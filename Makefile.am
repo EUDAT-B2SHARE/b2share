@@ -24,7 +24,4 @@ SUBDIRS = bibformat bibsched miscutil simplestore
 
 EXTRA_DIST = config.nice.in config.rpath
 
-install-tables:
-	${prefix}/bin/dbexec < $(top_srcdir)/simplestore/sql/tabcreate.sql 
-
 CLEANFILES = *~ *.pyc *.tmp

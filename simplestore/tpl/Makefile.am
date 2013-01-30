@@ -15,9 +15,9 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-tpldir = $(sysconfdir)
+tpldir = $(sysconfdir)/templates
 
-tpl_DATA = *.tpl
+tpl_DATA = *.html
 
 EXTRA_DIST = $(tpl_DATA)
 

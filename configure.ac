@@ -97,12 +97,8 @@ AC_CONFIG_FILES([config.nice  \
      bibsched/lib/bibsched_tasklets/Makefile \
      miscutil/Makefile \
      miscutil/lib/Makefile \
-     simplestore/js/Makefile \
-     simplestore/sql/Makefile \
      simplestore/Makefile \
-     simplestore/lib/Makefile \
      simplestore/tpl/Makefile \
-     simplestore/upgrades/Makefile \
      ])
 
 ## Finally, write output files:
