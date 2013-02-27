@@ -87,18 +87,9 @@ AC_SUBST(localstatedir, `eval echo "${localstatedir}"`)
 ## Define output files:
 AC_CONFIG_FILES([config.nice  \
      Makefile \
-     bibformat/Makefile \
-     bibformat/lib/Makefile \
-     bibformat/lib/bibformat_elements/Makefile \
-     bibformat/output_formats/Makefile \
-     bibformat/format_templates/Makefile \
-     bibsched/Makefile \
-     bibsched/lib/Makefile \
-     bibsched/lib/bibsched_tasklets/Makefile \
-     miscutil/Makefile \
-     miscutil/lib/Makefile \
      simplestore/Makefile \
      simplestore/tpl/Makefile \
+     simplestore/lib/Makefile \
      ])
 
 ## Finally, write output files:
