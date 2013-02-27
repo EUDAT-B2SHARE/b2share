@@ -20,7 +20,7 @@
 confignicedir = $(sysconfdir)/build
 confignice_SCRIPTS=config.nice
 
-SUBDIRS = bibformat bibsched miscutil simplestore
+SUBDIRS = simplestore
 
 EXTRA_DIST = config.nice.in config.rpath
 
