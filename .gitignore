@@ -30,3 +30,4 @@ config.nice
 config.log
 dbmigrator
 inveniomigrate
+*.swp
