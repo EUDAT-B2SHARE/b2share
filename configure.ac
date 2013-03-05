@@ -90,6 +90,10 @@ AC_CONFIG_FILES([config.nice  \
      simplestore/Makefile \
      simplestore/tpl/Makefile \
      simplestore/lib/Makefile \
+     webdeposit/Makefile \
+     webdeposit/etc/Makefile \
+     webdeposit/etc/templates/Makefile \
+     webdeposit/lib/Makefile \
      ])
 
 ## Finally, write output files:

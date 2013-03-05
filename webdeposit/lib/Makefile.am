@@ -1,5 +1,5 @@
 ## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012 CERN.
+## Copyright (C) 2013 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -14,14 +14,18 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-#
-#
 
-confignicedir = $(sysconfdir)/build
-confignice_SCRIPTS=config.nice
+#SUBDIRS = deposition_forms deposition_fields deposition_types
 
-SUBDIRS = simplestore webdeposit
+pylibdir = $(libdir)/python/invenio
 
-EXTRA_DIST = config.nice.in config.rpath
+pylib_DATA = webdeposit_field_widgets.py
 
-CLEANFILES = *~ *.pyc *.tmp
+##jsdir=$(localstatedir)/www/js
+
+##js_DATA = webdeposit_form.js
+
+EXTRA_DIST = $(pylib_DATA) 
+#             $(js_DATA)
+
+CLEANFILES = *~ *.tmp *.pyc
