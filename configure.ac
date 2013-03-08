@@ -90,6 +90,7 @@ AC_CONFIG_FILES([config.nice  \
      simplestore/Makefile \
      simplestore/tpl/Makefile \
      simplestore/lib/Makefile \
+     simplestore/simple_deposition_types/Makefile \
      webdeposit/Makefile \
      webdeposit/etc/Makefile \
      webdeposit/etc/templates/Makefile \
