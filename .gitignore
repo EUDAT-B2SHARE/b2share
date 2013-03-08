@@ -32,3 +32,4 @@ config.log
 dbmigrator
 inveniomigrate
 recomp.sh
+*.swp
