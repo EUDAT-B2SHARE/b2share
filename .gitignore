@@ -6,6 +6,7 @@ tags
 .settings
 .pydevproject
 .project
+.ropeproject
 *.egg-info
 env/
 bibformat/dist
@@ -30,3 +31,4 @@ config.nice
 config.log
 dbmigrator
 inveniomigrate
+recomp.sh
