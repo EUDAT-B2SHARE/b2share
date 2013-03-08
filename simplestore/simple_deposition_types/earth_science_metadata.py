@@ -30,7 +30,7 @@ PhotoForm = forms['PhotoForm']
 
 dep_type = "Earth Science"
 plural = "Earth Sciences"
-group = "Articles & Preprints"
+group = "Domains"
 wf = [authorize_user(),
       render_form(ArticleForm),
       wait_for_submission()]
