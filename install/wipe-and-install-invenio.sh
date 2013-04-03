@@ -32,6 +32,9 @@ fi
 #BE VERY CAREFUL!
 
 
+#Take down Apache; do this before moving dir due to symlinked files
+service apache2 stop
+
 #TODO: Test INVENIO_DIR doesn't have ending slash
 MV_DIR=$INVENIO_DIR$(date +"%d-%m-%y")
 read -p "About to run mv '$INVENIO_DIR $MV_DIR'; hit ctrl-c to abort"
@@ -41,8 +44,6 @@ if [ -d $MV_DIR ]; then
 fi
 mv $INVENIO_DIR $INVENIO_DIR$(date +"%d-%m-%y")
 
-#Take down Apache
-service apache2 stop
 aclocal-1.9
 automake-1.9 -a
 ./configure
