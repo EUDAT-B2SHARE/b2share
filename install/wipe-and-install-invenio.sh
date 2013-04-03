@@ -1,7 +1,7 @@
 #!/bin/bash
 #Note that if you change this you will also need to update the makefile
 INVENIO_DIR=/opt/invenio
-MYSQL_PASS="vagrant"
+MYSQL_PASS=
 
 echo "DANGER, WILL ROBINSON!
 
