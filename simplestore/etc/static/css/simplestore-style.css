@@ -1,0 +1,143 @@
+html {
+  overflow-y: scroll;
+}
+
+#drop_zone {
+  border: 4px dashed #bbb;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  margin-top: 20px;
+  padding-top: 100px;
+  padding-bottom: 50px;
+  padding-left: 100px;
+  padding-right: 100px;
+  text-align: center;
+  background-color: #bcbcbc;
+}
+
+#drop_zone h2 {
+  text-align: left;
+}
+
+.dep-submit {
+  margin-left: 0;
+  margin-top: 40px;
+}
+#domains {
+  margin-left: 0;
+}
+
+.domain {
+  float: left;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
+  margin-right: 10px;
+  margin-top: 20px;
+  text-align: center;
+  width: 85px;
+  height: 130px;
+  border: 2px solid #bbb;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+}
+
+.add-button{
+  text-align: center;
+  margin-left: 0;
+}
+
+.domain:hover {
+  opacity: 0.8;
+  color: #9d261d;
+  border: 2px solid #9d261d;
+}
+
+/* Hide only visually, but have it available for screenreaders: h5bp.com/v */
+.visuallyhidden { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+
+/* Extends the .visuallyhidden class to allow the element to be focusable when navigated to via the keyboard: h5bp.com/p */
+.visuallyhidden.focusable:active, .visuallyhidden.focusable:focus { clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto; }
+
+.highlight-icon {
+  color: #9d261d;
+  border: 2px solid #9d261d;
+}
+
+.deposit {
+
+  margin: 60px 0;
+
+}
+
+#sss-file-table tr {
+
+  border-style: solid;
+  border-color: #888888;
+  border-width: 2px;
+  background-color: white;
+}
+
+.meta-container {
+
+  padding: 60px;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 30px;
+  color: inherit;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px
+}
+
+
+.meta-label {
+
+  font-size: 17.5px;
+  font-weight: bold;
+  text-align: right;
+  width: 160px;
+  float: left;
+  padding-right: 6px;
+  padding-top: 5px;
+  margin-right: 35px; /* don't understand why margin right is needed :( */
+
+}
+
+#meta-fields {
+  margin-top: 40px;
+  text-align: left;
+}
+
+.meta-container h1 {
+
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.metacontent {
+  margin-top: 10px;
+  line-height: 40px;
+}
+
+#meta{
+  margin-top: 40px;
+  text-align: center;
+}
+
+.meta-table {
+
+  background-color: #f5f5f5;
+}
+
+.first-cap {
+  text-transform: capitalize;
+}
+
+#adv-fields {
+  margin-top: 20px;
+}

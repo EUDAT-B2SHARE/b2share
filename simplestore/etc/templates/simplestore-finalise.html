@@ -1,0 +1,20 @@
+{% extends "page.html" %}
+{% set active_page = "finalise" %}
+
+{% block body %}
+
+{{ super() }}
+    <div id = "page-header">
+    <div class="container">
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit">
+        <h1>Deposit Accepted</h1>
+        <p/>
+        <p>Your unique ID is {{ tag }}</p>
+        <!-- <p>Your public URL is {{ tag }}</p> -->
+        
+      </div>
+
+    </div>
+    </div>
+{% endblock %}
