@@ -17,42 +17,31 @@
 # # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""WebDeposit Flask Blueprint"""
+"""SimpleStore Flask Blueprint"""
 import os
-import shutil
-import json
 import uuid
-import logging
 import urllib2
-from glob import iglob
-from flask import Flask, \
-                  current_app, \
-                  render_template, \
-                  request, \
-                  jsonify, \
-                  redirect, \
-                  url_for, \
-                  send_from_directory, \
-                  flash
+from flask import (render_template, request, jsonify, url_for,
+                   send_from_directory, flash)
 from werkzeug.utils import secure_filename
-from invenio.sqlalchemyutils import db
-from flask.ext.bootstrap import Bootstrap
 from flask.ext.wtf import Form, TextField
 from flask.ext.wtf.html5 import EmailField
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
 
-blueprint = InvenioBlueprint('ssdeposit', __name__,
-                              url_prefix='/ssdeposit',
-                              menubuilder=[('main.ssdeposit',
-                                          _('SSDeposit'),
-                                            'ssdeposit.index_deposition_types', 2)],
-                              breadcrumbs=[(_('SSDeposit'), 'ssdeposit.index_deposition_types')])
+blueprint = InvenioBlueprint('simplestore', __name__,
+                             url_prefix='/simplestore',
+                             menubuilder=[('main.simplestore',
+                                          _('SimpleStore'),
+                                          'simplestore.deposit', 2)],
+                             breadcrumbs=[(_('SimpleStore'),
+                                          'simplestore.deposit')])
 
 
 @blueprint.route('/')
-def index_deposition_types():
+def deposit():
     """ Renders the deposit """
-    return render_template('simplestore-home.html')
+    return render_template('simplestore-deposit.html')
+
 
 class OtherForm(Form):
     author = TextField('Author')
@@ -70,15 +59,17 @@ class OtherForm(Form):
         yield self.pub
         yield self.email
 
+
 @blueprint.route('/addmeta', methods=['POST'])
 def addmeta():
     print 'here'
     form = OtherForm()
 
     return render_template('simplestore-addmeta.html',
-        domain=request.form['domain'],
-        fileret=request.form.get('filelist'),
-        form=form)
+                           domain=request.form['domain'],
+                           fileret=request.form.get('filelist'),
+                           form=form)
+
 
 @blueprint.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -142,14 +133,3 @@ def getfiles(dir_id, filename):
 @blueprint.route('/finalise', methods=['POST'])
 def finalise():
     return render_template('simplestore-finalise.html', tag=uuid.uuid4())
-
-
-@blueprint.route('/deposit')
-def deposit():
-    """ Renders the deposit """
-    return render_template('simplestore-deposit.html')
-
-
-
-
-

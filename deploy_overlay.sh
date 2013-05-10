@@ -1,10 +1,11 @@
 #!/bin/sh
 
-#Note that files with the same name are overwritten so be careful to prefix
-#files with name of module or similar scheme.
+# Note that files with the same name are overwritten so be careful to prefix
+# files with name of module or similar scheme.
 
-#Another thing to be careful of is to remove any moved or renamed files from
-#the installation to avoid confusion later.
+# Another thing to be careful of is to remove any moved or renamed files from
+# the installation to avoid confusion later. And don't forgot the damned .pyc
+# files.
 
 cp -v simplestore/lib/*.py /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/

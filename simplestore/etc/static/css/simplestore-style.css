@@ -3,7 +3,7 @@ html {
 }
 
 #drop_zone {
-  border: 4px dashed #bbb;
+  border: 2px dashed #bbb;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;
@@ -13,7 +13,7 @@ html {
   padding-left: 100px;
   padding-right: 100px;
   text-align: center;
-  background-color: #bcbcbc;
+  background-color: #eee;
 }
 
 #drop_zone h2 {

@@ -1,184 +1,30 @@
 {% extends "page.html" %}
-{% set active_page = "deposit" %}
 {% block header %}
     {{ super() }}
-    <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
-    {% js 'js/ssjs/vendor/jquery.ui.widget.js' %}
-    {% js 'js/ssjs/jquery.iframe-transport.js' %}
-    {% js 'js/ssjs/jquery.fileupload-fp.js' %}
-    {% js 'js/ssjs/jquery.fileupload.js' %}
-    {% js 'js/ssjs/jquery.fileupload-ui.js' %}
-    {% js 'js/ssjs/main.js' %}
-    {% js 'js/ssdeposit.js' %}
-    {% js 'js/ssjs/tmpl.min.js'%}
-    {% css 'js/ssjs/css/jquery.fileupload-ui.css' %}
-    {% css 'js/ssjs/css/jquery.fileupload-ui-noscript.css'%}
-    <script type="text/javascript" src=/root/invenio/opt/invenio/var/www/js/ssjs/deposit.js"></script> 
+    {% css 'css/simplestore-style.css', '50-simplestore' %}
+    {% css 'css/font-awesome.min.css', '50-simplestore' %}
+    {# need to link to CSS and simplestore-deposit.js I expect #}
 {% endblock %}
 
 {% block body%}
-<style>
-html {
-  overflow-y: scroll;
-}
 
-#drop_zone {
-  border-top:2px dashed #bbb;
-  border-bottom:2px dashed #bbb;
-  border-radius:10px;
-  border-bottom-right-radius: 10px;
-  padding: 10px;
-  padding-left: 100px;
-  padding-right: 100px;
-  padding-left: 100px;
-  padding-right: 100px;
-  text-align: center;
-  background-color: #eee;
-  position: centre;
-}
+    <div class="container">
 
-#drop_zone h2 {
-  text-align:left;
-}
-
-.dep-submit {
-  margin-left: 0;
-  margin-top: 40px;
-}
-#domains {
-  margin-left: 0;
-}
-
-.domain {
-  float: left;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 5px;
-  margin-right: 10px;
-  margin-top: 20px;
-  text-align: center;
-  width: 85px;
-  height: 130px;
-  border: 2px solid #bbb;
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  border-radius: 8px;
-}
-
-.add-button{
-  text-align: center;
-  margin-left: 0;
-}
-
-.domain:hover {
-  opacity: 0.8;
-  color: #9d261d;
-  border: 2px solid #9d261d;
-}
-
-/* Hide only visually, but have it available for screenreaders: h5bp.com/v */
-.visuallyhidden { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
-
-/* Extends the .visuallyhidden class to allow the element to be focusable when navigated to via the keyboard: h5bp.com/p */
-.visuallyhidden.focusable:active, .visuallyhidden.focusable:focus { clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto; }
-
-.highlight-icon {
-  color: #9d261d;
-  border: 2px solid #9d261d;
-}
-
-.deposit {
-
-  margin: 60px 0;
-
-}
-
-#sss-file-table tr {
-
-  border-style: solid;
-  border-color: #888888;
-  border-width: 2px;
-  background-color: white;
-}
-
-.meta-container {
-
-  padding: 60px;
-  margin-bottom: 30px;
-  margin-top: 30px;
-  font-size: 18px;
-  font-weight: 200;
-  line-height: 30px;
-  color: inherit;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px
-}
-
-
-.meta-label {
-
-  font-size: 17.5px;
-  font-weight: bold;
-  text-align: right;
-  width: 160px;
-  float: left;
-  padding-right: 6px;
-  padding-top: 5px;
-  margin-right: 35px; 
-
-}
-
-#meta-fields {
-  margin-top: 40px;
-  text-align: left;
-}
-
-.meta-container h1 {
-
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.metacontent {
-  margin-top: 10px;
-  line-height: 40px;
-}
-
-#meta{
-  margin-top: 40px;
-  text-align: center;
-}
-
-.meta-table {
-
-  background-color: #f5f5f5;
-}
-
-.first-cap {
-  text-transform: capitalize;
-}
-
-#adv-fields {
-  margin-top: 20px;
-}
-</style>
-
-    <div id="page-header">
       <div class="row deposit">
         <h1>Deposit</h1>
+
         <div id="drop_zone">
    <!-- The file upload form used as target for the file upload widget -->
-   <form id="fileupload" action="{{ url_for('.upload') }}" method="POST" enctype="multipart/form-data">
+   <form id="fileupload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
         <!-- Redirect browsers with JavaScript disabled to the origin page -->
         <noscript>JavaScript is required to upload files.</noscript>
         <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-         <h2>Use the button or drag and drop files to deposit</h2>
-         <div class="span5 add-button">
+            <h2>Use the button or drag and drop files to deposit</h2>
+        <div class="span5 add-button">
                 <!-- The fileinput-button span is used to style the file input field as button -->
-                <span class="btn btn-small add-button fileinput-button ">
+                <span class="btn btn-large fileinput-button add-button">
                     <i class="icon-plus icon-white"></i>
-                    <span>Add files....</span>
+                    <span>Add files...</span>
                     <input type="file" name="files[]" multiple>
                 </span>
             <!-- The global progress information -->
@@ -199,11 +45,15 @@ html {
     </form>
         </div>
         <output id="list"></output>
+
       </div>
-      <form method="POST" action="{{ url_for('.addmeta') }}" enctype="multipart/form-data">
+      <form method="post" action="{{ url_for('addmeta') }}" enctype="multipart/form-data">
         <input type="hidden" id="filelist" name="filelist" value=""></input>
         <div class="row" id="domains">
+
+
           <h1>Select a domain</h1>
+
         <!-- id/value, text, icon -->
   {% set domain_entries = [
     ('other', 'Other', 'icon-question-sign'),
@@ -216,93 +66,26 @@ html {
     ('linguistics', 'Linguistics', 'icon-quote-right')
   ] -%}
   {% set default_domain = default_domain|default('other') -%}
+
+
   {% for id, text, icon in domain_entries %}
   <div class="domain {% if id == default_domain %} highlight-icon{% endif %}">
     <input type="radio" class="visuallyhidden" name="domain" id="{{ id }}" value="{{ id }}" 
     {% if id == default_domain %}checked="checked"{% endif %}/>
     <label for="{{ id }}">
-      <i class="{{ icon }} icon-large icon-4x">&nbsp;</i>
+      &nbsp;<i class="{{ icon }} icon-large icon-4x"></i>
       <h5>{{ text }}</h5>
     </label>
   </div>
   {% endfor %}
+
+
       <div class="dep-submit span9 pull-left">
-     <button class="btn btn-primary btn-large" id="submit-deposit">Submit Deposit</button>
+        <button class="btn btn-primary btn-large" id="submit-deposit">Submit Deposit</button>
       </div>
+
       </div>
     </form>
   </div>
 
-{% endblock %}
-
-{% block scripts %}
-  <script>
-    $('#domains input:radio').addClass('visuallyhidden');
-    $('#domains .domain').click(function() {
-      $(this).addClass('highlight-icon').siblings().removeClass('highlight-icon');
-      });
-  </script>
-{% raw %}
-<!-- The template to display files available for upload -->
-<script id="template-upload" type="text/x-tmpl">
-{% for (var i=0, file; file=o.files[i]; i++) { %}
-    <tr class="template-upload fade amtest">
-        <td class="preview"><span class="fade"></span></td>
-        <td class="name"><span>{%=file.name%}</span></td>
-        <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
-        {% if (file.error) { %}
-            <td class="error" colspan="2"><span class="label label-important">Error</span> {%=file.error%}</td>
-        {% } else if (o.files.valid && !i) { %}
-            <td>
-                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" style="width:0%;"></div></div>
-            </td>
-            <td>{% if (!o.options.autoUpload) { %}
-                <button class="btn btn-primary start">
-                    <i class="icon-upload icon-white"></i>
-                    <span>Start</span>
-                </button>
-            {% } %}</td>
-        {% } else { %}
-            <td colspan="2"></td>
-        {% } %}
-        <td>{% if (!i) { %}
-            <button class="btn btn-warning cancel">
-                <i class="icon-ban-circle icon-white"></i>
-                <span>Cancel</span>
-            </button>
-        {% } %}</td>
-
-    </tr>
-{% } %}
-</script>
-<!-- The template to display files available for download -->
-<script id="template-download" type="text/x-tmpl">
-{% for (var i=0, file; file=o.files[i]; i++) { %}
-    <tr class="template-download fade">
-        {% if (file.error) { %}
-            <td></td>
-            <td class="name"><span>{%=file.name%}</span></td>
-            <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
-            <td class="error" colspan="2"><span class="label label-important">Error</span> {%=file.error%}</td>
-        {% } else { %}
-            <td class="preview">{% if (file.thumbnail_url) { %}
-                <a href="{%=file.url%}" title="{%=file.name%}" data-gallery="gallery" download="{%=file.name%}"><img src="{%=file.thumbnail_url%}"></a>
-            {% } %}</td>
-            <td class="name uploaded">
-                <a href="{%=file.url%}" title="{%=file.name%}" data-gallery="{%=file.thumbnail_url&&'gallery'%}" download="{%=file.name%}">{%=file.name%}</a>
-            </td>
-            <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
-            <td colspan="2"></td>
-        {% } %}
-        <td>
-            <button class="btn btn-danger delete" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}"{% if (file.delete_with_credentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
-                <i class="icon-trash icon-white"></i>
-                <span>Delete</span>
-            </button>
-            <input type="checkbox" name="delete" value="1" class="toggle">
-        </td>
-    </tr>
-{% } %}
-{% endraw %}
-</script>
 {% endblock %}
