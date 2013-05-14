@@ -3,7 +3,7 @@
     {{ super() }}
     {% css 'css/simplestore-style.css', '50-simplestore' %}
     {% css 'css/font-awesome.min.css', '50-simplestore' %}
-    {# need to link to CSS and simplestore-deposit.js I expect #}
+    {% js 'js/simplestore-deposit.js', '50-simplestore' %}
 {% endblock %}
 
 {% block body%}

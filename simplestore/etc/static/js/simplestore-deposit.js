@@ -10,4 +10,8 @@ $(document).ready(function() {
     $('#filelist').val(JSON.stringify(filearr));
 
   });
+  $('#domains input:radio').addClass('visuallyhidden');
+  $('#domains .domain').click(function() {
+    $(this).addClass('highlight-icon').siblings().removeClass('highlight-icon');
+  });
 });
