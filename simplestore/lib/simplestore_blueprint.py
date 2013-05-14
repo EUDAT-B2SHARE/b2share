@@ -27,6 +27,7 @@ from werkzeug.utils import secure_filename
 from flask.ext.wtf import Form, TextField
 from flask.ext.wtf.html5 import EmailField
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
+from invenio.config import CFG_SITE_SECRET_KEY
 
 blueprint = InvenioBlueprint('simplestore', __name__,
                              url_prefix='/simplestore',
@@ -44,6 +45,7 @@ def deposit():
 
 
 class OtherForm(Form):
+    SECRET_KEY = CFG_SITE_SECRET_KEY
     author = TextField('Author')
     title = TextField('Title')
     keywords = TextField('Keywords')
@@ -62,7 +64,6 @@ class OtherForm(Form):
 
 @blueprint.route('/addmeta', methods=['POST'])
 def addmeta():
-    print 'here'
     form = OtherForm()
 
     return render_template('simplestore-addmeta.html',

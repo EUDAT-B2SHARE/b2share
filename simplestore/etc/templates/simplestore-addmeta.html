@@ -1,7 +1,11 @@
-{% extends "ss-base.html" %}
-{% set active_page = "addmeta" %}
+{% extends "page.html" %}
+{% block header %}
+    {{ super() }}
+    {% css 'css/simplestore-style.css', '50-simplestore' %}
+    {% js 'js/simplestore-addmeta.js', '50-simplestore' %}
+{% endblock %}
 {% block body %}
-{{ super }}
+
     <div class="container">
       <div class="meta-container row">
         <h1>Your Deposit</h1>
@@ -68,9 +72,4 @@
 
     </div>
 
-{% endblock %}
-
-{% block scripts %}
- {{ super() }}
-{% js 'js/ssjs/addmeta.js' %}
 {% endblock %}
