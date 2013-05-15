@@ -3,6 +3,10 @@
     {{ super() }}
     {% css 'css/simplestore-style.css', '50-simplestore' %}
     {% css 'css/font-awesome.min.css', '50-simplestore' %}
+    <!-- Used by plupload -->
+    <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+    {% js 'js/plupload/plupload.full.js', '50-webdeposit' %}
+    <!-- Note there is also js at the bottom of the template. Sigh. -->
     {% js 'js/simplestore-deposit.js', '50-simplestore' %}
 {% endblock %}
 
@@ -13,38 +17,30 @@
       <div class="row deposit">
         <h1>Deposit</h1>
 
-        <div id="drop_zone">
-   <!-- The file upload form used as target for the file upload widget -->
-   <form id="fileupload" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-        <!-- Redirect browsers with JavaScript disabled to the origin page -->
-        <noscript>JavaScript is required to upload files.</noscript>
-        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-            <h2>Use the button or drag and drop files to deposit</h2>
-        <div class="span5 add-button">
-                <!-- The fileinput-button span is used to style the file input field as button -->
-                <span class="btn btn-large fileinput-button add-button">
-                    <i class="icon-plus icon-white"></i>
-                    <span>Add files...</span>
-                    <input type="file" name="files[]" multiple>
-                </span>
-            <!-- The global progress information -->
-            <div class="span5 fileupload-progress fade">
-                <!-- The global progress bar -->
-                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                    <div class="bar" style="width:0%;"></div>
-                </div>
-                <!-- The extended global progress information -->
-                <div class="progress-extended">&nbsp;</div>
+        <div class="pluploader" id="fileupload">
+          <div class="well" id="filebox">
+            <div id="drag_and_drop_text" style="text-align:center;z-index:-100;">
+              <h1><small>Drag and Drop files here</small></h1>
             </div>
+          </div>
+          <!-- Tables? Really? -->
+          <table id="file-table" class="table table-striped table-bordered" style="display:none;">
+            <thead>
+              <tr>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Status</th>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody id="filelist">
+            </tbody>
+          </table>
+          <a class="btn btn-primary" id="pickfiles" >Select files</a> 
+          <a class="btn btn-success disabled" id="uploadfiles"><i class="icon-upload icon-white"></i> Start upload</a>
+          <a class="btn btn-danger" id="stopupload" style="display:none;"><i class="icon-stop icon-white"></i> Stop upload</a>
+          <div id="upload-errors"></div>
         </div>
-        <!-- The loading indicator is shown during file processing -->
-        <div class="fileupload-loading"></div>
-        <br>
-        <!-- The table listing the files available for upload/download -->
-        <table role="presentation" class="table" id="sss-file-table"><tbody class="files"></tbody></table>
-    </form>
-        </div>
-        <output id="list"></output>
 
       </div>
       <form method="post" action="{{ url_for('.addmeta') }}" enctype="multipart/form-data">
@@ -88,4 +84,22 @@
     </form>
   </div>
 
+{% endblock %}
+
+{% block javascript %}
+{{ super() }}
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+  simplestore_init_plupload('.pluploader',
+                            '{{ url_for('.plupload', uuid=uuid) }}',
+                            '{{ url_for('.plupload_delete', uuid=uuid) }}',
+                            '{{ url_for('.plupload_get_file', uuid=uuid) }}');
+
+  //think this is used to update file upload status?
+  simplestore_check_status('{{ url_for('.check_status', uuid=uuid) }}');
+  });
+</script>
 {% endblock %}
