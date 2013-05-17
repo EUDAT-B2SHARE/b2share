@@ -201,7 +201,7 @@ def addmeta():
     #Uncomment the following line if there are errors regarding db tables
     #not being present. Hacky solution for minute.
 
-    db.create_all()
+    #db.create_all()
 
     sub = ""
     if 'uuid' in request.form:
