@@ -11,4 +11,11 @@ cp -v simplestore/lib/*.py /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
 chown -R www-data.www-data /opt/invenio
+
+# branding adjustments
+sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/templates/page.html
+
+# a quick hack for title replacement
+cp -vf invenio/templates/*  /opt/invenio/etc/templates/
+
 service apache2 restart
