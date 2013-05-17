@@ -22,6 +22,7 @@ import os
 import uuid
 import urllib2
 import shutil
+import time
 from glob import iglob
 from flask import (render_template, request, jsonify, url_for,
                    send_from_directory, flash)
@@ -32,8 +33,12 @@ from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
 from invenio.config import CFG_SITE_SECRET_KEY
 from invenio.sqlalchemyutils import db
 from invenio.simplestore_model.model import Submission, SubmissionMetadata, LinguisticsMetadata
+from invenio.bibtask import task_low_level_submission
 from wtforms.ext.sqlalchemy.orm import model_form
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
+from invenio.bibfield_jsonreader import JsonReader
+from tempfile import mkstemp
+from invenio.config import CFG_TMPSHAREDDIR
 
 blueprint = InvenioBlueprint('simplestore', __name__,
                              url_prefix='/simplestore',
@@ -221,6 +226,7 @@ def addmeta():
     meta_form = MetaForm(request.form, sub.md)
 
     if meta_form.validate_on_submit():
+        create_marc_and_ingest(request.form)
         return render_template('simplestore-finalise.html', tag=sub.uuid)
     #else:
     #   print meta_form.errors
@@ -236,6 +242,24 @@ def addmeta():
         basic_field_iter=sub.md.basicFieldIter,
         opt_field_iter=sub.md.optionalFieldIter,
         getattr=getattr)
+
+
+def create_marc_and_ingest(form):
+    json_reader = JsonReader()
+    # just do this by hand to get something working for demo
+    # this must be automated
+    json_reader['title.title'] = form['title']
+    json_reader['authors[0].full_name'] = form['creator']
+    json_reader['imprint.publisher_name'] = form['publisher']
+    json_reader['collection.primary'] = "Article"
+    marc = json_reader.legacy_export_as_marc()
+    tmp_file_fd, tmp_file_name = mkstemp(suffix='.marcxml',
+                                         prefix="webdeposit_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
+                                         dir=CFG_TMPSHAREDDIR)
+    os.write(tmp_file_fd, marc)
+    os.close(tmp_file_fd)
+    os.chmod(tmp_file_name, 0644)
+    task_low_level_submission('bibupload', 'webdeposit', '-i', tmp_file_name)
 
 
 @blueprint.route('/upload', methods=['GET', 'POST'])
