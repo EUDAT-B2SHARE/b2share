@@ -7,7 +7,7 @@
 # the installation to avoid confusion later. And don't forgot the damned .pyc
 # files.
 
-cp -v simplestore/lib/*.py /opt/invenio/lib/python/invenio/
+cp -vr simplestore/lib/* /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
 chown -R www-data.www-data /opt/invenio

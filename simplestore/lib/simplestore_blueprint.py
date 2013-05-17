@@ -30,6 +30,10 @@ from flask.ext.wtf import Form, TextField
 from flask.ext.wtf.html5 import EmailField
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
 from invenio.config import CFG_SITE_SECRET_KEY
+from invenio.sqlalchemyutils import db
+from invenio.simplestore_model.model import Submission, SubmissionMetadata, LinguisticsMetadata
+from wtforms.ext.sqlalchemy.orm import model_form
+from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 
 blueprint = InvenioBlueprint('simplestore', __name__,
                              url_prefix='/simplestore',
@@ -45,8 +49,8 @@ CFG_SIMPLESTORE_UPLOAD_FOLDER = '/opt/invenio/var/tmp/simplestore_uploads'
 @blueprint.route('/')
 def deposit():
     """ Renders the deposit """
-    #this is going to break on reload...
-    return render_template('simplestore-deposit.html', uuid=uuid.uuid1())
+    #this is going to break on reload, does it matter?
+    return render_template('simplestore-deposit.html', uuid=uuid.uuid1().hex)
 
 
 class OtherForm(Form):
@@ -65,6 +69,10 @@ class OtherForm(Form):
     def adv_field_iter(self):
         yield self.pub
         yield self.email
+
+
+class FormWithKey(Form):
+    SECRET_KEY = CFG_SITE_SECRET_KEY
 
 
 @blueprint.route('/upload/<uid>', methods=['POST'])
@@ -185,12 +193,49 @@ def check_status_noarg():
 
 @blueprint.route('/addmeta', methods=['POST'])
 def addmeta():
-    form = OtherForm()
+    #Uncomment the following line if there are errors regarding db tables
+    #not being present. Hacky solution for minute.
 
-    return render_template('simplestore-addmeta.html',
-                           domain=request.form['domain'],
-                           fileret=request.form.get('filelist'),
-                           form=form)
+    db.create_all()
+
+    sub = ""
+    if 'uuid' in request.form:
+        sub = Submission.query.filter_by(uuid=request.form['uuid']).first()
+        if sub is None:
+            sub = Submission(uuid=request.form['uuid'])
+
+            if request.form['domain'] == 'linguistics':
+                meta = LinguisticsMetadata()
+            else:
+                meta = SubmissionMetadata()
+
+            sub.md = meta
+            db.session.add(sub)
+            db.session.commit()
+    else:
+        return "ERROR: uuid not set", 500
+
+    MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
+                          exclude=['submission', 'submission_type'],
+                          converter=HTML5ModelConverter())
+    meta_form = MetaForm(request.form, sub.md)
+
+    if meta_form.validate_on_submit():
+        return render_template('simplestore-finalise.html', tag=sub.uuid)
+    #else:
+    #   print meta_form.errors
+
+    files = os.listdir(os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, request.form['uuid']))
+
+    return render_template(
+        'simplestore-addmeta.html',
+        domain=request.form['domain'],
+        fileret=files,
+        form=meta_form,
+        uuid=sub.uuid,
+        basic_field_iter=sub.md.basicFieldIter,
+        opt_field_iter=sub.md.optionalFieldIter,
+        getattr=getattr)
 
 
 @blueprint.route('/upload', methods=['GET', 'POST'])
