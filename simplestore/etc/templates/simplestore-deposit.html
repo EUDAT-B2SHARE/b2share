@@ -95,9 +95,9 @@
 $(document).ready(function() {
 
   simplestore_init_plupload('.pluploader',
-                            '{{ url_for('.plupload', uid=uuid) }}',
-                            '{{ url_for('.plupload_delete', uid=uuid) }}',
-                            '{{ url_for('.plupload_get_file', uid=uuid) }}');
+                            '{{ url_for('.upload', uid=uuid) }}',
+                            '{{ url_for('.delete', uid=uuid) }}',
+                            '{{ url_for('.get_file', uid=uuid) }}');
 
   //think this is used to update file upload status?
   simplestore_check_status('{{ url_for('.check_status', uuid=uuid) }}');
