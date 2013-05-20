@@ -64,8 +64,9 @@ def addmeta(request):
     meta_form = MetaForm(request.form, sub.md)
 
     if meta_form.validate_on_submit():
-        create_marc_and_ingest(request.form)
-        return render_template('simplestore-finalise.html', tag=sub.uuid)
+        marc = create_marc_and_ingest(request.form)
+        return render_template('simplestore-finalise.html',
+                               tag=sub.uuid, marc=marc)
     #else:
     #   print meta_form.errors
 
@@ -98,3 +99,4 @@ def create_marc_and_ingest(form):
     os.close(tmp_file_fd)
     os.chmod(tmp_file_name, 0644)
     task_low_level_submission('bibupload', 'webdeposit', '-i', tmp_file_name)
+    return marc
