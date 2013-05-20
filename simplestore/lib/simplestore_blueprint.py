@@ -20,15 +20,12 @@
 """SimpleStore Flask Blueprint"""
 import os
 import uuid
-import urllib2
 import shutil
 import time
 from glob import iglob
-from flask import (render_template, request, jsonify, url_for,
-                   send_from_directory, flash)
+from flask import (render_template, request, jsonify, current_app)
 from werkzeug.utils import secure_filename
-from flask.ext.wtf import Form, TextField
-from flask.ext.wtf.html5 import EmailField
+from flask.ext.wtf import Form
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
 from invenio.config import CFG_SITE_SECRET_KEY
 from invenio.sqlalchemyutils import db
@@ -54,28 +51,13 @@ CFG_SIMPLESTORE_UPLOAD_FOLDER = '/opt/invenio/var/tmp/simplestore_uploads'
 @blueprint.route('/')
 def deposit():
     """ Renders the deposit """
-    #this is going to break on reload, does it matter?
+    # this will wipe form on reload, does it matter?
+    # (if you want to fix this, I would suggest cookies rather than workflow)
     return render_template('simplestore-deposit.html', uuid=uuid.uuid1().hex)
 
 
-class OtherForm(Form):
-    SECRET_KEY = CFG_SITE_SECRET_KEY
-    author = TextField('Author')
-    title = TextField('Title')
-    keywords = TextField('Keywords')
-    pub = TextField('Publication')
-    email = EmailField('Email')
-
-    #using generator allows us to order output and avoid csrf field
-    def basic_field_iter(self):
-        for f in [self.author, self.title, self.keywords]:
-            yield f
-
-    def adv_field_iter(self):
-        yield self.pub
-        yield self.email
-
-
+# Needed to avoid errors in Form Generation
+# There is an invenio forms class that should be investigated
 class FormWithKey(Form):
     SECRET_KEY = CFG_SITE_SECRET_KEY
 
@@ -207,6 +189,7 @@ def addmeta():
     if 'uuid' in request.form:
         sub = Submission.query.filter_by(uuid=request.form['uuid']).first()
         if sub is None:
+            current_app.logger.error("Didn't find uuid")
             sub = Submission(uuid=request.form['uuid'])
 
             if request.form['domain'] == 'linguistics':
@@ -260,65 +243,6 @@ def create_marc_and_ingest(form):
     os.close(tmp_file_fd)
     os.chmod(tmp_file_name, 0644)
     task_low_level_submission('bibupload', 'webdeposit', '-i', tmp_file_name)
-
-
-@blueprint.route('/upload', methods=['GET', 'POST'])
-def upload():
-    if request.method == 'GET':
-
-        #Possibly not correct, but trying to mimic requests on working code
-        return ""
-
-    if request.method == 'POST':
-
-        #You can't use the data_file.content_length method as it is 0 usually
-        #Note that I've hard coded the server name, obviously you will need
-        #to fix this
-
-        data_file = request.files['files[]']
-        dir_id = str(uuid.uuid4())
-        temp_dir_name = str(blueprint.config['UPLOAD_FOLDER']) + "/" + dir_id
-        try:
-            os.makedirs(temp_dir_name)
-        except OSError as ex:
-            flash("Caught Server Error: " + ex.strerror)
-
-        sec_file = secure_filename(data_file.filename)
-        file_name = os.path.join(temp_dir_name, sec_file)
-        data_file.save(file_name)
-
-        #Can also supply a thumbnail url, but I don't think we need to
-
-        return jsonify(
-            files=[dict(
-                name=sec_file,
-                size=os.stat(file_name).st_size,  # content_length usually 0
-                type=data_file.content_type,
-                delete_url=url_for('getfiles', dir_id=dir_id,
-                                   filename=sec_file),
-                delete_type="DELETE",
-                url=url_for('getfiles', dir_id=dir_id, filename=sec_file))])
-
-
-#Handle getting and deleting of files
-@blueprint.route('/files/<dir_id>/<filename>', methods=['GET', 'DELETE'])
-def getfiles(dir_id, filename):
-    if request.method == 'GET':
-
-        return send_from_directory(blueprint.config['UPLOAD_FOLDER'] + "/" + dir_id,
-                                   urllib2.unquote(filename))
-
-    if request.method == 'DELETE':
-
-        file_dir = blueprint.config['UPLOAD_FOLDER'] + "/" + dir_id
-        try:
-            os.remove(file_dir + "/" + urllib2.unquote(filename))
-            if not os.listdir(file_dir):
-                os.rmdir(file_dir)
-        except OSError as ex:
-            flash("Caught Server Error: " + ex.strerror)
-
-        return ""
 
 
 @blueprint.route('/finalise', methods=['POST'])

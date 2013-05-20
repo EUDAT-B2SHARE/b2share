@@ -10,25 +10,26 @@
       <div class="meta-container row">
         <h1>Your Deposit</h1>
 
-        <div class="span10 metacontent" id="filetable">
-          <label class="control-label meta-label" for="fileinputs">Files</label>
-        </div>
+        <form class="form form-horizontal meta-form" method="post" action="{{ url_for('.addmeta') }}">
+          <input type="hidden" id="uuid" name="uuid" value="{{ uuid }}"/>
+          <input type="hidden" id="filelist" name="files" value="{{ fileret|tojson }}"/>
+          {{ form.csrf_token }}
 
-        <div class="span10 metacontent">
-          <label class="control-label meta-label" for="domain">Domain</label>
-          <input id="domain" name="domain" type="text" value="{{ domain }}" disabled class="first-cap"></input>
-        </div>
+          <div class="span10 metacontent" id="filetable">
+            <label class="control-label meta-label" for="fileinputs">Files</label>
+          </div>
+
+          <div class="span10 metacontent">
+            <label class="control-label meta-label" for="domain">Domain</label>
+            <input id="domain" name="domain" type="text" value="{{ domain }}" readonly lass="first-cap"></input>
+          </div>
 
 
-        <div id="meta" class="span10">
-          <h2>Add some basic details</h2>
+          <div id="meta" class="span10">
+            <h2>Add some basic details</h2>
 
-          <div id="meta-fields">
-            <form class="form form-horizontal meta-form" method="post" action="{{ url_for('.addmeta') }}">
-            <input type="hidden" id="uuid" name="uuid" value="{{ uuid }}"/>
-            {{ form.csrf_token }}
+            <div id="meta-fields">
 
-              <input type="hidden" id="filelist" name="files" value="{{ fileret|tojson }}"/>
 
               {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
               {%- macro meta_field(f) %}
@@ -66,12 +67,10 @@
               <div class="form-actions">
                 <button name="action_save" type="submit" class="btn btn-large btn-primary">I'm Done -<br>Submit the Item</button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
-        
-
     </div>
 
 {% endblock %}
