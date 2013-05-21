@@ -31,19 +31,19 @@ class FormWithKey(Form):
 def deposit(request):
     """ Renders the deposit start page """
     if request.method == 'POST':
-        if not 'uuid' in request.form:
-            return "ERROR: uuid not set", 500
+        if not 'sub_id' in request.form:
+            return "ERROR: submission id not set", 500
 
-        uid = request.form['uuid']
+        sub_id = request.form['sub_id']
 
-        updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, uid)
+        updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
         if (not os.path.isdir(updir)) or (not os.listdir(updir)):
             #would probably be better to disable the button in js until
             #upload complete
             flash(_("Please upload a file to deposit"), 'error')
-            return render_template('simplestore-deposit.html', uuid=uid)
+            return render_template('simplestore-deposit.html', sub_id=sub_id)
 
-        sub = Submission(uuid=uid)
+        sub = Submission(uuid=sub_id)
 
         if request.form['domain'] == 'linguistics':
             meta = LinguisticsMetadata()
@@ -53,13 +53,13 @@ def deposit(request):
         sub.md = meta
         db.session.add(sub)
         db.session.commit()
-        return redirect(url_for('.addmeta', uid=uid))
+        return redirect(url_for('.addmeta', sub_id=sub_id))
     else:
         return render_template('simplestore-deposit.html',
-                               uuid=uuid.uuid1().hex)
+                               sub_id=uuid.uuid1().hex)
 
 
-def addmeta(request, uid):
+def addmeta(request, sub_id):
     """
     Add metadata to a submission.
 
@@ -72,13 +72,19 @@ def addmeta(request, uid):
 
     #current_app.logger.error("Called addmeta")
 
-    if uid is None:
-        return "ERROR: uuid not set", 500
+    if sub_id is None:
+        return "ERROR: submission id not set", 500
 
-    sub = Submission.query.filter_by(uuid=uid).first()
+    sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
         return "ERROR: failed to find uuid in DB", 500
+
+    updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    if (not os.path.isdir(updir)) or (not os.listdir(updir)):
+        return "ERROR: Uploads not found", 500
+
+    files = os.listdir(updir)
 
     MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
@@ -92,15 +98,12 @@ def addmeta(request, uid):
     #else:
     #   print meta_form.errors
 
-    #Need to test that dir exists
-    files = os.listdir(os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, uid))
-
     return render_template(
         'simplestore-addmeta.html',
         domain=sub.md.domain,
         fileret=files,
         form=meta_form,
-        uuid=sub.uuid,
+        sub_id=sub.uuid,
         basic_field_iter=sub.md.basicFieldIter,
         opt_field_iter=sub.md.optionalFieldIter,
         getattr=getattr)

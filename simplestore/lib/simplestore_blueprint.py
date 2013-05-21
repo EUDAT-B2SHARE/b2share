@@ -21,34 +21,34 @@ def deposit():
     return dep.deposit(request)
 
 
-@blueprint.route('/addmeta/<uid>', methods=['GET', 'POST'])
+@blueprint.route('/addmeta/<sub_id>', methods=['GET', 'POST'])
 @blueprint.invenio_authenticated
-def addmeta(uid):
-    return dep.addmeta(request, uid)
+def addmeta(sub_id):
+    return dep.addmeta(request, sub_id)
 
 
-@blueprint.route('/upload/<uid>', methods=['POST'])
+@blueprint.route('/upload/<sub_id>', methods=['POST'])
 @blueprint.invenio_authenticated
-def upload(uid):
-    return uph.upload(request, uid)
+def upload(sub_id):
+    return uph.upload(request, sub_id)
 
 
-@blueprint.route('/delete/<id>', methods=['GET', 'POST'])
+@blueprint.route('/delete/<sub_id>', methods=['GET', 'POST'])
 @blueprint.invenio_authenticated
-def delete(id):
-    return uph.delete(request, id)
+def delete(sub_id):
+    return uph.delete(request, sub_id)
 
 
-@blueprint.route('/get_file/<uuid>', methods=['GET'])
+@blueprint.route('/get_file/<sub_id>', methods=['GET'])
 @blueprint.invenio_authenticated
-def get_file(uuid):
-    return uph.get_file(uuid)
+def get_file(sub_id):
+    return uph.get_file(sub_id)
 
 
-@blueprint.route('/check_status/<uuid>/', methods=['GET', 'POST'])
+@blueprint.route('/check_status/<sub_id>/', methods=['GET', 'POST'])
 @blueprint.invenio_authenticated
-def check_status(uuid):
-    return uph.check_status(uuid)
+def check_status(sub_id):
+    return uph.check_status(sub_id)
 
 
 @blueprint.route('/check_status/', methods=['GET', 'POST'])

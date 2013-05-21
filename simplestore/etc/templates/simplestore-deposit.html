@@ -42,7 +42,7 @@
 
       </div>
       <form method="post" action="{{ url_for('.deposit') }}" enctype="multipart/form-data">
-        <input type="hidden" id="uuid" name="uuid" value="{{ uuid }}"></input> 
+        <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
         <input type="hidden" id="filelist" name="filelist" value=""></input>
         <div class="row" id="domains">
 
@@ -93,12 +93,12 @@
 $(document).ready(function() {
 
   simplestore_init_plupload('.pluploader',
-                            '{{ url_for('.upload', uid=uuid) }}',
-                            '{{ url_for('.delete', uid=uuid) }}',
-                            '{{ url_for('.get_file', uid=uuid) }}');
+                            '{{ url_for('.upload', sub_id=sub_id) }}',
+                            '{{ url_for('.delete', sub_id=sub_id) }}',
+                            '{{ url_for('.get_file', sub_id=sub_id) }}');
 
   //think this is used to update file upload status?
-  simplestore_check_status('{{ url_for('.check_status', uuid=uuid) }}');
+  simplestore_check_status('{{ url_for('.check_status', sub_id=sub_id) }}');
   });
 </script>
 {% endblock %}
