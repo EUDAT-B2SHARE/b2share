@@ -51,20 +51,20 @@
 
         <!-- id/value, text, icon -->
   {% set domain_entries = [
-    ('other', 'Other', 'icon-question-sign'),
-    ('ecology', 'Ecology', 'icon-leaf'),
-    ('chemistry', 'Chemistry', 'icon-beaker'),
-    ('geography', 'Geography', 'icon-globe'),
-    ('medicine', 'Medicine', 'icon-stethoscope'),
-    ('compsci', 'Computer Science', 'icon-laptop'),
-    ('economics', 'Economics', 'icon-money'),
-    ('linguistics', 'Linguistics', 'icon-quote-right')
+    ('generic', 'Generic', 'icon-question-sign', 'domain'),
+    ('linguistics', 'Linguistics', 'icon-quote-right', 'domain'),
+    ('ecology', 'Ecology', 'icon-leaf', 'domain-disabled'),
+    ('chemistry', 'Chemistry', 'icon-beaker', 'domain-disabled'),
+    ('geography', 'Geography', 'icon-globe', 'domain-disabled'),
+    ('medicine', 'Medicine', 'icon-stethoscope', 'domain-disabled'),
+    ('compsci', 'Computer Science', 'icon-laptop', 'domain-disabled'),
+    ('economics', 'Economics', 'icon-money', 'domain-disabled')
   ] -%}
-  {% set default_domain = default_domain|default('other') -%}
+  {% set default_domain = default_domain|default('generic') -%}
 
 
-  {% for id, text, icon in domain_entries %}
-  <div class="domain {% if id == default_domain %} highlight-icon{% endif %}">
+  {% for id, text, icon, class in domain_entries %}
+  <div class="{{ class }}{% if id == default_domain %} highlight-icon{% endif %}">
     <input type="radio" class="visuallyhidden" name="domain" id="{{ id }}" value="{{ id }}" 
     {% if id == default_domain %}checked="checked"{% endif %}/>
     <label for="{{ id }}">
@@ -76,7 +76,7 @@
 
 
       <div class="dep-submit span9 pull-left">
-        <button class="btn btn-primary btn-large" id="submit-deposit">Submit Deposit</button>
+        <button class="btn btn-primary btn-large" id="submit-deposit">Submit</button>
       </div>
 
       </div>
