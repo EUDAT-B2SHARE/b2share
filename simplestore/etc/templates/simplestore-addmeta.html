@@ -10,7 +10,7 @@
       <div class="meta-container row">
         <h1>Your Deposit</h1>
 
-        <form class="form form-horizontal meta-form" method="post" action="{{ url_for('.addmeta') }}">
+        <form class="form form-horizontal meta-form" method="post" action="{{ url_for('.addmeta', uid=uuid) }}">
           <input type="hidden" id="uuid" name="uuid" value="{{ uuid }}"/>
           <input type="hidden" id="filelist" name="files" value="{{ fileret|tojson }}"/>
           {{ form.csrf_token }}

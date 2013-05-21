@@ -15,16 +15,16 @@ blueprint = InvenioBlueprint('simplestore', __name__,
                                           'simplestore.deposit')])
 
 
-@blueprint.route('/')
+@blueprint.route('/', methods=['GET', 'POST'])
 @blueprint.invenio_authenticated
 def deposit():
-    return dep.deposit()
+    return dep.deposit(request)
 
 
-@blueprint.route('/addmeta', methods=['POST'])
+@blueprint.route('/addmeta/<uid>', methods=['GET', 'POST'])
 @blueprint.invenio_authenticated
-def addmeta():
-    return dep.addmeta(request)
+def addmeta(uid):
+    return dep.addmeta(request, uid)
 
 
 @blueprint.route('/upload/<uid>', methods=['POST'])

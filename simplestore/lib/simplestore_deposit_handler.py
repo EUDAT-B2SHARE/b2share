@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, current_app
+from flask import render_template, redirect, url_for, flash
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -19,6 +19,7 @@ from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import (Submission, SubmissionMetadata,
                                              LinguisticsMetadata)
+from invenio.webinterface_handler_flask_utils import _
 
 
 # Needed to avoid errors in Form Generation
@@ -27,12 +28,38 @@ class FormWithKey(Form):
     SECRET_KEY = CFG_SITE_SECRET_KEY
 
 
-def deposit():
+def deposit(request):
     """ Renders the deposit start page """
-    return render_template('simplestore-deposit.html', uuid=uuid.uuid1().hex)
+    if request.method == 'POST':
+        if not 'uuid' in request.form:
+            return "ERROR: uuid not set", 500
+
+        uid = request.form['uuid']
+
+        updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, uid)
+        if (not os.path.isdir(updir)) or (not os.listdir(updir)):
+            #would probably be better to disable the button in js until
+            #upload complete
+            flash(_("Please upload a file to deposit"), 'error')
+            return render_template('simplestore-deposit.html', uuid=uid)
+
+        sub = Submission(uuid=uid)
+
+        if request.form['domain'] == 'linguistics':
+            meta = LinguisticsMetadata()
+        else:
+            meta = SubmissionMetadata()
+
+        sub.md = meta
+        db.session.add(sub)
+        db.session.commit()
+        return redirect(url_for('.addmeta', uid=uid))
+    else:
+        return render_template('simplestore-deposit.html',
+                               uuid=uuid.uuid1().hex)
 
 
-def addmeta(request):
+def addmeta(request, uid):
     """
     Add metadata to a submission.
 
@@ -43,23 +70,15 @@ def addmeta(request):
     #not being present. Hacky solution for minute.
     #db.create_all()
 
-    sub = ""
-    if 'uuid' in request.form:
-        sub = Submission.query.filter_by(uuid=request.form['uuid']).first()
-        if sub is None:
-            current_app.logger.error("Didn't find uuid")
-            sub = Submission(uuid=request.form['uuid'])
+    #current_app.logger.error("Called addmeta")
 
-            if request.form['domain'] == 'linguistics':
-                meta = LinguisticsMetadata()
-            else:
-                meta = SubmissionMetadata()
-
-            sub.md = meta
-            db.session.add(sub)
-            db.session.commit()
-    else:
+    if uid is None:
         return "ERROR: uuid not set", 500
+
+    sub = Submission.query.filter_by(uuid=uid).first()
+
+    if sub is None:
+        return "ERROR: failed to find uuid in DB", 500
 
     MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
@@ -73,12 +92,12 @@ def addmeta(request):
     #else:
     #   print meta_form.errors
 
-    files = os.listdir(os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER,
-                                    request.form['uuid']))
+    #Need to test that dir exists
+    files = os.listdir(os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, uid))
 
     return render_template(
         'simplestore-addmeta.html',
-        domain=request.form['domain'],
+        domain=sub.md.domain,
         fileret=files,
         form=meta_form,
         uuid=sub.uuid,

@@ -41,9 +41,9 @@
         </div>
 
       </div>
-      <form method="post" action="{{ url_for('.addmeta') }}" enctype="multipart/form-data">
+      <form method="post" action="{{ url_for('.deposit') }}" enctype="multipart/form-data">
+        <input type="hidden" id="uuid" name="uuid" value="{{ uuid }}"></input> 
         <input type="hidden" id="filelist" name="filelist" value=""></input>
-        <input type="hidden" id="uuid" name="uuid" value="{{ uuid }}"></input>
         <div class="row" id="domains">
 
 

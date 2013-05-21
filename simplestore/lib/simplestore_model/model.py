@@ -26,6 +26,7 @@ class SubmissionMetadata(db.Model):
     http://schema.datacite.org/meta/kernel-2.2/doc/DataCite-MetadataKernel_v2.2.pdf
     """
     __tablename__ = 'submission_metadata'
+    domain = 'Generic'
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
 
     # id seems to be needed to maintain link to parent submission
@@ -88,6 +89,7 @@ class LinguisticsMetadata(SubmissionMetadata):
     id = db.Column(db.Integer, db.ForeignKey('submission_metadata.id'),
                    primary_key=True)
 
+    domain = 'Linguistics'
     phrase_popularity = db.Column(db.String(256))  # a stub field
 
     def basicFieldIter(self):
