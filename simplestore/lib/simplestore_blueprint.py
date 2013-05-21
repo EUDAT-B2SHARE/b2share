@@ -16,35 +16,42 @@ blueprint = InvenioBlueprint('simplestore', __name__,
 
 
 @blueprint.route('/')
+@blueprint.invenio_authenticated
 def deposit():
     return dep.deposit()
 
 
 @blueprint.route('/addmeta', methods=['POST'])
+@blueprint.invenio_authenticated
 def addmeta():
     return dep.addmeta(request)
 
 
 @blueprint.route('/upload/<uid>', methods=['POST'])
+@blueprint.invenio_authenticated
 def upload(uid):
     return uph.upload(request, uid)
 
 
 @blueprint.route('/delete/<id>', methods=['GET', 'POST'])
+@blueprint.invenio_authenticated
 def delete(id):
     return uph.delete(request, id)
 
 
 @blueprint.route('/get_file/<uuid>', methods=['GET'])
+@blueprint.invenio_authenticated
 def get_file(uuid):
     return uph.get_file(uuid)
 
 
 @blueprint.route('/check_status/<uuid>/', methods=['GET', 'POST'])
+@blueprint.invenio_authenticated
 def check_status(uuid):
     return uph.check_status(uuid)
 
 
 @blueprint.route('/check_status/', methods=['GET', 'POST'])
+@blueprint.invenio_authenticated
 def check_status_noarg():
     return uph.check_status_noarg()
