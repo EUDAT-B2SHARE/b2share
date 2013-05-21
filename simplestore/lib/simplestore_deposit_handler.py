@@ -28,16 +28,19 @@ class FormWithKey(Form):
 
 
 def deposit():
-    """ Renders the deposit """
-    # this will wipe form on reload, does it matter?
-    # (if you want to fix this, I would suggest cookies rather than workflow)
+    """ Renders the deposit start page """
     return render_template('simplestore-deposit.html', uuid=uuid.uuid1().hex)
 
 
 def addmeta(request):
+    """
+    Add metadata to a submission.
+
+    The form is dependent on the domain chosen at the deposit stage.
+    """
+
     #Uncomment the following line if there are errors regarding db tables
     #not being present. Hacky solution for minute.
-
     #db.create_all()
 
     sub = ""
@@ -70,7 +73,8 @@ def addmeta(request):
     #else:
     #   print meta_form.errors
 
-    files = os.listdir(os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, request.form['uuid']))
+    files = os.listdir(os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER,
+                                    request.form['uuid']))
 
     return render_template(
         'simplestore-addmeta.html',
@@ -84,6 +88,11 @@ def addmeta(request):
 
 
 def create_marc_and_ingest(form):
+    """
+    Generates MARC data used bu Invenio from the filled out form, then
+    submits it to the Invenio system.
+    """
+
     json_reader = JsonReader()
     # just do this by hand to get something working for demo
     # this must be automated
