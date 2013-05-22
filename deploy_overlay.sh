@@ -15,6 +15,8 @@ chown -R www-data.www-data /opt/invenio
 # branding adjustments
 sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/templates/page.html
 
+echo "CFG_SIMPLESTORE_UPLOAD_FOLDER = /opt/invenio/var/tmp/simplestore_uploads" >> /opt/invenio/etc/invenio-local.conf
+sudo -u www-data /opt/invenio/bin/inveniocfg --update-all
 # a quick hack for title replacement
 cp -vf invenio/templates/*  /opt/invenio/etc/templates/
 

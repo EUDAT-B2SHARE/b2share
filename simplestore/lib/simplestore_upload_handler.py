@@ -11,11 +11,10 @@ import uuid
 from glob import iglob
 from werkzeug.utils import secure_filename
 from flask import jsonify
+from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
-CFG_SIMPLESTORE_UPLOAD_FOLDER = '/opt/invenio/var/tmp/simplestore_uploads'
 
-
-def upload(request, uid):
+def upload(request, sub_id):
     """ The file is split into chunks on the client-side
         and reformed on the server-side
     """
@@ -39,7 +38,7 @@ def upload(request, uid):
 
         # webdeposit also adds userid and deptype folders
         CFG_USER_SIMPLESTORE_FOLDER = os.path.join(
-            CFG_SIMPLESTORE_UPLOAD_FOLDER, uid)
+            CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
 
         if not os.path.exists(CFG_USER_SIMPLESTORE_FOLDER):
             os.makedirs(CFG_USER_SIMPLESTORE_FOLDER)
@@ -99,7 +98,7 @@ def delete(request, id):
 
 
 #don't think we need this
-def get_file(uuid):
+def get_file(sub_id):
 #    filename = request.args.get('filename')
 #    tmp = ""
 #    files = draft_field_get(current_user.get_id(), uuid, "files")
@@ -114,7 +113,7 @@ def get_file(uuid):
     return ""
 
 
-def check_status(uuid):
+def check_status(sub_id):
     # setting to status to 1 causes a reload. I'm not sure when we want to do
     # this. Possibly when upload complete?
     return jsonify({"status": 0})
