@@ -49,7 +49,7 @@ def upload(request, sub_id):
         # Save the chunk
         current_chunk.save(os.path.join(upload_dir, filename))
 
-        if int(chunk) == int(chunks) - 1:
+        if (chunks is not None) and (int(chunk) == int(chunks) - 1):
             '''All chunks have been uploaded!
                 start merging the chunks'''
             filename = secure_filename(name)
