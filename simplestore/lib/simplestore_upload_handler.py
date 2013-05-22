@@ -10,7 +10,7 @@ import shutil
 import os
 from glob import iglob
 from werkzeug.utils import secure_filename
-from flask import jsonify, send_file
+from flask import send_file
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
 
@@ -110,15 +110,3 @@ def get_file(request, sub_id):
         return send_file(f, attachment_filename=filename, as_attachment=True)
     else:
         return "File " + filename + " not found", 404
-
-
-def check_status(sub_id):
-    # setting to status to 1 causes a reload. I'm not sure when we want to do
-    # this. Possibly when upload complete?
-    return jsonify({"status": 0})
-
-
-def check_status_noarg():
-    # setting to status to 1 causes a reload. I'm not sure when we want to do
-    # this. Possibly when upload complete?
-    return jsonify({"status": 0})

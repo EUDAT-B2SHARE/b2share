@@ -17,11 +17,6 @@ $(document).ready(function() {
 
 });
 
-//Plupload stuff.
- function unique_ID(){
-    return Math.round(new Date().getTime() + (Math.random() * 100));
- }
-
 //removed db_files for simplicity - add restarting later if reqd
 function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
 
@@ -126,16 +121,3 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
 
     });
 }
-
-function simplestore_check_status(url){
-    setInterval(function() {
-        $.ajax({
-            type: 'GET',
-            url: url
-        }).done(function(data) {
-            if (data.status == 1)
-                location.reload();
-        });
-    }, 10000);
-}
-

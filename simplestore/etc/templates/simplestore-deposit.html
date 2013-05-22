@@ -97,8 +97,6 @@ $(document).ready(function() {
                             '{{ url_for('.delete', sub_id=sub_id) }}',
                             '{{ url_for('.get_file', sub_id=sub_id) }}');
 
-  //think this is used to update file upload status?
-  simplestore_check_status('{{ url_for('.check_status', sub_id=sub_id) }}');
   });
 </script>
 {% endblock %}
