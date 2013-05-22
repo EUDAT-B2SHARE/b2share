@@ -8,8 +8,10 @@
       <div class="hero-unit">
         <h1>Deposit Accepted</h1>
         <p/>
-        <p>Your unique ID is {{ tag }}</p>
-        
+        <p>Once processed, your submission will be available at
+        <a href="{{ url_for('record.metadata', recid=recid) }}">
+          {{ url_for('record.metadata', recid=recid, _external=True) }}
+        </a>
         <!-- MARC output
         {{ marc }}
         -->

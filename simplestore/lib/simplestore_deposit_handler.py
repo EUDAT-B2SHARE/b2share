@@ -14,6 +14,8 @@ from invenio.sqlalchemyutils import db
 from invenio.bibtask import task_low_level_submission
 from invenio.bibfield_jsonreader import JsonReader
 from invenio.config import CFG_TMPSHAREDDIR
+from invenio.dbquery import run_sql
+from invenio.bibrecord import record_add_field, record_xml_output, create_record
 
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
@@ -92,9 +94,9 @@ def addmeta(request, sub_id):
     meta_form = MetaForm(request.form, sub.md)
 
     if meta_form.validate_on_submit():
-        marc = create_marc_and_ingest(request.form)
+        recid, marc = create_marc_and_ingest(request.form)
         return render_template('simplestore-finalise.html',
-                               tag=sub.uuid, marc=marc)
+                               recid=recid, marc=marc)
     #else:
     #   print meta_form.errors
 
@@ -122,12 +124,20 @@ def create_marc_and_ingest(form):
     json_reader['authors[0].full_name'] = form['creator']
     json_reader['imprint.publisher_name'] = form['publisher']
     json_reader['collection.primary'] = "Article"
+
     marc = json_reader.legacy_export_as_marc()
+    rec, status, errs = create_record(marc)
+
+    recid = run_sql("INSERT INTO bibrec(creation_date, modification_date) values(NOW(), NOW())")
+    record_add_field(rec, '001', controlfield_value=str(recid))
+    marc2 = record_xml_output(rec)
+
     tmp_file_fd, tmp_file_name = mkstemp(suffix='.marcxml',
                                          prefix="webdeposit_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
                                          dir=CFG_TMPSHAREDDIR)
-    os.write(tmp_file_fd, marc)
+    os.write(tmp_file_fd, marc2)
     os.close(tmp_file_fd)
     os.chmod(tmp_file_name, 0644)
-    task_low_level_submission('bibupload', 'webdeposit', '-i', tmp_file_name)
-    return marc
+
+    task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file_name)
+    return recid, marc
