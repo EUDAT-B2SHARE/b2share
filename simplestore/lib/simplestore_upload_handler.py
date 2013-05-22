@@ -10,7 +10,7 @@ import shutil
 import os
 from glob import iglob
 from werkzeug.utils import secure_filename
-from flask import jsonify
+from flask import jsonify, send_file
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
 
@@ -97,20 +97,19 @@ def delete(request, sub_id):
     return result
 
 
-#don't think we need this
-def get_file(sub_id):
-#    filename = request.args.get('filename')
-#    tmp = ""
-#    files = draft_field_get(current_user.get_id(), uuid, "files")
-#    for f in files:
-#        tmp += f['file'].split('/')[-1] + '<br><br>'
-#        if filename == f['file'].split('/')[-1]:
-#            return send_file(f['file'],
-#                             attachment_filename=f['name'],
-#                             as_attachment=True)
-#
-#    return "filename: " + filename + '<br>' + tmp
-    return ""
+def get_file(request, sub_id):
+    """
+    Returns uploaded file.
+
+    I don't really think we need this, but it's easier to implement than to
+    remove the functionality.
+    """
+    filename = request.args.get('filename')
+    f = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id, filename)
+    if (os.path.isfile(f)):
+        return send_file(f, attachment_filename=filename, as_attachment=True)
+    else:
+        return "File " + filename + " not found", 404
 
 
 def check_status(sub_id):

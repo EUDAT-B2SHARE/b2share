@@ -42,7 +42,7 @@ def delete(sub_id):
 @blueprint.route('/get_file/<sub_id>', methods=['GET'])
 @blueprint.invenio_authenticated
 def get_file(sub_id):
-    return uph.get_file(sub_id)
+    return uph.get_file(request, sub_id)
 
 
 @blueprint.route('/check_status/<sub_id>/', methods=['GET', 'POST'])
