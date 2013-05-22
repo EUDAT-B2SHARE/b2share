@@ -33,7 +33,7 @@ def upload(sub_id):
     return uph.upload(request, sub_id)
 
 
-@blueprint.route('/delete/<sub_id>', methods=['GET', 'POST'])
+@blueprint.route('/delete/<sub_id>', methods=['POST'])
 @blueprint.invenio_authenticated
 def delete(sub_id):
     return uph.delete(request, sub_id)

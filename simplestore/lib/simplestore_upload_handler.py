@@ -3,11 +3,11 @@
 """
 SimpleStore File Upload
 
-Uses plupload. Based on WebDeposit code.
+Functions to handle plupload js calls from deposit page.
+Based on WebDeposit code.
 """
 import shutil
 import os
-import uuid
 from glob import iglob
 from werkzeug.utils import secure_filename
 from flask import jsonify
@@ -16,7 +16,10 @@ from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
 def upload(request, sub_id):
     """ The file is split into chunks on the client-side
-        and reformed on the server-side
+        and reformed on the server-side.
+
+        WebDeposit used unique filenames - don't think this is needed if we
+        have unique directories.
     """
     if request.method == 'POST':
         try:
@@ -36,64 +39,61 @@ def upload(request, sub_id):
         if not os.path.exists(CFG_SIMPLESTORE_UPLOAD_FOLDER):
             os.makedirs(CFG_SIMPLESTORE_UPLOAD_FOLDER)
 
-        # webdeposit also adds userid and deptype folders
-        CFG_USER_SIMPLESTORE_FOLDER = os.path.join(
-            CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+        # webdeposit also adds userid and deptype folders, we just use unique
+        # id
+        upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
 
-        if not os.path.exists(CFG_USER_SIMPLESTORE_FOLDER):
-            os.makedirs(CFG_USER_SIMPLESTORE_FOLDER)
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
 
         # Save the chunk
-        current_chunk.save(os.path.join(CFG_USER_SIMPLESTORE_FOLDER, filename))
+        current_chunk.save(os.path.join(upload_dir, filename))
 
-        unique_filename = ""
-
-        if chunks is None:  # file is a single chunk
-            unique_filename = str(uuid.uuid1()) + filename
-            old_path = os.path.join(CFG_USER_SIMPLESTORE_FOLDER, filename)
-            file_path = os.path.join(CFG_USER_SIMPLESTORE_FOLDER,
-                                     unique_filename)
-            os.rename(old_path, file_path)  # Rename the chunk
-            #size = os.path.getsize(file_path)
-            #file_metadata = dict(name=name, file=file_path, size=size)
-            #draft_field_list_add(current_user.get_id(), uuid,
-            #                     "files", file_metadata)
-        elif int(chunk) == int(chunks) - 1:
+        if int(chunk) == int(chunks) - 1:
             '''All chunks have been uploaded!
                 start merging the chunks'''
             filename = secure_filename(name)
             chunk_files = []
-            for chunk_file in iglob(os.path.join(CFG_USER_SIMPLESTORE_FOLDER,
+            for chunk_file in iglob(os.path.join(upload_dir,
                                                  filename + '_*')):
                 chunk_files.append(chunk_file)
 
             # Sort files in numerical order
             chunk_files.sort(key=lambda x: int(x.split("_")[-1]))
 
-            unique_filename = str(uuid.uuid1()) + filename
-            file_path = os.path.join(CFG_USER_SIMPLESTORE_FOLDER,
-                                     unique_filename)
+            file_path = os.path.join(upload_dir, filename)
             destination = open(file_path, 'wb')
             for chunk in chunk_files:
                 shutil.copyfileobj(open(chunk, 'rb'), destination)
                 os.remove(chunk)
             destination.close()
-            #size = os.path.getsize(file_path)
-            #file_metadata = dict(name=name, file=file_path, size=size)
-            #draft_field_list_add(current_user.get_id(), uuid,
-            #                     "files", file_metadata)
-    return unique_filename
+
+    return filename
 
 
-def delete(request, id):
-    if request.method == 'POST':
-        #filename = request.form['filename']
-        files = os.listdir(os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, id))
-        # delete all for minute
-        for f in files:
-            os.remove(f)
-            result = "File " + f['name'] + " Deleted"
+def delete(request, sub_id):
+    """
+    Deletes file with name form['filename'] if it exists in upload_dir.
+
+    Could change to return error if nothing deleted.
+    Also should we be using secure_filename ?
+    """
+
+    result = ""
+
+    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    filename = request.form['filename']
+
+    files = os.listdir(upload_dir)
+    # delete all for minute
+    for f in files:
+        if f == filename:
+            os.remove(os.path.join(upload_dir, f))
+            result = "File " + f + " Deleted"
             break
+    if result == "":
+        return "File " + filename + "not found", 404
+
     return result
 
 
