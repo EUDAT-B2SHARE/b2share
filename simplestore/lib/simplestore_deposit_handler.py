@@ -129,8 +129,7 @@ def create_marc_and_ingest(form, sub_id):
     marc = json_reader.legacy_export_as_marc()
     rec, status, errs = create_record(marc)
 
-    fft_status = ['allow any']  # Just open access for minute
-    fft_status = "firerole: %s" % "\n".join(fft_status)
+    fft_status = "firerole: allow any\n"  # Only open access for minute
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = os.listdir(upload_dir)
     for f in files:
