@@ -124,7 +124,7 @@ def create_marc_and_ingest(form, sub_id):
     json_reader['title.title'] = form['title']
     json_reader['authors[0].full_name'] = form['creator']
     json_reader['imprint.publisher_name'] = form['publisher']
-    json_reader['collection.primary'] = "Article"
+    json_reader['collection.primary'] = form['domain']
 
     marc = json_reader.legacy_export_as_marc()
     rec, status, errs = create_record(marc)
