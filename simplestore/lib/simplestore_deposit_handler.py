@@ -22,6 +22,7 @@ import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import (Submission, SubmissionMetadata,
                                              LinguisticsMetadata)
 from invenio.webinterface_handler_flask_utils import _
+from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
 
 # Needed to avoid errors in Form Generation
@@ -94,7 +95,7 @@ def addmeta(request, sub_id):
     meta_form = MetaForm(request.form, sub.md)
 
     if meta_form.validate_on_submit():
-        recid, marc = create_marc_and_ingest(request.form)
+        recid, marc = create_marc_and_ingest(request.form, sub_id)
         return render_template('simplestore-finalise.html',
                                recid=recid, marc=marc)
     #else:
@@ -111,7 +112,7 @@ def addmeta(request, sub_id):
         getattr=getattr)
 
 
-def create_marc_and_ingest(form):
+def create_marc_and_ingest(form, sub_id):
     """
     Generates MARC data used bu Invenio from the filled out form, then
     submits it to the Invenio system.
@@ -127,6 +128,17 @@ def create_marc_and_ingest(form):
 
     marc = json_reader.legacy_export_as_marc()
     rec, status, errs = create_record(marc)
+
+    fft_status = ['allow any']  # Just open access for minute
+    fft_status = "firerole: %s" % "\n".join(fft_status)
+    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    files = os.listdir(upload_dir)
+    for f in files:
+        record_add_field(rec, 'FFT',
+                         subfields=[('a', os.path.join(upload_dir, f)),
+                         #('d', 'some description') # TODO
+                         #('t', 'Type'), # TODO
+                         ('r', fft_status)])
 
     recid = run_sql("INSERT INTO bibrec(creation_date, modification_date) values(NOW(), NOW())")
     record_add_field(rec, '001', controlfield_value=str(recid))
