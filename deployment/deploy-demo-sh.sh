@@ -9,3 +9,8 @@ echo "========== DONE =========="
 
 sudo -u www-data /opt/invenio/bin/bibindex -u admin
 sudo -u www-data /opt/invenio/bin/webcoll -u admin
+
+# make it periodic
+sudo -u www-data /opt/invenio/bin/webcoll -v0 -s1m -u admin
+sudo -u www-data /opt/invenio/bin/bibindex -u admin f50000 -s1m
+
