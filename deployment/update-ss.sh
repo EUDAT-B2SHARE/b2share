@@ -4,4 +4,4 @@
 (cd /home/admin/src/simplestore && sudo -u admin git pull origin demo)
 
 # deploy
-(cd /home/admin/src/simplestore && /home/admin/src/simplestore/deploy_overlay.sh)
+(cd /home/admin/src/simplestore && /home/admin/src/simplestore/deployment/deploy_overlay.sh)
