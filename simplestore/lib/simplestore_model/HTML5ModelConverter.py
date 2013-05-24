@@ -1,6 +1,23 @@
 from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
-from flask.ext.wtf.html5 import IntegerField, DecimalField
+from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
+#from wtforms.ext.dateutil.fields import DateField, DateTimeField
+from wtforms import DateTimeField as _DateTimeField
+from wtforms.widgets import Input
+
+
+# Not sure why DateTime isn't in flask_wtf
+# Should also add color, datetime-local, e-mail, month, tel, time, url, week
+# if these are missing
+class DateTimeInput(Input):
+    """
+    Creates `<input type=datetime>` widget
+    """
+    input_type = "datetime"
+
+
+class DateTimeField(_DateTimeField):
+    widget = DateTimeInput()
 
 
 class HTML5ModelConverter(ModelConverter):
@@ -20,3 +37,11 @@ class HTML5ModelConverter(ModelConverter):
         if places is not None:
             field_args['places'] = places
         return DecimalField(**field_args)
+
+    @converts('DateTime')
+    def conv_DateTime(self, field_args, **extra):
+        return DateTimeField(**field_args)
+
+    @converts('Date')
+    def conv_Date(self, field_args, **extra):
+        return DateField(**field_args)

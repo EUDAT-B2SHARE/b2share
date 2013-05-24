@@ -34,12 +34,12 @@ class SubmissionMetadata(db.Model):
     creator = db.Column(db.String(128))
     title = db.Column(db.String(256))
     publisher = db.Column(db.String(128))
-    publication_year = db.Column(db.Date())
+    publication_date = db.Column('publication_year', db.Date())
 
     def basicFieldIter(self):
         #why won't submission_id work?
         for f in ['creator', 'title', 'publisher',
-                  'publication_year']:
+                  'publication_date']:
             yield f
 
     # optional
