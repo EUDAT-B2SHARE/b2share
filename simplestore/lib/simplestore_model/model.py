@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from invenio.sqlalchemyutils import db
+from datetime import date
 
 import babel
 
@@ -34,7 +35,8 @@ class SubmissionMetadata(db.Model):
     creator = db.Column(db.String(128))
     title = db.Column(db.String(256))
     publisher = db.Column(db.String(128))
-    publication_date = db.Column('publication_year', db.Date())
+    publication_date = db.Column('publication_year', db.Date(),
+                                 default=date.today())
 
     def basicFieldIter(self):
         #why won't submission_id work?
