@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # update simplestore and invenio repos
-/home/admin/src/invenio-devscripts/recreate.demo.sh
+/home/admin/src/simplestore/deployment/recreate-ssdev-invenio.sh
 
 echo "========== DONE =========="
 
