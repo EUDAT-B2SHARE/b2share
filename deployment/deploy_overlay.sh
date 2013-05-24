@@ -17,7 +17,10 @@ sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/
 
 echo "CFG_SIMPLESTORE_UPLOAD_FOLDER = /opt/invenio/var/tmp/simplestore_uploads" >> /opt/invenio/etc/invenio-local.conf
 sudo -u www-data /opt/invenio/bin/inveniocfg --update-all
-# a quick hack for title replacement
-cp -vf invenio/templates/*  /opt/invenio/etc/templates/
+
+# a quick hack for general modifications
+# XXX: invenio update unsafe
+cp -vf invenio/templates/* /opt/invenio/etc/templates/
+cp -vf invenio/lib/* /opt/invenio/lib/python/invenioi/
 
 service apache2 restart
