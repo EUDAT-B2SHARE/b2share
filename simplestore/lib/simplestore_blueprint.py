@@ -7,11 +7,11 @@ import invenio.simplestore_upload_handler as uph
 import invenio.simplestore_deposit_handler as dep
 
 blueprint = InvenioBlueprint('simplestore', __name__,
-                             url_prefix='/simplestore',
+                             url_prefix='/deposit',
                              menubuilder=[('main.simplestore',
-                                          _('SimpleStore'),
+                                          _('Deposit'),
                                           'simplestore.deposit', 2)],
-                             breadcrumbs=[(_('SimpleStore'),
+                             breadcrumbs=[(_('Deposit'),
                                           'simplestore.deposit')])
 
 
