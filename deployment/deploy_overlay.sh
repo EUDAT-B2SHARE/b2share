@@ -21,6 +21,6 @@ sudo -u www-data /opt/invenio/bin/inveniocfg --update-all
 # a quick hack for general modifications
 # XXX: invenio update unsafe
 cp -vf invenio/templates/* /opt/invenio/etc/templates/
-cp -vf invenio/lib/* /opt/invenio/lib/python/invenioi/
+cp -vf invenio/lib/* /opt/invenio/lib/python/invenio/
 
 service apache2 restart
