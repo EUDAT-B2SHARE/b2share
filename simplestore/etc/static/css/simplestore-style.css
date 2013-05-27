@@ -33,6 +33,22 @@ html {
   border-radius: 8px;
 }
 
+.domain-addmeta {
+  float: left;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
+  margin-right: 10px;
+  margin-top: 20px;
+  text-align: center;
+  width: 85px;
+  height: 130px;
+  border: 2px solid #bbb;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+}
+
 .domain-disabled {
   float: left;
   padding-left: 20px;
@@ -102,6 +118,10 @@ html {
   padding-top: 5px;
   margin-right: 35px; /* don't understand why margin right is needed :( */
 
+}
+
+#domain-label {
+  padding-top: 80px;
 }
 
 #meta-fields {

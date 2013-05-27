@@ -2,6 +2,7 @@
 {% block header %}
     {{ super() }}
     {% css 'css/simplestore-style.css', '50-simplestore' %}
+    {% css 'css/font-awesome.min.css', '50-simplestore' %}
     {% js 'js/simplestore-addmeta.js', '50-simplestore' %}
 {% endblock %}
 {% block body %}
@@ -20,8 +21,23 @@
           </div>
 
           <div class="span10 metacontent">
-            <label class="control-label meta-label" for="domain">Domain</label>
-            <input id="domain" name="domain" type="text" value="{{ domain }}" readonly lass="first-cap"></input>
+            <label class="control-label meta-label" id="domain-label" for="domain">Domain</label>
+            <div class="domain-addmeta">
+              {%- if domain == "Linguistics" -%}
+              <input type="text" class="visuallyhidden" name="domain" id="domain" value="Linguistics" />
+              <label for="linguistics">
+                &nbsp;<i class="icon-quote-right icon-large icon-4x"></i>
+                <h5>Linguistics</h5>
+              </label>
+              {%- else -%}
+              <input type="text" class="visuallyhidden" name="domain" id="domain" value="Generic" />
+              <label for="generic">
+                &nbsp;<i class="icon-question-sign icon-large icon-4x"></i>
+                <h5>Generic</h5>
+              </label>  
+              {%- endif -%}
+            </div>
+            <!--<input id="domain" name="domain" type="text" value="{{ domain }}" readonly class="first-cap"></input>-->
           </div>
 
 
