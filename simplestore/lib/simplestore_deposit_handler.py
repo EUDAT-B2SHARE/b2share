@@ -20,7 +20,9 @@ from invenio.bibrecord import record_add_field, record_xml_output, create_record
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import (Submission, SubmissionMetadata,
-                                             LinguisticsMetadata)
+                                             create_metadata_class)
+import invenio.simplestore_model.linguistics_metadata_config as LMC
+
 from invenio.webinterface_handler_flask_utils import _
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
@@ -49,11 +51,17 @@ def deposit(request):
         sub = Submission(uuid=sub_id)
 
         if request.form['domain'] == 'linguistics':
-            meta = LinguisticsMetadata()
+            LM = create_metadata_class(LMC)
+            meta = LM()
         else:
             meta = SubmissionMetadata()
 
         sub.md = meta
+
+        #Uncomment the following line if there are errors regarding db tables
+        #not being present. Hacky solution for minute.
+        #db.create_all()
+
         db.session.add(sub)
         db.session.commit()
         return redirect(url_for('.addmeta', sub_id=sub_id))
@@ -69,15 +77,14 @@ def addmeta(request, sub_id):
     The form is dependent on the domain chosen at the deposit stage.
     """
 
-    #Uncomment the following line if there are errors regarding db tables
-    #not being present. Hacky solution for minute.
-    #db.create_all()
-
     #current_app.logger.error("Called addmeta")
 
     if sub_id is None:
         return "ERROR: submission id not set", 500
 
+    # need to tell SQLAlchemy about our metaclasses
+    # temporary hack - need to come up with import solution or similar
+    create_metadata_class(LMC)
     sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
@@ -107,8 +114,8 @@ def addmeta(request, sub_id):
         fileret=files,
         form=meta_form,
         sub_id=sub.uuid,
-        basic_field_iter=sub.md.basicFieldIter,
-        opt_field_iter=sub.md.optionalFieldIter,
+        basic_field_iter=sub.md.basic_field_iter,
+        opt_field_iter=sub.md.optional_field_iter,
         getattr=getattr)
 
 
