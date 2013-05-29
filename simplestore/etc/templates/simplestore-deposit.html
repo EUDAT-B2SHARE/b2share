@@ -16,7 +16,7 @@
 
         <div class="pluploader" id="fileupload">
           <div class="well" id="filebox">
-            <h1>Deposit</h1>
+            <h1><span class="step-number">1.</span> Deposit</h1>
             <div id="drag_and_drop_text" style="text-align:center;z-index:-100;">
               <h1><small>Drag and drop files here</small></h1>
             </div>
@@ -47,7 +47,7 @@
         <div class="row" id="domains">
 
 
-          <h1>Select a domain</h1>
+          <h1><span class="step-number">2.</span> Select a domain</h1>
 
         <!-- id/value, text, icon -->
   {% set domain_entries = [
@@ -76,7 +76,7 @@
 
 
       <div class="dep-submit span9 pull-left">
-        <button class="btn btn-primary btn-large" id="submit-deposit">Submit</button>
+        <h1 style="display: inline; padding-right: 6px;"><span class="step-number">3.</span></h1> <button class="btn btn-primary btn-large" id="submit-deposit">Submit</button>
       </div>
 
       </div>

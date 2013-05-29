@@ -174,3 +174,11 @@ html {
   margin-top: 20px;
   font-size: 17.5px;
 }
+
+.step-number {
+  color: #a9a9a9;
+}
+
+#submit-deposit {
+  margin-top: -20px;
+}
