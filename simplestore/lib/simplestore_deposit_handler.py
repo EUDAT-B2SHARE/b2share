@@ -96,6 +96,7 @@ def addmeta(request, sub_id):
 
     if meta_form.validate_on_submit():
         recid, marc = create_marc_and_ingest(request.form, sub_id)
+        db.session.delete(sub)
         return render_template('simplestore-finalise.html',
                                recid=recid, marc=marc)
     #else:
