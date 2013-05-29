@@ -86,6 +86,8 @@ class SubmissionMetadata(db.Model):
 
 
 def create_metadata_class(cfg):
+    """Creates domain classes that map form fields to databases plus some other
+    details."""
 
     def basic_field_iter(self):
         # need to figure out how to refer to parent here
