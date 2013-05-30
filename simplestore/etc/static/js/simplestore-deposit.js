@@ -13,6 +13,9 @@ $(document).ready(function() {
   $('#domains input:radio').addClass('visuallyhidden');
   $('#domains .domain').click(function() {
     $(this).addClass('highlight-icon').siblings().removeClass('highlight-icon');
+    //Need to make sure value gets set before submit
+    $(this).find('input')[0].checked = true;
+    document.forms["domainform"].submit();
   });
 
 });
