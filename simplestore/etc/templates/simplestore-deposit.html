@@ -41,7 +41,7 @@
         </div>
 
       </div>
-      <form method="post" name="domainform" action="{{ url_for('.deposit') }}" enctype="multipart/form-data">
+      <form method="post" action="{{ url_for('.deposit') }}" enctype="multipart/form-data">
         <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
         <input type="hidden" id="filelist" name="filelist" value=""></input>
         <div class="row" id="domains">
@@ -64,7 +64,7 @@
 
 
   {% for id, text, icon, class in domain_entries %}
-  <div class="{{ class }}">
+  <div class="{{ class }}{% if id == default_domain %} highlight-icon{% endif %}">
     <input type="radio" class="visuallyhidden" name="domain" id="{{ id }}" value="{{ id }}" 
     {% if id == default_domain %}checked="checked"{% endif %}/>
     <label for="{{ id }}">
@@ -75,11 +75,9 @@
   {% endfor %}
 
 
-  <!--
       <div class="dep-submit span9 pull-left">
         <h1 style="display: inline; padding-right: 6px;"><span class="step-number">3.</span></h1> <button class="btn btn-primary btn-large" id="submit-deposit">Submit</button>
       </div>
-      -->
 
       </div>
     </form>
