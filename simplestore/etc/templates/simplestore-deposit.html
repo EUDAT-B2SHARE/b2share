@@ -44,10 +44,14 @@
       <form method="post" action="{{ url_for('.deposit') }}" enctype="multipart/form-data">
         <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
         <input type="hidden" id="filelist" name="filelist" value=""></input>
-        <div class="row" id="domains">
+        <div id="domains">
 
 
-          <h1><span class="step-number">2.</span> Select a domain</h1>
+          <div class="row-fluid">
+            <div class="span12">
+             <h1><span class="step-number">2.</span> Select a domain</h1>
+           </div>
+          </div>
 
         <!-- id/value, text, icon -->
   {% set domain_entries = [
@@ -63,22 +67,26 @@
   {% set default_domain = default_domain|default('generic') -%}
 
 
-  {% for id, text, icon, class in domain_entries %}
-  <div class="{{ class }}{% if id == default_domain %} highlight-icon{% endif %}">
-    <input type="radio" class="visuallyhidden" name="domain" id="{{ id }}" value="{{ id }}" 
-    {% if id == default_domain %}checked="checked"{% endif %}/>
-    <label for="{{ id }}">
-      &nbsp;<i class="{{ icon }} icon-large icon-4x"></i>
-      <h5>{{ text }}</h5>
-    </label>
-  </div>
-  {% endfor %}
+        <div class="row-fluid">
+          <div class="span10">
+            {% for id, text, icon, class in domain_entries %}
+            <div class="{{ class }}{% if id == default_domain %} highlight-icon{% endif %}">
+              <input type="radio" class="visuallyhidden" name="domain" id="{{ id }}" value="{{ id }}" 
+              {% if id == default_domain %}checked="checked"{% endif %}/>
+              <label for="{{ id }}">
+                &nbsp;<i class="{{ icon }} icon-large icon-4x"></i>
+                <h5>{{ text }}</h5>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
 
 
-      <div class="dep-submit span9 pull-left">
-        <h1 style="display: inline; padding-right: 6px;"><span class="step-number">3.</span></h1> <button class="btn btn-primary btn-large" id="submit-deposit">Submit</button>
-      </div>
+          <div class="span2 dep-submit">
+            <button class="btn btn-primary btn-large btn-block" id="submit-deposit">&gt;&gt; Submit</button>
+          </div>
 
+        </div>
       </div>
     </form>
   </div>
