@@ -75,6 +75,8 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         if(uploader.files.length === 0){
             $('#uploadfiles').addClass("disabled");
             $('#file-table').hide('slow');
+
+            $('#submit-deposit').addClass('disabled');
         }
     });
 
@@ -119,5 +121,6 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         $('#uploadfiles').addClass('disabled');
         $('#uploadfiles').show();
 
+        $('#submit-deposit').removeClass('disabled');
     });
 }
