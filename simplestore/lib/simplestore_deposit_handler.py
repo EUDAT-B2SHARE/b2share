@@ -19,10 +19,8 @@ from invenio.bibrecord import record_add_field, record_xml_output, create_record
 
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
-from invenio.simplestore_model.model import (Submission, SubmissionMetadata,
-                                             create_metadata_class)
-import invenio.simplestore_model.linguistics_metadata_config as LMC
-import invenio.simplestore_model.ecology_metadata_config as EMC
+from invenio.simplestore_model.model import Submission, SubmissionMetadata
+from invenio.simplestore_model import metadata_classes
 
 from invenio.webinterface_handler_flask_utils import _
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
@@ -52,10 +50,10 @@ def deposit(request):
         sub = Submission(uuid=sub_id)
 
         if request.form['domain'] == 'linguistics':
-            LM = create_metadata_class(LMC)
+            LM = metadata_classes['Linguistics']
             meta = LM()
         elif request.form['domain'] == 'ecology':
-            EM = create_metadata_class(EMC)
+            EM = metadata_classes['Ecology']
             meta = EM()
         else:
             meta = SubmissionMetadata()
@@ -64,7 +62,7 @@ def deposit(request):
 
         #Uncomment the following line if there are errors regarding db tables
         #not being present. Hacky solution for minute.
-        db.create_all()
+        #db.create_all()
 
         db.session.add(sub)
         db.session.commit()
@@ -86,10 +84,6 @@ def addmeta(request, sub_id):
     if sub_id is None:
         return "ERROR: submission id not set", 500
 
-    # need to tell SQLAlchemy about our metaclasses
-    # temporary hack - need to come up with import solution or similar
-    create_metadata_class(LMC)
-    create_metadata_class(EMC)
     sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
