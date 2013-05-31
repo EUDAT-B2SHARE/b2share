@@ -22,6 +22,7 @@ import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import (Submission, SubmissionMetadata,
                                              create_metadata_class)
 import invenio.simplestore_model.linguistics_metadata_config as LMC
+import invenio.simplestore_model.ecology_metadata_config as EMC
 
 from invenio.webinterface_handler_flask_utils import _
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
@@ -53,6 +54,9 @@ def deposit(request):
         if request.form['domain'] == 'linguistics':
             LM = create_metadata_class(LMC)
             meta = LM()
+        elif request.form['domain'] == 'ecology':
+            EM = create_metadata_class(EMC)
+            meta = EM()
         else:
             meta = SubmissionMetadata()
 
@@ -60,7 +64,7 @@ def deposit(request):
 
         #Uncomment the following line if there are errors regarding db tables
         #not being present. Hacky solution for minute.
-        #db.create_all()
+        db.create_all()
 
         db.session.add(sub)
         db.session.commit()
@@ -85,6 +89,7 @@ def addmeta(request, sub_id):
     # need to tell SQLAlchemy about our metaclasses
     # temporary hack - need to come up with import solution or similar
     create_metadata_class(LMC)
+    create_metadata_class(EMC)
     sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
