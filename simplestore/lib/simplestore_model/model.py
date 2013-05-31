@@ -85,7 +85,7 @@ class SubmissionMetadata(db.Model):
         self.publication_year = publication_year
 
 
-def create_metadata_class(cfg):
+def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
     details."""
 

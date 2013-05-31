@@ -49,12 +49,9 @@ def deposit(request):
 
         sub = Submission(uuid=sub_id)
 
-        if request.form['domain'] == 'linguistics':
-            LM = metadata_classes['Linguistics']
-            meta = LM()
-        elif request.form['domain'] == 'ecology':
-            EM = metadata_classes['Ecology']
-            meta = EM()
+        domain = request.form['domain'].lower()
+        if  domain in metadata_classes:
+            meta = metadata_classes[domain]()
         else:
             meta = SubmissionMetadata()
 

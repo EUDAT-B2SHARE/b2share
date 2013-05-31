@@ -1,7 +1,13 @@
-import linguistics_metadata_config as LMC
-import ecology_metadata_config as EMC
-from model import create_metadata_class
+from  invenio.simplestore_model import metadata
+from model import _create_metadata_class
+import pkgutil
 
+# might well be a better way to do this
 metadata_classes = {}
-metadata_classes[LMC.domain] = create_metadata_class(LMC)
-metadata_classes[EMC.domain] = create_metadata_class(EMC)
+
+pck = metadata
+prefix = pck.__name__ + '.'
+for imp, modname, ispkg in pkgutil.iter_modules(pck.__path__, prefix):
+    # not sure what fromlist does...
+    mod = __import__(modname, fromlist="dummy")
+    metadata_classes[mod.domain.lower()] = _create_metadata_class(mod)
