@@ -28,6 +28,7 @@ class SubmissionMetadata(db.Model):
     """
     __tablename__ = 'submission_metadata'
     domain = 'Generic'
+    icon = 'icon-question-sign'
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
 
     # id seems to be needed to maintain link to parent submission
@@ -115,6 +116,7 @@ def _create_metadata_class(cfg):
                 db.Integer, db.ForeignKey('submission_metadata.id'),
                 primary_key=True),
             'domain': cfg.domain,
+            'icon': cfg.icon,
             'basic_field_iter': basic_field_iter,
             'optional_field_iter': optional_field_iter}
 

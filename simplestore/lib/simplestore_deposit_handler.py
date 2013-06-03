@@ -107,12 +107,10 @@ def addmeta(request, sub_id):
 
     return render_template(
         'simplestore-addmeta.html',
-        domain=sub.md.domain,
+        metadata=sub.md,
         fileret=files,
         form=meta_form,
         sub_id=sub.uuid,
-        basic_field_iter=sub.md.basic_field_iter,
-        opt_field_iter=sub.md.optional_field_iter,
         getattr=getattr)
 
 

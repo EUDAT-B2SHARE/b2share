@@ -23,21 +23,12 @@
           <div class="span10 metacontent">
             <label class="control-label meta-label" id="domain-label" for="domain">Domain</label>
             <div class="domain-addmeta">
-              {%- if domain == "Linguistics" -%}
-              <input type="text" class="visuallyhidden" name="domain" id="domain" value="Linguistics" />
-              <label for="linguistics">
-                &nbsp;<i class="icon-quote-right icon-large icon-4x"></i>
-                <h5>Linguistics</h5>
+              <input type="text" class="visuallyhidden" name="domain" id="domain" value="{{ metadata.domain }}" />
+              <label for=" {{ metadata.domain }}">
+                &nbsp;<i class="{{ metadata.icon }} icon-large icon-4x"></i>
+                <h5>{{ metadata.domain }}</h5>
               </label>
-              {%- else -%}
-              <input type="text" class="visuallyhidden" name="domain" id="domain" value="Generic" />
-              <label for="generic">
-                &nbsp;<i class="icon-question-sign icon-large icon-4x"></i>
-                <h5>Generic</h5>
-              </label>  
-              {%- endif -%}
             </div>
-            <!--<input id="domain" name="domain" type="text" value="{{ domain }}" readonly class="first-cap"></input>-->
           </div>
 
 
@@ -65,7 +56,7 @@
               </div>
               {% endmacro %}
 
-              {% for f in basic_field_iter() %}
+              {% for f in metadata.basic_field_iter() %}
                 {{ meta_field(getattr(form, f)) }}
               {% endfor %}
 
@@ -75,7 +66,7 @@
  
               <div id="adv-fields" class="collapse"> 
 
-              {% for f in opt_field_iter() %}
+              {% for f in metadata.optional_field_iter() %}
                 {{ meta_field(getattr(form, f)) }}
               {% endfor %}
               </div>
