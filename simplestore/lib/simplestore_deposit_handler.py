@@ -19,8 +19,9 @@ from invenio.bibrecord import record_add_field, record_xml_output, create_record
 
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
-from invenio.simplestore_model.model import (Submission, SubmissionMetadata,
-                                             LinguisticsMetadata)
+from invenio.simplestore_model.model import Submission, SubmissionMetadata
+from invenio.simplestore_model import metadata_classes
+
 from invenio.webinterface_handler_flask_utils import _
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
@@ -48,12 +49,18 @@ def deposit(request):
 
         sub = Submission(uuid=sub_id)
 
-        if request.form['domain'] == 'linguistics':
-            meta = LinguisticsMetadata()
+        domain = request.form['domain'].lower()
+        if  domain in metadata_classes:
+            meta = metadata_classes[domain]()
         else:
             meta = SubmissionMetadata()
 
         sub.md = meta
+
+        #Uncomment the following line if there are errors regarding db tables
+        #not being present. Hacky solution for minute.
+        #db.create_all()
+
         db.session.add(sub)
         db.session.commit()
         return redirect(url_for('.addmeta', sub_id=sub_id))
@@ -68,10 +75,6 @@ def addmeta(request, sub_id):
 
     The form is dependent on the domain chosen at the deposit stage.
     """
-
-    #Uncomment the following line if there are errors regarding db tables
-    #not being present. Hacky solution for minute.
-    #db.create_all()
 
     #current_app.logger.error("Called addmeta")
 
@@ -108,8 +111,8 @@ def addmeta(request, sub_id):
         fileret=files,
         form=meta_form,
         sub_id=sub.uuid,
-        basic_field_iter=sub.md.basicFieldIter,
-        opt_field_iter=sub.md.optionalFieldIter,
+        basic_field_iter=sub.md.basic_field_iter,
+        opt_field_iter=sub.md.optional_field_iter,
         getattr=getattr)
 
 
