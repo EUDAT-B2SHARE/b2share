@@ -77,6 +77,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
             $('#file-table').hide('slow');
 
             $('#submit-deposit').addClass('disabled');
+            $('#submit-deposit').removeClass('btn-primary');
         }
     });
 
@@ -122,5 +123,6 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         $('#uploadfiles').show();
 
         $('#submit-deposit').removeClass('disabled');
+        $('#submit-deposit').addClass('btn-primary');
     });
 }
