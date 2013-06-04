@@ -31,8 +31,8 @@ mkdir /etc/apache2/ssl
 ## enable SSL module:
 /usr/sbin/a2enmod ssl
 
-#These two are required by below branch but not in reqs.txt
-pip install celery rq
+#These are required by below branch but not in reqs.txt
+pip install celery rq Flask-Script
 
 #following lines check out kn-tem version of invenio and get reqs
 git clone http://invenio-software.org/repo/personal/invenio-kntem invenio
@@ -43,3 +43,15 @@ pip install -r requirements.txt
 pip install -r requirements-extras.txt
 pip install -r requirements-flask.txt
 pip install -r requirements-flask-ext.txt
+
+#think these might be needed now
+aptitude install rabbitmq-server
+/usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management
+rabbitmqctl add_user www-data vagrant
+rabbitmqctl add_vhost myvhost
+rabbitmqctl set_permissions -p myvhost www-data ".*" ".*" ".*"
+rabbitmqctl set_user_tags www-data management
+rabbitmqctl change_password guest guest
+service rabbitmq-server restart
+
+pip install flower
