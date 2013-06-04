@@ -29,6 +29,7 @@
 
 {% block header %}
   {{ super() }}
+  {% css 'css/simplestore-style.css' %}
   {% js "js/websearch_typeahead.js" %}
   {% js "js/bootstrap-select.js" %}
 {% endblock %}
@@ -90,14 +91,6 @@
 </style>
 
 {{ search_form(collection) }}
-
-<h3>Welcome to SimpleStore!</h3>
-
-<p>SimpleStore is a service provided by EUDAT for simple submission of the data items and associated metadata. Data is preserved in a reliable
-and durable manner,</p>
-
-<p>The service is currently in the closed testing phase. If you would like to contribute with evaluation, please write a mail to
-<a href="mailto:livenson@kth.se">livenson@kth.se</a> and we shall create you an account.
 {% endmacro %}
 
 {% block body %}
@@ -109,6 +102,23 @@ and durable manner,</p>
     {{ collection_records(collection) }}
   {% endcache %}
 {% endif %}
+  <div class="row">
+    <div class="span4">
+      <img src="img/tome.jpg"/>
+      <span class="attribution">Image courtesy of <a href="http://www.flickr.com/photos/frisno/">Frisno Boström</a></span>
+    </div>
+    <div class="span8">
+      <div class="jumbotron">
+        <h1>Reliable and Durable Storage of Research Data</h1>
+
+        <p class="lead">The EUDAT SimpleStore service provides a quick and easy mechanism for storage of research data and output in a reliable and durable manner.</p>
+        <p class="maintext">The SimpleStore is currently in an early testing phase. Users are encouraged to sign up and test the service, but please be aware that is not yet ready for production use.</p> 
+        <p class="maintext">Please contact <a href="mailto:livenson@kth.se">livenson@kth.se</a> with any questions or feedback.</p>
+        <a class="btn btn-large btn-success" href="{{ url_for("youraccount.register") }}">Sign up now</a>
+      </div>
+    </div>
+  </div>
+
 
 {% endblock %}
 

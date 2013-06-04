@@ -2,6 +2,17 @@ html {
   overflow-y: scroll;
 }
 
+.maintext {
+  font-size: 16px;
+  line-height: 25px;
+}
+
+.attribution {
+  font-size: 10px;
+  font-style: italic;
+  padding-left: 10px;
+}
+
 .dep-submit {
   margin-left: 0;
   padding-left: 0;
