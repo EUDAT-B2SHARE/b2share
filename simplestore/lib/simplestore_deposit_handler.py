@@ -59,7 +59,7 @@ def deposit(request):
 
         #Uncomment the following line if there are errors regarding db tables
         #not being present. Hacky solution for minute.
-        #db.create_all()
+        db.create_all()
 
         db.session.add(sub)
         db.session.commit()
