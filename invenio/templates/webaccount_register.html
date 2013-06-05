@@ -19,18 +19,35 @@
 {% from "_formhelpers.html" import render_field with context %}
 {% extends "page.html" %}
 {% block title %}{% endblock %}
+
 {% block body %}
 <div class="container">
   <div class="row">
     <div class="offset3 span6 well">
     <form class="form-horizontal" method="POST" action="{{ url_for('.register',) }}">
-  <fieldset>
-    <legend>{{title}}</legend>
-  {% for field in form if field.name != 'submit' %}
-    {{render_field(field, show_description=True)}}
-  {% endfor %}
-  </fieldset>
-  {{form.submit(class="btn btn-primary btn-large pull-right")}}
+  
+    {%- if state == 'success' %}
+        <legend>{{title}} <i class="icon-ok pull-right"></i></legend>
+        {%- for m in messages %}
+            <p>{{m}}</p>
+        {%- endfor %}
+    {%- else %}
+    <fieldset>
+        <legend>{{title}}{% if state %}<i class="icon-warning-sign pull-right"></i>{% else %}<i class="icon-edit pull-right"></i>{% endif %}</legend>
+        {% if messages and state != 'success' %}
+        <div class="alert alert-{{state}}">
+        {%- for m in messages %}
+            <p>{{m}}</p>
+        {%- endfor %}
+        </div>
+        {% endif %}
+        {% for field in form if field.name != 'submit' %}
+            {{render_field(field, show_description=True)}}
+        {% endfor %}
+    
+    </fieldset>
+    {{form.submit(value="Sign up", class="btn btn-warning btn-large pull-right")}}
+  {% endif %}
     </form>
     </div>
   </div>
