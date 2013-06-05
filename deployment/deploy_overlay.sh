@@ -15,10 +15,15 @@ chown -R www-data.www-data /opt/invenio
 # branding adjustments
 sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/templates/page.html
 
-echo "CFG_SIMPLESTORE_UPLOAD_FOLDER = /opt/invenio/var/tmp/simplestore_uploads" >> /opt/invenio/etc/invenio-local.conf
-# this might need to *replace* existing var
-echo "CFG_SITE_NAME = SimpleStore" >> /opt/invenio/etc/invenio-local.conf
-sudo -u www-data /opt/invenio/bin/inveniocfg --update-all
+#The following vars should be set in invenio-local.conf.
+#I used to do it here with "echo bla >>" but it was a horrible hack
+#left here for documentation purposes until proper solution
+#CFG_ACCESS_CONTROL_NOTIFY_USER_ABOUT_NEW_ACCOUNT = 1
+#CFG_SIMPLESTORE_UPLOAD_FOLDER = /opt/invenio/var/tmp/simplestore_uploads
+#CFG_SITE_NAME = SimpleStore
+#CFG_WEBSTYLE_TEMPLATE_SKIN = openaire
+#sudo -u www-data /opt/invenio/bin/inveniocfg --update-all
+
 
 # a quick hack for general modifications
 # XXX: invenio update unsafe
