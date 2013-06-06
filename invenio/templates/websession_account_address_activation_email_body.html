@@ -1,5 +1,10 @@
-{% trans site_name=config.CFG_SITE_NAME_INTL.get(g.ln) %}Thanks for registering with {{site_name}}! To complete the registration, please validate your email address by clicking the link below:{% endtrans %}
+{% trans site_name=config.CFG_SITE_NAME_INTL.get(g.ln) %}Thanks for registering with {{site_name}}. 
+
+At the moment {{site_name}} is still in an early stage of development and should be treated only as preview version for user testing. Files submitted to the service are not currently stored reliably and will be removed at some stage.
+
+To complete the registration, please validate your email address by clicking the link below:{% endtrans %}
 
 {{activation_link|safe}}
 
 {% trans %}Please note that this URL will only remain valid for about {{days}} days. If this request (coming from IP address {{ip_address}}) was not made by you, please ignore this message.{% endtrans %}
+
