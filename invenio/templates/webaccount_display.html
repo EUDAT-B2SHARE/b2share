@@ -44,7 +44,7 @@
   <div class="row">
     <div class="span12">
     <ul id="widgets" class="thumbnails">
-    {%- for p in plugins if p.widget -%}
+    {%- for p in plugins if p.widget and p.__class__.__name__ not in ['WebBasketSettings', 'WebAlertSettings'] -%}
       <li id="{{ p.__class__.__name__}}" class="widget span{{ p.widget.size }}">
         <div class="thumbnail">
           <div class="caption">
