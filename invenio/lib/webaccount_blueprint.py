@@ -24,20 +24,13 @@ from flask import render_template, request, flash, redirect, url_for, g
 from invenio.sqlalchemyutils import db
 from invenio.websession_model import User
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
-from invenio.config import \
-    CFG_SITE_URL, \
-    CFG_SITE_SECURE_URL, \
-    CFG_ACCESS_CONTROL_LEVEL_SITE, \
-    CFG_ACCESS_CONTROL_NOTIFY_USER_ABOUT_NEW_ACCOUNT, \
-    CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS, \
-    CFG_OPENAIRE_SITE
-from invenio.access_control_config import \
-    CFG_EXTERNAL_AUTH_USING_SSO, \
-    CFG_EXTERNAL_AUTH_LOGOUT_SSO
+from invenio.config import (CFG_SITE_URL, CFG_SITE_SECURE_URL,
+                            CFG_ACCESS_CONTROL_LEVEL_SITE,
+                            CFG_ACCESS_CONTROL_NOTIFY_USER_ABOUT_NEW_ACCOUNT,
+                            CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS)
+from invenio.access_control_config import (CFG_EXTERNAL_AUTH_USING_SSO,
+                                           CFG_EXTERNAL_AUTH_LOGOUT_SSO)
 from invenio import webuser
-from invenio.access_control_mailcookie import \
-    InvenioWebAccessMailCookieError, \
-    mail_cookie_check_authorize_action
 
 from invenio.webaccount_forms import LoginForm, RegisterForm
 from invenio.webuser_flask import login_user, logout_user, current_user
@@ -172,15 +165,18 @@ _USER_SETTINGS = PluginContainer(
 @blueprint.invenio_authenticated
 def index():
     # load plugins
-    plugins = [a for a in [s() for (k, s) in _USER_SETTINGS.items()] \
-               if a.is_authorized]
-
-    dashboard_settings = current_user.get('dashboard_settings', {})
-    order = dashboard_settings.get('order', [])
-    plugins = sorted(plugins, key=lambda w: order.index(w.__class__.__name__) \
-                            if w.__class__.__name__ in order else len(order))
-
-    return render_template('webaccount_display.html', plugins=plugins)
+#    plugins = [a for a in [s() for (k, s) in _USER_SETTINGS.items()] \
+#               if a.is_authorized]
+#
+#    dashboard_settings = current_user.get('dashboard_settings', {})
+#    order = dashboard_settings.get('order', [])
+#    plugins = sorted(plugins, key=lambda w: order.index(w.__class__.__name__) \
+#                            if w.__class__.__name__ in order else len(order))
+#
+#    return render_template('webaccount_display.html', plugins=plugins)
+    return render_template('webaccount_display.html',
+                           nick=current_user['nickname'],
+                           email=current_user['email'])
 
 
 @blueprint.route('/edit/<name>', methods=['GET', 'POST'])
@@ -211,5 +207,5 @@ def edit(name):
         from werkzeug.datastructures import MultiDict
         form = plugin.form_builder(MultiDict(plugin.load()))
 
-    return render_template(getattr(plugin, 'edit_template', '') or \
+    return render_template(getattr(plugin, 'edit_template', '') or
                            'webaccount_edit.html', plugin=plugin, form=form)
