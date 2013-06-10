@@ -24,7 +24,7 @@ from flask import render_template
 from invenio.websession_templates import Template as DefaultTemplate
 from invenio.config import (CFG_SITE_SECURE_URL,
                             CFG_WEBSESSION_ADDRESS_ACTIVATION_EXPIRE_IN_DAYS,
-                            CFG_SITE_LANG)
+                            CFG_SITE_LANG, CFG_SITE_NAME_INTL)
 
 
 class Template(DefaultTemplate):
@@ -52,3 +52,40 @@ class Template(DefaultTemplate):
         return render_template(
             "websession_account_address_activation_email_body.html",
             **ctx).encode('utf8')
+
+    def tmpl_lost_password_form(self, ln):
+        """
+        Displays a form for the user to ask for his password sent by email.
+
+        Parameters:
+
+          - 'ln' *string* - The language to display the interface in
+
+          - 'msg' *string* - Explicative message on top of the form.
+        """
+
+        # load the right message language
+        out = "<p>" + "Please enter the email address that you used to sign up to %s. We will send a password reset link to this address." % CFG_SITE_NAME_INTL[ln] + "</p>"
+
+        out += """
+          <blockquote>
+          <form  method="post" action="../youraccount/send_email">
+          <table>
+                <tr>
+              <td align="right"><strong><label for="p_email">%(email)s:</label></strong></td>
+              <td><input type="text" size="25" name="p_email" id="p_email" value="" />
+                  <input type="hidden" name="ln" value="%(ln)s" />
+                  <input type="hidden" name="action" value="lost" />
+              </td>
+            </tr>
+            <tr><td>&nbsp;</td>
+              <td><input class="formbutton" type="submit" value="%(send)s" /></td>
+            </tr>
+          </table>
+
+          </form>
+          </blockquote>
+          """ % {'ln': ln, 'email': "Email address",
+                 'send': "Send password reset link"}
+
+        return out
