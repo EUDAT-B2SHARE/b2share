@@ -20,11 +20,14 @@ Customise activation e-mail.
 """
 
 from flask import render_template
+from urllib import urlencode
 
+from invenio.messages import gettext_set_language
 from invenio.websession_templates import Template as DefaultTemplate
 from invenio.config import (CFG_SITE_SECURE_URL,
                             CFG_WEBSESSION_ADDRESS_ACTIVATION_EXPIRE_IN_DAYS,
-                            CFG_SITE_LANG, CFG_SITE_NAME_INTL)
+                            CFG_SITE_LANG, CFG_SITE_NAME, CFG_SITE_NAME_INTL,
+                            CFG_WEBSESSION_RESET_PASSWORD_EXPIRE_IN_DAYS)
 
 
 class Template(DefaultTemplate):
@@ -35,7 +38,6 @@ class Template(DefaultTemplate):
         The body of the email that sends email address activation cookie
         passwords to users.
         """
-        from urllib import urlencode
         ctx = {
             "ip_address": ip_address,
             "email": email,
@@ -88,4 +90,41 @@ class Template(DefaultTemplate):
           """ % {'ln': ln, 'email': "Email address",
                  'send': "Send password reset link"}
 
+        return out
+
+    def tmpl_account_reset_password_email_body(self, email, reset_key, ip_address, ln=CFG_SITE_LANG):
+        """
+        The body of the email that sends lost internal account
+        passwords to users.
+        """
+
+        _ = gettext_set_language(ln)
+
+        out = """
+%(intro)s
+
+%(intro2)s
+
+%(link)s
+
+%(outro)s
+
+%(outro2)s""" % {
+            'intro': _("Somebody (possibly you) coming from %(x_ip_address)s "
+                       "has asked\nfor a password reset at %(x_sitename)s\nfor "
+                       "the account \"%(x_email)s\"."
+                       % {
+                           'x_sitename': CFG_SITE_NAME_INTL.get(ln, CFG_SITE_NAME),
+                           'x_email': email,
+                           'x_ip_address': ip_address,
+                       }
+                       ),
+            'intro2': _("If you want to reset the password for this account, please go to:"),
+            'link': "%s/youraccount/access?%s" %
+            (CFG_SITE_SECURE_URL, urlencode({
+                'ln': ln,
+                'mailcookie': reset_key})),
+            'outro': _("in order to confirm the validity of this request."),
+            'outro2': _("Please note that this URL will remain valid for about %(days)s days only.") % {'days': CFG_WEBSESSION_RESET_PASSWORD_EXPIRE_IN_DAYS},
+        }
         return out
