@@ -110,8 +110,8 @@ class Template(DefaultTemplate):
 %(outro)s
 
 %(outro2)s""" % {
-            'intro': _("Somebody (possibly you) coming from %(x_ip_address)s "
-                       "has asked\nfor a password reset at %(x_sitename)s\nfor "
+            'intro': _("Somebody (possibly you) "
+                       "has asked for a password reset at %(x_sitename)s\nfor "
                        "the account \"%(x_email)s\"."
                        % {
                            'x_sitename': CFG_SITE_NAME_INTL.get(ln, CFG_SITE_NAME),

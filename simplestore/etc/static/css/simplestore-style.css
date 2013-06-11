@@ -44,6 +44,11 @@ html {
   -webkit-border-radius: 8px;
   border-radius: 8px;
   margin-bottom: 10px;
+  /* turn of selecting of text */
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .domain-addmeta {

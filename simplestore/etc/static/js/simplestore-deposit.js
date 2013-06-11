@@ -11,9 +11,17 @@ $(document).ready(function() {
 
   });
   $('#domains input:radio').addClass('visuallyhidden');
-  $('#domains .domain').click(function() {
+
+  function domain_click_handler() {
+    $(this).find('input').prop('checked', true);
     $(this).addClass('highlight-icon').siblings().removeClass('highlight-icon');
-  });
+  }
+
+  $('#domains .domain').click(domain_click_handler);
+  //Added following two handlers to make clicking easier
+  //(misclicks were common before e.g. when mouse went out of focus)
+  $('#domains .domain').mousedown(domain_click_handler);
+  $('#domains .domain').select(domain_click_handler);
 
 });
 
