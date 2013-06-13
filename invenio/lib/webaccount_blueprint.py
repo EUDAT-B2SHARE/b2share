@@ -21,6 +21,7 @@
 
 from werkzeug.urls import url_unquote
 from flask import render_template, request, flash, redirect, url_for, g
+from math import ceil
 from invenio.sqlalchemyutils import db
 from invenio.websession_model import User
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
@@ -30,6 +31,10 @@ from invenio.config import (CFG_SITE_URL, CFG_SITE_SECURE_URL,
                             CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS)
 from invenio.access_control_config import (CFG_EXTERNAL_AUTH_USING_SSO,
                                            CFG_EXTERNAL_AUTH_LOGOUT_SSO)
+from invenio.search_engine import perform_request_search
+from invenio.websearch_blueprint import (Pagination, cached_format_record,
+                                         RecordInfo)
+from invenio.websearch_model import Collection
 from invenio import webuser
 
 from invenio.webaccount_forms import LoginForm, RegisterForm
@@ -174,9 +179,23 @@ def index():
 #                            if w.__class__.__name__ in order else len(order))
 #
 #    return render_template('webaccount_display.html', plugins=plugins)
+    email = current_user['email']
+    collection = Collection.query.get_or_404(1)
+    recids = perform_request_search(p='8560__f:"%s"' % email)
+    page = request.args.get('jrec', 1, type=int)
+    rg = request.args.get('rg', 10, type=int)
+    pagination = Pagination(int(ceil(page / float(rg))), rg, len(recids))
+
     return render_template('webaccount_display.html',
                            nick=current_user['nickname'],
-                           email=current_user['email'])
+                           email=email,
+                           collection=collection,
+                           pagination=pagination,
+                           recids=recids,
+                           format_record=cached_format_record,
+                           rg=rg,
+                           RecordInfo=RecordInfo
+                           )
 
 
 @blueprint.route('/edit/<name>', methods=['GET', 'POST'])

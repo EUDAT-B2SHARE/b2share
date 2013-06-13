@@ -21,6 +21,7 @@ from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import Submission, SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
+from invenio.webuser_flask import current_user
 
 from invenio.webinterface_handler_flask_utils import _
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
@@ -140,6 +141,7 @@ def create_marc_and_ingest(form, sub_id):
                          #('d', 'some description') # TODO
                          #('t', 'Type'), # TODO
                          ('r', fft_status)])
+        record_add_field(rec, '8560', subfields=[('f', current_user['email'])])
 
     recid = run_sql("INSERT INTO bibrec(creation_date, modification_date) values(NOW(), NOW())")
     record_add_field(rec, '001', controlfield_value=str(recid))
