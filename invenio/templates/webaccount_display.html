@@ -91,7 +91,7 @@
           {%- set r_to = pagination.page*pagination.per_page -%}
           {%- set r_of = recids|length -%}
           {%- set r_to = r_to if r_to < r_of else r_of -%}
-          {{ _('Showing recods %d to %d out of %d results.') % (r_from, r_to, r_of) }}
+          {{ _('Showing records %d to %d out of %d results.') % (r_from, r_to, r_of) }}
         </p>
         <div class="btn-group pull-right">
 

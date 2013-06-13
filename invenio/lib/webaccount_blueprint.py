@@ -19,7 +19,6 @@
 
 """WebAccount Flask Blueprint"""
 
-from werkzeug.urls import url_unquote
 from flask import render_template, request, flash, redirect, url_for, g
 from math import ceil
 from invenio.sqlalchemyutils import db
@@ -65,16 +64,12 @@ def login(action=''):
                 User.password == form.password.data)).one()
             login_user(user.get_id(), remember_me=form.remember.data)
             flash(_("You are logged in as %s.") % user.nickname, "info")
-            # Change HTTP method to https if needed.
-            referer = url_unquote(request.form.get("referer",
-                                                   url_for(".login")))
-            if CFG_FULL_HTTPS or CFG_HAS_HTTPS_SUPPORT and \
-                    request.url.startswith('https://') and \
-                    referer.startswith('http://'):
-                referer = referer.replace('http://', 'https://', 1)
-            return redirect(referer)
+
+            #Avoid annoying problems by just redirecting accoutn page
+            #should this be front page?
+            return redirect(url_for('.index'))
         except:
-            flash(_("Problem with login."), "error")
+            flash(_("Wrong username/email and password combination."), "error")
 
     return render_template('webaccount_login.html', form=form)
 
