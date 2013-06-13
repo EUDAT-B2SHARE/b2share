@@ -37,7 +37,7 @@ def deposit(request):
     """ Renders the deposit start page """
     if request.method == 'POST':
         if not 'sub_id' in request.form:
-            return render_template('500.html', 'Submission id not set'), 500
+            return render_template('500.html', message='Submission id not set'), 500
 
         sub_id = request.form['sub_id']
 
@@ -80,16 +80,16 @@ def addmeta(request, sub_id):
     #current_app.logger.error("Called addmeta")
 
     if sub_id is None:
-        return render_template('500.html', 'Submission id not set'), 500
+        return render_template('500.html', message='Submission id not set'), 500
 
     sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
-        return render_template('500.html', "UUID not found in database"), 500
+        return render_template('500.html', message="UUID not found in database"), 500
 
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
-        return render_template('500.html', "Uploads not found"), 500
+        return render_template('500.html', message="Uploads not found"), 500
 
     files = os.listdir(updir)
 
