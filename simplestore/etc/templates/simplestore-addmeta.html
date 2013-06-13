@@ -26,7 +26,13 @@
               <input type="text" class="visuallyhidden" name="domain" id="domain" value="{{ metadata.domain }}" />
               <label for=" {{ metadata.domain }}">
                 &nbsp;<i class="{{ metadata.icon }} icon-large icon-4x"></i>
-                <h5>{{ metadata.domain }}</h5>
+                <h5>
+                  {% if metadata.display_name %}
+                    {{ metadata.display_name }}
+                  {% else %}
+                    {{ metadata.domain }}
+                  {% endif %}
+                </h5>
               </label>
             </div>
           </div>

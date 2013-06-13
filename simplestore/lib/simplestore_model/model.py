@@ -120,6 +120,9 @@ def _create_metadata_class(cfg):
             'basic_field_iter': basic_field_iter,
             'optional_field_iter': optional_field_iter}
 
+    if hasattr(cfg, 'display_name'):
+        args['display_name'] = cfg.display_name
+
     for f in cfg.fields:
         args[f['name']] = db.Column(f['col_type'])
 
