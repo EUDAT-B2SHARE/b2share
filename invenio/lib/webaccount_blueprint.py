@@ -181,7 +181,7 @@ def index():
 #    return render_template('webaccount_display.html', plugins=plugins)
     email = current_user['email']
     collection = Collection.query.get_or_404(1)
-    recids = perform_request_search(p='8560__f:"%s"' % email)
+    recids = perform_request_search(p='8560_f:"%s"' % email)
     page = request.args.get('jrec', 1, type=int)
     rg = request.args.get('rg', 10, type=int)
     pagination = Pagination(int(ceil(page / float(rg))), rg, len(recids))

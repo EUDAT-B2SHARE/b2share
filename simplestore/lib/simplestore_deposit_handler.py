@@ -135,13 +135,13 @@ def create_marc_and_ingest(form, sub_id):
     fft_status = "firerole: allow any\n"  # Only open access for minute
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = os.listdir(upload_dir)
+    record_add_field(rec, '856', ind1='0', subfields=[('f', current_user['email'])])
     for f in files:
         record_add_field(rec, 'FFT',
                          subfields=[('a', os.path.join(upload_dir, f)),
                          #('d', 'some description') # TODO
                          #('t', 'Type'), # TODO
                          ('r', fft_status)])
-        record_add_field(rec, '8560', subfields=[('f', current_user['email'])])
 
     recid = run_sql("INSERT INTO bibrec(creation_date, modification_date) values(NOW(), NOW())")
     record_add_field(rec, '001', controlfield_value=str(recid))
