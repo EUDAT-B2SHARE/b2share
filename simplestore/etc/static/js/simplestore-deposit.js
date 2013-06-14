@@ -14,7 +14,10 @@ $(document).ready(function() {
 
   function domain_click_handler() {
     $(this).find('input').prop('checked', true);
-    $(this).addClass('highlight-icon').siblings().removeClass('highlight-icon');
+    $('#domains .domain').removeClass('highlight-icon');
+    $('#domains .domain img').addClass('desaturate');
+    $(this).addClass('highlight-icon');
+    $(this).find('img').removeClass('desaturate');
   }
 
   $('#domains .domain').click(domain_click_handler);

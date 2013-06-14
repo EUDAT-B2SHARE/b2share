@@ -91,6 +91,9 @@ def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
     details."""
 
+    if not hasattr(cfg, 'fields'):
+        cfg.fields = []
+
     def basic_field_iter(self):
         # need to figure out how to refer to parent here
         for s in SubmissionMetadata.basic_field_iter(self):
@@ -116,12 +119,18 @@ def _create_metadata_class(cfg):
                 db.Integer, db.ForeignKey('submission_metadata.id'),
                 primary_key=True),
             'domain': cfg.domain,
-            'icon': cfg.icon,
             'basic_field_iter': basic_field_iter,
             'optional_field_iter': optional_field_iter}
 
+    #change to just add all unknown attrs automatically with same name
     if hasattr(cfg, 'display_name'):
         args['display_name'] = cfg.display_name
+
+    if hasattr(cfg, 'icon'):
+        args['icon'] = cfg.icon
+
+    if hasattr(cfg, 'image'):
+        args['image'] = cfg.image
 
     for f in cfg.fields:
         args[f['name']] = db.Column(f['col_type'])

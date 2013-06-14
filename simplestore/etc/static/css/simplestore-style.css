@@ -200,3 +200,11 @@ html {
 
 #submit-deposit {
 }
+
+img.desaturate { 
+  filter: grayscale(100%); 
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: url(/img/desaturate.svg#greyscale);
+  filter: gray;
+}
