@@ -68,8 +68,9 @@ def login(action=''):
 
             referer = url_unquote(request.form.get("referer",
                                                    url_for(".login")))
+
             #Avoid crazy log-out/log-in loop
-            if referer == url_for('.logout'):
+            if referer == '':
                 return redirect(url_for('.index'))
 
             if CFG_FULL_HTTPS or CFG_HAS_HTTPS_SUPPORT and \
