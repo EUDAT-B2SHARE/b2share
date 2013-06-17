@@ -29,6 +29,7 @@ class SubmissionMetadata(db.Model):
     __tablename__ = 'submission_metadata'
     domain = 'Generic'
     icon = 'icon-question-sign'
+    kind = 'domain'
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
 
     # id seems to be needed to maintain link to parent submission
@@ -131,6 +132,9 @@ def _create_metadata_class(cfg):
 
     if hasattr(cfg, 'image'):
         args['image'] = cfg.image
+
+    if hasattr(cfg, 'kind'):
+        args['kind'] = cfg.kind
 
     for f in cfg.fields:
         args[f['name']] = db.Column(f['col_type'])

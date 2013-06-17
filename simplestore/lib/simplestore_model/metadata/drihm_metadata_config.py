@@ -5,6 +5,7 @@ domain = "drihm"
 display_name = "DRIHM"
 table_name = 'drihm'
 image = 'drihm_icon.jpg'
+kind = 'project'
 
 # note that fields will need more stuff like validators later
 fields = [{'name':'hydrology',

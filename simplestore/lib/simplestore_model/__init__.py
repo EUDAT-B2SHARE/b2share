@@ -1,9 +1,9 @@
 from  invenio.simplestore_model import metadata
-from model import _create_metadata_class
+from model import _create_metadata_class, SubmissionMetadata
 import pkgutil
 
 # might well be a better way to do this
-metadata_classes = {}
+metadata_classes = {SubmissionMetadata.domain.lower(): SubmissionMetadata}
 
 pck = metadata
 prefix = pck.__name__ + '.'

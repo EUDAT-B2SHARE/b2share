@@ -53,16 +53,7 @@
            </div>
           </div>
 
-        <!-- id/value, text, icon -->
-  {% set domain_entries = [
-    ('generic', 'Generic', 'icon-question-sign', 'domain'),
-    ('linguistics', 'Linguistics', 'icon-quote-right', 'domain'),
-    ('ecology', 'Ecology', 'icon-leaf', 'domain'),
-    ('geography', 'Geography', 'icon-globe', 'domain-disabled'),
-    ('medicine', 'Medicine', 'icon-stethoscope', 'domain-disabled'),
-    ('compsci', 'Computer Science', 'icon-laptop', 'domain-disabled'),
-  ] -%}
-  {% set default_domain = default_domain|default('generic') -%}
+        {% set default_domain = default_domain|default('Generic') -%}
 
 
         <div class="row-fluid">
@@ -70,35 +61,70 @@
 
             <div class="row-fluid">
             <div class="span12">
-              {% for id, text, icon, class in domain_entries %}
-              <div class="{{ class }}{% if id == default_domain %} highlight-icon{% endif %}">
-                <input type="radio" class="visuallyhidden" name="domain" id="{{ id }}" value="{{ id }}" 
-                {% if id == default_domain %}checked="checked"{% endif %}/>
-                <label for="{{ id }}">
-                  &nbsp;<i class="{{ icon }} icon-large icon-4x"></i>
-                  <h5>{{ text }}</h5>
+              {% for d in domains if d.kind == 'domain' %}
+              <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
+                <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
+                {% if d.domain == default_domain %}checked="checked"{% endif %}/>
+                <label for="{{ d.domain }}">
+                  {% if d.image %}
+                    <img src="/img/{{ d.image }}" class="desaturate"/>
+                  {% else %}
+                    &nbsp;<i class="{{ d.icon }} icon-large icon-4x"></i>
+                  {% endif %}
+                  {% if d.display_name %}
+                    <h5>{{ d.display_name }}</h5>
+                  {% else %}
+                    <h5>{{ d.domain }}</h5>
+                  {% endif %}
                 </label>
               </div>
               {% endfor %}
+
+              <!-- Add temporary demo domains by hand. To be deleted. -->
+              <div class="domain-disabled">
+                <input type="radio" class="visuallyhidden" name="domain" id="Geography" value="Geography"/>
+                <label for="Linguistics">
+                  &nbsp;<i class="icon-globe icon-large icon-4x"></i>
+                  <h5>Geography</h5>
+                </label>
+              </div>
+              <div class="domain-disabled">
+                <input type="radio" class="visuallyhidden" name="domain" id="Medicine" value="Medicine"/>
+                <label for="Medicine">
+                  &nbsp;<i class="icon-stethoscope icon-large icon-4x"></i>
+                  <h5>Medicine</h5>
+                </label>
+              </div>
+              <div class="domain-disabled">
+                <input type="radio" class="visuallyhidden" name="domain" id="compsci" value="compsci"/>
+                <label for="compsci">
+                  &nbsp;<i class="icon-laptop icon-large icon-4x"></i>
+                  <h5>Computer Science</h5>
+                </label>
+              </div>
             </div>
             </div>
 
             <div class="row-fluid">
             <div class="span12">
-              <div class="domain">
-                <input type="radio" class="visuallyhidden" name="domain" id="drihm" value="drihm" />
-                <label for="drihm">
-                  <img src="/img/drihm_icon.jpg" class="desaturate"/>
-                  <h5>DRIHM</h5>
+              {% for d in domains if d.kind == 'project' %}
+              <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
+                <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
+                {% if d.domain == default_domain %}checked="checked"{% endif %}/>
+                <label for="{{ d.domain }}">
+                  {% if d.image %}
+                    <img src="/img/{{ d.image }}" class="desaturate"/>
+                  {% else %}
+                    &nbsp;<i class="{{ d.icon }} icon-large icon-4x"></i>
+                  {% endif %}
+                  {% if d.display_name %}
+                    <h5>{{ d.display_name }}</h5>
+                  {% else %}
+                    <h5>{{ d.domain }}</h5>
+                  {% endif %}
                 </label>
               </div>
-              <div class="domain">
-                <input type="radio" class="visuallyhidden" name="domain" id="eudat" value="eudat"/>
-                <label for="eudat">
-                  <img src="/img/eudat-icon.png" class="desaturate"/>
-                  <h5>EUDAT</h5>
-                </label>
-              </div>
+              {% endfor %}
             </div>
             </div>
           </div>

@@ -46,7 +46,9 @@ def deposit(request):
             #would probably be better to disable the button in js until
             #upload complete
             flash(_("Please upload a file to deposit"), 'error')
-            return render_template('simplestore-deposit.html', sub_id=sub_id)
+            return render_template('simplestore-deposit.html',
+                                   domains=metadata_classes.values(),
+                                   sub_id=sub_id)
 
         sub = Submission(uuid=sub_id)
 
@@ -67,6 +69,7 @@ def deposit(request):
         return redirect(url_for('.addmeta', sub_id=sub_id))
     else:
         return render_template('simplestore-deposit.html',
+                               domains=metadata_classes.values(),
                                sub_id=uuid.uuid1().hex)
 
 
