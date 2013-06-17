@@ -19,6 +19,7 @@
 
 """WebAccount Flask Blueprint"""
 
+from werkzeug.urls import url_unquote
 from flask import render_template, request, flash, redirect, url_for, g
 from math import ceil
 from invenio.sqlalchemyutils import db
@@ -65,9 +66,18 @@ def login(action=''):
             login_user(user.get_id(), remember_me=form.remember.data)
             flash(_("You are logged in as %s.") % user.nickname, "info")
 
-            #Avoid annoying problems by just redirecting accoutn page
-            #should this be front page?
-            return redirect(url_for('.index'))
+            referer = url_unquote(request.form.get("referer",
+                                                   url_for(".login")))
+            #Avoid crazy log-out/log-in loop
+            if referer == url_for('.logout'):
+                return redirect(url_for('.index'))
+
+            if CFG_FULL_HTTPS or CFG_HAS_HTTPS_SUPPORT and \
+                    request.url.startswith('https://') and \
+                    referer.startswith('http://'):
+                referer = referer.replace('http://', 'https://', 1)
+            return redirect(referer)
+
         except:
             flash(_("Wrong username/email and password combination."), "error")
 
