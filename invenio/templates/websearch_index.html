@@ -117,7 +117,9 @@
         <p class="maintext">The SimpleStore is currently in an <b>early testing phase</b>. Users are encouraged to sign up and test the service, but please be aware that is <b>not ready for production use</b>. In particular, note that data submitted to the service in its current state is not stored reliably and will be removed at some stage. Also note that all submissions are made public; there is currently no support for restricting access to files.</p> 
         <p class="maintext">Please contact <a href="mailto:livenson@kth.se">livenson@kth.se</a> with any questions or feedback.</p>
         <br/>
+        {% if unregistered %}
         <a class="btn btn-large btn-success" href="{{ url_for("youraccount.register") }}">Sign up now</a>
+        {% endif %}
       </div>
     </div>
   </div>
