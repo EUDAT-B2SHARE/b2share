@@ -55,7 +55,7 @@ class SubmissionMetadata(db.Model):
     related_identifier = db.Column(db.String(256))
     size = db.Column(db.String(256))
     format = db.Column(db.String(256))  # file extension or MIME
-    version = db.Column(db.Integer)
+    version = db.Column(db.Numeric(precision=6))
     rights = db.Column(db.String(256))  # not sure how to serialize rights
     description = db.Column(db.String(1024))
 
@@ -114,27 +114,28 @@ def _create_metadata_class(cfg):
                 yield f['name']
 
     clsname = cfg.domain + "Metadata"
+
     args = {'__tablename__': cfg.table_name,
             '__mapper_args__': {'polymorphic_identity': cfg.table_name},
             'id': db.Column(
                 db.Integer, db.ForeignKey('submission_metadata.id'),
                 primary_key=True),
-            'domain': cfg.domain,
             'basic_field_iter': basic_field_iter,
             'optional_field_iter': optional_field_iter}
 
-    #change to just add all unknown attrs automatically with same name
-    if hasattr(cfg, 'display_name'):
-        args['display_name'] = cfg.display_name
+    #The following function and call just add all external attrs manually
+    def is_external_attr(n):
 
-    if hasattr(cfg, 'icon'):
-        args['icon'] = cfg.icon
+        #don't like this bit; problem is we don't want to include imports
+        # and I don't know how to exclude them except via name
+        #(fields is a special case so ok to exclude here)
+        if n in ['db', 'fields']:
+            return False
 
-    if hasattr(cfg, 'image'):
-        args['image'] = cfg.image
+        return not n.startswith('__')
 
-    if hasattr(cfg, 'kind'):
-        args['kind'] = cfg.kind
+    for attr in (filter(is_external_attr, dir(cfg))):
+        args[attr] = getattr(cfg, attr)
 
     for f in cfg.fields:
         args[f['name']] = db.Column(f['col_type'])
