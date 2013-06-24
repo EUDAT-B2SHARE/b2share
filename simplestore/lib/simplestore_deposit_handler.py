@@ -98,6 +98,7 @@ def addmeta(request, sub_id):
 
     MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
+                          field_args=sub.md.field_args,
                           converter=HTML5ModelConverter())
     meta_form = MetaForm(request.form, sub.md)
 

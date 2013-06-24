@@ -100,8 +100,12 @@ def _create_metadata_class(cfg):
         for s in SubmissionMetadata.basic_field_iter(self):
             yield s
 
+        #Normal field if extra is false or not set
         for f in cfg.fields:
-            if not f['extra']:
+            try:
+                if not f['extra']:
+                    yield f['name']
+            except KeyError:
                 yield f['name']
 
     def optional_field_iter(self):
@@ -110,8 +114,11 @@ def _create_metadata_class(cfg):
             yield s
 
         for f in cfg.fields:
-            if f['extra']:
-                yield f['name']
+            try:
+                if f['extra']:
+                    yield f['name']
+            except KeyError:
+                pass
 
     clsname = cfg.domain + "Metadata"
 
@@ -121,14 +128,14 @@ def _create_metadata_class(cfg):
                 db.Integer, db.ForeignKey('submission_metadata.id'),
                 primary_key=True),
             'basic_field_iter': basic_field_iter,
+            'field_args': {},
             'optional_field_iter': optional_field_iter}
 
     #The following function and call just add all external attrs manually
     def is_external_attr(n):
 
-        #don't like this bit; problem is we don't want to include imports
-        # and I don't know how to exclude them except via name
-        #(fields is a special case so ok to exclude here)
+        # don't like this bit; problem is we don't want to include the
+        # db import and I don't know how to exclude them except via name
         if n in ['db', 'fields']:
             return False
 
@@ -137,7 +144,12 @@ def _create_metadata_class(cfg):
     for attr in (filter(is_external_attr, dir(cfg))):
         args[attr] = getattr(cfg, attr)
 
+    # field args lets us control some aspects of the field
+    # including label, validators and decimal places
     for f in cfg.fields:
         args[f['name']] = db.Column(f['col_type'])
+        # Doesn't seem pythonic, but show me a better way
+        if 'display_text' in f:
+            args['field_args'][f['name']] = {'label': f.get('display_text')}
 
     return type(clsname, (SubmissionMetadata,), args)
