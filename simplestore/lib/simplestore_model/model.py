@@ -31,11 +31,12 @@ class SubmissionMetadata(db.Model):
     icon = 'icon-question-sign'
     kind = 'domain'
     submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
+    field_args = {}
 
     # id seems to be needed to maintain link to parent submission
     id = db.Column(db.Integer, primary_key=True)
     creator = db.Column(db.String(128))
-    title = db.Column(db.String(256))
+    title = db.Column(db.String(256), nullable=False)
     publisher = db.Column(db.String(128))
     publication_date = db.Column('publication_year', db.Date(),
                                  default=date.today())
@@ -147,7 +148,8 @@ def _create_metadata_class(cfg):
     # field args lets us control some aspects of the field
     # including label, validators and decimal places
     for f in cfg.fields:
-        args[f['name']] = db.Column(f['col_type'])
+        nullable = not f.get('required', False)
+        args[f['name']] = db.Column(f['col_type'], nullable=nullable)
         # Doesn't seem pythonic, but show me a better way
         if 'display_text' in f:
             args['field_args'][f['name']] = {'label': f.get('display_text')}

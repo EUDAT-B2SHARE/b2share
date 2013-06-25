@@ -53,7 +53,8 @@
               <div class="control-group {% if f.errors %}error{% endif %}">
                 {{f.label(class="control-label meta-label")}}
                 <div class="controls">
-                  {{f(**kwargs)|safe}}
+                  {{f(**kwargs)|safe}}{%- if f.flags.required -%}&nbsp;*{%- endif %}
+
 
                   {%- if f.errors %}
                   {%- for error in f.errors %}
@@ -84,6 +85,7 @@
               <div class="form-actions">
                 <button name="action_save" type="submit" class="btn btn-large btn-primary">I'm Done -<br>Submit the Item</button>
               </div>
+              <div class="footnote">* indicates required field</div> 
             </div>
           </div>
         </form>

@@ -208,3 +208,8 @@ img.desaturate {
   filter: url(/img/desaturate.svg#greyscale);
   filter: gray;
 }
+
+.footnote {
+  font-style: italic;
+  font-size: 12px;
+}

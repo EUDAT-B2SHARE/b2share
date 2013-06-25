@@ -9,7 +9,8 @@ kind = 'project'
 
 # note that fields will need more stuff like validators later
 fields = [{'name':'hydrology',
-           'col_type':db.String(256)},
+           'col_type':db.String(256),
+           'required':True},
           {'name':'hydraulic',
            'col_type':db.String(256)},
           {'name':'meteorology',
