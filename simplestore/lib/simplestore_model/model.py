@@ -35,6 +35,7 @@ class SubmissionMetadata(db.Model):
 
     # id seems to be needed to maintain link to parent submission
     id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.Text(), nullable=False)
     creator = db.Column(db.String(128))
     title = db.Column(db.String(256), nullable=False)
     publisher = db.Column(db.String(128))
@@ -43,7 +44,8 @@ class SubmissionMetadata(db.Model):
 
     def basic_field_iter(self):
         #why won't submission_id work?
-        for f in ['creator', 'title', 'publisher', 'publication_date']:
+        for f in ['title', 'description', 'creator', 'publisher',
+                  'publication_date']:
             yield f
 
     # optional
@@ -58,13 +60,12 @@ class SubmissionMetadata(db.Model):
     format = db.Column(db.String(256))  # file extension or MIME
     version = db.Column(db.Numeric(precision=6))
     rights = db.Column(db.String(256))  # not sure how to serialize rights
-    description = db.Column(db.String(1024))
 
     def optional_field_iter(self):
         for f in ['subject', 'contributor', 'date', 'language',
                   'resource_type', 'alternate_identifier',
                   'related_identifier', 'size', 'format',
-                  'version', 'rights', 'description']:
+                  'version', 'rights']:
             yield f
 
     # administrative metadata
