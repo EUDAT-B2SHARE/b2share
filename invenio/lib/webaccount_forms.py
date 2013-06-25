@@ -72,7 +72,11 @@ class RegisterForm(Form):
         description=_("Example") + ": johnd")
     password = PasswordField(
         _("Password"),
-        description=_("The password phrase may contain punctuation, spaces, etc."))
+        description=_("The password phrase may contain punctuation, spaces, etc."),
+        validators=[Required(message=_("Please enter a password")),
+                    validators.Length(
+                        min=6,
+                        message=_('Password must be at least 6 characters long'))])
     password2 = PasswordField(_("Confirm password"),)
     referer = HiddenField()
     action = HiddenField(default='login')
