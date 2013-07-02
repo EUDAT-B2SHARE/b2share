@@ -74,17 +74,6 @@
 {% macro render_search_results(recids, collection, pagination, format_record) %}
       <form class="clearfix form-horizontal" name="" action="{{ url_for('search.dispatch') }}" method="post">
         <span class="btn-group">
-          <span onclick="$('[name=recid]').prop('checked', function() {return !$(this).prop('checked')});"
-                class="btn">
-            <i class="icon icon-check"
-               rel="tooltip"
-               title="{{ _('Toggle all') }}"></i>
-          </span>
-          <button name="action" value="addtobasket" class="btn">
-            <i class="icon icon-bookmark"
-               rel="tooltip"
-               title="{{ _('Add to basket') }}"></i>
-          </button>
         </span>
         <p class="help-inline hidden-phone">
           {%- set r_from = (pagination.page-1)*pagination.per_page+1 -%}
@@ -131,27 +120,6 @@
           </ul>
         </div>
 
-        <div class="btn-group pull-right" style="margin-right: 5px;">
-          <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-            <i class="icon-th"></i> {{ _('Display') }}
-            <span class="caret"></span>
-          </a>
-          <ul class="dropdown-menu">
-          {%- for i in collection.formatoptions if i.content_type == 'text/html' and i.visibility == 1 -%}
-            {%- set used_args = new_args.copy() -%}
-            {%- do used_args.update({'of':i.code}) -%}
-            <li><a
-               href="{{ url_for('search.search', **used_args) }}{{ '#'+request.form.get('filter','')|default('', true) }}"
-               class="{{ ' active' if active }}">
-              <i class="pull-right icon {{ ' icon-ok' if request.args.get('of','hb')==i.code }}"></i>
-              {{ i.name }}
-            </a></li>
-          {%- endfor -%}
-          <!-- dropdown menu links -->
-          </ul>
-        </div>
-
-
         <hr/>
 
         {%- set of = request.values.get('of', 'hb') -%}
@@ -159,11 +127,7 @@
           {%- if of[0] == 'h' -%}
             <div class="row-fluid">
               <div class="span1">
-                <label class="checkbox">
-                  <input type="checkbox" name="recid" value="{{ recid }}" />
-                  <abbr class="unapi-id" title="{{ recid }}"></abbr>
                   {{ loop.index+(pagination.page-1)*rg }}
-                </label>
               </div>
               <div class="span11">
                 {{ format_record(recid, of, ln=g.ln)|safe }}
@@ -176,32 +140,7 @@
         {%- endfor -%}
         <hr/>
         <div class="row clearfix">
-          <div class="span10">
-            <span class="pull-left btn-group clearfix">
-            <span onclick="$('[name=recid]').prop('checked', function() {return !$(this).prop('checked')});"
-                  class="btn">
-              <i class="icon icon-check"
-                 rel="tooltip"
-                 title="{{ _('Toggle all') }}"></i>
-            </span>
-            <button name="action" value="addtobasket" class="btn">
-              <i class="icon icon-bookmark"
-                 rel="tooltip"
-                 title="{{ _('Add to basket') }}"></i>
-            </button>
-           </span>
-            <span class="span4">
-              <select name="of" class="span2">
-              {%- for i in export_formats -%}
-                <option value="{{ i.code }}"{{ ' selected' if request.args.get('of','hb')==i.code }}>{{ i.name }}</option>
-              {%- endfor -%}
-              </select>
-             <button name="action" value="export" class="btn">
-              <i class="icon icon-download-alt"
-                 rel="tooltip"
-                 title="{{ _('Export') }}"></i> {{ _('Export') }}
-             </button>
-            </span>
+          <div class="span12">
 
             {{ render_search_pagination(pagination) }}
           </div>
