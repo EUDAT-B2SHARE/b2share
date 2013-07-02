@@ -128,3 +128,39 @@ class Template(DefaultTemplate):
             'outro2': _("Please note that this URL will remain valid for about %(days)s days only.") % {'days': CFG_WEBSESSION_RESET_PASSWORD_EXPIRE_IN_DAYS},
         }
         return out
+
+    def tmpl_reset_password_form(self, ln, email, reset_key, msg=''):
+        """Display a form to reset the password."""
+
+        _ = gettext_set_language(ln)
+
+        out = ""
+        out = "<p>%s</p>" % _("Your request is valid. Please set the new "
+                              "desired password in the following form.")
+        if msg:
+            out += """<p class='warning'>%s</p>""" % msg
+        out += """
+<form method="post" action="../youraccount/resetpassword?ln=%(ln)s">
+<input type="hidden" name="k" value="%(reset_key)s" />
+<input type="hidden" name="e" value="%(email)s" />
+<input type="hidden" name="reset" value="1" />
+<table>
+<tr><td align="right"><strong>%(set_password_for)s</strong>:</td><td><em>%(email)s</em></td></tr>
+<tr><td align="right"><strong><label for="password">%(type_new_password)s:</label></strong></td>
+<td><input type="password" name="password" id="password" value="" /></td></tr>
+<tr><td align="right"><strong><label for="password2">%(type_it_again)s:</label></strong></td>
+<td><input type="password" name="password2" id="password2" value="" /></td></tr>
+<tr><td align="center" colspan="2">
+<input class="formbutton" type="submit" name="action" value="%(set_new_password)s" />
+</td></tr>
+</table>
+</form>""" % {
+            'ln': ln,
+            'reset_key': reset_key,
+            'email': email,
+            'set_password_for': _('Set a new password for'),
+            'type_new_password': _('Type the new password'),
+            'type_it_again': _('Type again the new password'),
+            'set_new_password': _('Set the new password')
+        }
+        return out
