@@ -63,6 +63,7 @@ def login(action=''):
                 db.or_(User.nickname == form.nickname.data,
                        User.email == form.nickname.data),
                 User.password == form.password.data)).one()
+
             login_user(user.get_id(), remember_me=form.remember.data)
             flash(_("You are logged in as %s.") % user.nickname, "info")
 
@@ -81,6 +82,9 @@ def login(action=''):
 
         except:
             flash(_("Wrong username/email and password combination."), "error")
+    elif request.method == 'POST':
+        # validation seems to fail with wrong username
+        flash(_("Wrong username/email and password combination."), "error")
 
     return render_template('webaccount_login.html', form=form)
 
