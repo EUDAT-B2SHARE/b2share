@@ -10,6 +10,7 @@ $(document).ready(function() {
     $('#filelist').val(JSON.stringify(filearr));
 
   });
+  $('#domains').hide();
   $('#domains input:radio').addClass('visuallyhidden');
 
   function domain_click_handler() {
@@ -55,6 +56,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         uploader.start();
         $('#uploadfiles').hide();
         $('#stopupload').show();
+        $('#domains').slideDown();
         e.preventDefault();
     });
 
