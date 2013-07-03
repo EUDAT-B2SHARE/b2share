@@ -213,3 +213,7 @@ img.desaturate {
   font-style: italic;
   font-size: 12px;
 }
+
+.hide {
+  display: none;
+}

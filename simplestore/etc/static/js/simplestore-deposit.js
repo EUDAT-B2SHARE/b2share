@@ -56,6 +56,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         uploader.start();
         $('#uploadfiles').hide();
         $('#stopupload').show();
+        $('#domains').removeClass('hide');
         $('#domains').slideDown();
         e.preventDefault();
     });

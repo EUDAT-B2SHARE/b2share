@@ -44,7 +44,7 @@
       <form method="post" action="{{ url_for('.deposit') }}" enctype="multipart/form-data">
         <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
         <input type="hidden" id="filelist" name="filelist" value=""></input>
-        <div id="domains">
+        <div id="domains" class="hide">
 
 
           <div class="row-fluid">
@@ -129,7 +129,7 @@
           </div>
 
           <div class="span2 dep-submit">
-            <button class="btn btn-large disabled" id="submit-deposit">&gt;&gt;&nbsp;Add Metadata</button>
+            <button class="btn btn-large disabled" id="submit-deposit">&gt;&gt;&nbsp;Continue</button>
           </div>
         </div>
 
