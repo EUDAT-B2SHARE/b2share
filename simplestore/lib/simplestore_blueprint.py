@@ -45,6 +45,12 @@ def get_file(sub_id):
     return uph.get_file(request, sub_id)
 
 
+@blueprint.route('/getform/<sub_id>/<domain>', methods=['GET'])
+@blueprint.invenio_authenticated
+def getform(sub_id, domain):
+    return dep.getform(request, sub_id, domain)
+
+
 @blueprint.route('/check_status/<sub_id>/', methods=['GET', 'POST'])
 @blueprint.invenio_authenticated
 def check_status(sub_id):

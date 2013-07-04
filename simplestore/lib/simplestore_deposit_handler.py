@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, current_app
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -71,6 +71,42 @@ def deposit(request):
         return render_template('simplestore-deposit.html',
                                domains=metadata_classes.values(),
                                sub_id=uuid.uuid1().hex)
+
+
+def getform(request, sub_id, domain):
+    sub = Submission(uuid=sub_id)
+
+    current_app.logger.error("Called getform")
+    domain = domain.lower()
+    if domain in metadata_classes:
+        current_app.logger.error("found domain")
+        meta = metadata_classes[domain]()
+        current_app.logger.error("called domain")
+    else:
+        meta = SubmissionMetadata()
+        current_app.logger.error("didn't find domain")
+
+    sub.md = meta
+    current_app.logger.error("got metadata")
+
+    MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
+                          exclude=['submission', 'submission_type'],
+                          field_args=sub.md.field_args,
+                          converter=HTML5ModelConverter())
+    meta_form = MetaForm(request.form, sub.md)
+    #Uncomment the following line if there are errors regarding db tables
+    #not being present. Hacky solution for minute.
+    #db.create_all()
+
+    #   db.session.add(sub)
+    #    db.session.commit()
+
+    current_app.logger.error("about to run template")
+    return render_template(
+        'simplestore-addmeta-table.html',
+        metadata=sub.md,
+        form=meta_form,
+        getattr=getattr)
 
 
 def addmeta(request, sub_id):

@@ -13,12 +13,22 @@ $(document).ready(function() {
   $('#domains').hide();
   $('#domains input:radio').addClass('visuallyhidden');
 
-  function domain_click_handler() {
-    $(this).find('input').prop('checked', true);
-    $('#domains .domain').removeClass('highlight-icon');
-    $('#domains .domain img').addClass('desaturate');
-    $(this).addClass('highlight-icon');
-    $(this).find('img').removeClass('desaturate');
+  function domain_click_handler(e) {
+
+    inputEl = $(this).find('input');
+    if (!inputEl.prop('checked')) {
+
+      inputEl.prop('checked', true);
+      $('#domains .domain').removeClass('highlight-icon');
+      $('#domains .domain img').addClass('desaturate');
+      $(this).addClass('highlight-icon');
+      $(this).find('img').removeClass('desaturate');
+
+      $.get("getform/" + $('#sub_id').val() + "/" + inputEl.val(),
+          function(data) {
+            $('#metaform').html(data);
+          });
+    }
   }
 
   $('#domains .domain').click(domain_click_handler);

@@ -61,7 +61,7 @@
             <div class="row-fluid">
             <div class="span12">
               {% for d in domains if d.kind == 'domain' %}
-              <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
+              <div class="domain">
                 <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
                 {% if d.domain == default_domain %}checked="checked"{% endif %}/>
                 <label for="{{ d.domain }}">
@@ -125,6 +125,11 @@
               </div>
               {% endfor %}
             </div>
+            </div>
+          </div>
+
+          <div class="row-fluid">
+            <div id="metaform" class="span12">
             </div>
           </div>
 
