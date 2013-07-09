@@ -1,36 +1,36 @@
 
-              {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
-              {{ form.csrf_token }}
-              {%- macro meta_field(f) %}
-              <div class="control-group {% if f.errors %}error{% endif %}">
-                {{f.label(class="control-label meta-label")}}
-                <div class="controls">
-                  {{f(**kwargs)|safe}}{%- if f.flags.required -%}&nbsp;*{%- endif %}
+{# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
+{{ form.csrf_token }}
+{%- macro meta_field(f) %}
+<div class="control-group {% if f.errors %}error{% endif %}">
+  {{f.label(class="control-label meta-label")}}
+  <div class="controls">
+    {{f(**kwargs)|safe}}{%- if f.flags.required -%}&nbsp;*{%- endif %}
 
 
-                  {%- if f.errors %}
-                  {%- for error in f.errors %}
-                  <p class="help-block">{{error}}</p>
-                  {%- endfor %}
-                  {%- elif f.description -%}
-                  <p class="help-block">{{f.description|safe}}</p>
-                  {%- endif %}
-                </div>
-              </div>
-              {% endmacro %}
+    {%- if f.errors %}
+      {%- for error in f.errors %}
+        <p class="help-block">{{error}}</p>
+      {%- endfor %}
+    {%- elif f.description -%}
+      <p class="help-block">{{f.description|safe}}</p>
+    {%- endif %}
+  </div>
+</div>
+{% endmacro %}
 
-              {% for f in metadata.basic_field_iter() %}
-                {{ meta_field(getattr(form, f)) }}
-              {% endfor %}
+{% for f in metadata.basic_field_iter() %}
+  {{ meta_field(getattr(form, f)) }}
+{% endfor %}
 
-              <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields">
-                Add more details…
-              </button>
- 
-              <div id="adv-fields" class="collapse"> 
+<button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields">
+  Add more details…
+</button>
 
-              {% for f in metadata.optional_field_iter() %}
-                {{ meta_field(getattr(form, f)) }}
-              {% endfor %}
-              </div>
+<div id="adv-fields" class="collapse"> 
+
+  {% for f in metadata.optional_field_iter() %}
+    {{ meta_field(getattr(form, f)) }}
+  {% endfor %}
+</div>
 

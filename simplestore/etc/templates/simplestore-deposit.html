@@ -46,11 +46,11 @@
         <input type="hidden" id="filelist" name="filelist" value=""></input>
         <div id="domains" class="hide">
 
-      <div class="row">
-        <div class="span12">
-          <hr>
-        </div>
-      </div>
+          <div class="row">
+            <div class="span12">
+              <hr>
+            </div>
+          </div>
 
           <div class="row-fluid">
             <div class="span12">
@@ -58,10 +58,7 @@
            </div>
           </div>
 
-        {% set default_domain = default_domain|default('Generic') -%} 
-
-
-            <div class="row-fluid">
+          <div class="row-fluid">
             <div class="span12">
               {% for d in domains if d.kind == 'domain' %}
               <div class="domain">

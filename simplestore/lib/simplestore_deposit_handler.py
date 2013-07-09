@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, redirect, url_for, flash, current_app, jsonify
+from flask import render_template, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -23,7 +23,6 @@ from invenio.simplestore_model.model import Submission, SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
 from invenio.webuser_flask import current_user
 
-from invenio.webinterface_handler_flask_utils import _
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
 
@@ -42,6 +41,9 @@ def deposit(request, sub_id=None, form=None, metadata=None):
 
 
 def getform(request, sub_id, domain):
+    """
+    Returns a metadata form tailored to the given domain.
+    """
     sub = Submission(uuid=sub_id)
 
     domain = domain.lower()
@@ -59,7 +61,7 @@ def getform(request, sub_id, domain):
     meta_form = MetaForm(request.form, sub.md)
     #Uncomment the following line if there are errors regarding db tables
     #not being present. Hacky solution for minute.
-    #db.create_all()
+    db.create_all()
 
     db.session.add(sub)
     db.session.commit()
@@ -74,19 +76,15 @@ def getform(request, sub_id, domain):
 
 def addmeta(request, sub_id):
     """
-    Add metadata to a submission.
-
-    The form is dependent on the domain chosen at the deposit stage.
+    Checks the submitted metadata form for validity.
+    Returns a new page with success message if valid, otherwise it returns a
+    form with the errors marked.
     """
-
-    current_app.logger.error("Called addmeta")
 
     if sub_id is None:
         return render_template('500.html', message='Submission id not set'), 500
 
     sub = Submission.query.filter_by(uuid=sub_id).first()
-
-    current_app.logger.error("Got sub")
 
     if sub is None:
         return render_template('500.html', message="UUID not found in database"), 500
@@ -95,28 +93,19 @@ def addmeta(request, sub_id):
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 
-    current_app.logger.error("Got files")
     MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
                           field_args=sub.md.field_args,
                           converter=HTML5ModelConverter())
     meta_form = MetaForm(request.form, sub.md)
 
-    current_app.logger.error("Got form")
     if meta_form.validate_on_submit():
-        current_app.logger.error("validated")
         recid, marc = create_marc_and_ingest(request.form, sub.md.domain, sub_id)
-        current_app.logger.error("ingested")
         db.session.delete(sub)
-        current_app.logger.error("deleted")
         return jsonify(valid=True,
                        html=render_template('simplestore-finalise.html',
                                             recid=recid, marc=marc))
-    else:
-        current_app.logger.error(meta_form.errors)
 
-    #return render_template('500.html', message="Unknown error"), 500
-#    return redirect(url_for('.deposit', sub_id=sub_id, form=meta_form, metadata=sub.md))
     return jsonify(valid=False,
                    html=render_template('simplestore-addmeta-table.html',
                                         sub_id=sub_id,

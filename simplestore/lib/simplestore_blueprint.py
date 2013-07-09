@@ -21,7 +21,7 @@ def deposit():
     return dep.deposit(request)
 
 
-@blueprint.route('/addmeta/<sub_id>', methods=['GET', 'POST'])
+@blueprint.route('/addmeta/<sub_id>', methods=['POST'])
 @blueprint.invenio_authenticated
 def addmeta(sub_id):
     return dep.addmeta(request, sub_id)
