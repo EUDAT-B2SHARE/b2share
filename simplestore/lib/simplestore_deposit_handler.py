@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, redirect, url_for, flash, current_app
+from flask import render_template, redirect, url_for, flash, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -33,61 +33,24 @@ class FormWithKey(Form):
     SECRET_KEY = CFG_SITE_SECRET_KEY
 
 
-def deposit(request):
+def deposit(request, sub_id=None, form=None, metadata=None):
     """ Renders the deposit start page """
-    if request.method == 'POST':
-        if not 'sub_id' in request.form:
-            return render_template('500.html', message='Submission id not set'), 500
-
-        sub_id = request.form['sub_id']
-
-        updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
-        if (not os.path.isdir(updir)) or (not os.listdir(updir)):
-            #would probably be better to disable the button in js until
-            #upload complete
-            flash(_("Please upload a file to deposit"), 'error')
-            return render_template('simplestore-deposit.html',
-                                   domains=metadata_classes.values(),
-                                   sub_id=sub_id)
-
-        sub = Submission(uuid=sub_id)
-
-        domain = request.form['domain'].lower()
-        if  domain in metadata_classes:
-            meta = metadata_classes[domain]()
-        else:
-            meta = SubmissionMetadata()
-
-        sub.md = meta
-
-        #Uncomment the following line if there are errors regarding db tables
-        #not being present. Hacky solution for minute.
-        db.create_all()
-
-        db.session.add(sub)
-        db.session.commit()
-        return redirect(url_for('.addmeta', sub_id=sub_id))
-    else:
-        return render_template('simplestore-deposit.html',
-                               domains=metadata_classes.values(),
-                               sub_id=uuid.uuid1().hex)
+    return render_template('simplestore-deposit.html',
+                           url_prefix=url_for('.deposit'),
+                           domains=metadata_classes.values(),
+                           sub_id=uuid.uuid1().hex)
 
 
 def getform(request, sub_id, domain):
     sub = Submission(uuid=sub_id)
 
-    current_app.logger.error("Called getform")
     domain = domain.lower()
     if domain in metadata_classes:
-        current_app.logger.error("found domain")
         meta = metadata_classes[domain]()
-        current_app.logger.error("called domain")
     else:
         meta = SubmissionMetadata()
-        current_app.logger.error("didn't find domain")
 
     sub.md = meta
-    current_app.logger.error("got metadata")
 
     MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
@@ -98,12 +61,12 @@ def getform(request, sub_id, domain):
     #not being present. Hacky solution for minute.
     #db.create_all()
 
-    #   db.session.add(sub)
-    #    db.session.commit()
+    db.session.add(sub)
+    db.session.commit()
 
-    current_app.logger.error("about to run template")
     return render_template(
         'simplestore-addmeta-table.html',
+        sub_id=sub_id,
         metadata=sub.md,
         form=meta_form,
         getattr=getattr)
@@ -116,12 +79,14 @@ def addmeta(request, sub_id):
     The form is dependent on the domain chosen at the deposit stage.
     """
 
-    #current_app.logger.error("Called addmeta")
+    current_app.logger.error("Called addmeta")
 
     if sub_id is None:
         return render_template('500.html', message='Submission id not set'), 500
 
     sub = Submission.query.filter_by(uuid=sub_id).first()
+
+    current_app.logger.error("Got sub")
 
     if sub is None:
         return render_template('500.html', message="UUID not found in database"), 500
@@ -130,32 +95,37 @@ def addmeta(request, sub_id):
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 
-    files = os.listdir(updir)
-
+    current_app.logger.error("Got files")
     MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
                           field_args=sub.md.field_args,
                           converter=HTML5ModelConverter())
     meta_form = MetaForm(request.form, sub.md)
 
+    current_app.logger.error("Got form")
     if meta_form.validate_on_submit():
-        recid, marc = create_marc_and_ingest(request.form, sub_id)
+        current_app.logger.error("validated")
+        recid, marc = create_marc_and_ingest(request.form, sub.md.domain, sub_id)
+        current_app.logger.error("ingested")
         db.session.delete(sub)
-        return render_template('simplestore-finalise.html',
-                               recid=recid, marc=marc)
-    #else:
-    #   print meta_form.errors
+        current_app.logger.error("deleted")
+        return jsonify(valid=True,
+                       html=render_template('simplestore-finalise.html',
+                                            recid=recid, marc=marc))
+    else:
+        current_app.logger.error(meta_form.errors)
 
-    return render_template(
-        'simplestore-addmeta.html',
-        metadata=sub.md,
-        fileret=files,
-        form=meta_form,
-        sub_id=sub.uuid,
-        getattr=getattr)
+    #return render_template('500.html', message="Unknown error"), 500
+#    return redirect(url_for('.deposit', sub_id=sub_id, form=meta_form, metadata=sub.md))
+    return jsonify(valid=False,
+                   html=render_template('simplestore-addmeta-table.html',
+                                        sub_id=sub_id,
+                                        metadata=sub.md,
+                                        form=meta_form,
+                                        getattr=getattr))
 
 
-def create_marc_and_ingest(form, sub_id):
+def create_marc_and_ingest(form, domain, sub_id):
     """
     Generates MARC data used bu Invenio from the filled out form, then
     submits it to the Invenio system.
@@ -165,10 +135,14 @@ def create_marc_and_ingest(form, sub_id):
     # just do this by hand to get something working for demo
     # this must be automated
     json_reader['title.title'] = form['title']
+    current_app.logger.error("got title")
     json_reader['authors[0].full_name'] = form['creator']
+    current_app.logger.error("got creator")
     json_reader['imprint.publisher_name'] = form['publisher']
-    json_reader['collection.primary'] = form['domain']
+    current_app.logger.error("got pub")
+    json_reader['collection.primary'] = domain
 
+    current_app.logger.error("got data")
     marc = json_reader.legacy_export_as_marc()
     rec, status, errs = create_record(marc)
 

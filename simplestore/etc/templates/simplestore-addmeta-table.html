@@ -1,17 +1,6 @@
-        
-        <form class="form form-horizontal meta-form" method="post" action="{{ url_for('.addmeta', sub_id=sub_id) }}">
-          <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
-          {{ form.csrf_token }}
-
-
-          <div class="row-fluid">
-          <div id="meta" class="span12">
-            <h1><span class="step-number">3.</span> Add some basic details</h1>
-
-            <div id="meta-fields">
-
 
               {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
+              {{ form.csrf_token }}
               {%- macro meta_field(f) %}
               <div class="control-group {% if f.errors %}error{% endif %}">
                 {{f.label(class="control-label meta-label")}}
@@ -45,11 +34,3 @@
               {% endfor %}
               </div>
 
-              <div class="form-actions">
-                <button name="action_save" type="submit" class="btn btn-large btn-primary">I'm Done -<br>Submit the Item</button>
-              </div>
-              <div class="footnote">* indicates required field</div> 
-            </div>
-          </div>
-          </div>
-        </form>

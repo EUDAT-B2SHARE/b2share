@@ -10,8 +10,28 @@ $(document).ready(function() {
     $('#filelist').val(JSON.stringify(filearr));
 
   });
-  $('#domains').hide();
+  if (!$("#filled") == "True") {
+    $('#domains').hide();
+  }
   $('#domains input:radio').addClass('visuallyhidden');
+
+  //Going to need to fix URL and handle success case
+  function deposit_click_handler(e) {
+    e.preventDefault();
+    console.log("Calling post");
+    $.post("addmeta/" + $('#sub_id').val(), $("#metaform_form").serialize(),
+      function(data) {
+        if (data.valid) {
+          var newDoc = document.open("text/html", "replace");
+          newDoc.write(data.html);
+          newDoc.close();
+
+        } else {
+          $('#meta-fields').html(data.html);
+        }
+
+      }, "json");
+  }
 
   function domain_click_handler(e) {
 
@@ -26,8 +46,12 @@ $(document).ready(function() {
 
       $.get("getform/" + $('#sub_id').val() + "/" + inputEl.val(),
           function(data) {
-            $('#metaform').html(data);
+            $('#meta-fields').html(data);
           });
+      
+      $('#metaform').hide();
+      $('#metaform').removeClass('hide');
+      $('#metaform').slideDown();
     }
   }
 
@@ -36,6 +60,8 @@ $(document).ready(function() {
   //(misclicks were common before e.g. when mouse went out of focus)
   $('#domains .domain').mousedown(domain_click_handler);
   $('#domains .domain').select(domain_click_handler);
+  //$('#metaform_form').submit(deposit_click_handler);
+  $('#deposit').click(deposit_click_handler);
 
 });
 

@@ -15,7 +15,7 @@ blueprint = InvenioBlueprint('simplestore', __name__,
                                           'simplestore.deposit')])
 
 
-@blueprint.route('/', methods=['GET', 'POST'])
+@blueprint.route('/', methods=['GET'])
 @blueprint.invenio_authenticated
 def deposit():
     return dep.deposit(request)
