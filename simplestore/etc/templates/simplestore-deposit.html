@@ -44,8 +44,7 @@
         <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
         <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input> 
         <input type="hidden" id="filelist" name="filelist" value=""></input>
-        <input type="hidden" id="filled" name="filled" value="{% if metadata %}True{% else %}False{% endif %}"></input>
-        <div id="domains" {% if not metadata %}class="hide"{% endif %}>
+        <div id="domains" class="hide">
 
       <div class="row">
         <div class="span12">
@@ -130,7 +129,7 @@
             </div>
           </div>
 
-          <div id="metaform" {% if not metadata %}class="hide" {% endif %}>
+          <div id="metaform" class="hide">
             <div class="row">
               <div class="span12">
                 <hr>
@@ -148,7 +147,7 @@
                   </div>
 
                   <div class="form-actions">
-                    <h1><span class="step-number">4. </span><button name="action_save" class="btn btn-large btn-primary" type="submit" id="deposit">Deposit</button></h1>
+                    <h1><span class="step-number">4. </span><button name="action_save" class="btn btn-large disabled" id="deposit">Deposit</button></h1>
                   </div>
                   <div class="footnote">* indicates required field</div> 
                 </div>

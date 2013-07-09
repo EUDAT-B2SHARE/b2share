@@ -1,38 +1,35 @@
 $(document).ready(function() {
-  $('#submit-deposit').click(function(evt) {
 
-    var filearr = [];
-    $(".uploaded a").each(function() { 
-      filearr.push($(this).attr('title'));
-    });
-
-    //Note this requires IE8+
-    $('#filelist').val(JSON.stringify(filearr));
-
-  });
-  if (!$("#filled") == "True") {
-    $('#domains').hide();
-  }
   $('#domains input:radio').addClass('visuallyhidden');
 
-  //Going to need to fix URL and handle success case
+  /**
+   * Handle clicking on deposit button.
+   *
+   * Either return success page or errors with form.
+   */
   function deposit_click_handler(e) {
     e.preventDefault();
-    console.log("Calling post");
     $.post("addmeta/" + $('#sub_id').val(), $("#metaform_form").serialize(),
       function(data) {
         if (data.valid) {
+          //Load new page with success message
           var newDoc = document.open("text/html", "replace");
           newDoc.write(data.html);
           newDoc.close();
 
         } else {
+          //Just replace metadata form with errors
           $('#meta-fields').html(data.html);
         }
 
       }, "json");
   }
 
+  /**
+   * Handle clicking on domain.
+   *
+   * Should get appropriate metadata form.
+   */
   function domain_click_handler(e) {
 
     inputEl = $(this).find('input');
@@ -49,9 +46,11 @@ $(document).ready(function() {
             $('#meta-fields').html(data);
           });
       
-      $('#metaform').hide();
-      $('#metaform').removeClass('hide');
-      $('#metaform').slideDown();
+      var form = $('#metaform');
+      form.hide();
+      form.removeClass('hide');
+      form.slideDown();
+      $('html,body').animate({scrollTop: form.offset().top}, "slow");
     }
   }
 
@@ -60,7 +59,7 @@ $(document).ready(function() {
   //(misclicks were common before e.g. when mouse went out of focus)
   $('#domains .domain').mousedown(domain_click_handler);
   $('#domains .domain').select(domain_click_handler);
-  //$('#metaform_form').submit(deposit_click_handler);
+
   $('#deposit').click(deposit_click_handler);
 
 });
@@ -89,12 +88,14 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
     uploader.init();
 
     $('#uploadfiles').click(function(e) {
-        uploader.start();
-        $('#uploadfiles').hide();
-        $('#stopupload').show();
-        $('#domains').removeClass('hide');
-        $('#domains').slideDown();
-        e.preventDefault();
+      uploader.start();
+
+      //Show the domain selection stuff
+      $('#uploadfiles').hide();
+      $('#stopupload').show();
+      $('#domains').removeClass('hide');
+      $('#domains').slideDown();
+      e.preventDefault();
     });
 
     $('#stopupload').click(function(d){
@@ -126,8 +127,8 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
             $('#uploadfiles').addClass("disabled");
             $('#file-table').hide('slow');
 
-            $('#submit-deposit').addClass('disabled');
-            $('#submit-deposit').removeClass('btn-primary');
+            $('#deposit').addClass('disabled');
+            $('#deposit').removeClass('btn-primary');
         }
     });
 
@@ -172,7 +173,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         $('#uploadfiles').addClass('disabled');
         $('#uploadfiles').show();
 
-        $('#submit-deposit').removeClass('disabled');
-        $('#submit-deposit').addClass('btn-primary');
+        $('#deposit').removeClass('disabled');
+        $('#deposit').addClass('btn-primary');
     });
 }
