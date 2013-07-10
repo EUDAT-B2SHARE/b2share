@@ -103,7 +103,6 @@ def addmeta(request, sub_id):
                                         form=meta_form,
                                         getattr=getattr))
 
-
 def create_marc_and_ingest(form, domain, sub_id):
     """
     Generates MARC data used bu Invenio from the filled out form, then

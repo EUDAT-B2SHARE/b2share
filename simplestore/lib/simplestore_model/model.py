@@ -15,9 +15,9 @@ class SubmissionMetadata(db.Model):
 
     # id seems to be needed to maintain link to parent submission
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.Text(), nullable=False, default="None")
+    description = db.Column(db.Text(), nullable=False)
     creator = db.Column(db.String(128))
-    title = db.Column(db.String(256), nullable=False, default="None")
+    title = db.Column(db.String(256), nullable=False)
     publisher = db.Column(db.String(128))
     publication_date = db.Column('publication_year', db.Date(),
                                  default=date.today())
