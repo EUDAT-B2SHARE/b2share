@@ -52,17 +52,13 @@ def deposit(request):
 
         sub = Submission(uuid=sub_id)
 
-        domain = request.form['domain'].lower()
-        if  domain in metadata_classes:
-            meta = metadata_classes[domain]()
-        else:
-            meta = SubmissionMetadata()
+        sub.domain = request.form['domain'].lower()
 
-        sub.md = meta
-
-        #Uncomment the following line if there are errors regarding db tables
-        #not being present. Hacky solution for minute.
-        db.create_all()
+        #Following line creates Submission table if it doesn't exist
+        #Should be moved to some one time set-up script for efficiency
+        #Note that we only want the Submission table but all the metadata
+        #tables are created. I can't figure out how to avoid this currently.
+        #db.create_all()
 
         db.session.add(sub)
         db.session.commit()
@@ -96,23 +92,26 @@ def addmeta(request, sub_id):
 
     files = os.listdir(updir)
 
-    MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
+    if sub.domain in metadata_classes:
+        meta = metadata_classes[sub.domain]()
+    else:
+        meta = SubmissionMetadata()
+
+    MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
-                          field_args=sub.md.field_args,
+                          field_args=meta.field_args,
                           converter=HTML5ModelConverter())
-    meta_form = MetaForm(request.form, sub.md)
+    meta_form = MetaForm(request.form, meta)
 
     if meta_form.validate_on_submit():
         recid, marc = create_marc_and_ingest(request.form, sub_id)
         db.session.delete(sub)
         return render_template('simplestore-finalise.html',
                                recid=recid, marc=marc)
-    #else:
-    #   print meta_form.errors
 
     return render_template(
         'simplestore-addmeta.html',
-        metadata=sub.md,
+        metadata=meta,
         fileret=files,
         form=meta_form,
         sub_id=sub.uuid,
