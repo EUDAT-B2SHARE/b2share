@@ -9,14 +9,12 @@ class Submission(db.Model):
     __tablename__ = 'submission'
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.CHAR(32), unique=True, nullable=False)
-    content = db.Column(db.LargeBinary())
     # metadata name is reserved, so using md
     md = db.relationship('SubmissionMetadata', backref='submission',
                          cascade="all, delete, delete-orphan", uselist=False)
 
-    def __init__(self, uuid=None, content=None):
+    def __init__(self, uuid=None):
         self.uuid = uuid if uuid is not None else uuid4().hex
-        self.content = content
 
     def __repr__(self):
         return '<Submission %s>' % self.uuid
