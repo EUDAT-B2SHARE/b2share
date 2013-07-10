@@ -58,6 +58,7 @@
            </div>
           </div>
 
+            <form class="form form-horizontal meta-form" method="post" id="metaform_form">
           <div class="row-fluid">
             <div class="span12">
               {% for d in domains if d.kind == 'domain' %}
@@ -132,7 +133,6 @@
                 <hr>
               </div>
             </div>
-            <form class="form form-horizontal meta-form" method="post" id="metaform_form">
               <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
 
               <div class="row-fluid">

@@ -10,7 +10,6 @@ from flask import render_template, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
-from invenio.sqlalchemyutils import db
 from invenio.bibtask import task_low_level_submission
 from invenio.bibfield_jsonreader import JsonReader
 from invenio.config import CFG_TMPSHAREDDIR
@@ -19,7 +18,7 @@ from invenio.bibrecord import record_add_field, record_xml_output, create_record
 
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
-from invenio.simplestore_model.model import Submission, SubmissionMetadata
+from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
 from invenio.webuser_flask import current_user
 
@@ -44,7 +43,6 @@ def getform(request, sub_id, domain):
     """
     Returns a metadata form tailored to the given domain.
     """
-    sub = Submission(uuid=sub_id)
 
     domain = domain.lower()
     if domain in metadata_classes:
@@ -52,24 +50,16 @@ def getform(request, sub_id, domain):
     else:
         meta = SubmissionMetadata()
 
-    sub.md = meta
-
-    MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
+    MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
-                          field_args=sub.md.field_args,
+                          field_args=meta.field_args,
                           converter=HTML5ModelConverter())
-    meta_form = MetaForm(request.form, sub.md)
-    #Uncomment the following line if there are errors regarding db tables
-    #not being present. Hacky solution for minute.
-    db.create_all()
-
-    db.session.add(sub)
-    db.session.commit()
+    meta_form = MetaForm(request.form, meta)
 
     return render_template(
         'simplestore-addmeta-table.html',
         sub_id=sub_id,
-        metadata=sub.md,
+        metadata=meta,
         form=meta_form,
         getattr=getattr)
 
@@ -84,24 +74,24 @@ def addmeta(request, sub_id):
     if sub_id is None:
         return render_template('500.html', message='Submission id not set'), 500
 
-    sub = Submission.query.filter_by(uuid=sub_id).first()
-
-    if sub is None:
-        return render_template('500.html', message="UUID not found in database"), 500
-
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 
-    MetaForm = model_form(sub.md.__class__, base_class=FormWithKey,
+    domain = request.form['domain'].lower()
+    if domain in metadata_classes:
+        meta = metadata_classes[domain]()
+    else:
+        meta = SubmissionMetadata()
+
+    MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
-                          field_args=sub.md.field_args,
+                          field_args=meta.field_args,
                           converter=HTML5ModelConverter())
-    meta_form = MetaForm(request.form, sub.md)
+    meta_form = MetaForm(request.form, meta)
 
     if meta_form.validate_on_submit():
-        recid, marc = create_marc_and_ingest(request.form, sub.md.domain, sub_id)
-        db.session.delete(sub)
+        recid, marc = create_marc_and_ingest(request.form, meta.domain, sub_id)
         return jsonify(valid=True,
                        html=render_template('simplestore-finalise.html',
                                             recid=recid, marc=marc))
@@ -109,7 +99,7 @@ def addmeta(request, sub_id):
     return jsonify(valid=False,
                    html=render_template('simplestore-addmeta-table.html',
                                         sub_id=sub_id,
-                                        metadata=sub.md,
+                                        metadata=meta,
                                         form=meta_form,
                                         getattr=getattr))
 

@@ -1,25 +1,6 @@
-from uuid import uuid4
-
 from invenio.sqlalchemyutils import db
 from datetime import date
 import babel
-
-
-class Submission(db.Model):
-    __tablename__ = 'submission'
-    id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.CHAR(32), unique=True, nullable=False)
-    content = db.Column(db.LargeBinary())
-    # metadata name is reserved, so using md
-    md = db.relationship('SubmissionMetadata', backref='submission',
-                         cascade="all, delete, delete-orphan", uselist=False)
-
-    def __init__(self, uuid=None, content=None):
-        self.uuid = uuid if uuid is not None else uuid4().hex
-        self.content = content
-
-    def __repr__(self):
-        return '<Submission %s>' % self.uuid
 
 
 class SubmissionMetadata(db.Model):
@@ -30,20 +11,18 @@ class SubmissionMetadata(db.Model):
     domain = 'Generic'
     icon = 'icon-question-sign'
     kind = 'domain'
-    submission_id = db.Column(db.Integer, db.ForeignKey('submission.id'))
     field_args = {}
 
     # id seems to be needed to maintain link to parent submission
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.Text(), nullable=False, default="None")
+    description = db.Column(db.Text(), nullable=False)
     creator = db.Column(db.String(128))
-    title = db.Column(db.String(256), nullable=False, default="None")
+    title = db.Column(db.String(256), nullable=False)
     publisher = db.Column(db.String(128))
     publication_date = db.Column('publication_year', db.Date(),
                                  default=date.today())
 
     def basic_field_iter(self):
-        #why won't submission_id work?
         for f in ['title', 'description', 'creator', 'publisher',
                   'publication_date']:
             yield f
