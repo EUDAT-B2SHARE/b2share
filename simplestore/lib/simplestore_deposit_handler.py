@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, url_for, current_app, jsonify
+from flask import render_template, url_for, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -113,18 +113,19 @@ def create_marc_and_ingest(form, domain, sub_id):
     # just do this by hand to get something working for demo
     # this must be automated
     json_reader['title.title'] = form['title']
-    current_app.logger.error("got title")
     json_reader['authors[0].full_name'] = form['creator']
-    current_app.logger.error("got creator")
     json_reader['imprint.publisher_name'] = form['publisher']
-    current_app.logger.error("got pub")
     json_reader['collection.primary'] = domain
 
-    current_app.logger.error("got data")
     marc = json_reader.legacy_export_as_marc()
     rec, status, errs = create_record(marc)
 
-    fft_status = "firerole: allow any\n"  # Only open access for minute
+    if 'open_access' in form:
+        fft_status = "firerole: allow any\n"  # Only open access for minute
+    else:
+        fft_status = "firerole: allow email {}\ndeny all\n".format(
+            current_user['email'])
+
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = os.listdir(upload_dir)
     record_add_field(rec, '856', ind1='0', subfields=[('f', current_user['email'])])
