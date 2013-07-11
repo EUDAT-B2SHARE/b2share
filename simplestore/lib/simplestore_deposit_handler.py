@@ -135,7 +135,12 @@ def create_marc_and_ingest(form, sub_id):
     marc = json_reader.legacy_export_as_marc()
     rec, status, errs = create_record(marc)
 
-    fft_status = "firerole: allow any\n"  # Only open access for minute
+    if 'open_access' in form:
+        fft_status = "firerole: allow any\n"  # Only open access for minute
+    else:
+        fft_status = "firerole: allow email {}\ndeny all\n".format(
+            current_user['email'])
+
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = os.listdir(upload_dir)
     record_add_field(rec, '856', ind1='0', subfields=[('f', current_user['email'])])
