@@ -18,13 +18,15 @@ class SubmissionMetadata(db.Model):
     description = db.Column(db.Text(), nullable=False)
     creator = db.Column(db.String(128))
     title = db.Column(db.String(256), nullable=False)
+    open_access = db.Column(db.Boolean())
     publisher = db.Column(db.String(128))
     publication_date = db.Column('publication_year', db.Date(),
                                  default=date.today())
 
     def basic_field_iter(self):
-        for f in ['title', 'description', 'creator', 'publisher',
-                  'publication_date']:
+        #why won't submission_id work?
+        for f in ['title', 'description', 'creator', 'open_access',
+                  'publisher', 'publication_date']:
             yield f
 
     # optional
