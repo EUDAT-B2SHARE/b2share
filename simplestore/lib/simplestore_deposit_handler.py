@@ -121,9 +121,9 @@ def create_marc_and_ingest(form, domain, sub_id):
     rec, status, errs = create_record(marc)
 
     if 'open_access' in form:
-        fft_status = 'firerole: allow any\n'  # Only open access for minute
+        fft_status = 'firerole: allow any\n'
     else:
-        fft_status = 'firerole: allow email "{0}"\ndeny all\n'.format(
+        fft_status = 'firerole: allow email "{0}"\nfirerole: deny all\n'.format(
             current_user['email'])
 
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
