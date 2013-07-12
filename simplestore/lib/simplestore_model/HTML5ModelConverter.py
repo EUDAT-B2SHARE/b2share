@@ -2,7 +2,26 @@ from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
-from wtforms.widgets import Input
+from wtforms import BooleanField
+from wtforms.widgets import Input, HTMLString
+
+
+class SwitchInput(Input):
+    input_type = "checkbox"
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+        return HTMLString(
+            '<div class="switch" data-on="success" data-off="danger">'
+            '<input checked="checked" %s></div>'
+            % self.html_params(name=field.name, **kwargs))
+
+
+class SwitchField(BooleanField):
+    widget = SwitchInput()
 
 
 # Not sure why DateTime isn't in flask_wtf
@@ -43,3 +62,7 @@ class HTML5ModelConverter(ModelConverter):
     @converts('Date')
     def conv_Date(self, field_args, **extra):
         return DateField(**field_args)
+
+    @converts('Boolean')
+    def conv_Boolean(self, field_args, **extra):
+        return SwitchField(**field_args)
