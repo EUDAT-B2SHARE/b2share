@@ -13,19 +13,20 @@ class SubmissionMetadata(db.Model):
     kind = 'domain'
     field_args = {}
 
-    # id seems to be needed to maintain link to parent submission
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.Text(), nullable=False)
     creator = db.Column(db.String(128))
     title = db.Column(db.String(256), nullable=False)
     open_access = db.Column(db.Boolean())
+
+    licence = db.Column(db.String(128))  # note we set licences in __init__
     publisher = db.Column(db.String(128))
     publication_date = db.Column('publication_year', db.Date(),
                                  default=date.today())
 
     def basic_field_iter(self):
         #why won't submission_id work?
-        for f in ['title', 'description', 'creator', 'open_access',
+        for f in ['title', 'description', 'creator', 'open_access', 'licence',
                   'publisher', 'publication_date']:
             yield f
 
@@ -69,6 +70,9 @@ class SubmissionMetadata(db.Model):
         self.title = title
         self.publisher = publisher
         self.publication_year = publication_year
+        self.field_args['licence'] = {
+            'data_provide': 'typeahead',
+            'data_source': '["GPL","Apache v2","Commercial", "Other"]'}
 
 
 def _create_metadata_class(cfg):

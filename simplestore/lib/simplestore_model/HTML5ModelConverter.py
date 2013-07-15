@@ -2,7 +2,7 @@ from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
-from wtforms import BooleanField
+from wtforms import BooleanField, StringField
 from wtforms.widgets import Input, HTMLString
 
 
@@ -37,6 +37,32 @@ class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
 
 
+class TypeAheadStringInput(Input):
+    input_type = "text"
+
+    def __call__(self, field, data_provide="", data_source="", **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+
+        return HTMLString(
+            '<input data-provide="{0}" data-source=\'{1}\' {2}>'.format(
+            field.data_provide, field.data_source, self.html_params(name=field.name, **kwargs)))
+
+
+class TypeAheadStringField(StringField):
+
+    widget = TypeAheadStringInput()
+    data_provide = ""
+    data_source = ""
+
+    def __init__(self, data_provide="", data_source="", **kwargs):
+        self.data_provide = data_provide
+        self.data_source = data_source
+        super(TypeAheadStringField, self).__init__(**kwargs)
+
+
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
@@ -66,3 +92,10 @@ class HTML5ModelConverter(ModelConverter):
     @converts('Boolean')
     def conv_Boolean(self, field_args, **extra):
         return SwitchField(**field_args)
+
+    @converts('String')
+    def conv_String(self, field_args, **extra):
+        if 'data_provide' in field_args:
+            return TypeAheadStringField(**field_args)
+        else:
+            return StringField(**field_args)
