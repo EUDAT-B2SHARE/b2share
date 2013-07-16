@@ -138,6 +138,18 @@ def create_marc_and_ingest(form, domain, sub_id):
 
     recid = run_sql("INSERT INTO bibrec(creation_date, modification_date) values(NOW(), NOW())")
     record_add_field(rec, '001', controlfield_value=str(recid))
+    record_add_field(rec, '520', subfields=[('a', form['description'])])
+    if form['publication_date']:
+        record_add_field(rec, '260', subfields=[('c', form['publication_date'])])
+
+    if 'open_access' in form:
+        record_add_field(rec, '542', subfields=[('l', 'open')])
+    else:
+        record_add_field(rec, '542', subfields=[('l', 'restricted')])
+
+    if form['licence']:
+        record_add_field(rec, '540', subfields=[('a', form['licence'])])
+
     marc2 = record_xml_output(rec)
 
     tmp_file_fd, tmp_file_name = mkstemp(suffix='.marcxml',
