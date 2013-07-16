@@ -47,7 +47,7 @@ class TypeAheadStringInput(Input):
             kwargs['value'] = field._value()
 
         return HTMLString(
-            '<input data-provide="{0}" data-source=\'{1}\' {2}>'.format(
+            '<input autocomplete="off" data-provide="{0}" data-source=\'{1}\' {2}>'.format(
             field.data_provide, field.data_source, self.html_params(name=field.name, **kwargs)))
 
 
