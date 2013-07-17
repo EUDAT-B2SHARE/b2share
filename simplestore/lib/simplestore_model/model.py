@@ -46,23 +46,16 @@ class SubmissionMetadata(db.Model):
             yield f
 
     # optional
-    subject = db.Column(db.String(256))
-    contributor = db.Column(db.String(256))
-    date = db.Column(db.Date())
+    keywords = db.Column(db.String(256))  # split on ,
+    contributors = db.Column(db.String(256))  # split on ;
     language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
-    related_identifier = db.Column(db.String(256))
-    size = db.Column(db.String(256))
-    format = db.Column(db.String(256))  # file extension or MIME
     version = db.Column(db.Numeric(precision=6))
-    rights = db.Column(db.String(256))  # not sure how to serialize rights
 
     def optional_field_iter(self):
-        for f in ['subject', 'contributor', 'date', 'language',
-                  'resource_type', 'alternate_identifier',
-                  'related_identifier', 'size', 'format',
-                  'version', 'rights']:
+        for f in ['keywords', 'contributors', 'language', 'resource_type',
+                  'alternate_identifier', 'version']:
             yield f
 
     # administrative metadata
