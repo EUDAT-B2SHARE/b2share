@@ -43,6 +43,30 @@ def add_basic_fields(rec, form, email):
 
     record_add_field(rec, '520', subfields=[('a', form['description'])])
 
+    if form['keywords']:
+        for kw in form['keywords'].split(','):
+            record_add_field(rec, '653',
+                             ind1='1',
+                             subfields=[('a', kw.strip())])
+
+    if form['contributors']:
+        for kw in form['contributors'].split(';'):
+            record_add_field(rec, '700', subfields=[('a', kw.strip())])
+
+    if form['language']:
+        record_add_field(rec, '546', subfields=[('a', form['language'])])
+
+    # copying zenodo here, but I don't think 980 is the right MARC field
+    if form['resource_type']:
+        record_add_field(rec, '980', subfields=[('a', form['resource_type'])])
+
+    if form['alternate_identifier']:
+        record_add_field(rec, '024',
+                         subfields=[('a', form['alternate_identifier'])])
+
+    if form['version']:
+        record_add_field(rec, '250', subfields=[('a', form['version'])])
+
 
 def create_recid():
     """
