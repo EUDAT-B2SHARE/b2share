@@ -11,18 +11,17 @@ from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
 from invenio.bibtask import task_low_level_submission
-from invenio.bibfield_jsonreader import JsonReader
 from invenio.config import CFG_TMPSHAREDDIR
-from invenio.dbquery import run_sql
-from invenio.bibrecord import record_add_field, record_xml_output, create_record
 
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
+import invenio.simplestore_marc_handler as mh
 from invenio.webuser_flask import current_user
 
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
+from invenio.webinterface_handler_flask_utils import _
 
 
 # Needed to avoid errors in Form Generation
@@ -91,7 +90,10 @@ def addmeta(request, sub_id):
     meta_form = MetaForm(request.form, meta)
 
     if meta_form.validate_on_submit():
-        recid, marc = create_marc_and_ingest(request.form, meta.domain, sub_id)
+        recid, marc = mh.create_marc(
+            request.form, sub_id, current_user['email'])
+        tmp_file = write_marc_to_temp_file(marc)
+        task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
         return jsonify(valid=True,
                        html=render_template('simplestore-finalise.html',
                                             recid=recid, marc=marc))
@@ -103,61 +105,17 @@ def addmeta(request, sub_id):
                                         form=meta_form,
                                         getattr=getattr))
 
-def create_marc_and_ingest(form, domain, sub_id):
+def write_marc_to_temp_file(marc):
     """
-    Generates MARC data used bu Invenio from the filled out form, then
-    submits it to the Invenio system.
+    Writes out the MARCXML to a file.
     """
+    tmp_file_fd, tmp_file_name = mkstemp(
+        suffix='.marcxml',
+        prefix="webdeposit_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
+        dir=CFG_TMPSHAREDDIR)
 
-    json_reader = JsonReader()
-    # just do this by hand to get something working for demo
-    # this must be automated
-    json_reader['title.title'] = form['title']
-    json_reader['authors[0].full_name'] = form['creator']
-    json_reader['imprint.publisher_name'] = form['publisher']
-    json_reader['collection.primary'] = domain
-
-    marc = json_reader.legacy_export_as_marc()
-    rec, status, errs = create_record(marc)
-
-    if 'open_access' in form:
-        fft_status = 'firerole: allow any\n'
-    else:
-        fft_status = 'firerole: allow email "{0}"\nfirerole: deny all\n'.format(
-            current_user['email'])
-
-    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
-    files = os.listdir(upload_dir)
-    record_add_field(rec, '856', ind1='0', subfields=[('f', current_user['email'])])
-    for f in files:
-        record_add_field(rec, 'FFT',
-                         subfields=[('a', os.path.join(upload_dir, f)),
-                         #('d', 'some description') # TODO
-                         #('t', 'Type'), # TODO
-                         ('r', fft_status)])
-
-    recid = run_sql("INSERT INTO bibrec(creation_date, modification_date) values(NOW(), NOW())")
-    record_add_field(rec, '001', controlfield_value=str(recid))
-    record_add_field(rec, '520', subfields=[('a', form['description'])])
-    if form['publication_date']:
-        record_add_field(rec, '260', subfields=[('c', form['publication_date'])])
-
-    if 'open_access' in form:
-        record_add_field(rec, '542', subfields=[('l', 'open')])
-    else:
-        record_add_field(rec, '542', subfields=[('l', 'restricted')])
-
-    if form['licence']:
-        record_add_field(rec, '540', subfields=[('a', form['licence'])])
-
-    marc2 = record_xml_output(rec)
-
-    tmp_file_fd, tmp_file_name = mkstemp(suffix='.marcxml',
-                                         prefix="webdeposit_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
-                                         dir=CFG_TMPSHAREDDIR)
-    os.write(tmp_file_fd, marc2)
+    os.write(tmp_file_fd, marc)
     os.close(tmp_file_fd)
     os.chmod(tmp_file_name, 0644)
 
-    task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file_name)
-    return recid, marc
+    return tmp_file_name
