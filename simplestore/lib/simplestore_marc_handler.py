@@ -1,7 +1,9 @@
 import os
+from itertools import chain
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
+from invenio.simplestore_model.model import SubmissionMetadata
 
 
 def add_basic_fields(rec, form, email):
@@ -95,6 +97,26 @@ def add_file_info(rec, form, email, sub_id):
                          ('r', fft_status)])
 
 
+def add_domain_fields(rec, form):
+    """
+    Adds a domain specific fields. These are just added as name value pairs
+    to field 690.
+    """
+
+    # At the moment we just assume any field *not* from SubmissionMetadata is
+    # an extra field. There's probably a better way to do this.
+
+    special_fields = ['files', 'domain', 'sub_id', 'csrf_token', 'action_save']
+    sm = SubmissionMetadata()
+    ignore_fields = chain(sm.basic_field_iter(),
+                          sm.optional_field_iter(),
+                          special_fields)
+
+    for k in (set(form.keys()) - set(ignore_fields)):
+        if form[k]:
+            record_add_field(rec, '690', subfields=[('a', k), ('b', form[k])])
+
+
 def create_marc(form, sub_id, email):
     """
     Generates MARC data used by Invenio from the filled out form, then
@@ -105,6 +127,7 @@ def create_marc(form, sub_id, email):
     record_add_field(rec, '001', controlfield_value=str(recid))
 
     add_basic_fields(rec, form, email)
+    add_domain_fields(rec, form)
     add_file_info(rec, form, email, sub_id)
 
     marc = record_xml_output(rec)
