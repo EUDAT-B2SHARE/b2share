@@ -37,6 +37,23 @@ class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
 
 
+class DecimalInput(Input):
+    input_type = "number"
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+        return HTMLString(
+            '<input step="any" %s>'
+            % self.html_params(name=field.name, **kwargs))
+
+
+class SSDecimalField(DecimalField):
+    widget = DecimalInput()
+
+
 class TypeAheadStringInput(Input):
     input_type = "text"
 
@@ -79,7 +96,7 @@ class HTML5ModelConverter(ModelConverter):
         places = getattr(column.type, 'scale', 2)
         if places is not None:
             field_args['places'] = places
-        return DecimalField(**field_args)
+        return SSDecimalField(**field_args)
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
