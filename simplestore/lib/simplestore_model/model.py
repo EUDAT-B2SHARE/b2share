@@ -51,7 +51,7 @@ class SubmissionMetadata(db.Model):
     language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
-    version = db.Column(db.Numeric(precision=6))
+    version = db.Column(db.String(128))
 
     def optional_field_iter(self):
         for f in ['keywords', 'contributors', 'language', 'resource_type',
