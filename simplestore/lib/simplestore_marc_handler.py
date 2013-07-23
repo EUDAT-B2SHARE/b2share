@@ -3,7 +3,9 @@ from itertools import chain
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
+from invenio.config import CFG_SITE_SECURE_URL
 from invenio.simplestore_model.model import SubmissionMetadata
+from invenio.simplestore_epic import createHandle
 
 
 def add_basic_fields(rec, form, email):
@@ -129,6 +131,12 @@ def create_marc(form, sub_id, email):
     add_basic_fields(rec, form, email)
     add_domain_fields(rec, form)
     add_file_info(rec, form, email, sub_id)
+
+    #TODO - replace by a call to get a genuine EPIC PID
+    location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
+    pid = createHandle(location)
+    #pid = '12.3456/dummy.pid.78910'
+    record_add_field(rec, '024', ind1='7', subfields = [('2', 'PID'), ('a', pid)])
 
     marc = record_xml_output(rec)
 
