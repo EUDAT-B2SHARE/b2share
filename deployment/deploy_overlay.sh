@@ -7,10 +7,16 @@
 # the installation to avoid confusion later. And don't forgot the damned .pyc
 # files.
 
+#apache on redhat and derivatives, www-data on debian
+WWW_USER=apache
+
+#httpd on redhat and derivatives, apache2 on debian
+WWW_SERVICE=httpd
+
 cp -vr simplestore/lib/* /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
-chown -R www-data.www-data /opt/invenio
+chown -R $WWW_USER.$WWW_USER /opt/invenio
 
 # branding adjustments
 sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/templates/page.html
@@ -30,4 +36,4 @@ sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/
 cp -vf invenio/templates/* /opt/invenio/etc/templates/
 cp -vf invenio/lib/* /opt/invenio/lib/python/invenio/
 
-service apache2 restart
+service $WWW_SERVICE restart
