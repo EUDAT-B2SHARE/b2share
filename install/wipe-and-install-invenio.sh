@@ -1,7 +1,9 @@
 #!/bin/bash
 #Note that if you change this you will also need to update the makefile
 INVENIO_DIR=/opt/invenio
-MYSQL_PASS=
+MYSQL_PASS="PASS"
+WWW_USER=apache
+WWW_SERVICE=httpd
 
 echo "DANGER, WILL ROBINSON!
 
@@ -27,9 +29,9 @@ if [ ! -f ./invenio-local.conf ]; then
   exit 1
 fi
 
-confirm = true
+confirm=true
 if [ "$1" == "--no-confirm" ]; then
-  confirm = false
+  confirm=false
 fi
 
 #This script will remove any existing invenio install then attempt to make
@@ -51,14 +53,15 @@ fi
 mv $INVENIO_DIR $INVENIO_DIR$(date +"%d-%m-%y")
 
 #Take down Apache
-service apache2 stop
-aclocal-1.9
-automake-1.9 -a
-./configure
+service $WWW_SERVICE stop
+aclocal
+automake -a
 autoconf
+./configure
 make
 
 #Ok, should install to /opt/invenio by default
+# not clear to me which of these are actually needed
 make install
 make install-bootstrap
 make install-mathjax-plugin 
@@ -73,7 +76,7 @@ make install-js-test-driver
 make install-plupload-plugin
 
 cp invenio-local.conf $INVENIO_DIR/etc/
-chown -R www-data.www-data $INVENIO_DIR
+chown -R $WWW_USER.$WWW_USER $INVENIO_DIR
 if $confirm ; then
   read -p "About to drop invenio database; ctrl-c to abort"
 fi
@@ -82,18 +85,15 @@ echo "Creating new DB"
 mysql -u root -p$MYSQL_PASS -e "CREATE DATABASE invenio DEFAULT CHARACTER SET utf8;"
 mysql -u root -p$MYSQL_PASS -e "GRANT ALL PRIVILEGES ON invenio.*  TO root@localhost IDENTIFIED BY '$MYSQL_PASS';"
 #Below line had problems for some reason, ending up putting default in
-#sudo -u www-data /opt/invenio/bin/inveniocfg --create-secret-key
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --update-all
+#sudo -u $WWW_USER /opt/invenio/bin/inveniocfg --create-secret-key
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniomanage database create
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --update-all
 #not sure if below is implied by above
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --update-config-py
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --load-bibfield-conf
-#sudo -u www-data $INVENIO_DIR/bin/inveniocfg --create-tables
-sudo -u www-data $INVENIO_DIR/bin/inveniomanage database create
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --load-webstat-conf
-#sudo -u www-data $INVENIO_DIR/bin/inveniocfg --create-apache-conf
-sudo -u www-data $INVENIO_DIR/bin/inveniomanage apache create_conf
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --load-bibfield-conf
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --update-all
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --update-config-py
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniomanage bibfield config load
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --load-webstat-conf
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniomanage apache create-config
+sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --update-all
 
 rm /etc/apache2/sites-available/invenio
 ln -s $INVENIO_DIR/etc/apache/invenio-apache-vhost.conf \
@@ -103,12 +103,12 @@ ln -s $INVENIO_DIR/etc/apache/invenio-apache-vhost-ssl.conf \
   /etc/apache2/sites-available/invenio-ssl
 
 #TODO: Destroy any running versions of these. Also seem to be problem with rogue mysql instances
-nohup sudo -u www-data celery worker -A invenio -l info -B -E --schedule=$INVENIO_DIR/var/celerybeat-schedule > $INVENIO_DIR/var/log/celerybeat.log &
-nohup flower --port=5555 > $INVENIO_DIR/var/log/flower.log &
+#nohup sudo -u $WWW_USER celery worker -A invenio -l info -B -E --schedule=$INVENIO_DIR/var/celerybeat-schedule > $INVENIO_DIR/var/log/celerybeat.log &
+#nohup flower --port=5555 > $INVENIO_DIR/var/log/flower.log &
 
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --create-demo-site
-sudo -u www-data $INVENIO_DIR/bin/inveniocfg --load-demo-records
+#sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --create-demo-site
+#sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --load-demo-records
 
 #bring apache back up
 
-service apache2 start
+service $WWW_SERVICE start
