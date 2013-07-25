@@ -1,8 +1,10 @@
 import os
 from itertools import chain
+from datetime import datetime
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
+from invenio.config import CFG_SITE_NAME
 from invenio.simplestore_model.model import SubmissionMetadata
 
 
@@ -69,6 +71,10 @@ def add_basic_fields(rec, form, email):
     if form['version']:
         record_add_field(rec, '250', subfields=[('a', form['version'])])
 
+    record_add_field(rec, '264',
+                     subfields=[('b', CFG_SITE_NAME),
+                                ('c', str(datetime.utcnow()) + " UTC")])
+
 
 def create_recid():
     """
@@ -90,10 +96,12 @@ def add_file_info(rec, form, email, sub_id):
         fft_status = 'firerole: allow email "{0}"\nfirerole: deny all\n'.format(
             email)
     for f in files:
+        path = os.path.join(upload_dir, f)
         record_add_field(rec, 'FFT',
-                         subfields=[('a', os.path.join(upload_dir, f)),
+                         subfields=[('a', path),
                          #('d', 'some description') # TODO
                          #('t', 'Type'), # TODO
+                         ('s', str(os.path.getsize(path))),
                          ('r', fft_status)])
 
 
