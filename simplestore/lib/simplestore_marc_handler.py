@@ -3,8 +3,8 @@ from itertools import chain
 from datetime import datetime
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
-from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
-from invenio.config import CFG_SITE_NAME
+from invenio.config import (CFG_SIMPLESTORE_UPLOAD_FOLDER, CFG_SITE_NAME,
+                            CFG_SITE_SECURE_URL)
 from invenio.simplestore_model.model import SubmissionMetadata
 
 
@@ -84,7 +84,7 @@ def create_recid():
                    "values(NOW(), NOW())")
 
 
-def add_file_info(rec, form, email, sub_id):
+def add_file_info(rec, form, email, sub_id, recid):
     """
     Adds the path to the file and access rights to ther record.
     """
@@ -101,8 +101,14 @@ def add_file_info(rec, form, email, sub_id):
                          subfields=[('a', path),
                          #('d', 'some description') # TODO
                          #('t', 'Type'), # TODO
-                         ('s', str(os.path.getsize(path))),
                          ('r', fft_status)])
+
+        # Because of the way invenio works, we need to add any further data
+        # directly to the record and hope it merges properly later.
+        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
+        record_add_field(rec, '856', ind1='4',
+                         subfields=[('u', url),
+                                    ('s', str(os.path.getsize(path)))])
 
 
 def add_domain_fields(rec, form):
@@ -136,7 +142,7 @@ def create_marc(form, sub_id, email):
 
     add_basic_fields(rec, form, email)
     add_domain_fields(rec, form)
-    add_file_info(rec, form, email, sub_id)
+    add_file_info(rec, form, email, sub_id, recid)
 
     marc = record_xml_output(rec)
 
