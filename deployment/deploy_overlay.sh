@@ -8,10 +8,10 @@
 # files.
 
 #apache on redhat and derivatives, www-data on debian
-WWW_USER=apache
+WWW_USER=www-data
 
 #httpd on redhat and derivatives, apache2 on debian
-WWW_SERVICE=httpd
+WWW_SERVICE=apache2
 
 cp -vr simplestore/lib/* /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/
