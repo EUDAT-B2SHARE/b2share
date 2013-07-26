@@ -73,25 +73,22 @@ def addmeta(request, sub_id):
     The form is dependent on the domain chosen at the deposit stage.
     """
 
-    current_app.logger.error("Called addmeta")
+    #current_app.logger.error("Called addmeta")
 
     if sub_id is None:
         return render_template('500.html', message='Submission id not set'), 500
 
-    current_app.logger.error("Looking up sub")
     sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
         return render_template('500.html', message="UUID not found in database"), 500
 
-    current_app.logger.error("Looking up files")
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 
     files = os.listdir(updir)
 
-    current_app.logger.error("Looking up meta")
     if sub.domain in metadata_classes:
         meta = metadata_classes[sub.domain]()
     else:
@@ -103,17 +100,12 @@ def addmeta(request, sub_id):
                           converter=HTML5ModelConverter())
     meta_form = MetaForm(request.form, meta)
 
-    current_app.logger.error("got meta, validating")
     if meta_form.validate_on_submit():
-        current_app.logger.error("validated")
         recid, marc = mh.create_marc(
             request.form, sub_id, current_user['email'])
-        current_app.logger.error("got marc")
         tmp_file = write_marc_to_temp_file(marc)
         task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
-        current_app.logger.error("submitted")
         db.session.delete(sub)
-        current_app.logger.error("deleted")
         return render_template('simplestore-finalise.html',
                                recid=recid, marc=marc)
 
