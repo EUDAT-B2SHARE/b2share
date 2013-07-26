@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, url_for, jsonify
+from flask import render_template, url_for, current_app
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -89,9 +89,12 @@ def addmeta(request, sub_id):
                           converter=HTML5ModelConverter())
     meta_form = MetaForm(request.form, meta)
 
+    current_app.logger.error("got meta, validating")
     if meta_form.validate_on_submit():
+        current_app.logger.error("validated")
         recid, marc = mh.create_marc(
             request.form, sub_id, current_user['email'])
+        current_app.logger.error("got marc")
         tmp_file = write_marc_to_temp_file(marc)
         task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
         return jsonify(valid=True,

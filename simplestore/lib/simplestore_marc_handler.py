@@ -52,8 +52,8 @@ def add_basic_fields(rec, form, email):
 
     record_add_field(rec, '520', subfields=[('a', form['description'])])
 
-    if form['keywords']:
-        for kw in form['keywords'].split(','):
+    if form['tags']:
+        for kw in form['tags'].split(','):
             record_add_field(rec, '653',
                              ind1='1',
                              subfields=[('a', kw.strip())])
@@ -108,8 +108,7 @@ def add_file_info(rec, form, email, sub_id, recid):
                          #('t', 'Type'), # TODO
                          ('r', fft_status)])
 
-        # Because of the way invenio works, we need to add any further data
-        # directly to the record and hope it merges properly later.
+        #seems to be impossible to add file size data, thought this would work
         url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
         record_add_field(rec, '856', ind1='4',
                          subfields=[('u', url),
