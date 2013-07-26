@@ -38,15 +38,15 @@ class SubmissionMetadata(db.Model):
     publisher = db.Column(db.String(128))
     publication_date = db.Column('publication_year', db.Date(),
                                  default=date.today())
+    tags = db.Column(db.String(256))  # split on ,
 
     def basic_field_iter(self):
         #why won't submission_id work?
         for f in ['title', 'description', 'creator', 'open_access', 'licence',
-                  'publisher', 'publication_date']:
+                  'publisher', 'publication_date', 'tags']:
             yield f
 
     # optional
-    keywords = db.Column(db.String(256))  # split on ,
     contributors = db.Column(db.String(256))  # split on ;
     language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
@@ -54,7 +54,7 @@ class SubmissionMetadata(db.Model):
     version = db.Column(db.String(128))
 
     def optional_field_iter(self):
-        for f in ['keywords', 'contributors', 'language', 'resource_type',
+        for f in ['contributors', 'language', 'resource_type',
                   'alternate_identifier', 'version']:
             yield f
 
