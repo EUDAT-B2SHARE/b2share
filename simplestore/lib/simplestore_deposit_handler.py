@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, url_for, current_app
+from flask import render_template, redirect, url_for, flash
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -71,7 +71,8 @@ def addmeta(request, sub_id):
     """
 
     if sub_id is None:
-        return render_template('500.html', message='Submission id not set'), 500
+        #just return to deposit
+        return redirect(url_for('.deposit'))
 
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
