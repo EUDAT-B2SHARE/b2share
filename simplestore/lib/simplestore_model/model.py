@@ -81,6 +81,12 @@ class SubmissionMetadata(db.Model):
         self.field_args['licence'] = {
             'data_provide': 'typeahead',
             'data_source': '["GPL","Apache v2","Commercial", "Other"]'}
+        self.field_args['tags'] = {'description': 'Comma separated list of keywords associated with item'}
+        self.field_args['open_access'] = {'description': 'Open Access items may be downloaded by anyone'}
+        self.field_args['contributors'] = {'description': 'Semicolon separated list of contributors e.g. further authors'}
+        self.field_args['language'] = {'description': 'Principal language of submission'}
+        self.field_args['resource_type'] = {'description': 'e.g. written report, audio or video'}
+        self.field_args['alternate_identifier'] = {'description': 'e.g. ISBN number'}
 
 
 def _create_metadata_class(cfg):

@@ -63,7 +63,7 @@
                   <p class="help-block">{{error}}</p>
                   {%- endfor %}
                   {%- elif f.description -%}
-                  <p class="help-block">{{f.description|safe}}</p>
+                  <p class="help-inline"><abbr title="{{f.description|safe}}"><i class="icon-question-sign"></i></abbr></p>
                   {%- endif %}
                 </div>
               </div>
