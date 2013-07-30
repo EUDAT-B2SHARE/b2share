@@ -101,6 +101,8 @@ def add_file_info(rec, form, email, sub_id, recid):
                          subfields=[('a', path),
                          #('d', 'some description') # TODO
                          #('t', 'Type'), # TODO
+                         # unfortunately s is used for a timestamp, not file size
+                         #('s', str(os.path.getsize(path))),
                          ('r', fft_status)])
 
         #seems to be impossible to add file size data, thought this would work
