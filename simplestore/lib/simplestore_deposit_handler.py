@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, redirect, url_for, flash, current_app
+from flask import render_template, redirect, url_for, flash
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -76,12 +76,17 @@ def addmeta(request, sub_id):
     #current_app.logger.error("Called addmeta")
 
     if sub_id is None:
-        return render_template('500.html', message='Submission id not set'), 500
+        #just return to deposit
+        return redirect(url_for('.deposit'))
 
     sub = Submission.query.filter_by(uuid=sub_id).first()
 
     if sub is None:
-        return render_template('500.html', message="UUID not found in database"), 500
+        #probably already deposited, possibly invalid id
+        #just returning to deposit seems most user friendly
+        return redirect(url_for('.deposit'))
+        return render_template('500.html',
+                               message="UUID not found in database"), 500
 
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
@@ -106,6 +111,8 @@ def addmeta(request, sub_id):
         tmp_file = write_marc_to_temp_file(marc)
         task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
         db.session.delete(sub)
+        db.session.commit()
+
         return render_template('simplestore-finalise.html',
                                recid=recid, marc=marc)
 
