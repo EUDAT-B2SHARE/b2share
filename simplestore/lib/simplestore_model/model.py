@@ -159,10 +159,14 @@ def _create_metadata_class(cfg):
         nullable = not f.get('required', False)
         args[f['name']] = db.Column(f['col_type'], nullable=nullable)
         # Doesn't seem pythonic, but show me a better way
+        args['field_args'][f['name']] = {}
         if 'display_text' in f:
-            args['field_args'][f['name']] = {'label': f.get('display_text')}
+            args['field_args'][f['name']]['label'] = f.get('display_text')
         if 'description' in f:
-            args['field_args'][f['name']] = {
-                'description': f.get('description')}
+            args['field_args'][f['name']]['description'] = f.get('description')
+        if 'data_provide' in f:
+            args['field_args'][f['name']]['data_provide'] = f.get('data_provide')
+        if 'data_source' in f:
+            args['field_args'][f['name']]['data_source'] = f.get('data_source')
 
     return type(clsname, (SubmissionMetadata,), args)

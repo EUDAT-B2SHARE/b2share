@@ -1,15 +1,18 @@
 from invenio.sqlalchemyutils import db
-
+from invenio.simplestore_model.metadata.linguistics_lang_codes import lang_codes
+import json
 
 domain = "Linguistics"
 table_name = 'linguistics'
 icon = 'icon-quote-right'
-# note that fields will need more stuff like validators later
+
 fields = [{'name':'language_code',
            'display_text':'Language Code',
-           'col_type':db.String(3),
+           'col_type':db.String(128),
            'required':True,
-           'description': 'Three letter ISO 639-3 code'},
+           'description': 'Three letter ISO 639-3 code',
+           'data_provide': 'typeahead',
+           'data_source': json.dumps(lang_codes)},
           {'name':'region',
            'display_text':'Country/Region',
            'col_type':db.String(256)},

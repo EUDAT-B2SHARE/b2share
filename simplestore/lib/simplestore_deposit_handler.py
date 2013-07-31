@@ -85,8 +85,6 @@ def addmeta(request, sub_id):
         #probably already deposited, possibly invalid id
         #just returning to deposit seems most user friendly
         return redirect(url_for('.deposit'))
-        return render_template('500.html',
-                               message="UUID not found in database"), 500
 
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
