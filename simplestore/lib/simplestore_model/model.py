@@ -18,6 +18,14 @@ class Submission(db.Model):
         return '<Submission %s>' % self.uuid
 
 
+class FieldSet:
+
+    def __init__(self, name, basic_fields=[], optional_fields=[]):
+        self.name = name
+        self.basic_fields = basic_fields
+        self.optional_fields = optional_fields
+
+
 class SubmissionMetadata(db.Model):
     """DataCite-based metadata class. Format description is here:
     http://schema.datacite.org/meta/kernel-2.2/doc/DataCite-MetadataKernel_v2.2.pdf
@@ -40,12 +48,6 @@ class SubmissionMetadata(db.Model):
                                  default=date.today())
     tags = db.Column(db.String(256))  # split on ,
 
-    def basic_field_iter(self):
-        #why won't submission_id work?
-        for f in ['title', 'description', 'creator', 'open_access', 'licence',
-                  'publisher', 'publication_date', 'tags']:
-            yield f
-
     # optional
     contributors = db.Column(db.String(256))  # split on ;
     language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
@@ -53,15 +55,10 @@ class SubmissionMetadata(db.Model):
     alternate_identifier = db.Column(db.String(256))
     version = db.Column(db.String(128))
 
-    def optional_field_iter(self):
-        for f in ['contributors', 'language', 'resource_type',
-                  'alternate_identifier', 'version']:
-            yield f
-
-    # administrative metadata
-    # XXX are we going to use them?
-    # last_metadata_update = hook?
-    # metadata_version_number = schema migration version?
+    basic_fields = ['title', 'description', 'creator', 'open_access',
+                    'licence', 'publisher', 'publication_date', 'tags']
+    optional_fields = ['contributors', 'language', 'resource_type',
+                       'alternate_identifier', 'version']
 
     # using joined table inheritance for the specific domains
     submission_type = db.Column(db.String(50))
@@ -73,11 +70,10 @@ class SubmissionMetadata(db.Model):
     def __repr__(self):
         return '<SubmissionMetadata %s>' % self.id
 
-    def __init__(self, creator="", title="", publisher="", publication_year=None):
-        self.creator = creator
-        self.title = title
-        self.publisher = publisher
-        self.publication_year = publication_year
+    def __init__(self):
+        self.fieldsets = [(FieldSet("Generic",
+                                    basic_fields=self.basic_fields,
+                                    optional_fields=self.optional_fields))]
         self.field_args['licence'] = {
             'data_provide': 'typeahead',
             'data_source': '["GPL","Apache v2","Commercial", "Other"]'}
@@ -104,10 +100,8 @@ def _create_metadata_class(cfg):
     if not hasattr(cfg, 'fields'):
         cfg.fields = []
 
-    def basic_field_iter(self):
-        # need to figure out how to refer to parent here
-        for s in SubmissionMetadata.basic_field_iter(self):
-            yield s
+    # TODO: this can be done in a simpler and clearer way now
+    def basic_field_iter():
 
         #Normal field if extra is false or not set
         for f in cfg.fields:
@@ -117,10 +111,7 @@ def _create_metadata_class(cfg):
             except KeyError:
                 yield f['name']
 
-    def optional_field_iter(self):
-        # need to figure out how to refer to parent here
-        for s in SubmissionMetadata.optional_field_iter(self):
-            yield s
+    def optional_field_iter():
 
         for f in cfg.fields:
             try:
@@ -129,16 +120,22 @@ def _create_metadata_class(cfg):
             except KeyError:
                 pass
 
+    def __init__(self):
+        super(type(self), self).__init__()
+        self.fieldsets.append(FieldSet(
+            cfg.domain,
+            basic_fields=list(basic_field_iter()),
+            optional_fields=list(optional_field_iter())))
+
     clsname = cfg.domain + "Metadata"
 
-    args = {'__tablename__': cfg.table_name,
+    args = {'__init__': __init__,
+            '__tablename__': cfg.table_name,
             '__mapper_args__': {'polymorphic_identity': cfg.table_name},
             'id': db.Column(
                 db.Integer, db.ForeignKey('submission_metadata.id'),
                 primary_key=True),
-            'basic_field_iter': basic_field_iter,
-            'field_args': {},
-            'optional_field_iter': optional_field_iter}
+            'field_args': {}}
 
     #The following function and call just add all external attrs manually
     def is_external_attr(n):
