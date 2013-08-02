@@ -92,7 +92,7 @@ def add_file_info(rec, form, email, sub_id, recid):
     if 'open_access' in form:
         fft_status = 'firerole: allow any\n'
     else:
-        fft_status = 'firerole: allow email "{0}"\nfirerole: deny all\n'.format(
+        fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
             email)
     for f in files:
         path = os.path.join(upload_dir, f)
