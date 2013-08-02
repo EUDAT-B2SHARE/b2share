@@ -1,5 +1,4 @@
 import os
-from itertools import chain
 from datetime import datetime
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
@@ -13,6 +12,7 @@ from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_epic import createHandle
 
 from werkzeug.exceptions import HTTPException
+from invenio.simplestore_model import metadata_classes
 
 
 def add_basic_fields(rec, form, email):
@@ -125,18 +125,19 @@ def add_domain_fields(rec, form):
     to field 690.
     """
 
-    # At the moment we just assume any field *not* from SubmissionMetadata is
-    # an extra field. There's probably a better way to do this.
+    domain = form['domain'].lower()
+    if domain in metadata_classes:
+        meta = metadata_classes[domain]()
+    else:
+        #no domain stuff
+        return
 
-    special_fields = ['files', 'domain', 'sub_id', 'csrf_token', 'action_save']
-    sm = SubmissionMetadata()
-    ignore_fields = chain(sm.basic_field_iter(),
-                          sm.optional_field_iter(),
-                          special_fields)
-
-    for k in (set(form.keys()) - set(ignore_fields)):
-        if form[k]:
-            record_add_field(rec, '690', subfields=[('a', k), ('b', form[k])])
+    for fs in meta.fieldsets:
+        if fs.name != 'Generic':  # TODO: this is brittle; get from somewhere
+            for k in (fs.optional_fields + fs.basic_fields):
+                if form[k]:
+                    record_add_field(rec, '690',
+                                     subfields=[('a', k), ('b', form[k])])
 
 
 def create_marc(form, sub_id, email):
@@ -155,11 +156,11 @@ def create_marc(form, sub_id, email):
     location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
     try:
         pid = createHandle(location)
-        record_add_field(rec, '024', ind1='7', 
+        record_add_field(rec, '024', ind1='7',
                          subfields = [('2', 'PID'), ('a', pid)])
     except HTTPException as e:
         raise e
-        
+
     marc = record_xml_output(rec)
 
     return recid, marc

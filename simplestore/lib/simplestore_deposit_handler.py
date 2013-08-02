@@ -116,7 +116,7 @@ def write_marc_to_temp_file(marc):
         prefix="webdeposit_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
         dir=CFG_TMPSHAREDDIR)
 
-    os.write(tmp_file_fd, marc)
+    os.write(tmp_file_fd, marc.encode('utf8'))
     os.close(tmp_file_fd)
     os.chmod(tmp_file_name, 0644)
 
