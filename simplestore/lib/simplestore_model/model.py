@@ -25,7 +25,7 @@ class SubmissionMetadata(db.Model):
     description = db.Column(db.Text(), nullable=False)
     creator = db.Column(db.String(128))
     title = db.Column(db.String(256), nullable=False)
-    open_access = db.Column(db.Boolean())
+    open_access = db.Column(db.Boolean(), default=True)
 
     licence = db.Column(db.String(128))  # note we set licences in __init__
     publisher = db.Column(db.String(128))
