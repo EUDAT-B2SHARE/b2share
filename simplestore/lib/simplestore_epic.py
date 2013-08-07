@@ -1,6 +1,7 @@
 import httplib2
 from simplejson import dumps as jsondumps
-from werkzeug.exceptions import HTTPException, BadRequest
+from werkzeug.exceptions import HTTPException, BadRequest, abort
+from flask import current_app
 
 from invenio.config import CFG_EPIC_USERNAME
 from invenio.config import CFG_EPIC_PASSWORD
@@ -11,6 +12,7 @@ def _debugMsg(debug, method, msg):
     # Internal: Print a debug message if debug is enabled.
     if debug: 
         print "[",method,"]",msg
+        current_app.logger.error(msg)
 
 def createHandle(location,checksum=None,suffix=''):
     # Create a new handle for a file.
@@ -22,7 +24,7 @@ def createHandle(location,checksum=None,suffix=''):
     # Returns the URI of the new handle, None if an error occurred.
     
     # True - print out disgnostics
-    debug = True
+    debug = False
     
     # Comment out this line when it all works!
     httplib2.debuglevel = 4
@@ -50,8 +52,6 @@ def createHandle(location,checksum=None,suffix=''):
     if not (proxy==''):
         _debugMsg(debug, 'createHandleWithLocation',"Proxy: " + proxy)
         _debugMsg(debug, 'createHandleWithLocation',"Proxy port: " + str(proxyPort))
-        if type(proxyPort) != int:
-            raise HTTPException
         import socks
 
         # The original epic clint this code is based on included the 
@@ -60,13 +60,9 @@ def createHandle(location,checksum=None,suffix=''):
         http = httplib2.Http(proxy_info = httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP, 
                              proxy, proxyPort))
     else:
-        _debugMsg(debug, 'createHandleWithLocation',"Still no Proxy set")
         http = httplib2.Http()
-        
-    _debugMsg(debug, 'createHandleWithLocation',"Setting credentials")    
+           
     http.add_credentials(username, password)
-    _debugMsg(debug, 'createHandleWithLocation',"Set credentials") 
-
     
     if not (prefix.endswith('/')):
         prefix += '/'
@@ -89,23 +85,20 @@ def createHandle(location,checksum=None,suffix=''):
         
     _debugMsg(debug, 'createHandleWithLocation',"json: " + new_handle_json)         
 
-    try:
-        # Try to test the error handling with a an obvious error
-        response, content = http.request(uri, method='PUT',
-                headers=hdrs, body=new_handle_json)        
-        #response, content = http.request(uri, method='POST',
-        #        headers=hdrs, body=new_handle_json)
+    try:        
+        response, content = http.request(uri, method='POST',
+                headers=hdrs, body=new_handle_json)
     except:
-        _debugMsg(debug, 'createHandleWithLocation',
-                  "An Exception occurred during Creation of " + uri)
-        raise
+        dbgmsg = "An Exception occurred during Creation of " + uri
+        _debugMsg(debug, 'createHandleWithLocation', dbgmsg)
+        raise BadRequest(description=dbgmsg, response=response)
     else:
         _debugMsg(debug, 'createHandleWithLocation', "Request completed")
     
     if response.status != 201:
         _debugMsg(debug, 'createHandleWithLocation',
                   "Not Created: Response status: "+str(response.status))
-        raise HTTPException
+        abort(response.status)
        	
     # make sure to only return the handle and strip off the baseuri 
     # if it is included 
