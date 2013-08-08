@@ -69,24 +69,24 @@ def createHandle(location,checksum=None,suffix=''):
             {'type':'CHECKSUM','parsed_data': checksum}])
     else:
         new_handle_json = jsondumps([{'type':'URL','parsed_data':location}])
-        
+
     current_app.logger.debug("json: " + new_handle_json)         
 
-    try:        
+    try:
         response, content = http.request(uri, method='POST',
                 headers=hdrs, body=new_handle_json)
     except:
         dbgmsg = "An Exception occurred during Creation of " + uri
         current_app.logger.debug(dbgmsg)
-        raise BadRequest(description=dbgmsg, response=response)
+        abort(503)
     else:
         current_app.logger.debug("Request completed")
-    
+
     if response.status != 201:
         current_app.logger.debug(
                   "Not Created: Response status: "+str(response.status))
         abort(response.status)
-       	
+
     # make sure to only return the handle and strip off the baseuri 
     # if it is included 
     hdl = response['location']

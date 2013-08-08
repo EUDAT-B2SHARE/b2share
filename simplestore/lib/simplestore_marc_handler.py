@@ -168,7 +168,7 @@ def create_marc(form, sub_id, email):
 
         current_app.logger.error(
                 "Unable to obtain PID from EPIC server {0} {1}: {2}".
-                format(e.code, e.name, e.get_description()))
+                format(e.code, e.name, e)
         if fail:
             raise e
 
