@@ -155,7 +155,7 @@ def create_marc(form, sub_id, email):
     location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
     try:
         pid = createHandle(location)
-        record_add_field(rec, '024', ind1='7', 
+        record_add_field(rec, '024', ind1='7',
                          subfields = [('2', 'PID'), ('a', pid)])
     except HTTPException as e:
         # If CFG_FAIL_ON_MISSING_PID is not found in invenio-local.conf,
@@ -163,15 +163,15 @@ def create_marc(form, sub_id, email):
         try:
             from config import CFG_FAIL_ON_MISSING_PID
             fail = bool(CFG_FAIL_ON_MISSING_PID)
-        except ImportError:    
+        except ImportError:
             fail = False
-                     
+
         current_app.logger.error(
                 "Unable to obtain PID from EPIC server {0} {1}: {2}".
-                format(e.code, e.name, e.get_description()))            
+                format(e.code, e.name, e)
         if fail:
             raise e
-         
+
     marc = record_xml_output(rec)
 
     return recid, marc
