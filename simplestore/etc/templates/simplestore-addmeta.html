@@ -45,7 +45,7 @@
 
 
           <div id="meta" class="span10">
-            <h2><span class="step-number">3.</span> Add some basic details</h2>
+            <h2><span class="step-number">3.</span> Add some details</h2>
 
             <div id="meta-fields">
 
@@ -63,26 +63,35 @@
                   <p class="help-block">{{error}}</p>
                   {%- endfor %}
                   {%- elif f.description -%}
-                  <p class="help-block">{{f.description|safe}}</p>
+                  <p class="help-inline"><abbr title="{{f.description|safe}}"><i class="icon-question-sign"></i></abbr></p>
                   {%- endif %}
                 </div>
               </div>
               {% endmacro %}
 
-              {% for f in metadata.basic_field_iter() %}
-                {{ meta_field(getattr(form, f)) }}
-              {% endfor %}
+              {% for s in metadata.fieldsets %}
+                <fieldset>
+                  <legend>{{ s.name }}</legend>
 
-              <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields">
-                Add more details…
-              </button>
+                  {% for f in s.basic_fields %}
+                    {{ meta_field(getattr(form, f)) }}
+                  {% endfor %}
+
+                  {% if s.optional_fields %}
+                  <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields-{{ s.name }}">
+                    Add more details…
+                  </button>
  
-              <div id="adv-fields" class="collapse"> 
+                  <div id="adv-fields-{{ s.name }}" class="collapse"> 
 
-              {% for f in metadata.optional_field_iter() %}
-                {{ meta_field(getattr(form, f)) }}
+                  {% for f in s.optional_fields %}
+                    {{ meta_field(getattr(form, f)) }}
+                  {% endfor %}
+                  </div>
+                  {% endif %}
+
+                </fieldset>
               {% endfor %}
-              </div>
 
               <div class="form-actions">
                 <button name="action_save" type="submit" class="btn btn-large btn-primary">I'm Done -<br>Submit the Item</button>

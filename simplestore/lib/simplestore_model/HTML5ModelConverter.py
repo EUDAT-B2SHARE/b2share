@@ -14,14 +14,25 @@ class SwitchInput(Input):
         kwargs.setdefault('type', self.input_type)
         if 'value' not in kwargs:
             kwargs['value'] = field._value()
+
+        checked = ""
+        if getattr(field, 'checked', field.data):
+            checked = "checked"
+
         return HTMLString(
             '<div class="switch" data-on="success" data-off="danger">'
-            '<input checked="checked" %s></div>'
-            % self.html_params(name=field.name, **kwargs))
+            '<input {0} {1}></div>'.format(checked, self.html_params(name=field.name, **kwargs)))
 
 
 class SwitchField(BooleanField):
     widget = SwitchInput()
+
+    def process_data(self, value):
+        # I don't think we should have to check for none. wtforms bug?
+        if value is None:
+            self.data = self.default
+        else:
+            self.data = bool(value)
 
 
 # Not sure why DateTime isn't in flask_wtf

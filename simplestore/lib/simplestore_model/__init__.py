@@ -17,6 +17,7 @@ prefix = pck.__name__ + '.'
 for imp, modname, ispkg in pkgutil.iter_modules(pck.__path__, prefix):
     # not sure what fromlist does...
     mod = __import__(modname, fromlist="dummy")
-    domain_name = mod.domain.lower()
-    if not configured_domains or domain_name in configured_domains:
-        metadata_classes[domain_name] = _create_metadata_class(mod)
+    if hasattr(mod, 'domain'):
+        domain_name = mod.domain.lower()
+        if not configured_domains or domain_name in configured_domains:
+            metadata_classes[domain_name] = _create_metadata_class(mod)

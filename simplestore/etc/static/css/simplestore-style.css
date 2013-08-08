@@ -217,3 +217,10 @@ img.desaturate {
 .hide {
   display: none;
 }
+
+input, textarea {
+  width: 270px;
+}
+textarea {
+  height: 100px;
+}

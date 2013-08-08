@@ -1,13 +1,17 @@
 import os
-from itertools import chain
+from datetime import datetime
+
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
-from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
-from invenio.config import CFG_SITE_SECURE_URL
-from invenio.simplestore_model.model import SubmissionMetadata
-from invenio.simplestore_epic import createHandle
+from invenio.config import (CFG_SIMPLESTORE_UPLOAD_FOLDER, CFG_SITE_NAME,
+                            CFG_SITE_SECURE_URL)
+
 from flask import current_app
 from werkzeug.exceptions import HTTPException
+
+from invenio.simplestore_epic import createHandle
+from invenio.simplestore_model.model import SubmissionMetadata
+from invenio.simplestore_model import metadata_classes
 
 
 def add_basic_fields(rec, form, email):
@@ -49,8 +53,8 @@ def add_basic_fields(rec, form, email):
 
     record_add_field(rec, '520', subfields=[('a', form['description'])])
 
-    if form['keywords']:
-        for kw in form['keywords'].split(','):
+    if form['tags']:
+        for kw in form['tags'].split(','):
             record_add_field(rec, '653',
                              ind1='1',
                              subfields=[('a', kw.strip())])
@@ -73,6 +77,10 @@ def add_basic_fields(rec, form, email):
     if form['version']:
         record_add_field(rec, '250', subfields=[('a', form['version'])])
 
+    record_add_field(rec, '264',
+                     subfields=[('b', CFG_SITE_NAME),
+                                ('c', str(datetime.utcnow()) + " UTC")])
+
 
 def create_recid():
     """
@@ -82,7 +90,7 @@ def create_recid():
                    "values(NOW(), NOW())")
 
 
-def add_file_info(rec, form, email, sub_id):
+def add_file_info(rec, form, email, sub_id, recid):
     """
     Adds the path to the file and access rights to ther record.
     """
@@ -91,14 +99,23 @@ def add_file_info(rec, form, email, sub_id):
     if 'open_access' in form:
         fft_status = 'firerole: allow any\n'
     else:
-        fft_status = 'firerole: allow email "{0}"\nfirerole: deny all\n'.format(
+        fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
             email)
     for f in files:
+        path = os.path.join(upload_dir, f)
         record_add_field(rec, 'FFT',
-                         subfields=[('a', os.path.join(upload_dir, f)),
+                         subfields=[('a', path),
                          #('d', 'some description') # TODO
                          #('t', 'Type'), # TODO
+                         # unfortunately s is used for a timestamp, not file size
+                         #('s', str(os.path.getsize(path))),
                          ('r', fft_status)])
+
+        #seems to be impossible to add file size data, thought this would work
+        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
+        record_add_field(rec, '856', ind1='4',
+                         subfields=[('u', url),
+                                    ('s', str(os.path.getsize(path)))])
 
 
 def add_domain_fields(rec, form):
@@ -107,18 +124,19 @@ def add_domain_fields(rec, form):
     to field 690.
     """
 
-    # At the moment we just assume any field *not* from SubmissionMetadata is
-    # an extra field. There's probably a better way to do this.
+    domain = form['domain'].lower()
+    if domain in metadata_classes:
+        meta = metadata_classes[domain]()
+    else:
+        #no domain stuff
+        return
 
-    special_fields = ['files', 'domain', 'sub_id', 'csrf_token', 'action_save']
-    sm = SubmissionMetadata()
-    ignore_fields = chain(sm.basic_field_iter(),
-                          sm.optional_field_iter(),
-                          special_fields)
-
-    for k in (set(form.keys()) - set(ignore_fields)):
-        if form[k]:
-            record_add_field(rec, '690', subfields=[('a', k), ('b', form[k])])
+    for fs in meta.fieldsets:
+        if fs.name != 'Generic':  # TODO: this is brittle; get from somewhere
+            for k in (fs.optional_fields + fs.basic_fields):
+                if form[k]:
+                    record_add_field(rec, '690',
+                                     subfields=[('a', k), ('b', form[k])])
 
 
 def create_marc(form, sub_id, email):
@@ -132,7 +150,7 @@ def create_marc(form, sub_id, email):
 
     add_basic_fields(rec, form, email)
     add_domain_fields(rec, form)
-    add_file_info(rec, form, email, sub_id)
+    add_file_info(rec, form, email, sub_id, recid)
 
     location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
     try:
