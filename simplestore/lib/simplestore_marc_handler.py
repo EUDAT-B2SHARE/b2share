@@ -1,9 +1,16 @@
 import os
 from datetime import datetime
+
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
 from invenio.config import (CFG_SIMPLESTORE_UPLOAD_FOLDER, CFG_SITE_NAME,
                             CFG_SITE_SECURE_URL)
+
+from flask import current_app
+from werkzeug.exceptions import HTTPException
+
+from invenio.simplestore_epic import createHandle
+from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
 
 
@@ -145,6 +152,26 @@ def create_marc(form, sub_id, email):
     add_domain_fields(rec, form)
     add_file_info(rec, form, email, sub_id, recid)
 
+    location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
+    try:
+        pid = createHandle(location)
+        record_add_field(rec, '024', ind1='7', 
+                         subfields = [('2', 'PID'), ('a', pid)])
+    except HTTPException as e:
+        # If CFG_FAIL_ON_MISSING_PID is not found in invenio-local.conf,
+        # default is to assume False
+        try:
+            from config import CFG_FAIL_ON_MISSING_PID
+            fail = bool(CFG_FAIL_ON_MISSING_PID)
+        except ImportError:    
+            fail = False
+                     
+        current_app.logger.error(
+                "Unable to obtain PID from EPIC server {0} {1}: {2}".
+                format(e.code, e.name, e.get_description()))            
+        if fail:
+            raise e
+         
     marc = record_xml_output(rec)
 
     return recid, marc
