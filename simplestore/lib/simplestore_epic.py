@@ -8,11 +8,6 @@ from invenio.config import CFG_EPIC_PASSWORD
 from invenio.config import CFG_EPIC_BASEURL
 from invenio.config import CFG_EPIC_PREFIX
 
-def _debugMsg(debug, method, msg):
-    # Internal: Print a debug message if debug is enabled.
-    if debug: 
-        print "[",method,"]",msg
-        current_app.logger.error(msg)
 
 def createHandle(location,checksum=None,suffix=''):
     # Create a new handle for a file.
@@ -35,23 +30,16 @@ def createHandle(location,checksum=None,suffix=''):
     baseurl = str(CFG_EPIC_BASEURL)
     prefix = str(CFG_EPIC_PREFIX)
 
-    _debugMsg(debug, 'createHandleWithLocation',"Location: " + location)
-    _debugMsg(debug, 'createHandleWithLocation',"Username: " + username)
-    _debugMsg(debug, 'createHandleWithLocation',"Password: " + password)   
-        
     # If the proxy and proxy ports are set in the invenio-local.conf file
     # read them and set the proxy. If not, do nothing.
     try:
         from invenio.config import CFG_SITE_PROXY as proxy
         from invenio.config import CFG_SITE_PROXYPORT as proxyPort        
-    except:
-        _debugMsg(debug, 'createHandleWithLocation',"No Proxy set")
-        proxy = ''
+    except ImportError:
+        proxy = None
         proxyPort = 80
             
-    if not (proxy==''):
-        _debugMsg(debug, 'createHandleWithLocation',"Proxy: " + proxy)
-        _debugMsg(debug, 'createHandleWithLocation',"Proxy port: " + str(proxyPort))
+    if proxy is not None:
         import socks
 
         # The original epic clint this code is based on included the 
@@ -72,7 +60,6 @@ def createHandle(location,checksum=None,suffix=''):
         uri = baseurl + '/' + prefix
     if suffix != '':
     	  uri += "/" + suffix.lstrip(prefix+"/")
-    _debugMsg(debug, 'createHandleWithLocation',"URI " + uri)
     
     # for a PUT, add 'If-None-Match': '*' to the header
     hdrs = {'Content-Type':'application/json', 'Accept': 'application/json'}
@@ -83,33 +70,30 @@ def createHandle(location,checksum=None,suffix=''):
     else:
         new_handle_json = jsondumps([{'type':'URL','parsed_data':location}])
         
-    _debugMsg(debug, 'createHandleWithLocation',"json: " + new_handle_json)         
+    current_app.logger.debug("json: " + new_handle_json)         
 
     try:        
         response, content = http.request(uri, method='POST',
                 headers=hdrs, body=new_handle_json)
     except:
         dbgmsg = "An Exception occurred during Creation of " + uri
-        _debugMsg(debug, 'createHandleWithLocation', dbgmsg)
+        current_app.logger.debug(dbgmsg)
         raise BadRequest(description=dbgmsg, response=response)
     else:
-        _debugMsg(debug, 'createHandleWithLocation', "Request completed")
+        current_app.logger.debug("Request completed")
     
     if response.status != 201:
-        _debugMsg(debug, 'createHandleWithLocation',
+        current_app.logger.debug(
                   "Not Created: Response status: "+str(response.status))
         abort(response.status)
        	
     # make sure to only return the handle and strip off the baseuri 
     # if it is included 
     hdl = response['location']
-    _debugMsg(debug, 'hdl', hdl)
     if hdl.startswith(uri):
         hdl = hdl[len(uri):len(hdl)]
     elif hdl.startswith(uri + '/'):
         hdl = hdl[len(uri + '/'):len(hdl)]
-  	
-    _debugMsg(debug, 'final hdl', hdl)
 
     return hdl
     
