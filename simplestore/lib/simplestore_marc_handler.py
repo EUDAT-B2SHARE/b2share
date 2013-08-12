@@ -176,7 +176,7 @@ def create_marc(form, sub_id, email):
     add_domain_fields(rec, form)
     add_file_info(rec, form, email, sub_id, recid)
 
-    add_epic_pid(rec, location)
+    add_epic_pid(rec, recid)
 
     marc = record_xml_output(rec)
 

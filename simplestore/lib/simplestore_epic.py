@@ -60,10 +60,12 @@ def createHandle(location,checksum=None,suffix=''):
     hdrs = {'Content-Type':'application/json', 'Accept': 'application/json'}
 
     if checksum:
-        new_handle_json = jsondumps([{'type':'URL','parsed_data':location},
+        new_handle_json = jsondumps([{'type': 'URL',
+                                      'parsed_data': location},
             {'type':'CHECKSUM','parsed_data': checksum}])
     else:
-        new_handle_json = jsondumps([{'type':'URL','parsed_data':location}])
+        new_handle_json = jsondumps([{'type':'URL',
+                                      'parsed_data': location}])
 
     current_app.logger.debug("json: " + new_handle_json)
 
