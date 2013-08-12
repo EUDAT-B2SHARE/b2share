@@ -139,19 +139,9 @@ def add_domain_fields(rec, form):
                                      subfields=[('a', k), ('b', form[k])])
 
 
-def create_marc(form, sub_id, email):
-    """
-    Generates MARC data used by Invenio from the filled out form, then
-    submits it to the Invenio system.
-    """
-    rec = {}
-    recid = create_recid()
-    record_add_field(rec, '001', controlfield_value=str(recid))
-
-    add_basic_fields(rec, form, email)
-    add_domain_fields(rec, form)
-    add_file_info(rec, form, email, sub_id, recid)
-
+def add_epic_pid(rec, recid):
+    """ Adds EPIC PID to the record. If registration fails, can 
+    also fail the request if CFG_FAIL_ON_MISSING_PID is set to True"""
     location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
     try:
         pid = createHandle(location)
@@ -171,6 +161,22 @@ def create_marc(form, sub_id, email):
                 format(e.code, e.name, e))
         if fail:
             raise e
+
+
+def create_marc(form, sub_id, email):
+    """
+    Generates MARC data used by Invenio from the filled out form, then
+    submits it to the Invenio system.
+    """
+    rec = {}
+    recid = create_recid()
+    record_add_field(rec, '001', controlfield_value=str(recid))
+
+    add_basic_fields(rec, form, email)
+    add_domain_fields(rec, form)
+    add_file_info(rec, form, email, sub_id, recid)
+
+    add_epic_pid(rec, location)
 
     marc = record_xml_output(rec)
 
