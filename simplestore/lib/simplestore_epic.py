@@ -40,10 +40,10 @@ def createHandle(location,checksum=None,suffix=''):
         import socks
         http = httplib2.Http(proxy_info = httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP,
                              proxy, proxyPort))
-        http.disable_ssl_certificate_validation = true
+        http.disable_ssl_certificate_validation = True
     else:
         http = httplib2.Http()
-        http.disable_ssl_certificate_validation = true
+        http.disable_ssl_certificate_validation = True
 
     http.add_credentials(username, password)
 
