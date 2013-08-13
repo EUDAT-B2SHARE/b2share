@@ -1,5 +1,10 @@
 import os
 from datetime import datetime
+<<<<<<< HEAD
+=======
+import hashlib
+
+>>>>>>> Adds a checksum to the MARC and passes on to the EPIC client. (EUDAT-406)
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
@@ -139,12 +144,12 @@ def add_domain_fields(rec, form):
                                      subfields=[('a', k), ('b', form[k])])
 
 
-def add_epic_pid(rec, recid):
-    """ Adds EPIC PID to the record. If registration fails, can 
+def add_epic_pid(rec, recid, checksum):
+    """ Adds EPIC PID to the record. If registration fails, can
     also fail the request if CFG_FAIL_ON_MISSING_PID is set to True"""
     location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
     try:
-        pid = createHandle(location)
+        pid = createHandle(location, checksum)
         record_add_field(rec, '024', ind1='7',
                          subfields = [('2', 'PID'), ('a', pid)])
     except HTTPException as e:
@@ -176,8 +181,33 @@ def create_marc(form, sub_id, email):
     add_domain_fields(rec, form)
     add_file_info(rec, form, email, sub_id, recid)
 
-    add_epic_pid(rec, recid)
+    checksum = create_checksum(rec, sub_id)
+    add_epic_pid(rec, recid, checksum)
 
     marc = record_xml_output(rec)
 
     return recid, marc
+
+
+def create_checksum(rec, sub_id, buffersize=64*1024):
+    """
+    Creates a checksum of all the files in the record, and adds it
+    to the MARC.
+    Returns: checksum as a hex string
+    """
+    buffer = bytearray(buffersize)
+    sha = hashlib.sha256()
+    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    files = os.listdir(upload_dir)
+    for f in files:
+        filepath = os.path.join(upload_dir, f)
+        with open(filepath, 'rb', buffering=0) as fp:
+            while True:
+                block = fp.read(buffersize)
+                if not block:
+                    break
+                sha.update(block)
+    cs = sha.hexdigest()
+    record_add_field(rec, '024', ind1='7',
+                         subfields = [('2', 'checksum'), ('a', cs)])
+    return cs
