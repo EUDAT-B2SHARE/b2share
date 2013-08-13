@@ -198,8 +198,9 @@ def create_checksum(rec, sub_id, buffersize=64*1024):
     buffer = bytearray(buffersize)
     sha = hashlib.sha256()
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
-    files = os.listdir(upload_dir)
+    files = sorted(os.listdir(upload_dir))
     for f in files:
+        current_app.logger.debug("create_checksum: Adding " + f)
         filepath = os.path.join(upload_dir, f)
         with open(filepath, 'rb', buffering=0) as fp:
             while True:
