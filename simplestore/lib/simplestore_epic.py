@@ -40,10 +40,10 @@ def createHandle(location,checksum=None,suffix=''):
         import socks
         http = httplib2.Http(proxy_info = httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP,
                              proxy, proxyPort))
-        http.disable_ssl_certificate_validation = true
+        http.disable_ssl_certificate_validation = True
     else:
         http = httplib2.Http()
-        http.disable_ssl_certificate_validation = true
+        http.disable_ssl_certificate_validation = True
 
     http.add_credentials(username, password)
 
@@ -60,10 +60,12 @@ def createHandle(location,checksum=None,suffix=''):
     hdrs = {'Content-Type':'application/json', 'Accept': 'application/json'}
 
     if checksum:
-        new_handle_json = jsondumps([{'type':'URL','parsed_data':location},
+        new_handle_json = jsondumps([{'type': 'URL',
+                                      'parsed_data': location},
             {'type':'CHECKSUM','parsed_data': checksum}])
     else:
-        new_handle_json = jsondumps([{'type':'URL','parsed_data':location}])
+        new_handle_json = jsondumps([{'type':'URL',
+                                      'parsed_data': location}])
 
     current_app.logger.debug("json: " + new_handle_json)
 

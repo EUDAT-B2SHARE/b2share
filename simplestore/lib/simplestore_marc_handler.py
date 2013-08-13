@@ -164,6 +164,30 @@ def add_epic_pid(rec, recid, checksum):
             raise e
 
 
+def create_checksum(rec, sub_id, buffersize=64*1024):
+    """
+    Creates a checksum of all the files in the record, and adds it
+    to the MARC.
+    Returns: checksum as a hex string
+    """
+    buffer = bytearray(buffersize)
+    sha = hashlib.sha256()
+    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    files = os.listdir(upload_dir)
+    for f in files:
+        filepath = os.path.join(upload_dir, f)
+        with open(filepath, 'rb', buffering=0) as fp:
+            while True:
+                block = fp.read(buffersize)
+                if not block:
+                    break
+                sha.update(block)
+    cs = sha.hexdigest()
+    record_add_field(rec, '024', ind1='7',
+                         subfields = [('2', 'checksum'), ('a', cs)])
+    return cs
+
+
 def create_marc(form, sub_id, email):
     """
     Generates MARC data used by Invenio from the filled out form, then
@@ -183,28 +207,4 @@ def create_marc(form, sub_id, email):
     marc = record_xml_output(rec)
 
     return recid, marc
-    
-    
-def create_checksum(rec, sub_id, buffersize=64*1024):
-    """
-    Creates a checksum of all the files in the record, and adds it
-    to the MARC.
-    Returns: checksum as a hex string
-    """
-    buffer = bytearray(buffersize)
-    sha = hashlib.sha256()
-    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
-    files = os.listdir(upload_dir)
-    for f in files:
-        filepath = os.path.join(upload_dir, f)
-        with open(filepath, 'rb', buffering=0) as fp:
-            while True:
-                block = fp.read(buffersize)
-                if not block:
-                    break
-                sha.update(block)
-    cs = sha.hexdigest()                       
-    record_add_field(rec, '024', ind1='7',
-                         subfields = [('2', 'checksum'), ('a', cs)])
-    return cs
-    
+
