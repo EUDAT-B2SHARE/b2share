@@ -1,0 +1,22 @@
+.accordion-heading .caret {
+  margin-top: 8px;
+  margin-left: 5px;
+}
+
+
+.collapse .accordion-toggle .icon-caret-left {
+    display: inline;
+}
+
+.collapse .in .accordion-toggle .icon-caret-left {
+    display: none;
+}
+
+.collapse .accordion-toggle .icon-caret-down {
+    display: none;
+}
+
+.collapse .in .accordion-toggle .icon-caret-down {
+    display: inline;
+}
+
