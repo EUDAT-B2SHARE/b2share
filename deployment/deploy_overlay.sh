@@ -30,6 +30,9 @@ chown -R $WWW_USER.$WWW_USER /opt/invenio
 
 # a quick hack for general modifications
 # XXX: invenio update unsafe
+if [ -f /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py ];
+  then rm -v /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py*;
+fi
 cp -vf invenio/templates/* /opt/invenio/etc/templates/
 cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
 cp -vrf invenio/etc/* /opt/invenio/etc/

@@ -101,21 +101,18 @@
   </div>
   <div class="span4">
     {%- set adminarea = format_record(recid, of='HDACT', ln=g.ln)|safe -%}
-    {%- set curatearea = format_record(recid, of='HDCUR', ln=g.ln)|safe -%}
+    {%- set md_area = format_record(recid, of='HDMD', ln=g.ln)|safe -%}
     {%- if adminarea.strip() -%}
-    <div class="well" style="text-align: center;">
+    <div class="well">
       {{ adminarea }}
     </div>
     {%- endif -%}
-    {%- if curatearea.strip() -%}
+    {%- if md_area.strip() -%}
     <div class="well">
-      {{ curatearea }}
+      {{ md_area }}
     </div>
     {%- endif -%}
-    {{ format_record(recid, of='HDINFO', ln=g.ln)|safe }}
 
-    {{ format_record(recid, of='HDSHAR', ln=g.ln)|safe }}
-    {{ format_record(recid, of='HDEXP', ln=g.ln)|safe }}
   </div>
   {%- else %}
   <div class="offset3 span6">
