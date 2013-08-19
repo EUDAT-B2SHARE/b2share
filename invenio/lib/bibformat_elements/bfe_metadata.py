@@ -33,26 +33,26 @@ def format_element(bfo):
 
     ver = bfo.field("250__a")
     if ver:
-        ret += '<tr><th>Version:</th><td>{}</td></tr>'.format(ver)
+        ret += '<tr><th>Version:</th><td>{0}</td></tr>'.format(ver)
 
     pub = bfo.field("260__")
     if pub:
-        ret += '<tr><th>Publication:</th><td>{}</td></tr>'.format(pub['b'])
+        ret += '<tr><th>Publication:</th><td>{0}</td></tr>'.format(pub['b'])
         if pub['c']:
-            ret += '<tr><th>Publication Date:</th><td>{}</td></tr>'.format(
+            ret += '<tr><th>Publication Date:</th><td>{0}</td></tr>'.format(
                    pub['c'])
 
     licence = bfo.field("540__a")
     if licence:
-        ret += '<tr><th>Licence:</th><td>{}</td></tr>'.format(licence)
+        ret += '<tr><th>Licence:</th><td>{0}</td></tr>'.format(licence)
 
     uploader = bfo.field("8560_f")
     if uploader:
-        ret += '<tr><th>Uploaded by:</th><td>{}</td></tr>'.format(uploader)
+        ret += '<tr><th>Uploaded by:</th><td>{0}</td></tr>'.format(uploader)
 
     domain = bfo.field("980__a")
     if domain:
-        ret += '<tr><th>Domain:</th><td>{}</td></tr>'.format(domain)
+        ret += '<tr><th>Domain:</th><td>{0}</td></tr>'.format(domain)
 
     md_class = None
     if domain.lower() in metadata_classes:
