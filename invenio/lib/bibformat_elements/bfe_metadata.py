@@ -18,29 +18,28 @@
 """
 __revision__ = "$Id$"
 
+from invenio.simplestore_model import metadata_classes
+
 
 def format_element(bfo):
 
     ret = '<div class="metadata_table"><table class="table table-striped'\
           ' table-condensed">'
 
-    # Might be more than one of these - need for each
-    pid = bfo.field("0247_")
-    if pid['2'] == 'PID':
-        ret += '<tr><th>PID:</th><td>{}</td></tr>'.format(pid['a'])
+    ids = bfo.fields("0247_")
+    for i in ids:
+        ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(i['2'], i['a'])
 
     ver = bfo.field("250__a")
     if ver:
         ret += '<tr><th>Version:</th><td>{}</td></tr>'.format(ver)
 
-    # argh - used SimpleStore here. Fix :(
-    pub = bfo.field("264__b")
+    pub = bfo.field("260__")
     if pub:
-        ret += '<tr><th>Publication:</th><td>{}</td></tr>'.format(pub)
-
-    pub_date = bfo.field("264__c")
-    if pub_date:
-        ret += '<tr><th>Publication Date:</th><td>{}</td></tr>'.format(pub_date)
+        ret += '<tr><th>Publication:</th><td>{}</td></tr>'.format(pub['b'])
+        if pub['c']:
+            ret += '<tr><th>Publication Date:</th><td>{}</td></tr>'.format(
+                   pub['c'])
 
     licence = bfo.field("540__a")
     if licence:
@@ -50,8 +49,26 @@ def format_element(bfo):
     if uploader:
         ret += '<tr><th>Uploaded by:</th><td>{}</td></tr>'.format(uploader)
 
+    domain = bfo.field("980__a")
+    if domain:
+        ret += '<tr><th>Domain:</th><td>{}</td></tr>'.format(domain)
+
+    md_class = None
+    if domain.lower() in metadata_classes:
+        md_class = metadata_classes[domain.lower()]()
+
+    domain_data = bfo.fields("690__")
+    for md in domain_data:
+        if md_class:
+            field = md_class.field_args.get(md['a'], {'label': md['a']})
+        else:
+            field = {'label': md['a']}
+
+        ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(
+            field['label'], md['b'])
+
     ret += '</table></div>'
-    # ret += 'Uploaded by <a href="' + url_for('yourmessages.write', sent_to_user_nicks=bfo.field('8560_y')) + '">' + bfo.field('8560_y').decode('utf8') + '</a>'
+
     return  ret
 
 
