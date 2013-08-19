@@ -23,12 +23,13 @@ from invenio.simplestore_model import metadata_classes
 
 def format_element(bfo):
 
-    ret = '<div class="metadata_table"><table class="table table-striped'\
+    ret = '<div><table class="metadata_table table table-striped'\
           ' table-condensed">'
 
     ids = bfo.fields("0247_")
     for i in ids:
-        ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(i['2'], i['a'])
+        ret += '<tr><th width="40%">{0}:</th><td width="60%">{1}</td></tr>'.format(
+            i['2'][0].upper() + i['2'][1:], i['a'])
 
     ver = bfo.field("250__a")
     if ver:
