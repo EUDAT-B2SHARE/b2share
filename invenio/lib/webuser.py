@@ -417,6 +417,9 @@ def registerUser(req, email, passw, nickname, register_without_nickname=False,
        users cannot register themselves because of the site policy, 6 when the
        site is having problem contacting the user.
 
+       AM: What's with all the returning int codes? Are we doing C again? They
+       could have at least assigned constants...
+
        If login_method is None or is equal to the key corresponding to local
        authentication, then CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS is taken
        in account for deciding the behaviour about registering.
