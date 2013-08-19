@@ -18,9 +18,6 @@ cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
 chown -R $WWW_USER.$WWW_USER /opt/invenio
 
-# branding adjustments
-sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/templates/page.html
-
 #The following vars should be set in invenio-local.conf.
 #I used to do it here with "echo bla >>" but it was a horrible hack
 #left here for documentation purposes until proper solution
@@ -33,7 +30,11 @@ sed -i 's#<title>.*</title>#<title>EUDAT SimpleStore</title>#' /opt/invenio/etc/
 
 # a quick hack for general modifications
 # XXX: invenio update unsafe
+if [ -f /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py ];
+  then rm -v /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py*;
+fi
 cp -vf invenio/templates/* /opt/invenio/etc/templates/
-cp -vf invenio/lib/* /opt/invenio/lib/python/invenio/
+cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
+cp -vrf invenio/etc/* /opt/invenio/etc/
 
 service $WWW_SERVICE restart
