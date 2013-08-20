@@ -1,18 +1,11 @@
 import os
 from datetime import datetime
-<<<<<<< HEAD
-=======
 import hashlib
 
->>>>>>> Adds a checksum to the MARC and passes on to the EPIC client. (EUDAT-406)
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
-from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
-from invenio.config import CFG_SITE_SECURE_URL
-from invenio.config import CFG_SITE_NAME
 from invenio.config import (CFG_SIMPLESTORE_UPLOAD_FOLDER, CFG_SITE_NAME,
                             CFG_SITE_SECURE_URL)
-from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_epic import createHandle
 from flask import current_app
 from werkzeug.exceptions import HTTPException
@@ -151,7 +144,7 @@ def add_epic_pid(rec, recid, checksum):
     try:
         pid = createHandle(location, checksum)
         record_add_field(rec, '024', ind1='7',
-                         subfields = [('2', 'PID'), ('a', pid)])
+                         subfields=[('2', 'PID'), ('a', pid)])
     except HTTPException as e:
         # If CFG_FAIL_ON_MISSING_PID is not found in invenio-local.conf,
         # default is to assume False
@@ -162,8 +155,8 @@ def add_epic_pid(rec, recid, checksum):
             fail = False
 
         current_app.logger.error(
-                "Unable to obtain PID from EPIC server {0} {1}: {2}".
-                format(e.code, e.name, e))
+            "Unable to obtain PID from EPIC server {0} {1}: {2}".
+            format(e.code, e.name, e))
         if fail:
             raise e
 
@@ -189,13 +182,12 @@ def create_marc(form, sub_id, email):
     return recid, marc
 
 
-def create_checksum(rec, sub_id, buffersize=64*1024):
+def create_checksum(rec, sub_id, buffersize=64 * 1024):
     """
     Creates a checksum of all the files in the record, and adds it
     to the MARC.
     Returns: checksum as a hex string
     """
-    buffer = bytearray(buffersize)
     sha = hashlib.sha256()
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = sorted(os.listdir(upload_dir))
@@ -210,5 +202,5 @@ def create_checksum(rec, sub_id, buffersize=64*1024):
                 sha.update(block)
     cs = sha.hexdigest()
     record_add_field(rec, '024', ind1='7',
-                         subfields = [('2', 'checksum'), ('a', cs)])
+                     subfields=[('2', 'checksum'), ('a', cs)])
     return cs
