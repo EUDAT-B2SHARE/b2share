@@ -28,8 +28,17 @@ def format_element(bfo):
 
     ids = bfo.fields("0247_")
     for i in ids:
+        val = i['a']
+        if i['2'] == "PID":
+            try:
+                from invenio.config import CFG_EPIC_BASEURL
+                val = '<a href="{0}/{1}">{1}</a>'.format(
+                    CFG_EPIC_BASEURL, i['a'])
+            except ImportError:
+                None
+
         ret += '<tr><th width="40%">{0}:</th><td width="60%">{1}</td></tr>'.format(
-            i['2'][0].upper() + i['2'][1:], i['a'])
+            i['2'][0].upper() + i['2'][1:], val)
 
     ver = bfo.field("250__a")
     if ver:
