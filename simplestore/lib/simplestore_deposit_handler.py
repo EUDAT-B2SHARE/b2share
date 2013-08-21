@@ -6,7 +6,7 @@ import os
 from tempfile import mkstemp
 
 from flask.ext.wtf import Form
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.config import CFG_SITE_SECRET_KEY
@@ -19,9 +19,6 @@ from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
 import invenio.simplestore_marc_handler as mh
 from invenio.webuser_flask import current_user
-
-from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
-from invenio.webinterface_handler_flask_utils import _
 
 
 # Needed to avoid errors in Form Generation
@@ -49,11 +46,14 @@ def getform(request, sub_id, domain):
     else:
         meta = SubmissionMetadata()
 
+    current_app.logger.error("Got meta")
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
                           field_args=meta.field_args,
                           converter=HTML5ModelConverter())
+    current_app.logger.error("Got form")
     meta_form = MetaForm(request.form, meta)
+    current_app.logger.error("Returning")
 
     return render_template(
         'simplestore-addmeta-table.html',
@@ -78,10 +78,9 @@ def addmeta(request, sub_id):
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 
-    files = os.listdir(updir)
-
-    if sub.domain in metadata_classes:
-        meta = metadata_classes[sub.domain]()
+    domain = request.form['domain'].lower()
+    if domain in metadata_classes:
+        meta = metadata_classes[domain]()
     else:
         meta = SubmissionMetadata()
 
@@ -106,6 +105,7 @@ def addmeta(request, sub_id):
                                         metadata=meta,
                                         form=meta_form,
                                         getattr=getattr))
+
 
 def write_marc_to_temp_file(marc):
     """
