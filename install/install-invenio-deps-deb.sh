@@ -34,8 +34,11 @@ mkdir /etc/apache2/ssl
 #These are required by below branch but not in reqs.txt
 pip install celery rq Flask-Script
 
-#following lines check out kn-tem version of invenio and get reqs
-git clone http://invenio-software.org/repo/personal/invenio-kntem invenio
+#Check out next branch of invenio
+git clone -v -b next https://invenio-software.org/repo/invenio
+#If you get ssl errors, try the following:
+#git config --global http.sslVerify false
+
 cd invenio
 git checkout webdeposit
 #may need to remove libxml lines from requirements.txt
