@@ -3,19 +3,19 @@
 {{ form.csrf_token }}
 {%- macro meta_field(f) %}
 <div class="control-group {% if f.errors %}error{% endif %}">
-  {{f.label(class="control-label meta-label")}}
+  {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</a>{%- endif %}
   <div class="controls">
-    {{f(**kwargs)|safe}}{%- if f.flags.required -%}&nbsp;*{%- endif %}
-
+    {{f(**kwargs)|safe}}
 
     {%- if f.errors %}
       {%- for error in f.errors %}
         <p class="help-block">{{error}}</p>
       {%- endfor %}
-    {%- elif f.description -%}
-      <p class="help-inline"><abbr title="{{f.description|safe}}"><i class="icon-question-sign"></i></abbr></p>
     {%- endif %}
   </div>
+  {%- if f.description -%}
+    <p class="help-block"><abbr title="{{f.description|safe}}"><i class="icon-question-sign"></i></abbr></p>
+  {%- endif %}
 </div>
 {% endmacro %}
 
@@ -29,7 +29,7 @@
 
     {% if s.optional_fields %}
       <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields-{{ s.name }}">
-                    Add more detailsâ€¦
+                    Add more detailsâ
       </button>
  
       <div id="adv-fields-{{ s.name }}" class="collapse"> 
