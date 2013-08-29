@@ -4,8 +4,8 @@
 {%- macro meta_field(f) %}
 <div class="control-group {% if f.errors %}error{% endif %}">
   {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</span>{%- endif %}
-  <div class="controls">
     {{f(**kwargs)|safe}}
+  <div class="controls">
 
     {%- if f.errors %}
       {%- for error in f.errors %}
@@ -13,7 +13,7 @@
       {%- endfor %}
     {%- endif %}
   {%- if f.description -%}
-    <p class="help-block"><abbr title="{{f.description|safe}}"><i class="icon-question-sign"></i></abbr></p>
+  <p class="help-block"><i class="icon-question-sign"></i>{{f.description|safe}}"</p>
   {%- endif %}
   </div>
 </div>
