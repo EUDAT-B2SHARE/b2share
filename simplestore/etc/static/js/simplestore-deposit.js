@@ -65,7 +65,7 @@ $(document).ready(function() {
           function(data) {
             $('#meta-fields').html(data);
           });
-      
+
       var form = $('#metaform');
       form.hide();
       form.removeClass('hide');
