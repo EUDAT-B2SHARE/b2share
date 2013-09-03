@@ -93,6 +93,10 @@ class SubmissionMetadata(db.Model):
             'description': 'e.g. written report, audio or video'}
         self.field_args['alternate_identifier'] = {
             'description': 'e.g. ISBN number'}
+        self.field_args['creator'] = {
+            'description': 'Either the person who created the resource or ' +\
+                           'is the person who uploaded the resource.'
+        }
 
 
 def _create_metadata_class(cfg):
