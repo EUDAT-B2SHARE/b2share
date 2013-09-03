@@ -141,8 +141,7 @@ class SubmissionMetadata(db.Model):
             'reference such as a URN, URI or an ISBN number.'}
         self.field_args['creator'] = {           
             'description': 'Either the person who created the resource or ' +\
-                           'is the person who uploaded the resource.' 
-        }
+                           'is the person who uploaded the resource.'}
 
 def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other

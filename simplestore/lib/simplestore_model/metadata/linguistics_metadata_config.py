@@ -26,7 +26,7 @@ fields = [{'name':'language_code',
            'col_type':db.String(256),
            'required':True,
            'description': 'This element allows the depositor to specify the type ' +\
-                          'of the resource (Text, Audio, Video, Time-Series, Photo, etc.)'}, 
+                          'of the resource (Text, Audio, Video, Time-Series, Photo, etc.)'},
           {'name':'project_name',
            'display_text':'Project Name',
            'col_type':db.String(256),
