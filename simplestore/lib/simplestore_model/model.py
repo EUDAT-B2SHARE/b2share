@@ -122,12 +122,13 @@ class SubmissionMetadata(db.Model):
         self.field_args['open_access'] = {
             'description':
             'This element indicates whether the resource is open or access ' +\
-            'is restricted. In case of restricted access in the next phase ' +\
-            'of BE2Share we will allow to create user groups.'}
+            'is restricted. In case of restricted access the uploaded files ' +\
+            'will not be public, however the metadata will be'}
         self.field_args['contributors'] = {
             'description':
-            'Here people can mention all other persons that were relevant ' +\
-            'in the creation of the resource.'}
+            'This element contains a semicolon separated list of ' +\
+            'contributors, e.g. further authors. Here people can mention all ' +\
+            'other persons that were relevant in the creation of the resource.'}
         self.field_args['language'] = {
             'description': 
             'This element specifies the name of the language the document ' +\
@@ -142,7 +143,7 @@ class SubmissionMetadata(db.Model):
             'reference such as a URN, URI or an ISBN number.'}
         self.field_args['creator'] = {           
             'description': 'Either the person who created the resource or ' +\
-                           'is the person who uploaded the resource.'}
+                           'the person who uploaded the resource.'}
 
 def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
