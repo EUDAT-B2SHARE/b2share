@@ -115,7 +115,8 @@ class SubmissionMetadata(db.Model):
                            }
         self.field_args['tags'] = {
             'description':
-            'This is an element where people can add tags (keywords) that ' +\
+            'This is an element where people can add a comma separated list ' +\
+            'of tags (keywords) that ' +\
             'may characterize the content. In a later phase users should be ' +\
             'able to also add tags. Multiple values are allowed in this tag.'}
         self.field_args['open_access'] = {
@@ -125,7 +126,7 @@ class SubmissionMetadata(db.Model):
             'of BE2Share we will allow to create user groups.'}
         self.field_args['contributors'] = {
             'description':
-            'Here people can mention all other persons that were relevent ' +\
+            'Here people can mention all other persons that were relevant ' +\
             'in the creation of the resource.'}
         self.field_args['language'] = {
             'description': 
