@@ -5,6 +5,12 @@
 <div class="control-group {% if f.errors %}error{% endif %}">
   {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</span>{%- endif %}
     {{f(**kwargs)|safe}}
+
+  {%- if f.description -%}
+    <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled">
+    <i class="icon-info-sign"></i></button><span>{{f.description|safe}}</span></a>
+  {%- endif %}
+  
   <div class="controls">
 
     {%- if f.errors %}
@@ -12,10 +18,7 @@
         <p class="help-block">{{error}}</p>
       {%- endfor %}
     {%- endif %}
-  {%- if f.description -%}
-  {# <p class="help-block">{{f.description|safe}}</p> #}
-  <a class="description" href="#"><button type="button" class="btn btn-info disabled">?</button><span>{{f.description}}</span></a>
-  {%- endif %}
+  
   </div>
 </div>
 {% endmacro %}
