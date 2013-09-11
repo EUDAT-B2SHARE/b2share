@@ -13,7 +13,8 @@
       {%- endfor %}
     {%- endif %}
   {%- if f.description -%}
-  <p class="help-block">{{f.description|safe}}</p>
+  {# <p class="help-block">{{f.description|safe}}</p> #}
+  <a class="description" href="#"><button type="button" class="btn btn-info disabled">?</button><span>{{f.description}}</span></a>
   {%- endif %}
   </div>
 </div>
