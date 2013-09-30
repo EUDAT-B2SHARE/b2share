@@ -19,8 +19,10 @@ from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
+from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms.widgets import Input, HTMLString
+from flask import current_app
 
 
 class SwitchInput(Input):
@@ -79,7 +81,32 @@ class DateTimeField(_DateTimeField):
         else:
             self.data = value
 
+class DateInput(Input):
+    """
+    Creates `<input type=date>` widget
+    """
+    input_type = "text"
+    
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        current_app.logger.error(field._value())
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+            
+        return HTMLString(
+            '<div class="date" >'
+            '<input type="text" id="datepicker" /></div>')
 
+class DateField(_DateField):
+    widget = DateInput()
+    
+    def process_data(self, value):
+        if value is None:
+            self.data = self.default
+        else:
+            self.data = value
+            
 class DecimalInput(Input):
     input_type = "number"
 
@@ -143,10 +170,14 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
+        current_app.logger.error("DateTime conversion")
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
+        current_app.logger.error("Date conversion")
+        #for f in field_args:
+        #    current_app.logger.error(f, ": ", f.value)
         return DateField(**field_args)
 
     @converts('Boolean')
