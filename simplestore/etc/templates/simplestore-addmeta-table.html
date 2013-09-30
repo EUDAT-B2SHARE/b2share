@@ -1,7 +1,7 @@
 
 {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
 {{ form.csrf_token }}
-{%- macro meta_field(f) %}
+{% macro meta_field(f) %}
 <div class="control-group {% if f.errors %}error{% endif %}">
   {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</span>{%- endif %}
     {{f(**kwargs)|safe}}

@@ -8,6 +8,7 @@
     <!-- Note there is also js at the bottom of the template. Sigh. -->
     {% js 'js/simplestore-deposit.js', '50-simplestore' %}
     {% js 'js/bootstrap-switch.js', '50-simplestore' %}
+    {% js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' %}
 {% endblock %}
 
 {% block body%}
@@ -138,6 +139,12 @@
 
 {% block javascript %}
 {{ super() }}
+
+ <script>
+$(function() {
+$( "#datepicker" ).datepicker();
+});
+</script>
 
 <script type="text/javascript">
 

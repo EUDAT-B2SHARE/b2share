@@ -58,11 +58,26 @@ class DateTimeInput(Input):
     """
     Creates `<input type=datetime>` widget
     """
-    input_type = "datetime"
-
+    input_type = "text"
+    
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+            
+        return HTMLString(
+            '<div class="datetime" >'
+            '<input type="text" id="datepicker" /></div>')
 
 class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
+    
+    def process_data(self, value):
+        if value is None:
+            self.data = self.default
+        else:
+            self.data = value
 
 
 class DecimalInput(Input):
