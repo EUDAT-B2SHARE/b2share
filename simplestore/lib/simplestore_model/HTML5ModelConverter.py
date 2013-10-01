@@ -70,7 +70,7 @@ class DateTimeInput(Input):
             
         return HTMLString(
             '<div class="datetime" >'
-            '<input type="text" id="datepicker" /></div>')
+            '<input type="text" /></div>')
 
 class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
@@ -90,11 +90,7 @@ class DateInput(Input):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
-        #current_app.logger.error(field._value())
-        #if 'value' not in kwargs:
-            #kwargs['value'] = field._value()
-            
-        return HTMLString('<input type="text" id="datepicker" />')
+        return HTMLString('<input type="text" class="datepicker" />')
 
 class DateField(_DateField):
     widget = DateInput()
@@ -168,14 +164,10 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
-        current_app.logger.error("DateTime conversion")
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
-        current_app.logger.error("Date conversion")
-        #for f in field_args:
-        #    current_app.logger.error(f, ": ", f.value)
         return DateField(**field_args)
 
     @converts('Boolean')

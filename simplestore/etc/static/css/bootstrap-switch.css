@@ -102,7 +102,7 @@
   text-align: center;
   margin-top: -1px;
   margin-bottom: -1px;
-  z-index: 100;
+  z-index: 0;
   width: 34%;
   border-left: 1px solid #cccccc;
   border-right: 1px solid #cccccc;

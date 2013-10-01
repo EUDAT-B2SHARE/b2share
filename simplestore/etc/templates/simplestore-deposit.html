@@ -4,20 +4,13 @@
     {% css 'css/simplestore-style.css', '50-simplestore' %}
     {% css 'css/font-awesome.min.css', '50-simplestore' %}
     {% css 'css/bootstrap-switch.css', '50-simplestore' %}
+    {% css 'css/jquery-ui.css', '50-simplestore' %}
     {% js 'js/plupload/plupload.full.js', '50-webdeposit' %}
     <!-- Note there is also js at the bottom of the template. Sigh. -->
     {% js 'js/simplestore-deposit.js', '50-simplestore' %}
     {% js 'js/bootstrap-switch.js', '50-simplestore' %}
     {% js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' %}
     
-    <script src="/home/hm/simplestore/simplestore/etc/static/js/jquery-ui-1.10.3.custom.min.js"></script>
-    <script src="/home/hm/simplestore/simplestore/etc/static/js/jquery-1.10.2.min.js"></script>
-    <script>
-$(function() {
-$( "#datepicker" ).datepicker();
-});
-</script>
-
 {% endblock %}
 
 {% block body%}
@@ -159,5 +152,6 @@ $(document).ready(function() {
                             '{{ url_for('.get_file', sub_id=sub_id) }}');
 
   });
+
 </script>
 {% endblock %}
