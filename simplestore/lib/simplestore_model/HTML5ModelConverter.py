@@ -90,13 +90,11 @@ class DateInput(Input):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
-        current_app.logger.error(field._value())
-        if 'value' not in kwargs:
-            kwargs['value'] = field._value()
+        #current_app.logger.error(field._value())
+        #if 'value' not in kwargs:
+            #kwargs['value'] = field._value()
             
-        return HTMLString(
-            '<div class="date" >'
-            '<input type="text" id="datepicker" /></div>')
+        return HTMLString('<input type="text" id="datepicker" />')
 
 class DateField(_DateField):
     widget = DateInput()
