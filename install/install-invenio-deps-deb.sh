@@ -28,7 +28,7 @@ mkdir /etc/apache2/ssl
 /usr/sbin/a2enmod ssl
 
 #These are required by below branch but not in reqs.txt
-pip install celery rq Flask-Script pyparsing numpy Babel
+pip install celery rq Flask-Script pyparsing numpy Babel workflow
 
 #Check out next branch of invenio
 git config --global http.sslVerify false
