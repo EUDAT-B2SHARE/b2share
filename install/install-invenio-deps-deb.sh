@@ -12,11 +12,11 @@ aptitude install -y python-dev apache2-mpm-prefork \
               python-libxml2 python-libxslt1 gnuplot poppler-utils \
               gs-common clisp gettext libapache2-mod-wsgi unzip \
               pdftk html2text giflib-tools \
-              pstotext netpbm python-chardet
+              pstotext netpbm python-chardet sudo
 aptitude install -y sbcl cmucl pylint pychecker pyflakes \
               python-profiler python-epydoc libapache2-mod-xsendfile \
               openoffice.org python-utidylib python-beautifulsoup
-apt-get install -y automake1.9
+apt-get install -y automake1.9 make
 #configure apache
 aptitude install ssl-cert
 mkdir /etc/apache2/ssl
@@ -24,23 +24,18 @@ mkdir /etc/apache2/ssl
 ## disable Debian's default web site:
 /usr/sbin/a2dissite default
 
-## enable Invenio web sites:
-/usr/sbin/a2ensite invenio
-/usr/sbin/a2ensite invenio-ssl
-
 ## enable SSL module:
 /usr/sbin/a2enmod ssl
 
 #These are required by below branch but not in reqs.txt
-pip install celery rq Flask-Script
+pip install celery rq Flask-Script pyparsing numpy Babel
 
 #Check out next branch of invenio
+git config --global http.sslVerify false
 git clone -v -b next https://invenio-software.org/repo/invenio
-#If you get ssl errors, try the following:
-#git config --global http.sslVerify false
 
 cd invenio
-git checkout webdeposit
+git checkout next
 #may need to remove libxml lines from requirements.txt
 pip install -r requirements.txt
 pip install -r requirements-extras.txt
@@ -49,7 +44,7 @@ pip install -r requirements-flask-ext.txt
 
 #think these might be needed now
 aptitude install rabbitmq-server
-/usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management
+/usr/lib/rabbitmq/bin/rabbitmq-activate-plugins rabbitmq_management
 rabbitmqctl add_user www-data vagrant
 rabbitmqctl add_vhost myvhost
 rabbitmqctl set_permissions -p myvhost www-data ".*" ".*" ".*"
@@ -58,3 +53,6 @@ rabbitmqctl change_password guest guest
 service rabbitmq-server restart
 
 pip install flower
+
+# create locatedb -- required for installation
+updatedb
