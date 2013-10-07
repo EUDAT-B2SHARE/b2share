@@ -19,8 +19,10 @@ from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
+from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms.widgets import Input, HTMLString
+from flask import current_app
 
 
 class SwitchInput(Input):
@@ -58,13 +60,47 @@ class DateTimeInput(Input):
     """
     Creates `<input type=datetime>` widget
     """
-    input_type = "datetime"
-
+    input_type = "text"
+    
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+            
+        return HTMLString(
+            '<div class="datetime" >'
+            '<input type="text" /></div>')
 
 class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
+    
+    def process_data(self, value):
+        if value is None:
+            self.data = self.default
+        else:
+            self.data = value
 
+class DateInput(Input):
+    """
+    Creates `<input type=date>` widget
+    """
+    input_type = "text"
+    
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        return HTMLString('<input type="text" class="datepicker" />')
 
+class DateField(_DateField):
+    widget = DateInput()
+    
+    def process_data(self, value):
+        if value is None:
+            self.data = self.default
+        else:
+            self.data = value
+            
 class DecimalInput(Input):
     input_type = "number"
 
