@@ -33,6 +33,11 @@ chown -R $WWW_USER.$WWW_USER /opt/invenio
 if [ -f /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py ];
   then rm -v /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py*;
 fi
+# XXX: invenio update unsafe
+if [ -f /opt/invenio/lib/python/invenio/webmessage_blueprint.py ];
+  then rm -v /opt/invenio/lib/python/invenio/webmessage_blueprint.py
+fi
+
 cp -vf invenio/templates/* /opt/invenio/etc/templates/
 cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
 cp -vrf invenio/etc/* /opt/invenio/etc/

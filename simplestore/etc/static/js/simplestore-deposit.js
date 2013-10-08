@@ -64,13 +64,15 @@ $(document).ready(function() {
       $.get("getform/" + $('#sub_id').val() + "/" + inputEl.val(),
           function(data) {
             $('#meta-fields').html(data);
+            $('#submitbutton').removeClass('hide');
+             $('#reqfootnote').removeClass('hide');
           });
+	    var form = $('#metaform');
+	    form.hide();
+	    form.removeClass('hide');
+	    form.slideDown();
+	    $('html,body').animate({scrollTop: form.offset().top}, "slow");
 
-      var form = $('#metaform');
-      form.hide();
-      form.removeClass('hide');
-      form.slideDown();
-      $('html,body').animate({scrollTop: form.offset().top}, "slow");
     }
   }
 

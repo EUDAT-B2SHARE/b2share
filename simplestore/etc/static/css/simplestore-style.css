@@ -20,13 +20,13 @@ html {
 }
 
 #domains {
-  margin-top: 40px;
+  margin-top: 0px;
   margin-left: auto;
   margin-right: auto;
 }
 
 #filebox {
-  height: 250px;
+  height: 190px;
 }
 
 .domain {
@@ -35,15 +35,15 @@ html {
   padding-right: 20px;
   padding-top: 5px;
   margin-right: 10px;
-  margin-top: 20px;
+  margin-top: 10px;
   text-align: center;
-  width: 85px;
-  height: 130px;
+  width: 70px;
+  height: 80px;
   border: 2px solid #bbb;
   -moz-border-radius: 8px;
   -webkit-border-radius: 8px;
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
   /* turn of selecting of text */
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -57,7 +57,7 @@ html {
   padding-right: 20px;
   padding-top: 5px;
   margin-right: 10px;
-  margin-top: 20px;
+  margin-top: 10px;
   text-align: center;
   width: 85px;
   height: 130px;
@@ -65,6 +65,10 @@ html {
   -moz-border-radius: 8px;
   -webkit-border-radius: 8px;
   border-radius: 8px;
+}
+
+.domain-img {
+	max-width: 50px;
 }
 
 .domain-disabled {
@@ -83,6 +87,10 @@ html {
   border-radius: 8px;
   margin-bottom: 10px;
   color: #e5e5e5;
+}
+
+.compact-form {
+  margin-bottom: 0px;
 }
 
 .add-button{
@@ -128,10 +136,10 @@ html {
 
 .meta-label {
 
-  font-size: 17.5px;
+  font-size: 14px;
   font-weight: bold;
   text-align: right;
-  width: 160px;
+  width: 40px;
   float: left;
   padding-right: 6px;
   padding-top: 5px;
