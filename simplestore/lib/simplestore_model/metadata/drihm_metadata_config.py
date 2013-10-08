@@ -11,14 +11,7 @@ kind = 'project'
 
 
 # note that fields will need more stuff like validators later
-fields = [{'name': 'title',
-           'col_type': db.String(256),
-           'display_text': 'Title',
-           'required': True},
-           {'name': 'abstract',
-           'col_type': db.Text(),
-           'display_text': 'Abstract',
-           'required': True},
+fields = [
           {'name': 'ref_date',
            'col_type': db.Date(),
            'display_text': 'Reference date',
