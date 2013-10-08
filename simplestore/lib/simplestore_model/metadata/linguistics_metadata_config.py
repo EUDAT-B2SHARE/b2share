@@ -22,7 +22,7 @@ fields = [{'name':'language_code',
                           'a region to allow depositors to specify where the language ' +\
                           'the document is in is spoken'},
           {'name':'ling_resource_type',
-           'display_text':'Linguistic Resource Type',
+           'display_text':'Resource Type',
            'col_type':db.String(256),
            'required':True,
            'description': 'This element allows the depositor to specify the type ' +\
