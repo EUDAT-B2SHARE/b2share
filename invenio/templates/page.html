@@ -43,6 +43,7 @@
 {%- js 'js/bootstrap.js', '00-invenio' -%}
 {%- js 'js/jquery.tokeninput.js', '00-invenio' -%}
 {%- js 'js/invenio.js', '00-invenio' -%}
+{%- js 'js/hogan.js', '00-invenio' -%}
 
 {%- if not no_pageheader -%}
 <!DOCTYPE html>
@@ -81,6 +82,8 @@
 
   {% block header %}
     {{ metaheaderadd|safe }}
+    {% block metaheader %}
+    {% endblock metaheader %}
   {% endblock header %}
   {% for bundle in get_css_bundle(iterate=True) %}
   {% assets bundle %}
@@ -92,6 +95,9 @@
   <style>
 
     legend [class*="icon-"] { vertical-align: baseline; }
+    a.label, a.label:hover, .label a, .label a:hover { color: white;}
+    .htmlbrief .media-heading { font-weight: 200; }
+    .icon.muted { opacity: 0.6; }
 
     /*
     ----------------------- Stick footer ----------------------- */
@@ -167,7 +173,7 @@
       {% endif %}
       {% endblock title %}
       {% block messages %}
-        {% for category, msg in get_flashed_messages(with_categories=true) %}
+        {% for category, msg in get_flashed_messages(with_categories=True, category_filter=['', 'info', 'error', 'warning', 'success']) %}
           <div class="alert alert-{{ category }}">
             <a class="close" data-dismiss="alert" href="#">×</a>
             {{ msg|safe }}
