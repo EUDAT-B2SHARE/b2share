@@ -63,14 +63,13 @@ autoconf
 make
 
 #Ok, should install to /opt/invenio by default
+# not clear to me which of these are actually needed
 make install
 
 sudo ln -s $INVENIO_DIR/lib/python/invenio /usr/local/lib/python2.6/dist-packages/invenio
 sudo ln -s $INVENIO_DIR/lib/python/invenio /usr/lib/python2.6/dist-packages/invenio
-
 # we need to rerun make install once the symlink is in place
 make install
-
 # on debian the file is not moved into a correct place
 cp -vf modules/miscutil/lib/build/lib.linux-x86_64-2.6/invenio/intbitset.so /opt/invenio/lib/python/invenio/
 chown $WWW_USER:$WWW_USER /opt/invenio/lib/python/invenio/intbitset.so
@@ -100,7 +99,6 @@ mysql -u root -p$MYSQL_PASS -e "GRANT ALL PRIVILEGES ON invenio.*  TO root@local
 sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --update-all
 
 #Below line had problems for some reason, ending up putting default in
-
 #sudo -u $WWW_USER /opt/invenio/bin/inveniocfg --create-secret-key
 #sudo -u $WWW_USER $INVENIO_DIR/bin/inveniomanage database create
 sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --create-tables --yes-i-know
@@ -132,4 +130,5 @@ ln -s $INVENIO_DIR/etc/apache/invenio-apache-vhost-ssl.conf \
 #sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --load-demo-records
 
 #bring apache back up
+
 service $WWW_SERVICE start
