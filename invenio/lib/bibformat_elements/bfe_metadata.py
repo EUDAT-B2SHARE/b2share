@@ -47,7 +47,7 @@ def format_element(bfo):
 
     pub = bfo.field("260__")
     if pub:
-        ret += '<tr><th>Publication:</th><td>{0}</td></tr>'.format(pub['b'])
+        ret += '<tr><th>Publication:</th><td>{0}</td></tr>'.format(pub.get('b'))
         if 'c' in pub:
             ret += '<tr><th>Publication Date:</th><td>{0}</td></tr>'.format(
                    pub['c'])
@@ -74,7 +74,6 @@ def format_element(bfo):
             field = md_class.field_args.get(md['a'], {'label': md['a']})
         else:
             field = {'label': md['a']}
-
         ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(
             field['label'], md['b'])
 

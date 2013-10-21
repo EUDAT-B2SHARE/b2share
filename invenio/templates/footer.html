@@ -28,6 +28,7 @@
   <hr/>
   <div class="row">
   <div class="span6">
+  {{ config["CFG_SITE_NAME_INTL"][g.ln] }} &nbsp;::&nbsp;<a class="footer" href="{{ url_for('') }}">{{ _("Search") }}</a>&nbsp;::&nbsp;<a class="footer" href="{{ url_for('deposit') }}">{{ _("Submit") }}</a>&nbsp;::&nbsp;<a class="footer" href="{{ url_for('webaccount.index') }}">{{ _("Personalize") }}</a>&nbsp;::&nbsp;<a class="footer" href="{{ url_for('help') }}">{{ _("Help") }}</a>
   <br />
   {{ _("Powered by") }} <a class="footer" href="http://invenio-software.org/">Invenio</a> v{{ config.CFG_VERSION }}
   <br />
@@ -37,11 +38,7 @@
       {{ _("Last updated") }}: {{ lastupdated|invenio_format_date }}
   {% endif %}
   </div>
-  <div class="span6">
-    <p style="text-align: right">
-      <img src="/img/EUDAT-logo2011-small.jpg" />
-    </p>
-  </div>
+
   </div>
   <!-- replaced page footer -->
 </div> <!-- containter -->

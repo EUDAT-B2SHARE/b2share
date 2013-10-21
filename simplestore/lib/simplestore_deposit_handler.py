@@ -86,11 +86,10 @@ def addmeta(request, sub_id):
     Returns a new page with success message if valid, otherwise it returns a
     form with the errors marked.
     """
-
+    current_app.logger.error("Adding metadata")
     if sub_id is None:
         #just return to deposit
         return redirect(url_for('.deposit'))
-
     updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
@@ -100,22 +99,29 @@ def addmeta(request, sub_id):
         meta = metadata_classes[domain]()
     else:
         meta = SubmissionMetadata()
-
+    
+    current_app.logger.error("About to create a metaform")
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
                           field_args=meta.field_args,
                           converter=HTML5ModelConverter())
     meta_form = MetaForm(request.form, meta)
-
+    
+    current_app.logger.error("about to validate")
     if meta_form.validate_on_submit():
+        current_app.logger.error("validation a sucess")
         recid, marc = mh.create_marc(
             request.form, sub_id, current_user['email'])
+        current_app.logger.error("marc created")
         tmp_file = write_marc_to_temp_file(marc)
+        current_app.logger.error("tmp marc file created")
         task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
+        current_app.logger.error("low level bibupload is done")
         return jsonify(valid=True,
                        html=render_template('simplestore-finalise.html',
                                             recid=recid, marc=marc))
 
+    current_app.logger.error("returning form addmeta")
     return jsonify(valid=False,
                    html=render_template('simplestore-addmeta-table.html',
                                         sub_id=sub_id,

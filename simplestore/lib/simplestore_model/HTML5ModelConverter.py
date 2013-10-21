@@ -70,7 +70,7 @@ class DateTimeInput(Input):
             
         return HTMLString(
             '<div class="datetime" >'
-            '<input type="text" /></div>')
+            '<input type="text" {0}/></div>'.format(self.html_params(name=field.name, **kwargs)))
 
 class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
@@ -90,10 +90,16 @@ class DateInput(Input):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
-        return HTMLString('<input type="text" class="datepicker" />')
+        return HTMLString('<input type="text" class="datepicker" {0}/>'.format(self.html_params(name=field.name, **kwargs)))
 
 class DateField(_DateField):
     widget = DateInput()
+    
+    def __init__(self,  *args, **kwargs):
+        date_format='%d-%m-%Y'
+        if 'format' in kwargs:
+            kwargs.pop('format')
+        super(_DateField, self ).__init__(format=date_format, *args, **kwargs)
     
     def process_data(self, value):
         if value is None:

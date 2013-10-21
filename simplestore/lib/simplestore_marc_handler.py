@@ -38,65 +38,70 @@ def add_basic_fields(rec, form, email):
     contains information on field 260 for publication data.
     """
     # why aren't subfields a dictionary?!
-    if form['title']:
-        record_add_field(rec, '245', subfields=[('a', form['title'])])
-
-    if form['creator']:
-        record_add_field(rec, '100', subfields=[('a', form['creator'])])
-
-    if form['domain']:
-        record_add_field(rec, '980', subfields=[('a', form['domain'])])
-
-    pubfields = []
-    if form['publisher']:
-        pubfields.append(('b', form['publisher']))
-
-    if form['publication_date']:
-        pubfields.append(('c', form['publication_date']))
-
-    if pubfields:
-        record_add_field(rec, '260', subfields=pubfields)
-
-    record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
-
-    if 'open_access' in form:
-        record_add_field(rec, '542', subfields=[('l', 'open')])
-    else:
-        record_add_field(rec, '542', subfields=[('l', 'restricted')])
-
-    if form['licence']:
-        record_add_field(rec, '540', subfields=[('a', form['licence'])])
-
-    record_add_field(rec, '520', subfields=[('a', form['description'])])
-
-    if form['tags']:
-        for kw in form['tags'].split(','):
-            record_add_field(rec, '653',
-                             ind1='1',
-                             subfields=[('a', kw.strip())])
-
-    if form['contributors']:
-        for kw in form['contributors'].split(';'):
-            record_add_field(rec, '700', subfields=[('a', kw.strip())])
-
-    if form['language']:
-        record_add_field(rec, '546', subfields=[('a', form['language'])])
-
-    # copying zenodo here, but I don't think 980 is the right MARC field
-    if form['resource_type']:
-        record_add_field(rec, '980', subfields=[('a', form['resource_type'])])
-
-    if form['alternate_identifier']:
-        record_add_field(rec, '024',
-                         subfields=[('a', form['alternate_identifier'])])
-
-    if form['version']:
-        record_add_field(rec, '250', subfields=[('a', form['version'])])
-
-    record_add_field(rec, '264',
-                     subfields=[('b', CFG_SITE_NAME),
-                                ('c', str(datetime.utcnow()) + " UTC")])
-
+    try:
+        current_app.logger.error("A")
+        if form['title']:
+            record_add_field(rec, '245', subfields=[('a', form['title'])])
+    
+        if form['creator']:
+            record_add_field(rec, '100', subfields=[('a', form['creator'])])
+    
+        if form['domain']:
+            record_add_field(rec, '980', subfields=[('a', form['domain'])])
+        current_app.logger.error("B")
+        pubfields = []
+        if form['publisher']:
+            pubfields.append(('b', form['publisher']))
+        current_app.logger.error("Z1: %s" % form)
+        if form.get('publication_date'):
+            pubfields.append(('c', form['publication_date']))
+        current_app.logger.error("Z2")
+        if pubfields:
+            current_app.logger.error("Z3")
+            record_add_field(rec, '260', subfields=pubfields)
+        current_app.logger.error("C")
+        record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
+    
+        if 'open_access' in form:
+            record_add_field(rec, '542', subfields=[('l', 'open')])
+        else:
+            record_add_field(rec, '542', subfields=[('l', 'restricted')])
+    
+        if form['licence']:
+            record_add_field(rec, '540', subfields=[('a', form['licence'])])
+        current_app.logger.error("D")
+        record_add_field(rec, '520', subfields=[('a', form['description'])])
+    
+        if form['tags']:
+            for kw in form['tags'].split(','):
+                record_add_field(rec, '653',
+                                 ind1='1',
+                                 subfields=[('a', kw.strip())])
+    
+        if form['contributors']:
+            for kw in form['contributors'].split(';'):
+                record_add_field(rec, '700', subfields=[('a', kw.strip())])
+    
+        if form['language']:
+            record_add_field(rec, '546', subfields=[('a', form['language'])])
+    
+        # copying zenodo here, but I don't think 980 is the right MARC field
+        if form['resource_type']:
+            record_add_field(rec, '980', subfields=[('a', form['resource_type'])])
+    
+        if form['alternate_identifier']:
+            record_add_field(rec, '024',
+                             subfields=[('a', form['alternate_identifier'])])
+    
+        if form['version']:
+            record_add_field(rec, '250', subfields=[('a', form['version'])])
+        current_app.logger.error("Zs")
+        record_add_field(rec, '264',
+                         subfields=[('b', CFG_SITE_NAME),
+                                    ('c', str(datetime.utcnow()) + " UTC")])
+    except Exception as e:
+        current_app.logger.error(e)
+        raise
 
 def create_recid():
     """
@@ -185,16 +190,21 @@ def create_marc(form, sub_id, email):
     submits it to the Invenio system.
     """
     rec = {}
+    current_app.logger.error("before recid")
     recid = create_recid()
+    current_app.logger.error("before 001")
     record_add_field(rec, '001', controlfield_value=str(recid))
-
+    current_app.logger.error("before basic")
     add_basic_fields(rec, form, email)
+    current_app.logger.error("before domain")
     add_domain_fields(rec, form)
+    current_app.logger.error("before file info")
     add_file_info(rec, form, email, sub_id, recid)
-
+    current_app.logger.error("before checksum")
     checksum = create_checksum(rec, sub_id)
+    current_app.logger.error("before epic")
     add_epic_pid(rec, recid, checksum)
-
+    current_app.logger.error("before record xml")
     marc = record_xml_output(rec)
 
     return recid, marc

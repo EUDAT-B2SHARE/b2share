@@ -45,6 +45,7 @@ def upload(request, sub_id):
         except KeyError:
             chunks = None
             pass
+        # generate a unique name to be used for submission
         name = request.form['name']
         current_chunk = request.files['file']
 
@@ -122,6 +123,9 @@ def get_file(request, sub_id):
     remove the functionality.
     """
     filename = request.args.get('filename')
+    # make sure that request doesn't go outside the CFG_SIMPLESTORE_UPLOAD_FOLDER
+    if os.path.isabs(filename):
+        return 'File ' + filename + " not found", 404
     f = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id, filename)
     if (os.path.isfile(f)):
         return send_file(f, attachment_filename=filename, as_attachment=True)

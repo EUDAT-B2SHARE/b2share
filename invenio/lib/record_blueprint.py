@@ -28,23 +28,24 @@ from invenio.config import CFG_SITE_RECORD, CFG_WEBLINKBACK_TRACKBACK_ENABLED
 from invenio.access_control_config import VIEWRESTRCOLL
 from invenio.access_control_mailcookie import \
     mail_cookie_create_authorize_action
+from invenio.bibformat import format_record, get_output_format_content_type
+from invenio.bibdocfile import BibRecDocs
+
 from invenio.websearch_model import Collection
 from invenio.websession_model import User
 from invenio.bibedit_model import Bibrec
 from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint, \
-                                  register_template_context_processor
+    register_template_context_processor
 from invenio.webuser_flask import current_user
 
 from invenio.search_engine import guess_primary_collection_of_a_record, \
-                                  check_user_can_view_record
+    check_user_can_view_record, print_record
 
 from invenio.webcomment import get_mini_reviews
 from invenio.websearchadminlib import get_detailed_page_tabs,\
                                       get_detailed_page_tabs_counts
-from invenio.bibdocfile import BibRecDocs
-from invenio.websearch_blueprint import get_collection_breadcrumbs, \
-                                        cached_format_record
 from invenio.search_engine_utils import get_fieldvalues
+from invenio.bibrank_downloads_similarity import register_page_view_event
 
 blueprint = InvenioBlueprint('record', __name__, url_prefix="/"+CFG_SITE_RECORD,
                              config='invenio.search_engine_config',
@@ -71,12 +72,14 @@ def request_record(f):
         if auth_code and current_user.is_guest:
             cookie = mail_cookie_create_authorize_action(VIEWRESTRCOLL, {
                 'collection': guess_primary_collection_of_a_record(recid)})
-            url_args = {'action': cookie, 'ln': g.ln, 'referer': request.referrer}
+            url_args = {'action': cookie, 'ln': g.ln, 'referer': request.url}
+            flash(_("Authorization failure"), 'error')
             return redirect(url_for('webaccount.login', **url_args))
         elif auth_code:
             flash(auth_msg, 'error')
             abort(apache.HTTP_UNAUTHORIZED)
 
+        from invenio.bibfield import get_record
         from invenio.search_engine import record_exists, get_merged_recid
         # check if the current record has been deleted
         # and has been merged, case in which the deleted record
@@ -88,14 +91,11 @@ def request_record(f):
         elif record_status == -1:
             abort(apache.HTTP_GONE)  # The record is gone!
 
-        g.record = record = Bibrec.query.get(recid)
-        user = None
-        if not current_user.is_guest:
-            user = User.query.get(current_user.get_id())
-        title = get_fieldvalues(recid, '245__a')
-        title = title[0] if len(title) > 0 else ''
+        g.bibrec = Bibrec.query.get(recid)
+        record = get_record(recid)
+        title = record.get('title.title', '')
 
-        b = get_collection_breadcrumbs(collection, [(_('Home'), '')])
+        b = [(_('Home'), '')] + collection.breadcrumbs()[1:]
         b += [(title, 'record.metadata', dict(recid=recid))]
         current_app.config['breadcrumbs_map'][request.endpoint] = b
         g.record_tab_keys = []
@@ -127,20 +127,23 @@ def request_record(f):
                 from invenio.weblinkback_templates import get_trackback_auto_discovery_tag
                 return dict(headerLinkbackTrackbackLink=get_trackback_auto_discovery_tag(recid))
 
+        def _format_record(recid, of='hd', user_info=current_user, *args, **kwargs):
+            return print_record(recid, format=of, user_info=user_info, *args, **kwargs)
+
         @register_template_context_processor
         def record_context():
-            files = [f for f in BibRecDocs(recid, human_readable=True).list_latest_files(list_hidden=False) if not f.is_icon() and f.is_restricted(current_user)[0] == 0]
+            files = [f for f in BibRecDocs(recid, human_readable=True).list_latest_files(list_hidden=False) \
+                        if not f.is_icon() and f.is_restricted(current_user)[0] == 0]
 
             return dict(recid=recid,
                         record=record,
-                        user=user,
                         tabs=tabs,
                         title=title,
                         get_mini_reviews=lambda *args, **kwargs:
                         get_mini_reviews(*args, **kwargs).decode('utf8'),
                         collection=collection,
-                        format_record=cached_format_record,
-                        files=files,
+                        format_record=_format_record,
+                        files=files
                         )
         return f(recid, *args, **kwargs)
     return decorated
@@ -149,9 +152,13 @@ def request_record(f):
 @blueprint.route('/<int:recid>/metadata', methods=['GET', 'POST'])
 @blueprint.route('/<int:recid>/', methods=['GET', 'POST'])
 @blueprint.route('/<int:recid>', methods=['GET', 'POST'])
+@blueprint.invenio_wash_urlargd({'of': (unicode, 'hd')})
 @request_record
-def metadata(recid):
-    return render_template('record_metadata.html')
+def metadata(recid, of='hd'):
+    register_page_view_event(recid, current_user.get_id(), str(request.remote_addr))
+    if get_output_format_content_type(of) != 'text/html':
+        return redirect('/%s/%d/export/%s' % (CFG_SITE_RECORD, recid, of))
+    return render_template('record_metadata.html', of=of)
 
 
 @blueprint.route('/<int:recid>/references', methods=['GET', 'POST'])
