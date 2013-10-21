@@ -24,6 +24,10 @@ mkdir /etc/apache2/ssl
 ## disable Debian's default web site:
 /usr/sbin/a2dissite default
 
+## enable Invenio web sites:
+#/usr/sbin/a2ensite invenio
+#/usr/sbin/a2ensite invenio-ssl
+
 ## enable SSL module:
 /usr/sbin/a2enmod ssl
 
@@ -32,10 +36,10 @@ pip install celery rq Flask-Script pyparsing numpy Babel workflow
 
 #Check out next branch of invenio
 git config --global http.sslVerify false
-git clone -v -b next https://invenio-software.org/repo/invenio
+git clone -v -b next https://github.com/SimpleStore/invenio.git
 
 cd invenio
-git checkout next
+git checkout tags/b2share-v1
 #may need to remove libxml lines from requirements.txt
 pip install -r requirements.txt
 pip install -r requirements-extras.txt
