@@ -61,20 +61,20 @@ class DateTimeInput(Input):
     Creates `<input type=datetime>` widget
     """
     input_type = "text"
-    
+
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
         if 'value' not in kwargs:
             kwargs['value'] = field._value()
-            
+
         return HTMLString(
             '<div class="datetime" >'
             '<input type="text" {0}/></div>'.format(self.html_params(name=field.name, **kwargs)))
 
 class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
-    
+
     def process_data(self, value):
         if value is None:
             self.data = self.default
@@ -86,7 +86,7 @@ class DateInput(Input):
     Creates `<input type=date>` widget
     """
     input_type = "text"
-    
+
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
@@ -94,19 +94,19 @@ class DateInput(Input):
 
 class DateField(_DateField):
     widget = DateInput()
-    
+
     def __init__(self,  *args, **kwargs):
         date_format='%d-%m-%Y'
         if 'format' in kwargs:
             kwargs.pop('format')
         super(_DateField, self ).__init__(format=date_format, *args, **kwargs)
-    
+
     def process_data(self, value):
         if value is None:
             self.data = self.default
         else:
             self.data = value
-            
+
 class DecimalInput(Input):
     input_type = "number"
 
