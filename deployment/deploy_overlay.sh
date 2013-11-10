@@ -18,30 +18,13 @@ cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
 chown -R $WWW_USER.$WWW_USER /opt/invenio
 
-#The following vars should be set in invenio-local.conf.
-#I used to do it here with "echo bla >>" but it was a horrible hack
-#left here for documentation purposes until proper solution
-#CFG_ACCESS_CONTROL_NOTIFY_USER_ABOUT_NEW_ACCOUNT = 1
-#CFG_SIMPLESTORE_UPLOAD_FOLDER = /opt/invenio/var/tmp/simplestore_uploads
-#CFG_SITE_NAME = SimpleStore
-#CFG_WEBSTYLE_TEMPLATE_SKIN = openaire
-#sudo -u www-data /opt/invenio/bin/inveniocfg --update-all
-
-
 # a quick hack for general modifications
 # XXX: invenio update unsafe
 if [ -f /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py ];
   then rm -v /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_unit_tests.py*;
 fi
-# XXX: invenio update unsafe
-#if [ -f /opt/invenio/lib/python/invenio/webmessage_blueprint.py ]; then
-#	rm -v /opt/invenio/lib/python/invenio/webmessage_blueprint.py
-#fi
 
-if [ -f /opt/invenio/lib/python/invenio/webdeposit_blueprint.py ]; then
-	rm -v /opt/invenio/lib/python/invenio/webdeposit_blueprint.py
-fi
-
+# add invenio-specific overlay
 cp -vf invenio/templates/* /opt/invenio/etc/templates/
 cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
 cp -vrf invenio/etc/* /opt/invenio/etc/
