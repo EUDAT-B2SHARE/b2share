@@ -25,9 +25,13 @@ Based on WebDeposit code.
 """
 import shutil
 import os
+from uuid import uuid1 as new_uuid
 from glob import iglob
+
 from werkzeug.utils import secure_filename
+
 from flask import send_file
+
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
 
@@ -35,10 +39,12 @@ def upload(request, sub_id):
     """ The file is split into chunks on the client-side
         and reformed on the server-side.
 
-        WebDeposit used unique filenames - don't think this is needed if we
-        have unique directories.
+        @sub_id - submission id
     """
     if request.method == 'POST':
+        if sub_id.startswith('/'):
+            # malformed uuid, can lead to data escalation, raise an error
+            raise Exception('UUID is malformed')
         try:
             chunks = request.form['chunks']
             chunk = request.form['chunk']
@@ -57,20 +63,28 @@ def upload(request, sub_id):
         if not os.path.exists(CFG_SIMPLESTORE_UPLOAD_FOLDER):
             os.makedirs(CFG_SIMPLESTORE_UPLOAD_FOLDER)
 
-        # webdeposit also adds userid and deptype folders, we just use unique
-        # id
+        # webdeposit also adds userid and deptype folders, we just use unique id
         upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
 
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
 
         # Save the chunk
-        current_chunk.save(os.path.join(upload_dir, filename))
+        path_to_save = os.path.join(upload_dir, filename)
+        current_chunk.save(path_to_save)
 
-        if (chunks is not None) and (int(chunk) == int(chunks) - 1):
+        if chunks is None:  # file is a single chunk
+            unique_filename = str(new_uuid()) + filename
+            old_path = os.path.join(upload_dir, filename)
+            file_path = os.path.join(upload_dir,
+                                     unique_filename)
+            os.rename(old_path, file_path)  # Rename the chunk
+            size = os.path.getsize(file_path)
+            file_metadata = dict(name=name, file=file_path, size=size)
+        elif (chunks is not None) and (int(chunk) == int(chunks) - 1):
             '''All chunks have been uploaded!
                 start merging the chunks'''
-            filename = secure_filename(name)
+            filename =  secure_filename(name)
             chunk_files = []
             for chunk_file in iglob(os.path.join(upload_dir,
                                                  filename + '_*')):
@@ -79,12 +93,14 @@ def upload(request, sub_id):
             # Sort files in numerical order
             chunk_files.sort(key=lambda x: int(x.split("_")[-1]))
 
-            file_path = os.path.join(upload_dir, filename)
+            file_path = os.path.join(upload_dir, str(new_uuid()) + filename)
             destination = open(file_path, 'wb')
             for chunk in chunk_files:
                 shutil.copyfileobj(open(chunk, 'rb'), destination)
                 os.remove(chunk)
             destination.close()
+            size = os.path.getsize(file_path)
+            file_metadata = dict(name=name, file=file_path, size=size)
 
     return filename
 
