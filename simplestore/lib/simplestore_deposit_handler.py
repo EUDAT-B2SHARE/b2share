@@ -25,23 +25,24 @@ from tempfile import mkstemp
 from flask.ext.wtf import Form
 from flask import render_template, redirect, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
+from wtforms.ext.csrf.session import SessionSecureForm
 
 from invenio.config import CFG_SITE_SECRET_KEY
 from invenio.bibtask import task_low_level_submission
 from invenio.config import CFG_TMPSHAREDDIR
+from invenio.wtforms_utils import InvenioBaseForm
+from invenio.webuser_flask import current_user
 
 from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
 import invenio.simplestore_upload_handler as uph
 from invenio.simplestore_model.model import SubmissionMetadata
 from invenio.simplestore_model import metadata_classes
 import invenio.simplestore_marc_handler as mh
-from invenio.webuser_flask import current_user
 
 
-# Needed to avoid errors in Form Generation
-# There is an invenio forms class that should be investigated
-class FormWithKey(Form):
-    SECRET_KEY = CFG_SITE_SECRET_KEY
+# InvenioBaseForm is taking care of the csrf
+class FormWithKey(InvenioBaseForm):
+    pass
 
 
 def deposit(request, sub_id=None, form=None, metadata=None):
@@ -63,14 +64,11 @@ def getform(request, sub_id, domain):
     else:
         meta = SubmissionMetadata()
 
-    current_app.logger.error("Got meta")
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
                           field_args=meta.field_args,
                           converter=HTML5ModelConverter())
-    current_app.logger.error("Got form")
     meta_form = MetaForm(request.form, meta)
-    current_app.logger.error("Returning")
 
     return render_template(
         'simplestore-addmeta-table.html',
@@ -100,7 +98,6 @@ def addmeta(request, sub_id):
     else:
         meta = SubmissionMetadata()
     
-    current_app.logger.error("About to create a metaform")
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
                           field_args=meta.field_args,
@@ -109,14 +106,10 @@ def addmeta(request, sub_id):
     
     current_app.logger.error("about to validate")
     if meta_form.validate_on_submit():
-        current_app.logger.error("validation a sucess")
         recid, marc = mh.create_marc(
             request.form, sub_id, current_user['email'])
-        current_app.logger.error("marc created")
         tmp_file = write_marc_to_temp_file(marc)
-        current_app.logger.error("tmp marc file created")
         task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
-        current_app.logger.error("low level bibupload is done")
         return jsonify(valid=True,
                        html=render_template('simplestore-finalise.html',
                                             recid=recid, marc=marc))
