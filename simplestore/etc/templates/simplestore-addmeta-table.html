@@ -3,14 +3,18 @@
 {{ form.csrf_token }}
 {% macro meta_field(f) %}
 <div class="compact-form {% if f.errors %}error{% endif %}">
+
+{%- if f.description -%}
+    <div id="descbutton">
+    <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled" disabled>
+    <i class="icon-info-sign"></i></button><span>{{f.description|safe}}</span></a></div>
+  {%- endif %}
+
+
   {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
     {{f(**kwargs)|safe}}
 
-  {%- if f.description -%}
-    <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled" disabled>
-    <i class="icon-info-sign"></i></button><span>{{f.description|safe}}</span></a>
-  {%- endif %}
-
+  
   <div class="controls">
 
     {%- if f.errors %}

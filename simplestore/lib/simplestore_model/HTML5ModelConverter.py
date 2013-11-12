@@ -39,8 +39,9 @@ class SwitchInput(Input):
             checked = "checked"
 
         return HTMLString(
+            '<div id="switcharea"'
             '<div class="switch" data-on="success" data-off="danger">'
-            '<input {0} {1}></div>'.format(checked, self.html_params(name=field.name, **kwargs)))
+            '<input {0} {1}></div></div>'.format(checked, self.html_params(name=field.name, **kwargs)))
 
 
 class SwitchField(BooleanField):
