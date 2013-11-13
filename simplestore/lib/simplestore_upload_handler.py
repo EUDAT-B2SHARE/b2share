@@ -142,9 +142,9 @@ def get_file(request, sub_id):
     # make sure that request doesn't go outside the CFG_SIMPLESTORE_UPLOAD_FOLDER
     if not os.path.samefile(
          CFG_SIMPLESTORE_UPLOAD_FOLDER,
-         os.path.commonprefix(CFG_SIMPLESTORE_UPLOAD_FOLDER,
-                              os.path.realpath(filename))):
-        return "File " + filename + " not tried", 404
+         os.path.commonprefix([CFG_SIMPLESTORE_UPLOAD_FOLDER,
+                              os.path.realpath(filename))]):
+        return "File " + filename + " not found", 404
 
     f = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id, filename)
     if (os.path.isfile(f)):
