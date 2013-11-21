@@ -4,14 +4,22 @@
 {% macro meta_field(f) %}
 <div class="compact-form {% if f.errors %}error{% endif %}">
 
+<a title={{f.description|safe}} rel='tooltip' container="body">
+    <button type="button" class="btn btn-mini btn-info disabled" disabled>
+        <i class="icon-info-sign"></i>
+    </button>
+</a>
+
+{#
 {%- if f.description -%}
     <div id="descbutton">
     <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled" disabled>
     <i class="icon-info-sign"></i></button><span>{{f.description|safe}}</span></a></div>
   {%- endif %}
+#}
 
-
-  {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
+  {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}
+    <span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
     {{f(**kwargs)|safe}}
 
   
@@ -61,5 +69,10 @@
       defaultDate: new Date()
     });
 </script>
+
+<script type="text/javascript">
+   $(document).ready(function() {
+   $("[rel='tooltip']").tooltip();
+})
 
 </script>
