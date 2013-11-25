@@ -143,7 +143,7 @@ def get_file(request, sub_id):
     if not os.path.samefile(
          CFG_SIMPLESTORE_UPLOAD_FOLDER,
          os.path.commonprefix([CFG_SIMPLESTORE_UPLOAD_FOLDER,
-                              os.path.realpath(filename))]):
+                              os.path.realpath(filename)])):
         return "File " + filename + " not found", 404
 
     f = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id, filename)
