@@ -47,7 +47,7 @@ from invenio.websearchadminlib import get_detailed_page_tabs,\
 from invenio.search_engine_utils import get_fieldvalues
 from invenio.bibrank_downloads_similarity import register_page_view_event
 
-blueprint = InvenioBlueprint('record', __name__, url_prefix="/"+CFG_SITE_RECORD,
+blueprint = InvenioBlueprint('record', __name__, url_prefix="/" + CFG_SITE_RECORD,
                              config='invenio.search_engine_config',
                              breadcrumbs=[])
                              #menubuilder=[('main.search', _('Search'),
@@ -119,7 +119,7 @@ def request_record(f):
             t.update(v)
             tabs.append(t)
             if v['visible']:
-                g.record_tab_keys.append(b+'.'+k)
+                g.record_tab_keys.append(b + '.' + k)
 
         if CFG_WEBLINKBACK_TRACKBACK_ENABLED:
             @register_template_context_processor
