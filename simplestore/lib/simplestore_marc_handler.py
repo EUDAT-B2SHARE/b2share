@@ -19,6 +19,7 @@
 import os
 from datetime import datetime
 import hashlib
+import pickle
 
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
@@ -116,12 +117,27 @@ def add_file_info(rec, form, email, sub_id, recid):
             email)
     for f in files:
         path = os.path.join(upload_dir, f)
+        if f.startswith('metadata_'):
+            # we do not want to do load file metadata into Invenio as files, will extract into MARC fields
+            continue
+        # load corresponding metadata file
+        metadata = {}
+        metadata_filename = os.path.join(upload_dir, 'metadata_' + f)
+        if os.path.isfile(metadata_filename):
+            # expecting to load a dict with the following structure: dict(name=name, file=file_path, size=size)
+            metadata = pickle.load(open(metadata_filename, 'rb'))
+        else:
+            current_app.logger.error('Submitted file \'%s\' is missing metadata file, using default' % f)
+            metadata = dict(name=f, file=path, size=str(os.path.getsize(path)))
+
         record_add_field(rec, 'FFT',
                          subfields=[('a', path),
-                         #('d', 'some description') # TODO
+                         ('n', metadata['name']), # name of the file
                          #('t', 'Type'), # TODO
                          # unfortunately s is used for a timestamp, not file size
-                         #('s', str(os.path.getsize(path))),
+                         #('s', 'timestamp'), # s is a timestamp
+                         ('w', str(metadata['size'])), # size should be derived automatically, 
+                                                       # but storing it into 'document_moreinfo' field
                          ('r', fft_status)])
 
         #seems to be impossible to add file size data, thought this would work

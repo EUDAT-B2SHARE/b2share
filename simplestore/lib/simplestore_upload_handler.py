@@ -27,6 +27,7 @@ import shutil
 import os
 from uuid import uuid1 as new_uuid
 from glob import iglob
+import pickle
 
 from werkzeug.utils import secure_filename
 
@@ -84,7 +85,7 @@ def upload(request, sub_id):
         elif (chunks is not None) and (int(chunk) == int(chunks) - 1):
             '''All chunks have been uploaded!
                 start merging the chunks'''
-            filename =  secure_filename(name)
+            filename = secure_filename(name)
             chunk_files = []
             for chunk_file in iglob(os.path.join(upload_dir,
                                                  filename + '_*')):
@@ -93,7 +94,9 @@ def upload(request, sub_id):
             # Sort files in numerical order
             chunk_files.sort(key=lambda x: int(x.split("_")[-1]))
 
-            file_path = os.path.join(upload_dir, str(new_uuid()) + filename)
+            file_uuid = str(new_uuid())
+            file_path = os.path.join(upload_dir, file_uuid + filename)
+            metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_uuid + filename)
             destination = open(file_path, 'wb')
             for chunk in chunk_files:
                 shutil.copyfileobj(open(chunk, 'rb'), destination)
@@ -101,6 +104,8 @@ def upload(request, sub_id):
             destination.close()
             size = os.path.getsize(file_path)
             file_metadata = dict(name=name, file=file_path, size=size)
+            # create a metadata-<uuid>-<safe-file-name> file to store pickled metadata
+            pickle.dump(file_metadata, open(metadata_file_path, 'wb'))
 
     return filename
 
@@ -141,8 +146,8 @@ def get_file(request, sub_id):
     filename = request.args.get('filename')
     # make sure that request doesn't go outside the CFG_SIMPLESTORE_UPLOAD_FOLDER
     if not os.path.samefile(
-         CFG_SIMPLESTORE_UPLOAD_FOLDER,
-         os.path.commonprefix([CFG_SIMPLESTORE_UPLOAD_FOLDER,
+                            CFG_SIMPLESTORE_UPLOAD_FOLDER,
+                            os.path.commonprefix([CFG_SIMPLESTORE_UPLOAD_FOLDER,
                               os.path.realpath(filename)])):
         return "File " + filename + " not found", 404
 
