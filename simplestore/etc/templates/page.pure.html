@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="" >
+<head>
+	<meta charset="utf-8">
+	<title>EUDAT B2SHARE</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en" />
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="author" content="">
+	<link rev="made" href="mailto:livenson@kth.se" />
+	<link rel="canonical" href="http://ss-dev.pdc.kth.se/" />
+
+	<link rel="alternate" type="application/rss+xml" title="SimpleStore RSS" href="/rss" />
+	<link rel="search" type="application/opensearchdescription+xml" href="/opensearchdescription" title="SimpleStore" />
+	<link rel="unapi-server" type="application/xml" title="unAPI" href="/unapi" />
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css"></link>
+
+	<link rel="stylesheet" type="text/css" href="css/simplestore-style.css"></link>
+
+	<link rel="stylesheet" type="text/css" href="css/page.css"></link>
+
+
+
+</head>
+
+
+
+<body class="{{ body_css_classes|join(' ') if body_css_classes }}"
+	  lang="" {{ rtl_direction|safe }}>
+
+	<div id="wrap">
+
+		<header>
+			<div class="navbar navbar-fixed-top">
+				<div class="navbar-inner">
+					<div class="container">
+						<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+						</a>
+						<a class="brand" href="">
+							B2Share
+						</a>
+						<div class="nav-collapse collapse">
+							<ul class="nav">
+							</ul>
+							<div class="pull-right">
+								<ul class="nav pull-right">
+									<li class="dropdown">
+										<a href="" style="display: inline-block; padding-right: 5px;">
+											<i class="icon icon-white icon-user"></i> {{ "guest" }}
+										</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="visible-desktop" style="clear:both; height: 60px;"></div>
+
+			<!-- page.html: end block headerbox; end replaced page header -->
+			<!-- page.html: start block pageheaderadd.html -->
+			{% block pageheaderadd %}{{ pageheaderadd|safe }}{% endblock pageheaderadd %}
+			<!-- page.html: end block pageheaderadd.html -->
+		</header>
+		{%- if not no_pagebody -%}
+		<!-- page.html: start block page_body -->
+		{% block page_body -%}
+
+
+		<div class="container">
+			<!-- page.html: start block title -->
+			{% block title %}
+			{% if title %}
+			<div class="page-header">
+				<h1>{{ title }}</h1>
+			</div>
+			{% endif %}
+			{% endblock title %}
+			<!-- page.html: end block title -->
+			<!-- page.html: start block messages -->
+			{% block messages %}
+			{% for category, msg in get_flashed_messages(with_categories=true) %}
+			<div class="alert alert-{{ category }}">
+				<a class="close" data-dismiss="alert" href="#">×</a>
+				{{ msg|safe }}
+			</div>
+			{% endfor %}
+			{% endblock messages %}
+			<!-- page.html: end block messages -->
+			<!-- page.html: start block body -->
+			{% block body %}
+			{{ body }}
+			{% endblock body %}
+			<!-- page.html: end block body -->
+		</div>
+		{%- endblock page_body -%}
+		<!-- page.html: end block page_body -->
+		{%- endif -%}
+		{%- if not no_pagefooter -%}
+		<div id="push"></div>
+	</div>{# end wrap #}
+
+
+
+	<footer>
+		<div class="container">
+			<!-- page.html: start block pagefooteradd -->
+			{% block pagefooteradd %}{{ pagefooteradd|safe }}{% endblock pagefooteradd %}
+			<!-- page.html: end block pagefooteradd -->
+		</div>
+		<!-- replaced page footer -->
+		{%- include 'footer.html' -%}
+	</footer>
+
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	{% block javascript %}{% endblock javascript %}
+</body>
+</html>
+{%- endif -%}
