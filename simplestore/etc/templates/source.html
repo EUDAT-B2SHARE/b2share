@@ -1,0 +1,780 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="" >
+<head>
+  <meta charset="utf-8">
+  <title>EUDAT B2Share</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Language" content="en" />
+  <meta name="description" content="" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="">
+  <link rev="made" href="mailto:livenson@kth.se" />
+  <link rel="canonical" href="http://ss-dev.pdc.kth.se/" />
+  
+  <link rel="alternate" hreflang="en" href="http://ss-dev.pdc.kth.se/?ln=en" />
+  
+  <link rel="alternate" type="application/rss+xml" title="SimpleStore RSS" href="/rss" />
+  <link rel="search" type="application/opensearchdescription+xml" href="/opensearchdescription" title="SimpleStore" />
+  <link rel="unapi-server" type="application/xml" title="unAPI" href="/unapi" />
+  
+  <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <!-- Le fav and touch icons -->
+  <link rel="shortcut icon" href="/favicon.ico">
+  
+    
+  <link rel="apple-touch-icon-precomposed" sizes="144x144"
+        href="/apple-touch-icon-144-precomposed.png">
+  
+    
+  <link rel="apple-touch-icon-precomposed" sizes="114x114"
+        href="/apple-touch-icon-114-precomposed.png">
+  
+    
+  <link rel="apple-touch-icon-precomposed" sizes="72x72"
+        href="/apple-touch-icon-72-precomposed.png">
+  
+    
+  <link rel="apple-touch-icon-precomposed" sizes="57x57"
+        href="/apple-touch-icon-57-precomposed.png">
+  
+
+  
+  
+    
+  
+  
+  
+  
+
+  
+  
+    <link rel="stylesheet" type="text/css" href="/css/00-invenio-7144220369135696297.css?975e4d1a"></link>
+  
+  
+  
+    <link rel="stylesheet" type="text/css" href="/css/90-invenio-3462910968222156675.css?0a167083"></link>
+  
+  
+  
+  
+  <style>
+
+    legend [class*="icon-"] { vertical-align: baseline; }
+
+    /*
+    ----------------------- Stick footer ----------------------- */
+    html,
+    body {
+      height: 100%;
+    }
+
+    /* Wrapper for page content to push down footer */
+    #wrap {
+      min-height: 100%;
+      height: auto !important;
+      height: 100%;
+      /* Negative indent footer by it's height */
+      margin: 0 auto -150px;
+    }
+
+    /* Set the fixed height of the footer here */
+    #push,
+    footer {
+      min-height: 150px;
+    }
+
+    #push {
+      margin-top: 60px;
+    }
+
+    footer a, footer a:hover {
+      color: #666;
+    }
+    footer, footer p {
+      font-size: 11px;
+      color: #333;
+    }
+
+    /* Lastly, apply responsive CSS fixes as necessary */
+    @media (max-width: 767px) {
+      footer {
+        margin-left: -20px;
+        margin-right: -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+
+    /* --------------- */
+  </style>
+</head>
+<body class=""
+      lang="en" >
+  <div id="wrap">
+    <header>
+      <!-- replaced page header -->
+      
+        
+
+
+
+  <style>
+  .brand img {
+    height: 20px;
+    width: auto!important;
+    max-width: 200%!important;
+    opacity: 0.6;
+  }
+
+  .brand:hover img {
+    opacity: 0.95;
+  }
+  </style>
+  <div class="navbar navbar-fixed-top navbar-inverse">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="/">
+           B2Share 
+        </a>
+        <div class="nav-collapse collapse">
+          <ul class="nav"><li><a href="/">Search</a></li><li><a href="/deposit/">Deposit</a></li>
+          </ul>
+          <div class="pull-right">
+            <ul class="nav pull-right">
+              <li class="dropdown">
+              
+                <a href="/youraccount/login?referer=https%3A%2F%2Fss-dev.pdc.kth.se%2F" style="display: inline-block; padding-right: 5px;">
+                  <i class="icon icon-white icon-user"></i> guest
+                </a>
+              
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: inline-block; padding-left: 5px;">
+                <span class="caret"></span>&nbsp;</a>
+                <ul class="dropdown-menu pull-right">
+                  <li class="divider"></li>
+                  
+                  <li><a href="/youraccount/login?referer=https%3A%2F%2Fss-dev.pdc.kth.se%2F">
+                    <i class="icon icon-lock"></i> Login
+                  </a></li>
+                  
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="visible-desktop" style="clear:both; height: 60px;"></div>
+
+      
+      <!-- end replaced page header -->
+      
+
+      
+    </header><div class="container">
+      
+  
+  
+      
+      
+  
+
+      
+        
+        
+        
+
+
+  
+    
+<style>
+.websearch .nav > li > ul > li {
+  float: left;
+}
+.websearch .nav > li > a {
+  white-space: nowrap;
+}
+.websearch .nav > li > a:hover {
+  background-color: inherit;
+}
+.websearch ul.nav > li > ul {
+  clear: both;
+}
+.websearch ul.nav > li > ul > li {
+  display: inline;
+}
+.websearch ul.nav > li > ul > li > a {
+  display: inline;
+}
+.websearch .badge {
+  font-size: 80%;
+}
+
+.collection ul.nav-list {
+  padding-left: 0px;
+}
+
+.collection ul.nav-list ul.nav-list {
+  font-size: 90%;
+}
+
+.collection ul ul li a {
+  color: #333;
+  opacity: 0.8;
+}
+
+.collection .badge {
+  opacity:0.6;
+  font-size:80%;
+}
+
+.collection ul ul .badge {
+  color: #333;
+  background-color: #EEE;
+  border: 1px solid #999;
+}
+
+</style>
+
+
+  <div id="search-box-main" class="row">
+    <div class="span12">
+    <div class="well well-small"
+         style="margin-bottom: 20px; margin-left: -9px; margin-right: -9px;">
+      <div class="row">
+
+        <form action="/search" name="settings" method="get"
+              style="margin-bottom: 0px; position: relative; z-index: 1;"
+              class="pull-right form-inline">
+          <input name="p" value="" type="hidden" />
+
+
+        <div id="settingsdropdown" class="pull-right btn-group dropdown">
+          <button class="btn dropdown-toggle add-open-permanent" data-target="#settingsdropdown" data-toggle="dropdown">
+            <i class="icon-cog"></i>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu donothide clearfix"
+              style="min-width: 300px; padding-bottom: 0px;">
+            <li class="nav-header">Search settings</li>
+
+            <li class="divider"></li>
+            <li class="clearfix nav-list">
+
+          <div class="control-group clearfix">
+            <label class="control-label pull-left">Display on page</label>
+            <div class="controls pull-right">
+              <select
+                      name="rg"
+                      style="height: inherit; line-height: inherit;"
+                      class="btn-small span2"><option value="10">10 results</option><option value="25">25 results</option><option value="50">50 results</option><option value="100">100 results</option></select>
+            </div>
+          </div>
+
+
+          <div class="control-group clearfix">
+            <label class="control-label pull-left">Output format</label>
+            <div class="controls pull-right">
+              <select
+                      name="of"
+                      style="height: inherit; line-height: inherit;"
+                      class="btn-small span2"></select>
+            </div>
+          </div>
+
+          <div class="clearfix">
+            <label class="control-label pull-left">Sort by most</label>
+            <div class="controls pull-right">
+            <div class="btn-group" data-toggle="buttons-radio"><label class="btn btn-mini active">
+                <input style="display:none;"
+                  type="radio"
+                  name="rm"
+                  value=""
+                  checked="checked">
+                recent
+              </label><label class="btn btn-mini ">
+                <input style="display:none;"
+                  type="radio"
+                  name="rm"
+                  value="citation"
+                  >
+                cited
+              </label><label class="btn btn-mini ">
+                <input style="display:none;"
+                  type="radio"
+                  name="rm"
+                  value="wrd"
+                  >
+                relevant
+              </label></div>
+            </div>
+          </div>
+            </li>
+
+            <li class="divider"></li>
+            <li class="clearfix nav-list">
+            <div class="control-group clearfix">
+              <label class="control-label pull-left">Search form</label>
+            <div class="controls pull-right">
+            <div class="btn-group" data-toggle="buttons-radio"><label class="btn btn-mini">
+                <input style="display:none;"
+                  type="radio"
+                  name="box"
+                  value="simple"
+                  checked="checked">
+                Simple
+              </label><label class="btn btn-mini">
+                <input style="display:none;"
+                  type="radio"
+                  name="box"
+                  value="advanced"
+                  >
+                Advanced
+              </label></div>
+            </div>
+            </div>
+            </li>
+
+            <li class="modal-footer nav-list clearfix"><button name="action_search"
+                      rel="tooltip"
+                      title="use settings in current search"
+                      data-placement="bottom"
+                      class="btn btn-small pull-right">
+                <i class="icon-ok"></i> Apply
+              </button>
+            </li>
+          </ul>
+        </div>
+        </form>
+
+
+
+        <form action="/search"
+              name="search"
+              method="get"
+              style="margin-bottom: 0px;"
+              class="form-horizontal span11">
+        <div class="row">
+          <div class="span2 visible-desktop">
+            <label for="p"
+                style="padding-top: 5px; text-align: right; font-size: 90%;">Search 61 records for
+            </label>
+          </div>
+          <div class="span9">
+            <div id="searchdropdown"
+                 class="dropdown">
+            
+              <div class="input-prepend input-append">
+                <div class="dropdown add-on">
+                  <a class="dropdown-toggle"
+                     rel="tooltip" title="Search Tips and Examples"
+                     data-placement="bottom"
+                     data-delay="100"
+                     data-toggle="dropdown" role="button"
+                     href="#"><i class="icon-question-sign"></i></a>
+                  <ul class="searchexamples dropdown-menu" role="menu" aria-labelledby="dLabel" style="text-align: left;">
+                    <li>
+                      <a href="/help/search-tips">
+                        <i class="pull-right icon-info-sign"></i>
+                        <strong>Search Tips</strong>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="/help/search-guide">
+                        <i class="pull-right icon-leaf"></i>
+                        <strong>Search Guide</strong>
+                      </a>
+                    </li>
+                    
+                  </ul>
+                </div><!--
+                No space!
+             --><input autocomplete="off"
+                  data-provide="typeahead"
+                  data-items="4"
+                  name="p"
+                  class="span6"
+                  type="text"
+                  style="min-width:200px;"
+                  
+                  tabindex="1"
+                  value=""autofocus/><!--
+                No space!
+             --><span data-toggle="dropdown" data-target="#searchdropdown" class="add-on btn add-open-permanent">
+                  <i class="caret"></i>
+                </span>
+              </div>
+
+
+<script>
+  var box = "\n  <div style=\"padding: 0px;\" class=\"dropdown-menu donothide\">\n    <div class=\"row\">\n      <div class=\"span6\" style=\"min-width: 400px;\">\n\n        <div class=\"modal-header\">\n          <button type=\"button\" style=\"z-index:9999; position: relative;\" class=\"close\" onclick=\"$('.dropdown').removeClass('open open-permanent')\">\u00d7<\/button>\n          <div class=\"control\" style=\"margin-bottom: 0px;\">\n            <label class=\"control-label\">\n              <strong>Add to search<\/strong>\n            <\/label>\n            <div class=\"controls\">\n            <div style=\"padding-top:4px;\" class=\"btn-group\" data-toggle=\"buttons-radio\">\n              <label class=\"btn btn-mini active\">\n                <input style=\"display:none;\" type=\"radio\" name=\"op1\" value=\"a\" checked\/>AND\n              <\/label>\n              <label class=\"btn btn-mini\">\n                <input style=\"display:none;\" type=\"radio\" name=\"op1\" value=\"o\"\/>OR\n              <\/label>\n              <label class=\"btn btn-mini\">\n                <input style=\"display:none;\" type=\"radio\" name=\"op1\" value=\"n\"\/>AND NOT\n              <\/label>\n            <\/div>\n            <\/div>\n          <\/div>\n        <\/div><!-- end modal-header-->\n\n        <div style=\"max-height: 800px;\" class=\"modal-body\">\n\n<div class=\"tab-content\">\n  <div class=\"tab-pane active\" id=\"simple-search\">\n    \n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Author\n    <\/label>\n    <div class=\"controls controls-row\">\n      <input data-provide=\"typeahead-url\" data-source=\"\/list\/exactauthor\" id=\"author\" name=\"author\" type=\"text\" value=\"\" \/>\n    <\/div>\n  <\/div>\n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Title\n    <\/label>\n    <div class=\"controls controls-row\">\n      <input id=\"title\" name=\"title\" type=\"text\" value=\"\">\n    <\/div>\n  <\/div>\n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Report number\n    <\/label>\n    <div class=\"controls controls-row\">\n      <input data-provide=\"typeahead-url\" data-source=\"\/list\/reportnumber\" id=\"rn\" name=\"rn\" type=\"text\" value=\"\" \/>\n    <\/div>\n  <\/div>\n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Affiliation\n    <\/label>\n    <div class=\"controls controls-row\">\n      <input data-provide=\"typeahead-url\" data-source=\"\/list\/affiliation\" id=\"aff\" name=\"aff\" type=\"text\" value=\"\" \/>\n    <\/div>\n  <\/div>\n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Collaboration\n    <\/label>\n    <div class=\"controls controls-row\">\n      <input data-provide=\"typeahead-url\" data-source=\"\/list\/collaboration\" id=\"cn\" name=\"cn\" type=\"text\" value=\"\" \/>\n    <\/div>\n  <\/div>\n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Keywords\n    <\/label>\n    <div class=\"controls controls-row\">\n      <input data-provide=\"typeahead-url\" data-source=\"\/list\/keyword\" id=\"k\" name=\"k\" type=\"text\" value=\"\" \/>\n    <\/div>\n  <\/div>\n  \n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      Journal\n    <\/label>\n    <div class=\"controls controls-row\">\n      <select class=\"span1\" id=\"journal-name\" name=\"journal-name\" placeholder=\"\"><option value=\"\">Any journal<\/option><\/select><input class=\"span1\" id=\"journal-vol\" name=\"journal-vol\" placeholder=\"Vol\" type=\"text\" value=\"\"><input class=\"span1\" id=\"journal-page\" name=\"journal-page\" placeholder=\"Pg\" type=\"text\" value=\"\">\n    <\/div>\n  <\/div>\n  \n\n  <\/div>\n  <div class=\"tab-pane\" id=\"advanced-search\">\n    \n\n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      <strong>what?<\/strong>\n    <\/label>\n    <div class=\"controls\">\n      <input type=\"text\" name=\"p1\" value=\"\" class=\"span3\"\/>\n    <\/div>\n  <\/div>\n\n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      <strong>where?<\/strong>\n    <\/label>\n    <div class=\"controls\">\n    <select class=\"span2\" name=\"f\">\n      \n      <option value=\"\">\n        any field\n      <\/option>\n      \n      <option value=\"abstract\">\n        abstract\n      <\/option>\n      \n      <option value=\"author\">\n        author\n      <\/option>\n      \n      <option value=\"fulltext\">\n        fulltext\n      <\/option>\n      \n      <option value=\"journal\">\n        journal\n      <\/option>\n      \n      <option value=\"keyword\">\n        keyword\n      <\/option>\n      \n      <option value=\"reference\">\n        reference\n      <\/option>\n      \n      <option value=\"reportnumber\">\n        report number\n      <\/option>\n      \n      <option value=\"title\">\n        title\n      <\/option>\n      \n      <option value=\"year\">\n        year\n      <\/option>\n      \n    <\/select>\n    <\/div>\n  <\/div>\n\n  <div class=\"control-group\">\n    <label class=\"control-label\">\n      <strong>how?<\/strong>\n    <\/label>\n    <div class=\"controls\">\n      <select class=\"span2\" name=\"m1\"><option value=\"a\">all of the words<\/option><option value=\"o\">any of the words<\/option><option value=\"e\">exact phrase<\/option><option value=\"p\">partial phrase<\/option><option value=\"r\">regular expression<\/option><\/select>\n    <span id=\"addtosearch\" class=\"btn\">\n      <i class=\"icon-ok\"><\/i>\n    <\/span>\n    <\/div>\n  <\/div>\n\n  \n\n\n  <\/div>\n<\/div>\n\n\n        <\/div><!-- end modal-body -->\n\n        <div class=\"modal-footer\">\n          <small><ul class=\"nav nav-pills nav-pill-gray pull-left\" style=\"margin-bottom: 0px; text-align: left;\">\n            <li class=\"active\">\n              <a href=\"#simple-search\" data-toggle=\"tab\">simple<\/a>\n            <\/li>\n            <li>\n              <a href=\"#advanced-search\" data-toggle=\"tab\">advanced<\/a>\n            <\/li>\n          <\/ul><\/small>\n          <button name=\"action_browse\" class=\"btn\">\n            <i class=\"icon-list\"><\/i> Browse\n          <\/button>\n          <button name=\"action_search\" type=\"submit\" class=\"btn btn-primary\">\n            <i class=\"icon-search icon-white\"><\/i> Search\n          <\/button>\n        <\/div><!-- end modal-footer -->\n\n      <\/div><!-- end span5 -->\n    <\/div><!-- end row -->\n  <\/div><!-- end dropdown-menu -->\n\n<style>\n.nav.nav-pill-gray > .active > a,\n.nav.nav-pill-gray > li > a:hover {\n  background: none;\n  text-decoration: underline;\n  color: inherit;\n}\n\n#searchdropdown .searchexamples i.pull-right {\n  margin-right: -6px;\n  margin-top: 3px;\n  opacity: .25;\n}\n\n#searchdropdown .searchexamples .after-fix {\n  padding-right: 20px;\n}\n\n.open-permanent .donothide {\n  display: block!important;\n}\n\n<\/style>\n";
+  document.write(box);
+</script>
+
+              <!-- Hidden configuration fields -->
+              
+              
+              <!-- end of configuration fields -->
+
+              <button name="action_search" type="submit" class="btn btn-primary">
+                <i class="icon-search icon-white"></i>
+                <span class="hidden-phone">Search</span>
+              </button>
+              
+            </div>
+          </div><!-- end controls -->
+        </div>
+        </form>
+
+      </div><!-- end sub row -->
+    </div><!-- end span12 -->
+    </div>
+  </div><!-- end row -->
+
+
+  
+
+  <div class="row">
+    <div class="span4">
+      <img src="/img/tome.jpg"/>
+      <span class="attribution">Image courtesy of <a href="http://www.flickr.com/photos/frisno/">Frisno Boström</a></span>
+    </div>
+    <div class="span8">
+      <div class="jumbotron">
+        <h1>Durable Storage of Research Data</h1>
+
+        <p class="lead">The EUDAT B2Share (ex-SimpleStore) service provides a quick and easy mechanism for preservation of research data.</p>
+        
+        <p class="maintext">In future, the SimpleStore will work with other EUDAT services to ensure data is stored reliably and can be easily searched and retrieved.</p>
+        <p class="maintext">The B2Share is currently in an <b>early testing phase</b>. Users are encouraged to sign up and test the service, but please be aware that is <b>not ready for production use</b>. In particular, note that data submitted to the service in its current state is not stored reliably and will be removed at some stage. Also note that all submissions are made public; there is currently no support for restricting access to files.</p> 
+        <p class="maintext">Please contact <a href="mailto:livenson@kth.se">livenson@kth.se</a> with any questions or feedback.</p>
+        <br/>
+        
+        <a class="btn btn-large btn-success" href="/youraccount/register">Sign up now</a>
+        
+      </div>
+    </div>
+  </div>
+
+
+
+    </div><div id="push"></div>
+  </div>
+<footer>
+  <div class="container">
+    
+  </div>
+  <!-- replaced page footer -->
+
+
+
+<div class="container">
+  <hr/>
+  <div class="row">
+  <div class="span6">
+  <br />
+  Powered by <a class="footer" href="http://invenio-software.org/">Invenio</a> v1.1.1.879-b7b2c
+  <br />
+  Maintained by <a class="footer" href="mailto:livenson@kth.se">livenson@kth.se</a>
+  <br />
+  
+  </div>
+  <div class="span6">
+    <p style="text-align: right">
+      <img src="/img/EUDAT-logo2011-small.jpg" />
+    </p>
+  </div>
+  </div>
+  <!-- replaced page footer -->
+</div> <!-- containter --></footer>
+
+
+
+  <script type="text/javascript" src="/js/00-invenio--830909996478631369.js?c4c94f37"></script>
+
+
+
+  <script type="text/javascript" src="/js/90-invenio-7095175583857952163.js?e21b6a6a"></script>
+
+
+
+
+<script>
+(function($) {
+  $('[rel=tooltip]').tooltip();
+})(jQuery);
+</script>
+
+
+  <script>
+  $(function () {
+
+    $("form[name=search]").submit(function() {
+      $('.donothide').remove();
+      return true; // ensure form still submits
+    })
+
+    $('#settingsdropdown select[name="of"]').buttonSelect({
+      button: '<div class="btn btn-mini" />'
+    , span: '<span class="btn btn-mini" style="width: 80px;" />'
+    , next: '<i class="icon icon-chevron-right"></i>'
+    , prev: '<i class="icon icon-chevron-left"></i>'
+    })
+
+    $('#settingsdropdown select[name="rg"]').buttonSelect({
+      button: '<div class="btn btn-mini" />'
+    , span: '<span class="btn btn-mini" style="width: 80px;" />'
+    , next: '<i class="icon icon-plus"></i>'
+    , prev: '<i class="icon icon-minus"></i>'
+    })
+
+    //if (!("autofocus" in $("form[name=search] input[name=q]"))) {
+    //  // ensure we get the focus always in search input
+    //  $("form[name=search] input[name=q]").focus();
+    //}
+
+    var op1_fn = {'a': 'AND ', 'o': 'OR ', 'n': 'AND NOT '},
+        m1_fn = {'a': function(val, f) {
+            
+            var vals = val.split(' '),
+                result = $.map(vals, function(e) {
+              return f+e;
+            }).join(' AND ');
+            if (vals.length > 1) {
+                result = '(' + result +')';
+            }
+            return result;
+        
+          },'o': function(val, f) {
+            
+            var vals = val.split(' '),
+                result = $.map(vals, function(e) {
+              return f+e;
+            }).join(' OR ');
+            if (vals.length > 1) {
+                result = '(' + result +')';
+            }
+            return result;
+        
+          },'e': function(val, f) {
+            
+            return f+'"'+val+'"';
+        
+          },'p': function(val, f) {
+            
+            return f+"'"+val+"'";
+        
+          },'r': function(val, f) {
+            
+            return f+'/'+val+'/';
+        
+          }};
+
+    var addtosearch_callback = function(e) {
+      var op1 = $('[name=op1]:checked').val(),
+          m1 = $('[name=m1]').val(),
+          p1 = $('[name=p1]').val(),
+          f = $('[name=f]').val(),
+          p = $('[name=p]'),
+          val = $.trim(p.val()),
+          op = (op1=='a' && val=="")?'':op1_fn[op1];
+      if (val !== "") {
+        val += ' ' + op;
+      }
+      if (p1 === "") { return false; }
+      if (f !== "") {
+        f +=':';
+      }
+      p.val(val+m1_fn[m1](p1,f));
+      $('[name=p1]').val('');
+      e.stopPropagation();
+      return false;
+    };
+
+
+    function perform_easy_search() {
+        // get values
+        var p = $('[name=p]'),
+            val = $.trim(p.val()),
+            op1 = $('[name=op1]:checked').val(),
+            op = (op1=='a' && val=="")?'':op1_fn[op1],
+            author = $('#author').val(),
+            title = $('#title').val(),
+            rn = $('#rn').val(),
+            aff = $('#aff').val()
+            cn = $('#cn').val(),
+            k = $('#k').val(),
+            //eprinttype = $('#eprint-type').val(),
+            //eprintnumber = $('#eprint-number').val(),
+            j = $('#journal-name').val(),
+            jvol = $('#journal-vol').val(),
+            jpage = $('#journal-page').val();
+
+        if (val !== "") {
+          val += ' ' + op;
+        }
+        // filter and build
+        var query = [];
+        if (author !== '') { query.push('author:' + author); }
+        if (title !== '') { query.push('title:' + title); }
+        if (rn !== '') { query.push('reportnumber:' + rn); }
+        if (aff !== '') { query.push('affiliation:' + aff); }
+        if (cn !== '') { query.push('collaboration:' + cn); }
+        if (k !== '') { query.push('keyword:' + k); }
+        if (j !== '') { query.push('journal:' + j); }
+        if (jvol !== '') { query.push('909C4v:' + jvol); }
+        if (jpage !== '') { query.push('909C4c:' + jpage); }
+        //query = query.replace(/topcite (\d+)?\+/, 'topcite $1->99999');
+        //query = query.replace(' and ', ' ');
+        //query = query.replace(/ /g, '+');
+        //window.location = search_url;
+        if (query.length > 0) {
+          p.val(val+query.join(' '+op1_fn[op1]));
+        }
+    };
+
+    $('.donothide .btn-primary').on('click', function(e) {
+      if ($('.modal-footer li.active a').attr('href') === '#simple-search') {
+        perform_easy_search();
+      } else {
+        addtosearch_callback(e);
+        $('#searchdropdown .appender').trigger('click');
+      }
+    });
+
+    $('form[name=search] button[name=action_browse]').on('click', function(e) {
+      $('form[name=search] button[name=action_search]')
+        .attr('name', 'action_browse');
+      $('.donothide .btn-primary').trigger('click');
+    });
+
+    $('#advanced-search #addtosearch').on('click', addtosearch_callback);
+    $('#advanced-search [name=p1]').keypress(function(event) {
+      if ( event.which == 13 ) {
+        if ($(this).val() !== '') {
+          event.preventDefault();
+          addtosearch_callback(event);
+        }
+      }
+    });
+
+    $('#searchdropdown #advanced-search .appender').on('click', function(e) {
+        var op1 = $('[name=op1]:checked').val(),
+            btn = $(this),
+            source = $('[name='+btn.attr('data-source')+']'),
+            target = $('[name='+btn.attr('data-target')+']'),
+            val = $.trim(target.val()),
+            op = (op1=='a' && val=="")?'':op1_fn[op1];
+        if (val !== "") {
+          val += ' ' + op;
+        }
+        if (source.val() === "") { return false }
+        if (source.val().length > 0) {
+          target.val(val+source.attr('name')+':"'+source.val()+'"');
+          source.val('');
+        }
+        e.stopPropagation();
+        return false;
+    });
+
+    $('.add-open-permanent').on('click', function(e) {
+      $(this).parents('.dropdown').addClass('open-permanent')
+    })
+
+    $(document).on('click', function(e) {
+      if ($(e.target).parents('.donothide').length <= 0) {
+        $('.open-permanent').removeClass('open-permanent')
+      }
+    })
+
+    var source = $.map([["abstract", "abstract"], ["author", "author"], ["fulltext", "fulltext"], ["journal", "journal"], ["keyword", "keyword"], ["reference", "reference"], ["reportnumber", "report number"], ["title", "title"], ["year", "year"]],
+          function(val, i) { return val[0]+':';}); //['author:', 'title:', 'isbn:'];
+    source.push('AND ');
+    source.push('OR ');
+    source.push('AND NOT ');
+
+    var sources = {
+    
+    };
+
+    
+
+    sources['author'] = function(query) {
+            var typeahead = this
+            $.ajax({
+              type: 'GET',
+              url: '/list/exactauthor',
+              data: $.param({
+                q: query.substr(query.lastIndexOf(':')+1)
+              })
+            }).done(function(data) {
+              var a = [query.substr(query.lastIndexOf(':')+1)]
+                , b = data.results
+                , c = a.concat(b)
+              typeahead.process(c)
+            }).fail(function(data) {
+              var a = [query.substr(query.lastIndexOf(':')+1)]
+              typeahead.process(a)
+            })
+          };
+
+
+
+    $('form[name=search] input[name=p]').searchTypeahead({
+      source: source,
+      sources: sources,
+      type: 'search'
+    });
+
+    $('body').on(
+      'focus.typeahead.data-api',
+      '[data-provide="typeahead-url"]',
+      function (e) {
+        var $this = $(this)
+        if ($this.data('typeahead')) return
+        e.preventDefault()
+        var data_url = $this.data('source')
+        var options = {
+          source: function(query) {
+            var typeahead = this
+            $.ajax({
+              type: 'GET',
+              url: data_url,
+              data: $.param({
+                q: query
+              })
+            }).done(function(data) {
+              typeahead.process(data.results)
+            })
+          }
+        }
+        var data = $.extend({}, $this.data(), options)
+        $this.typeahead(data)
+      }
+    );
+
+
+  });
+
+ </script>
+
+
+</body>
+</html>
