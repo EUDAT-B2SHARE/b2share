@@ -50,6 +50,10 @@ class CustomRequestGlobals(object):
 		self.ln = ''
 app.app_ctx_globals_class = CustomRequestGlobals
 
+@app.template_filter('invenio_format_date')
+def invenio_format_date(s):
+    return s
+
 @app.route('/')
 def site_root():
 	return flask.render_template('websearch_index.html')
