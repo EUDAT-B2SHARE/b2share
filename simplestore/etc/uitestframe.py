@@ -13,10 +13,10 @@ app.jinja_env.add_extension('jinja2.ext.do')
 assets = flask.ext.assets.Environment(app)
 assets.debug = True
 def _jinja2_new_bundle(tag, collection, name=None):
-    if len(collection):
-        return flask.ext.assets.Bundle(output="%s/%s-%s.%s" %
-                      (tag, 'invenio' if name is None else name,
-                       hash('|'.join(collection)), tag), *collection)
+	if len(collection):
+		return flask.ext.assets.Bundle(output="%s/%s-%s.%s" %
+					  (tag, 'invenio' if name is None else name,
+					   hash('|'.join(collection)), tag), *collection)
 
 app.jinja_env.extend(new_bundle=_jinja2_new_bundle, default_bundle_name='90-invenio')
 
@@ -45,28 +45,32 @@ app.config['CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS'] = 200
 
 cache = flask.ext.cache.Cache(app)
 
+class CustomRequestGlobals(object):
+	def __init__(self):
+		self.ln = ''
+app.app_ctx_globals_class = CustomRequestGlobals
+
 @app.route('/')
 def site_root():
-    # return flask.render_template('page.html')
-    return flask.render_template('websearch_index.html')
+	return flask.render_template('websearch_index.html')
 
 @app.route('/css/<filename>')
 def serve_css(filename):
-    with open(os.getcwd()+"/../var/www/css/" + filename) as file:
-	    return flask.Response(response=file.read(), status=200, mimetype="text/css")
+	with open(os.getcwd()+"/../var/www/css/" + filename) as file:
+		return flask.Response(response=file.read(), status=200, mimetype="text/css")
 
 @app.route('/js/<filename>')
 def serve_js(filename):
-    with open(os.getcwd()+"/../var/www/js/" + filename) as file:
-	    return flask.Response(response=file.read(), status=200, mimetype="application/javascript")
+	with open(os.getcwd()+"/../var/www/js/" + filename) as file:
+		return flask.Response(response=file.read(), status=200, mimetype="application/javascript")
 
 @app.route('/img/<filename>')
 def serve_img(filename):
-    with open(os.getcwd()+"/../var/www/img/" + filename) as file:
-	    return flask.Response(response=file.read(), status=200, mimetype="image/jpeg")
+	with open(os.getcwd()+"/../var/www/img/" + filename) as file:
+		return flask.Response(response=file.read(), status=200, mimetype="image/jpeg")
 
 
 
 
 if __name__ == '__main__':
-    app.run()
+	app.run()

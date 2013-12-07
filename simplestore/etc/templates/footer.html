@@ -29,12 +29,12 @@
   <div class="row">
   <div class="span6">
   <br />
-  {{ ("Powered by") }} <a class="footer" href="http://invenio-software.org/">Invenio</a> v{{ config.CFG_VERSION }}
+  {{ _("Powered by") }} <a class="footer" href="http://invenio-software.org/">Invenio</a> v{{ config.CFG_VERSION }}
   <br />
-  {{ ("Maintained by") }} <a class="footer" href="mailto:{{ config.CFG_SITE_SUPPORT_EMAIL }}">{{ config.CFG_SITE_SUPPORT_EMAIL }}</a>
+  {{ _("Maintained by") }} <a class="footer" href="mailto:{{ config.CFG_SITE_SUPPORT_EMAIL }}">{{ config.CFG_SITE_SUPPORT_EMAIL }}</a>
   <br />
   {% if lastupdated %}
-      {{ ("Last updated") }}: {{ lastupdated }}
+      {{ _("Last updated") }}: {{ lastupdated|invenio_format_date }}
   {% endif %}
   </div>
   <div class="span6">

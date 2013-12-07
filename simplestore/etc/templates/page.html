@@ -146,7 +146,7 @@
 </head>
 <!-- page.html: start body -->
 <body class="{{ body_css_classes|join(' ') if body_css_classes }}"
-      lang="{{ g.ln.split('_', 1)[0]|safe if g.ln }}" {{ rtl_direction|safe }}>
+      lang="{{ g.ln.split('_', 1)[0]|safe }}" {{ rtl_direction|safe }}>
   <div id="wrap">
     <header>
       <!-- page.html: start block headerbox; replaced page header -->
@@ -209,10 +209,9 @@
   {%- include 'footer.html' -%}
 </footer>
 {% block _bottom_assets %}
-
 {% for bundle in get_js_bundle(iterate=True) %}
 {% assets bundle %}
-<script type="text/javascript" src="{{ ASSET_URL }}"></script>
+  <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
 {% endfor %}
 {% endblock _bottom_assets %}
