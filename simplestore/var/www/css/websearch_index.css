@@ -1,35 +1,49 @@
-
 .websearch .title {
-  font-size: 24px;
-  display: inline-block;
+    font-size: 24px;
+    display: inline-block;
 }
 
 .websearch p {
-  font-size: 150%;
-  line-height: 150%;
+    font-size: 150%;
+    line-height: 150%;
 }
 
+.websearch .deposits_title {
+    font-size: 16px;
+}
+
+.deposit-btn {
+    color: white;
+    background-color: #4876A1;
+    font-size: 28px;
+    font-weight: 600;
+    border: none;
+    padding: 10px 15px 10px 15px;
+    margin: 10px 0 10px 0;
+}
+
+
 .collection ul.nav-list {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .collection ul.nav-list ul.nav-list {
-  font-size: 90%;
+    font-size: 90%;
 }
 
 .collection ul ul li a {
-  color: #333;
-  opacity: 0.8;
+    color: #333;
+    opacity: 0.8;
 }
 
 .collection .badge {
-  opacity:0.6;
-  font-size:80%;
+    opacity:0.6;
+    font-size:80%;
 }
 
 .collection ul ul .badge {
-  color: #333;
-  background-color: #EEE;
-  border: 1px solid #999;
+    color: #333;
+    background-color: #EEE;
+    border: 1px solid #999;
 }
 

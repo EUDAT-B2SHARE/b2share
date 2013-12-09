@@ -1,15 +1,29 @@
 .navbar .navbar-inner {
-  background: none;
-  filter: none;
-  border: none;
-  border-radius: 0;
-  -webkit-box-shadow: 0 0;
-  -moz-box-shadow:    0 0;
-  box-shadow:         0 0;
+    background: none;
+    filter: none;
+    border: none;
+    border-radius: 0;
+    -webkit-box-shadow: 0 0;
+    -moz-box-shadow:    0 0;
+    box-shadow:         0 0;
 }
 
 .navbar-border {
-  height: 4px;
-  background-image: url('/img/orange-hline.png');
-  background-repeat: repeat-x;
+    height: 4px;
+    background-image: url('/img/orange-hline.png');
+    background-repeat: repeat-x;
+}
+
+div.navbar {
+    margin-bottom:0;
+}
+
+.login-btn {
+    color: white;
+    background-color: #4876A1;
+    font-size: 22px;
+    font-weight: 500;
+    border: none;
+    padding: 5px 10px 5px 10px;
+    margin: 10px 0 10px 0;
 }
