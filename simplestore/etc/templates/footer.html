@@ -24,24 +24,34 @@
 ## {% include 'footer.html' %}
 #}
 
-<div class="container">
-  <hr/>
-  <div class="row">
-  <div class="span6">
-  <br />
-  {{ _("Powered by") }} <a class="footer" href="http://invenio-software.org/">Invenio</a> v{{ config.CFG_VERSION }}
-  <br />
-  {{ _("Maintained by") }} <a class="footer" href="mailto:{{ config.CFG_SITE_SUPPORT_EMAIL }}">{{ config.CFG_SITE_SUPPORT_EMAIL }}</a>
-  <br />
-  {% if lastupdated %}
-      {{ _("Last updated") }}: {{ lastupdated|invenio_format_date }}
-  {% endif %}
-  </div>
-  <div class="span6">
-    <p style="text-align: right">
-      <img src="/img/EUDAT-logo2011-small.jpg" />
-    </p>
-  </div>
-  </div>
-  <!-- replaced page footer -->
-</div> <!-- containter -->
+{%- css 'css/footer.css', '00-invenio' -%}
+
+<div class="container footer">
+    <div class="row">
+        <div class="span9">
+            <div class="footer_links">
+                <span>
+                <a href="{{ url_for('/') }}">HOME</a>
+                -
+                <a href="{{ url_for('/') }}">ABOUT</a>
+                -
+                <a href="{{ url_for('/') }}">TOU</a>
+                -
+                <a href="{{ url_for('/') }}">FAQ</a>
+                -
+                <a href="{{ url_for('/') }}">CONTACT</a>
+                -
+                <a href="{{ url_for('/') }}">DISCLAIMER</a>
+                </span>
+            </div>
+        </div>
+        <div class="span3">
+            <a href="http://ec.europa.eu/research/fp7/index_en.cfm">
+                <img src="img/fp7.png" alt="The Seventh Framework Programme"></img>
+            </a>
+            <a href="http://invenio-software.org/">
+                <img src="img/invenio.png" alt="Invenio"></img>
+            </a>
+        </div>
+    </div>
+</div>

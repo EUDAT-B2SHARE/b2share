@@ -1,0 +1,22 @@
+.footer {
+	margin-top: 20px;
+}
+
+.footer_links {
+    margin: 20px 0 0 0;
+}
+
+.footer_links span {
+    font-size: 24px;
+    font-weight: 600;
+    padding: 10px 10px 10px 10px;
+    border: 2px solid #224A7B;
+}
+
+.footer_links a {
+    color: #224A7B;
+}
+
+.footer_links a:hover {
+    color: #224A7B;
+}

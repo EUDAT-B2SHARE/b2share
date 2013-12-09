@@ -23,73 +23,27 @@
 {# set title = collection.name_ln if collection.id > 1 else None #}
 {% set title = None %}
 
+
 {%- set portalboxes = dict() -%}
 {%- for k,l in collection.portalboxes_ln|groupby('position') -%}
-  {%- do portalboxes.update({k:l}) -%}
+    {%- do portalboxes.update({k:l}) -%}
 {%- endfor -%}
 
 {% block header %}
-  {{ super() }}
-  {% css 'css/simplestore-style.css' %}
-  {% js "js/websearch_typeahead.js" %}
-  {% js "js/bootstrap-select.js" %}
+    {{ super() }}
+    {% css 'css/websearch_index.css' %}
+    {% css 'css/simplestore-style.css' %}
+    {% js "js/websearch_typeahead.js" %}
+    {% js "js/bootstrap-select.js" %}
 {% endblock %}
 
 {% block title %}
-  {{ portalboxes.tp }}
-  {{ super() }}
-  {{ portalboxes.te }}
+    {{ portalboxes.tp }}
+    {{ super() }}
+    {{ portalboxes.te }}
 {% endblock %}
 
 {% macro collection_records(collection) %}
-<style>
-.websearch .nav > li > ul > li {
-  float: left;
-}
-.websearch .nav > li > a {
-  white-space: nowrap;
-}
-.websearch .nav > li > a:hover {
-  background-color: inherit;
-}
-.websearch ul.nav > li > ul {
-  clear: both;
-}
-.websearch ul.nav > li > ul > li {
-  display: inline;
-}
-.websearch ul.nav > li > ul > li > a {
-  display: inline;
-}
-.websearch .badge {
-  font-size: 80%;
-}
-
-.collection ul.nav-list {
-  padding-left: 0px;
-}
-
-.collection ul.nav-list ul.nav-list {
-  font-size: 90%;
-}
-
-.collection ul ul li a {
-  color: #333;
-  opacity: 0.8;
-}
-
-.collection .badge {
-  opacity:0.6;
-  font-size:80%;
-}
-
-.collection ul ul .badge {
-  color: #333;
-  background-color: #EEE;
-  border: 1px solid #999;
-}
-
-</style>
 
 {{ search_form(collection) }}
 {% endmacro %}
@@ -97,33 +51,35 @@
 {% block body %}
 
 {% if collection.is_restricted %}
-  {{ collection_records(collection) }}
-{% else %}
-  {% cache 24*60*60, collection.name, g.ln %}
     {{ collection_records(collection) }}
-  {% endcache %}
+{% else %}
+    {% cache 24*60*60, collection.name, g.ln %}
+        {{ collection_records(collection) }}
+    {% endcache %}
 {% endif %}
-  <div class="row">
-    <div class="span4">
-      <img src="/img/tome.jpg"/>
-      <span class="attribution">Image courtesy of <a href="http://www.flickr.com/photos/frisno/">Frisno Boström</a></span>
-    </div>
-    <div class="span8">
-      <div class="jumbotron">
-        <h1>Durable Storage of Research Data</h1>
+    <div class="row websearch">
+        <div class="span4">
+            <h3>Latest Deposits</h3>
+        </div>
+        <div class="span8">
+            <span>
+                <img src="img/bee.png" alt="Bee"></img>
+                <h2 class="title">STORE AND SHARE YOUR RESEARCH DATA</h2>
+            </span>
 
-        <p class="lead">The EUDAT B2Share (ex-SimpleStore) service provides a quick and easy mechanism for preservation of research data.</p>
-        
-        <p class="maintext">In future, the SimpleStore will work with other EUDAT services to ensure data is stored reliably and can be easily searched and retrieved.</p>
-        <p class="maintext">The B2Share is currently in an <b>early testing phase</b>. Users are encouraged to sign up and test the service, but please be aware that is <b>not ready for production use</b>. In particular, note that data submitted to the service in its current state is not stored reliably and will be removed at some stage. Also note that all submissions are made public; there is currently no support for restricting access to files.</p> 
-        <p class="maintext">Please contact <a href="mailto:livenson@kth.se">livenson@kth.se</a> with any questions or feedback.</p>
-        <br/>
-        {% if unregistered %}
-        <a class="btn btn-large btn-success" href="{{ url_for("youraccount.register") }}">Sign up now</a>
-        {% endif %}
-      </div>
+            <p class="bigtext">A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference</em></p>
+
+            <p class="bigtext"><strong>Deposit your data</strong> via the generic interface or select a community extension including specific metadata fields</p>
+
+            <p class="bigtext"><strong>Search for data</strong></p>
+
+            <p class="bigtext"><strong>Do you belong to a scientific community?</strong> Brand and create your own community collection with specific metadata fields customised for your  field</p>
+
+            {% if unregistered %}
+            <a class="btn btn-large btn-success" href="{{ url_for("youraccount.register") }}">Sign up now</a>
+            {% endif %}
+        </div>
     </div>
-  </div>
 
 
 {% endblock %}
@@ -131,7 +87,7 @@
 {% block javascript %}
 <script>
 (function($) {
-  $('[rel=tooltip]').tooltip();
+    $('[rel=tooltip]').tooltip();
 })(jQuery);
 </script>
 {{ search_form_javascript(collection)}}

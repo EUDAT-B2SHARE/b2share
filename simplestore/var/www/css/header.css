@@ -1,0 +1,15 @@
+.navbar .navbar-inner {
+  background: none;
+  filter: none;
+  border: none;
+  border-radius: 0;
+  -webkit-box-shadow: 0 0;
+  -moz-box-shadow:    0 0;
+  box-shadow:         0 0;
+}
+
+.navbar-border {
+  height: 4px;
+  background-image: url('/img/orange-hline.png');
+  background-repeat: repeat-x;
+}

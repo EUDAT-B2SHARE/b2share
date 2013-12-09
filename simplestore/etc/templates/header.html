@@ -24,80 +24,72 @@
 ## {% include 'header.html' %}
 #}
 
-  <style>
-  .brand img {
-    height: 20px;
-    width: auto!important;
-    max-width: 200%!important;
-    opacity: 0.6;
-  }
+{%- css 'css/header.css', '00-invenio' -%}
 
-  .brand:hover img {
-    opacity: 0.95;
-  }
-  </style>
-  <div class="navbar navbar-fixed-top navbar-inverse">
+<div class="navbar">
     <div class="navbar-inner">
-      <div class="container">
-        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-        </a>
-        <a class="brand" href="{{ url_for('search.index') }}">
-           B2Share 
-        </a>
-        <div class="nav-collapse collapse">
-          <ul class="nav">
-          {%- for item in config.menubuilder_map.main.children.itervalues()|sort(attribute='order') if item.display() recursive %}
-            {%- if item.children -%}
-            <li class="dropdown">
-              <a href="{{ url_for(item.url) }}" style="display: inline-block; padding-right: 5px;">{{ item.title|safe }}</a>
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: inline-block; padding-left: 5px;">
-                <b class="caret"></b>	
-              </a>
-              <ul class="dropdown-menu pull-right">
-                {{ loop(item.children.itervalues()) }}
-              </ul>
-            </li>
-            {%- else -%}
-            <li><a href="{{ url_for(item.url) }}">{{ item.title|safe }}</a></li>
-            {%- endif %}
-          {%- endfor %}
-          </ul>
-          <div class="pull-right">
-            <ul class="nav pull-right">
-              <li class="dropdown">
-              {% if current_user.is_guest %}
-                <a href="{{ url_for('webaccount.login', referer=request.url) }}" style="display: inline-block; padding-right: 5px;">
-                  <i class="icon icon-white icon-user"></i> {{ _("guest") }}
-                </a>
-              {% else %}
-                <a href="{{ url_for('webaccount.index') }}" style="display: inline-block; padding-right: 5px;">
-                  <i class="icon icon-white icon-user"></i> {{ current_user.nickname|default(current_user.email) }}
-                </a>
-              {% endif %}
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: inline-block; padding-left: 5px;">
-                <span class="caret"></span>&nbsp;</a>
-                <ul class="dropdown-menu pull-right">
-                  <li class="divider"></li>
-                  {% if current_user.is_guest %}
-                  <li><a href="{{ url_for('webaccount.login', referer=request.url) }}">
-                    <i class="icon icon-lock"></i> {{ _("Login") }}
-                  </a></li>
-                  {% else %}
-                  <li><a href="{{ url_for('webaccount.logout') }}">
-                    <i class="icon icon-off"></i> {{ _("Logout") }}
-                  </a></li>
-                  {% endif %}
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="container">
+            <a class="brand" href="{{ url_for('/') }}">
+                <img src="img/EUDAT-logo2011.jpg" alt="EUDAT B2Share"></img>
+            </a>
 
-  <div class="visible-desktop" style="clear:both; height: 60px;"></div>
+            <div class="pull-right">
+                <a class="brand" href="{{ url_for('/') }}">
+                    <img src="img/B2SHARE.big.png" alt="EUDAT B2Share"></img>
+                </a>
+            </div>
+
+            <!--div class="nav-collapse collapse">
+                <ul class="nav">
+                {%- for item in config.menubuilder_map.main.children.itervalues()|sort(attribute='order') if item.display() recursive %}
+                    {%- if item.children -%}
+                    <li class="dropdown">
+                        <a href="{{ url_for(item.url) }}" style="display: inline-block; padding-right: 5px;">{{ item.title|safe }}</a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: inline-block; padding-left: 5px;">
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            {{ loop(item.children.itervalues()) }}
+                        </ul>
+                    </li>
+                    {%- else -%}
+                    <li><a href="{{ url_for(item.url) }}">{{ item.title|safe }}</a></li>
+                    {%- endif %}
+                {%- endfor %}
+                </ul>
+
+                <div class="pull-right">
+                    <ul class="nav pull-right">
+                        <li class="dropdown">
+                        {% if current_user.is_guest %}
+                            <a href="{{ url_for('webaccount.login', referer=request.url) }}" style="display: inline-block; padding-right: 5px;">
+                                <i class="icon icon-white icon-user"></i> {{ _("guest") }}
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('webaccount.index') }}" style="display: inline-block; padding-right: 5px;">
+                                <i class="icon icon-white icon-user"></i> {{ current_user.nickname|default(current_user.email) }}
+                            </a>
+                        {% endif %}
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: inline-block; padding-left: 5px;">
+                            <span class="caret"></span>&nbsp;</a>
+                            <ul class="dropdown-menu pull-right">
+                                <li class="divider"></li>
+                                {% if current_user.is_guest %}
+                                <li><a href="{{ url_for('webaccount.login', referer=request.url) }}">
+                                    <i class="icon icon-lock"></i> {{ _("Login") }}
+                                </a></li>
+                                {% else %}
+                                <li><a href="{{ url_for('webaccount.logout') }}">
+                                    <i class="icon icon-off"></i> {{ _("Logout") }}
+                                </a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div-->
+        </div>
+        <div class="navbar-border"></div>
+    </div>
+</div>
 
