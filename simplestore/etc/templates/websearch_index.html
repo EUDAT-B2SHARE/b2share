@@ -44,7 +44,6 @@
 {% endblock %}
 
 {% macro collection_records(collection) %}
-
 {{ search_form(collection) }}
 {% endmacro %}
 
@@ -57,11 +56,9 @@
         {{ collection_records(collection) }}
     {% endcache %}
 {% endif %}
+
     <div class="row websearch">
-        <div class="span4">
-            <button class="deposit-btn">DEPOSIT</button>
-            <h3 class="deposits_title">Latest Deposits</h3>
-        </div>
+        {% include "deposits.html" %}
         <div class="span8">
             <h2 class="title">
                 <img src="img/bee.png" alt="Bee"></img>STORE AND SHARE YOUR RESEARCH DATA

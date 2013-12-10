@@ -16,11 +16,12 @@
     color: white;
     background-color: #4876A1;
     font-size: 28px;
-    font-weight: 600;
+    font-weight: 500;
     border: none;
     padding: 10px 15px 10px 15px;
     margin: 10px 0 10px 0;
 }
+
 
 
 .collection ul.nav-list {
@@ -46,4 +47,3 @@
     background-color: #EEE;
     border: 1px solid #999;
 }
-
