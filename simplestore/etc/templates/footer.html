@@ -48,8 +48,14 @@
                 <img src="/img/fp7.png" alt="The Seventh Framework Programme"></img>
             </a>
             <a href="http://invenio-software.org/">
-                <img src="/img/invenio.png" alt="Invenio"></img>
+                <img src="/img/invenio.png" alt="Invenio"></img> <!-- v{{ config.CFG_VERSION }} -->
             </a>
         </div>
     </div>
+    <!-- {{ _("Maintained by") }} <a class="footer" href="mailto:{{ config.CFG_SITE_SUPPORT_EMAIL }}">{{ config.CFG_SITE_SUPPORT_EMAIL }}</a>
+    <br />
+    {% if lastupdated %}
+        {{ _("Last updated") }}: {{ lastupdated|invenio_format_date }}
+    {% endif %} -->
 </div>
+

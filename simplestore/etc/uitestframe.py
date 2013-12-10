@@ -202,8 +202,7 @@ class CustomRequestGlobals(object):
 app.app_ctx_globals_class = CustomRequestGlobals
 
 @app.template_filter('invenio_format_date')
-def invenio_format_date(s):
-    return s
+def invenio_format_date(s): return s
 
 @app.route('/img/<filename>')
 def serve_img(filename):
