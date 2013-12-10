@@ -54,10 +54,6 @@ app.app_ctx_globals_class = CustomRequestGlobals
 def invenio_format_date(s):
     return s
 
-@app.route('/')
-def site_root():
-	return flask.render_template('websearch_index.html')
-
 @app.route('/css/<filename>')
 def serve_css(filename):
 	with open(os.getcwd()+"/../var/www/css/" + filename) as file:
@@ -72,6 +68,24 @@ def serve_js(filename):
 def serve_img(filename):
 	with open(os.getcwd()+"/../var/www/img/" + filename) as file:
 		return flask.Response(response=file.read(), status=200, mimetype="image/jpeg")
+
+
+
+@app.route('/add')
+def root_add():
+	return flask.render_template('simplestore-addmeta-table.html')
+
+@app.route('/deposit')
+def root_deposit():
+	return flask.render_template('simplestore-deposit.html')
+
+@app.route('/finalize')
+def root_finalize():
+	return flask.render_template('simplestore-finalize.html')
+
+@app.route('/')
+def site_root():
+	return flask.render_template('websearch_index.html')
 
 
 
