@@ -24,18 +24,16 @@
 ## {% include 'header.html' %}
 #}
 
-{%- css 'css/header.css', '00-invenio' -%}
-
 <div class="navbar">
     <div class="navbar-inner">
         <div class="container">
             <a class="brand" href="{{ url_for('/') }}">
-                <img src="img/EUDAT-logo2011.jpg" alt="EUDAT B2Share" style="height: 64px"></img>
+                <img src="/img/EUDAT-logo2011.jpg" alt="EUDAT B2Share" style="height: 64px"></img>
             </a>
 
             <div class="pull-right">
                 <a class="brand" href="{{ url_for('/') }}">
-                    <img src="img/B2SHARE.big.png" alt="EUDAT B2Share" style="height: 64px"></img>
+                    <img src="/img/B2SHARE.big.png" alt="EUDAT B2Share" style="height: 64px"></img>
                 </a>
             </div>
 
@@ -94,5 +92,13 @@
 </div>
 
 <div class="container">
-    <button class="pull-right login-btn">LOGIN</button>
+    {% if current_user.is_guest %}
+        <a class="pull-right flat-blue-btn login-btn" href="{{ url_for('webaccount.login', referer=request.url) }}">
+        {{ _("LOGIN") }}
+        </a>
+    {% else %}
+        <a class="pull-right flat-blue-btn login-btn" href="{{ url_for('webaccount.logout', referer=request.url) }}">
+        {{ _("LOGOUT") }}
+        </a>
+    {% endif %}
 </div>

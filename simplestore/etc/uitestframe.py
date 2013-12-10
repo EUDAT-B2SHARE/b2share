@@ -212,21 +212,31 @@ def serve_img(filename):
 
 
 
-@app.route('/add')
-def root_add():
-	return flask.render_template('simplestore-addmeta-table.html')
+@app.route('/webaccount.login')
+def webaccount_login(): return flask.redirect('/youraccount/login')
+
+@app.route('/youraccount.register')
+def webaccount_register(): return flask.redirect('/youraccount/register')
+
+@app.route('/youraccount.lost')
+def webaccount_lost(): return flask.redirect('/youraccount/lost')
+
+@app.route('/youraccount/login')
+def youraccount_login(): return flask.render_template('b2s-login.html')
+
+
+
+@app.route('/addmeta')
+def root_addmeta(): return flask.render_template('simplestore-addmeta-table.html')
 
 @app.route('/deposit')
-def root_deposit():
-	return flask.render_template('simplestore-deposit.html')
+def root_deposit(): return flask.render_template('simplestore-deposit.html')
 
 @app.route('/finalize')
-def root_finalize():
-	return flask.render_template('simplestore-finalize.html')
+def root_finalize(): return flask.render_template('simplestore-finalize.html')
 
 @app.route('/')
-def site_root():
-	return flask.render_template('websearch_index.html')
+def site_root(): return flask.render_template('websearch_index.html')
 
 
 

@@ -20,28 +20,6 @@
 {% from "_formhelpers.html" import render_filter_form with context %}
 {% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
 {% extends "page.html" %}
-{# set title = collection.name_ln if collection.id > 1 else None #}
-{% set title = None %}
-
-
-{%- set portalboxes = dict() -%}
-{%- for k,l in collection.portalboxes_ln|groupby('position') -%}
-    {%- do portalboxes.update({k:l}) -%}
-{%- endfor -%}
-
-{% block header %}
-    {{ super() }}
-    {% css 'css/websearch_index.css' %}
-    {% css 'css/simplestore-style.css' %}
-    {% js "js/websearch_typeahead.js" %}
-    {% js "js/bootstrap-select.js" %}
-{% endblock %}
-
-{% block title %}
-    {{ portalboxes.tp }}
-    {{ super() }}
-    {{ portalboxes.te }}
-{% endblock %}
 
 {% macro collection_records(collection) %}
 {{ search_form(collection) }}
@@ -57,24 +35,24 @@
     {% endcache %}
 {% endif %}
 
-    <div class="row websearch">
+    <div class="row login">
         {% include "deposits.html" %}
         <div class="span8">
-            <h2 class="title">
-                <img src="img/bee.png" alt="Bee"></img>STORE AND SHARE YOUR RESEARCH DATA
-            </h2>
+                        <h3 class="login-message">Please sign in</h3>
 
-            <p class="bigtext">A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference</em></p>
-
-            <p class="bigtext"><strong>Deposit your data</strong> via the generic interface or select a community extension including specific metadata fields</p>
-
-            <p class="bigtext"><strong>Search for data</strong></p>
-
-            <p class="bigtext"><strong>Do you belong to a scientific community?</strong> Brand and create your own community collection with specific metadata fields customized for your  field</p>
-
-            {% if unregistered %}
-            <a class="btn btn-large btn-success" href="{{ url_for("youraccount.register") }}">Sign up now</a>
-            {% endif %}
+                        <form method="post" action="/login">
+                            <input class="login login-row" type="text" name="username" placeholder="Username or email"></input><br/>
+                            <input class="login login-row" type="password" name="password" placeholder="Password"></input><br/>
+                            <div class="login-row">
+                                <label class="checkbox" style="display:inline-block">
+                                    <input class="login" type="checkbox"> Remember me
+                                </label>
+                                <a class="flat-blue-btn login-btn pull-right">LOGIN</a>
+                            </div>
+                        </form>
+                        <br/>
+                        <p><a href="{{ url_for('youraccount.register') }}"><strong>Don't have an account? Sign up here.</strong></a></p>
+                        <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
         </div>
     </div>
 
