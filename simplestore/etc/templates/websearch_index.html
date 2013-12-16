@@ -47,8 +47,7 @@
 {{ search_form(collection) }}
 {% endmacro %}
 
-{% block body %}
-
+{% block searchbar %}
 {% if collection.is_restricted %}
     {{ collection_records(collection) }}
 {% else %}
@@ -56,12 +55,17 @@
         {{ collection_records(collection) }}
     {% endcache %}
 {% endif %}
+{% endblock %}
 
+{% block body %}
     <div class="row websearch">
         {% include "deposits.html" %}
-        <div class="span8">
+        <div class="span7">
             <h2 class="title">
-                <img src="img/bee.png" alt="Bee"></img>STORE AND SHARE YOUR RESEARCH DATA
+                <div class="pull-left" style="display:inline-block">
+                    STORE AND SHARE<br/> YOUR RESEARCH DATA
+                </div>
+                <img class="pull-right" src="img/bee-shadow.png" alt="Bee"></img>
             </h2>
 
             <p class="bigtext">A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference</em></p>

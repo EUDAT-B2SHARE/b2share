@@ -20,7 +20,21 @@
 {% from "_formhelpers.html" import render_filter_form with context %}
 {% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
 
-<div class="span4">
-    <button class="deposit-btn">DEPOSIT</button>
-    <h3 class="deposits_title">Latest Deposits</h3>
+<div class="span5">
+	<div class="deposits">
+		<button class='deposit-btn'>Deposit >>></button>
+    	<h3 class="deposits_title">Latest Deposits</h3>
+		<ol class="deposit-list">
+		{% for dep in latest_deposits %}
+		<li class="deposit">
+			<ul>
+				<li class="deposit-date">{{dep[0]}}</li>
+				<li class="deposit-title">{{dep[1]}}</li>
+				<li class="deposit-meta">{{dep[2]}}</li>
+				<li class="deposit-records">{{dep[3]}}</li>
+			</ul>
+		</li>
+		{% endfor %}
+		</ol>
+	</div>
 </div>

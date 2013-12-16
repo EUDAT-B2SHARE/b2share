@@ -1,28 +1,18 @@
 .websearch .title {
-    font-size: 24px;
+    font-size: 28px;
     display: inline-block;
 }
 
 .websearch p {
-    font-size: 150%;
-    line-height: 150%;
+    font-size: 20px;
+    line-height: 25px;
+    padding-top: 10px;
 }
 
-.websearch .deposits_title {
-    font-size: 16px;
+.websearch .title img {
+    height: 186px;
+    margin: -64px 0;
 }
-
-.deposit-btn {
-    color: white;
-    background-color: #4876A1;
-    font-size: 28px;
-    font-weight: 500;
-    border: none;
-    padding: 10px 15px 10px 15px;
-    margin: 10px 0 10px 0;
-}
-
-
 
 .collection ul.nav-list {
     padding-left: 0;

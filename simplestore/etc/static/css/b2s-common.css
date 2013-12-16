@@ -1,3 +1,15 @@
+html, body, input, button, select, textarea {
+    font-family: Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif !important;
+    font-weight: 200 !important;
+    background-color: rgb(212, 221, 226);
+}
+
+#wrap {
+    background-color: white;
+}
+
+
+
 a {
     color: #224A7B;
 }
@@ -9,8 +21,7 @@ a:hover {
 /* --- header css --- */
 
 .navbar .navbar-inner {
-    background: none;
-    filter: none;
+    background: rgb(212, 221, 226) url('/img/comb2.png') repeat-x left top;
     border: none;
     border-radius: 0;
     -webkit-box-shadow: 0 0;
@@ -19,26 +30,51 @@ a:hover {
 }
 
 .navbar-border {
-    height: 4px;
-    background-image: url('/img/orange-hline.png');
-    background-repeat: repeat-x;
+    height: 3px;
+    background: none;
 }
 
 div.navbar {
     margin-bottom:0;
 }
 
+.navbar > .navbar-inner > .container {
+    width: 640px;
+    margin: 17px auto;
+}
+
+.brand-b2share img {
+    margin-top: 7px;
+}
+
+/* --- search row css --- */
+
+.searchbar {
+    background-color: rgb(34, 69, 138);
+    padding: 24px 0;
+}
+
+#search-box-main .well {
+    margin-bottom: 0;
+}
+
 /* --- common css --- */
 
-.flat-blue-btn {
-    color: white;
-    background-color: #4876A1;
-    font-weight: 500;
-    border: none;
+ul.breadcrumb {
+    background: none;
+    font-size: 12px;
+    margin: 0 0 0 10px;
 }
 
 legend [class*="icon-"] {
     vertical-align: baseline;
+}
+
+.login {
+    color: rgb(227, 94, 43);
+    text-align: right;
+    font-size: 20px;
+    margin: 10px 10px 10px 10px;
 }
 
 .login-message {
@@ -69,50 +105,77 @@ input.login:focus {
     margin: 10px 0 10px 0;
 }
 
-
-
-.deposits_title {
-    font-size: 16px;
+.deposits {
+    margin: 10px 20px 20px 10px;
 }
 
-.deposit-btn {
+.deposits .deposit-btn {
     color: white;
-    background-color: #4876A1;
-    font-size: 28px;
-    font-weight: 500;
+    background-color: rgb(227, 94, 43);
+    font-size: 20px;
     border: none;
-    padding: 10px 15px 10px 15px;
-    margin: 10px 0 10px 0;
+    width: 100%;
+    text-align: left;
+    padding: 8px 0 8px 25px;
+    margin: 10px 0 0 0;
+}
+.deposits .deposit-btn:hover {
+    color: white;
 }
 
-.websearch .title {
-    font-size: 24px;
-    display: inline-block;
+.deposits .deposits_title {
+    font-size: 16px;
+    border-bottom: 2px solid rgb(175, 197, 211);
+    padding-left: 25px;
+    margin: 0;
 }
 
-.websearch p {
-    font-size: 150%;
-    line-height: 150%;
+.deposit-list {
+    margin: 0;
+}
+
+.deposit {
+    list-style-type: none;
+    padding: 5px 0;
+    border-bottom: 2px solid rgb(175, 197, 211);
+}
+
+.deposit li {
+    list-style-type: none;
+    font-size: 12px;
+    line-height: 18px;
+}
+
+li.deposit-date {
+    font-weight: 600;
+}
+li.deposit-title {
+    font-size: 16px;
+    font-weight: 600;
 }
 
 
 /* --- footer css --- */
+
 .footer {
-    margin-top: 20px;
+    margin-top: 10px;
+}
+
+.footer .poweredby {
+    background: rgb(212, 221, 226) url('/img/footer-gradient.png') no-repeat right top;
 }
 
 .footer_links {
-    margin: 20px 0 0 0;
+    margin: 10px 0 0 0;
 }
 
 .footer_links span {
-    font-size: 24px;
-    font-weight: 600;
-    padding: 10px 10px 10px 10px;
-    border: 2px solid #224A7B;
+    font-size: 20px;
+    padding: 10px;
 }
 
 .footer_links a {
+    padding-right: 20px;
     color: #224A7B;
 }
 

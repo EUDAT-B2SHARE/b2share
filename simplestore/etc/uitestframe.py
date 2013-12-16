@@ -180,9 +180,16 @@ app.jinja_env.globals['get_css_bundle'] = app.jinja_env.get_css_bundle
 app.jinja_env.globals['get_js_bundle'] = app.jinja_env.get_js_bundle
 
 app.jinja_env.globals['form'] = {'csrf_token': ""}
+app.jinja_env.globals['breadcrumbs'] = [('Home', '/')]
 app.jinja_env.globals['metadata'] = {'fieldsets': [
-	{'name': 'Author'}
+    {'name': 'Author'}
 ]}
+app.jinja_env.globals['latest_deposits'] = [
+    ["2013-12-13", "Masterwork 018", "Description, Author; Full text; pictures", "Detailed records/similar records"],
+    ["2013-12-10", "Masterwork 017", "Description, Author; Full text; pictures", "Detailed records/similar records"],
+    ["2013-12-05", "Masterwork 016", "Description, Author; Full text; pictures", "Detailed records/similar records"],
+    ["2013-12-01", "Masterwork 015", "Description, Author; Full text; pictures", "Detailed records/similar records"],
+];
 
 app.jinja_env.globals['collection'] = {
 	'is_restricted': True,
@@ -190,7 +197,7 @@ app.jinja_env.globals['collection'] = {
 	'search_within': [["author", "Author"], ["title", "Title"]]
 }
 
-app.config['breadcrumbs_map'] = {}
+#app.config['breadcrumbs_map'] = {}
 app.config['menubuilder_map'] = {'main':{'children':{}}}
 app.config['CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS'] = 200
 

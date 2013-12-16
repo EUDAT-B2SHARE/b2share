@@ -104,11 +104,6 @@
                 {% include 'header.html' %}
             {% endblock headerbox %}
             <!-- page.html: end block headerbox; end replaced page header -->
-            <!-- page.html: start block breadcrumb.html -->
-            {% block breadcrumb %}
-            {%- include 'breadcrumbs.html' -%}
-            {% endblock breadcrumb %}
-            <!-- page.html: end block breadcrumb.html -->
             <!-- page.html: start block pageheaderadd.html -->
             {% block pageheaderadd %}{{ pageheaderadd|safe }}{% endblock pageheaderadd %}
             <!-- page.html: end block pageheaderadd.html -->
@@ -135,13 +130,28 @@
                         {{ msg|safe }}
                     </div>
                 {% endfor %}
-                {% endblock messages %}
-                <!-- page.html: end block messages -->
-                <!-- page.html: start block body -->
-                {% block body %}
-                {{ body }}
-                {% endblock body %}
-                <!-- page.html: end block body -->
+            {% endblock messages %}
+            <!-- page.html: end block messages -->
+        </div>
+        <div class="searchbar">
+            <div class="container">
+                <!-- page.html: start block searchbar -->
+                {% block searchbar %}
+                {% endblock searchbar %}
+                <!-- page.html: end block searchbar -->
+            </div>
+        </div>
+        <div class="container">
+            <!-- page.html: start block breadcrumb.html -->
+            {% block breadcrumb %}
+            {%- include 'breadcrumbs.html' -%}
+            {% endblock breadcrumb %}
+            <!-- page.html: end block breadcrumb.html -->
+            <!-- page.html: start block body -->
+            {% block body %}
+            {{ body }}
+            {% endblock body %}
+            <!-- page.html: end block body -->
         </div>
 {%- endblock page_body -%}
 <!-- page.html: end block page_body -->

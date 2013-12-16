@@ -115,10 +115,6 @@ html {
   border: 2px solid #9d261d;
 }
 
-.deposit {
-  margin: 0 0;
-}
-
 .meta-container {
 
   padding: 60px;
@@ -204,8 +200,8 @@ html {
 #submit-deposit {
 }
 
-img.desaturate { 
-  filter: grayscale(100%); 
+img.desaturate {
+  filter: grayscale(100%);
   -webkit-filter: grayscale(100%);
   -moz-filter: grayscale(100%);
   filter: url(/img/desaturate.svg#greyscale);
@@ -235,7 +231,7 @@ a.description {
   color:#000;
   text-decoration: none;
   margin-left: 20px;
-}    
+}
 
 a.description.hover {z-index:25; background-color:#ff0}
 
