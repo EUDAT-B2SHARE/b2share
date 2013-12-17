@@ -39,9 +39,9 @@
             </div>
         </div>
         <div class="span6 poweredby" style="text-align:right">
-            <div style="float:right; margin-right:20px">
+            <div style="float:right; margin:0 20px 0 10px">
                 <a href="http://invenio-software.org/">
-                    <div style="font-size:10px; margin: 2px 15px 0;">Powered by</div>
+                    <div style="font-size:10px; margin: 2px 18px 0;">Powered by</div>
                     <img src="/img/invenio.png" alt="Invenio"></img> <!-- v{{ config.CFG_VERSION }} -->
                 </a>
             </div>
@@ -51,11 +51,9 @@
                     <img src="/img/fp7.png" alt="The Seventh Framework Programme"></img>
                 </a>
             </div>
-
         </div>
     </div>
     {% if lastupdated %}
         {{ _("Last updated") }}: {{ lastupdated|invenio_format_date }}
     {% endif %}
 </div>
-

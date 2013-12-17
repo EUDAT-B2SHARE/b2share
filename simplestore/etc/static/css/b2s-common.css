@@ -89,8 +89,8 @@ legend [class*="icon-"] {
 }
 
 .login .title img {
-    height: 186px;
-    margin: -64px 0;
+    height: 200px;
+    margin: -76px 0;
 }
 
 .login-message {
@@ -218,11 +218,13 @@ li.deposit-title {
 /* --- footer css --- */
 
 .footer {
-    margin-top: 10px;
+    margin-top: 4px;
 }
 
 .footer .poweredby {
     background: rgb(212, 221, 226) url('/img/footer-gradient.png') no-repeat right top;
+    height: 60px;
+    padding-top: 4px;
 }
 
 .footer_links {

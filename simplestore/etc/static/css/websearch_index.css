@@ -1,5 +1,5 @@
 .websearch .title {
-    font-size: 28px;
+    font-size: 30px;
     display: inline-block;
 }
 
@@ -14,8 +14,8 @@
 }
 
 .websearch .title img {
-    height: 186px;
-    margin: -60px 0;
+    height: 200px;
+    margin: -76px 0;
 }
 
 .collection ul.nav-list {

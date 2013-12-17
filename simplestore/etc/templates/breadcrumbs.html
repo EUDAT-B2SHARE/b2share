@@ -19,7 +19,7 @@
 {% macro render_breadcrumbs(visibile, show_login_button) %}
 {% if breadcrumbs|length >= 1 %}
 <div class="row" style="visibility: {{visible}}">
-    <div class="span10">
+    <div class="span6">
         <ul class="breadcrumb">
             {% for breadcrumb in breadcrumbs %}
             {% if loop.last %}
@@ -39,12 +39,12 @@
         </ul>
     </div>
     {% if show_login_button %}
-    <div class="span2">
-        <div class="login_link" style="position:relative; z-index:10">
+    <div class="offset3 span2">
+        <div class="login_link" style="position:relative; z-index:10; margin-left:40px">
             {% if current_user.is_guest %}
-            <a href="{{ url_for('/webaccount.login', referer=request.url) }}">Login >>></a>
+            <a href="{{ url_for('webaccount.login', referer=request.url) }}">Login >>></a>
             {% else %}
-            <a href="{{ url_for('/webaccount.index') }}">{{ current_user.nickname|default(current_user.email) }}</a>
+            <a href="{{ url_for('webaccount.index') }}">{{ current_user.nickname|default(current_user.email) }}</a>
             {% endif %}
         </div>
     </div>
