@@ -65,7 +65,8 @@ div.navbar {
 ul.breadcrumb {
     background: none;
     font-size: 12px;
-    margin: 0 0 0 10px;
+    margin: 0;
+    padding-left: 0;
 }
 
 legend [class*="icon-"] {
@@ -74,8 +75,7 @@ legend [class*="icon-"] {
 
 .login_link a {
     color: rgb(228, 108, 10);
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 20px;
     line-height: 30px;
 }
 
@@ -86,6 +86,11 @@ legend [class*="icon-"] {
 }
 .login p a {
     color: #224A7B;
+}
+
+.login .title img {
+    height: 186px;
+    margin: -64px 0;
 }
 
 .login-message {

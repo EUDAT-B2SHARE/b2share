@@ -20,11 +20,19 @@
 {% from "_formhelpers.html" import render_filter_form with context %}
 {% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
 {% from "deposits.html" import render_deposits with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
 {% extends "page.html" %}
 
 {% macro collection_records(collection) %}
 {{ search_form(collection) }}
 {% endmacro %}
+
+{% block breadcrumbs %}
+    {{ render_breadcrumbs('visible', False) }}
+{% endblock breadcrumbs %}
+
+
 
 {% block searchbar %}
 {% if collection.is_restricted %}
@@ -39,8 +47,12 @@
 {% block body %}
 
     <div class="row login">
-        {{ render_deposits(False) }}
-        <div class="span6">
+        {{ render_deposits('hidden') }}
+        <div class="span7">
+            <h2 class="title">
+                <img class="pull-right" src="/img/bee-shadow.png" alt="Bee"></img>
+            </h2>
+
             <h3 class="login-message">Please sign in</h3>
 
             <form method="post" action="/login">

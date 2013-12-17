@@ -18,14 +18,12 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
-{% macro render_deposits(show_deposit_btn) %}
+{% macro render_deposits(deposit_btn_visibility) %}
 <div class="span5">
 	<div class="deposits">
-	    {% if show_deposit_btn %}
-        <form action="/deposit">
+        <form action="/deposit" style="visibility:{{deposit_btn_visibility}}">
             <input type="submit" class="deposit-btn" value="Deposit >>>"></input>
         </form>
-		{% endif %}
     	<h3 class="deposits-title">Latest Deposits</h3>
 		<ol class="deposit-list">
 		{% if latest_deposits %}

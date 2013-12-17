@@ -47,7 +47,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    {{ render_breadcrumbs(True) }}
+    {{ render_breadcrumbs('visible', True) }}
 {% endblock breadcrumbs %}
 
 {% block searchbar %}
@@ -62,13 +62,14 @@
 
 {% block body %}
     <div class="row websearch">
-        {{ render_deposits(True) }}
+        {{ render_deposits('visible') }}
         <div class="span7">
             <h2 class="title">
                 <div class="pull-left" style="display:inline-block">
                     STORE AND SHARE<br/> YOUR RESEARCH DATA
                 </div>
-                <img class="pull-right" src="img/bee-shadow.png" alt="Bee"></img>
+                <div class="pull-left" style="display:inline-block; width:100px"></div>
+                <img class="pull-right" src="/img/bee-shadow.png" alt="Bee"></img>
             </h2>
 
             <p class="bigtext">A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference</em></p>
