@@ -179,7 +179,9 @@ app.jinja_env.globals['alternate_urls'] = {}
 app.jinja_env.globals['get_css_bundle'] = app.jinja_env.get_css_bundle
 app.jinja_env.globals['get_js_bundle'] = app.jinja_env.get_js_bundle
 
-app.jinja_env.globals['form'] = {'csrf_token': ""}
+def formfn(placeholder='', class_=''): placeholder
+def formremember(placeholder='', class_=''): { 'label': {'text': "text"}}
+app.jinja_env.globals['form'] = {'csrf_token': "", 'nickname': formfn, 'password': formfn, 'remember': formremember, 'submit': formfn}
 app.jinja_env.globals['breadcrumbs'] = [('Home', '/'), ('Login', '/login')]
 app.jinja_env.globals['metadata'] = {'fieldsets': [
 	{'name': 'Author'}
@@ -200,6 +202,12 @@ app.jinja_env.globals['collection'] = {
 #app.config['breadcrumbs_map'] = {}
 app.config['menubuilder_map'] = {'main':{'children':{}}}
 app.config['CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS'] = 200
+app.config['CFG_OPENID_PROVIDERS'] = 0
+app.config['CFG_OPENID_AUTHENTICATION'] = 0
+app.config['CFG_OAUTH1_PROVIDERS'] = 0
+app.config['CFG_OAUTH1_AUTHENTICATION'] = 0
+app.config['CFG_OAUTH2_PROVIDERS'] = 0
+app.config['CFG_OAUTH2_AUTHENTICATION'] = 0
 
 cache = flask.ext.cache.Cache(app)
 
@@ -228,7 +236,7 @@ def webaccount_register(): return flask.render_template('register.html')
 def webaccount_lost(): return flask.render_template('lost.html')
 
 @app.route('/youraccount/login')
-def youraccount_login(): return flask.render_template('b2share-login.html')
+def youraccount_login(): return flask.render_template('webaccount_login.html')
 
 
 
