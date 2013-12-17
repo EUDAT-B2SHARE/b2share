@@ -94,9 +94,33 @@ legend [class*="icon-"] {
 }
 
 .login-message {
-    font-size: 18px;
+    font-size: 20px;
     margin: 50px 0 0 20px;
 }
+
+.login input[type='text'],
+.login input[type='password'] {
+    padding-left: 20px;
+}
+
+.login input[type='text'],
+.login input[type='password'],
+.login span.after-input {
+    font-size: 20px;
+    line-height: 30px;
+    height: 30px;
+}
+
+.login input[type='checkbox'] {
+
+}
+
+.login label.checkbox {
+    font-size: 16px;
+    line-height: 20px;
+    height: 20px;
+}
+
 
 .login input[type='text'],
 .login input[type='password'],
@@ -129,12 +153,14 @@ legend [class*="icon-"] {
 
 .login-bottomrow {
     width: 320px;
-    margin:20px 0 0 20px;
+    margin:10px 0 0 20px;
+    height: 50px;
 }
 
-.login-btn {
-    color: white;
-    background-color: rgb(228, 108, 10);
+.login input.login-btn {
+    color: rgb(228, 108, 10);
+    background-color: white;
+    border: none;
     font-size: 22px;
     padding: 10px 20px;
 }

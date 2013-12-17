@@ -180,7 +180,7 @@ app.jinja_env.globals['get_css_bundle'] = app.jinja_env.get_css_bundle
 app.jinja_env.globals['get_js_bundle'] = app.jinja_env.get_js_bundle
 
 app.jinja_env.globals['form'] = {'csrf_token': ""}
-app.jinja_env.globals['breadcrumbs'] = [('Home', '/')]
+app.jinja_env.globals['breadcrumbs'] = [('Home', '/'), ('Login', '/login')]
 app.jinja_env.globals['metadata'] = {'fieldsets': [
 	{'name': 'Author'}
 ]}
@@ -228,18 +228,18 @@ def webaccount_register(): return flask.render_template('register.html')
 def webaccount_lost(): return flask.render_template('lost.html')
 
 @app.route('/youraccount/login')
-def youraccount_login(): return flask.render_template('login.html')
+def youraccount_login(): return flask.render_template('b2share-login.html')
 
 
 
 @app.route('/addmeta')
-def root_addmeta(): return flask.render_template('simplestore-addmeta-table.html')
+def root_addmeta(): return flask.render_template('b2share-addmeta-table.html')
 
 @app.route('/deposit')
-def root_deposit(): return flask.render_template('simplestore-deposit.html')
+def root_deposit(): return flask.render_template('b2share-deposit.html')
 
 @app.route('/finalize')
-def root_finalize(): return flask.render_template('simplestore-finalize.html')
+def root_finalize(): return flask.render_template('b2share-finalize.html')
 
 @app.route('/')
 def site_root(): return flask.render_template('websearch_index.html')
