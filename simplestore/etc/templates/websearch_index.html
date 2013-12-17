@@ -19,6 +19,9 @@
 #}
 {% from "_formhelpers.html" import render_filter_form with context %}
 {% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
+{% from "deposits.html" import render_deposits with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
 {% extends "page.html" %}
 {# set title = collection.name_ln if collection.id > 1 else None #}
 {% set title = None %}
@@ -43,23 +46,23 @@
     {{ portalboxes.te }}
 {% endblock %}
 
-{% macro collection_records(collection) %}
-{{ search_form(collection) }}
-{% endmacro %}
+{% block breadcrumbs %}
+    {{ render_breadcrumbs(True) }}
+{% endblock breadcrumbs %}
 
 {% block searchbar %}
 {% if collection.is_restricted %}
-    {{ collection_records(collection) }}
+    {{ search_form(collection) }}
 {% else %}
     {% cache 24*60*60, collection.name, g.ln %}
-        {{ collection_records(collection) }}
+        {{ search_form(collection) }}
     {% endcache %}
 {% endif %}
 {% endblock %}
 
 {% block body %}
     <div class="row websearch">
-        {% include "deposits.html" %}
+        {{ render_deposits(True) }}
         <div class="span7">
             <h2 class="title">
                 <div class="pull-left" style="display:inline-block">
@@ -75,14 +78,8 @@
             <p class="bigtext"><strong>Search for data</strong></p>
 
             <p class="bigtext"><strong>Do you belong to a scientific community?</strong> Brand and create your own community collection with specific metadata fields customized for your  field</p>
-
-            {% if unregistered %}
-            <!-- <a class="btn btn-large btn-success" href="{{ url_for("youraccount.register") }}">Sign up now</a> -->
-            {% endif %}
         </div>
     </div>
-
-
 {% endblock %}
 
 {% block javascript %}

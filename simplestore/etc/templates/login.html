@@ -19,14 +19,14 @@
 #}
 {% from "_formhelpers.html" import render_filter_form with context %}
 {% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
+{% from "deposits.html" import render_deposits with context %}
 {% extends "page.html" %}
 
 {% macro collection_records(collection) %}
 {{ search_form(collection) }}
 {% endmacro %}
 
-{% block body %}
-
+{% block searchbar %}
 {% if collection.is_restricted %}
     {{ collection_records(collection) }}
 {% else %}
@@ -34,28 +34,36 @@
         {{ collection_records(collection) }}
     {% endcache %}
 {% endif %}
+{% endblock %}
+
+{% block body %}
 
     <div class="row login">
-        {% include "deposits.html" %}
-        <div class="span8">
-                        <h3 class="login-message">Please sign in</h3>
+        {{ render_deposits(False) }}
+        <div class="span6">
+            <h3 class="login-message">Please sign in</h3>
 
-                        <form method="post" action="/login">
-                            <input class="login login-row" type="text" name="username" placeholder="Username or email"></input><br/>
-                            <input class="login login-row" type="password" name="password" placeholder="Password"></input><br/>
-                            <div class="login-row">
-                                <label class="checkbox" style="display:inline-block">
-                                    <input class="login" type="checkbox"> Remember me
-                                </label>
-                                <a class="flat-blue-btn login-btn pull-right">LOGIN</a>
-                            </div>
-                        </form>
-                        <br/>
-                        <p><a href="{{ url_for('youraccount.register') }}"><strong>Don't have an account? Sign up here.</strong></a></p>
-                        <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
+            <form method="post" action="/login">
+                <div class="input-append">
+                    <input class="login-row" type="text" name="username" placeholder="Username or email"></input>
+                    <span class="add-on after-input">></span><br/>
+                </div>
+                <div class="input-append">
+                    <input class="login-row" type="password" name="password" placeholder="Password"></input>
+                    <span class="add-on after-input">></span><br/>
+                </div>
+                <div class="login-bottomrow">
+                    <label class="checkbox" style="display:inline-block">
+                        <input type="checkbox"> Remember me
+                    </label>
+                    <input type="submit" class="login-btn pull-right" value="LOGIN"></input>
+                </div>
+            </form>
+            <br/>
+            <p><a href="{{ url_for('youraccount.register') }}"><strong>Don't have an account? Sign up here.</strong></a></p>
+            <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
         </div>
     </div>
-
 
 {% endblock %}
 

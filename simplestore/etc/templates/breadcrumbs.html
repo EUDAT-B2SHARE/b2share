@@ -16,6 +16,7 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
+{% macro render_breadcrumbs(show_login_button) %}
 {% if breadcrumbs|length >= 1 %}
 <div class="row">
     <div class="span10">
@@ -37,10 +38,17 @@
             {% endfor %}
         </ul>
     </div>
+    {% if show_login_button %}
     <div class="span2">
-        <div class="login">
-            <a href="">Login >>></a>
+        <div class="login_link" style="position:relative; z-index:10">
+            {% if current_user.is_guest %}
+            <a href="{{ url_for('/webaccount.login', referer=request.url) }}">Login >>></a>
+            {% else %}
+            <a href="{{ url_for('/webaccount.index') }}">{{ current_user.nickname|default(current_user.email) }}</a>
+            {% endif %}
         </div>
     </div>
+    {% endif %}
 </div>
 {% endif %}
+{% endmacro %}

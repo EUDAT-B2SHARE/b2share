@@ -17,14 +17,18 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-{% from "_formhelpers.html" import render_filter_form with context %}
-{% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
 
+{% macro render_deposits(show_deposit_btn) %}
 <div class="span5">
 	<div class="deposits">
-		<button class='deposit-btn'>Deposit >>></button>
-    	<h3 class="deposits_title">Latest Deposits</h3>
+	    {% if show_deposit_btn %}
+        <form action="/deposit">
+            <input type="submit" class="deposit-btn" value="Deposit >>>"></input>
+        </form>
+		{% endif %}
+    	<h3 class="deposits-title">Latest Deposits</h3>
 		<ol class="deposit-list">
+		{% if latest_deposits %}
 		{% for dep in latest_deposits %}
 		<li class="deposit">
 			<ul>
@@ -35,6 +39,8 @@
 			</ul>
 		</li>
 		{% endfor %}
+		{% endif %}
 		</ol>
 	</div>
 </div>
+{% endmacro %}

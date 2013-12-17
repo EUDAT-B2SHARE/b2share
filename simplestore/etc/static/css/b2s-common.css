@@ -1,6 +1,8 @@
 html, body, input, button, select, textarea {
     font-family: Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif !important;
-    font-weight: 200 !important;
+}
+
+html, body {
     background-color: rgb(212, 221, 226);
 }
 
@@ -70,41 +72,66 @@ legend [class*="icon-"] {
     vertical-align: baseline;
 }
 
-.login {
-    text-align: right;
-    margin: 10px 10px 10px 10px;
+.login_link a {
+    color: rgb(228, 108, 10);
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 30px;
 }
-.login a {
-    color: rgb(227, 94, 43);
-    font-size: 20px;
+
+.login p {
+    margin-left: 20px;
+    font-size: 16px;
+    line-height: 25px;
+}
+.login p a {
+    color: #224A7B;
 }
 
 .login-message {
-    font-size: 16px;
+    font-size: 18px;
+    margin: 50px 0 0 20px;
 }
 
-input.login {
-    border: 1px solid #E35E2B;
+.login input[type='text'],
+.login input[type='password'],
+.login input[type='submit'] {
+    border: 1px solid rgb(228, 108, 10);
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
     border-radius: 0;
+    margin: 0;
 }
 
-input.login:focus {
+.login input[type='text']:focus,
+.login input[type='password']:focus,
+.login input[type='submit']:focus {
   border-color: #E35E2B;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 94, 43, 0.6);
-     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 94, 43, 0.6);
-          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 94, 43, 0.6);
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+}
+
+.login span.after-input {
+    color: white;
+    background-color: rgb(228, 108, 10);
+    border: 1px solid rgb(228, 108, 10);
 }
 
 .login-row {
-    width:300px;
+    width: 300px;
+}
+
+.login-bottomrow {
+    width: 320px;
+    margin:20px 0 0 20px;
 }
 
 .login-btn {
+    color: white;
+    background-color: rgb(228, 108, 10);
     font-size: 22px;
-    padding: 5px 10px 5px 10px;
-    margin: 10px 0 10px 0;
+    padding: 10px 20px;
 }
 
 .deposits {
@@ -125,7 +152,7 @@ input.login:focus {
     color: white;
 }
 
-.deposits .deposits_title {
+.deposits .deposits-title {
     font-size: 16px;
     border-bottom: 2px solid rgb(175, 197, 211);
     padding-left: 25px;
