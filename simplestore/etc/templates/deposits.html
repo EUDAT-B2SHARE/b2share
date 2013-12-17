@@ -30,10 +30,16 @@
 		{% for dep in latest_deposits %}
 		<li class="deposit">
 			<ul>
-				<li class="deposit-date">{{dep[0]}}</li>
-				<li class="deposit-title">{{dep[1]}}</li>
-				<li class="deposit-meta">{{dep[2]}}</li>
-				<li class="deposit-records">{{dep[3]}}</li>
+				<li class="deposit-date">{{dep.date}}</li>
+				<li class="deposit-title">{{dep.title}}</li>
+				<li class="deposit-meta">by {{dep.author}}</li>
+				<li class="deposit-meta">{{dep.description}}</li>
+				
+				{%- set similar = "recid:%d" % recID -%}
+				<li class="deposit-meta">
+					<a href="{{ url_for('record.metadata', recid=recID) }}">{{ _("Detailed record") }}</a>
+					<a href="{{ url_for('.search', p=similar, recid=recID) }}">{{ _("Similar records") }}</a>
+				</li>
 			</ul>
 		</li>
 		{% endfor %}
