@@ -136,8 +136,8 @@ def add_file_info(rec, form, email, sub_id, recid):
                          #('t', 'Type'), # TODO
                          # unfortunately s is used for a timestamp, not file size
                          #('s', 'timestamp'), # s is a timestamp
-                         ('w', str(metadata['size'])), # size should be derived automatically, 
-                                                       # but storing it into 'document_moreinfo' field
+                         #('w', str(metadata['size'])), # size should be derived automatically, 
+                         #                              # but storing it into 'document_moreinfo' field
                          ('r', fft_status)])
 
         #seems to be impossible to add file size data, thought this would work
