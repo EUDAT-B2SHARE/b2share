@@ -34,12 +34,14 @@
 				<li class="deposit-title">{{dep.title}}</li>
 				<li class="deposit-meta">by {{dep.author}}</li>
 				<li class="deposit-meta">{{dep.description}}</li>
-				
+			
+				{% if recID %}	
 				{%- set similar = "recid:%d" % recID -%}
 				<li class="deposit-meta">
 					<a href="{{ url_for('record.metadata', recid=recID) }}">{{ _("Detailed record") }}</a>
 					<a href="{{ url_for('.search', p=similar, recid=recID) }}">{{ _("Similar records") }}</a>
 				</li>
+				{% endif %}
 			</ul>
 		</li>
 		{% endfor %}
