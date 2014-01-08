@@ -1,149 +1,169 @@
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
 {% extends "page.html" %}
 {% block header %}
-    {{ super() }}
-    {% css 'css/simplestore-style.css', '50-simplestore' %}
-    {% css 'css/font-awesome.min.css', '50-simplestore' %}
-    {% css 'css/bootstrap-switch.css', '50-simplestore' %}
-    {% css 'css/jquery-ui.css', '50-simplestore' %}
-    {% js 'js/plupload/plupload.full.js', '50-webdeposit' %}
-    <!-- Note there is also js at the bottom of the template. Sigh. -->
-    {% js 'js/simplestore-deposit.js', '50-simplestore' %}
-    {% js 'js/bootstrap-switch.js', '50-simplestore' %}
-    {% js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' %}
-    
+        {{ super() }}
+        {% css 'css/simplestore-style.css', '50-simplestore' %}
+        {% css 'css/font-awesome.min.css', '50-simplestore' %}
+        {% css 'css/bootstrap-switch.css', '50-simplestore' %}
+        {% css 'css/jquery-ui.css', '50-simplestore' %}
+        {% js 'js/plupload/plupload.full.js', '50-webdeposit' %}
+        <!-- Note there is also js at the bottom of the template. Sigh. -->
+        {% js 'js/simplestore-deposit.js', '50-simplestore' %}
+        {% js 'js/bootstrap-switch.js', '50-simplestore' %}
+        {% js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' %}
+        
 {% endblock %}
+
+{% block breadcrumbs %}
+    {{ render_breadcrumbs('visible', False) }}
+{% endblock breadcrumbs %}
 
 {% block body%}
 
 <div class="container">
 
-  <div class="row deposit">
+<div class="row">
+    <div class="description span5">
+        <div style="margin: 100px 50px 0 50px">
+            <p>You are logged in. Username: <strong>{{ current_user.nickname }}</strong></p>
+            <p>If you hover over the <strong>project-logos</strong> in step 02 we offer detailed description below.</p>
 
-    <div class="pluploader" id="fileupload">
-      <div class="well" id="filebox">
-        <h2><span class="step-number">1.</span> Upload files (drag and drop or select files)</h2>
-        	<p>Deposits are done in 3 steps:</p>
-	        <ol>
-			  <li>
-			    you select and upload one or several data resources
-			  </li>
-			  <li>you then select the metadata set you want to use and describe the resource by
-			        	metadata</li>
-			  <li>you deposit the selected resource including its metadata elements. The
-			        	deposit takes a moment to be processed. You will get a reference URL at once.</li>
-			</ol>
-        <div id="drag_and_drop_text" style="text-align:center;z-index:-100;">
-          <h1><small></small></h1>
+            <div><img src="/img/bee-shadow.png"></img></div>
+
+            <p class="hide">Please select a metadata description set which best fits to your data. The EUDAT Generic set
+                includes a common set of elements which are inspired by Dublin Core, MARC and DataCite and
+                this set is included in all sets as basis. So if you just want the common set select Generic,
+                if you want in addition a specific community set select that community. Soon there will be
+                more communities. You can always revise your decisions and select another set, however you may
+                lose what you have already entered.</p>
         </div>
-        <a class="btn btn-primary" id="pickfiles" >Select files</a> 
-      <a class="btn btn-success disabled" id="uploadfiles"><i class="icon-upload icon-white"></i> Start upload</a>
-      <a class="btn btn-danger" id="stopupload" style="display:none;"><i class="icon-stop icon-white"></i> Stop upload</a>
-      </div>
-      <!-- Tables? Really? -->
-      <table id="file-table" class="table table-striped table-bordered" style="display:none;">
-        <thead>
-          <tr>
-            <th>Filename</th>
-            <th>Size</th>
-            <th>Status</th>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody id="filelist">
-        </tbody>
-      </table>
-      <div id="upload-errors"></div>
     </div>
 
-  </div>
-  <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
-  <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input> 
-  <input type="hidden" id="filelist" name="filelist" value=""></input>
-  <div id="domains" class="hide">
+    <div class="newdeposit span7">
 
-    <div class="row-fluid">
-      <div class="span12">
-        <h2><span class="step-number">2.</span> Select a domain or project</h2>
-        <div class="well">Please select a metadata description set which best fits to your data. The EUDAT Generic set
-        	includes a common set of elements which are inspired by Dublin Core, MARC and DataCite and
-        	this set is included in all sets as basis. So if you just want the common set select Generic,
-        	if you want in addition a specific community set select that community. Soon there will be
-        	more communities. You can always revise your decisions and select another set, however you may
-        	lose what you have already entered.</div>
-      </div>
-    </div>
+        <div id="fileupload"> 
+            <div id="filebox">
+                <h2>
+                    <p class="step-number">Step 01</p> 
+                    <p>Drag and drop files here</p>
+                </h2>
 
-    <form class="form form-horizontal meta-form" method="post" id="metaform_form">
-      <div class="row-fluid">
-        <div class="span12">
-          {% for d in domains if d.kind == 'domain' %}
-          <div class="domain">
-            <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
-            {% if d.domain == default_domain %}checked="checked"{% endif %}/>
-            <label for="{{ d.domain }}">
-              {% if d.image %}
-              <img src="/img/{{ d.image }}" class="desaturate"/>
-              {% else %}
-              &nbsp;<i class="{{ d.icon }} icon-large icon-2x"></i>
-              {% endif %}
-              {% if d.display_name %}
-              <h5>{{ d.display_name }}</h5>
-              {% else %}
-              <h5>{{ d.domain }}</h5>
-              {% endif %}
-            </label>
-          </div>
-          {% endfor %}
-
-        </div>
-      </div>
-
-      <div class="row-fluid">
-        <div class="span12">
-          {% for d in domains if d.kind == 'project' %}
-          <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
-            <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
-            {% if d.domain == default_domain %}checked="checked"{% endif %}/>
-            <label for="{{ d.domain }}">
-              {% if d.image %}
-              <img src="/img/{{ d.image }}" class="desaturate domain-img"/>
-              {% else %}
-              &nbsp;<i class="{{ d.icon }} icon-large icon-2x"></i>
-              {% endif %}
-              {% if d.display_name %}
-              <h5>{{ d.display_name }}</h5>
-              {% else %}
-              <h5>{{ d.domain }}</h5>
-              {% endif %}
-            </label>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div id="metaform" class="hide">
-        <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
-
-        <div class="row-fluid">
-          <div id="meta" class="span12">
-            <h2><span class="step-number">3.</span> Add metadata</h2>
-
-            <div id="meta-fields">Loading form...</div>
-
-            <div id="submitbutton" class="form-actions hide">
-              <h2><span class="step-number">4. </span>
-              		<button name="action_save" class="btn btn-large disabled" id="deposit">Deposit</button></h2>
+                <div class="row-fluid">
+                    <div id="drag_and_drop_text" class="span9 well well-b2sblue" style="height: 70px"></div>
+                    <div class="span3">
+                        <a class="btn btn-b2sblue" id="pickfiles">Select files</a> 
+                        <p> </p>
+                        <a class="btn btn-b2sblue disabled" id="uploadfiles">Start upload</a>
+                        <a class="btn btn-b2sblue" id="stopupload" style="display:none">Stop upload</a>
+                    </div>
+                </div>
             </div>
-            <div id="reqfootnote" class="footnote hide">* indicates required field</div> 
-          </div>
-        </div>
-      </div>
-    </form>
 
-  </div>
+            <table id="file-table" class="table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="filelist">
+                </tbody>
+            </table>
+
+            <div id="upload-errors"></div>
+    
+            <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
+            <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input> 
+            <input type="hidden" id="filelist" name="filelist" value=""></input>
+    
+        </div>
+
+        <div id="domains" class="hide">
+
+            <h2 style="margin-top:30px">
+                <p class="step-number">Step 02</p> 
+                <p>Select a domain or project</p>
+            </h2>
+
+            <form class="form form-horizontal meta-form" method="post" id="metaform_form">
+                <div class="row-fluid">
+                    <div class="span12">
+                        {% for d in domains if d.kind == 'domain' %}
+                        <div class="domain">
+                            <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
+                                {% if d.domain == default_domain %}checked="checked"{% endif %}/>
+                            <label for="{{ d.domain }}">
+                                {% if d.display_name %}
+                                <h5>{{ d.display_name }}</h5>
+                                {% else %}
+                                <h5>{{ d.domain }}</h5>
+                                {% endif %}
+                                {% if d.image %}
+                                <img src="/img/{{ d.image }}" class="desaturate"/>
+                                {% else %}
+                                &nbsp;<i class="{{ d.icon }} icon-large icon-2x"></i>
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="projects" class="row-fluid">
+                    <div class="span12">
+                        {% for d in domains if d.kind == 'project' %}
+                        <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
+                            <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
+                                {% if d.domain == default_domain %}checked="checked"{% endif %}/>
+                            <label for="{{ d.domain }}">
+                                {% if d.image %}
+                                <img src="/img/{{ d.image }}" class="desaturate domain-img"/>
+                                {% else %}
+                                &nbsp;<i class="{{ d.icon }} icon-large icon-2x"></i>
+                                {% endif %}
+                                {% if d.display_name %}
+                                <h5>{{ d.display_name }}</h5>
+                                {% else %}
+                                <h5>{{ d.domain }}</h5>
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="metaform" class="hide">
+                    <h2 style="margin-top:30px">
+                        <p class="step-number">Step 03</p> 
+                        <p>Add basic details</p>
+                    </h2>
+                    <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
+
+                    <div id="meta">
+                        <div id="meta-fields">Loading form...</div>
+
+                        <div id="submitbutton" class="form-actions hide">
+                            <h2 style="margin-top:30px">
+                                <p class="step-number">Step 04</p> 
+                                <button name="action_save" class="btn btn-large disabled" id="deposit">Deposit</button>
+                                <p>Deposit</p>
+                            </h2>
+                        </div>
+                        <div id="reqfootnote" class="footnote hide">* indicates required field</div> 
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+</div>
 </div>
 
-{% endblock %}
+{% endblock body %}
 
 {% block javascript %}
 {{ super() }}
@@ -152,12 +172,12 @@
 
 $(document).ready(function() {
 
-  simplestore_init_plupload('.pluploader',
-                            '{{ url_for('.upload', sub_id=sub_id) }}',
-                            '{{ url_for('.delete', sub_id=sub_id) }}',
-                            '{{ url_for('.get_file', sub_id=sub_id) }}');
+    simplestore_init_plupload('#fileupload',
+                                                        '{{ url_for('.upload', sub_id=sub_id) }}',
+                                                        '{{ url_for('.delete', sub_id=sub_id) }}',
+                                                        '{{ url_for('.get_file', sub_id=sub_id) }}');
 
-  });
+    });
 
 </script>
 {% endblock %}
