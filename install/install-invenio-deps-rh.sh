@@ -12,7 +12,7 @@ yum install -y git python-pip httpd mysql mysql-server gnuplot html2text netpbm 
                python-BeautifulSoup automake16 gcc python-devel mysql-devel \
                libxslt-devel libxml2-devel gettext-devel python-magic \
                java-1.7.0-openjdk-devel redis python-redis\
-               automake autoconf
+               automake autoconf unzip
 
 #redis
 /sbin/service redis start
