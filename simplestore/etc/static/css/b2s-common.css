@@ -1,5 +1,9 @@
 html, body, input, button, select, textarea {
-    font-family: Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif !important;
+    font-family: Calibri, Candara, Segoe, "Segoe UI", Arial, sans-serif !important;
+}
+
+html {
+  overflow-y: scroll;
 }
 
 html, body {
@@ -228,12 +232,11 @@ li.deposit-title {
 }
 
 .footer_links {
-    margin: 10px 0 0 0;
+    margin: 16px 0 0 0;
 }
 
 .footer_links span {
-    font-size: 20px;
-    padding: 10px;
+    font-size: 18px;
 }
 
 .footer_links a {
