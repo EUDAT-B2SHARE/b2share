@@ -199,6 +199,12 @@ app.jinja_env.globals['collection'] = {
 	'search_within': [["author", "Author"], ["title", "Title"]]
 }
 
+app.jinja_env.globals['domains'] = [
+	{'kind': 'domain', 'image': 'EUDAT-58px.png', 'display_name':'Generic'},
+	{'kind': 'domain', 'image': 'CLARIN-68px.png', 'display_name':'Linguistics'},
+	{'kind': 'domain', 'image': 'DRIHM-48px.png', 'display_name':'Hydrology'}
+]
+
 #app.config['breadcrumbs_map'] = {}
 app.config['menubuilder_map'] = {'main':{'children':{}}}
 app.config['CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS'] = 200
@@ -241,13 +247,13 @@ def youraccount_login(): return flask.render_template('webaccount_login.html')
 
 
 @app.route('/addmeta')
-def root_addmeta(): return flask.render_template('b2share-addmeta-table.html')
+def root_addmeta(): return flask.render_template('simplestore-addmeta-table.html')
 
 @app.route('/deposit')
-def root_deposit(): return flask.render_template('b2share-deposit.html')
+def root_deposit(): return flask.render_template('simplestore-deposit.html')
 
 @app.route('/finalize')
-def root_finalize(): return flask.render_template('b2share-finalize.html')
+def root_finalize(): return flask.render_template('simplestore-finalize.html')
 
 @app.route('/')
 def site_root(): return flask.render_template('websearch_index.html')
