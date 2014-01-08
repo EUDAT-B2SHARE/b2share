@@ -44,7 +44,7 @@ git clone -v -b next https://github.com/SimpleStore/invenio.git
 
 cd invenio
 git fetch # just in case, to get then new tags
-git checkout tags/b2share-v1 -b bshare-v1
+git checkout tags/b2share-v2 -b bshare-v2
 
 python-pip install --upgrade distribute
 python-pip install -r requirements.txt

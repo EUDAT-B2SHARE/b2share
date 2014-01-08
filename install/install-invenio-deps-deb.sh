@@ -36,7 +36,7 @@ git clone -v -b next https://github.com/SimpleStore/invenio.git
 
 cd invenio
 git fetch # just in case, to get then new tags
-git checkout tags/b2share-v1 -b bshare-v1
+git checkout tags/b2share-v2 -b bshare-v2
 #may need to remove libxml lines from requirements.txt
 pip install -r requirements.txt
 pip install -r requirements-extras.txt
