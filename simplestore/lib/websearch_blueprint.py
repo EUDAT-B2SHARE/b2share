@@ -150,6 +150,26 @@ def index():
     return dict(collection=collection, latest_deposits=latest_deposits)
 
 
+@blueprint.route('/docs/<docid>')
+@blueprint.invenio_templated('b2share-docs.html')
+def help(docid=None):
+    collection = Collection.query.get_or_404(1)
+    def markdown(filename):
+        import os, invenio.config, markdown2
+        path = os.path.join(invenio.config.CFG_ETCDIR, 'templates', docid + ".markdown")
+        return markdown2.markdown_path(path)
+
+    @register_template_context_processor
+    def index_context():
+        return dict(
+            easy_search_form=EasySearchForm(csrf_enabled=False),
+            format_record=cached_format_record,
+            get_creation_date=get_creation_date,
+            unregistered=(not current_user.is_authenticated())
+        )
+    return dict(collection=collection, render_markdown_from_file=markdown)
+
+
 #@blueprint.invenio_memoize(3600)
 def get_collection_breadcrumbs(collection, breadcrumbs=None, builder=None,
                                ln=CFG_SITE_LANG):
