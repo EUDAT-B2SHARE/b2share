@@ -29,7 +29,7 @@ from invenio.simplestore_epic import createHandle
 from flask import current_app
 from werkzeug.exceptions import HTTPException
 from invenio.simplestore_model import metadata_classes
-
+from invenio.htmlutils import remove_html_markup
 
 def add_basic_fields(rec, form, email):
     """
@@ -41,18 +41,18 @@ def add_basic_fields(rec, form, email):
     # why aren't subfields a dictionary?!
     try:
         if form['title']:
-            record_add_field(rec, '245', subfields=[('a', form['title'])])
+            record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
 
         if form['creator']:
-            record_add_field(rec, '100', subfields=[('a', form['creator'])])
+            record_add_field(rec, '100', subfields=[('a', remove_html_markup(form['creator']))])
 
         if form['domain']:
-            record_add_field(rec, '980', subfields=[('a', form['domain'])])
+            record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
         pubfields = []
         if form['publisher']:
-            pubfields.append(('b', form['publisher']))
+            pubfields.append(('b', remove_html_markup(form['publisher'])))
         if form.get('publication_date'):
-            pubfields.append(('c', form['publication_date']))
+            pubfields.append(('c', remove_html_markup(form['publication_date'])))
         if pubfields:
             record_add_field(rec, '260', subfields=pubfields)
         record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
@@ -63,32 +63,32 @@ def add_basic_fields(rec, form, email):
             record_add_field(rec, '542', subfields=[('l', 'restricted')])
 
         if form['licence']:
-            record_add_field(rec, '540', subfields=[('a', form['licence'])])
-        record_add_field(rec, '520', subfields=[('a', form['description'])])
+            record_add_field(rec, '540', subfields=[('a', remove_html_markup(form['licence']))])
+        record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
 
         if form['tags']:
             for kw in form['tags'].split(','):
                 record_add_field(rec, '653',
                                  ind1='1',
-                                 subfields=[('a', kw.strip())])
+                                 subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form['contributors']:
             for kw in form['contributors'].split(';'):
-                record_add_field(rec, '700', subfields=[('a', kw.strip())])
+                record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form['language']:
-            record_add_field(rec, '546', subfields=[('a', form['language'])])
+            record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
         if form['resource_type']:
-            record_add_field(rec, '980', subfields=[('a', form['resource_type'])])
+            record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['resource_type']))])
 
         if form['alternate_identifier']:
             record_add_field(rec, '024',
-                             subfields=[('a', form['alternate_identifier'])])
+                             subfields=[('a', remove_html_markup(form['alternate_identifier']))])
 
         if form['version']:
-            record_add_field(rec, '250', subfields=[('a', form['version'])])
+            record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
         record_add_field(rec, '264',
                          subfields=[('b', CFG_SITE_NAME),
                                     ('c', str(datetime.utcnow()) + " UTC")])
