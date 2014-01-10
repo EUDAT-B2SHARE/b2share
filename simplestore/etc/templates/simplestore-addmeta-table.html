@@ -2,15 +2,22 @@
 {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
 {{ form.csrf_token }}
 {% macro meta_field(f) %}
+<tr>
 <div class="compact-form {% if f.errors %}error{% endif %}">
-  {{f.label(class="control-label meta-label")}} {%- if f.flags.required -%}<span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
-    {{f(**kwargs)|safe}}
 
-  {%- if f.description -%}
-    <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled" disabled>
-    <i class="icon-info-sign"></i></button><span>{{f.description|safe}}</span></a>
-  {%- endif %}
 
+<td>
+  {{f.label(class="control-label meta-label")}} 
+</td>
+
+<td>  
+  {%- if f.flags.required -%}
+    <span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
+</td>
+<td>    
+    <div title="{{f.description}}" rel='tooltip' placement='right' container='body'> {{f(**kwargs)|safe}}</div>
+</td>
+  
   <div class="controls">
 
     {%- if f.errors %}
@@ -21,12 +28,14 @@
 
   </div>
 </div>
+</tr>
 {% endmacro %}
 
 {% for s in metadata.fieldsets %}
   <fieldset>
     <legend>{{ s.name }}</legend>
 
+<table>
     {% for f in s.basic_fields %}
       {{ meta_field(getattr(form, f)) }}
     {% endfor %}
@@ -35,15 +44,15 @@
       <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields-{{ s.name }}">
                     Add more details?
       </button>
-
+</table>
       <div id="adv-fields-{{ s.name }}" class="collapse">
-
+<table>
         {% for f in s.optional_fields %}
           {{ meta_field(getattr(form, f)) }}
         {% endfor %}
       </div>
     {% endif %}
-
+</table>
   </fieldset>
 {% endfor %}
 <script type="text/javascript">
@@ -57,5 +66,14 @@
       defaultDate: new Date()
     });
 </script>
+
+<script type="text/javascript">
+   $(document).ready(function() {
+   $("[rel='tooltip']").tooltip(
+       trigger: 'hover',
+       delay: 5000,
+       placement: 'left'
+   });
+})
 
 </script>
