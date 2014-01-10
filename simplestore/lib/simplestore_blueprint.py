@@ -59,6 +59,9 @@ def delete(sub_id):
 @blueprint.route('/get_file/<sub_id>', methods=['GET'])
 @blueprint.invenio_authenticated
 def get_file(sub_id):
+    # XXX uses insecure function
+    # - option A: should check for UUID of a submission and disallow foreign GETs
+    # - option B: should remove a link from the upload form for good and remove the handler
     return uph.get_file(request, sub_id)
 
 

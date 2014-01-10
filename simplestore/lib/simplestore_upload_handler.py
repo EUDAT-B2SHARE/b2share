@@ -75,7 +75,7 @@ def upload(request, sub_id):
         current_chunk.save(path_to_save)
 
         if chunks is None:  # file is a single chunk
-            unique_filename = str(new_uuid()) + filename
+            unique_filename = str(new_uuid())
             old_path = os.path.join(upload_dir, filename)
             file_path = os.path.join(upload_dir,
                                      unique_filename)
@@ -95,7 +95,7 @@ def upload(request, sub_id):
             chunk_files.sort(key=lambda x: int(x.split("_")[-1]))
 
             file_uuid = str(new_uuid())
-            file_path = os.path.join(upload_dir, file_uuid + filename)
+            file_path = os.path.join(upload_dir, file_uuid)
             metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_uuid + filename)
             destination = open(file_path, 'wb')
             for chunk in chunk_files:
