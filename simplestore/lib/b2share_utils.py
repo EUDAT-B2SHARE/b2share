@@ -45,20 +45,12 @@ def get_latest_deposits():
 	from invenio.bibformat_elements import bfe_title
 	from invenio.bibformat_elements import bfe_creation_date
 	
-
-
 	recs = [{
 		"id": bfo.recID,
 		"date": bfe_creation_date.format_element(bfo),
-
 		"author": bfe_authors.format_element(bfo),
 		"title": bfe_title.format_element(bfo),
-
-		"author": make_long_author_list(bfo.field("100__a"), bfo.field("700__a")),
-		"title": bfo.field("245__a"), 
 		"description": bfo.field("520__a"), 
 		"category": bfo.field("980__a"), 
-		"date": bfo.field("264__c")[:10], 
-
 	} for bfo in bfo_list]
 	return recs
