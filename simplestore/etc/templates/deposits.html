@@ -24,9 +24,9 @@
         <form action="/deposit" style="visibility:{{deposit_btn_visibility}}">
             <input type="submit" class="deposit-btn" value="Deposit >>>"></input>
         </form>
+		{% if latest_deposits %}
     	<h3 class="deposits-title">Latest Deposits</h3>
 		<ol class="deposit-list">
-		{% if latest_deposits %}
 		{% for dep in latest_deposits %}
 		<li class="deposit">
 			<ul>
@@ -45,8 +45,8 @@
 			</ul>
 		</li>
 		{% endfor %}
-		{% endif %}
 		</ol>
+		{% endif %}
 	</div>
 </div>
 {% endmacro %}
