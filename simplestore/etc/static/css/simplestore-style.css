@@ -266,6 +266,10 @@ textarea {
     height: 100px;
 }
 
+.switch {
+    width: 280px;
+    margin-left: 0px;
+}
 
 a.description {
     position: relative;
