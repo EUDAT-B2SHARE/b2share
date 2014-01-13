@@ -97,9 +97,9 @@
                                 {% if d.domain == default_domain %}checked="checked"{% endif %}/>
                             <label for="{{ d.domain }}">
                                 {% if d.display_name %}
-                                <h5>{{ d.display_name }}</h5>
+                                <h5 style="margin-top:0">{{ d.display_name }}</h5>
                                 {% else %}
-                                <h5>{{ d.domain }}</h5>
+                                <h5 style="margin-top:0">{{ d.domain }}</h5>
                                 {% endif %}
                                 {% if d.image %}
                                 <img src="/img/{{ d.image }}" class="desaturate"/>
@@ -119,15 +119,15 @@
                             <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
                                 {% if d.domain == default_domain %}checked="checked"{% endif %}/>
                             <label for="{{ d.domain }}">
+                                {% if d.display_name %}
+                                <h5 style="margin-top:0">{{ d.display_name }}</h5>
+                                {% else %}
+                                <h5 style="margin-top:0">{{ d.domain }}</h5>
+                                {% endif %}
                                 {% if d.image %}
                                 <img src="/img/{{ d.image }}" class="desaturate domain-img"/>
                                 {% else %}
                                 &nbsp;<i class="{{ d.icon }} icon-large icon-2x"></i>
-                                {% endif %}
-                                {% if d.display_name %}
-                                <h5>{{ d.display_name }}</h5>
-                                {% else %}
-                                <h5>{{ d.domain }}</h5>
                                 {% endif %}
                             </label>
                         </div>
