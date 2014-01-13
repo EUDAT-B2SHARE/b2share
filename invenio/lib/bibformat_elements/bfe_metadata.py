@@ -32,9 +32,9 @@ def format_element(bfo):
         val = i['a']
         if i['2'] == "PID":
             try:
-                from invenio.config import CFG_EPIC_BASEURL, CFG_EPIC_USERNAME
+                from invenio.config import CFG_HANDLE_SYSTEM_BASEURL, CFG_EPIC_PREFIX
                 val = '<a href="{0}/{1}/{2}">{2}</a>'.format(
-                    CFG_EPIC_BASEURL, CFG_EPIC_USERNAME, i['a'])
+                    CFG_HANDLE_SYSTEM_BASEURL, CFG_EPIC_PREFIX, i['a'])
             except ImportError:
                 None
 
