@@ -16,6 +16,7 @@ WWW_SERVICE=apache2
 cp -vr simplestore/lib/* /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
+cp -vr simplestore/etc/templates/*.markdown /opt/invenio/etc/templates/
 
 # a quick hack for general modifications
 # XXX: invenio update unsafe
