@@ -16,7 +16,6 @@ WWW_SERVICE=apache2
 cp -vr simplestore/lib/* /opt/invenio/lib/python/invenio/
 cp -vr simplestore/etc/static/* /opt/invenio/var/www/
 cp -vr simplestore/etc/templates/*.html /opt/invenio/etc/templates/
-chown -R $WWW_USER.$WWW_USER /opt/invenio
 
 # a quick hack for general modifications
 # XXX: invenio update unsafe
@@ -29,6 +28,8 @@ cp -vf invenio/templates/* /opt/invenio/etc/templates/
 cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
 cp -vrf invenio/etc/* /opt/invenio/etc/
 cp -vrf invenio/var/* /opt/invenio/var/
+
+chown -R $WWW_USER.$WWW_USER /opt/invenio
 
 pip install -r b2share_requirements.txt                                                               
 
