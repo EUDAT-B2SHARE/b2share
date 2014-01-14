@@ -181,12 +181,16 @@
     margin-right: 35px; /* don't understand why margin right is needed :( */
 }
 
+#submitbutton {
+	margin-top: 20px;
+	border-top: 2px solid rgb(37, 95, 134);
+}
+
 #domain-label {
     padding-top: 80px;
 }
 
 #meta-fields {
-    margin-top: 40px;
     text-align: left;
 }
 
