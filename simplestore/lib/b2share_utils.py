@@ -48,7 +48,7 @@ def get_latest_deposits():
 	recs = [{
 		"id": bfo.recID,
 		"date": bfe_creation_date.format_element(bfo),
-		"author": bfe_authors.format_element(bfo),
+		"author": bfe_authors.format_element(bfo, "1"),
 		"title": bfe_title.format_element(bfo),
 		"description": bfo.field("520__a"), 
 		"category": bfo.field("980__a"), 
