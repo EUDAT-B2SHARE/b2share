@@ -1,107 +1,148 @@
-html {
-  overflow-y: scroll;
+.newdeposit .well-b2sblue {
+    background-color: rgb(198, 214, 224);
+    background-image: none;
+    border: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    text-shadow: none;
 }
 
+.newdeposit .btn-b2sblue {
+    color: black;
+    font-weight: bold;
+    background-color: rgb(141, 172, 193);
+    background-image: none;
+    border: 1px solid rgb(141, 172, 193);
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+    text-shadow: none;
+    text-align: left;
+    padding-left: 20px;
+    width: 75%;
+}
+
+
+
+
+/* -- commented out by edima; grepping shows these styles are not used in the new UI
+
 .maintext {
-  font-size: 16px;
-  line-height: 25px;
+    font-size: 16px;
+    line-height: 25px;
 }
 
 .attribution {
-  font-size: 10px;
-  font-style: italic;
-  padding-left: 20px;
+    font-size: 10px;
+    font-style: italic;
+    padding-left: 20px;
 }
 
 .dep-submit {
-  margin-left: 0;
-  padding-left: 0;
-  margin-top: 40px;
+    margin-left: 0;
+    padding-left: 0;
+    margin-top: 40px;
 }
+*/
+
+#fileupload, #projects, #metaform  {
+    border-bottom: 2px solid rgb(37, 95, 134);
+}
+
+#file-table {
+    border-top-left-radius: 0;
+    -webkit-border-top-left-radius: 0;
+    -moz-border-radius-topleft: 0;
+}
+
+#file-table tbody tr {
+    border: none;
+    background-color: rgb(225, 225, 225);
+}
+
 
 #domains {
-  margin-top: 0px;
-  margin-left: auto;
-  margin-right: auto;
+    margin-top: 0px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-#filebox {
-  height: 190px;
-}
 
 .domain {
-  float: left;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 5px;
-  margin-right: 10px;
-  margin-top: 10px;
-  text-align: center;
-  width: 70px;
-  height: 80px;
-  border: 2px solid #bbb;
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  border-radius: 8px;
-  margin-bottom: 0px;
-  /* turn of selecting of text */
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
+    float: left;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+    margin-right: 10px;
+    margin-top: 10px;
+    text-align: center;
+    width: 70px;
+    height: 80px;
+    border: 2px solid #bbb;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+    margin-bottom: 0px;
+    /* turn of selecting of text */
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .domain-addmeta {
-  float: left;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 5px;
-  margin-right: 10px;
-  margin-top: 10px;
-  text-align: center;
-  width: 85px;
-  height: 130px;
-  border: 2px solid #bbb;
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  border-radius: 8px;
+    float: left;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+    margin-right: 10px;
+    margin-top: 10px;
+    text-align: center;
+    width: 85px;
+    height: 130px;
+    border: 2px solid #bbb;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
 }
 
 .domain-img {
-	max-width: 50px;
+    max-width: 50px;
 }
 
 .domain-disabled {
-  float: left;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 5px;
-  margin-right: 10px;
-  margin-top: 20px;
-  text-align: center;
-  width: 85px;
-  height: 130px;
-  border: 2px solid #bbb;
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  color: #e5e5e5;
+    float: left;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+    margin-right: 10px;
+    margin-top: 20px;
+    text-align: center;
+    width: 85px;
+    height: 130px;
+    border: 2px solid #bbb;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    color: #e5e5e5;
 }
 
 .compact-form {
-  margin-bottom: 0px;
+    margin-bottom: 0px;
 }
 
 .add-button{
-  text-align: center;
-  margin-left: 0;
+    text-align: center;
+    margin-left: 0;
 }
 
 .domain:hover {
-  opacity: 0.8;
-  color: #9d261d;
-  border: 2px solid #9d261d;
+    opacity: 0.8;
+    color: #9d261d;
+    border: 2px solid #9d261d;
 }
 
 /* Hide only visually, but have it available for screenreaders: h5bp.com/v */
@@ -111,140 +152,137 @@ html {
 .visuallyhidden.focusable:active, .visuallyhidden.focusable:focus { clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto; }
 
 .highlight-icon {
-  color: #9d261d;
-  border: 2px solid #9d261d;
-}
-
-.deposit {
-  margin: 0 0;
+    color: #9d261d;
+    border: 2px solid #9d261d;
 }
 
 .meta-container {
-
-  padding: 60px;
-  margin-bottom: 30px;
-  margin-top: 30px;
-  font-size: 18px;
-  font-weight: 200;
-  line-height: 30px;
-  color: inherit;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px
+    padding: 60px;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    font-size: 18px;
+    font-weight: 200;
+    line-height: 30px;
+    color: inherit;
+    -webkit-border-radius: 6px;
+         -moz-border-radius: 6px;
+                    border-radius: 6px
 }
 
 
 .meta-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    width: 40px;
+    float: left;
+    padding-right: 6px;
+    padding-top: 5px;
+    margin-right: 35px; /* don't understand why margin right is needed :( */
+}
 
-  font-size: 14px;
-  font-weight: bold;
-  text-align: right;
-  width: 40px;
-  float: left;
-  padding-right: 6px;
-  padding-top: 5px;
-  margin-right: 35px; /* don't understand why margin right is needed :( */
-
+#submitbutton {
+	margin-top: 20px;
+	border-top: 2px solid rgb(37, 95, 134);
 }
 
 #domain-label {
-  padding-top: 80px;
+    padding-top: 80px;
 }
 
 #meta-fields {
-  margin-top: 40px;
-  text-align: left;
+    text-align: left;
 }
 
 .meta-container h1 {
-
-  text-align: center;
-  margin-bottom: 40px;
+    text-align: center;
+    margin-bottom: 40px;
 }
 
 .metacontent {
-  margin-top: 10px;
-  line-height: 40px;
+    margin-top: 10px;
+    line-height: 40px;
 }
 
 .meta-table {
-
-  background-color: #f5f5f5;
+    background-color: #f5f5f5;
 }
 
 .first-cap {
-  text-transform: capitalize;
+    text-transform: capitalize;
 }
 
 #adv-fields {
-  margin-top: 20px;
+    margin-top: 20px;
 }
 
 .deposit-result {
-  background-color: #f5f5f5;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  padding-left: 10px;
+    background-color: #f5f5f5;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 10px;
 }
 
 .deposit-text {
-  margin-top: 20px;
-  font-size: 17.5px;
+    margin-top: 20px;
+    font-size: 17.5px;
 }
 
 .another-item {
-  margin-top: 20px;
-  font-size: 17.5px;
+    margin-top: 20px;
+    font-size: 17.5px;
 }
 
 .step-number {
-  color: #a9a9a9;
+    color: #a9a9a9;
+    font-size: 18px;
+    line-height: 20px;
 }
 
 #submit-deposit {
 }
 
-img.desaturate { 
-  filter: grayscale(100%); 
-  -webkit-filter: grayscale(100%);
-  -moz-filter: grayscale(100%);
-  filter: url(/img/desaturate.svg#greyscale);
-  filter: gray;
+img.desaturate {
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    filter: url(/img/desaturate.svg#greyscale);
+    filter: gray;
 }
 
 .footnote {
-  font-style: italic;
-  font-size: 12px;
+    font-style: italic;
+    font-size: 12px;
 }
 
 .hide {
-  display: none;
+    display: none;
 }
 
 input, textarea {
-  width: 270px;
+    width: 270px;
 }
 textarea {
-  height: 100px;
+    height: 100px;
 }
 
 
 a.description {
-  position: relative;
-  z-index:24;
-  color:#000;
-  text-decoration: none;
-  margin-left: 20px;
-}    
+    position: relative;
+    z-index:24;
+    color:#000;
+    text-decoration: none;
+    margin-left: 20px;
+}
 
 a.description.hover {z-index:25; background-color:#ff0}
 
 a.description span{display:none}
 
 a.description:hover span {
-  display:block;
-  position:absolute;
-  top:2em; left:2em; width:10em;
-  border:10px solid #666;
-  background-color:#666; color:#fff
+    display:block;
+    position:absolute;
+    top:2em; left:2em; width:10em;
+    border:10px solid #666;
+    background-color:#666; color:#fff
 }

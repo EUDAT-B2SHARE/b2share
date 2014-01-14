@@ -1,0 +1,43 @@
+.websearch .title {
+    font-size: 30px;
+    display: inline-block;
+}
+
+.websearch p {
+    font-size: 20px;
+    line-height: 25px;
+    padding-top: 10px;
+}
+
+.websearch p em {
+    color: rgb(31, 67, 141);
+}
+
+.websearch .title img {
+    height: 200px;
+    margin: -76px 0;
+}
+
+.collection ul.nav-list {
+    padding-left: 0;
+}
+
+.collection ul.nav-list ul.nav-list {
+    font-size: 90%;
+}
+
+.collection ul ul li a {
+    color: #333;
+    opacity: 0.8;
+}
+
+.collection .badge {
+    opacity:0.6;
+    font-size:80%;
+}
+
+.collection ul ul .badge {
+    color: #333;
+    background-color: #EEE;
+    border: 1px solid #999;
+}
