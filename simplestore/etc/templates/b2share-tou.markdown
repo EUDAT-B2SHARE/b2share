@@ -1,4 +1,4 @@
-# Terms of Use for EUDAT B2SHARE Service
+# Terms of Use
 
 By registering as a EUDAT B2SHARE service user (hereafter “B2SHARE”) you accept the following conditions of use: 
 
