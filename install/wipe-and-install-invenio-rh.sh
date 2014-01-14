@@ -112,6 +112,6 @@ sudo -u $WWW_USER $INVENIO_DIR/bin/inveniomanage apache create-config
 sudo -u $WWW_USER $INVENIO_DIR/bin/inveniocfg --update-all
 
 # insert initial collection to the list
-mysql invenio --password=$MYSQL_PASS < collections.sql 
+mysql invenio --password=$MYSQL_PASS < collections.sql
 
 service $WWW_SERVICE start
