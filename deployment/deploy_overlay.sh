@@ -30,6 +30,6 @@ cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
 cp -vrf invenio/etc/* /opt/invenio/etc/
 cp -vrf invenio/var/* /opt/invenio/var/
 
-pip install -r simplestore/b2share_requirements.txt                                                               
+pip install -r b2share_requirements.txt                                                               
 
 service $WWW_SERVICE restart
