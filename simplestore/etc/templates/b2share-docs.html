@@ -1,0 +1,64 @@
+{#
+## This file is part of Invenio.
+## Copyright (C) 2012 CERN.
+## Portions Copyright (C) 2013 EPCC, The University of Edinburgh.
+##
+## Invenio is free software; you can redistribute it and/or
+## modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation; either version 2 of the
+## License, or (at your option) any later version.
+##
+## Invenio is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with Invenio; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+{% from "_formhelpers.html" import render_filter_form with context %}
+{% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
+{% from "deposits.html" import render_deposits with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
+{% extends "page.html" %}
+
+{% block header %}
+    {{ super() }}
+{% endblock %}
+
+{% block title %}
+    {{ super() }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {{ render_breadcrumbs('visible', True) }}
+{% endblock breadcrumbs %}
+
+{% block searchbar %}
+{% if collection.is_restricted %}
+    {{ search_form(collection) }}
+{% else %}
+    {% cache 24*60*60, collection.name, g.ln %}
+        {{ search_form(collection) }}
+    {% endcache %}
+{% endif %}
+{% endblock %}
+
+{% block body %}
+    <div class="row websearch">
+        <div class="span12">
+	    {{ render_markdown_from_file("b2share-about.markdown")|safe }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+(function($) {
+    $('[rel=tooltip]').tooltip();
+})(jQuery);
+</script>
+{{ search_form_javascript(collection)}}
+{% endblock %}

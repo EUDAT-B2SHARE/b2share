@@ -7,10 +7,10 @@
     {{f(**kwargs)|safe}}
 
   {%- if f.description -%}
-    <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled" disabled>
+    <a class="description" href="#"><button type="button" class="btn btn-mini btn-info disabled">
     <i class="icon-info-sign"></i></button><span>{{f.description|safe}}</span></a>
   {%- endif %}
-
+  
   <div class="controls">
 
     {%- if f.errors %}
@@ -18,7 +18,7 @@
         <p class="help-block">{{error}}</p>
       {%- endfor %}
     {%- endif %}
-
+  
   </div>
 </div>
 {% endmacro %}
@@ -35,8 +35,8 @@
       <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields-{{ s.name }}">
                     Add more details?
       </button>
-
-      <div id="adv-fields-{{ s.name }}" class="collapse">
+ 
+      <div id="adv-fields-{{ s.name }}" class="collapse"> 
 
         {% for f in s.optional_fields %}
           {{ meta_field(getattr(form, f)) }}

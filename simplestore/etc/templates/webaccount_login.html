@@ -1,0 +1,216 @@
+{#
+## This file is part of Invenio.
+## Copyright (C) 2012 CERN.
+##
+## Invenio is free software; you can redistribute it and/or
+## modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation; either version 2 of the
+## License, or (at your option) any later version.
+##
+## Invenio is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with Invenio; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+
+{% from "_formhelpers.html" import render_filter_form with context %}
+{% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
+{% from "deposits.html" import render_deposits with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+{% extends "page.html" %}
+
+{% set title = None %}
+{% set activated_providers = 0 %}
+
+{% macro collection_records(collection) %}
+{{ search_form(collection) }}
+{% endmacro %}
+
+{% block breadcrumbs %}
+    {{ render_breadcrumbs('visible', False) }}
+{% endblock breadcrumbs %}
+
+{% if collection %}
+    {% block searchbar %}
+    {% if collection.is_restricted %}
+        {{ collection_records(collection) }}
+    {% else %}
+        {% cache 24*60*60, collection.name, g.ln %}
+            {{ collection_records(collection) }}
+        {% endcache %}
+    {% endif %}
+    {% endblock %}
+{% endif %}
+
+
+
+{% macro external_login_button(provider, referer='', icon_size=48,
+                               classes="", label="%(provider)s username") %}
+
+    {% set type = 'login' %}
+
+  {% set handler = url_for('youraccount.' + type, provider=provider) %}
+  {% if referer %}
+    {% if not url_for('webaccount.login') in referer %}
+        {% set handler = url_for('youraccount.' + type, provider=provider, referer=referer) %}
+    {% endif %}
+  {% endif %}
+
+  <li class="{{ classes }}" id="{{ provider }}_login_button">
+    <a class="thumbnail" id="{{ provider }}_login"
+       rel="tooltip" title="{{ provider }}" data-placement="top"
+       href="{{ handler|safe }}">
+      <img class="external_provider {{ classes }}"
+           src="{{ url_for('static', filename="/img/%s_icon_%s.png"|format(provider, icon_size)) }}" />
+    </a>
+  </li>
+
+{% endmacro %}
+
+{% macro external_login_form(provider, referer='', icon_size=48,
+                             classes="", label="%(provider)s username") %}
+  {#
+  Template of the login form for providers which need an username for
+  verification.
+
+  @param provider: The name of the provider
+  @type provider: str
+
+  @param referer: The referer URL - will be redirected upon after login
+  @type referer: str
+
+  @param icon_size: The size of the icon of the provider
+  @type icon_size: int
+
+  @param classes: Additional classes for the login form
+  @type classes: str
+
+  @param label: The label for text input.
+  @param label: str
+
+  @rtype: str
+  #}
+    {% set type = 'login' %}
+
+  <li class="{{ classes }} login_form" id="{{ provider }}_verify_form">
+    <a class="thumbnail" id="{{ provider }}_login_img"
+       rel="tooltip" title="{{ provider }}" data-placement="top"
+       onclick="show_username_form('#{{ provider }}_verifier')" href="#{{ provider }}_verify_form">
+      <img class="external_provider {{ classes }}"
+           src="{{ url_for('static', filename="/img/%s_icon_%s.png"|format(provider, icon_size)) }}" />
+    </a>
+    <div class="login_content with_label" id="{{ provider }}_verifier" hidden="hidden">
+      <form method="get" accept-charset="UTF-8" action="{{ url_for('youraccount.' + type)|safe }}">
+        <input type="hidden" name="provider" value="{{ provider }}">
+        <input type="hidden" name="referer" value="{{ referer }}">
+        <input class="input-block-level" id="{{ provider }}_username_field"
+               style="background: url({{ url_for('static', filename="/img/%s_icon_%s.png"|format(provider, 24)) }});
+                      background-repeat: no-repeat;
+                      background-position: 2px center;
+                      padding-left: 30px;
+                      height: 30px;
+                      box-sizing: border-box;"
+               type="text" name="identifier" value=""
+               placeholder="{{ label|format(provider=provider) }}">
+        <button class="btn btn-info btn-block" type="submit">
+          {{ _('Continue') }}&nbsp;<i class="icon-chevron-right icon-white"></i>
+        </button>
+      </form>
+    </div>
+  </li>
+{% endmacro %}
+
+
+{% block body %}
+
+    <div class="row login">
+        {{ render_deposits('hidden') }}
+        <div class="span7">
+            <h2 class="title">
+                <img class="pull-right" src="/img/bee-shadow.png" alt="Bee"></img>
+            </h2>
+
+            <h3 class="login-message">Please sign in</h3>
+
+            <form action="{{ url_for('webaccount.login') }}" method="POST">
+                {{ form.referer }}
+                {{ form.login_method }}
+                <div class="input-append">
+                    <input class="login-row" type="text" name="nickname" placeholder="Username or email"></input>
+                    <span class="add-on after-input">></span><br/>
+                </div>
+                <div class="input-append">
+                    <input class="login-row" type="password" name="password" placeholder="Password"></input>
+                    <span class="add-on after-input">></span><br/>
+                </div>
+                <div class="login-bottomrow">
+                    <label class="checkbox">
+                        <input type="checkbox" name="remember"> Remember me
+                    </label>
+                    <input type="submit" class="login-btn pull-right" value="Login >>>"></input>
+                </div>
+            </form>
+            <br/>
+            <p><a href="{{ url_for('youraccount.register') }}"><strong>Don't have an account? Sign up here.</strong></a></p>
+            <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
+        </div>
+    </div>
+
+<!-- <div class="row">
+  <div class="span8 offset2">
+    <p class="lead text-center">{{ _("If you already have an account, please login using the form below.") }}</p>
+    <p class="text-center">{{ _("If you don't own an account yet, please %(x_url_open)sregister")|format(
+      x_url_open='<a href="'+url_for('webaccount.register')+'">')|safe }}
+    {{ _("%(x_url_close)s an internal account.")|format(x_url_close='</a>')|safe }}</p>
+
+    <hr/>
+  </div>
+</div> -->
+
+<!-- <div class="row">
+  <div class="span4 offset{{ '2' if activated_providers else '4' }}">
+    <legend>{{ _('Please Sign In') }}</legend>
+    <form action="{{ url_for('webaccount.login') }}" method="POST">
+    {{ form.referer }}
+    {{ form.login_method }}
+    {{ form.nickname(placeholder=_('Username or email'), class_="span4") }}
+    {{ form.password(placeholder=_('Password'), class_="span4") }}
+    <label class="checkbox">
+      {{ form.remember(class_="checkbox") }}
+    </label>
+    {{ form.submit(class_="btn btn-info btn-block") }}
+    </form>
+    <p class="text-right">
+      <a href="{{ url_for('webaccount.lost') }}">
+        {{ _('Lost your password?') }}
+      </a>
+    </p>
+  </div>
+ -->
+
+{% endblock %}
+
+{% block javascript %}
+{{ super() }}
+<script type="text/javascript">
+  function show_username_form(element) {
+    $('#form_field').html($(element).html())
+    return false
+  }
+
+  (function($) {
+    $('[rel=tooltip]').tooltip();
+    $('#nickname').popover({
+      title: '<strong>{{ _('Note') }}</strong>',
+      content: '{{ _('You can use your nickname or your email address to login.') }}',
+      trigger: 'focus',
+      html: true,
+    });
+  })(jQuery);
+</script>
+{{ search_form_javascript(collection)}}
+{% endblock %}
