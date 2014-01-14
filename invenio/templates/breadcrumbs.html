@@ -40,7 +40,7 @@
     </div>
     {% if show_login_button %}
     <div class="offset3 span2">
-        <div class="login_link" style="position:relative; z-index:10; margin-left:40px">
+        <div class="login_link" style="position:relative; margin-left:40px">
             {% if current_user.is_guest %}
             <a href="{{ url_for('webaccount.login', referer=request.url) }}">Login >>></a>
             {% else %}
