@@ -111,7 +111,7 @@ def addmeta(request, sub_id):
         tmp_file = write_marc_to_temp_file(marc)
         task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
         return jsonify(valid=True,
-                       html=render_template('simplestore-finalise.html',
+                       html=render_template('simplestore-finalize.html',
                                             recid=recid, marc=marc))
 
     current_app.logger.error("returning form addmeta")
