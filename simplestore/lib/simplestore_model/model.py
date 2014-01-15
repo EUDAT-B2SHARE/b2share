@@ -179,7 +179,6 @@ def _create_metadata_class(cfg):
             cfg.domain,
             basic_fields=list(basic_field_iter()),
             optional_fields=list(optional_field_iter())))
-	# load a list of field names which could be potentially mandatory
 
     clsname = cfg.domain + "Metadata"
 
