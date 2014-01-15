@@ -30,7 +30,7 @@ def format_element(bfo):
     ids = bfo.fields("0247_")
     for i in ids:
         val = i['a']
-        if i['2'] == "PID":
+        if i['2'] == "PID (citable)":
             try:
                 val = '<a href="{0}">{0}</a>'.format(i['a'])
             except ImportError:
