@@ -3,7 +3,10 @@ from simplejson import dumps as jsondumps
 from werkzeug.exceptions import HTTPException, BadRequest, abort
 from flask import current_app
 
+from urlparse import urljoin, urlparse
+
 from invenio.config import CFG_EPIC_USERNAME
+from invenio.config import CFG_HANDLE_SYSTEM_BASEURL
 from invenio.config import CFG_EPIC_PASSWORD
 from invenio.config import CFG_EPIC_BASEURL
 from invenio.config import CFG_EPIC_PREFIX
@@ -85,6 +88,7 @@ def createHandle(location,checksum=None,suffix=''):
 
     # get the handle as returned by EPIC
     hdl = response['location']
+    pid = '/'.join(urlparse(hdl).path.split('/')[3:])
 
-    return hdl
+    return urljoin(CFG_HANDLE_SYSTEM_BASEURL, pid)
 
