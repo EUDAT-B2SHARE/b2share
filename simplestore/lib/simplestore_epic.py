@@ -83,13 +83,8 @@ def createHandle(location,checksum=None,suffix=''):
                   "Not Created: Response status: %s" % response.status)
         abort(response.status)
 
-    # make sure to only return the handle and strip off the baseuri
-    # if it is included
+    # get the handle as returned by EPIC
     hdl = response['location']
-    if hdl.startswith(uri):
-        hdl = hdl[len(uri):len(hdl)]
-    elif hdl.startswith(uri + '/'):
-        hdl = hdl[len(uri + '/'):len(hdl)]
 
     return hdl
 
