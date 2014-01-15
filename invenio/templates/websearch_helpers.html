@@ -329,7 +329,7 @@
     <div class="well well-small">
       <div class="row">
 
-        <form action="{{ url_for('.search') }}" name="settings" method="get"
+        <form action="{{ url_for('search.search') }}" name="settings" method="get"
               style="margin-bottom: 0px; position: relative; z-index: 1;"
               class="pull-right form-inline">
           <input name="p" value="{{ request.args.get('p','') }}" type="hidden" />
@@ -443,7 +443,7 @@
 
 
 
-        <form action="{{ url_for('.search') }}"
+        <form action="{{ url_for('search.search') }}"
               name="search"
               method="get"
               style="margin-bottom: 0px;"
