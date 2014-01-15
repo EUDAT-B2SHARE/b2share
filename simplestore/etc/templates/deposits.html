@@ -31,8 +31,8 @@
 		<li class="deposit">
 			<ul>
 				<li class="deposit-date">{{dep.date}}</li>
-				<li class="deposit-title">{{dep.title}}</li>
-				<li class="deposit-meta">by {{dep.author}}</li>
+				<li class="deposit-title">{{dep.title|safe}}</li>
+				<li class="deposit-meta">by {{dep.author|safe}}</li>
 				<li class="deposit-meta">{{dep.description}}</li>
 			
 				{% if recID %}	
