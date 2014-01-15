@@ -90,5 +90,5 @@ def createHandle(location,checksum=None,suffix=''):
     hdl = response['location']
     pid = '/'.join(urlparse(hdl).path.split('/')[3:])
 
-    return urljoin(CFG_HANDLE_SYSTEM_BASEURL, '/'.join(urlparse(a).path.split('/')[3:]))
+    return urljoin(CFG_HANDLE_SYSTEM_BASEURL, pid)
 
