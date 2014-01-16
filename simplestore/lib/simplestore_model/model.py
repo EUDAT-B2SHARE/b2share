@@ -52,14 +52,14 @@ class SubmissionMetadata(db.Model):
 
     # optional
     contributors = db.Column(db.String(256))  # split on ;
-    language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
+    #language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
     version = db.Column(db.String(128))
 
     basic_fields = ['title', 'description', 'creator', 'open_access',
                     'licence', 'publisher', 'publication_date', 'tags']
-    optional_fields = ['contributors', 'language', 'resource_type',
+    optional_fields = ['contributors', 'resource_type',
                        'alternate_identifier', 'version']
 
     # using joined table inheritance for the specific domains
@@ -129,10 +129,11 @@ class SubmissionMetadata(db.Model):
             'This element contains a semicolon separated list of ' +\
             'contributors, e.g. further authors. Here people can mention all ' +\
             'other persons that were relevant in the creation of the resource.'}
-        self.field_args['language'] = {
-            'description': 
-            'This element specifies the name of the language the document ' +\
-            'is written in.'}
+#        self.field_args['language'] = {
+#            'description': 
+#           'This element specifies the name of the language the document ' +\
+#            'is written in.',
+#	    }
         self.field_args['resource_type'] = {
             'description': 
             'This element allows the depositor to specify the type of the ' +\
