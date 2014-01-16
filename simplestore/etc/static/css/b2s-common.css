@@ -27,7 +27,7 @@ a:hover {
 /* --- header css --- */
 
 .navbar .navbar-inner {
-    background: rgb(212, 221, 226) url('/img/comb2.png') repeat-x left top;
+    background: rgb(212, 221, 226) none;
     border: none;
     border-radius: 0;
     -webkit-box-shadow: 0 0;
@@ -45,8 +45,10 @@ div.navbar {
 }
 
 .navbar > .navbar-inner > .container {
-    width: 640px;
-    margin: 17px auto;
+	margin: 0 auto;
+    background: rgb(212, 221, 226) url('/img/B2SHARE-header.png') repeat-x left top;
+    width: 1024px;
+    height: 98px;
 }
 
 .brand-b2share img {
