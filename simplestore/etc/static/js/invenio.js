@@ -59,5 +59,10 @@
       $menu.dropdown();
     });
   });
+ 
+  (function() {
+    var h = window.innerHeight - $("footer").height();
+    $("#wrap").css('min-height', h + "px");
+  })();
 
 }(window.jQuery);
