@@ -157,7 +157,12 @@ def help(docid=None):
     def markdown(filename):
         import os, invenio.config, markdown2
         path = os.path.join(invenio.config.CFG_ETCDIR, 'templates', docid + ".markdown")
-        return markdown2.markdown_path(path)
+        with open (path, "r") as mdfile:
+            mddata = mdfile.read()
+            # replacing relative with absolute paths for images in markdown source
+            from re import sub
+            mdtext = re.sub(r'!\[([^\]]*)\]\(img/', r'![\1](/img/', mddata)
+            return markdown2.markdown(mdtext)
 
     @register_template_context_processor
     def index_context():
