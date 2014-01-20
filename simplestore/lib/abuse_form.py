@@ -110,7 +110,7 @@ Phone: """ + phone + """
 
 """
 
-	send_email(CFG_SITE_SUPPORT_EMAIL,CFG_SITE_SUPPORT_EMAIL,
+	send_email(email,CFG_SITE_SUPPORT_EMAIL,
 		subject='New Abuse Report',content=msg_content)
 #	flush_mailbox()
 
