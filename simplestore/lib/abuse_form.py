@@ -27,6 +27,17 @@ from invenio.webuser_flask import current_user
 from invenio.htmlutils import remove_html_markup
 from invenio.mailutils import send_email
 from invenio.config import CFG_SITE_SUPPORT_EMAIL
+import re
+
+def check_email_addr(addr):
+        if not re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",addr):
+                return False
+        return True
+
+def check_phone(num):
+	if not re.match("^[0-9-+]+",num):
+		return False
+	return True
 
 def abuse_form(request):
 	return render_template('abuse_form.html')
@@ -65,13 +76,19 @@ def abuse_submit(request):
 	if(affiliation == ''):
 		return render_template('abuse_form.html',warning_msg="Affiliation is missing")
 	
-	if(email == ''):
+	if(email == '' or check_email_addr(email) == False):
 		return render_template('abuse_form.html',warning_msg="Not valid email address")
 
 	if(street_address == ''):	
 		return render_template('abuse_form.html',warning_msg="Street Address is missing")
 
-	if(phone == ''):
+        if(postal_code == ''):
+                return render_template('abuse_form.html',warning_msg="Postal Code is missing")
+
+        if(country == ''):
+                return render_template('abuse_form.html',warning_msg="Country is missing")
+
+	if(phone == '' or check_phone(phone) == False):
 		return render_template('abuse_form.html',warning_msg="Phone is missing")
 
 	msg_content = """
