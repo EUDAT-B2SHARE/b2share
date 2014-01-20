@@ -34,6 +34,7 @@
 
 def get_latest_deposits():
 	NUMBER_OF_RECORDS = 4;
+	TRUNCATE_DESCRIPTION_TO = 120;
 	from invenio.search_engine import perform_request_search
 	ids = perform_request_search(of="id", rg=NUMBER_OF_RECORDS, sf="005", so="a")
 	limit_ids = ids[:NUMBER_OF_RECORDS]
@@ -50,7 +51,7 @@ def get_latest_deposits():
 		"date": bfe_creation_date.format_element(bfo),
 		"author": bfe_authors.format_element(bfo, "1"),
 		"title": bfe_title.format_element(bfo),
-		"description": bfo.field("520__a"), 
+		"description": bfo.field("520__a")[:TRUNCATE_DESCRIPTION_TO],
 		"category": bfo.field("980__a"), 
 	} for bfo in bfo_list]
 	return recs
