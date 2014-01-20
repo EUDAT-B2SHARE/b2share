@@ -69,6 +69,10 @@
     margin-right: auto;
 }
 
+#projects {
+	padding-bottom: 10px;
+}
+
 
 .domain {
     float: left;

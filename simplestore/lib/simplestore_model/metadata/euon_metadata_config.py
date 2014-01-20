@@ -4,8 +4,8 @@ from datetime import date
 
 
 domain = "euon"
-display_name = "EUON"
-table_name = 'euon'
+display_name = "Ontology"
+table_name = 'EUON'
 image = 'EUON-logo.png'
 kind = 'project'
 

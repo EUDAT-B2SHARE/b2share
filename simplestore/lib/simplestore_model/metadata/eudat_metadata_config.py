@@ -1,5 +1,5 @@
-domain = "eudat"
-display_name = "EUDAT"
+domain = "generic"
+display_name = "Generic"
 table_name = 'eudat'
-image = 'eudat-icon.png'
+image = 'eudat.png'
 kind = 'project'
