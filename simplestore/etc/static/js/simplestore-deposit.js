@@ -104,10 +104,23 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                 //]
         });
 
+        function setDepositBtnState() {
+            var nowUploading = false;
+            $.each(uploader.files, function(i, file) {
+                if (file.loaded < file.size) {
+                     nowUploading = true;
+                }
+            });
+            $('#deposit').toggleClass('disabled', nowUploading)
+                         .attr('disabled', nowUploading ? 'disabled' : null);
+        }
+
         uploader.init();
+        setDepositBtnState();
 
         $('#uploadfiles').click(function(e) {
             uploader.start();
+            setDepositBtnState();
 
             //Show the domain selection stuff
             $('#uploadfiles').hide();
@@ -145,19 +158,19 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                 if(uploader.files.length === 0){
                         $('#uploadfiles').addClass("disabled");
                         $('#file-table').hide('slow');
-
-                        $('#deposit').addClass('disabled');
-                        $('#deposit').removeClass('btn-primary');
                 }
+                setDepositBtnState();
         });
 
         uploader.bind('UploadProgress', function(up, file) {
                 $('#' + file.id + " .bar").css('width', file.percent + "%");
+                setDepositBtnState();
                 console.log("Progress " + file.name + " - " + file.percent);
         });
 
         uploader.bind('UploadFile', function(up, file) {
                 $('#' + file.id + "_rm").hide();
+                setDepositBtnState();
         });
 
 
@@ -177,6 +190,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                                 uploader.removeFile(file);
                         });
                 });
+                setDepositBtnState();
         });
 
         uploader.bind('FileUploaded', function(up, file, responseObj) {
@@ -191,8 +205,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
 
                 $('#uploadfiles').addClass('disabled');
                 $('#uploadfiles').show();
-
-                $('#deposit').removeClass('disabled');
                 $('#deposit').addClass('btn-primary');
+                setDepositBtnState();
         });
 }
