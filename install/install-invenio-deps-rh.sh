@@ -55,3 +55,5 @@ python-pip install -r requirements-flask-ext.txt
 #seems to be missed or old
 python-pip install --upgrade redis
 python-pip install babel
+python-pip install validate_email
+python-pip install pyDNS
