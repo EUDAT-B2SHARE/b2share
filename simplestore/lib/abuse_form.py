@@ -27,12 +27,10 @@ from invenio.webuser_flask import current_user
 from invenio.htmlutils import remove_html_markup
 from invenio.mailutils import send_email
 from invenio.config import CFG_SITE_SUPPORT_EMAIL
+from recaptcha.client import captcha
+from invenio.config import CFG_CAPTCHA_PRIVATE_KEY
+from validate_email import validate_email
 import re
-
-def check_email_addr(addr):
-        if not re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",addr):
-                return False
-        return True
 
 def check_phone(num):
 	if not re.match("^[0-9-+]+",num):
@@ -57,41 +55,63 @@ def abuse_submit(request):
 	postal_code = request.form.get('element_2_5','')
 	phone = request.form.get('element_4','')
 	country = request.form.get('element_2_6','')
+	recaptcha_challenge = request.form.get('recaptcha_challenge_field','')
+	recaptcha_response = request.form.get('recaptcha_response_field','')
 	
-	if(link == ''): 
+	if(link == '' or len(link)>256): 
 		return render_template('abuse_form.html',warning_msg="Link is missing")	
 	
-	if(subject == ''): 
+	if(subject == '' or len(subject) > 256): 
 		return render_template('abuse_form.html',warning_msg="Subject is missing")	
 
 	if(reason == ''):
 		return render_template('abuse_form.html',warning_msg="Reason is missing")
 
-	if(first_name == ''):
+	if(first_name == '' or len(first_name) > 256):
 		return render_template('abuse_form.html',warning_msg="First Name is missing")
 
-	if(last_name == ''):
+	if(last_name == '' or len(last_name) > 256):
 		return render_template('abuse_form.html',warning_msg="Last Name is missing")
 
-	if(affiliation == ''):
+	if(affiliation == '' or len(affiliation) > 256):
 		return render_template('abuse_form.html',warning_msg="Affiliation is missing")
 	
-	if(email == '' or check_email_addr(email) == False):
-		return render_template('abuse_form.html',warning_msg="Not valid email address")
+	if(email == '' or validate_email(email,verify=True) == False):
+		return render_template('abuse_form.html',warning_msg="Email address missing or format is invalid")
 
-	if(street_address == ''):	
+	if(street_address == '' or len(street_address) > 256):	
 		return render_template('abuse_form.html',warning_msg="Street Address is missing")
 
-        if(postal_code == ''):
+	if(len(street_address2) > 256):
+		return render_template('abuse_form.html',warning_msg="Street Address2 format is invalid")
+
+        if(postal_code == '' or len(postal_code) > 20):
                 return render_template('abuse_form.html',warning_msg="Postal Code is missing")
 
-        if(country == ''):
+        if(country == ''or len(country) > 256):
                 return render_template('abuse_form.html',warning_msg="Country is missing")
 
-	if(phone == '' or check_phone(phone) == False):
-		return render_template('abuse_form.html',warning_msg="Phone is missing")
+	if(phone == '' or check_phone(phone) == False or len(phone) > 30):
+		return render_template('abuse_form.html',warning_msg="Phone is missing or invalid format")
 
-	msg_content = """
+	if(recaptcha_challenge == ''):
+		return render_template('abuse_form.html',warning_msg="Recaptcha Challenge is missing")
+	
+	if(recaptcha_response == ''):
+		return render_template('abuse_form.html',warning_msg="Recaptcha Response is missing")
+
+	submit_response = captcha.submit(
+		recaptcha_challenge,
+		recaptcha_response,
+		CFG_CAPTCHA_PRIVATE_KEY,
+		request.remote_addr
+	)
+	
+	if not submit_response.is_valid:
+		return render_template('abuse_form.html',warning_msg="Incorrect Captcha response")
+
+	else:
+		msg_content = """
 We have received new abuse report!
 
 Link: """ + link + """
@@ -110,8 +130,7 @@ Phone: """ + phone + """
 
 """
 
-	send_email(email,CFG_SITE_SUPPORT_EMAIL,
-		subject='New Abuse Report',content=msg_content)
-#	flush_mailbox()
+		send_email(email,CFG_SITE_SUPPORT_EMAIL,
+			subject='New Abuse Report',content=msg_content)
 
-	return render_template('abuse_form.html')
+		return render_template('abuse_form.html')

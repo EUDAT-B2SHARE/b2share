@@ -541,23 +541,6 @@ form li.highlighted
 	background-color:#fff7c0;
 }
 
-form .guidelines
-{
-	background:#f5f5f5;
-	border:1px solid #e6e6e6;
-	color:#444;
-	font-size:80%;
-	left:100%;
-	line-height:130%;
-	margin:0 0 0 8px;
-	padding:8px 10px 9px;
-	position:absolute;
-	top:0;
-	visibility:hidden;
-	width:42%;
-	z-index:1000;
-}
-
 form .guidelines small
 {
 	font-size:105%;
