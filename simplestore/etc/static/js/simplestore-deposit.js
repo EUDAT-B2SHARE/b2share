@@ -91,7 +91,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                 runtimes : 'html5',
                 url : url,
                 max_file_size : '2048mb',
-                chunk_size : '1mb',
+                chunk_size : '20mb',
                 //unique_names : true,
                 browse_button : 'pickfiles',
                 drop_element : 'filebox'
