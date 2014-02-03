@@ -5,18 +5,17 @@
         {% css 'css/font-awesome.min.css', '50-simplestore' %}
         {% css 'css/bootstrap-switch.css', '50-simplestore' %}
         {% css 'css/jquery-ui.css', '50-simplestore' %}
-        {% css 'css/view.css','50-simplestore' %} 
-       <!-- Note there is also js at the bottom of the template. Sigh. -->
+	{% css 'css/view.css','50-simplestore' %}
+	<!-- Note there is also js at the bottom of the template. Sigh. -->
         {% js 'js/bootstrap-switch.js', '50-simplestore' %}
         {% js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' %}
-        {% js 'js/view.js','50-simplestore' %}
+	{% js 'js/view.js','50-simplestore' %}
 {% endblock %}
-
-{% block body%}
+{% block body %}
 	<div id="form_container">
 		{% if warning_msg: %}
-			<font color="red"><h5> {{ warning_msg }} </h5></font>
-		{% endif %}
+                        <font color="red"><h5> {{ warning_msg }} </h5></font>
+                {% endif %}
 		<form id="form_774353" class="appnitro"  method="post" action="/abuse/submit">
 					<div class="form_description">
 			<h2>Report Abuse or Inappropriate Content</h2>
@@ -300,7 +299,18 @@
 			<input id="element_4" name="element_4" class="element text medium" type="text" maxlength="255" value=""/> 
 		</div> 
 		</li>
-			
+		<script type="text/javascript"
+			src="http://api.recaptcha.net/challenge?k=6LefTu0SAAAAAC71iUJWSThHS4uweNKp40tBhLt7">
+		</script>
+
+		<noscript>
+			<iframe src="http://api.recaptcha.net/noscript?k=6LefTu0SAAAAAC71iUJWSThHS4uweNKp40tBhLt7"
+				height="300" width="500" frameborder="0"></iframe><br>
+			<textarea name="recaptcha_challenge_field" rows="3" cols="40">
+			</textarea>
+			<input type="hidden" name="recaptcha_response_field"
+				value="manual_challenge">
+		</noscript>
 					<li class="buttons">
 			    <input type="hidden" name="form_id" value="774353" />
 			    
