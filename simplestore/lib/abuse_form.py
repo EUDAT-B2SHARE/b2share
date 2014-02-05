@@ -57,12 +57,22 @@ def abuse_submit(request):
 	country = request.form.get('element_2_6','')
 	recaptcha_challenge = request.form.get('recaptcha_challenge_field','')
 	recaptcha_response = request.form.get('recaptcha_response_field','')
+	subject_text = "Unknown subject"
 	
 	if(link == '' or len(link)>256): 
 		return render_template('abuse_form.html',warning_msg="Link is missing")	
 	
-	if(subject == '' or len(subject) > 256): 
+	if(subject == ''):
 		return render_template('abuse_form.html',warning_msg="Subject is missing")	
+	else:
+		if(subject == 1):
+			subject_text = "Abuse or Inappropriate content"
+		elif(subject == 2):
+			subject_text = "Copyrighted material"
+		elif(subject == 3):
+			subject_text = "No research data"
+		elif(subject == 4):
+			subject_text = "Illegal content"
 
 	if(reason == ''):
 		return render_template('abuse_form.html',warning_msg="Reason is missing")
@@ -115,7 +125,7 @@ def abuse_submit(request):
 We have received new abuse report!
 
 Link: """ + link + """
-Subject: """ + subject + """
+Subject: """ + subject_text + """
 Reason: """ + reason + """
 First Name: """ + first_name + """
 Last Name: """ + last_name + """
