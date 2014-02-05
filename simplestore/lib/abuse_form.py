@@ -65,13 +65,13 @@ def abuse_submit(request):
 	if(subject == ''):
 		return render_template('abuse_form.html',warning_msg="Subject is missing")	
 	else:
-		if(subject == 1):
+		if(subject == "1"):
 			subject_text = "Abuse or Inappropriate content"
-		elif(subject == 2):
+		elif(subject == "2"):
 			subject_text = "Copyrighted material"
-		elif(subject == 3):
+		elif(subject == "3"):
 			subject_text = "No research data"
-		elif(subject == 4):
+		elif(subject == "4"):
 			subject_text = "Illegal content"
 
 	if(reason == ''):
