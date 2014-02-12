@@ -78,7 +78,7 @@ def upload(request, sub_id):
             unique_filename = str(new_uuid())
             old_path = os.path.join(upload_dir, filename)
             file_path = os.path.join(upload_dir,
-                                     unique_filename)
+                                     unique_filename + filename)
             os.rename(old_path, file_path)  # Rename the chunk
             size = os.path.getsize(file_path)
             file_metadata = dict(name=name, file=file_path, size=size)
@@ -95,7 +95,7 @@ def upload(request, sub_id):
             chunk_files.sort(key=lambda x: int(x.split("_")[-1]))
 
             file_uuid = str(new_uuid())
-            file_path = os.path.join(upload_dir, file_uuid)
+            file_path = os.path.join(upload_dir, file_uuid + filename)
             metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_uuid + filename)
             destination = open(file_path, 'wb')
             for chunk in chunk_files:
