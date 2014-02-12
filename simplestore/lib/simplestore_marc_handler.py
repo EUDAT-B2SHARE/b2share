@@ -1,4 +1,3 @@
-
 ## This file is part of SimpleStore.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
@@ -144,7 +143,8 @@ def add_file_info(rec, form, email, sub_id, recid):
         url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
         record_add_field(rec, '856', ind1='4',
                          subfields=[('u', url),
-                                    ('s', str(os.path.getsize(path)))])
+                                    ('s', str(os.path.getsize(path))),
+                                    ('y',metadata['name'])])
 
 
 def add_domain_fields(rec, form):
