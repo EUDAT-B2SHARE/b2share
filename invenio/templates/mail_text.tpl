@@ -17,7 +17,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 {%- block mail_header -%}
-{% if header %}{{ header }}{% else %}{{ _("Hello:") }}{% endif %}
+{% if header %}{{ header }}{% else %}{{ _("Hello,") }}{% endif %}
 {% endblock -%}
 {%- block mail_content -%}
 {{ content }}
@@ -28,7 +28,9 @@
 
 {{ _("Best regards") }}
 --
-{{ _("B2Share - <https://b2share.eudat.eu>") }}
-{{ _("Need human intervention?  Contact") }} <{{ config.CFG_SITE_SUPPORT_EMAIL }}>
+{{ _("B2Share BETA*- <https://b2share.eudat.eu>") }}
+{{ _("Need human intervention? Contact") }} <{{ config.CFG_SITE_SUPPORT_EMAIL }}>
+{{ _("*This is the first publicly deployed B2SHARE (BETA 0.1) Version. For more information see B2SHARE Terms of Use [https://b2share.eudat.eu/docs/b2share-tou]") }}
+
 {% endif %}
 {% endblock -%}
