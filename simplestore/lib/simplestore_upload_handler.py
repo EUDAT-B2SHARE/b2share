@@ -69,7 +69,7 @@ def upload(request, sub_id):
 
         import hashlib
         hasher = hashlib.md5()
-        hasher.update(name)
+        hasher.update(name.encode("utf-8"))
         md5 = hasher.hexdigest()
 
         # Save the chunk
