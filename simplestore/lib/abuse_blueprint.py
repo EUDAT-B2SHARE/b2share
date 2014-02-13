@@ -26,9 +26,13 @@ blueprint = InvenioBlueprint('abuse_form', __name__,
 	url_prefix='/abuse'
 	)
 
-@blueprint.route('/',methods=['GET'])
-def abuse_form():
-	return abuse.abuse_form(request)
+@blueprint.route('/', methods=['GET'])
+def abuse_form_noparams():
+	return abuse.abuse_form(request,-1)
+
+@blueprint.route('/<recid>',methods=['GET'])
+def abuse_form(recid):
+	return abuse.abuse_form(request,recid)
 
 @blueprint.route('/submit',methods=['POST'])
 def abuse_submit():

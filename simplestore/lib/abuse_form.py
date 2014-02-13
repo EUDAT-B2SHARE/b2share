@@ -38,7 +38,11 @@ def check_phone(num):
 	return True
 
 def abuse_form(request):
-	return render_template('abuse_form.html')
+	if(recid == -1):
+		link_txt = ""
+	else:
+		link_txt = CFG_SITE_URL + "/record/" + recid
+	return render_template('abuse_form.html',full_link=link_txt)
 
 def abuse_submit(request):
 	link = request.form.get('element_9_1','')
@@ -143,4 +147,4 @@ Phone: """ + phone + """
 		send_email(email,CFG_SITE_SUPPORT_EMAIL,
 			subject='New Abuse Report',content=msg_content)
 
-		return render_template('abuse_form.html')
+		return render_template('abuse_form.html',warning_msg="Abuse report submitted!")
