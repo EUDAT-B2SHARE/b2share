@@ -3,7 +3,7 @@
 INVENIO_DIR=/opt/invenio
 
 git config --global http.sslVerify false
-cd ../simplestore.wiki
+cd ../b2share.wiki
 git pull
 
 cp -v B2SHARE-About.md $INVENIO_DIR/etc/templates/b2share-about.markdown
