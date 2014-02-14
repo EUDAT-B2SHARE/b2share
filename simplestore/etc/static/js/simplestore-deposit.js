@@ -175,6 +175,19 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
 
 
         uploader.bind('FilesAdded', function(up, files) {
+                no_files_with_content = true;
+                
+                for(var t = files.length-1;t>=0;t--){
+                    if(files[t].size == 0){
+                        alert("File " + files[t].name + " is empty");
+                        files.splice(t,1);
+                    }
+                    else if(files[t].size>0){
+                        no_files_with_content = false;
+                    }
+                }
+                if(no_files_with_content == true){ return; }
+                
                 $('#uploadfiles').removeClass("disabled");
                 $('#file-table').show('slow');
                 $.each(files, function(i, file) {
