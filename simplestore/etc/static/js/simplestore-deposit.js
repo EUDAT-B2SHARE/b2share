@@ -180,7 +180,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                 for(var t = files.length-1;t>=0;t--){
                     if(files[t].size == 0){
                         alert("File " + files[t].name + " is empty");
-                        $('#filelist #' + files[t].id).hide('fast');
+                        uploader.removeFile(files[t]);
                         files.splice(t,1);
                     }
                     else if(files[t].size>0){
@@ -196,7 +196,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                                 '<tr id="' + file.id + '" style="display:none;z-index:-100;">' +
                                 '<td id="' + file.id + '_link">' + file.name + '</td>' +
                                 '<td>' + plupload.formatSize(file.size) + '</td>' +
-                                '<td width="30%"><div class="progress progress-stri´ped active"><div class="bar" style="width: 0%;"></div></div></td>' +
+                                '<td width="30%"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></td>' +
                                 '<td><a id="' + file.id + '_rm" class="rmlink"><i class="icon-trash"></i></a></td>' +
                                 '</tr>');
                         $('#filelist #' + file.id).show('fast');
