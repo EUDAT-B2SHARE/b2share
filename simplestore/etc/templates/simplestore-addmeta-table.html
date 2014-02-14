@@ -67,12 +67,14 @@
 </script>
 
 <script type="text/javascript">
-   $(document).ready(function() {
-   $("[rel='tooltip']").tooltip({
-       trigger: 'hover',
-       delay: 5000,
-       placement: 'left'
-   });
-});
-
+  $(document).ready(function() {
+    var elements = $("[rel='tooltip']");
+    // the jquery ui tooltips are used here, not bootstrap
+    elements.tooltip({
+      position: {
+        my: "right center",
+        at: 'left-220px center'
+      }
+    });
+  });
 </script>
