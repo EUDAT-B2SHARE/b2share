@@ -4,7 +4,7 @@ import json
 
 domain = "Linguistics"
 table_name = 'CLARIN'
-image = 'CLARIN-68px.png'
+image = 'domain-clarin.png'
 
 fields = [{'name':'language_code',
            'display_text':'Language Code',
