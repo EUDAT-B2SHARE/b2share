@@ -98,9 +98,9 @@
                                 {% if d.domain == default_domain %}checked="checked"{% endif %}/>
                             <label for="{{ d.domain }}">
                                 {% if d.display_name %}
-                                <h5 style="margin-top:0">{{ d.display_name }}</h5>
+                                <h5 style="margin:0; height:40px">{{ d.display_name }}</h5>
                                 {% else %}
-                                <h5 style="margin-top:0">{{ d.domain }}</h5>
+                                <h5 style="margin:0; height:40px">{{ d.domain }}</h5>
                                 {% endif %}
                                 {% if d.image %}
                                 <img src="/img/{{ d.image }}" class="desaturate domain-img"/>

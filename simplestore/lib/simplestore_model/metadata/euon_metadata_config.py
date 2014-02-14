@@ -6,7 +6,7 @@ from datetime import date
 domain = "euon"
 display_name = "Ontology"
 table_name = 'EUON'
-image = 'EUON-logo.png'
+image = 'domain-euon.png'
 kind = 'project'
 
 

@@ -4,9 +4,9 @@ from datetime import date
 
 
 domain = "drihm"
-display_name = "Hydrology"
+display_name = "Hydro-Meteorology"
 table_name = 'DRIHM'
-image = 'DRIHM-48px.png'
+image = 'domain-drihm.png'
 kind = 'project'
 
 
