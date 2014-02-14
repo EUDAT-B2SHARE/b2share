@@ -180,6 +180,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                 for(var t = files.length-1;t>=0;t--){
                     if(files[t].size == 0){
                         alert("File " + files[t].name + " is empty");
+                        $('#filelist #' + files[t].id).hide('fast');
                         files.splice(t,1);
                     }
                     else if(files[t].size>0){
