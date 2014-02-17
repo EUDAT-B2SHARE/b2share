@@ -147,7 +147,7 @@ def index():
             get_creation_date=get_creation_date,
             unregistered=(not current_user.is_authenticated())
         )
-    return dict(collection=collection, latest_deposits=latest_deposits)
+    return dict(collection=collection, latest_deposits=latest_deposits, pagetitle="EUDAT B2SHARE")
 
 
 @blueprint.route('/docs/<docid>')
@@ -171,7 +171,7 @@ def help(docid=None):
             get_creation_date=get_creation_date,
             unregistered=(not current_user.is_authenticated())
         )
-    return dict(collection=collection, render_markdown_from_file=markdown)
+    return dict(collection=collection, render_markdown_from_file=markdown, pagetitle="Help - EUDAT B2SHARE")
 
 
 #@blueprint.invenio_memoize(3600)
@@ -443,7 +443,7 @@ def search():
                     easy_search_form=EasySearchForm(csrf_enabled=False),
                     format_record=cached_format_record,
                     #FIXME: move to DB layer
-                    export_formats=get_export_formats())
+                    export_formats=get_export_formats(), pagetitle="Search Results - EUDAT B2SHARE")
     return dict(recids=recids)
 
 
