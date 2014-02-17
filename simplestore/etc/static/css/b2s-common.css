@@ -198,6 +198,7 @@ legend [class*="icon-"] {
 
 .deposit-list {
     margin: 0;
+    overflow: hidden;
 }
 
 .deposit {
