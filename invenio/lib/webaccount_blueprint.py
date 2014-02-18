@@ -57,8 +57,7 @@ blueprint = InvenioBlueprint('webaccount', __name__,
                                            'webaccount.index')],
                              menubuilder=[('personalize', _('Personalize'),
                                            'webaccount.index')])
-
-
+                                           
 def update_login(nickname, password=None, remember_me=False):
     where = [db.or_(User.nickname == nickname, User.email == nickname)]
     if password is not None:
@@ -79,10 +78,8 @@ def update_login(nickname, password=None, remember_me=False):
 @blueprint.invenio_force_https
 def login(nickname=None, password=None, login_method=None, action='',
           remember_me=False, referer=None):
-
     if CFG_ACCESS_CONTROL_LEVEL_SITE > 0:
         return abort(401)  # page is not authorized
-
     if action:
         try:
             action, arguments = mail_cookie_check_authorize_action(action)
@@ -133,6 +130,9 @@ def login(nickname=None, password=None, login_method=None, action='',
     except:
         flash(_("Problem with login."), "error")
 
+    if (form.validated and form.invalid_user):
+        flash(_('Invalid user.'), 'error')
+        
     current_app.config.update(dict((k, v) for k, v in
                               vars(websession_config).iteritems()
                               if "CFG_" == k[:4]))
