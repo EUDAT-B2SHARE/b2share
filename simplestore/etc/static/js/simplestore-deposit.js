@@ -165,7 +165,6 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         uploader.bind('UploadProgress', function(up, file) {
                 $('#' + file.id + " .bar").css('width', file.percent + "%");
                 setDepositBtnState();
-                console.log("Progress " + file.name + " - " + file.percent);
         });
 
         uploader.bind('UploadFile', function(up, file) {
@@ -173,22 +172,63 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                 setDepositBtnState();
         });
 
+        function splitFileNameExtension(filename) {
+            function endsWith(str, suffix) {
+                return str.indexOf(suffix, str.length - suffix.length) !== -1;
+            }
+            var ext = "";
+            if (endsWith(filename, ".tar.gz")) {
+                ext = ".tar.gz";
+            } else if (endsWith(filename, ".tar.bz2")) {
+                ext = ".tar.bz2";
+            } else {
+                var arr = filename.split(".");
+                if (arr.length > 1) {
+                    ext = "." + arr.pop();
+                }
+            }
+            if (filename === ext || ext === ".") {
+                ext = "";
+            }
+            var name = filename.substring(0, filename.length - ext.length);
+            return {
+                "name": name,
+                "ext": ext
+            };
+        }
 
         uploader.bind('FilesAdded', function(up, files) {
                 no_files_with_content = true;
                 
-                for(var t = files.length-1;t>=0;t--){
-                    if(files[t].size == 0){
+                for (var t = files.length - 1; t >= 0; t--) {
+                    if (files[t].size === 0) {
                         alert("File " + files[t].name + " is empty");
                         uploader.removeFile(files[t]);
-                        files.splice(t,1);
-                    }
-                    else if(files[t].size>0){
+                        files.splice(t, 1);
+                    } else if (files[t].size > 0) {
                         no_files_with_content = false;
                     }
                 }
-                if(no_files_with_content == true){ return; }
-                
+                if (no_files_with_content === true) { 
+                    setDepositBtnState();
+                    return; 
+                }
+
+                var hashmap = {};
+                $.each(uploader.files, function(i, file) {
+                    if (hashmap[file.name]) {
+                        var split = splitFileNameExtension(file.name);
+                        var name = split.name, ext = split.ext;
+                        var suffix = 1;
+                        while (hashmap[name +"_" + suffix + ext]) {
+                            suffix ++;
+                        }
+                        var oldname = file.name;
+                        file.name = name +"_" + suffix + ext;
+                    }
+                    hashmap[file.name] = true;
+                });
+
                 $('#uploadfiles').removeClass("disabled");
                 $('#file-table').show('slow');
                 $.each(files, function(i, file) {
@@ -208,7 +248,6 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         });
 
         uploader.bind('FileUploaded', function(up, file, responseObj) {
-                console.log("Done " + file.name);
                 $('#' + file.id + " .progress").removeClass("progress-striped");
                 $('#' + file.id + " .bar").css('width', "100%");
                 $('#' + file.id + '_rm').show();
