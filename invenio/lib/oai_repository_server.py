@@ -379,7 +379,7 @@ def print_record(recid, prefix='marcxml', verb='ListRecords', set_spec=None, set
     record_exists_result = record_exists(recid) == 1
     if record_exists_result:
         sets = get_field(recid, CFG_OAI_SET_FIELD)
-        if set_spec is not None and not set_spec in sets and not [set_ for set_ in sets if set_.startswith("%s:" % set_spec)]:
+        if set_spec and not set_spec in sets and not [set_ for set_ in sets if set_.startswith("%s:" % set_spec)]:
             ## the record is not in the requested set, and is not
             ## in any subset
             record_exists_result = False
