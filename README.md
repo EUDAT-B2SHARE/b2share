@@ -6,7 +6,7 @@ Content:
  * invenio - modifications to the Invenio core files
  * deployment - deployment support scripts
 
-### First steps with B2SHARE development:
+### Installing B2SHARE
  1. Find a new Centos/RedHat VM and install the base invenio system and then the b2share overlay. Use the B2SHARE/invenio-scripts repository for this (the `Vagrantfile` and `install-b2share-from-scratch-rh.sh`) 
    - 1.1. Create a new folder
    - 1.2. Get into this directory and download manually the `Vagrantfile` and `install-b2share-from-scratch-rh.sh`
