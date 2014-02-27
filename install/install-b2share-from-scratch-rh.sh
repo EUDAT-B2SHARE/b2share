@@ -11,7 +11,7 @@ echo "************ Stopping firewall"
 /sbin/chkconfig iptables off
 
 echo "************ Installing wget & git"
-yum install -y wget git 
+yum install -y wget git vim 
 
 echo "************ Git clone invenio"
 git clone https://github.com/B2SHARE/invenio.git
@@ -30,6 +30,7 @@ echo "************ Installing required OS dependencies"
 
 echo "************ Installing invenio base"
 cp invenio-scripts/install/invenio-local.conf invenio/
+cp invenio-scripts/install/collections.sql invenio/
 (cd invenio && ../invenio-scripts/install/wipe-and-install-invenio-rh.sh --no-confirm)
 
 echo "************ Deploying b2share overlay"
