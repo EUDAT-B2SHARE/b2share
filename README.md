@@ -11,7 +11,7 @@ Content:
    - 1.1. Create a new directory
    - 1.2. Get into this directory and download manually the Vagrantfile and install-b2share-from-scratch.sh
    - 1.3. Go to a terminal into this directory and run 'vagrant up'
-   - 1.4. Run 'vagrant ssh' to connect to the VM, then 'cd /vagrant' and './install-b2share-from-scratch.sh'
+   - 1.4. Run 'vagrant ssh' to connect to the VM, then 'cd /vagrant' and 'sudo ./install-b2share-from-scratch.sh'
    - 1.5. (Wait for 2 hours)
  2. Be sure to remove the redis cache, see the last actions in install-b2share-from-scratch.sh script
  3. You should now be able to connect to your machine (not the VM) at https://localhost:4443 and see the b2share site (with no deposits)
