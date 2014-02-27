@@ -21,7 +21,10 @@ from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
 from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
-from wtforms.widgets import Input, HTMLString
+from wtforms import SelectField
+from wtforms import HiddenField
+from wtforms.widgets import Input, Select, HTMLString, html_params
+from wtforms.compat import text_type
 from flask import current_app
 
 
@@ -182,7 +185,22 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
+
+        if 'placeholder' in field_args:
+            return PlaceholderStringField(**field_args)
+
         if 'data_provide' in field_args:
             return TypeAheadStringField(**field_args)
-        else:
-            return StringField(**field_args)
+
+        # SelectField
+        if 'choices' in field_args:
+            if 'other' in field_args:
+                return SelectFieldWithInput(**field_args)
+
+            if isinstance(field_args['choices'][0], basestring):
+                field_args['choices'] = [(x,x) for x in field_args['choices']]
+            return SelectField(**field_args)
+
+        return StringField(**field_args)

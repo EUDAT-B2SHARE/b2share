@@ -75,8 +75,7 @@ def add_basic_fields(rec, form, email):
             for kw in form['contributors'].split(';'):
                 record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
 
-        lang = form.get('language', 'en')
-        record_add_field(rec, '546', subfields=[('a', remove_html_markup(lang))])
+        record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
         if form['resource_type']:

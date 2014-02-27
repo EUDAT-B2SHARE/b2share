@@ -11,7 +11,7 @@
 
 <td>
   {%- if f.flags.required -%}
-    <span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
+    <span style="color: red;">*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
 </td>
 <td>
     <div title="{{f.description}}" rel='tooltip' placement='right' container='body'> {{f(**kwargs)|safe}}</div>
@@ -77,4 +77,32 @@
       }
     });
   });
+</script>
+
+<script type="text/javascript">
+    $(function(){
+    $('select').change( function() {
+        var value = $(this).val();
+        if (value == 'other'){
+           $("#"+this.name+"_input").show();
+           $("#"+this.name+"_input").focus();
+        }
+        else{
+           $("#"+this.name+"_input").hide();
+        }
+    });
+});
+</script>
+
+<script>
+    $('#metaform_form').submit(function() {
+        var select_list = this.getElementsByTagName('select')
+        for(var i=0; i<select_list.length; i++) {
+            var otherOption =  $(select_list[i]).val();
+            if(otherOption == "other"){
+                // replace select value with text field value
+                otherOption.val($("#"+select_list[i]+"_input").val());
+            }
+        }
+    });
 </script>
