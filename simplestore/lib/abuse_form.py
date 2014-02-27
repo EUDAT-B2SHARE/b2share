@@ -30,6 +30,7 @@ from invenio.config import CFG_SITE_SUPPORT_EMAIL
 from recaptcha.client import captcha
 from invenio.config import CFG_CAPTCHA_PRIVATE_KEY
 from validate_email import validate_email
+from invenio.config import CFG_SITE_URL
 import re
 
 def check_phone(num):
@@ -37,7 +38,7 @@ def check_phone(num):
 		return False
 	return True
 
-def abuse_form(request):
+def abuse_form(request,recid):
 	if(recid == -1):
 		link_txt = ""
 	else:

@@ -50,6 +50,7 @@ from invenio.webuser_flask import current_user
 from invenio.bibindex_engine import get_index_id_from_index_name
 from invenio.search_engine import get_creation_date, perform_request_search,\
     search_pattern, print_record, create_nearest_terms_box
+from invenio.bibformat import get_output_format_content_type, print_records
 
 blueprint = InvenioBlueprint('search', __name__, url_prefix="",
                              config='invenio.search_engine_config',
@@ -127,6 +128,13 @@ def get_export_formats():
         Format.content_type != 'text/html',
         Format.visibility == 1)
     ).order_by(Format.name).all()
+
+
+def response_formated_records(recids, collection, of, **kwargs):
+    response = make_response(print_records(recids, collection=collection,
+                                           of=of, **kwargs))
+    response.mimetype = get_output_format_content_type(of)
+    return response
 
 
 @blueprint.route('/', methods=['GET', 'POST'])
