@@ -206,8 +206,7 @@ class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
 
-    @converts
-    def handle_hidden_fields(self, field_args):
+    def handle_hidden_field(self, field_args):
         if 'hidden' in field_args:
             del field_args['hidden']
             return HiddenField(**field_args)
@@ -228,10 +227,16 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
+        hidden = self.handle_hidden_field(**field_args)
+        if hidden:
+            return hidden
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
+        hidden = self.handle_hidden_field(**field_args)
+        if hidden:
+            return hidden
         return DateField(**field_args)
 
     @converts('Boolean')
@@ -240,6 +245,10 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
+        hidden = self.handle_hidden_field(**field_args)
+        if hidden:
+            return hidden
+
         if 'placeholder' in field_args:
             return PlaceholderStringField(**field_args)
 
