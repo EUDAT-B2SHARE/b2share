@@ -84,7 +84,8 @@ class SubmissionMetadata(db.Model):
             'placeholder': "Title of the resource",
             'description':
             'The title of the uploaded resource - a name that ' +\
-            'indicates the content to be expected.'}
+            'indicates the content to be expected.'
+        }
         self.field_args['description'] = {
             'description':
             'A more elaborate description of the resource. ' +\
@@ -94,7 +95,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['publisher'] = {
             'hidden': True,
-            'default': self.publisher_default,
+            'default': self.publisher_default
             # 'description':
             # 'Here should be stored the site that will host the BE2Share ' +\
             # 'container, so that in case of access problems, people can ' +\
@@ -103,7 +104,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['publication_date'] = {
             'hidden': True,
-            'default': self.publication_date_now,
+            'default': self.publication_date_now
             # 'description':
             # 'This is the date that the resource was uploaded and thus ' +\
             # 'being available broadly. Also this date can be extracted ' +\
@@ -121,40 +122,47 @@ class SubmissionMetadata(db.Model):
                            'agreement to access the data (e.g. GPL, ' +\
                            'Apache v2 or Commercial); if no licence applies ' +\
                            'leave this field blank.'
-                           }
+        }
         self.field_args['tags'] = {
             'placeholder': "keyword1, keyword2, ...",
             'description':
             'A comma separated list of tags (keywords) that ' +\
-            'characterize the content.'}
+            'characterize the content.'
+        }
         self.field_args['open_access'] = {
             'description':
             'Indicate whether the resource is open or access ' +\
             'is restricted. In case of restricted access the uploaded files ' +\
-            'will not be public, however the metadata will be.'}
+            'will not be public, however the metadata will be.'
+        }
         self.field_args['contributors'] = {
             'placeholder': 'co-author 1; co-author 2; ...',
             'description':
             'A semicolon separated list of ' +\
             'contributors, e.g. further authors. Mention all ' +\
-            'other persons that were relevant in the creation of the resource.'}
+            'other persons that were relevant in the creation of the resource.'
+        }
         self.field_args['language'] = {
             'hidden': True,
-            'default': self.language_default,
+            'default': self.language_default
             # 'description':
-            # 'The name of the language the document is written in.'}
+            # 'The name of the language the document is written in.'
+        }
         self.field_args['resource_type'] = {
             'choices': ['Text', 'Image', 'Video'], # choices -> SelectField
             'other': 'Other...', # other -> dynamic input text field
             'description':
-            'Select the type of the resource.'}
+            'Select the type of the resource.'
+        }
         self.field_args['alternate_identifier'] = {
             'placeholder': 'Other reference, such as URI, ISBN, etc.',
             'description':
-            'Any kind of other reference such as a URN, URI or an ISBN number.'}
+            'Any kind of other reference such as a URN, URI or an ISBN number.'
+        }
         self.field_args['creator'] = {
             'placeholder': 'The main author of the resource.',
-            'description': 'The person who created the resource.'}
+            'description': 'The person who created the resource.'
+        }
 
 def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
