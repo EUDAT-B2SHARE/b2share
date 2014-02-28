@@ -15,7 +15,7 @@
 ## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from wtforms.ext.sqlalchemy.orm import ModelConverter
+from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
