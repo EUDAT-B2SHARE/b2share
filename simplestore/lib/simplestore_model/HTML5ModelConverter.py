@@ -206,7 +206,7 @@ class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
 
-    def handle_hidden_field(**field_args):
+    def handle_hidden_field(self, field_args, **extra):
         if 'hidden' in field_args:
             del field_args['hidden']
             return HiddenField(**field_args)
