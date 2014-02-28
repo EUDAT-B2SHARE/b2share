@@ -47,13 +47,13 @@ def add_basic_fields(rec, form, email):
 
         if form['domain']:
             record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
-        # pubfields = []
-        # if form['publisher']:
-        #     pubfields.append(('b', remove_html_markup(form['publisher'])))
-        # if form.get('publication_date'):
-        #     pubfields.append(('c', remove_html_markup(form['publication_date'])))
-        # if pubfields:
-        #     record_add_field(rec, '260', subfields=pubfields)
+        pubfields = []
+        if form['publisher']:
+            pubfields.append(('b', remove_html_markup(form['publisher'])))
+        if form.get('publication_date'):
+            pubfields.append(('c', remove_html_markup(form['publication_date'])))
+        if pubfields:
+            record_add_field(rec, '260', subfields=pubfields)
         # record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
         #
         # if 'open_access' in form:
