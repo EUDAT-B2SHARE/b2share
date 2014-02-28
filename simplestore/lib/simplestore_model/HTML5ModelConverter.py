@@ -236,6 +236,7 @@ class HTML5ModelConverter(ModelConverter):
     @converts('String')
     def conv_String(self, field_args, **extra):
         if 'hidden' in field_args:
+            del field_args['hidden']
             return HiddenField(**field_args)
 
         if 'placeholder' in field_args:
