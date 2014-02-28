@@ -75,7 +75,7 @@ def add_basic_fields(rec, form, email):
             for kw in form['contributors'].split(';'):
                 record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
 
-        record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
+        # record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
         if form['resource_type']:
@@ -85,11 +85,11 @@ def add_basic_fields(rec, form, email):
             record_add_field(rec, '024',
                              subfields=[('a', remove_html_markup(form['alternate_identifier']))])
 
-        # if form['version']:
-        #     record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
-        # record_add_field(rec, '264',
-        #                  subfields=[('b', CFG_SITE_NAME),
-        #                             ('c', str(datetime.utcnow()) + " UTC")])
+        if form['version']:
+            record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
+        record_add_field(rec, '264',
+                         subfields=[('b', CFG_SITE_NAME),
+                                    ('c', str(datetime.utcnow()) + " UTC")])
     except Exception as e:
         current_app.logger.error(e)
         raise
