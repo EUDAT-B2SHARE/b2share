@@ -140,7 +140,7 @@ class SubmissionMetadata(db.Model):
             'other persons that were relevant in the creation of the resource.'}
         self.field_args['language'] = {
             'hidden': True,
-            'value': self.LANGUAGE_DEFAULT,
+            'value': self.language_default,
             'description':
             'The name of the language the document is written in.'}
         self.field_args['resource_type'] = {
