@@ -94,7 +94,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['publisher'] = {
             'hidden': True,
-            'value': self.publisher_default,
+            'default': self.publisher_default,
             'description':
             'Here should be stored the site that will host the BE2Share ' +\
             'container, so that in case of access problems, people can ' +\
@@ -103,7 +103,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['publication_date'] = {
             'hidden': True,
-            'value': self.publication_date_now,
+            'default': self.publication_date_now,
             'description':
             'This is the date that the resource was uploaded and thus ' +\
             'being available broadly. Also this date can be extracted ' +\
@@ -140,7 +140,7 @@ class SubmissionMetadata(db.Model):
             'other persons that were relevant in the creation of the resource.'}
         self.field_args['language'] = {
             'hidden': True,
-            'value': self.language_default,
+            'default': self.language_default,
             'description':
             'The name of the language the document is written in.'}
         self.field_args['resource_type'] = {
@@ -232,7 +232,5 @@ def _create_metadata_class(cfg):
             args['field_args'][f['name']]['default'] = f.get('default')
         if 'placeholder' in f:
             args['field_args'][f['name']]['placeholder'] = f.get('placeholder')
-        if 'value' in f:
-            args['field_args'][f['name']]['value'] = f.get('value')
 
     return type(clsname, (SubmissionMetadata,), args)
