@@ -42,11 +42,11 @@ def add_basic_fields(rec, form, email):
         if form['title']:
             record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
 
-        # if form['creator']:
-        #     record_add_field(rec, '100', subfields=[('a', remove_html_markup(form['creator']))])
-        #
-        # if form['domain']:
-        #     record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
+        if form['creator']:
+            record_add_field(rec, '100', subfields=[('a', remove_html_markup(form['creator']))])
+
+        if form['domain']:
+            record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
         # pubfields = []
         # if form['publisher']:
         #     pubfields.append(('b', remove_html_markup(form['publisher'])))
@@ -80,7 +80,7 @@ def add_basic_fields(rec, form, email):
         # # copying zenodo here, but I don't think 980 is the right MARC field
         # if form['resource_type']:
         #     record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['resource_type']))])
-        # 
+        #
         # if form['alternate_identifier']:
         #     record_add_field(rec, '024',
         #                      subfields=[('a', remove_html_markup(form['alternate_identifier']))])
