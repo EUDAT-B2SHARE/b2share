@@ -193,13 +193,12 @@ class SelectWithInput(Select):
 class SelectFieldWithInput(SelectField):
     widget = SelectWithInput()
 
-    def __init__(self, **field_args):
+    def __init__(self, other="", **field_args):
         self.field_args = field_args
         # make list of tuples for SelectField (only once)
         if isinstance(self.field_args['choices'][0], basestring):
             self.field_args['choices'] = [(x,x) for x in field_args['choices']]
-            self.field_args['choices'].append(('other', field_args['other']))
-            del self.field_args['other']
+            self.field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
