@@ -232,5 +232,7 @@ def _create_metadata_class(cfg):
             args['field_args'][f['name']]['default'] = f.get('default')
         if 'placeholder' in f:
             args['field_args'][f['name']]['placeholder'] = f.get('placeholder')
+        if 'value' in f:
+            args['field_args'][f['name']]['value'] = f.get('value')
 
     return type(clsname, (SubmissionMetadata,), args)
