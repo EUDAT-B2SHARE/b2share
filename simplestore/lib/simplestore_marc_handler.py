@@ -91,7 +91,8 @@ def add_basic_fields(rec, form, email):
                          subfields=[('b', CFG_SITE_NAME),
                                     ('c', str(datetime.utcnow()) + " UTC")])
     except Exception as e:
-        current_app.logger.error(e+" "+form['language'])
+        print "form['language']: "+form['language']
+        current_app.logger.error(e)
         raise
 
 def create_recid():
