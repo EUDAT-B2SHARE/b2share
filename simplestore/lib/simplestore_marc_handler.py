@@ -63,18 +63,18 @@ def add_basic_fields(rec, form, email):
 
         if form['licence']:
             record_add_field(rec, '540', subfields=[('a', remove_html_markup(form['licence']))])
-        # record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
-        #
-        # if form['tags']:
-        #     for kw in form['tags'].split(','):
-        #         record_add_field(rec, '653',
-        #                          ind1='1',
-        #                          subfields=[('a', remove_html_markup(kw.strip()))])
-        #
-        # if form['contributors']:
-        #     for kw in form['contributors'].split(';'):
-        #         record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
-        #
+        record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
+
+        if form['tags']:
+            for kw in form['tags'].split(','):
+                record_add_field(rec, '653',
+                                 ind1='1',
+                                 subfields=[('a', remove_html_markup(kw.strip()))])
+
+        if form['contributors']:
+            for kw in form['contributors'].split(';'):
+                record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
+        
         # record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
         #
         # # copying zenodo here, but I don't think 980 is the right MARC field
