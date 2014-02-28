@@ -227,14 +227,14 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
-        hidden = self.handle_hidden_field(**field_args)
+        hidden = self.handle_hidden_field(field_args)
         if hidden:
             return hidden
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
-        hidden = self.handle_hidden_field(**field_args)
+        hidden = self.handle_hidden_field(field_args)
         if hidden:
             return hidden
         return DateField(**field_args)
@@ -245,7 +245,7 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
-        hidden = self.handle_hidden_field(**field_args)
+        hidden = self.handle_hidden_field(field_args)
         if hidden:
             return hidden
 
