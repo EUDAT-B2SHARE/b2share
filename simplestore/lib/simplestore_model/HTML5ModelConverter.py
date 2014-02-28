@@ -202,6 +202,16 @@ class SelectFieldWithInput(SelectField):
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
+def converts(*args):
+    def _inner(func):
+        if 'hidden' in args:
+            del args['hidden']
+            return HiddenField(**args)
+        func._converter_for = frozenset(args)
+        return func
+    return _inner
+
+
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
@@ -234,10 +244,6 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
-        if 'hidden' in field_args:
-            del field_args['hidden']
-            return HiddenField(**field_args)
-
         if 'placeholder' in field_args:
             return PlaceholderStringField(**field_args)
 
