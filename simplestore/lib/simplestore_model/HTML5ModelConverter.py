@@ -15,7 +15,7 @@
 ## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
+from wtforms.ext.sqlalchemy.orm import ModelConverter
 from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
@@ -202,19 +202,15 @@ class SelectFieldWithInput(SelectField):
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
-def converts(*args):
-    def _inner(func):
-        if 'hidden' in args:
-            del args['hidden']
-            return HiddenField(**args)
-        func._converter_for = frozenset(args)
-        return func
-    return _inner
-
-
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
+
+    @converts
+    def handle_hidden_fields(self, field_args):
+        if 'hidden' in field_args:
+            del field_args['hidden']
+            return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
     def handle_integer_types(self, column, field_args, **extra):
