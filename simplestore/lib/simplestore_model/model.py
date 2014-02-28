@@ -95,19 +95,19 @@ class SubmissionMetadata(db.Model):
         self.field_args['publisher'] = {
             'hidden': True,
             'default': self.publisher_default,
-            'description':
-            'Here should be stored the site that will host the BE2Share ' +\
-            'container, so that in case of access problems, people can ' +\
-            'be contacted. This element can be created automatically ' +\
-            'dependent on the centre.'
+            # 'description':
+            # 'Here should be stored the site that will host the BE2Share ' +\
+            # 'container, so that in case of access problems, people can ' +\
+            # 'be contacted. This element can be created automatically ' +\
+            # 'dependent on the centre.'
         }
         self.field_args['publication_date'] = {
             'hidden': True,
             'default': self.publication_date_now,
-            'description':
-            'This is the date that the resource was uploaded and thus ' +\
-            'being available broadly. Also this date can be extracted ' +\
-            'automatically.'
+            # 'description':
+            # 'This is the date that the resource was uploaded and thus ' +\
+            # 'being available broadly. Also this date can be extracted ' +\
+            # 'automatically.'
         }
         self.field_args['version'] = {
             'placeholder': 'e.g. v1.02',
@@ -141,8 +141,8 @@ class SubmissionMetadata(db.Model):
         self.field_args['language'] = {
             'hidden': True,
             'default': self.language_default,
-            'description':
-            'The name of the language the document is written in.'}
+            # 'description':
+            # 'The name of the language the document is written in.'}
         self.field_args['resource_type'] = {
             'choices': ['Text', 'Image', 'Video'], # choices -> SelectField
             'other': 'Other...', # other -> dynamic input text field
