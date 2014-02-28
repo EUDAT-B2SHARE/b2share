@@ -153,6 +153,56 @@ class TypeAheadStringField(StringField):
         super(TypeAheadStringField, self).__init__(**kwargs)
 
 
+class PlaceholderStringInput(Input):
+    input_type = "text"
+
+    def __call__(self, field, placeholder="", **kwargs):
+         kwargs.setdefault('id', field.id)
+         kwargs.setdefault('type', self.input_type)
+         if 'value' not in kwargs:
+             kwargs['value'] = field._value()
+
+         return HTMLString(
+             '<input placeholder="{0}" {1}>'.format(
+             field.placeholder, self.html_params(name=field.name, **kwargs)))
+
+
+class PlaceholderStringField(StringField):
+
+    widget = PlaceholderStringInput()
+    placeholder = ""
+
+    def __init__(self, placeholder="", **kwargs):
+         self.placeholder = placeholder
+         super(PlaceholderStringField, self).__init__(**kwargs)
+
+
+class SelectWithInput(Select):
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = ['<select %s>' % html_params(name=field.name, **kwargs)]
+        for val, label, selected in field.iter_choices():
+            html.append(self.render_option(val, label, selected))
+        html.append('</select>')
+        html.append('<input type=text style="display: none" {0} {1} >'
+            .format(html_params(name=field.name+"_input"),
+                    html_params(id=field.name+"_input")))
+        return HTMLString(''.join(html))
+
+
+class SelectFieldWithInput(SelectField):
+    widget = SelectWithInput()
+
+    def __init__(self, **field_args):
+        self.field_args = field_args
+        # make list of tuples for SelectField (only once)
+        if isinstance(self.field_args['choices'][0], basestring):
+            self.field_args['choices'] = [(x,x) for x in field_args['choices']]
+            self.field_args['choices'].append(('other', field_args['other']))
+            del self.field_args['other']
+        super(SelectFieldWithInput, self).__init__(**field_args)
+
+
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
