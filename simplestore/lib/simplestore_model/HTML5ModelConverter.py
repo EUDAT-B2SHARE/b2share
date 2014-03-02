@@ -207,7 +207,8 @@ class HiddenField(StringField):
     value = ""
 
     def __init__(self,  value="", **kwargs):
-        super(_DateField, self ).__init__(value=value, **kwargs)
+        self.value = value
+        super(HiddenField, self ).__init__(**kwargs)
 
     def process_data(self, value):
         if value is None:
