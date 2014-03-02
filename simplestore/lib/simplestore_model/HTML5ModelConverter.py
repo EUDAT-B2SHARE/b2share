@@ -22,7 +22,7 @@ from wtforms import DateTimeField as _DateTimeField
 from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms import SelectField
-from wtforms import HiddenField
+from wtforms import HiddenInput
 from wtforms.widgets import Input, Select, HTMLString, html_params
 from wtforms.compat import text_type
 from flask import current_app
@@ -200,6 +200,20 @@ class SelectFieldWithInput(SelectField):
             self.field_args['choices'] = [(x,x) for x in field_args['choices']]
             self.field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
+
+
+class HiddenField(StringField):
+    widget = HiddenInput()
+    value = ""
+
+    def __init__(self,  value="", **kwargs):
+        super(_DateField, self ).__init__(value=value, **kwargs)
+
+    def process_data(self, value):
+        if value is None:
+            self.data = self.default
+        else:
+            self.data = value
 
 
 class HTML5ModelConverter(ModelConverter):
