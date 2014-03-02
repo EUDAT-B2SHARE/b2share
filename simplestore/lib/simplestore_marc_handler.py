@@ -38,6 +38,8 @@ def add_basic_fields(rec, form, email):
     contains information on field 260 for publication data.
     """
     # why aren't subfields a dictionary?!
+    current_app.logger.error("form['language']: ")
+    current_app.logger.error(form['language'])
     try:
         if form['title']:
             record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
@@ -75,8 +77,7 @@ def add_basic_fields(rec, form, email):
             for kw in form['contributors'].split(';'):
                 record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
 
-        # current_app.logger.error("form['language']: "+form['language'])
-        # record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
+        record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
         if form['resource_type']:
