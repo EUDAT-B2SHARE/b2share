@@ -31,12 +31,16 @@
 {% endmacro %}
 
 {% for s in metadata.fieldsets %}
-  <fieldset>
+<fieldset>
     <legend>{{ s.name }} </legend>
 
 <table>
     {% for f in s.basic_fields %}
-      {{ meta_field(getattr(form, f)) }}
+        {% if f.type in ('HiddenField') %}
+            {{ f.name }}
+        {% endif %}
+
+        {{ meta_field(getattr(form, f)) }}
     {% endfor %}
 
     {% if s.optional_fields %}
