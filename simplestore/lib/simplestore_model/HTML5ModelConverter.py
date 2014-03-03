@@ -210,11 +210,8 @@ class HiddenField(StringField):
         self.value = value
         super(HiddenField, self ).__init__(**kwargs)
 
-    def process_data(self, value):
-        if value is None:
-            self.data = self.default
-        else:
-            self.data = value
+    def _value(self):
+        return self.value
 
 
 class HTML5ModelConverter(ModelConverter):
