@@ -50,6 +50,11 @@
 
 <table>
     {% for f in s.basic_fields %}
+        {{ f.name }}
+        {{ f.id }}
+        {{ f.label }}
+        {{ f.widget }}
+
         {% if f.widget == 'HiddenInput' %}
             <b>hidden</b>
         {% else %}
