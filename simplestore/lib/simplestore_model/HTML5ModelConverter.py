@@ -204,17 +204,9 @@ class SelectFieldWithInput(SelectField):
 
 class HiddenField(StringField):
     widget = HiddenInput()
-    default = ""
 
     def __init__(self,  default="", **kwargs):
-        self.default = default
-        super(HiddenField, self ).__init__(**kwargs)
-
-    def _value(self):
-        if self.default is not None:
-            return self.default
-        else:
-            return None
+        super(HiddenField, self ).__init__(value=default, **kwargs)
 
 
 class HTML5ModelConverter(ModelConverter):
