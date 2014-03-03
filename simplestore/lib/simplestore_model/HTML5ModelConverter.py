@@ -202,16 +202,19 @@ class SelectFieldWithInput(SelectField):
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
-#class HiddenField(StringField):
-#    widget = HiddenInput()
-#    value = ""
-#
-#    def __init__(self,  value="", **kwargs):
-#        self.value = value
-#        super(HiddenField, self ).__init__(**kwargs)
-#
-#    def _value(self):
-#        return self.value
+class HiddenField(StringField):
+    widget = HiddenInput()
+    default = ""
+
+    def __init__(self,  default="", **kwargs):
+        self.default = default
+        super(HiddenField, self ).__init__(**kwargs)
+
+    def _value(self):
+        if self.default is not None:
+            return self.default
+        else:
+            return None
 
 
 class HTML5ModelConverter(ModelConverter):
@@ -222,7 +225,7 @@ class HTML5ModelConverter(ModelConverter):
         if 'hidden' in field_args:
             del field_args['hidden']
 
-            return HiddenField(field_args)
+            return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
     def handle_integer_types(self, column, field_args, **extra):
