@@ -22,7 +22,7 @@ from wtforms import DateTimeField as _DateTimeField
 from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms import SelectField
-from wtforms import HiddenField
+from wtforms import HiddenField as _HiddenField
 from wtforms.widgets import Input, Select, HTMLString, html_params
 from wtforms.compat import text_type
 from flask import current_app
@@ -202,22 +202,31 @@ class SelectFieldWithInput(SelectField):
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
-#class HiddenInput(Input):
-#    input_type = "hidden"
+class HiddenInput(Input):
+    input_type = "hidden"
 
-#class HiddenField(_HiddenField):
-#    widget = HiddenInput()
+    def __call__(self, field, default="", **kwargs):
+         kwargs.setdefault('id', field.id)
+         kwargs.setdefault('type', self.input_type)
 
-#    def __init__(self, default="", **kwargs):
-#        super(HiddenField, self ).__init__(default=default, **kwargs)
+         return HTMLString(
+             '<input type=hidden {0}>'.format(
+                self.html_params(value=default, **kwargs)))
+
+
+class HiddenField(_HiddenField):
+    widget = HiddenInput()
+
+    def __init__(self, hidden="", **kwargs):
+        super(HiddenField, self ).__init__(**kwargs)
 
 
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
 
-    def handle_hidden_field(self, hidden="", **field_args):
-        if hidden:
+    def handle_hidden_field(self, **field_args):
+        if 'hidden' in field_args:
             return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
