@@ -32,7 +32,7 @@
 
 {% for s in metadata.fieldsets %}
   <fieldset>
-    <legend>{{ s.name }}</legend>
+    <legend>{{ s.name }} {{ s.type }}</legend>
 
 <table>
     {% for f in s.basic_fields %}

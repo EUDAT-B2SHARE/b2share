@@ -22,7 +22,6 @@ from wtforms import DateTimeField as _DateTimeField
 from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms import SelectField
-from wtforms import HiddenInput
 from wtforms import HiddenField as _HiddenField
 from wtforms.widgets import Input, Select, HTMLString, html_params
 from wtforms.compat import text_type
@@ -203,10 +202,20 @@ class SelectFieldWithInput(SelectField):
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
+class HiddenInput(Input):
+    input_type = "hidden"
+
+    def __call__(self, field, **kwargs):
+         kwargs.setdefault('id', field.id)
+         kwargs.setdefault('type', self.input_type)
+
+         return HiddenField(**kwargs)
+
+
 class HiddenField(_HiddenField):
     widget = HiddenInput()
 
-    def __init__(self,  default="", **kwargs):
+    def __init__(self,  hidden="", default="", **kwargs):
         super(HiddenField, self ).__init__(value=default, **kwargs)
 
 
