@@ -21,7 +21,10 @@ from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
 from wtforms import DateTimeField as _DateTimeField
 from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
-from wtforms.widgets import Input, HTMLString
+from wtforms import SelectField
+from wtforms import HiddenField as _HiddenField
+from wtforms.widgets import Input, Select, HTMLString, html_params
+from wtforms.compat import text_type
 from flask import current_app
 
 
@@ -150,9 +153,83 @@ class TypeAheadStringField(StringField):
         super(TypeAheadStringField, self).__init__(**kwargs)
 
 
+class PlaceholderStringInput(Input):
+    input_type = "text"
+
+    def __call__(self, field, placeholder="", **kwargs):
+         kwargs.setdefault('id', field.id)
+         kwargs.setdefault('type', self.input_type)
+         if 'value' not in kwargs:
+             kwargs['value'] = field._value()
+
+         return HTMLString(
+             '<input placeholder="{0}" {1}>'.format(
+             field.placeholder, self.html_params(name=field.name, **kwargs)))
+
+
+class PlaceholderStringField(StringField):
+
+    widget = PlaceholderStringInput()
+    placeholder = ""
+
+    def __init__(self, placeholder="", **kwargs):
+         self.placeholder = placeholder
+         super(PlaceholderStringField, self).__init__(**kwargs)
+
+
+class SelectWithInput(Select):
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = ['<select %s>' % html_params(name=field.name, **kwargs)]
+        for val, label, selected in field.iter_choices():
+            html.append(self.render_option(val, label, selected))
+        html.append('</select>')
+        html.append('<input type=text style="display: none" {0} {1} >'
+            .format(html_params(name=field.name+"_input"),
+                    html_params(id=field.name+"_input")))
+        return HTMLString(''.join(html))
+
+
+class SelectFieldWithInput(SelectField):
+    widget = SelectWithInput()
+
+    def __init__(self, other="", **field_args):
+        self.field_args = field_args
+        # make list of tuples for SelectField (only once)
+        if isinstance(self.field_args['choices'][0], basestring):
+            self.field_args['choices'] = [(x,x) for x in field_args['choices']]
+            self.field_args['choices'].append(('other', other))
+        super(SelectFieldWithInput, self).__init__(**field_args)
+
+
+class HiddenInput(Input):
+    input_type = "hidden"
+
+    def __call__(self, field, value="", **kwargs):
+         kwargs.setdefault('id', field.id)
+         kwargs.setdefault('type', self.input_type)
+
+         return HTMLString(
+             '<input type=hidden {0}>'.format(
+                self.html_params(value=field.value, name=field.id, **kwargs)))
+
+
+class HiddenField(_HiddenField):
+    widget = HiddenInput()
+    value = ""
+
+    def __init__(self, hidden="", value="", **kwargs):
+        self.value = value
+        super(HiddenField, self ).__init__(**kwargs)
+
+
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
+
+    def handle_hidden_field(self, field_args):
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
     def handle_integer_types(self, column, field_args, **extra):
@@ -170,10 +247,16 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
+        hidden = self.handle_hidden_field(field_args)
+        if hidden:
+            return hidden
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
+        hidden = self.handle_hidden_field(field_args)
+        if hidden:
+            return hidden
         return DateField(**field_args)
 
     @converts('Boolean')
@@ -182,7 +265,23 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
+        hidden = self.handle_hidden_field(field_args)
+        if hidden:
+            return hidden
+
+        if 'placeholder' in field_args:
+            return PlaceholderStringField(**field_args)
+
         if 'data_provide' in field_args:
             return TypeAheadStringField(**field_args)
-        else:
-            return StringField(**field_args)
+
+        # SelectField
+        if 'choices' in field_args:
+            if 'other' in field_args:
+                return SelectFieldWithInput(**field_args)
+
+            if isinstance(field_args['choices'][0], basestring):
+                field_args['choices'] = [(x,x) for x in field_args['choices']]
+            return SelectField(**field_args)
+
+        return StringField(**field_args)

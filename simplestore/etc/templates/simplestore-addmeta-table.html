@@ -1,6 +1,15 @@
 {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
 {{ form.csrf_token }}
+
 {% macro meta_field(f) %}
+{% if f.type == 'HiddenField' %}
+    <tr class="compact-form hidden">
+        <td></td>
+        <td></td>
+        <td> {{f(**kwargs)|safe}} </td>
+    </tr>
+{% else %}
+
 <tr>
 <div class="compact-form {% if f.errors %}error{% endif %}">
 
@@ -11,7 +20,7 @@
 
 <td>
   {%- if f.flags.required -%}
-    <span style="color: red;">&nbsp;*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
+    <span style="color: red;">*</span>{%else%}<span>&nbsp;&nbsp;</span>{%- endif %}
 </td>
 <td>
     <div title="{{f.description}}" rel='tooltip' placement='right' container='body'> {{f(**kwargs)|safe}}</div>
@@ -28,15 +37,17 @@
   </div>
 </div>
 </tr>
+{% endif %}
 {% endmacro %}
 
+
 {% for s in metadata.fieldsets %}
-  <fieldset>
-    <legend>{{ s.name }}</legend>
+<fieldset>
+    <legend>{{ s.name }} </legend>
 
 <table>
     {% for f in s.basic_fields %}
-      {{ meta_field(getattr(form, f)) }}
+        {{ meta_field(getattr(form, f)) }}
     {% endfor %}
 
     {% if s.optional_fields %}
@@ -77,4 +88,19 @@
       }
     });
   });
+</script>
+
+<script type="text/javascript">
+    $(function(){
+    $('select').change( function() {
+        var value = $(this).val();
+        if (value == 'other'){
+           $("#"+this.name+"_input").show();
+           $("#"+this.name+"_input").focus();
+        }
+        else{
+           $("#"+this.name+"_input").hide();
+        }
+    });
+});
 </script>
