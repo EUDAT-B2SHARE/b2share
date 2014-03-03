@@ -36,11 +36,11 @@
 
 <table>
     {% for f in s.basic_fields %}
-        {% if f.type in ('HiddenField') %}
+        {% if f.type == 'HiddenField' %}
             {{ f.name }}
-        {% endif %}
-
-        {{ meta_field(getattr(form, f)) }}
+        {% else %}
+            {{ meta_field(getattr(form, f)) }}
+        {% elseif %}
     {% endfor %}
 
     {% if s.optional_fields %}
