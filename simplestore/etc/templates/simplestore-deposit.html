@@ -159,7 +159,7 @@ $(document).ready(function() {
 </script>
 
 <script>
-    $('#metaform_form').submit(function() {
+    $('#metaform_form').change(function() {
         prompt("XXX")
         var select_list = this.getElementsByTagName('select')
         for(var i=0; i<select_list.length; i++) {
@@ -173,7 +173,7 @@ $(document).ready(function() {
 </script>
 
 <script>
-        $("#metaform_form").submit(function()
+        $("#metaform_form").change(function()
         {
          alert('v bloku');
          return true;
@@ -182,7 +182,7 @@ $(document).ready(function() {
 {% endblock %}
 
 <script>
-        $("#metaform_form").submit(function()
+        $("#metaform_form").change(function()
         {
          alert('venku');
          return true;
