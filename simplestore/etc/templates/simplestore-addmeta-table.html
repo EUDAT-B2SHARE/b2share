@@ -44,6 +44,10 @@
 <fieldset>
     <legend>{{ s.name }} </legend>
 
+        {% for f in s.basic_fields %}
+            {{ f.type }}
+    {% endfor %}
+
 <table>
     {% for f in s.basic_fields %}
         {% if f.type == 'HiddenField' %}
