@@ -138,6 +138,10 @@
     margin-bottom: 0px;
 }
 
+.compact-form hidden {
+    display:none;
+}
+
 .add-button{
     text-align: center;
     margin-left: 0;

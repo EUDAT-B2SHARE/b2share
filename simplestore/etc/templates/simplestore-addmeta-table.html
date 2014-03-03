@@ -30,17 +30,27 @@
 </tr>
 {% endmacro %}
 
+
+{% macro hidden_field(f) %}
+    <tr class="compact-form hidden">
+        <td></td>
+        <td></td>
+        <td> {{f(**kwargs)|safe}} </td>
+    </tr>
+{% endmacro %}
+
+
 {% for s in metadata.fieldsets %}
 <fieldset>
     <legend>{{ s.name }} </legend>
 
 <table>
     {% for f in s.basic_fields %}
-        {% if f.type == 'HiddenField' %}
-            {{ f.name }}
+        {% if f.type == 'HiddenField') %}
+            {{ hidden_field(getattr(form, f)) }}
         {% else %}
             {{ meta_field(getattr(form, f)) }}
-        {% elseif %}
+        {% endif %}
     {% endfor %}
 
     {% if s.optional_fields %}
