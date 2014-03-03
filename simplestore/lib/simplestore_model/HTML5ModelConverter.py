@@ -211,7 +211,7 @@ class HiddenInput(Input):
 
          return HTMLString(
              '<input type=hidden {0}>'.format(
-                self.html_params(value=field.value, **kwargs)))
+                self.html_params(value=field.value, name=field.id, **kwargs)))
 
 
 class HiddenField(_HiddenField):
