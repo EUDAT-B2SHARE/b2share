@@ -41,10 +41,6 @@
 {% endmacro %}
 
 
-{% for field in form %}
-    {{ field.type }}
-{% endfor %}
-
 {% for s in metadata.fieldsets %}
 <fieldset>
     <legend>{{ s.name }} </legend>
@@ -117,6 +113,7 @@
             if(otherOption == "other"){
                 // replace select value with text field value
                 otherOption.val($("#"+select_list[i]+"_input").val());
+                alert("new value:"+otherOption.val());
             }
         }
     });
