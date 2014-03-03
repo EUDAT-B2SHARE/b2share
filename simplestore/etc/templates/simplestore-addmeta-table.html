@@ -1,6 +1,15 @@
 {# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
 {{ form.csrf_token }}
+
 {% macro meta_field(f) %}
+{% if f.type == 'HiddenField' %}
+    <tr class="compact-form hidden">
+        <td></td>
+        <td></td>
+        <td> {{f(**kwargs)|safe}} </td>
+    </tr>
+{% else %}
+
 <tr>
 <div class="compact-form {% if f.errors %}error{% endif %}">
 
@@ -28,15 +37,7 @@
   </div>
 </div>
 </tr>
-{% endmacro %}
-
-
-{% macro hidden_field(f) %}
-    <tr class="compact-form hidden">
-        <td></td>
-        <td></td>
-        <td> {{f(**kwargs)|safe}} </td>
-    </tr>
+{% endif %}
 {% endmacro %}
 
 
@@ -50,16 +51,7 @@
 
 <table>
     {% for f in s.basic_fields %}
-        {{ f.name }}
-        {{ f.id }}
-        {{ f.label }}
-        {{ f.widget }}
-        saaaaaa
-        {% if f.widget == 'HiddenInput' %}
-            <b>hidden</b>
-        {% else %}
-            {{ meta_field(getattr(form, f)) }}
-        {% endif %}
+        {{ meta_field(getattr(form, f)) }}
     {% endfor %}
 
     {% if s.optional_fields %}
