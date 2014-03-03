@@ -38,8 +38,6 @@ def add_basic_fields(rec, form, email):
     contains information on field 260 for publication data.
     """
     # why aren't subfields a dictionary?!
-    current_app.logger.error("form['language']: ")
-    current_app.logger.error(form['language'])
     try:
         if form['title']:
             record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
