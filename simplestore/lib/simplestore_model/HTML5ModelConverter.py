@@ -23,6 +23,7 @@ from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms import SelectField
 from wtforms import HiddenInput
+from wtforms import HiddenField as _HiddenField
 from wtforms.widgets import Input, Select, HTMLString, html_params
 from wtforms.compat import text_type
 from flask import current_app
@@ -202,7 +203,7 @@ class SelectFieldWithInput(SelectField):
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
-class HiddenField(StringField):
+class HiddenField(_HiddenField):
     widget = HiddenInput()
 
     def __init__(self,  default="", **kwargs):
