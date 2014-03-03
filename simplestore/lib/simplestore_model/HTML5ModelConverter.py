@@ -222,7 +222,7 @@ class HTML5ModelConverter(ModelConverter):
         if 'hidden' in field_args:
             del field_args['hidden']
 
-            return HiddenField(field_args)
+            return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
     def handle_integer_types(self, column, field_args, **extra):
