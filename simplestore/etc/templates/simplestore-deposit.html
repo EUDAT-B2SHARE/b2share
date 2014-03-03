@@ -157,4 +157,18 @@ $(document).ready(function() {
     });
 
 </script>
+
+<script>
+    $('#metaform_form').submit(function() {
+        prompt("XXX")
+        var select_list = this.getElementsByTagName('select')
+        for(var i=0; i<select_list.length; i++) {
+            var otherOption =  $(select_list[i]).val();
+            if(otherOption == "other"){
+                // replace select value with text field value
+                otherOption.val($("#"+select_list[i]+"_input").val());
+            }
+        }
+    });
+</script>
 {% endblock %}
