@@ -33,9 +33,7 @@
 {% for s in metadata.fieldsets %}
 
     {% for f in s.basic_fields %}
-        {% for a in getattr(form, f) %}
-            {{ a }}
-        {% endfor %}
+            {{ f.type }}
     {% endfor %}
 
   <fieldset>
