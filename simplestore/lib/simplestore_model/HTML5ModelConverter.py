@@ -205,19 +205,21 @@ class SelectFieldWithInput(SelectField):
 class HiddenInput(Input):
     input_type = "hidden"
 
-    def __call__(self, field, default="", **kwargs):
+    def __call__(self, field, value="", **kwargs):
          kwargs.setdefault('id', field.id)
          kwargs.setdefault('type', self.input_type)
 
          return HTMLString(
              '<input type=hidden {0}>'.format(
-                self.html_params(value=default, **kwargs)))
+                self.html_params(value=field.value, **kwargs)))
 
 
 class HiddenField(_HiddenField):
     widget = HiddenInput()
+    value = ""
 
-    def __init__(self, hidden="", **kwargs):
+    def __init__(self, hidden="", value="", **kwargs):
+        self.value = value
         super(HiddenField, self ).__init__(**kwargs)
 
 

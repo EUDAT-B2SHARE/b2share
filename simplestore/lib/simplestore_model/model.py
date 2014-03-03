@@ -142,7 +142,8 @@ class SubmissionMetadata(db.Model):
             'other persons that were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
-            'hidden': True
+            'hidden': True,
+            'value': self.language_default
             # 'description':
             # 'The name of the language the document is written in.'
         }
@@ -238,5 +239,6 @@ def _create_metadata_class(cfg):
             args['field_args'][f['name']]['default'] = f.get('default')
         if 'placeholder' in f:
             args['field_args'][f['name']]['placeholder'] = f.get('placeholder')
-
+        if 'value' in f:
+            args['field_args'][f['name']]['value'] = f.get('value')
     return type(clsname, (SubmissionMetadata,), args)
