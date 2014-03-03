@@ -39,15 +39,13 @@
     </tr>
 {% endmacro %}
 
+{% for field in form %}
+    {{ field.type }}
+{% endfor %}
 
 {% for s in metadata.fieldsets %}
 <fieldset>
     <legend>{{ s.name }} </legend>
-
-        {% for f in s.basic_fields %}
-            {{ f }}
-            {{f(**kwargs)|safe}}
-    {% endfor %}
 
 <table>
     {% for f in s.basic_fields %}
