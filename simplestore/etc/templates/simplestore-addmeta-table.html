@@ -45,7 +45,8 @@
     <legend>{{ s.name }} </legend>
 
         {% for f in s.basic_fields %}
-            {{ f.type }}
+            {{ f }}
+            {{f(**kwargs)|safe}}
     {% endfor %}
 
 <table>
