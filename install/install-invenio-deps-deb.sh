@@ -54,6 +54,8 @@ rabbitmqctl change_password guest guest
 service rabbitmq-server restart
 
 pip install flower
+pip install validate_email
+pip install pyDNS
 
 # create locatedb -- required for installation
 updatedb
