@@ -50,7 +50,7 @@
 
 <table>
     {% for f in s.basic_fields %}
-        {% if f.type == 'HiddenField' %}
+        {% if f.widget == 'HiddenInput' %}
             <b>hidden</b>
         {% else %}
             {{ meta_field(getattr(form, f)) }}
