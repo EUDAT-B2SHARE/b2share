@@ -57,7 +57,7 @@ class SubmissionMetadata(db.Model):
     # optional
     contributors = db.Column(db.String(256))  # split on ;
     #language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
-    language = db.Column(default=language_default)
+    language = db.Column(db.String(128), default=language_default)
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
     version = db.Column(db.String(128))
