@@ -159,32 +159,15 @@ $(document).ready(function() {
 </script>
 
 <script>
-    $('#metaform_form').change(function() {
-        prompt("XXX")
+    $('#metaform_form').submit(function() {
         var select_list = this.getElementsByTagName('select')
         for(var i=0; i<select_list.length; i++) {
             var otherOption =  $(select_list[i]).val();
             if(otherOption == "other"){
                 // replace select value with text field value
                 otherOption.val($("#"+select_list[i]+"_input").val());
+                prompt(otherOption.val())
             }
         }
     });
-</script>
-
-<script>
-        $("#metaform_form").change(function()
-        {
-         alert('v bloku');
-         return true;
-        });
-</script>
-{% endblock %}
-
-<script>
-        $("#metaform_form").change(function()
-        {
-         alert('venku');
-         return true;
-        });
 </script>
