@@ -50,6 +50,7 @@
             {{ hidden_field(getattr(form, f)) }}
         {% else %}
             {{ meta_field(getattr(form, f)) }}
+            {{ f.type }}
         {% endif %}
     {% endfor %}
 
