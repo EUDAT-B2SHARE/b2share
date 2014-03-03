@@ -215,7 +215,7 @@ class HiddenInput(Input):
 class HiddenField(_HiddenField):
     widget = HiddenInput()
 
-    def __init__(self,  hidden="", default="", **kwargs):
+    def __init__(self, default="", **kwargs):
         super(HiddenField, self ).__init__(default=default, **kwargs)
 
 
@@ -223,8 +223,8 @@ class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
 
-    def handle_hidden_field(self, field_args):
-        if 'hidden' in field_args:
+    def handle_hidden_field(self, hidden=False, **field_args):
+        if hidden:
             return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
