@@ -39,6 +39,7 @@
     </tr>
 {% endmacro %}
 
+
 {% for field in form %}
     {{ field.type }}
 {% endfor %}
@@ -50,10 +51,9 @@
 <table>
     {% for f in s.basic_fields %}
         {% if f.type == 'HiddenField' %}
-            {{ hidden_field(getattr(form, f)) }}
+            <b>hidden</b>
         {% else %}
             {{ meta_field(getattr(form, f)) }}
-            {{ f.type }}
         {% endif %}
     {% endfor %}
 
