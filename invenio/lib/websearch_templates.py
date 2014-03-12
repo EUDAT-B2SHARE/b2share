@@ -520,7 +520,7 @@ class Template:
             del parameters['aas']
 
         if c and c != CFG_SITE_NAME and c != CFG_SITE_SECURE_URL:
-            base = CFG_SITE_SECURE_URL + '/collection/' + quote(c)
+            base = '/collection/' + quote(c)
         else:
             base = CFG_SITE_SECURE_URL
         return create_url(base, parameters)

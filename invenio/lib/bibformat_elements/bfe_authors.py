@@ -23,7 +23,6 @@ __revision__ = "$Id$"
 import re
 from urllib import quote
 from cgi import escape
-from invenio.config import CFG_SITE_URL, CFG_SITE_SECURE_URL
 from invenio.messages import gettext_set_language
 from invenio.bibauthority_config import \
     CFG_BIBAUTHORITY_AUTHORITY_COLLECTION_NAME, \
@@ -101,8 +100,7 @@ def format_element(bfo, limit, separator=' ; ',
 
             if print_links.lower() == "yes":
                 if link_author_pages == "yes":
-                    author['a'] = '<a rel="author" href="' + CFG_SITE_SECURE_URL + \
-                                  '/author/' + quote(author['a']) + \
+                    author['a'] = '<a rel="author" href="/author/' + quote(author['a']) + \
                                   '?recid=' +  bibrec_id + \
                                   '&ln=' + bfo.lang + \
                                   '">' + escape(author['a']) + '</a>'
@@ -117,8 +115,7 @@ def format_element(bfo, limit, separator=' ; ',
                         if len(recIDs):
                             auth_coll_param = '&amp;c=' + \
                                               CFG_BIBAUTHORITY_AUTHORITY_COLLECTION_NAME
-                    author['a'] = '<a href="' + CFG_SITE_SECURE_URL + \
-                                  '/search?f=author&amp;p=' + quote(author['a']) + \
+                    author['a'] = '<a href="/search?f=author&amp;p=' + quote(author['a']) + \
                                    auth_coll_param + \
                                   '&amp;ln=' + bfo.lang + \
                                   '">' + escape(author['a']) + '</a>'
@@ -132,7 +129,7 @@ def format_element(bfo, limit, separator=' ; ',
                     # contain a warning that there are multiple authority
                     # records with the same control number
                     if len(recIDs):
-                        author['u'] = '<a href="' + CFG_SITE_URL + '/record/' + \
+                        author['u'] = '<a href="/record/' + \
                                       str(recIDs[0]) + \
                                       '?ln=' + bfo.lang + \
                                       '">' + author['u'] + '</a>'
