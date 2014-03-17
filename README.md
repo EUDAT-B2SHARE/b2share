@@ -17,3 +17,7 @@ Utility scripts for Invenio:
 
 The scripts above are designed to run on a RedHat/CentOS machine. The remaining scripts target ubuntu/debian machines.
 
+    
+### License
+
+B2SHARE is licensed under the [GPL v3 license.](http://www.gnu.org/licenses/gpl-3.0.txt)
