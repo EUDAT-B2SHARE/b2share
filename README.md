@@ -21,3 +21,7 @@ Content:
  If you have used the Vagrant environment, you can directly work in the folder created previously. The `install-b2share-from-scratch-rh.sh` script creates git repositories in this folder. Vagrant shares the folder between the host and the VM, so all changes in the git repositories from the host are mirrored to the VM. When done editing code, switch to the VM, go to `/vagrant/b2share` and run `./deployment/deploy_overlay-rh.sh`, then switch back to the host browser, reload the `https://localhost:4443/` webpage and test your changes.
 
     
+### License
+
+B2SHARE is licensed under the [GPL v3 license.](http://www.gnu.org/licenses/gpl-3.0.txt)
+
