@@ -19,7 +19,6 @@ import os
 from datetime import datetime
 import hashlib
 import pickle
-from urllib import pathname2url
 
 from invenio.dbquery import run_sql
 from invenio.bibrecord import record_add_field, record_xml_output
@@ -140,7 +139,7 @@ def add_file_info(rec, form, email, sub_id, recid):
                          ('r', fft_status)])
 
         #seems to be impossible to add file size data, thought this would work
-        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, pathname2url(f))
+        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
         record_add_field(rec, '856', ind1='4',
                          subfields=[('u', url),
                                     ('s', str(os.path.getsize(path))),

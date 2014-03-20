@@ -2969,7 +2969,7 @@ class BibDocFile(object):
         return self.hidden
 
     def get_url(self):
-        return self.url
+        return urllib.pathname2url(self.url)
 
     def get_type(self):
         """Returns the first type connected with the bibdoc of this file."""
