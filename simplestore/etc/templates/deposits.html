@@ -37,7 +37,7 @@
 				{% if dep.author %}
 				<li class="deposit-meta">by {{dep.author|safe}}</li>
 				{% endif %}
-				<li class="deposit-meta">{{dep.description}}</li>
+				<li class="deposit-meta">{{dep.description|safe}}</li>
 			</ul>
 		</li>
 		{% endfor %}

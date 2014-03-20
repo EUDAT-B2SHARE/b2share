@@ -62,10 +62,12 @@ def format_element(bfo, prefix_en, prefix_fr, suffix_en, suffix_fr, limit, max_c
 
     abstract_en = bfo.fields('520__a', escape=escape_mode_int)
     abstract_en.extend(bfo.fields('520__b', escape=escape_mode_int))
+    abstract_en = [line for abstract in abstract_en for line in abstract.split("\n") if line]
     abstract_en = separator_en.join(abstract_en)
 
     abstract_fr = bfo.fields('590__a', escape=escape_mode_int)
     abstract_fr.extend(bfo.fields('590__b', escape=escape_mode_int))
+    abstract_fr = [line for abstract in abstract_fr for line in abstract.split("\n") if line]
     abstract_fr = separator_fr.join(abstract_fr)
 
     if contextual == 'yes' and limit != "" and \
