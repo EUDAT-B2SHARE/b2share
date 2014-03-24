@@ -150,7 +150,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                                         type: "POST",
                                         url: delete_url,
                                         data: $.param({
-                                                filename: file.unique_filename
+                                                filename: file.name,
                                         })
                                 });
                         }
@@ -242,6 +242,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                         $('#filelist #' + file.id).show('fast');
                         $('#' + file.id + '_rm').on("click", function(event){
                                 uploader.removeFile(file);
+                                setDepositBtnState();
                         });
                 });
                 setDepositBtnState();
