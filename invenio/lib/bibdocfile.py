@@ -743,7 +743,7 @@ class BibRecDocs(object):
 
         for afile in self.list_latest_files(list_hidden=False):
             out += '\t<datafield tag="856" ind1="4" ind2=" ">\n'
-            url = afile.get_url()
+            url = afile.get_fullurl()
             description = afile.get_description()
             comment = afile.get_comment()
             if url:
@@ -2904,10 +2904,10 @@ class BibDocFile(object):
         url_name = urllib.quote(self.name)
         if self.subformat:
             self.url = create_url('%s/%s/files/%s%s' % (CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'subformat' : self.subformat})
-            self.fullurl = create_url('%s/%s/files/%s%s' % (CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'subformat' : self.subformat, 'version' : self.version})
+            self.fullurl = create_url('%s/%s/%s/files/%s%s' % (CFG_SITE_SECURE_URL, CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'subformat' : self.subformat, 'version' : self.version})
         else:
             self.url = create_url('%s/%s/files/%s%s' % (CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {})
-            self.fullurl = create_url('%s/%s/files/%s%s' % (CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'version' : self.version})
+            self.fullurl = create_url('%s/%s/%s/files/%s%s' % (CFG_SITE_SECURE_URL, CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'version' : self.version})
         self.etag = '"%i%s%i"' % (self.docid, self.format, self.version)
         self.magic = None
 
@@ -2971,6 +2971,10 @@ class BibDocFile(object):
 
     def get_url(self):
         return self.url
+
+    def get_full_url(self):
+        """Returns absolute url."""
+        return self.fullurl
 
     def get_type(self):
         """Returns the first type connected with the bibdoc of this file."""
