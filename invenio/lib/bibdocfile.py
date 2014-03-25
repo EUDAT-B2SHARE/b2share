@@ -743,7 +743,7 @@ class BibRecDocs(object):
 
         for afile in self.list_latest_files(list_hidden=False):
             out += '\t<datafield tag="856" ind1="4" ind2=" ">\n'
-            url = afile.get_fullurl()
+            url = afile.get_full_url()
             description = afile.get_description()
             comment = afile.get_comment()
             if url:
