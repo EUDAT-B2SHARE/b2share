@@ -2904,10 +2904,10 @@ class BibDocFile(object):
         url_name = urllib.quote(self.name)
         if self.subformat:
             self.url = create_url('%s/%s/files/%s%s' % (CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'subformat' : self.subformat})
-            self.fullurl = create_url('%s/%s/%s/files/%s%s' % (CFG_SITE_SECURE_URL, CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'subformat' : self.subformat, 'version' : self.version})
+            self.fullurl = create_url('%s/%s/%s/files/%s%s' % (CFG_SITE_SECURE_URL+"aaa", CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'subformat' : self.subformat, 'version' : self.version})
         else:
             self.url = create_url('%s/%s/files/%s%s' % (CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {})
-            self.fullurl = create_url('%s/%s/%s/files/%s%s' % (CFG_SITE_SECURE_URL, CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'version' : self.version})
+            self.fullurl = create_url('%s/%s/%s/files/%s%s' % (CFG_SITE_SECURE_URL+"bbb", CFG_SITE_RECORD, self.recids_doctypes[0][0], url_name, self.superformat), {'version' : self.version})
         self.etag = '"%i%s%i"' % (self.docid, self.format, self.version)
         self.magic = None
 
