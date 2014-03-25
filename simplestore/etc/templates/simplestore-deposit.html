@@ -171,4 +171,17 @@ $(document).ready(function() {
     });
 </script>
 
+<script type="text/javascript">
+  $(document).ready(function() {
+    var elements = $("[rel='tooltip']");
+    // the jquery ui tooltips are used here, not bootstrap
+    elements.tooltip({
+      position: {
+        my: "right bottom",
+        at: 'left+10px center'
+      }
+    });
+  });
+</script>
+
 {% endblock %}

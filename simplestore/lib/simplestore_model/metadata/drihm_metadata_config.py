@@ -8,7 +8,7 @@ display_name = "Hydro-Meteorology"
 table_name = 'DRIHM'
 image = 'domain-drihm.png'
 kind = 'project'
-
+description = 'This domain is for meteorology or climate data.'
 
 # note that fields will need more stuff like validators later
 fields = [
