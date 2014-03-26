@@ -105,14 +105,17 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         });
 
         function setDepositBtnState() {
-            var nowUploading = false;
+            var disableDeposit = false;
+            if (!uploader.files.length) {
+                disableDeposit = true;
+            }
             $.each(uploader.files, function(i, file) {
                 if (file.loaded < file.size) {
-                     nowUploading = true;
+                     disableDeposit = true;
                 }
             });
-            $('#deposit').toggleClass('disabled', nowUploading)
-                         .attr('disabled', nowUploading ? 'disabled' : null);
+            $('#deposit').toggleClass('disabled', disableDeposit)
+                         .attr('disabled', disableDeposit ? 'disabled' : null);
         }
 
         uploader.init();
@@ -150,7 +153,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                                         type: "POST",
                                         url: delete_url,
                                         data: $.param({
-                                                filename: file.unique_filename
+                                                filename: file.name,
                                         })
                                 });
                         }
@@ -242,6 +245,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                         $('#filelist #' + file.id).show('fast');
                         $('#' + file.id + '_rm').on("click", function(event){
                                 uploader.removeFile(file);
+                                setDepositBtnState();
                         });
                 });
                 setDepositBtnState();

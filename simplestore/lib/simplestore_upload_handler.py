@@ -25,7 +25,6 @@ Based on WebDeposit code.
 """
 import shutil
 import os
-from uuid import uuid1 as new_uuid
 from glob import iglob
 import pickle
 
@@ -35,6 +34,20 @@ from flask import send_file, current_app
 
 from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
 
+
+def encode_filename(filename):
+    import hashlib
+    hasher = hashlib.md5()
+    hasher.update(filename.encode("utf-8"))
+    md5 = hasher.hexdigest()
+    safename = secure_filename(filename)
+    return (safename, md5)
+
+def get_extension(filename):
+    root, ext = os.path.splitext(filename)
+    if ext in ['.gz', '.bz2'] and root.endswith('.tar'):
+        ext = ".tar" + ext
+    return ext
 
 def upload(request, sub_id):
     """ The file is split into chunks on the client-side
@@ -54,7 +67,7 @@ def upload(request, sub_id):
             chunks = None
             chunk = 0
 
-        # generate a unique name to be used for submission
+        # the file name is guaranteed to be unique by the uploading js code
         name = request.form['name']
         current_chunk = request.files['file']
 
@@ -67,30 +80,22 @@ def upload(request, sub_id):
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
 
-        import hashlib
-        hasher = hashlib.md5()
-        hasher.update(name.encode("utf-8"))
-        md5 = hasher.hexdigest()
+        safename, md5 = encode_filename(name)
 
         # Save the chunk
-        safename = secure_filename(name)
         filename = safename + "_" + md5 + "_" + chunk
         path_to_save = os.path.join(upload_dir, filename)
         current_chunk.save(path_to_save)
-        current_app.logger.warning("    chunk %s" % (filename,))
+        current_app.logger.info("uploaded chunk %s" % (filename,))
 
         if (chunks is None) or (int(chunk) == int(chunks) - 1):
             '''All chunks have been uploaded! Start merging the chunks!'''
             merge_chunks_and_create_metadata(upload_dir, name, md5, safename)
-    return filename
+        return filename
 
 def merge_chunks_and_create_metadata(upload_dir, name, md5, safename):
-    root, ext = os.path.splitext(safename)
-    if ext in ['.gz', '.bz2']:
-        ext = os.path.splitext(root)[1] + ext
-
-    file_uuid_name = str(new_uuid()) + ext
-    file_path = os.path.join(upload_dir, file_uuid_name)
+    file_unique_name = safename + "_" + md5 + get_extension(safename)
+    file_path = os.path.join(upload_dir, file_unique_name)
 
     chunk_files = []
     for chunk_file in iglob(os.path.join(upload_dir, safename + "_" + md5 + '_*')):
@@ -108,32 +113,43 @@ def merge_chunks_and_create_metadata(upload_dir, name, md5, safename):
     file_metadata = dict(name=name, file=file_path, size=size)
 
     # create a metadata_<uuid> file to store pickled metadata
-    metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_uuid_name)
+    metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_unique_name)
     pickle.dump(file_metadata, open(metadata_file_path, 'wb'))
-    current_app.logger.warning("just uploaded: %s, size %d, in %s" % (name, size, file_path))
+    current_app.logger.info("finished uploading: %s, size %d, in %s" % (name, size, file_path))
 
 def delete(request, sub_id):
     """
-    Deletes file with name form['filename'] if it exists in upload_dir.
+    Deletes file and chunks of the file named form['filename'].
 
     Could change to return error if nothing deleted.
-    Also should we be using secure_filename ?
     """
+
+    from flask import current_app
 
     result = ""
 
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     filename = request.form['filename']
 
-    files = os.listdir(upload_dir)
-    # delete all for minute
-    for f in files:
-        if f == filename:
-            os.remove(os.path.join(upload_dir, f))
-            result = "File " + f + " Deleted"
-            break
+    safename, md5 = encode_filename(filename)
+    for chunk_file in iglob(os.path.join(upload_dir, safename + "_" + md5 + '_*')):
+        os.remove(chunk_file)
+        current_app.logger.info("deleted chunk: %s" % (chunk_file,))
+        result = "Chunk " + chunk_file + " Deleted"
+
+    file_unique_name = safename + "_" + md5 + get_extension(safename)
+    metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_unique_name)
+    os.remove(metadata_file_path)
+    current_app.logger.info("deleted metadata file: %s" % (metadata_file_path,))
+
+    file_path = os.path.join(upload_dir, file_unique_name)
+    os.remove(file_path)
+    current_app.logger.info("deleted file: %s" % (file_path,))
+    result = "File " + file_path + " Deleted"
+
     if result == "":
-        return "File " + filename + "not found", 404
+        current_app.logger.warning("cannot delete %s: not found" % (filename,))
+        return "File " + filename + " not found", 404
 
     return result
 
