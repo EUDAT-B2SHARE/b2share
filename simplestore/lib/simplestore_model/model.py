@@ -44,7 +44,7 @@ class SubmissionMetadata(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.Text(), nullable=False)
-    creator = db.Column(db.String(128))
+    creator = db.Column(db.String(256))  # split on ;
     title = db.Column(db.String(256), nullable=False)
     open_access = db.Column(db.Boolean(), default=True)
 
@@ -137,10 +137,10 @@ class SubmissionMetadata(db.Model):
             'will not be public, however the metadata will be.'
         }
         self.field_args['contributors'] = {
-            'placeholder': 'co-author 1; co-author 2; ...',
+            'placeholder': 'contributor 1; contributor 2; ...',
             'description':
-            'A semicolon separated list of ' +\
-            'contributors, e.g. further authors. Mention all ' +\
+            'A semicolon separated list of all other ' +\
+            'contributors. Mention all ' +\
             'other persons that were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
@@ -161,8 +161,9 @@ class SubmissionMetadata(db.Model):
             'Any kind of other reference such as a URN, URI or an ISBN number.'
         }
         self.field_args['creator'] = {
-            'placeholder': 'The main author of the resource.',
-            'description': 'The person who created the resource.'
+            'placeholder': 'author 1; author 2; ... ',
+            'description': 
+            'A semicolon separated list of authors of the resource.'
         }
 
 def _create_metadata_class(cfg):
