@@ -5,7 +5,7 @@ import json
 domain = "Linguistics"
 table_name = 'CLARIN'
 image = 'domain-clarin.png'
-description = 'This domain is for linguistic data.'
+domaindesc = 'This domain is for linguistic data.'
 
 fields = [{'name':'language_code',
            'display_text':'Language Code',

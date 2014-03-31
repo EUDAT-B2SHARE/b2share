@@ -8,7 +8,7 @@ display_name = "Ontology"
 table_name = 'EUON'
 image = 'domain-euon.png'
 kind = 'project'
-description = 'This domain is for ontological data.'
+domaindesc = 'This domain is for ontological data.'
 
 # note that fields will need more stuff like validators later
 fields = [
