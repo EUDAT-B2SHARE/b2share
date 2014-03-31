@@ -119,11 +119,11 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         setDepositBtnState();
 
         $('#uploadfiles').click(function(e) {
+            $('#uploadfiles').hide();
+
             uploader.start();
             setDepositBtnState();
 
-            //Show the domain selection stuff
-            $('#uploadfiles').hide();
             $('#stopupload').show();
             $('#domains').removeClass('hide');
             $('#domains').slideDown();
@@ -131,8 +131,10 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         });
 
         $('#stopupload').click(function(d){
-                uploader.stop();
                 $('#stopupload').hide();
+
+                uploader.stop();
+
                 $('#uploadfiles').show();
                 $.each(uploader.files, function(i, file) {
                         if (file.loaded < file.size){
