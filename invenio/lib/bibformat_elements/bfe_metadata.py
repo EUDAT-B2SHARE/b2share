@@ -27,18 +27,6 @@ def format_element(bfo):
     ret = '<div><table class="metadata_table table table-striped'\
           ' table-condensed">'
 
-    ids = bfo.fields("0247_")
-    for i in ids:
-        val = i['a']
-        if i['2'] == "PID":
-            try:
-                val = '<a href="{0}">{0}</a>'.format(i['a'])
-            except ImportError:
-                None
-
-        ret += '<tr><th width="40%">{0}:</th><td width="60%">{1}</td></tr>'.format(
-            i['2'][0].upper() + i['2'][1:], val)
-
     ver = bfo.field("250__a")
     if ver:
         ret += '<tr><th>Version:</th><td>{0}</td></tr>'.format(ver)
@@ -74,6 +62,18 @@ def format_element(bfo):
             field = {'label': md['a']}
         ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(
             field['label'], md['b'])
+
+    ids = bfo.fields("0247_")
+    for i in ids:
+        val = i['a']
+        if i['2'] == "PID":
+            try:
+                val = '<a href="{0}">{0}</a>'.format(i['a'])
+            except ImportError:
+                None
+
+        ret += '<tr><th width="40%">{0}:</th><td width="60%">{1}</td></tr>'.format(
+            i['2'][0].upper() + i['2'][1:], val)
 
     ret += '</table></div>'
 
