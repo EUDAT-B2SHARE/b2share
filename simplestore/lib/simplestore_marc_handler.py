@@ -44,7 +44,8 @@ def add_basic_fields(rec, form, email):
 
         if form['creator']:
             for kw in form['creator'].split(';'):
-                record_add_field(rec, '100', subfields=[('a', remove_html_markup(kw.strip()))])
+                if kw and not kw.isspace():
+                    record_add_field(rec, '100', subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form['domain']:
             record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
@@ -68,7 +69,8 @@ def add_basic_fields(rec, form, email):
 
         if form['tags']:
             for kw in form['tags'].split(','):
-                record_add_field(rec, '653',
+                if kw and not kw.isspace():
+                    record_add_field(rec, '653',
                                  ind1='1',
                                  subfields=[('a', remove_html_markup(kw.strip()))])
 
