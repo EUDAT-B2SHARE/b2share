@@ -109,7 +109,8 @@ def addmeta(request, sub_id):
         recid, marc = mh.create_marc(
             request.form, sub_id, current_user['email'])
         tmp_file = write_marc_to_temp_file(marc)
-        task_low_level_submission('bibupload', 'webdeposit', '-r', tmp_file)
+        # all usual tasks have priority 0; we want the bibuploads to run first
+        task_low_level_submission('bibupload', 'webdeposit', '--priority', '1', '-r', tmp_file)
         return jsonify(valid=True,
                        html=render_template('simplestore-finalize.html',
                                             recid=recid, marc=marc))

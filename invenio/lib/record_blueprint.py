@@ -46,6 +46,7 @@ from invenio.websearchadminlib import get_detailed_page_tabs,\
                                       get_detailed_page_tabs_counts
 from invenio.search_engine_utils import get_fieldvalues
 from invenio.bibrank_downloads_similarity import register_page_view_event
+from invenio.b2share_utils import check_fresh_record
 
 blueprint = InvenioBlueprint('record', __name__, url_prefix="/" + CFG_SITE_RECORD,
                              config='invenio.search_engine_config',
@@ -76,8 +77,9 @@ def request_record(f):
             flash(_("Authorization failure"), 'error')
             return redirect(url_for('webaccount.login', **url_args))
         elif auth_code:
-            flash(auth_msg, 'error')
-            abort(apache.HTTP_UNAUTHORIZED)
+            if not check_fresh_record(current_user, recid):
+                flash(auth_msg, 'error')
+                abort(apache.HTTP_UNAUTHORIZED)
 
         from invenio.bibfield import get_record
         from invenio.search_engine import record_exists, get_merged_recid
