@@ -146,6 +146,14 @@ def index():
     from invenio.b2share_utils import get_latest_deposits
     latest_deposits = get_latest_deposits()
     # inject functions to the template
+    
+    func = ""
+    if CFG_SITE_FUNCTION="development":
+        func = "DEVELOPMENT ENVIRONMENT"
+    elif CFG_SITE_FUNCTION="testing":
+        func = "TESTING ENVIRONMENT"
+    elif CFG_SITE_FUNCTION="training":
+        func = "TRAINING ENVIRONMENT"
 
     @register_template_context_processor
     def index_context():
@@ -155,7 +163,7 @@ def index():
             get_creation_date=get_creation_date,
             unregistered=(not current_user.is_authenticated())
         )
-    return dict(collection=collection, latest_deposits=latest_deposits, pagetitle="EUDAT B2SHARE")
+    return dict(collection=collection, latest_deposits=latest_deposits, pagetitle="EUDAT B2SHARE",site_function=func)
 
 
 @blueprint.route('/docs/<docid>')
