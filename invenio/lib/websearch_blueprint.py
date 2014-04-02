@@ -31,7 +31,7 @@ from flask import make_response, g, render_template, request, flash, jsonify, \
 
 from invenio import bibindex_model as BibIndex
 from invenio.config import CFG_PYLIBDIR, CFG_WEBSEARCH_SEARCH_CACHE_TIMEOUT, \
-    CFG_SITE_LANG, CFG_LOGDIR
+    CFG_SITE_LANG, CFG_LOGDIR, CFG_SITE_FUNCTION
 from invenio.cache import cache
 from invenio.pluginutils import PluginContainer
 from invenio.bibformat_engine import get_format_element, eval_format_element
@@ -148,11 +148,11 @@ def index():
     # inject functions to the template
     
     func = ""
-    if CFG_SITE_FUNCTION="development":
+    if CFG_SITE_FUNCTION is "development":
         func = "DEVELOPMENT ENVIRONMENT"
-    elif CFG_SITE_FUNCTION="testing":
+    elif CFG_SITE_FUNCTION is "testing":
         func = "TESTING ENVIRONMENT"
-    elif CFG_SITE_FUNCTION="training":
+    elif CFG_SITE_FUNCTION is "training":
         func = "TRAINING ENVIRONMENT"
 
     @register_template_context_processor
