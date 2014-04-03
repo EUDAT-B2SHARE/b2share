@@ -127,7 +127,7 @@ def oai_header(argd, verb):
     """
 
     out = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "\n"
-    out += "<?xml-stylesheet type=\"text/xsl\" href=\"%s/css/oai2.xsl.v1.0\" ?>\n" % CFG_SITE_SECURE_URL or CFG_SITE_URL
+    out += "<?xml-stylesheet type=\"text/xsl\" href=\"%s/css/oai2.xsl.v1.0\" ?>\n" % CFG_SITE_URL or CFG_SITE_SECURE_URL
     out += "<OAI-PMH xmlns=\"http://www.openarchives.org/OAI/2.0/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd\">\n"
 
     #out += "<responseDate>%s</responseDate>" % get_utc_now()
@@ -575,7 +575,7 @@ def oai_identify(argd):
     """
 
     out = X.repositoryName()(CFG_SITE_NAME)
-    out += X.baseURL()((CFG_SITE_SECURE_URL or CFG_SITE_URL) + '/oai2d')
+    out += X.baseURL()((CFG_SITE_URL or CFG_SITE_SECURE_URL) + '/oai2d')
     out += X.protocolVersion()("2.0")
     out += X.adminEmail()(CFG_SITE_SUPPORT_EMAIL)
     out += X.earliestDatestamp()(get_earliest_datestamp())
@@ -592,7 +592,7 @@ def oai_identify(argd):
                 X.delimiter()(":") +
                 X.sampleIdentifier()(CFG_OAI_SAMPLE_IDENTIFIER) +
                 """</oai-identifier>""")
-    out += CFG_OAI_IDENTIFY_DESCRIPTION % {'CFG_SITE_URL': EscapedXMLString(CFG_SITE_SECURE_URL or CFG_SITE_URL)}
+    out += CFG_OAI_IDENTIFY_DESCRIPTION % {'CFG_SITE_URL': EscapedXMLString(CFG_SITE_URL or CFG_SITE_SECURE_URL)}
     if CFG_OAI_FRIENDS:
         friends = """<friends xmlns="http://www.openarchives.org/OAI/2.0/friends/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -619,11 +619,11 @@ def oai_build_request_element(argd=None):
     """
     if argd is None:
         argd = {}
-    return X.responseDate()(get_utc_now()) + X.request(**argd)("%s/oai2d" % CFG_SITE_SECURE_URL or CFG_SITE_URL)
+    return X.responseDate()(get_utc_now()) + X.request(**argd)("%s/oai2d" % CFG_SITE_URL or CFG_SITE_SECURE_URL)
 
 def oai_get_request_url():
     """Generates requesturl tag for OAI."""
-    requesturl = (CFG_SITE_SECURE_URL or CFG_SITE_URL) + "/oai2d"
+    requesturl = (CFG_SITE_URL or CFG_SITE_SECURE_URL) + "/oai2d"
     return requesturl
 
 def oai_get_response_date(delay=0):
