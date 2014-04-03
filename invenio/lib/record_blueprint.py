@@ -60,6 +60,12 @@ def request_record(f):
     def decorated(recid, *args, **kwargs):
         # ensure recid to be integer
         recid = int(recid)
+
+        from invenio.search_engine import record_exists, get_merged_recid
+        if record_exists(recid) == 0:
+            # record doesn't exist
+            abort(apache.HTTP_NOT_FOUND)  # The record is gone!
+
         g.collection = collection = Collection.query.filter(
             Collection.name == guess_primary_collection_of_a_record(recid)).\
             one()
@@ -82,7 +88,6 @@ def request_record(f):
                 abort(apache.HTTP_UNAUTHORIZED)
 
         from invenio.bibfield import get_record
-        from invenio.search_engine import record_exists, get_merged_recid
         # check if the current record has been deleted
         # and has been merged, case in which the deleted record
         # will be redirect to the new one
