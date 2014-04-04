@@ -141,14 +141,6 @@ def add_file_info(rec, form, email, sub_id, recid):
                          #                              # but storing it into 'document_moreinfo' field
                          ('r', fft_status)])
 
-        #seems to be impossible to add file size data, thought this would work
-        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
-        record_add_field(rec, '856', ind1='4',
-                         subfields=[('u', url),
-                                    ('s', str(os.path.getsize(path))),
-                                    ('y',metadata['name'])])
-
-
 def add_domain_fields(rec, form):
     """
     Adds a domain specific fields. These are just added as name value pairs
