@@ -52,7 +52,7 @@ class SubmissionMetadata(db.Model):
     publisher = db.Column(db.String(128), default=publisher_default)
     publication_date = db.Column('publication_year', db.Date(),
                                  default=publication_date_now)
-    tags = db.Column(db.String(256))  # split on ,
+    keywords = db.Column(db.String(256))  # split on ,
 
     # optional
     contributors = db.Column(db.String(256))  # split on ;
@@ -63,7 +63,7 @@ class SubmissionMetadata(db.Model):
     version = db.Column(db.String(128))
 
     basic_fields = ['title', 'description', 'creator', 'open_access',
-                    'licence', 'publisher', 'publication_date','language', 'tags']
+                    'licence', 'publisher', 'publication_date','language', 'keywords']
     optional_fields = ['contributors', 'resource_type',
                        'alternate_identifier', 'version']
 
@@ -124,10 +124,10 @@ class SubmissionMetadata(db.Model):
                            'Apache v2 or Commercial); if no licence applies ' +\
                            'leave this field blank.'
         }
-        self.field_args['tags'] = {
+        self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
             'description':
-            'A comma separated list of tags (keywords) that ' +\
+            'A comma separated list of keywords that ' +\
             'characterize the content.'
         }
         self.field_args['open_access'] = {
