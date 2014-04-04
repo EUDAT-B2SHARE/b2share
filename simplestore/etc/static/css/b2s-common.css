@@ -68,6 +68,10 @@ div.navbar {
 
 /* --- common css --- */
 
+div.alert {
+  margin-bottom: 3px;
+}
+
 ul.breadcrumb {
     background: none;
     font-size: 12px;
