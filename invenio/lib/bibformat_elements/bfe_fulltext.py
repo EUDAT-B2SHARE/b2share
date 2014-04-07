@@ -78,7 +78,7 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         style = 'class="'+style+'"'
 
     if show_icons.lower() == 'yes':
-        file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_SITE_URL, _("Download fulltext"))
+        file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
     else:
         file_icon = ''
 
