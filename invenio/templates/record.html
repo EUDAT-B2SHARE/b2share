@@ -77,7 +77,13 @@
           </div>
         </div>
       </div>
-      <a href="/abuse/{{ recid }}">Report abuse</a>
+	  <table>
+        <tr>
+          <td><a href={{recid}}/comments>Comments & Reviews</a></td>
+          <td width="70%">&nbsp;</td>
+          <td align="right"><a href="/abuse/{{ recid }}">Report abuse</a></td>
+        </tr>
+      </table> 
       {% endif%}
       {% if has_private_files %}
         <p><i class="icon-lock"></i>This record contains private files, which are not listed here.</p>
