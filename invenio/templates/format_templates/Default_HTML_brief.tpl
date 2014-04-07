@@ -107,7 +107,9 @@
 
 {% block record_brief %}
 <div class="htmlbrief">
-    {{ bfe_fulltext(bfo, show_icons="yes", prefix='<ul class="nav nav-pills pull-right" style="margin-top: -10px;"><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" rel="tooltip" title="Download" href="#"><i class="icon-download-alt"></i><span class="caret"></span></a>', suffix='</li></ul>', focus_on_main_file="yes") }}
+    {{ bfe_fulltext(bfo, show_icons="yes", 
+       prefix='<ul class="nav nav-pills pull-right" style="margin-top: -10px;"><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" rel="tooltip" title="Download" href="#"><i class="icon-download-alt"></i><span class="caret"></span></a><ul class="dropdown-menu pull-right"><li>',
+       suffix='</li></ul></li></ul>', focus_on_main_file="yes", separator="</li><li>") }}
     {% block record_header %}
     <h4 class="media-heading">
         <a href="{{ url_for('record.metadata', recid=record['recid']) }}">

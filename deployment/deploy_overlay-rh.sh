@@ -25,7 +25,7 @@ if [ -f /opt/invenio/lib/python/invenio/bibfield_functions/is_type_isbn_issn_uni
 fi
 
 # add invenio-specific overlay
-cp -vf invenio/templates/* /opt/invenio/etc/templates/
+cp -vrf invenio/templates/* /opt/invenio/etc/templates/
 cp -vrf invenio/lib/* /opt/invenio/lib/python/invenio/
 cp -vrf invenio/etc/* /opt/invenio/etc/
 cp -vrf invenio/var/* /opt/invenio/var/
