@@ -50,7 +50,7 @@ date > /etc/provisioned_at
 
 echo 
 echo "*** If you are configuring a development environment, you should:"
-echo "    1. disable the redis cache:"
+echo "    1. disable the redis cache (SOME FUNCTIONS CANNOT RUN WITHOUT CACHE):"
 echo '       edit /opt/invenio/lib/python/invenio/config.py and set CFG_FLASK_CACHE_TYPE = "null"'
 echo "    2. reduce the number of apache processes:"
 echo '       edit /opt/invenio/etc/apache/invenio-apache-vhost.conf and replace "processes=5" with "processes=1"'
