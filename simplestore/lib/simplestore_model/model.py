@@ -44,7 +44,7 @@ class SubmissionMetadata(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.Text(), nullable=False)
-    creator = db.Column(db.String(256))  # split on ;
+    creator = db.Column(db.String(256)) 
     title = db.Column(db.String(256), nullable=False)
     open_access = db.Column(db.Boolean(), default=True)
 
@@ -52,10 +52,10 @@ class SubmissionMetadata(db.Model):
     publisher = db.Column(db.String(128), default=publisher_default)
     publication_date = db.Column('publication_year', db.Date(),
                                  default=publication_date_now)
-    keywords = db.Column(db.String(256))  # split on ,
+    tags = db.Column(db.String(256))  # split on ,
 
     # optional
-    contributors = db.Column(db.String(256))  # split on ;
+    contributors = db.Column(db.String(256))
     #language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     language = db.Column(db.String(128), default=language_default)
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
@@ -63,7 +63,7 @@ class SubmissionMetadata(db.Model):
     version = db.Column(db.String(128))
 
     basic_fields = ['title', 'description', 'creator', 'open_access',
-                    'licence', 'publisher', 'publication_date','language', 'keywords']
+                    'licence', 'publisher', 'publication_date','language', 'tags']
     optional_fields = ['contributors', 'resource_type',
                        'alternate_identifier', 'version']
 
@@ -124,10 +124,10 @@ class SubmissionMetadata(db.Model):
                            'Apache v2 or Commercial); if no licence applies ' +\
                            'leave this field blank.'
         }
-        self.field_args['keywords'] = {
+        self.field_args['tags'] = {
             'placeholder': "keyword1, keyword2, ...",
             'description':
-            'A comma separated list of keywords that ' +\
+            'A comma separated list of tags (keywords) that ' +\
             'characterize the content.'
         }
         self.field_args['open_access'] = {
@@ -137,7 +137,8 @@ class SubmissionMetadata(db.Model):
             'will not be public, however the metadata will be.'
         }
         self.field_args['contributors'] = {
-            'placeholder': 'contributor 1; contributor 2; ...',
+            'placeholder': 'contributor',
+            'cardinality': 'n',
             'description':
             'A semicolon separated list of all other ' +\
             'contributors. Mention all ' +\
@@ -161,7 +162,8 @@ class SubmissionMetadata(db.Model):
             'Any kind of other reference such as a URN, URI or an ISBN number.'
         }
         self.field_args['creator'] = {
-            'placeholder': 'author 1; author 2; ... ',
+            'placeholder': 'author',
+            'cardinality': 'n',
             'description': 
             'A semicolon separated list of authors of the resource.'
         }
@@ -244,4 +246,11 @@ def _create_metadata_class(cfg):
             args['field_args'][f['name']]['placeholder'] = f.get('placeholder')
         if 'value' in f:
             args['field_args'][f['name']]['value'] = f.get('value')
+        if 'choices' in f:
+            args['field_args'][f['name']]['choices'] = f.get('choices')
+        if 'other' in f:
+            args['field_args'][f['name']]['other'] = f.get('other')
+        if 'cardinality' in f:
+            args['field_args'][f['name']]['cardinality'] = f.get('cardinality')
+
     return type(clsname, (SubmissionMetadata,), args)

@@ -186,7 +186,7 @@ class SelectWithInput(Select):
         html.append('</select>')
         html.append('<input type=text style="display: none" {0} {1} >'
             .format(html_params(name=field.name+"_input"),
-                    html_params(id=field.name+"_input")))
+                    html_params(id=field.name+"_input")))                          
         return HTMLString(''.join(html))
 
 
@@ -200,6 +200,33 @@ class SelectFieldWithInput(SelectField):
             self.field_args['choices'] = [(x,x) for x in field_args['choices']]
             self.field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
+
+
+class AddFieldInput(Input):
+    input_type = "text"
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = ['<div id="'+field.name+'_div">']
+        html.append('<div id="rowNum0">')
+        html.append('<input class="add_field" type="text" id="inputRowNum0" placeholder="{0}" {1}>'
+            .format(field.placeholder, self.html_params(name=field.name, **kwargs)))                             
+        html.append('<div class="plus" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}"></div>'
+            .format(field.placeholder, field.cardinality, field.name))
+        html.append('</div>')                          
+        html.append('</div>')
+        return HTMLString(''.join(html))
+
+class AddField(StringField):
+    widget = AddFieldInput()
+    placeholder = ""
+    cardinality = "n"
+
+    def __init__(self, cardinality="n", placeholder="", **field_args):
+        self.field_args = field_args
+        self.placeholder = placeholder
+        self.cardinality = cardinality
+        super(AddField, self).__init__(**field_args)
 
 
 class HiddenInput(Input):
@@ -268,6 +295,9 @@ class HTML5ModelConverter(ModelConverter):
         hidden = self.handle_hidden_field(field_args)
         if hidden:
             return hidden
+
+        if 'cardinality' in field_args:
+            return AddField(**field_args)
 
         if 'placeholder' in field_args:
             return PlaceholderStringField(**field_args)

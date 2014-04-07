@@ -42,10 +42,12 @@ def add_basic_fields(rec, form, email):
         if form['title']:
             record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
 
-        if form['creator']:
-            for kw in form['creator'].split(';'):
-                if kw and not kw.isspace():
-                    record_add_field(rec, '100', subfields=[('a', remove_html_markup(kw.strip()))])
+        if form['creator']:        
+            fields = form.getlist('creator')
+            for f in fields:
+                if f and not f.isspace():
+                    record_add_field(rec, '100', subfields=[('a', remove_html_markup(f.strip()))])
+            
 
         if form['domain']:
             record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
@@ -67,16 +69,18 @@ def add_basic_fields(rec, form, email):
             record_add_field(rec, '540', subfields=[('a', remove_html_markup(form['licence']))])
         record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
 
-        if form['keywords']:
-            for kw in form['keywords'].split(','):
+        if form['tags']:
+            for kw in form['tags'].split(','):
                 if kw and not kw.isspace():
                     record_add_field(rec, '653',
                                  ind1='1',
                                  subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form['contributors']:
-            for kw in form['contributors'].split(';'):
-                record_add_field(rec, '700', subfields=[('a', remove_html_markup(kw.strip()))])
+            fields = form.getlist('contributors')
+            for f in fields:
+                if f and not f.isspace():
+                    record_add_field(rec, '700', subfields=[('a', remove_html_markup(f.strip()))])
 
         record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
@@ -164,11 +168,14 @@ def add_domain_fields(rec, form):
 
     for fs in meta.fieldsets:
         if fs.name != 'Generic':  # TODO: this is brittle; get from somewhere
-            for k in (fs.optional_fields + fs.basic_fields):
+            for k in (fs.optional_fields + fs.basic_fields):                
                 if form[k]:
-                    record_add_field(rec, '690',
-                                     subfields=[('a', k), ('b', form[k])])
-
+                    fields = form.getlist(k)
+                    for f in fields:
+                        if f and not f.isspace():
+                            record_add_field(rec, '690',
+                                     subfields=[('a', k), ('b', f)])
+ 
 
 def add_epic_pid(rec, recid, checksum):
     """ Adds EPIC PID to the record. If registration fails, can

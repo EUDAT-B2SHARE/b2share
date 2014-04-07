@@ -104,3 +104,39 @@
     });
 });
 </script>
+
+<script type="text/javascript">
+ var rowNum = 0;
+
+ $('form .plus').click(function(){
+      rowNum ++;
+      var name = $(this).attr('name');
+      var placeholder = $(this).attr('data-placeholder');
+      var cardinality = $(this).attr('data-cardinality');
+        
+      var row = '<div id="rowNum'+rowNum+'">'
+      row += '<input class="add_field" id="inputRowNum'+rowNum+'" type="text" name="'+name+'" placeholder="'+placeholder+'">';
+      row += '<div class="minus" data-name="'+name+'" data-cardinality="'+cardinality+'" data-row="'+rowNum+'"></div>';
+      row += '</div>';
+      $('#'+name+"_div").append(row);
+        
+      var rowCount = $('#'+name+"_div > div").length;
+      if (cardinality <= rowCount){
+          $("#"+name+"_add").css("visibility", "hidden");
+      }
+ });
+ 
+ $('form').on('click', '.minus', function() {
+     var row = $(this).attr('data-row');
+     var name = $(this).attr('data-name');
+     var cardinality = $(this).attr('data-cardinality');     
+
+     $('#rowNum'+row).remove();
+
+     var rowCount = $('#'+name+"_div > div").length;
+     if (cardinality > rowCount){
+         $("#"+name+"_add").css("visibility", "visible");
+     } 
+ });
+ 
+</script>
