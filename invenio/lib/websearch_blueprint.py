@@ -211,20 +211,12 @@ def get_collection_breadcrumbs(collection, breadcrumbs=None, builder=None,
 
 
 @blueprint.route('/collection/<name>', methods=['GET', 'POST'])
-@blueprint.invenio_templated('websearch_collection.html')
 def collection(name):
-    collection = Collection.query.filter(Collection.name == name).first_or_404()
-    #FIXME cache per language
-    b = get_collection_breadcrumbs(collection, [(_('Home'), '')], ln=g.ln)
-    current_app.config['breadcrumbs_map'][request.endpoint] = b
-
-    @register_template_context_processor
-    def index_context():
-        return dict(
-            format_record=cached_format_record,
-            easy_search_form=EasySearchForm(csrf_enabled=False),
-            get_creation_date=get_creation_date)
-    return dict(collection=collection)
+    from werkzeug import ImmutableMultiDict
+    d = dict(request.args)
+    d['cc'] = name
+    request.args = ImmutableMultiDict(d)
+    return search()
 
 
 class Pagination(object):
