@@ -112,8 +112,8 @@ def addmeta(request, sub_id):
         # all usual tasks have priority 0; we want the bibuploads to run first
         task_low_level_submission('bibupload', 'webdeposit', '--priority', '1', '-r', tmp_file)
         return jsonify(valid=True,
-                       html=render_template('simplestore-finalize.html',
-                                            recid=recid, marc=marc))
+                       newurl=url_for("record.metadata", recid=recid),
+                       html=render_template('record_waitforit.html', recid=recid, marc=marc))
 
     current_app.logger.error("returning form addmeta")
     return jsonify(valid=False,

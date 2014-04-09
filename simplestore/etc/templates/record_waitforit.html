@@ -1,6 +1,7 @@
 {% extends "page.html" %}
 {% block header %}
     {{ super() }}
+    <meta http-equiv="refresh" content="10">
     {% css 'css/simplestore-style.css', '50-simplestore' %}
 {% endblock %}
 
@@ -9,15 +10,10 @@
     <div id = "page-header">
     <div class="container">
       <div class="deposit-result">
-        <h1>Deposit Successful</h1>
+        <h1>New Record</h1>
 
         <div class="deposit-text">
-          Your submission will shortly be available at: <br/>
-            <a href="{{ url_for('record.metadata', recid=recid) }}">
-              {{ url_for('record.metadata', recid=recid, _external=True) }}
-            </a>
-            <p/>
-          <p>Please note that it may take a few minutes to process your submission.
+          This record is being processed and will be available shortly. Please wait.
         </div>
         </div>
         <div class="another-item">
@@ -25,10 +21,7 @@
             <button class="btn btn-primary btn-large">Deposit another item</button>
           </a>
         </div>
-        <!-- MARC output
-        {{ marc }}
-        -->
+    </div>
+    </div>
 
-    </div>
-    </div>
 {% endblock %}
