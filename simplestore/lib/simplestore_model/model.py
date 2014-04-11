@@ -54,6 +54,9 @@ class SubmissionMetadata(db.Model):
                                  default=publication_date_now)
     keywords = db.Column(db.String(256))  # split on ,
 
+    contact_name = db.Column(db.String(256))
+    contact_mail = db.Column(db.String(256))
+
     # optional
     contributors = db.Column(db.String(256))  # split on ;
     #language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
@@ -63,7 +66,8 @@ class SubmissionMetadata(db.Model):
     version = db.Column(db.String(128))
 
     basic_fields = ['title', 'description', 'creator', 'open_access',
-                    'licence', 'publisher', 'publication_date','language', 'keywords']
+                    'licence', 'publisher', 'publication_date','language', 'keywords',
+		    'contact_name', 'contact_mail']
     optional_fields = ['contributors', 'resource_type',
                        'alternate_identifier', 'version']
 
@@ -164,6 +168,16 @@ class SubmissionMetadata(db.Model):
             'placeholder': 'author 1; author 2; ... ',
             'description': 
             'A semicolon separated list of authors of the resource.'
+        }
+        self.field_args['contact_name'] = {
+	   'placeholder': 'firstname lastname',
+	   'description':
+           'Name of the contact for this deposit'
+        }
+        self.field_args['contact_mail'] = {
+           'placeholder':'username@host.com',
+           'description':
+           'Mail address of contact for this deposit'
         }
 
 def _create_metadata_class(cfg):
