@@ -56,7 +56,12 @@ def add_basic_fields(rec, form, email):
             pubfields.append(('c', remove_html_markup(form['publication_date'])))
         if pubfields:
             record_add_field(rec, '260', subfields=pubfields)
-        record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
+        
+	if form['contact_mail']:
+		record_add_field(rec, '856', ind1='0', subfields=[('f', remove_html_markup(form['contact_mail']))])
+
+	if form['contact_name']:
+		record_add_field(rec,'800',subfields=[('a',remove_html_markup(form['contact_name']))])
 
         if 'open_access' in form:
             record_add_field(rec, '542', subfields=[('l', 'open')])

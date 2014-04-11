@@ -42,9 +42,13 @@ def format_element(bfo):
     if licence:
         ret += '<tr><th>Licence:</th><td>{0}</td></tr>'.format(licence)
 
-    uploader = bfo.field("8560_f")
-    if uploader:
-        ret += '<tr><th>Uploaded by:</th><td>{0}</td></tr>'.format(uploader)
+    contact_name = bfo.field("8560_f")
+    if contact_name:
+        ret += '<tr><th>Contact person:</th><td>{0}</td></tr>'.format(contact_name)
+
+    contact_email = bfo.field("800__a")
+    if contact_email:
+        ret +='<tr><th>Contact email:</th><td>{0}</td></tr>'.format(contact_email)
 
     domain = bfo.field("980__a")
     if domain:
