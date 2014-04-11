@@ -44,11 +44,11 @@ def format_element(bfo):
 
     contact_email = bfo.field("8560_f")
     if contact_email:
-        ret += '<tr><th>Contact person:</th><td>{0}</td></tr>'.format(contact_email)
+        ret += '<tr><th>Contact email:</th><td>{0}</td></tr>'.format(contact_email)
 
     contact_name = bfo.field("800__a")
     if contact_name:
-        ret +='<tr><th>Contact email:</th><td>{0}</td></tr>'.format(contact_name)
+        ret +='<tr><th>Contact name:</th><td>{0}</td></tr>'.format(contact_name)
 
     domain = bfo.field("980__a")
     if domain:
