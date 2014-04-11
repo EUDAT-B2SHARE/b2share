@@ -31,11 +31,8 @@ $(document).ready(function() {
         $.post("addmeta/" + $('#sub_id').val(), $("#metaform_form").serialize(),
             function(data) {
                 if (data.valid) {
-                    //Load new page with success message
-                    var newDoc = document.open("text/html", "replace");
-                    newDoc.write(data.html);
-                    newDoc.close();
-
+                    // redirect to new url location, with history
+                    window.location.href = data.newurl;
                 } else {
                     //Just replace metadata form with errors
                     $('#meta-fields').html(data.html);

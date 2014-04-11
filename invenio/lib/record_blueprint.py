@@ -84,8 +84,7 @@ def request_record(f):
             return redirect(url_for('webaccount.login', **url_args))
         elif auth_code:
             if check_fresh_record(current_user, recid):
-                flash(auth_msg, 'Please wait, your record is being processed')
-                abort(apache.HTTP_NOT_FOUND)
+                return render_template('record_waitforit.html', recid=recid)
             else:
                 flash(auth_msg, 'error')
                 abort(apache.HTTP_UNAUTHORIZED)
