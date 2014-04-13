@@ -34,3 +34,5 @@ inveniomigrate
 recomp.sh
 *.swp
 .DS_Store
+.idea*
+.idea/*

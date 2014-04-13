@@ -87,6 +87,7 @@
       {% endif%}
       {% if has_private_files %}
         <p><i class="icon-lock"></i>This record contains private files, which are not listed here.</p>
+        <p><a href="{{ url_for('webmessage.add') }}">Send a request for data</a></p>
       {% endif%}
     {% block record_tabs %}
     {%- for tab in tabs|sort(attribute='order') -%}
