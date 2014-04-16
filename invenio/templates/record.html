@@ -77,16 +77,17 @@
           </div>
         </div>
       </div>
-	  <table>
+      <table>
         <tr>
           <td><a href={{recid}}/comments>Comments & Reviews</a></td>
-          <td width="70%">&nbsp;</td>
+          <td width="70%">&nbsp;</td> 
           <td align="right"><a href="/abuse/{{ recid }}">Report abuse</a></td>
         </tr>
-      </table> 
+	</table>
       {% endif%}
       {% if has_private_files %}
-        <p><i class="icon-lock"></i>This record contains private files, which are not listed here.</p>
+	    <p><i class="icon-lock"></i>This record contains private files, which are not listed here.</p>
+		<br><p><a href="/reqdata/{{ recid }}">Request Data</a></p>
       {% endif%}
     {% block record_tabs %}
     {%- for tab in tabs|sort(attribute='order') -%}
