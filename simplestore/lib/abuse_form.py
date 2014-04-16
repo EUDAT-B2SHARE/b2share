@@ -91,7 +91,7 @@ def abuse_submit(request):
 	if(affiliation == '' or len(affiliation) > 256):
 		return render_template('abuse_form.html',warning_msg="Affiliation is missing")
 	
-	if(email == '' or validate_email(email,verify=True) == False):
+	if(email == '' or validate_email(email,verify=False) == False):
 		return render_template('abuse_form.html',warning_msg="Email address missing or format is invalid")
 
 	if(street_address == '' or len(street_address) > 256):	
