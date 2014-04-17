@@ -63,8 +63,11 @@ def request_record(f):
 
         from invenio.search_engine import record_exists, get_merged_recid
         if record_exists(recid) == 0:
-            # record doesn't exist
+            # record doesn't exist, abort so it doesn't get incorrectly cached
             abort(apache.HTTP_NOT_FOUND)  # The record is gone!
+
+        if check_fresh_record(current_user, recid):
+            return render_template('record_waitforit.html', recid=recid)
 
         g.collection = collection = Collection.query.filter(
             Collection.name == guess_primary_collection_of_a_record(recid)).\
@@ -83,11 +86,8 @@ def request_record(f):
             flash(_("Authorization failure"), 'error')
             return redirect(url_for('webaccount.login', **url_args))
         elif auth_code:
-            if check_fresh_record(current_user, recid):
-                return render_template('record_waitforit.html', recid=recid)
-            else:
-                flash(auth_msg, 'error')
-                abort(apache.HTTP_UNAUTHORIZED)
+            flash(auth_msg, 'error')
+            abort(apache.HTTP_UNAUTHORIZED)
 
         from invenio.bibfield import get_record
         # check if the current record has been deleted
