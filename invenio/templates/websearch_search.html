@@ -114,6 +114,15 @@ body {
   bottom: 170px;
 }
 
+/* the search interface list of collections and authors */
+div.accordion div.facetdiv div:hover {  
+  background-color: rgb(217, 237, 247)
+}
+
+ul.context li.controls div:hover {  
+  background-color: rgb(217, 237, 247)
+}
+
 </style>
 
 
@@ -133,7 +142,7 @@ body {
 <div class="row">
   <div class="span2 visible-desktop">
     <div class="row">
-    <div
+    <div style="text-align:center"
       class="accordion span2 facet"
       id="facet_list">
     </div>
@@ -207,23 +216,23 @@ body {
       var title = data[(data.length==3)?2:0],
           counter = data[1]
       return '<li class="controls" style="display:none">'+
-                 '<a class="expandable" style="cursor:pointer" ' +
+                 '<div class="expandable muted" style="cursor:pointer" ' +
                     'data-target="#facet_list" ' +
                     'data-facet="toggle" ' +
                     'data-facet-action="+" '+
                     'data-facet-key="' + name + '" '+
                     'data-facet-value="' + data[0] + '">' +
         title +
-        '</a> <small class="muted">('+counter+')</small>' +
+        '<small class="muted"> ('+counter+')</small> </div>' +
         '</li>'
     },
     box_builder: function(name, title) {
-      return '<div class="'+name+'">' +
-      '<a style="cursor:pointer" ' +
+      return '<div class="facetdiv '+name+'">' +
+      '<div style="cursor:pointer" ' +
          'data-facet="reset-key" '+
          'data-target="#facet_list" ' +
          'data-facet-key="'+ name +'"><strong>'+
-        title + '</strong></a>' +
+        title + '</strong></div>' +
         '<ul class="context unstyled"><ul></div>'
     },
     facets: {{ facets|tojson|safe }}
