@@ -44,7 +44,7 @@ fields = [
         'display_text': 'Study design',
         'data_provide': 'select',
         'cardinality': 'n',
-        'description': 'The type of study. Can be one or several of the following values.'
+        'description': 'The type of study. Can be one or several of the following values.',
         'data_source': ['Case-control', 'Cohort', 'Cross-sectional', 'Longitudinal',
                         'Twin-study', 'Quality control', 'Population-based', 'Other'],
         'required': False
