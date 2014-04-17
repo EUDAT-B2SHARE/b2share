@@ -298,3 +298,22 @@ a.description:hover span {
     border:10px solid #666;
     background-color:#666; color:#fff
 }
+
+.plus, .minus {
+  width:30px;
+  height:30px;
+  overflow:hidden;
+}
+
+.plus {
+  background: url(/img/plus.png);
+}
+
+.minus {
+  background: url(/img/minus.png);
+}
+
+.add_field {
+  float:left;
+  width:240px;
+}
