@@ -3,8 +3,8 @@ from invenio.simplestore_model.metadata.linguistics_lang_codes import lang_codes
 import json
 
 domain = "Linguistics"
-table_name = 'CLARIN'
-image = 'domain-clarin.png'
+table_name = 'linguistics'
+icon = 'icon-quote-right'
 
 fields = [{'name':'language_code',
            'display_text':'Language Code',
@@ -13,7 +13,8 @@ fields = [{'name':'language_code',
            'description': 'This element can be used to add an ISO language code from ' +\
                           'ISO-639-3 to uniquely identify the language a document ' +\
                           'is written in',
-           'data_provide': 'typeahead',
+           'data_provide': 'select',
+           'cardinality': 'n',
            'data_source': json.dumps(lang_codes)},
           {'name':'region',
            'display_text':'Country/Region',
@@ -25,8 +26,11 @@ fields = [{'name':'language_code',
            'display_text':'Resource Type',
            'col_type':db.String(256),
            'required':True,
+           'data_provide': 'select',
+           'data_source': ["Text", "Audio", "Video", "Time-Series", "Photo"],
+           'other:': 'Other...',
            'description': 'This element allows the depositor to specify the type ' +\
-                          'of the resource (Text, Audio, Video, Time-Series, Photo, etc.)'},
+                          'of the resource.'},
           {'name':'project_name',
            'display_text':'Project Name',
            'col_type':db.String(256),
