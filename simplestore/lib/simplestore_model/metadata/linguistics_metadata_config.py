@@ -28,7 +28,7 @@ fields = [{'name':'language_code',
            'required':True,
            'data_provide': 'select',
            'data_source': ["Text", "Audio", "Video", "Time-Series", "Photo"],
-           'other:': 'Other...',
+           'other': 'Other...',
            'description': 'This element allows the depositor to specify the type ' +\
                           'of the resource.'},
           {'name':'project_name',
