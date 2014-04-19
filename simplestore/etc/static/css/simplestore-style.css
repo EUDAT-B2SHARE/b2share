@@ -199,6 +199,7 @@
 }
 
 #meta-fields {
+    overflow: visible;
     text-align: left;
 }
 
@@ -297,4 +298,31 @@ a.description:hover span {
     top:2em; left:2em; width:10em;
     border:10px solid #666;
     background-color:#666; color:#fff
+}
+
+.plus, .minus {
+  width:30px;
+  height:30px;
+  overflow:hidden;
+}
+
+.plus {
+  background: url(/img/plus.png);
+}
+
+.minus {
+  background: url(/img/minus.png);
+}
+
+.add_field {
+  float:left;
+  width:240px;
+}
+
+.collapse.in {
+  overflow: visible;
+}
+
+.multiselect {
+  width:284px;
 }
