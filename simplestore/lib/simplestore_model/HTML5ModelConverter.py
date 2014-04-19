@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ## This file is part of SimpleStore.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
@@ -26,7 +27,6 @@ from wtforms import HiddenField as _HiddenField
 from wtforms.widgets import Input, Select, HTMLString, html_params
 from wtforms.compat import text_type
 from flask import current_app
-
 
 class SwitchInput(Input):
     input_type = "checkbox"
@@ -202,15 +202,16 @@ class SelectFieldWithInput(SelectField):
     filtering = ""
     other = ""
 
-    def __init__(self, other="", filtering="", cardinality="1", 
+    def __init__(self, other="", filtering="", cardinality=1, 
                        data_provide="", data_source="", **field_args):
-        # make list of tuples for SelectField (only once)
         self.cardinality = cardinality        
         self.other = other
         self.filtering = filtering
+        # make list of tuples for SelectField (only once)
         if isinstance(data_source[0], basestring):
             field_args['choices'] = [(x,x) for x in data_source]
-            field_args['choices'].append(('other', other))
+            if other:
+                field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
           
 
