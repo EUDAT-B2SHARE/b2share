@@ -42,12 +42,11 @@ fields = [
         'name': 'study_design',
         'col_type': db.String(256),
         'display_text': 'Study design',
-        'description': 'The type of study. Can be one or several of the following values: '
-                       'Case-control, Cohort, Cross-sectional, Longitudinal, '
-                       'Twin-study, Quality control, Population-based, Other',
-        'data_provide': 'typeahead',
-        'data_source': json.dumps(['Case-control', 'Cohort', 'Cross-sectional', 'Longitudinal',
-                                   'Twin-study', 'Quality control', 'Population-based']),
+        'data_provide': 'select',
+        'cardinality': 'n',
+        'description': 'The type of study. Can be one or several of the following values.',
+        'data_source': ['Case-control', 'Cohort', 'Cross-sectional', 'Longitudinal',
+                        'Twin-study', 'Quality control', 'Population-based', 'Other'],
         'required': False
     },
     {
@@ -65,9 +64,11 @@ fields = [
                        'Can be one or several of the following values: '
                        'Biological samples, Register data, Survey data, '
                        'Physiological measurements, Imaging data, Medical records, Other',
-        'data_provide': 'typeahead',
-        'data_source': json.dumps(['Biological samples', 'Register data', 'Survey data',
-                                   'Physiological measurements', 'Imaging data', 'Medical records']),
+        'data_provide': 'select',
+        'cardinality': 'n',
+        'data_source': ['Biological samples', 'Register data', 'Survey data',
+                        'Physiological measurements', 'Imaging data', 
+                        'Medical records', 'Other'],
         'required': False
     },
     {
@@ -89,8 +90,9 @@ fields = [
         'col_type': db.String(256),
         'display_text': 'Sex',
         'description': 'The sex of the study participants. Can be several of the following values: Female, Male, Other',
-        'data_provide': 'typeahead',
-        'data_source': json.dumps(['Female', 'Male']),
+        'data_provide': 'select',
+        'cardinality': 'n',
+        'data_source': ['Female', 'Male', 'Other'],
         'required': False
     },
     {
@@ -107,9 +109,10 @@ fields = [
         'description': 'The nature of the biological samples that are included in the study, if any. '
                        'Can be one or several of the following values: '
                        'Whole blood, Plasma, Serum, Urine, Saliva, CSF, DNA, RNA, Tissue, Faeces, Other',
-        'data_provide': 'typeahead',
-        'data_source': json.dumps(['Whole blood', 'Plasma', 'Serum', 'Urine', 'Saliva',
-                                   'CSF', 'DNA', 'RNA', 'Tissue', 'Faeces']),
+        'data_provide': 'select',
+        'cardinality': 'n',
+        'data_source': ['Whole blood', 'Plasma', 'Serum', 'Urine', 'Saliva',
+                        'CSF', 'DNA', 'RNA', 'Tissue', 'Faeces', 'Other'],
         'required': False
     },
 ]
