@@ -75,7 +75,7 @@ def add_basic_fields(rec, form, email):
                                  ind1='1',
                                  subfields=[('a', remove_html_markup(kw.strip()))])
 
-        if form['contributors']:
+        if 'contributors' in form and form['contributors']:
             fields = form.getlist('contributors')
             for f in fields:
                 if f and not f.isspace():
@@ -84,16 +84,16 @@ def add_basic_fields(rec, form, email):
         record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
-        if 'resource_type' in form:
+        if 'resource_type' in form and form['resource_type']:
             fields = form.getlist('resource_type')
             for f in fields:
                 record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['resource_type']))])
 
-        if form['alternate_identifier']:
+        if 'alternate_identifier' in form and form['alternate_identifier']:
             record_add_field(rec, '024',
                              subfields=[('a', remove_html_markup(form['alternate_identifier']))])
 
-        if form['version']:
+        if 'version' in form and form['version']:
             record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
         record_add_field(rec, '264',
                          subfields=[('b', CFG_SITE_NAME),
@@ -170,7 +170,7 @@ def add_domain_fields(rec, form):
     for fs in meta.fieldsets:
         if fs.name != 'Generic':  # TODO: this is brittle; get from somewhere
             for k in (fs.optional_fields + fs.basic_fields):
-                if form[k]:
+                if k in form and form[k]:
                     fields = form.getlist(k)
                     for f in fields:
                         if f and not f.isspace():
