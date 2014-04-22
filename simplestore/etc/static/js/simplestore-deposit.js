@@ -27,7 +27,7 @@ $(document).ready(function() {
      */
     function deposit_click_handler(e) {
         e.preventDefault();
-        $('#deposit').addClass('disabled');
+        $('#deposit').addClass('disabled').attr('disabled', 'disabled');
         $.post("addmeta/" + $('#sub_id').val(), $("#metaform_form").serialize(),
             function(data) {
                 if (data.valid) {
@@ -36,7 +36,7 @@ $(document).ready(function() {
                 } else {
                     //Just replace metadata form with errors
                     $('#meta-fields').html(data.html);
-                    $('#deposit').removeClass('disabled');
+                    $('#deposit').removeClass('disabled').attr('disabled', null);
                 }
 
             }, "json");
