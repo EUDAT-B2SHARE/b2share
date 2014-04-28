@@ -2972,9 +2972,10 @@ class BibDocFile(object):
     def get_url(self):
         return self.url
 
-    def get_full_url(self):
-        """Returns absolute url."""
-        return self.fullurl
+    def get_full_url(self, download=False):
+        """Returns the absolute file url, with optional forced download."""
+        # self.fullurl always has at least one attribute
+        return "%s%s" % (self.fullurl, download and "&download=1" or "")
 
     def get_type(self):
         """Returns the first type connected with the bibdoc of this file."""
