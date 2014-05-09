@@ -62,8 +62,11 @@ class SubmissionMetadata(db.Model):
     alternate_identifier = db.Column(db.String(256))
     version = db.Column(db.String(128))
 
+    contact_email = db.Column(db.String(256))
+
     basic_fields = ['title', 'description', 'creator', 'open_access',
-                    'licence', 'publisher', 'publication_date', 'language', 'keywords']
+                    'licence', 'publisher', 'publication_date', 'language', 'keywords',
+                    'contact_email']
     optional_fields = ['contributors', 'resource_type',
                        'alternate_identifier', 'version']
 
@@ -167,6 +170,10 @@ class SubmissionMetadata(db.Model):
             'cardinality': 'n',
             'description': 
             'A semicolon separated list of authors of the resource.'
+        }
+        self.field_args['contact_email'] = {
+            'placeholder': 'contact email',
+             'description': 'Contact email information for this record'
         }
 
 def _create_metadata_class(cfg):

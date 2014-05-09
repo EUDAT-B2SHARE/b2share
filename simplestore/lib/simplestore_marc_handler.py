@@ -68,6 +68,9 @@ def add_basic_fields(rec, form, email):
             record_add_field(rec, '540', subfields=[('a', remove_html_markup(form['licence']))])
         record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
 
+        if form['contact_email']:
+            record_add_field(rec,'270',subfields=[('m', remove_html_markup(form['contact_email']))])        
+
         if form['keywords']:
             for kw in form['keywords'].split(','):
                 if kw and not kw.isspace():
