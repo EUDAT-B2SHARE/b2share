@@ -14,7 +14,7 @@ echo "************ Installing wget & git"
 yum install -y wget git vim 
 
 echo "************ Git clone invenio"
-git clone https://github.com/B2SHARE/invenio.git
+# will be done by install-invenio-deps-rh.sh
 
 echo "************ Git clone invenio-scripts"
 git clone https://github.com/B2SHARE/invenio-scripts.git
