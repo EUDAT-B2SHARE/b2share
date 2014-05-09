@@ -29,6 +29,8 @@ echo "************ Installing required OS dependencies"
 ./invenio-scripts/install/install-invenio-deps-rh.sh
 
 echo "************ Installing invenio base"
+# overwrite the invenio config file
+cp invenio-scripts/install/invenio.conf invenio/config/
 cp invenio-scripts/install/invenio-local.conf invenio/
 cp invenio-scripts/install/collections.sql invenio/
 (cd invenio && ../invenio-scripts/install/wipe-and-install-invenio-rh.sh --no-confirm)
