@@ -58,6 +58,10 @@ def format_element(bfo):
     if uploader:
         ret += '<tr><th>Uploaded by:</th><td>{0}</td></tr>'.format(uploader)
 
+    contact_email = bfo.field("270__m")
+    if contact_email:
+        ret += '<tr><th>Contact email:</th><td>{0}</td></tr>'.format(contact_email)
+
     domain = bfo.field("980__a")
     if domain:
         ret += '<tr><th>Domain:</th><td>{0}</td></tr>'.format(domain)
