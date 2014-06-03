@@ -4,6 +4,8 @@
 # cd
 # sudo /vagrant/provision_system.sh 2>&1 | tee /vagrant/provision.log
 
+export MYSQL_ROOT=invenio
+
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
    exit 1
@@ -38,22 +40,38 @@ yum install -y git python-pip httpd mysql mysql-server gnuplot html2text netpbm 
 echo; echo "### Groupinstall development"
 yum groupinstall -y --skip-broken development
 
+echo; echo "### Install grunt & bower"
+npm -g install grunt-cli bower
+
 echo; echo "### Install python27"
 /vagrant/_install_python2.7.sh
 echo 'export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"' >> /home/vagrant/.bashrc
 export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"
 
-echo; echo "### Install setuptools, easy_install, pip, Babel"
+echo; echo "### Install setuptools"
 wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz
 tar -xvf setuptools-1.4.2.tar.gz
 (cd setuptools-1.4.2 && python2.7 setup.py install)
 rm setuptools-1.4.2.tar.gz
+
+echo; echo "### Install easy_install & pip"
 curl https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py | python2.7 -
-easy_install pip Babel
+easy_install pip 
+
+echo; echo "### Install virtualenv"
+pip install virtualenv virtualenvwrapper
+source /opt/python-2.7.6/bin/virtualenvwrapper.sh 
+
+echo; echo "### Start mysql"
+chkconfig mysqld on
+service mysqld start
+mysqladmin -u root password $MYSQL_ROOT
+
+echo; echo "### Start redis"
+chkconfig redis on
+service redis start
 
 if [[ `which pip` != "/opt/python-2.7.6/bin/pip" ]]; then
    echo "!!! pip not installed or wrong path"
    exit 1
 fi
-
-pip install flower # flower is for monitoring celery tasks

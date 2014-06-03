@@ -14,7 +14,7 @@ $ sudo /vagrant/provision_system.sh 2>&1 | tee /vagrant/provision.log
 
 3. Run `install_invenio.sh`, which will clone and install the invenio/pu branch
 ````
-$ sudo PATH="/opt/python-2.7.6/bin:$PATH" /vagrant/install_invenio.sh 2>&1 | tee /vagrant/install.log
+$ /vagrant/install_invenio.sh 2>&1 | tee /vagrant/install.log
 ````
 
 4. run the server in development mode:
