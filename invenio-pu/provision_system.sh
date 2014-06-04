@@ -2,7 +2,7 @@
 
 # # invoke with
 # cd
-# sudo /vagrant/provision_system.sh 2>&1 | tee /vagrant/provision.log
+# sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
 
 export MYSQL_ROOT=invenio
 
@@ -60,8 +60,9 @@ easy_install pip
 
 echo; echo "### Install virtualenv"
 pip install virtualenv virtualenvwrapper
+echo 'export WORKON_HOME=/vagrant/.virtualenvs' >> /home/vagrant/.bashrc
 echo 'source /opt/python-2.7.6/bin/virtualenvwrapper.sh' >> /home/vagrant/.bashrc
-
+export WORKON_HOME=/vagrant/.virtualenvs
 source /opt/python-2.7.6/bin/virtualenvwrapper.sh 
 
 echo; echo "### Start mysql"

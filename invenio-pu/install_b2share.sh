@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # # invoke with
-# /vagrant/install_b2share.sh 2>&1 | tee /vagrant/install.log
+# /vagrant/install_b2share.sh 2>&1 | tee install.log
 
 export MYSQL_ROOT=invenio
 cd /vagrant
@@ -12,6 +12,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"
+export WORKON_HOME=/vagrant/.virtualenvs
 source /opt/python-2.7.6/bin/virtualenvwrapper.sh 
 
 if [[ `which pip` != "/opt/python-2.7.6/bin/pip" ]]; then
