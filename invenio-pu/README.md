@@ -1,23 +1,27 @@
-To install the invenio/pu branch:
+To install the b2share-pu branch:
 
-1. run vagrant up in this folder (where the README is located) and login into the machine:
+1. Run `vagrant up` in this folder (where the README is located) and login into the machine:
 ````
 $ vagrant up
 $ vagrant ssh
 ````
 
-2. Run `provision_system.sh`, which will install the needed packages, python 2.7 and other python tools
+2. Run `provision_system.sh`, which will install the needed packages, python 2.7, other python tools, grunt and bower
 ````
-$ cd
-$ sudo /vagrant/provision_system.sh 2>&1 | tee /vagrant/provision.log
-````
-
-3. Run `install_invenio.sh`, which will clone and install the invenio/pu branch
-````
-$ /vagrant/install_invenio.sh 2>&1 | tee /vagrant/install.log
+$ sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
 ````
 
-4. run the server in development mode:
+3. Run `install_b2share.sh`, which will clone and install the b2share-pu branch. The script should never stop: at the very end it will start the invenio server in development mode (interactive mode)
 ````
-$ PATH="/opt/python-2.7.6/bin:$PATH" inveniomanage runserver
+$ /vagrant/install_b2share.sh 2>&1 | tee install.log
+````
+
+You can now go on the host machine to `http://localhost:4000` and the bare invenio site (future b2share) should show up.
+
+4. If you want to restart the server and run it again:
+````
+$ source ~/.bashrc
+$ workon b2share
+# make sure celeryd is running, see end of 'install_b2share.sh'
+$ inveniomanage runserver
 ````

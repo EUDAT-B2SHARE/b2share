@@ -60,6 +60,8 @@ easy_install pip
 
 echo; echo "### Install virtualenv"
 pip install virtualenv virtualenvwrapper
+echo 'source /opt/python-2.7.6/bin/virtualenvwrapper.sh' >> /home/vagrant/.bashrc
+
 source /opt/python-2.7.6/bin/virtualenvwrapper.sh 
 
 echo; echo "### Start mysql"
