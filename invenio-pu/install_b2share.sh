@@ -71,5 +71,7 @@ inveniomanage config set CFG_DEVEL_TOOLS "['werkzeug-debugger', 'debug-toolbar']
 
 echo; echo "### Run celery"
 nohup celeryd -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV &
+sleep 5 # give a bit of time to celery
 
-inveniomanage runserver
+echo; echo "### Run invenio"
+inveniomanage runserver -d -r

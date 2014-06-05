@@ -18,7 +18,7 @@ chkconfig iptables off
 echo; echo "### System update"
 yum -y update
 
-echo; echo "### Install wget"
+echo; echo "### Install wget vim"
 yum install -y wget vim
 
 echo; echo "### Install epel"
@@ -27,7 +27,7 @@ rpm -Uvh epel-release-6-8.noarch.rpm
 rm epel-release-6-8.noarch.rpm
 
 echo; echo "### Install lots of packages"
-yum install -y git python-pip httpd mysql mysql-server gnuplot html2text netpbm \
+yum install -y screen git python-pip httpd mysql mysql-server gnuplot html2text netpbm \
            python-chardet python-simplejson mod_wsgi mod_ssl MySQL-python \
            libxml2-python libxslt-python poppler ghostscript-devel \
            giflib-devel sbcl pylint pychecker pyflakes epydoc mod_xsendfile \
