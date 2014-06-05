@@ -4,6 +4,7 @@
 # sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
 
 MYSQL_ROOT=invenio
+USER=vagrant
 PYPATH=/opt/python-2.7.6
 
 if [[ $EUID -ne 0 ]]; then
@@ -45,7 +46,7 @@ npm -g install grunt-cli bower
 
 echo; echo "### Install python27"
 `dirname $0`/_install_python2.7.sh
-echo "export PATH=$PYPATH/bin:$PATH" >> ~/.bashrc
+echo "export PATH=$PYPATH/bin:$PATH" >> /home/$USER/.bashrc
 export PATH="$PYPATH/bin:$PATH"
 
 echo; echo "### Install setuptools"
@@ -60,7 +61,7 @@ easy_install pip
 
 echo; echo "### Install virtualenv"
 pip install virtualenv virtualenvwrapper
-echo "source $PYPATH/bin/virtualenvwrapper.sh" >> ~/.bashrc
+echo "source $PYPATH/bin/virtualenvwrapper.sh" >> /home/$USER/.bashrc
 source $PYPATH/bin/virtualenvwrapper.sh 
 
 echo; echo "### Start mysql"
