@@ -4,7 +4,8 @@
 # cd
 # sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
 
-export MYSQL_ROOT=invenio
+MYSQL_ROOT=invenio
+PYPATH=/opt/python-2.7.6
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
@@ -27,7 +28,7 @@ rpm -Uvh epel-release-6-8.noarch.rpm
 rm epel-release-6-8.noarch.rpm
 
 echo; echo "### Install lots of packages"
-yum install -y screen git python-pip httpd mysql mysql-server gnuplot html2text netpbm \
+yum install -y screen strace git python-pip httpd mysql mysql-server gnuplot html2text netpbm \
            python-chardet python-simplejson mod_wsgi mod_ssl MySQL-python \
            libxml2-python libxslt-python poppler ghostscript-devel \
            giflib-devel sbcl pylint pychecker pyflakes epydoc mod_xsendfile \
@@ -44,9 +45,9 @@ echo; echo "### Install grunt & bower"
 npm -g install grunt-cli bower
 
 echo; echo "### Install python27"
-/vagrant/_install_python2.7.sh
-echo 'export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"' >> /home/vagrant/.bashrc
-export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"
+./_install_python2.7.sh
+echo 'export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"' >> ~/.bashrc
+export PATH="$PYPATH/bin:/usr/local/bin:$PATH"
 
 echo; echo "### Install setuptools"
 wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz
@@ -60,10 +61,8 @@ easy_install pip
 
 echo; echo "### Install virtualenv"
 pip install virtualenv virtualenvwrapper
-echo 'export WORKON_HOME=/vagrant/.virtualenvs' >> /home/vagrant/.bashrc
-echo 'source /opt/python-2.7.6/bin/virtualenvwrapper.sh' >> /home/vagrant/.bashrc
-export WORKON_HOME=/vagrant/.virtualenvs
-source /opt/python-2.7.6/bin/virtualenvwrapper.sh 
+echo 'source $PYPATH/bin/virtualenvwrapper.sh' >> ~/.bashrc
+source $PYPATH/bin/virtualenvwrapper.sh 
 
 echo; echo "### Start mysql"
 chkconfig mysqld on
@@ -74,7 +73,7 @@ echo; echo "### Start redis"
 chkconfig redis on
 service redis start
 
-if [[ `which pip` != "/opt/python-2.7.6/bin/pip" ]]; then
+if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
    echo "!!! pip not installed or wrong path"
    exit 1
 fi

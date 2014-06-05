@@ -3,19 +3,20 @@
 # # invoke with
 # /vagrant/install_b2share.sh 2>&1 | tee install.log
 
-export MYSQL_ROOT=invenio
-cd /vagrant
+MYSQL_ROOT=invenio
+USER=vagrant
+PYPATH=/opt/python-2.7.6
+
 
 if [[ $EUID -eq 0 ]]; then
    echo "This script should not be run as root"
    exit 1
 fi
 
-export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"
-export WORKON_HOME=/vagrant/.virtualenvs
-source /opt/python-2.7.6/bin/virtualenvwrapper.sh 
+export PATH="$PYPATH/bin:/usr/local/bin:$PATH"
+source $PYPATH/bin/virtualenvwrapper.sh 
 
-if [[ `which pip` != "/opt/python-2.7.6/bin/pip" ]]; then
+if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
    echo "!!! pip not installed or wrong path"
    exit 1
 fi
@@ -33,6 +34,7 @@ echo; echo "### Install pip dependencies"
 pip install Babel 
 pip install flower # flower is for monitoring celery tasks
 pip install -r requirements-img.txt
+pip install -r requirements-b2share.txt
 
 echo; echo "### Install invenio egg"
 pip install -e . --process-dependency-links --allow-all-external
@@ -64,10 +66,9 @@ inveniomanage database create
 
 echo; echo "### Config for development"
 inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail
-inveniomanage config set CFG_BIBSCHED_PROCESS_USER vagrant
+inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
 inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
-inveniomanage config set CFG_DEVEL_SITE 9
-inveniomanage config set CFG_DEVEL_TOOLS "['werkzeug-debugger', 'debug-toolbar']"
+inveniomanage config set CFG_SITE_SECURE_URL https://0.0.0.0:4443
 
 echo; echo "### Run celery"
 nohup celeryd -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV &
