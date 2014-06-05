@@ -13,7 +13,7 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
-export PATH="$PYPATH/bin:/usr/local/bin:$PATH"
+export PATH="$PYPATH/bin:$PATH"
 source $PYPATH/bin/virtualenvwrapper.sh 
 
 if [[ `which pip` != "$PYPATH/bin/pip" ]]; then

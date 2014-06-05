@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # # invoke with
-# cd
 # sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
 
 MYSQL_ROOT=invenio
@@ -45,9 +44,9 @@ echo; echo "### Install grunt & bower"
 npm -g install grunt-cli bower
 
 echo; echo "### Install python27"
-./_install_python2.7.sh
-echo 'export PATH="/opt/python-2.7.6/bin:/usr/local/bin:$PATH"' >> ~/.bashrc
-export PATH="$PYPATH/bin:/usr/local/bin:$PATH"
+`dirname $0`/_install_python2.7.sh
+echo "export PATH=$PYPATH/bin:$PATH" >> ~/.bashrc
+export PATH="$PYPATH/bin:$PATH"
 
 echo; echo "### Install setuptools"
 wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz
@@ -61,7 +60,7 @@ easy_install pip
 
 echo; echo "### Install virtualenv"
 pip install virtualenv virtualenvwrapper
-echo 'source $PYPATH/bin/virtualenvwrapper.sh' >> ~/.bashrc
+echo "source $PYPATH/bin/virtualenvwrapper.sh" >> ~/.bashrc
 source $PYPATH/bin/virtualenvwrapper.sh 
 
 echo; echo "### Start mysql"
