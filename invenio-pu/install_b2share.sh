@@ -75,3 +75,9 @@ sleep 5 # give a bit of time to celery
 
 echo; echo "### Run invenio"
 inveniomanage runserver -d -r
+
+# workon b2share
+# cdvirtualenv
+# cd src/b2share
+# mv invenio /vagrant
+# ln -s /vagrant/invenio .
