@@ -26,7 +26,7 @@ cdvirtualenv
 mkdir src; cd src
 
 echo; echo "### Clone b2share/b2share"
-git clone -b b2share-pu https://github.com/b2share/b2share.git
+git clone -b b2share-next https://github.com/b2share/b2share.git
 cd b2share
 
 echo; echo "### Install pip dependencies"
