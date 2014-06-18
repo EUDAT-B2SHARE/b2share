@@ -1,6 +1,6 @@
-To install the b2share-pu branch:
+To install the b2share-next branch:
 
-1. Run `vagrant up` in this folder (where the README is located) and login into the machine:
+1. Run `vagrant up` in this folder (where the README is located) and then login into the machine:
    ```
    $ vagrant up
    $ vagrant ssh
@@ -11,7 +11,7 @@ To install the b2share-pu branch:
    $ sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
    ```
 
-3. Run `install_b2share.sh`, which will clone and install the b2share-pu branch. The script should never stop: at the very end it will start the invenio server in development mode (interactive mode)
+3. Run `install_b2share.sh`, which will clone and install the b2share-next branch. The script should never stop: at the very end it will start the invenio server in development mode (interactive mode)
    ```
    $ /vagrant/install_b2share.sh 2>&1 | tee install.log
    ```
@@ -23,5 +23,5 @@ To install the b2share-pu branch:
    $ source ~/.bashrc
    $ workon b2share
    # make sure celeryd is running, see end of 'install_b2share.sh'
-   $ inveniomanage runserver
+   $ inveniomanage runserver -d -r
    ```
