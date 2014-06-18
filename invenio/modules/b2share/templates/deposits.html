@@ -1,0 +1,48 @@
+{#
+## This file is part of Invenio.
+## Copyright (C) 2012 CERN.
+## Portions Copyright (C) 2013 EPCC, The University of Edinburgh.
+##
+## Invenio is free software; you can redistribute it and/or
+## modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation; either version 2 of the
+## License, or (at your option) any later version.
+##
+## Invenio is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with Invenio; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+
+{% macro render_deposits(deposit_btn_visibility) %}
+<div class="span5">
+	<div class="deposits">
+        <form action="/deposit/" style="visibility:{{deposit_btn_visibility}}">
+            <input type="submit" class="deposit-btn" value="Deposit >>>"></input>
+        </form>
+		{% if latest_deposits %}
+    	<h3 class="deposits-title">Latest Deposits</h3>
+		<ol class="deposit-list">
+		{% for dep in latest_deposits %}
+		<li class="deposit">
+			<ul>
+				<li class="deposit-date">{{dep.date}}</li>
+				<li class="deposit-title">
+					<a href="{{ url_for('record.metadata', recid=dep.id) }}">{{dep.title|safe}}</a>
+				</li>
+				{% if dep.author %}
+				<li class="deposit-meta">by {{dep.author|safe}}</li>
+				{% endif %}
+				<li class="deposit-meta">{{dep.description|safe}}</li>
+			</ul>
+		</li>
+		{% endfor %}
+		</ol>
+		{% endif %}
+	</div>
+</div>
+{% endmacro %}

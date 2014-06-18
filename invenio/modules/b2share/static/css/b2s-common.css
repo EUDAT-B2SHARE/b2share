@@ -1,0 +1,256 @@
+html, body, input, button, select, textarea {
+    font-family: Calibri, Candara, Segoe, "Segoe UI", Arial, sans-serif !important;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+html, body {
+    background-color: rgb(212, 221, 226);
+}
+
+#wrap {
+    background-color: white;
+}
+
+
+
+a {
+    color: #224A7B;
+}
+
+a:hover {
+    color: #224A7B;
+}
+
+/* --- header css --- */
+
+.navbar .navbar-inner {
+    background: rgb(212, 221, 226) none;
+    border: none;
+    border-radius: 0;
+    -webkit-box-shadow: 0 0;
+    -moz-box-shadow:    0 0;
+    box-shadow:         0 0;
+}
+
+.navbar-border {
+    height: 3px;
+    background: none;
+}
+
+div.navbar {
+    margin-bottom:0;
+}
+
+.navbar > .navbar-inner > .container {
+	margin: 0 auto;
+    background: rgb(212, 221, 226) url('/img/B2SHARE-header.png') repeat-x left top;
+    width: 1024px;
+    height: 98px;
+}
+
+.brand-b2share img {
+    margin-top: 7px;
+}
+
+/* --- search row css --- */
+
+.searchbar {
+    background-color: rgb(34, 69, 138);
+    padding: 24px 0;
+}
+
+#search-box-main .well {
+    margin-bottom: 0;
+}
+
+/* --- common css --- */
+
+div.alert {
+  margin-bottom: 3px;
+}
+
+ul.breadcrumb {
+    background: none;
+    font-size: 12px;
+    margin: 0;
+    padding-left: 0;
+}
+
+legend [class*="icon-"] {
+    vertical-align: baseline;
+}
+
+.login_link a {
+    color: rgb(228, 108, 10);
+    font-size: 20px;
+    line-height: 30px;
+}
+
+.login p {
+    margin-left: 20px;
+    font-size: 16px;
+    line-height: 25px;
+}
+.login p a {
+    color: #224A7B;
+}
+
+.login .title img {
+    height: 200px;
+    margin: -76px 0;
+}
+
+.login-message {
+    font-size: 20px;
+    margin: 50px 0 0 20px;
+}
+
+.login input[type='text'],
+.login input[type='password'] {
+    padding-left: 20px;
+}
+
+.login input[type='text'],
+.login input[type='password'],
+.login span.after-input {
+    font-size: 20px;
+    line-height: 30px;
+    height: 30px;
+}
+
+.login input[type='checkbox'] {
+
+}
+
+.login label.checkbox {
+    font-size: 16px;
+    line-height: 20px;
+    height: 20px;
+}
+
+
+.login input[type='text'],
+.login input[type='password'],
+.login input[type='submit'] {
+    border: 1px solid rgb(228, 108, 10);
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    margin: 0;
+}
+
+.login input[type='text']:focus,
+.login input[type='password']:focus,
+.login input[type='submit']:focus {
+  border-color: #E35E2B;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+}
+
+.login span.after-input {
+    color: white;
+    background-color: rgb(228, 108, 10);
+    border: 1px solid rgb(228, 108, 10);
+}
+
+.login-row {
+    width: 300px;
+}
+
+.login-bottomrow {
+    width: 320px;
+    margin:10px 0 0 20px;
+    height: 50px;
+}
+
+.login input.login-btn {
+    color: rgb(228, 108, 10);
+    background-color: white;
+    border: none;
+    font-size: 22px;
+    padding: 10px 20px;
+}
+
+.deposits {
+    margin: 10px 20px 20px 10px;
+}
+
+.deposits .deposit-btn {
+    color: white;
+    background-color: rgb(227, 94, 43);
+    font-size: 20px;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 8px 0 8px 25px;
+    margin: 10px 0 0 0;
+}
+.deposits .deposit-btn:hover {
+    color: white;
+}
+
+.deposits .deposits-title {
+    font-size: 16px;
+    border-bottom: 2px solid rgb(175, 197, 211);
+    padding-left: 25px;
+    margin: 0;
+}
+
+.deposit-list {
+    margin: 0;
+    overflow: hidden;
+}
+
+.deposit {
+    list-style-type: none;
+    padding: 5px 0;
+    border-bottom: 2px solid rgb(175, 197, 211);
+}
+
+.deposit li {
+    list-style-type: none;
+    font-size: 12px;
+    line-height: 18px;
+}
+
+li.deposit-date {
+    font-weight: 600;
+}
+li.deposit-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+/* --- footer css --- */
+
+.footer {
+    margin-top: 4px;
+}
+
+.footer .poweredby {
+    background: rgb(212, 221, 226) url('/img/footer-gradient.png') no-repeat right top;
+    height: 60px;
+    padding-top: 4px;
+}
+
+.footer_links {
+    margin: 16px 0 0 0;
+}
+
+.footer_links span {
+    font-size: 18px;
+}
+
+.footer_links a {
+    padding-right: 20px;
+    color: #224A7B;
+}
+
+.footer_links a:hover {
+    color: #224A7B;
+}
