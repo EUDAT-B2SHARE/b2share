@@ -10,6 +10,7 @@
 *.sse2f
 *.x86f
 *~
+.DS_Store
 .coverage
 .noseids
 .project
