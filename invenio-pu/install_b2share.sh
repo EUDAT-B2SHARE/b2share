@@ -63,11 +63,15 @@ inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
 inveniomanage database create
 #inveniomanage demosite create
 
+echo; echo "### Config name and user"
+inveniomanage config set CFG_SITE_NAME B2SHARE
+inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2SHARE'}"
+inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
+
 echo; echo "### Config for development"
 inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail
-inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
 inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
-inveniomanage config set CFG_SITE_SECURE_URL https://0.0.0.0:4443
+inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
 
 echo; echo "### Run celery"
 nohup celeryd -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV &
