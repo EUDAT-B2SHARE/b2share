@@ -1,18 +1,11 @@
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
 {% extends "page.html" %}
-{% block header %}
-        {{ super() }}
-        {% css 'css/simplestore-style.css', '50-simplestore' %}
-        {# css 'css/font-awesome.min.css', '50-simplestore' #}
-        {% css 'css/bootstrap-switch.css', '50-simplestore' %}
-        {% css 'css/jquery-ui.css', '50-simplestore' %}
-        {% js 'js/plupload/plupload.full.js', '50-webdeposit' %}
-        <!-- Note there is also js at the bottom of the template. Sigh. -->
-        {% js 'js/simplestore-deposit.js', '50-simplestore' %}
-        {% js 'js/bootstrap-switch.js', '50-simplestore' %}
-        {% js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' %}
-        
+{% block css %}
+    {{ super() }}
+    {% css 'css/simplestore-style.css', '50-simplestore' %}
+    {% css 'css/bootstrap-switch.css', '50-simplestore' %}
+    {% css 'css/jquery-ui.css', '50-simplestore' %}
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -21,10 +14,19 @@
 
 {% block body%}
 
-<div class="container">
+<div style="display:none">
+    {# these divs are used to transfer flask dynamic values to javascript -#}
+    upload_url = {{ upload_url }}
+    <div id="url_for_upload" value='{{ upload_url }}'></div>
+    <div id="url_for_delete" value='{{ delete_url }}'></div>
+    <div id="url_for_get_file" value='{{ get_file_url }}'></div>
+</div>
 
+upload_url = {{ 1/0 }}
+
+<div class="container">
 <div class="row">
-    <div class="description span5">
+    <div class="description col-sm-5">
         <div style="margin: 100px 50px 0 50px">
             <p>You are logged in. Username: <strong><a href="/youraccount/display">{{ current_user.nickname }}</a></strong></p>
             <!--p>If you hover over the <strong>project-logos</strong> in step 02 we offer detailed description below.</p-->
@@ -40,7 +42,7 @@
         </div>
     </div>
 
-    <div class="newdeposit span7">
+    <div class="newdeposit col-sm-7">
 
         <div id="fileupload"> 
             <div id="filebox">
@@ -49,9 +51,9 @@
                     <p>Drag and drop files here</p>
                 </h2>
 
-                <div class="row-fluid">
-                    <div id="drag_and_drop_text" class="span9 well well-b2sblue" style="height: 70px"></div>
-                    <div class="span3">
+                <div class="row">
+                    <div id="drag_and_drop_text" class="col-sm-8 well well-b2sblue" style="height: 70px"></div>
+                    <div class="col-sm-4">
                         <a class="btn btn-b2sblue" id="pickfiles">Select files</a> 
                         <p> </p>
                         <a class="btn btn-b2sblue disabled" id="uploadfiles">Start upload</a>
@@ -90,8 +92,8 @@
 
             <form class="form form-horizontal meta-form" method="post" id="metaform_form">
 
-                <div id="projects" class="row-fluid">
-                    <div class="span12">
+                <div id="projects" class="row">
+                    <div class="col-sm-12">
                         {% for d in domains %}
                         <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
                             <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
@@ -143,32 +145,11 @@
 {% endblock body %}
 
 {% block javascript %}
-{{ super() }}
-
-<script type="text/javascript">
-
-$(document).ready(function() {
-
-    simplestore_init_plupload('#fileupload',
-                                                        '{{ url_for('.upload', sub_id=sub_id) }}',
-                                                        '{{ url_for('.delete', sub_id=sub_id) }}',
-                                                        '{{ url_for('.get_file', sub_id=sub_id) }}');
-
-    });
-
-</script>
-
-<script>
-    $('#metaform_form').submit(function() {
-        var select_list = this.getElementsByTagName('select');
-        for(var i=0; i<select_list.length; i++) {
-            var otherOption =  $(select_list[i]).val();
-            if(otherOption == "other"){
-                // replace select value with text field value
-                otherOption.val($("#"+select_list[i]+"_input").val());
-            }
-        }
-    });
-</script>
+    {{ super() }}
+    
+    {%- js 'plupload/plupload.full.min.js', '50-simplestore' -%}
+    {%- js 'js/simplestore-deposit.js', '50-simplestore' -%}
+    {%- js 'js/bootstrap-switch.min.js', '50-simplestore' -%}
+    {%- js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' -%}
 
 {% endblock %}

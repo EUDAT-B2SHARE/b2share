@@ -17,9 +17,9 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 {% macro render_breadcrumbs(visibile, show_login_button) %}
-{% if breadcrumbs|length >= 1 %}
 <div class="row" style="visibility: {{visible}}">
     <div class="col-md-6">
+        {% if breadcrumbs|length >= 1 %}
         <ul class="breadcrumb">
             {% for breadcrumb in breadcrumbs %}
             {% if loop.last %}
@@ -37,6 +37,7 @@
             {% endif %}
             {% endfor %}
         </ul>
+        {% endif %}
     </div>
     {% if show_login_button %}
     <div class="col-md-offset-3 col-md-2">
@@ -50,5 +51,4 @@
     </div>
     {% endif %}
 </div>
-{% endif %}
 {% endmacro %}

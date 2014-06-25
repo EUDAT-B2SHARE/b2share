@@ -26,12 +26,8 @@ from invenio.webinterface_handler_flask_utils import _
 from invenio.webuser_flask import current_user
 from invenio.settings import Settings, UserSettingsStorage
 
-# Models
-from invenio.sqlalchemyutils import db
-
 # Related models
 from invenio.websession_model import User
-from invenio.bibedit_model import Bibrec
 from invenio.search_engine import perform_request_search
 
 class DepositsSettings(Settings):
