@@ -19,11 +19,11 @@
 #}
 
 {% macro render_deposits(deposit_btn_visibility) %}
-<div class="span5">
+<div class="col-sm-5">
 	<div class="deposits">
-        <form action="/deposit/" style="visibility:{{deposit_btn_visibility}}">
-            <input type="submit" class="deposit-btn" value="Deposit >>>"></input>
-        </form>
+        <div style="visibility:{{deposit_btn_visibility}}">
+            <a class="deposit-btn btn" href="/deposit">Deposit >>></a>
+        </div>
 		{% if latest_deposits %}
     	<h3 class="deposits-title">Latest Deposits</h3>
 		<ol class="deposit-list">

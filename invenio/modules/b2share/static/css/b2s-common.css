@@ -10,8 +10,14 @@ html, body {
     background-color: rgb(212, 221, 226);
 }
 
+body {
+    padding-top: 0px !important;
+}
+
 #wrap {
     background-color: white;
+    padding-bottom: 54px;
+    margin-bottom: -54px; /* for dynamic footer */
 }
 
 
@@ -41,6 +47,7 @@ a:hover {
 }
 
 div.navbar {
+    border: none; /* undo bootstrap css */
     margin-bottom:0;
 }
 
@@ -62,11 +69,11 @@ div.navbar {
     padding: 24px 0;
 }
 
-#search-box-main .well {
-    margin-bottom: 0;
+#search-label {
+    font-size: 14px;
 }
 
-/* --- common css --- */
+/* --- common --- */
 
 div.alert {
   margin-bottom: 3px;
@@ -88,6 +95,55 @@ legend [class*="icon-"] {
     font-size: 20px;
     line-height: 30px;
 }
+
+/* --- home page --- */
+
+
+.websearch .title {
+    font-size: 30px;
+    display: inline-block;
+}
+
+.websearch p {
+    font-size: 20px;
+    line-height: 25px;
+    padding-top: 10px;
+}
+
+.websearch .hl {
+    color: rgb(31, 67, 141);
+}
+
+.websearch .title img {
+    height: 200px;
+    margin: -76px 0;
+}
+
+.collection ul.nav-list {
+    padding-left: 0;
+}
+
+.collection ul.nav-list ul.nav-list {
+    font-size: 90%;
+}
+
+.collection ul ul li a {
+    color: #333;
+    opacity: 0.8;
+}
+
+.collection .badge {
+    opacity:0.6;
+    font-size:80%;
+}
+
+.collection ul ul .badge {
+    color: #333;
+    background-color: #EEE;
+    border: 1px solid #999;
+}
+
+/* --- login --- */
 
 .login p {
     margin-left: 20px;
@@ -183,6 +239,7 @@ legend [class*="icon-"] {
     color: white;
     background-color: rgb(227, 94, 43);
     font-size: 20px;
+    font-weight: 500;
     border: none;
     width: 100%;
     text-align: left;
@@ -227,14 +284,20 @@ li.deposit-title {
 
 
 /* --- footer css --- */
+#footer {
+    height: 54px !important;
+}
 
 .footer {
     margin-top: 4px;
 }
 
-.footer .poweredby {
+.footer .row {
     background: rgb(212, 221, 226) url('/img/footer-gradient.png') no-repeat right top;
-    height: 60px;
+}
+
+.footer .poweredby {
+    height: 54px;
     padding-top: 4px;
 }
 
