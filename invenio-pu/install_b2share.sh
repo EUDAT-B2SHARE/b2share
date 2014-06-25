@@ -73,6 +73,9 @@ inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail
 inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
 inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
 
+echo; echo "### Setup iptables to redirect 4443 to 4000"
+sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 4443 -j REDIRECT --to-port 4000
+
 echo; echo "### Run celery"
 nohup celeryd -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV &
 sleep 5 # give a bit of time to celery
