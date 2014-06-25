@@ -28,7 +28,7 @@
     {%- do portalboxes.update({k:l}) -%}
 {%- endfor -%}
 
-{% block header %}
+{% block header1 %}
     {{ super() }}
     {#% css 'css/websearch_index.css' %#}
     {% css 'css/simplestore-style.css' %}
@@ -37,7 +37,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    {{ render_breadcrumbs('visible', True) }}
+    {{ render_breadcrumbs('hidden', True) }}
 {% endblock breadcrumbs %}
 
 {% block searchbar %}

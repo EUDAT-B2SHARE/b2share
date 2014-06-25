@@ -18,8 +18,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Latest deposits"""
-from invenio.search_engine import perform_request_search
-from invenio.search_engine_utils import get_fieldvalues
+from invenio.legacy.search_engine import perform_request_search
 from invenio.bibformat_engine import BibFormatObject
 from invenio.bibformat_elements import bfe_authors, bfe_title, bfe_abstract, bfe_creation_date
 	

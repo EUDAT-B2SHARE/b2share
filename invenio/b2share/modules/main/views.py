@@ -23,8 +23,6 @@ blueprint = Blueprint('b2share', __name__, url_prefix="",
                                            # if url_prefix is empty
                       static_folder='static')
 
-@blueprint.route('/index.html', methods=['GET', 'POST'])
-@blueprint.route('/index.py', methods=['GET', 'POST'])
 @blueprint.route('/', methods=['GET', 'POST'])
 @templated('index.html')
 # @register_menu(blueprint, 'main.b2share', _('B2Share'), order=1)

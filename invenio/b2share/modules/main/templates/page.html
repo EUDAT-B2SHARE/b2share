@@ -16,6 +16,7 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
 {# -- Avoid any written title #}
 {%- set title = None -%}
@@ -42,6 +43,7 @@
     <div class="container">
         <!-- page.html: start block breadcrumb.html -->
         {% block breadcrumbs %}
+            {{ render_breadcrumbs('visible', True) }}
         {% endblock breadcrumbs %}
         <!-- page.html: end block breadcrumb.html -->
         <!-- page.html: start block body -->

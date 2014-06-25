@@ -78,6 +78,23 @@ $(document).ready(function() {
 
     $('#deposit').click(deposit_click_handler);
 
+    // the url values are put into html by the flask template renderer
+    simplestore_init_plupload('#fileupload',
+        $("#url_for_upload").attr("value"),
+        $("#url_for_delete").attr("value"),
+        $("#url_for_get_file").attr("value"));
+
+    // dynamic selection
+    $('#metaform_form').submit(function() {
+        var select_list = this.getElementsByTagName('select');
+        for(var i=0; i<select_list.length; i++) {
+            var otherOption =  $(select_list[i]).val();
+            if(otherOption == "other"){
+                // replace select value with text field value
+                otherOption.val($("#"+select_list[i]+"_input").val());
+            }
+        }
+    });
 });
 
 //removed db_files for simplicity - add restarting later if reqd
