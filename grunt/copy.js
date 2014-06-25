@@ -33,6 +33,7 @@ module.exports = {
                ,'datatables-colvis/css/dataTables.colVis.css'
                ,'DataTables-Plugins/integration/bootstrap/3/dataTables.bootstrap.css'
                ,'prism/themes/prism.css'
+               ,'bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css'
                ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.css'],
         dest: '<%= globalConfig.installation_path %>/css/'
     },
@@ -81,6 +82,8 @@ module.exports = {
         cwd: '<%= globalConfig.bower_path %>/',
         src: ['bootstrap/dist/js/bootstrap.js'
              ,'bootstrap/dist/js/bootstrap.min.js'
+             ,'bootstrap-switch/dist/js/bootstrap-switch.js'
+             ,'bootstrap-switch/dist/js/bootstrap-switch.min.js'
              ,'jquery/dist/jquery.min.js'
              ,'jquery/dist/jquery.min.map'
              ,'jquery-tokeninput/src/jquery.tokeninput.js'
