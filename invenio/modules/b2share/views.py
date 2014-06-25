@@ -27,8 +27,8 @@ blueprint = Blueprint('b2share', __name__, url_prefix="",
 @blueprint.route('/index.py', methods=['GET', 'POST'])
 @blueprint.route('/', methods=['GET', 'POST'])
 @templated('index.html')
-@register_menu(blueprint, 'main.b2share', _('B2Share'), order=1)
-@register_breadcrumb(blueprint, '.', _('Home'))
+# @register_menu(blueprint, 'main.b2share', _('B2Share'), order=1)
+# @register_breadcrumb(blueprint, '.', _('Home'))
 def index():
     """ Renders homepage. """
 

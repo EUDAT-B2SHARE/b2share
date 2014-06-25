@@ -17,15 +17,11 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-{% from "_formhelpers.html" import render_filter_form with context %}
-{% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
+{% from "search/helpers.html" import search_form, search_form_javascript with context %}
 {% from "deposits.html" import render_deposits with context %}
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
 {% extends "page.html" %}
-{# set title = collection.name_ln if collection.id > 1 else None #}
-{% set title = None %}
-
 
 {%- set portalboxes = dict() -%}
 {%- for k,l in collection.portalboxes_ln|groupby('position') -%}
@@ -40,46 +36,38 @@
     {% js "js/bootstrap-select.js" %}
 {% endblock %}
 
-{% block title %}
-    {{ portalboxes.tp }}
-    {{ super() }}
-    {{ portalboxes.te }}
-{% endblock %}
-
 {% block breadcrumbs %}
     {{ render_breadcrumbs('visible', True) }}
 {% endblock breadcrumbs %}
 
 {% block searchbar %}
-{% if collection.is_restricted %}
-    {{ search_form(collection) }}
-{% else %}
-    {% cache 24*60*60, collection.name, g.ln %}
-        {{ search_form(collection) }}
-    {% endcache %}
-{% endif %}
+    <div class="searchbar">
+        <div class="container" style="background-color: rgb(34, 69, 138)">
+            {%- include "search/form/index.html" -%}
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}
     <div class="row websearch">
         {{ render_deposits('visible') }}
-        <div class="span7">
+        <div class="col-sm-7">
             <h2 class="title">               
                 <font color="red">{{ site_function }}</font>
-                <div class="pull-left" style="display:inline-block">
+                <div style="display:inline-block; float: left">
                     STORE AND SHARE<br/> YOUR RESEARCH DATA
                 </div>
-                <div class="pull-left" style="display:inline-block; width:110px"></div>
-                <img class="pull-right" src="/img/bee-shadow.png" alt="Bee"></img>
+                <div style="display:inline-block; width:110px; float: left"></div>
+                <img style="float: right" src="/img/bee-shadow.png" alt="Bee"></img>
             </h2>
 
-            <p class="bigtext">A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference.</em></p>
+            <p>A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference.</em></p>
 
-            <p class="bigtext"><strong>Deposit <span class="hl">and release</span> your data</strong> via the generic interface or select a community extension including specific metadata fields. <span class="hl">Releasing your data implies that your deposited data can be referred to, therefore any changes should be reflected in new data uploads.</span></p>
+            <p><strong>Deposit <span class="hl">and release</span> your data</strong> via the generic interface or select a community extension including specific metadata fields. <span class="hl">Releasing your data implies that your deposited data can be referred to, therefore any changes should be reflected in new data uploads.</span></p>
 
-            <p class="bigtext"><strong>Share your data</strong> with others in a safe and trusted environment.</p>
+            <p><strong>Share your data</strong> with others in a safe and trusted environment.</p>
 
-            <p class="bigtext"><strong>Do you belong to a scientific community?</strong> Brand and create your own community collection with specific metadata fields customized for your  field.</p>
+            <p><strong>Do you belong to a scientific community?</strong> Brand and create your own community collection with specific metadata fields customized for your  field.</p>
         </div>
     </div>
 {% endblock %}
@@ -90,5 +78,5 @@
     $('[rel=tooltip]').tooltip();
 })(jQuery);
 </script>
-{{ search_form_javascript(collection)}}
+{# {{ search_form_javascript(collection)}} #}
 {% endblock %}

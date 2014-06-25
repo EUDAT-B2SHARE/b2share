@@ -16,4 +16,38 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
+
+{# -- Avoid any written title #}
+{%- set title = None -%}
+
 {%- extends "page_base.html" -%}
+
+{%- block global_css -%}
+  {{ super() }}
+  {%- css url_for('static', filename='css/b2s-common.css'), '10-b2share' -%}
+{%- endblock global_css -%}
+
+{% block breadcrumb %}
+{# -- Disable invenio breadcrumbs, we'll render our own #}
+{% endblock breadcrumb %}
+
+{%- block page_body -%}
+    {% block searchbar %}
+    {% endblock %}
+    <div class="container">
+        <!-- page.html: start block messages -->
+        {{ flashed_messages() }}
+        <!-- page.html: end block messages -->
+    </div>
+    <div class="container">
+        <!-- page.html: start block breadcrumb.html -->
+        {% block breadcrumbs %}
+        {% endblock breadcrumbs %}
+        <!-- page.html: end block breadcrumb.html -->
+        <!-- page.html: start block body -->
+        {% block body %}
+        {{ body }}
+        {% endblock body %}
+        <!-- page.html: end block body -->
+    </div>
+{%- endblock page_body -%}
