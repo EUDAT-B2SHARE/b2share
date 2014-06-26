@@ -25,9 +25,7 @@ import invenio.b2share.modules.b2deposit.simplestore_upload_handler as uph
 import invenio.b2share.modules.b2deposit.simplestore_deposit_handler as dep
 
 blueprint = Blueprint('b2deposit', __name__, url_prefix="/b2deposit",
-                      template_folder='templates'
-                      # breadcrumbs=[(_('Deposit'), 'simplestore.deposit')]
-                      )
+                      template_folder='templates', static_folder='static')
 
 @blueprint.route('/', methods=['GET'])
 @login_required

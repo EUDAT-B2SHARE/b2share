@@ -32,8 +32,6 @@ from werkzeug.utils import secure_filename
 
 from flask import send_file, current_app
 
-from invenio.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
-
 
 def encode_filename(filename):
     import hashlib
@@ -70,6 +68,10 @@ def upload(request, sub_id):
         # the file name is guaranteed to be unique by the uploading js code
         name = request.form['name']
         current_chunk = request.files['file']
+
+
+        CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_SIMPLESTORE_UPLOAD_FOLDER")
 
         if not os.path.exists(CFG_SIMPLESTORE_UPLOAD_FOLDER):
             os.makedirs(CFG_SIMPLESTORE_UPLOAD_FOLDER)
@@ -128,6 +130,9 @@ def delete(request, sub_id):
 
     result = ""
 
+    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
+                            "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     filename = request.form['filename']
 
@@ -161,6 +166,9 @@ def get_file(request, sub_id):
     I don't really think we need this, but it's easier to implement than to
     remove the functionality.
     """
+    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
+                            "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+
     filename = request.args.get('filename')
     # make sure that request doesn't go outside the CFG_SIMPLESTORE_UPLOAD_FOLDER
     if not os.path.samefile(

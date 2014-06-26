@@ -20,20 +20,19 @@
 import uuid
 import time
 import os
+import os.path
 from tempfile import mkstemp
 
 from flask import render_template, redirect, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
-from invenio.base.config import CFG_TMPSHAREDDIR
 from invenio.utils.forms import InvenioBaseForm
 from invenio.ext.login import current_user
 
 from simplestore_model.HTML5ModelConverter import HTML5ModelConverter
-from simplestore_model.model import SubmissionMetadata
 from simplestore_model import metadata_classes
-import simplestore_upload_handler as uph
 import simplestore_marc_handler as mh
+
 
 
 # InvenioBaseForm is taking care of the csrf
@@ -41,11 +40,11 @@ class FormWithKey(InvenioBaseForm):
     pass
 
 
-def deposit(request, sub_id=None, form=None, metadata=None):
+def deposit(request):
     """ Renders the deposit start page """
     return render_template('simplestore-deposit.html',
                            url_prefix=url_for('.deposit'),
-                           domains=metadata_classes.values(),
+                           domains=metadata_classes().values(),
                            sub_id=uuid.uuid1().hex)
 
 
@@ -55,9 +54,10 @@ def getform(request, sub_id, domain):
     """
 
     domain = domain.lower()
-    if domain in metadata_classes:
-        meta = metadata_classes[domain]()
+    if domain in metadata_classes():
+        meta = metadata_classes()[domain]()
     else:
+        from simplestore_model.model import SubmissionMetadata
         meta = SubmissionMetadata()
 
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
@@ -84,14 +84,17 @@ def addmeta(request, sub_id):
     if sub_id is None:
         #just return to deposit
         return redirect(url_for('.deposit'))
-    updir = os.path.join(uph.CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+
+    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get("CFG_SIMPLESTORE_UPLOAD_FOLDER")
+    updir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 
     domain = request.form['domain'].lower()
-    if domain in metadata_classes:
-        meta = metadata_classes[domain]()
+    if domain in metadata_classes():
+        meta = metadata_classes()[domain]()
     else:
+        from simplestore_model.model import SubmissionMetadata
         meta = SubmissionMetadata()
     
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
@@ -125,10 +128,18 @@ def write_marc_to_temp_file(marc):
     """
     Writes out the MARCXML to a file.
     """
+    # CFG_TMPDIR is used by bibupload, must be there
+    tmpdir = current_app.config.get("CFG_TMPDIR")
+    if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
+    # CFG_TMPDIR is used to write the marc file, create if necessary
+    tmpsharedir = current_app.config.get("CFG_TMPSHAREDDIR")
+    if not os.path.exists(tmpsharedir):
+        os.makedirs(tmpsharedir)
     tmp_file_fd, tmp_file_name = mkstemp(
         suffix='.marcxml',
         prefix="webdeposit_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
-        dir=CFG_TMPSHAREDDIR)
+        dir=tmpsharedir)
 
     os.write(tmp_file_fd, marc.encode('utf8'))
     os.close(tmp_file_fd)

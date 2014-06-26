@@ -1,12 +1,23 @@
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
 {% extends "page.html" %}
-{% block css %}
+
+{%- block global_css %}
     {{ super() }}
     {% css 'css/simplestore-style.css', '50-simplestore' %}
     {% css 'css/bootstrap-switch.css', '50-simplestore' %}
+    {% css 'css/bootstrap-multiselect.css', '50-simplestore' %}
     {% css 'css/jquery-ui.css', '50-simplestore' %}
-{% endblock %}
+{%- endblock global_css -%}
+
+{%- block global_javascript -%}
+    {{ super() }}
+    {%- js 'plupload/plupload.full.min.js', '50-simplestore' -%}
+    {%- js 'js/bootstrap-switch.min.js', '50-simplestore' -%}
+    {%- js 'js/bootstrap-multiselect.js', '50-simplestore' -%}
+    {%- js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' -%}
+    {%- js 'js/simplestore-deposit.js', '50-simplestore' -%}
+{%- endblock global_javascript -%}
 
 {% block breadcrumbs %}
     {{ render_breadcrumbs('visible', False) }}
@@ -70,9 +81,11 @@
             {# these hidden inputs are used to transfer flask dynamic values to javascript -#}
             <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
             <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input> 
-            <input type="hidden" id="url_for_upload" name="url_for_upload" value='{{ upload_url }}'></div>
-            <input type="hidden" id="url_for_delete" name="url_for_delete" value='{{ delete_url }}'></div>
-            <input type="hidden" id="url_for_get_file" name="url_for_get_file" value='{{ get_file_url }}'></div>
+            <input type="hidden" id="url_for_upload" name="url_for_upload" value="{{ url_for('.upload', sub_id=sub_id) }}"></input>
+            <input type="hidden" id="url_for_delete" name="url_for_delete" value="{{ url_for('.delete', sub_id=sub_id) }}"></input>
+            <input type="hidden" id="url_for_get_file" name="url_for_get_file" value="{{ url_for('.get_file', sub_id=sub_id) }}"></input>
+            <input type="hidden" id="url_for_getform" name="url_for_getform" value="{{ url_for('.getform', sub_id=sub_id, domain='') }}"></input>
+            <input type="hidden" id="url_for_addmeta" name="url_for_addmeta" value="{{ url_for('.addmeta', sub_id=sub_id) }}"></input>
             <input type="hidden" id="filelist" name="filelist" value=""></input>
     
         </div>
@@ -138,12 +151,3 @@
 
 {% endblock body %}
 
-{% block javascript %}
-    {{ super() }}
-    
-    {%- js 'plupload/plupload.full.min.js', '50-simplestore' -%}
-    {%- js 'js/simplestore-deposit.js', '50-simplestore' -%}
-    {%- js 'js/bootstrap-switch.min.js', '50-simplestore' -%}
-    {%- js 'js/jquery-ui-1.10.3.custom.min.js', '50-simplestore' -%}
-
-{% endblock %}

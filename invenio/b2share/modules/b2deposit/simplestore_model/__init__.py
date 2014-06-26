@@ -16,29 +16,36 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import metadata
-from model import _create_metadata_class, SubmissionMetadata
 import pkgutil
 
-# might well be a better way to do this
-metadata_classes = {SubmissionMetadata.domain.lower(): SubmissionMetadata}
-try:
-    from invenio.config import CFG_SIMPLESTORE_DOMAINS
-except ImportError:
-    CFG_SIMPLESTORE_DOMAINS = None
+class MetadataClasses:
+    domains = None
+    def load(self):
+        # need to do this lazily due to config settings needing flask.current_app
+        from model import _create_metadata_class, SubmissionMetadata
+        from flask import current_app
+        configured_domains = None
 
-if CFG_SIMPLESTORE_DOMAINS:
-    configured_domains = [d.strip().lower() for d in
-                          CFG_SIMPLESTORE_DOMAINS.split(',')]
-else:
-    configured_domains = None
+        CFG_SIMPLESTORE_DOMAINS = current_app.config.get('CFG_SIMPLESTORE_DOMAINS')
+        if CFG_SIMPLESTORE_DOMAINS:
+            configured_domains = [d.strip().lower() for d in
+                                  CFG_SIMPLESTORE_DOMAINS.split(',')]
 
+        domains = {SubmissionMetadata.domain.lower(): SubmissionMetadata}
+        pck = metadata
+        prefix = pck.__name__ + '.'
+        for imp, modname, ispkg in pkgutil.iter_modules(pck.__path__, prefix):
+            # not sure what fromlist does...
+            mod = __import__(modname, fromlist="dummy")
+            if hasattr(mod, 'domain'):
+                domain_name = mod.domain.lower()
+                if not configured_domains or domain_name in configured_domains:
+                    domains[domain_name] = _create_metadata_class(mod)
+        MetadataClasses.domains = domains
 
-pck = metadata
-prefix = pck.__name__ + '.'
-for imp, modname, ispkg in pkgutil.iter_modules(pck.__path__, prefix):
-    # not sure what fromlist does...
-    mod = __import__(modname, fromlist="dummy")
-    if hasattr(mod, 'domain'):
-        domain_name = mod.domain.lower()
-        if not configured_domains or domain_name in configured_domains:
-            metadata_classes[domain_name] = _create_metadata_class(mod)
+    def __call__(self):
+        if not MetadataClasses.domains:
+            self.load()
+        return MetadataClasses.domains
+
+metadata_classes = MetadataClasses()
