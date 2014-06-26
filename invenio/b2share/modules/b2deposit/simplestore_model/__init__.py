@@ -15,7 +15,7 @@
 ## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from  invenio.simplestore_model import metadata
+import metadata
 from model import _create_metadata_class, SubmissionMetadata
 import pkgutil
 
@@ -23,9 +23,13 @@ import pkgutil
 metadata_classes = {SubmissionMetadata.domain.lower(): SubmissionMetadata}
 try:
     from invenio.config import CFG_SIMPLESTORE_DOMAINS
+except ImportError:
+    CFG_SIMPLESTORE_DOMAINS = None
+
+if CFG_SIMPLESTORE_DOMAINS:
     configured_domains = [d.strip().lower() for d in
                           CFG_SIMPLESTORE_DOMAINS.split(',')]
-except ImportError:
+else:
     configured_domains = None
 
 

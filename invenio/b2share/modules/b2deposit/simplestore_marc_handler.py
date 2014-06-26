@@ -20,15 +20,20 @@ from datetime import datetime
 import hashlib
 import pickle
 
-from invenio.dbquery import run_sql
-from invenio.bibrecord import record_add_field, record_xml_output
-from invenio.config import (CFG_SIMPLESTORE_UPLOAD_FOLDER, CFG_SITE_NAME,
-                            CFG_SITE_SECURE_URL)
-from invenio.simplestore_epic import createHandle
 from flask import current_app
+from invenio.legacy.dbquery import run_sql
+from invenio.legacy.bibrecord import record_add_field, record_xml_output
+from invenio.base.config import (CFG_SITE_NAME, CFG_SITE_SECURE_URL)
 from werkzeug.exceptions import HTTPException
-from invenio.simplestore_model import metadata_classes
-from invenio.htmlutils import remove_html_markup
+from simplestore_epic import createHandle
+from simplestore_model import metadata_classes
+from invenio.utils.html import remove_html_markup
+
+try:
+    from invenio.base.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
+except: 
+    CFG_SIMPLESTORE_UPLOAD_FOLDER = "/tmp/"
+
 
 def add_basic_fields(rec, form, email):
     """

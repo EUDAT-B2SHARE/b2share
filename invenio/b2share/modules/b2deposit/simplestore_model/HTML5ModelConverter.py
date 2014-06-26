@@ -25,8 +25,6 @@ from wtforms import BooleanField, StringField
 from wtforms import SelectField
 from wtforms import HiddenField as _HiddenField
 from wtforms.widgets import Input, Select, HTMLString, html_params
-from wtforms.compat import text_type
-from flask import current_app
 
 class SwitchInput(Input):
     input_type = "checkbox"

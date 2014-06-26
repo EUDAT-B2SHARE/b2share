@@ -22,22 +22,18 @@ import time
 import os
 from tempfile import mkstemp
 
-from flask.ext.wtf import Form
 from flask import render_template, redirect, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
-from wtforms.ext.csrf.session import SessionSecureForm
 
-from invenio.config import CFG_SITE_SECRET_KEY
-from invenio.bibtask import task_low_level_submission
-from invenio.config import CFG_TMPSHAREDDIR
-from invenio.wtforms_utils import InvenioBaseForm
-from invenio.webuser_flask import current_user
+from invenio.base.config import CFG_TMPSHAREDDIR
+from invenio.utils.forms import InvenioBaseForm
+from invenio.ext.login import current_user
 
-from invenio.simplestore_model.HTML5ModelConverter import HTML5ModelConverter
-import invenio.simplestore_upload_handler as uph
-from invenio.simplestore_model.model import SubmissionMetadata
-from invenio.simplestore_model import metadata_classes
-import invenio.simplestore_marc_handler as mh
+from simplestore_model.HTML5ModelConverter import HTML5ModelConverter
+from simplestore_model.model import SubmissionMetadata
+from simplestore_model import metadata_classes
+import simplestore_upload_handler as uph
+import simplestore_marc_handler as mh
 
 
 # InvenioBaseForm is taking care of the csrf
@@ -110,6 +106,7 @@ def addmeta(request, sub_id):
             request.form, sub_id, current_user['email'])
         tmp_file = write_marc_to_temp_file(marc)
         # all usual tasks have priority 0; we want the bibuploads to run first
+        from invenio.legacy.bibsched.bibtask import task_low_level_submission
         task_low_level_submission('bibupload', 'webdeposit', '--priority', '1', '-r', tmp_file)
         return jsonify(valid=True,
                        newurl=url_for("record.metadata", recid=recid),

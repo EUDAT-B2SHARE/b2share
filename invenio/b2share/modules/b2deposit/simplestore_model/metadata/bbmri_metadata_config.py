@@ -1,5 +1,4 @@
-from invenio.sqlalchemyutils import db
-import json
+from invenio.ext.sqlalchemy import db
 
 domain = 'BBMRI'
 # display_name = 'Biobanking and BioMolecular Resources Research Infrastructure'

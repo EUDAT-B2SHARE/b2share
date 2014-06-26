@@ -1,4 +1,4 @@
-from invenio.sqlalchemyutils import db
+from invenio.ext.sqlalchemy import db
 
 domain = "Ecology"
 table_name = 'ecology'
