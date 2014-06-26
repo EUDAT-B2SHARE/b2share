@@ -34,6 +34,7 @@ module.exports = {
                ,'DataTables-Plugins/integration/bootstrap/3/dataTables.bootstrap.css'
                ,'prism/themes/prism.css'
                ,'bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css'
+               ,'bootstrap-multiselect/css/bootstrap-multiselect.css'
                ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.css'],
         dest: '<%= globalConfig.installation_path %>/css/'
     },
@@ -84,6 +85,7 @@ module.exports = {
              ,'bootstrap/dist/js/bootstrap.min.js'
              ,'bootstrap-switch/dist/js/bootstrap-switch.js'
              ,'bootstrap-switch/dist/js/bootstrap-switch.min.js'
+             ,'bootstrap-multiselect/js/bootstrap-multiselect.js'
              ,'jquery/dist/jquery.min.js'
              ,'jquery/dist/jquery.min.map'
              ,'jquery-tokeninput/src/jquery.tokeninput.js'
