@@ -16,8 +16,8 @@
  * along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
-$(document).ready(function() {
 
+$(document).ready(function() {
     $('#domains input:radio').addClass('visuallyhidden');
 
     /**
@@ -28,7 +28,8 @@ $(document).ready(function() {
     function deposit_click_handler(e) {
         e.preventDefault();
         $('#deposit').addClass('disabled').attr('disabled', 'disabled');
-        $.post("addmeta/" + $('#sub_id').val(), $("#metaform_form").serialize(),
+        var addmeta_url = $("#url_for_addmeta").attr("value");
+        $.post(addmeta_url, $("#metaform_form").serialize(),
             function(data) {
                 if (data.valid) {
                     // redirect to new url location, with history
@@ -56,7 +57,11 @@ $(document).ready(function() {
             $(this).addClass('highlight-icon');
             $(this).find('img').removeClass('desaturate');
 
-            $.get("/deposit/getform/" + $('#sub_id').val() + "/" + inputEl.val(),
+            var getform_url = $("#url_for_getform").attr("value");
+            if (getform_url[getform_url.length - 1] !== '/') {
+                getform_url += getform_url + "/";
+            }
+            $.get(getform_url + inputEl.val(),
                     function(data) {
                         $('#meta-fields').html(data);
                         $('#submitbutton').removeClass('hide');
@@ -256,7 +261,7 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
                                 '<td id="' + file.id + '_link">' + file.name + '</td>' +
                                 '<td>' + plupload.formatSize(file.size) + '</td>' +
                                 '<td width="30%"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></td>' +
-                                '<td><a id="' + file.id + '_rm" class="rmlink"><i class="icon-trash"></i></a></td>' +
+                                '<td><a id="' + file.id + '_rm" class="rmlink"><i class="glyphicon glyphicon-trash"></i></a></td>' +
                                 '</tr>');
                         $('#filelist #' + file.id).show('fast');
                         $('#' + file.id + '_rm').on("click", function(event){

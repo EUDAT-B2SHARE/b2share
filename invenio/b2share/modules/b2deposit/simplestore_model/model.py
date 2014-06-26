@@ -16,9 +16,9 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from invenio.ext.sqlalchemy import db
+from flask import current_app
 from datetime import date
 import babel
-from invenio.config import CFG_SITE_URL
 
 
 class FieldSet:
@@ -38,7 +38,7 @@ class SubmissionMetadata(db.Model):
     icon = 'icon-question-sign'
     kind = 'domain'
     field_args = {}
-    publisher_default = CFG_SITE_URL
+    publisher_default = current_app.config.get('CFG_SITE_URL')
     publication_date_now = date.today()
     language_default = 'en'
 

@@ -5,13 +5,6 @@ from flask import current_app
 
 from urlparse import urljoin, urlparse
 
-from invenio.config import CFG_EPIC_USERNAME
-from invenio.config import CFG_HANDLE_SYSTEM_BASEURL
-from invenio.config import CFG_EPIC_PASSWORD
-from invenio.config import CFG_EPIC_BASEURL
-from invenio.config import CFG_EPIC_PREFIX
-
-
 def createHandle(location,checksum=None,suffix=''):
     """ Create a new handle for a file.
 
@@ -25,17 +18,17 @@ def createHandle(location,checksum=None,suffix=''):
     httplib2.debuglevel = 4
 
     # Ensure all these are strings
-    username = str(CFG_EPIC_USERNAME)
-    password = str(CFG_EPIC_PASSWORD)
-    baseurl = str(CFG_EPIC_BASEURL)
-    prefix = str(CFG_EPIC_PREFIX)
+    username = str(current_app.config.get('CFG_EPIC_USERNAME'))
+    password = str(current_app.config.get('CFG_EPIC_PASSWORD'))
+    baseurl = str(current_app.config.get('CFG_EPIC_BASEURL'))
+    prefix = str(current_app.config.get('CFG_EPIC_PREFIX'))
 
     # If the proxy and proxy ports are set in the invenio-local.conf file
     # read them and set the proxy. If not, do nothing.
     try:
-        from invenio.config import CFG_SITE_PROXY as proxy
-        from invenio.config import CFG_SITE_PROXYPORT as proxyPort
-    except ImportError:
+        proxy = current_app.config.get('CFG_SITE_PROXY')
+        proxyPort = current_app.config.get('CFG_SITE_PROXYPORT')
+    except:
         proxy = None
         proxyPort = 80
 
@@ -90,5 +83,6 @@ def createHandle(location,checksum=None,suffix=''):
     hdl = response['location']
     pid = '/'.join(urlparse(hdl).path.split('/')[3:])
 
+    CFG_HANDLE_SYSTEM_BASEURL = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
     return urljoin(CFG_HANDLE_SYSTEM_BASEURL, pid)
 

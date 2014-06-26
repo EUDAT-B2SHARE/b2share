@@ -23,17 +23,10 @@ import pickle
 from flask import current_app
 from invenio.legacy.dbquery import run_sql
 from invenio.legacy.bibrecord import record_add_field, record_xml_output
-from invenio.base.config import (CFG_SITE_NAME, CFG_SITE_SECURE_URL)
 from werkzeug.exceptions import HTTPException
 from simplestore_epic import createHandle
 from simplestore_model import metadata_classes
 from invenio.utils.html import remove_html_markup
-
-try:
-    from invenio.base.config import CFG_SIMPLESTORE_UPLOAD_FOLDER
-except: 
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = "/tmp/"
-
 
 def add_basic_fields(rec, form, email):
     """
@@ -103,6 +96,8 @@ def add_basic_fields(rec, form, email):
 
         if 'version' in form and form['version']:
             record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
+
+        CFG_SITE_NAME = current_app.config.get("CFG_SITE_NAME")
         record_add_field(rec, '264',
                          subfields=[('b', CFG_SITE_NAME),
                                     ('c', str(datetime.utcnow()) + " UTC")])
@@ -122,6 +117,7 @@ def add_file_info(rec, form, email, sub_id, recid):
     """
     Adds the path to the file and access rights to ther record.
     """
+    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get("CFG_SIMPLESTORE_UPLOAD_FOLDER")
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = os.listdir(upload_dir)
     if 'open_access' in form:
@@ -155,6 +151,8 @@ def add_file_info(rec, form, email, sub_id, recid):
                          ('r', fft_status)])
 
         #seems to be impossible to add file size data, thought this would work
+
+        CFG_SITE_SECURE_URL = current_app.config.get("CFG_SITE_SECURE_URL")
         url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
         record_add_field(rec, '856', ind1='4',
                          subfields=[('u', url),
@@ -169,8 +167,8 @@ def add_domain_fields(rec, form):
     """
 
     domain = form['domain'].lower()
-    if domain in metadata_classes:
-        meta = metadata_classes[domain]()
+    if domain in metadata_classes():
+        meta = metadata_classes()[domain]()
     else:
         #no domain stuff
         return
@@ -189,6 +187,7 @@ def add_domain_fields(rec, form):
 def add_epic_pid(rec, recid, checksum):
     """ Adds EPIC PID to the record. If registration fails, can
     also fail the request if CFG_FAIL_ON_MISSING_PID is set to True"""
+    CFG_SITE_SECURE_URL = current_app.config.get("CFG_SITE_SECURE_URL")
     location = CFG_SITE_SECURE_URL + '/record/' + str(recid)
     try:
         pid = createHandle(location, checksum)
@@ -235,6 +234,7 @@ def create_checksum(rec, sub_id, buffersize=64 * 1024):
     Returns: checksum as a hex string
     """
     sha = hashlib.sha256()
+    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get("CFG_SIMPLESTORE_UPLOAD_FOLDER")
     upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
     files = sorted(os.listdir(upload_dir))
     for f in files:
