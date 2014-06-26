@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from invenio.sqlalchemyutils import db
+from invenio.ext.sqlalchemy import db
 from datetime import date
 
 

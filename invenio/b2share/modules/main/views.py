@@ -17,7 +17,7 @@ from invenio.modules.search.models import Collection
 from invenio.modules.search.forms import EasySearchForm
 
 
-blueprint = Blueprint('b2share', __name__, url_prefix="",
+blueprint = Blueprint('main', __name__, url_prefix="",
                       template_folder='templates',
                       static_url_path='',  # static url path has to be empty
                                            # if url_prefix is empty

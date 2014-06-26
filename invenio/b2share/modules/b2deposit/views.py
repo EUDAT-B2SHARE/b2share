@@ -21,12 +21,12 @@
 from flask import request, Blueprint
 from flask.ext.login import login_required
 from invenio.base.i18n import _
-import invenio.b2share.modules.deposit.simplestore_upload_handler as uph
-import invenio.b2share.modules.deposit.simplestore_deposit_handler as dep
+import invenio.b2share.modules.b2deposit.simplestore_upload_handler as uph
+import invenio.b2share.modules.b2deposit.simplestore_deposit_handler as dep
 
-blueprint = Blueprint('deposit', __name__, url_prefix="/deposit",
-                      template_folder='templates',
-                      breadcrumbs=[(_('Deposit'), 'simplestore.deposit')]
+blueprint = Blueprint('b2deposit', __name__, url_prefix="/b2deposit",
+                      template_folder='templates'
+                      # breadcrumbs=[(_('Deposit'), 'simplestore.deposit')]
                       )
 
 @blueprint.route('/', methods=['GET'])

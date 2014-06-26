@@ -15,7 +15,7 @@
 ## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from invenio.sqlalchemyutils import db
+from invenio.ext.sqlalchemy import db
 from datetime import date
 import babel
 from invenio.config import CFG_SITE_URL

@@ -14,16 +14,6 @@
 
 {% block body%}
 
-<div style="display:none">
-    {# these divs are used to transfer flask dynamic values to javascript -#}
-    upload_url = {{ upload_url }}
-    <div id="url_for_upload" value='{{ upload_url }}'></div>
-    <div id="url_for_delete" value='{{ delete_url }}'></div>
-    <div id="url_for_get_file" value='{{ get_file_url }}'></div>
-</div>
-
-upload_url = {{ 1/0 }}
-
 <div class="container">
 <div class="row">
     <div class="description col-sm-5">
@@ -77,8 +67,12 @@ upload_url = {{ 1/0 }}
 
             <div id="upload-errors"></div>
     
+            {# these hidden inputs are used to transfer flask dynamic values to javascript -#}
             <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
             <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input> 
+            <input type="hidden" id="url_for_upload" name="url_for_upload" value='{{ upload_url }}'></div>
+            <input type="hidden" id="url_for_delete" name="url_for_delete" value='{{ delete_url }}'></div>
+            <input type="hidden" id="url_for_get_file" name="url_for_get_file" value='{{ get_file_url }}'></div>
             <input type="hidden" id="filelist" name="filelist" value=""></input>
     
         </div>
