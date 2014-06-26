@@ -19,7 +19,7 @@
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
 {# -- Avoid any written title #}
-{%- set title = None -%}
+{#%- set title = None -%#}
 
 {%- extends "page_base.html" -%}
 
@@ -43,7 +43,6 @@
     <div class="container">
         <!-- page.html: start block breadcrumb.html -->
         {% block breadcrumbs %}
-            {{ render_breadcrumbs('visible', True) }}
         {% endblock breadcrumbs %}
         <!-- page.html: end block breadcrumb.html -->
         <!-- page.html: start block body -->
