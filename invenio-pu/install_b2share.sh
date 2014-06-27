@@ -104,7 +104,7 @@ echo; echo "### Setup database collections"
 mysql -u root -D invenio --password=$MYSQL_ROOT < collections.sql
 
 echo; echo "### Config for development"
-inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail
+inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.dummy.Mail
 inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
 inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
 
