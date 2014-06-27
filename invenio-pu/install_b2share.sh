@@ -52,6 +52,7 @@ echo; echo "### Run inveniomanage collect"
 inveniomanage collect
 
 echo; echo "### Run inveniomanage config secret"
+# CFG_SITE_SECRET_KEY deprecated in favor of SECRET_KEY, create it here
 inveniomanage config create secret-key
 
 echo; echo "### Run inveniomanage config lessc and cleancss"
@@ -71,9 +72,6 @@ inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
 #inveniomanage config set CFG_DATABASE_USER root
 #inveniomanage config set CFG_DATABASE_PASS invenio
 
-# CFG_SITE_SECRET_KEY deprecated in favor of SECRET_KEY, created above ???
-#inveniomanage config set CFG_SITE_SECRET_KEY supersecretkeythatnoonecanguess
-
 echo; echo "### Config emails"
 inveniomanage config set CFG_SITE_ADMIN_EMAIL admin@localhost
 inveniomanage config set CFG_SITE_SUPPORT_EMAIL admin@localhost
@@ -84,7 +82,7 @@ echo; echo "### Config upload folder"
 inveniomanage config set CFG_SIMPLESTORE_UPLOAD_FOLDER /tmp/ss/
 
 echo; echo "### Config upload folder"
-inveniomanage config set CFG_SIMPLESTORE_DOMAINS [""]
+inveniomanage config set CFG_SIMPLESTORE_DOMAINS "generic, drihm, linguistics, euon, bbmri"
 
 echo; echo "### Config epic credentials"
 inveniomanage config set CFG_EPIC_USERNAME ""
