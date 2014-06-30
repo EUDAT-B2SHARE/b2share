@@ -96,6 +96,11 @@ legend [class*="icon-"] {
     line-height: 30px;
 }
 
+.login_link ul li a {
+    font-size: 14px;
+    line-height: 20px;
+}
+
 /* --- home page --- */
 
 
