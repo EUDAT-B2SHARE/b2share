@@ -30,6 +30,7 @@ If you need to stop the server you can restart b2share with the `inveniomanage r
 ### Other
 
 - If you want to restart the server and run it again:
+
    ```
    $ source ~/.bashrc
    $ workon b2share
