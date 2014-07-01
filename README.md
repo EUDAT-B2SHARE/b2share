@@ -1,21 +1,43 @@
 invenio-scripts
 ===============
 
-Utility scripts for Invenio:
+Utility scripts for B2SHARE - Invenio:
 
-- **Vagrantfile** is a vagrant configuration for a suitable development machine. You need to provision it manually with the **install-everything-from-scratch-rh.sh** script, after it boots
+- **Vagrantfile** is a vagrant configuration for a suitable development machine.
 
-- **install-b2share-from-scratch-rh.sh** will use the other scripts to install and configure a fresh machine
+- **start-invenio-daemons.sh** will start the invenio daemons necessary for data ingestion and other background jobs
 
-- **install-invenio-deps-rh.sh** will install the OS required packages for invenio
 
-- **wipe-and-install-invenio-rh.sh** will WIPE (if existing) and reinstall the invenio base system. This will not install b2share, for that you need to run deployment scripts in the b2share repository.
+### Installation
 
-- **start-daemons-rh.sh** will start the invenio daemons necessary for data ingestion and other background jobs
+On your host machine, create a clean folder and copy into it the whole content of `invenio-scripts/install`. Change working directory to this folder (`cd...`)
 
-- **invenio-local.conf** contains additional invenio configurations, specific for b2share. It is not a script but a configuration file.
+1. ON THE HOST: Run `vagrant up` in the folder created above and then login into the newly created machine:
+   ```
+   $ vagrant up
+   $ vagrant ssh
+   ```
 
-The scripts above are designed to run on a RedHat/CentOS machine. The remaining scripts target ubuntu/debian machines.
+2. ON THE GUEST VM: Run `provision_system.sh`, which will install the needed packages, python 2.7, other python tools, grunt and bower
+   ```
+   $ sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
+   ```
+
+3. ON THE GUEST VM: Run `install_b2share.sh`, which will clone and install the b2share-next branch. The script should never stop: at the very end it will start the invenio server in development mode (interactive mode)
+   ```
+   $ /vagrant/install_b2share.sh 2>&1 | tee install.log
+   ```
+
+   You can now go on the host machine to `http://localhost:4000` and the  b2share/invenio site should show up.
+
+4. if needed: ON THE GUEST VM: If you want to restart the server and run it again:
+   ```
+   $ source ~/.bashrc
+   $ workon b2share
+   # make sure celeryd is running, see end of 'install_b2share.sh'
+   $ inveniomanage runserver -d -r
+   ```
+
 
     
 ### License
