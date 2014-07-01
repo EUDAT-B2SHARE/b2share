@@ -3,11 +3,6 @@ invenio-scripts
 
 Utility scripts for B2SHARE - Invenio:
 
-- **Vagrantfile** is a vagrant configuration for a suitable development machine.
-
-- **start-invenio-daemons.sh** will start the invenio daemons necessary for data ingestion and other background jobs
-
-
 ### Installation
 
 On your host machine, create a clean folder and copy into it the whole content of `invenio-scripts/install`. Change working directory to this folder (`cd...`)
@@ -30,7 +25,11 @@ On your host machine, create a clean folder and copy into it the whole content o
 
    You can now go on the host machine to `http://localhost:4000` and the  b2share/invenio site should show up.
 
-4. if needed: ON THE GUEST VM: If you want to restart the server and run it again:
+If you need to stop the server you can restart b2share with the `inveniomanage runserver -d -r` command, as described below.
+
+### Other
+
+- If you want to restart the server and run it again:
    ```
    $ source ~/.bashrc
    $ workon b2share
@@ -38,6 +37,19 @@ On your host machine, create a clean folder and copy into it the whole content o
    $ inveniomanage runserver -d -r
    ```
 
+### Files
+
+- **Vagrantfile** is a vagrant configuration for a suitable development machine. Should be used with vagrant to create and start a virtual machine.
+
+- **provision_system.sh** will install the necessary packages, python version and other dependencies needed by invenio. Must be called by the user.
+
+- **install_b2share.sh** will install b2share (the b2share-next branch) and create the necessary configuration settings. Must be called by the user.
+
+- **start-invenio-daemons.sh** will start the invenio daemons necessary for data ingestion and other background jobs. It is automatically run by the `install_b2share.sh` script.
+
+- **collections.sql** is a sql script that creates the needed b2share collections. It is automatically called by the `install_b2share.sh` script.
+
+- **\_install_python2.7.sh** will install python 2.7. It is automatically called by the `provision_system` script.
 
     
 ### License
