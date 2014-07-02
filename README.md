@@ -23,7 +23,17 @@ On your host machine, create a clean folder and copy into it the whole content o
    $ /vagrant/install_b2share.sh 2>&1 | tee install.log
    ```
 
-4. ON THE GUEST VM: Run `start_b2share.sh`, which will start the b2share server in development mode. You can now go on the host machine to `http://localhost:4000` and the  b2share/invenio site should show up.
+4. ON THE GUEST VM: Run `start_b2share.sh`, which will start the b2share server in development mode. You can now go on the host machine to `http://localhost:4000` and the b2share/invenio site should show up.
+   ```
+   $ /vagrant/start_b2share.sh
+   ```
+
+After the installation the b2share sources are located in `$WORKON_HOME/b2share/src/b2share`. Use the following commands to go to that folder:
+   ```
+   $ workon b2share
+   $ cdvirtualenv
+   $ cd src/b2share
+   ```
 
 ### Files
 
