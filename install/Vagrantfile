@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest:4000, host: 4000
   config.vm.network :forwarded_port, guest:4443, host: 4443
 
-# config.vm.synced_folder "invenio/", "/home/vagrant/.virtualenvs/b2share/src/b2share/invenio" 
+#  config.vm.synced_folder "../invenio/", "/home/vagrant/.virtualenvs/b2share/src/b2share/invenio" 
 
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "2048"]

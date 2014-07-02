@@ -18,24 +18,12 @@ On your host machine, create a clean folder and copy into it the whole content o
    $ sudo /vagrant/provision_system.sh 2>&1 | tee provision.log
    ```
 
-3. ON THE GUEST VM: Run `install_b2share.sh`, which will clone and install the b2share-next branch. The script should never stop: at the very end it will start the invenio server in development mode (interactive mode)
+3. ON THE GUEST VM: Run `install_b2share.sh`, which will clone and install the b2share-next branch. The script will also make the necessary configurations for b2share (for development!).
    ```
    $ /vagrant/install_b2share.sh 2>&1 | tee install.log
    ```
 
-   You can now go on the host machine to `http://localhost:4000` and the  b2share/invenio site should show up.
-
-If you need to stop the server you can restart b2share with the `inveniomanage runserver -d -r` command, as described below.
-
-### Other
-
-- If you want to restart the server and run it again:
-   ```
-   $ source ~/.bashrc
-   $ workon b2share
-   # make sure celeryd is running, see end of 'install_b2share.sh'
-   $ inveniomanage runserver -d -r
-   ```
+4. ON THE GUEST VM: Run `start_b2share.sh`, which will start the b2share server in development mode. You can now go on the host machine to `http://localhost:4000` and the  b2share/invenio site should show up.
 
 ### Files
 
@@ -45,9 +33,9 @@ If you need to stop the server you can restart b2share with the `inveniomanage r
 
 - **install_b2share.sh** will install b2share (the b2share-next branch) and create the necessary configuration settings. Must be called by the user.
 
-- **start-invenio-daemons.sh** will start the invenio daemons necessary for data ingestion and other background jobs. It is automatically run by the `install_b2share.sh` script.
+- **start_b2share.sh** will start b2share with the required prerequisites. Must be called by the user.
 
-- **collections.sql** is a sql script that creates the needed b2share collections. It is automatically called by the `install_b2share.sh` script.
+- **\_collections.sql** is a sql script that creates the needed b2share collections. It is automatically called by the `install_b2share.sh` script.
 
 - **\_install_python2.7.sh** will install python 2.7. It is automatically called by the `provision_system` script.
 

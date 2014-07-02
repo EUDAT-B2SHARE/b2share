@@ -101,22 +101,24 @@ inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
 inveniomanage database create
 
 echo; echo "### Setup database collections"
-mysql -u root -D invenio --password=$MYSQL_ROOT < collections.sql
+mysql -u root -D invenio --password=$MYSQL_ROOT < _collections.sql
+
+echo; echo "### Setup bibtasks: bibindex"
+bibindex -f50000 -s5m -uadmin
+
+echo; echo "### Setup bibtasks: bibreformat"
+bibreformat -oHB -s5m -uadmin
+
+echo; echo "### Setup bibtasks: webcoll"
+webcoll -v0 -s5m -uadmin
+
+echo; echo "### Setup bibtasks: bibrank"
+bibrank -f50000 -s5m -uadmin
+
+echo; echo "### Setup bibtasks: bibsort"
+bibsort -s5m -uadmin
 
 echo; echo "### Config for development"
 inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.dummy.Mail
 inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
 inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
-
-echo; echo "### Setup iptables to redirect 4443 to 4000"
-sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 4443 -j REDIRECT --to-port 4000
-
-echo; echo "### Starting invenio daemons"
-`dirname $0`/start-invenio-daemons.sh
-
-echo; echo "### Run celery"
-nohup celeryd -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV &
-sleep 5 # give a bit of time to celery
-
-echo; echo "### Run invenio"
-inveniomanage runserver -d -r
