@@ -101,6 +101,7 @@ def addmeta(request, sub_id):
                           exclude=['submission', 'submission_type'],
                           field_args=meta.field_args,
                           converter=HTML5ModelConverter())
+
     meta_form = MetaForm(request.form, meta)
     
     current_app.logger.error("about to validate")
