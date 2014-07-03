@@ -19,8 +19,8 @@
 
 """Latest deposits"""
 from invenio.legacy.search_engine import perform_request_search
-from invenio.bibformat_engine import BibFormatObject
-from invenio.bibformat_elements import bfe_authors, bfe_title, bfe_abstract, bfe_creation_date
+from invenio.modules.formatter import engine as bibformat_engine
+from invenio.modules.formatter.format_elements import bfe_authors, bfe_title, bfe_abstract, bfe_creation_date
 	
 
 # class MockRequest:
@@ -41,7 +41,7 @@ def get_latest_deposits():
 
 	ids = perform_request_search(of="id", rg=NUMBER_OF_RECORDS, sf="005", so="a")
 	limit_ids = ids[:NUMBER_OF_RECORDS]
-	bfo_list = [BibFormatObject(id) for id in limit_ids]
+	bfo_list = [bibformat_engine.BibFormatObject(id) for id in limit_ids]
 	recs = [{
 		"id": bfo.recID,
 		"date": bfe_creation_date.format_element(bfo),

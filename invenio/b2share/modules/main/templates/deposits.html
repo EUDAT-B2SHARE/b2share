@@ -26,10 +26,10 @@
         </div>
 		{% if latest_deposits %}
     	<h3 class="deposits-title">Latest Deposits</h3>
-		<ol class="deposit-list">
+		<ol class="deposit-list list-unstyled">
 		{% for dep in latest_deposits %}
 		<li class="deposit">
-			<ul>
+			<ul class="list-unstyled">
 				<li class="deposit-date">{{dep.date}}</li>
 				<li class="deposit-title">
 					<a href="{{ url_for('record.metadata', recid=dep.id) }}">{{dep.title|safe}}</a>

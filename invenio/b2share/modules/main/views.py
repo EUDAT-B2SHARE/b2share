@@ -39,6 +39,11 @@ def index():
 
     collection = Collection.query.get_or_404(1)
 
+    from invenio.b2share.modules.b2deposit.latest_deposits import get_latest_deposits
+    latest_deposits = get_latest_deposits()
+
+    func = current_app.config.get("CFG_SITE_FUNCTION") or ""
+
     @register_template_context_processor
     def index_context():
         return dict(
@@ -46,4 +51,4 @@ def index():
             easy_search_form=EasySearchForm(csrf_enabled=False),
             format_record=format_record,
         )
-    return dict(collection=collection)
+    return dict(collection=collection,latest_deposits=latest_deposits, pagetitle="EUDAT B2SHARE",site_function=func)

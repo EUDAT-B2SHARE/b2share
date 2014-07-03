@@ -249,7 +249,7 @@ legend [class*="icon-"] {
     width: 100%;
     text-align: left;
     padding: 8px 0 8px 25px;
-    margin: 10px 0 0 0;
+    margin: 10px 0 20px 0;
 }
 .deposits .deposit-btn:hover {
     color: white;
@@ -259,7 +259,12 @@ legend [class*="icon-"] {
     font-size: 16px;
     border-bottom: 2px solid rgb(175, 197, 211);
     padding-left: 25px;
+    line-height: 40px;
     margin: 0;
+}
+
+.deposits .deposit {
+    padding-left: 25px;
 }
 
 .deposit-list {
