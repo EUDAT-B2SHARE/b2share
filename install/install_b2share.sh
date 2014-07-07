@@ -89,7 +89,6 @@ inveniomanage config set CFG_EPIC_USERNAME ""
 inveniomanage config set CFG_EPIC_PASSWORD ""
 inveniomanage config set CFG_EPIC_BASEURL ""
 inveniomanage config set CFG_EPIC_PREFIX ""
-inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY ""
 
 echo; echo "### Config captcha keys"
 inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY ""
@@ -101,7 +100,7 @@ inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
 inveniomanage database create
 
 echo; echo "### Setup database collections"
-mysql -u root -D invenio --password=$MYSQL_ROOT < _collections.sql
+mysql -u root -D invenio --password=$MYSQL_ROOT < `dirname $0`/_collections.sql
 
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
