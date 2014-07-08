@@ -6,6 +6,7 @@
 MYSQL_ROOT=invenio
 USER=vagrant
 PYPATH=/opt/python-2.7.6
+BRANCH=b2share-next
 
 if [[ $EUID -eq 0 ]]; then
    echo "This script should not be run as root"
@@ -26,7 +27,7 @@ cdvirtualenv
 mkdir src; cd src
 
 echo; echo "### Clone b2share/b2share"
-git clone -b b2share-next https://github.com/b2share/b2share.git
+git clone -b $BRANCH https://github.com/b2share/b2share.git
 cd b2share
 
 echo; echo "### Install pip dependencies"
@@ -81,7 +82,7 @@ inveniomanage config set CFG_WEBCOMMENT_ALERT_ENGINE_EMAIL admin@localhost
 echo; echo "### Config upload folder"
 inveniomanage config set CFG_SIMPLESTORE_UPLOAD_FOLDER /tmp/ss/
 
-echo; echo "### Config upload folder"
+echo; echo "### Config simplestore domains"
 inveniomanage config set CFG_SIMPLESTORE_DOMAINS "generic, drihm, linguistics, euon, bbmri"
 
 echo; echo "### Config epic credentials"
