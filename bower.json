@@ -34,6 +34,7 @@
     "DataTables-Plugins": "https://github.com/DataTables/Plugins.git",
     "plupload": "*",
     "bootstrap-switch": "https://github.com/nostalgiaz/bootstrap-switch.git#3.0",
+    "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect.git",
     "font-awesome": "*",
     "bootstrap-tagsinput": "*",
     "jquery.caret": "https://github.com/acdvorak/jquery.caret.git",
