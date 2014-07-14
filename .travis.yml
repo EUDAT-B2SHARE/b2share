@@ -63,6 +63,9 @@ install:
   - "inveniomanage config set REQUIREJS_BIN false"
   - "inveniomanage config set UGLIFYJS_BIN false"
   - "inveniomanage config set ASSETS_AUTO_BUILD False"
+  - "travis_retry grunt"
+  - "inveniomanage config get PACKAGES"
+  - "inveniomanage collect"
 
 before_script:
   - "inveniomanage apache create-config"

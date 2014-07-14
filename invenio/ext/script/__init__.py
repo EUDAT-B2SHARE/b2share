@@ -190,3 +190,5 @@ def register_manager(manager):
     from invenio.ext.assets import command, bower
     manager.add_command("assets", command)
     manager.add_command("bower", bower)
+    # Added for B2SHARE for debugging purposes
+    print("Available blueprints:", [x.name for x in manager.app.blueprints.values()])
