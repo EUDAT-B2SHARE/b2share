@@ -57,6 +57,7 @@ install:
   - "inveniomanage config set LESS_BIN `find $PWD/node_modules -iname \"lessc\" | grep \"\\.bin\" | head -1`"
   - "bower install"
   - "travis_retry grunt"
+  - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
 
 before_script:
