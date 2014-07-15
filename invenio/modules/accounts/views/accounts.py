@@ -79,6 +79,9 @@ def login(nickname=None, password=None, login_method=None, action='',
                             if referer else {'login_method': 'Local'}),
          request.values]), csrf_enabled=False)
 
+    from invenio.b2share.modules.b2deposit.latest_deposits import get_latest_deposits
+    latest_deposits = get_latest_deposits()
+
     if request.method == "POST":
         try:
             if login_method == 'Local' and form.validate_on_submit() and \
@@ -96,7 +99,7 @@ def login(nickname=None, password=None, login_method=None, action='',
             )
             flash(_("Problem with login."), "error")
 
-    return render_template('accounts/login.html', form=form)
+    return render_template('accounts/login.html', form=form, latest_deposits=latest_deposits)
 
 
 @blueprint.route('/register', methods=['GET', 'POST'])

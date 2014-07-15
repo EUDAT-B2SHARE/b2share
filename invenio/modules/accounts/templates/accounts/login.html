@@ -16,4 +16,77 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
+{% from "deposits.html" import render_deposits with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
 {%- extends "accounts/login_base.html" -%}
+
+{% block breadcrumbs %}
+    {#{ render_breadcrumbs('hidden', True) }#}
+{% endblock breadcrumbs %}
+
+{%- block body -%}
+    <div class="row login">
+        {{ render_deposits('hidden') }}
+        <div class="col-md-7">
+            <h2 class="title">               
+                <div style="position:absolute; left:400px"><font color="red">{{ site_function }}</font></div>
+                <div style="display:inline-block; float: left"></div>
+                <div style="display:inline-block; width:110px; float: left"></div>
+                <img style="float: right" src="/img/bee-shadow.png" alt="Bee"></img>
+            </h2>
+
+            <h3 class="login-message">Please sign in</h3>
+
+            <form action="{{ url_for('webaccount.login') }}" method="POST">
+                {{ form.referer }}
+                {{ form.login_method }}
+                <div class="input-append">
+                    <input class="login-row" type="text" name="nickname" placeholder="Username or email"></input>
+                    <span class="add-on after-input">></span><br/>
+                </div>
+                <div class="input-append">
+                    <input class="login-row" type="password" name="password" placeholder="Password"></input>
+                    <span class="add-on after-input">></span><br/>
+                </div>
+                <div class="login-bottomrow">
+                    <label class="checkbox">
+                        <input type="checkbox" name="remember"> Remember me
+                    </label>
+                    <input type="submit" class="login-btn pull-right" value="Login >>>"></input>
+                </div>
+            </form>
+            <br/>
+            <p><a href="{{ url_for('youraccount.register') }}"><strong>Don't have an account? Sign up here.</strong></a></p>
+            <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
+        </div>
+    </div>
+<!--
+ 	<legend>{{ _('Please Sign In') }}</legend>
+	<form class="form-signin" action="{{ url_for('webaccount.login') }}" method="POST">
+	{{ form.referer }}
+	{{ form.login_method }}
+	<div class="form-group{% if form.nickname.errors%} has-error{% endif %}">
+	{{ form.nickname(placeholder=_('Username or email'), class_="form-control", type="text") }}
+	{%- if form.nickname.errors %}{% for error in form.nickname.errors %}
+	    <span class="help-block">{{ error }}</span>
+	{%- endfor %}{% endif %}
+	</div>
+	<div class="form-group{% if form.password.errors%} has-error{% endif %}">
+	{{ form.password(placeholder=_('Password'), class_="form-control", type="password") }}
+	{%- if form.password.errors %}{% for error in form.password.errors %}
+	    <span class="help-block">{{ error }}</span>
+	{%- endfor %}{% endif %}
+
+	  <label class="checkbox">
+	    {{ form.remember(class_="checkbox") }} {{ form.remember.label.text }}
+	  </label>
+	  {{ form.submit(class_="btn btn-info btn-block") }}
+	</form>
+	<p class="text-center"><small>
+	  <a href="{{ url_for('webaccount.lost') }}">
+	    {{ _('Lost your password?') }}
+	  </a>
+	</small></p>
+-->
+{%- endblock -%}
