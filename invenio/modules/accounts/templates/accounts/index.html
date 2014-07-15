@@ -17,3 +17,49 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 {%- extends "accounts/index_base.html" -%}
+
+{% block body %}
+<div class="container">
+  <div class="row">
+   <div class="col-md-12">
+    <ul id="widgets" class="list-unstyled">
+      <li id="leftColumn" class="widgetColumn col-md-4">
+        <ul id="widgetsLeft" class="connectedWidgets list-unstyled">
+          {%- for p in plugins[0] -%}
+            {{display_widget(p)}}
+          {%- endfor -%}
+        </ul>
+      </li>
+      <li id="middleColumn" class="widgetColumn col-md-4">
+        <ul id="widgetsMiddle" class="connectedWidgets list-unstyled">
+          {%- for p in plugins[1] -%}
+            {{display_widget(p)}}
+          {%- endfor -%}
+        </ul>
+      </li>
+      <li id="rightColumn" class="widgetColumn col-md-4">
+        <ul id="widgetsRight" class="connectedWidgets list-unstyled">
+          {%- for p in plugins[2] -%}
+            {{display_widget(p)}}
+          {%- endfor -%}
+        </ul>
+      </li>
+    </ul>
+    </div>
+  </div>
+  <a href="{{ url_for('youraccount.logout') }}">Logout</a>
+
+  <hr/>
+
+  <div class="row">
+    <div class="col-md-12" id="closed-list-bar">
+      <h5>{{ _('Closed Widgets') }} <small>{{ _('can be re-opened by clicking on the following button(s)') }}</small></h5>
+      <ul id="closed-list">
+      {%- for p in closed_plugins -%}
+        <li id="{{ p.name}}" class="btn display-widget">{{p.title}} <i class="glyphicon glyphicon-plus"></i></li>
+      {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
