@@ -25,6 +25,14 @@
     {#{ render_breadcrumbs('hidden', True) }#}
 {% endblock breadcrumbs %}
 
+{% block searchbar %}
+    <div class="searchbar">
+        <div class="container" style="background-color: rgb(34, 69, 138)">
+            {%- include "search/form/index.html" -%}
+        </div>
+    </div>
+{% endblock %}
+
 {%- block body -%}
     <div class="row login">
         {{ render_deposits('hidden') }}
@@ -41,14 +49,17 @@
             <form action="{{ url_for('webaccount.login') }}" method="POST">
                 {{ form.referer }}
                 {{ form.login_method }}
-                <div class="input-append">
+
+                <div class="input-group">
                     <input class="login-row" type="text" name="nickname" placeholder="Username or email"></input>
-                    <span class="add-on after-input">></span><br/>
+                    <span class="input-group-addon after-input">></span>
                 </div>
-                <div class="input-append">
+                <br>
+                <div class="input-group">
                     <input class="login-row" type="password" name="password" placeholder="Password"></input>
-                    <span class="add-on after-input">></span><br/>
+                    <span class="input-group-addon after-input">></span>
                 </div>
+                <br>
                 <div class="login-bottomrow">
                     <label class="checkbox">
                         <input type="checkbox" name="remember"> Remember me
@@ -57,7 +68,8 @@
                 </div>
             </form>
             <br/>
-            <p><a href="{{ url_for('youraccount.register') }}"><strong>Don't have an account? Sign up here.</strong></a></p>
+            <p><a href="{{ url_for('youraccount.register') }}"><strong style="white-space: nowrap;">
+                Don't have an account? Sign up here.</strong></a></p>
             <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
         </div>
     </div>
