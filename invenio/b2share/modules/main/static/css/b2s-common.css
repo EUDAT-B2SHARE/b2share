@@ -150,6 +150,10 @@ legend [class*="icon-"] {
 
 /* --- login --- */
 
+.login h3 {
+    line-height: 40px;
+}
+
 .login p {
     margin-left: 20px;
     font-size: 16px;
@@ -160,14 +164,19 @@ legend [class*="icon-"] {
 }
 
 .login .title img {
-    height: 200px;
-    margin: -76px 0;
+    height: 150px;
+    margin: -24px 0 -60px;
 }
 
 .login-message {
     font-size: 20px;
     margin: 50px 0 0 20px;
 }
+
+.login div.input-append {
+    margin-bottom: 5px;
+}
+
 
 .login input[type='text'],
 .login input[type='password'] {
@@ -179,19 +188,10 @@ legend [class*="icon-"] {
 .login span.after-input {
     font-size: 20px;
     line-height: 30px;
-    height: 30px;
+    height: 40px;
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
-
-.login input[type='checkbox'] {
-
-}
-
-.login label.checkbox {
-    font-size: 16px;
-    line-height: 20px;
-    height: 20px;
-}
-
 
 .login input[type='text'],
 .login input[type='password'],
@@ -213,10 +213,22 @@ legend [class*="icon-"] {
 }
 
 .login span.after-input {
+    width: 38px;
     color: white;
     background-color: rgb(228, 108, 10);
     border: 1px solid rgb(228, 108, 10);
 }
+
+.login input[type='checkbox'] {
+}
+
+.login label.checkbox {
+    font-size: 16px;
+    font-weight: 500px;
+    line-height: 20px;
+    height: 20px;
+}
+
 
 .login-row {
     width: 300px;

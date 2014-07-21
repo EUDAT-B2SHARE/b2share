@@ -42,6 +42,7 @@ from invenio.ext.sslify import ssl_required
 from invenio.modules.access.mailcookie import mail_cookie_check_mail_activation
 from invenio.utils.datastructures import LazyDict, flatten_multidict
 from invenio.utils.url import rewrite_to_secure_url
+from invenio.modules.search.models import Collection
 
 
 #CFG_HAS_HTTPS_SUPPORT = CFG_SITE_SECURE_URL.startswith("https://")
@@ -79,6 +80,8 @@ def login(nickname=None, password=None, login_method=None, action='',
                             if referer else {'login_method': 'Local'}),
          request.values]), csrf_enabled=False)
 
+    collection = Collection.query.get_or_404(1)
+
     from invenio.b2share.modules.b2deposit.latest_deposits import get_latest_deposits
     latest_deposits = get_latest_deposits()
 
@@ -99,7 +102,7 @@ def login(nickname=None, password=None, login_method=None, action='',
             )
             flash(_("Problem with login."), "error")
 
-    return render_template('accounts/login.html', form=form, latest_deposits=latest_deposits)
+    return render_template('accounts/login.html', collection=collection, form=form, latest_deposits=latest_deposits)
 
 
 @blueprint.route('/register', methods=['GET', 'POST'])
