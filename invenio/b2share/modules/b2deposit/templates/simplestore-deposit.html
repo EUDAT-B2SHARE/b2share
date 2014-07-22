@@ -102,7 +102,7 @@
                 <div id="projects" class="row">
                     <div class="col-sm-12">
                         {% for d in domains %}
-                        <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}">
+                        <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}" title="{{ d.domaindesc if d.domaindesc != None }}" rel='tooltip'>
                             <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
                                 {% if d.domain == default_domain %}checked="checked"{% endif %}/>
                             <label for="{{ d.domain }}">

@@ -100,6 +100,15 @@ $(document).ready(function() {
             }
         }
     });
+
+    // tooltips for domains
+    $("[rel='tooltip']").tooltip({
+        position: {
+            my: "right center",
+            at: 'left-20 center',
+            of: '#projects'
+        }
+    });
 });
 
 //removed db_files for simplicity - add restarting later if reqd
