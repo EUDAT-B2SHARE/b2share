@@ -9,3 +9,4 @@ fields = [{'name':'ecosystem',
            'col_type':db.String(256),
            'mandatory':False,
            'extra':False}]
+domaindesc = 'Ecology data.'

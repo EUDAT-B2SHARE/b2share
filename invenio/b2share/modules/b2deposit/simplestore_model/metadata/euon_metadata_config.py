@@ -2,13 +2,12 @@
 from invenio.ext.sqlalchemy import db
 from datetime import date
 
-
 domain = "euon"
 display_name = "Ontology"
 table_name = 'EUON'
 image = 'domain-euon.png'
 kind = 'project'
-
+domaindesc = 'Ontological data.'
 
 # note that fields will need more stuff like validators later
 fields = [
