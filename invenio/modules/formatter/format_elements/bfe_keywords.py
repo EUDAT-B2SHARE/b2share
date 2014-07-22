@@ -39,12 +39,12 @@ def format_element(bfo, keyword_prefix, keyword_suffix, separator=' ; ',
 
     if len(keywords) > 0:
         if link == 'yes':
-            keywords = ['<a href="' + CFG_BASE_URL +
-                        '/search?f=keyword&amp;p=' +
-                        quote('"' + keyword + '"') +
-                        '&amp;ln=' + str(bfo.lang) +
-                        '">' + cgi.escape(keyword) + '</a>'
-                        for keyword in keywords]
+            keywords = [
+                '<a href="/search?f=keyword&amp;p=' +
+                quote('"' + keyword + '"') +
+                '&amp;ln=' + str(bfo.lang) +
+                '">' + cgi.escape(keyword) + '</a>'
+                for keyword in keywords]
         else:
             keywords = [cgi.escape(keyword)
                         for keyword in keywords]

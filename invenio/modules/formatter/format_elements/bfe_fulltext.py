@@ -85,7 +85,7 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         style = 'class="'+style+'"'
 
     if show_icons.lower() == 'yes':
-        file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
+        file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
     else:
         file_icon = ''
 
@@ -94,11 +94,11 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
 
     additional_str = ''
     if additionals:
-        additional_str = ' <small>(<a '+style+' href="'+CFG_BASE_URL+'/%s/' % CFG_SITE_RECORD + str(bfo.recID)+'/files/">%s</a>)</small>' % _("additional files")
+        additional_str = ' <small>(<a '+style+' href="/%s/' % CFG_SITE_RECORD + str(bfo.recID)+'/files/">%s</a>)</small>' % _("additional files")
 
     versions_str = ''
     #if old_versions:
-        #versions_str = ' <small>(<a '+style+' href="'+CFG_BASE_URL+'/CFG_SITE_RECORD/'+str(bfo.recID)+'/files/">%s</a>)</small>' % _("older versions")
+        #versions_str = ' <small>(<a '+style+' href="/CFG_SITE_RECORD/'+str(bfo.recID)+'/files/">%s</a>)</small>' % _("older versions")
 
     if main_urls:
         out = []
@@ -177,8 +177,8 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         out += separator.join(url_list)
 
     if others_urls:
-        external_link = len(others_urls) == 1 and _('external link') or _('external links')
-        out += '<strong>%s</strong>: ' % external_link.capitalize()
+        # external_link = len(others_urls) == 1 and _('external link') or _('external links')
+        # out += '<strong>%s</strong>: ' % external_link.capitalize()
         url_list = []
         for url, descr in others_urls:
             url_list.append('<a '+style+' href="'+escape(url)+'">'+ \
@@ -289,7 +289,7 @@ def get_files(bfo, distinguish_main_and_additional_files=True, include_subformat
                 ## This format should be hidden.
                 continue
 
-            descr = _("Fulltext")
+            descr = filename
             if 'y' in complete_url:
                 descr = complete_url['y']
                 if descr == 'Fulltext':

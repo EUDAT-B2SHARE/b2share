@@ -108,9 +108,8 @@ def format_element(bfo, limit, separator=' ; ',
 
             if print_links.lower() == "yes":
                 if link_author_pages == "yes":
-                    author['a'] = '<a rel="author" href="' + CFG_BASE_URL + \
-                                  '/author/profile/' + quote(author['a']) + \
-                                  '?recid=' + bibrec_id + \
+                    author['a'] = '<a rel="author" href="/author/' + quote(author['a']) + \
+                                  '?recid=' +  bibrec_id + \
                                   '&ln=' + bfo.lang + \
                                   '">' + escape(author['a']) + '</a>'
                 elif link_mobile_pages == 'yes':
@@ -124,10 +123,9 @@ def format_element(bfo, limit, separator=' ; ',
                             author['a0'])
                         if len(recIDs):
                             auth_coll_param = '&amp;c=' + \
-                                CFG_BIBAUTHORITY_AUTHORITY_COLLECTION_NAME
-                    author['a'] = '<a href="' + CFG_BASE_URL + \
-                                  '/search?f=author&amp;p=' + quote(author['a']) + \
-                        auth_coll_param + \
+                                              CFG_BIBAUTHORITY_AUTHORITY_COLLECTION_NAME
+                    author['a'] = '<a href="/search?f=author&amp;p=' + quote(author['a']) + \
+                                   auth_coll_param + \
                                   '&amp;ln=' + bfo.lang + \
                                   '">' + escape(author['a']) + '</a>'
 
@@ -142,7 +140,7 @@ def format_element(bfo, limit, separator=' ; ',
                     if isinstance(author['u'], (list, tuple)):
                         author['u'] = author['u'][0]
                     if len(recIDs):
-                        author['u'] = '<a href="' + CFG_BASE_URL + '/' + CFG_SITE_RECORD + '/' + \
+                        author['u'] = '<a href="/record/' + \
                                       str(recIDs[0]) + \
                                       '?ln=' + bfo.lang + \
                                       '">' + author['u'] + '</a>'

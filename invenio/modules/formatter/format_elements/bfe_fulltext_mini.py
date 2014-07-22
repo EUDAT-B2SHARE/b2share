@@ -71,10 +71,10 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         if len(main_urls.keys()) == 1 and len(main_urls.items()[0][1]) == 1 and \
                (not CFG_CERN_SITE or len(cern_urls) == 0) and len(others_urls) == 0 and \
                show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="%s/img/file-icon-text-34x48.gif" alt="%s" /><br />' % (CFG_BASE_URL, _("Download fulltext"))
+            file_icon = '<img style="border:none" src="/img/file-icon-text-34x48.gif" alt="%s" /><br />' % _("Download fulltext")
 
         elif show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
+            file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
         else:
             file_icon = ''
 
@@ -112,10 +112,10 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         if len(main_urls.keys()) == 0 and \
                len(cern_urls) == 1 and len(others_urls) == 0 and \
                show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="%s/img/file-icon-text-34x48.gif" alt="%s" /><br />' % (CFG_BASE_URL, _("Download fulltext"))
+            file_icon = '<img style="border:none" src="/img/file-icon-text-34x48.gif" alt="%s" /><br />' % _("Download fulltext")
 
         elif show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
+            file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
         else:
             file_icon = ''
 
@@ -132,9 +132,9 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         if len(main_urls.keys()) == 0 and \
                (not CFG_CERN_SITE or len(cern_urls) == 0) and len(others_urls) == 1 and \
                show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="%s/img/file-icon-text-34x48.gif" alt="%s" /><br />' % (CFG_BASE_URL, _("Download fulltext"))
+            file_icon = '<img style="border:none" src="/img/file-icon-text-34x48.gif" alt="%s" /><br />' % _("Download fulltext")
         elif show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
+            file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
         else:
             file_icon = ''
         external_link = len(others_urls) == 1 and _('external link') or _('external links')
