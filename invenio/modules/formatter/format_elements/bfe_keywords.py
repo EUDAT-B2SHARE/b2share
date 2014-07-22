@@ -45,7 +45,7 @@ def format_element(bfo, keyword_prefix, keyword_suffix, separator=' ; ',
     if len(keywords) > 0:
         if link == 'yes':
             keywords = [
-                '<a href="' + CFG_SITE_URL + '/search?f=keyword&amp;p=' +
+                '<a href="/search?f=keyword&amp;p=' +
                 quote('"' + keyword + '"') +
                 '&amp;ln=' + str(bfo.lang) +
                 '">' + cgi.escape(keyword) + '</a>'
