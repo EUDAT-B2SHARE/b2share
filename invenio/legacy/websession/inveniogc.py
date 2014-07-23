@@ -29,12 +29,13 @@ import sys
 import datetime
 import time
 import os
+<<<<<<< HEAD
 
 from invenio.legacy.dbquery import run_sql, wash_table_column_name
 from invenio.config import CFG_LOGDIR, CFG_TMPDIR, CFG_CACHEDIR, \
         CFG_TMPSHAREDDIR, CFG_WEBSEARCH_RSS_TTL, CFG_PREFIX, \
         CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS, \
-        CFG_INSPIRE_SITE
+        CFG_SIMPLESTORE_UPLOAD_FOLDER, CFG_INSPIRE_SITE
 from invenio.legacy.bibsched.bibtask import task_init, task_set_option, task_get_option, \
          write_message, write_messages
 from invenio.legacy.bibsched.bibtask_config import CFG_BIBSCHED_LOGDIR
@@ -125,6 +126,11 @@ def clean_tempfiles():
     write_message("- deleting/gzipping temporary empty/old "
             "BibReformat xml files")
     vstr = task_get_option('verbose') > 1 and '-v' or ''
+
+    write_message(" -cleaning up the simplestore upload folder")
+    gc_exec_command('''find %s -regextype sed -regex '.*[a-z0-9]\{32\}' -type d'''
+        ''' -mtime +7 -exec rm -rf {} \;'''
+            % (CFG_SIMPLESTORE_UPLOAD_FOLDER))
 
     write_message("- deleting/gzipping temporary old "
             "OAIHarvest xml files")
