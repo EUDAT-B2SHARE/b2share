@@ -31,18 +31,18 @@ On your host machine, create a clean folder and copy into it the whole content o
    $ /vagrant/start_b2share.sh
    ```
 
-4. ON THE HOST: Open a browser and goto `http://localhost:4000`.
+4. ON THE HOST: Open a browser and goto URL [`http://localhost:4000`](http://localhost:4000).
 
 
 ### Development
 
 After the installation the b2share sources are located in `$WORKON_HOME/b2share/src/b2share`. Use the following commands to go to that folder:
-   ```bash
-   $ vagrant ssh
-   $ workon b2share
-   $ cdvirtualenv
-   $ cd src/b2share
-   ```
+```bash
+$ vagrant ssh
+$ workon b2share
+$ cdvirtualenv
+$ cd src/b2share
+```
 
 ##### Pushing changes to git
 
