@@ -27,7 +27,7 @@ $(document).ready(function() {
      */
     function deposit_click_handler(e) {
         e.preventDefault();
-        $('#deposit').addClass('disabled').attr('disabled', 'disabled');
+        change_deposit_button_state('depositing');
         var addmeta_url = $("#url_for_addmeta").attr("value");
         $.post(addmeta_url, $("#metaform_form").serialize(),
             function(data) {
@@ -37,7 +37,7 @@ $(document).ready(function() {
                 } else {
                     //Just replace metadata form with errors
                     $('#meta-fields').html(data.html);
-                    $('#deposit').removeClass('disabled').attr('disabled', null);
+                    change_deposit_button_state('ready');
                 }
 
             }, "json");
@@ -100,7 +100,40 @@ $(document).ready(function() {
             }
         }
     });
+
+    // tooltips for domains
+    $("[rel='tooltip']").tooltip({
+        position: {
+            my: "right center",
+            at: 'left-20 center',
+            of: '#projects'
+        }
+    });
 });
+
+
+/**
+ * Changes the deposit button and status message based on state.
+ * State can be one of: 'ready', 'nofile', 'uploading', 'depositing'
+ */
+function change_deposit_button_state(state) {
+    if (state === 'ready') {
+        $('#deposit').removeClass('disabled').attr('disabled', null).show();
+        $('#depositmsg').css('display', 'none');
+    } else if (state === 'nofile') {
+        $('#deposit').addClass('disabled').attr('disabled', 'disabled').show();
+        $('#depositmsg').css('display', 'inline').text('Please select files for upload');
+    } else if (state === 'uploading') {
+        $('#deposit').addClass('disabled').attr('disabled', 'disabled').show();
+        $('#depositmsg').css('display', 'inline').text('Please wait until files are fully uploaded');
+    } else if (state === 'depositing') {
+        $('#deposit').addClass('disabled').attr('disabled', 'disabled').hide();
+        $('#depositmsg').css('display', 'inline').text('Depositing, please wait...');
+    } else {
+        throw 'Unknown change_deposit_button_state state argument';
+    }
+}
+
 
 //removed db_files for simplicity - add restarting later if reqd
 function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
@@ -124,17 +157,17 @@ function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
         });
 
         function setDepositBtnState() {
-            var disableDeposit = false;
+            var state = 'ready';
             if (!uploader.files.length) {
-                disableDeposit = true;
+                state = 'nofile';
+            } else {
+                $.each(uploader.files, function(i, file) {
+                    if (file.loaded < file.size) {
+                         state = 'uploading';
+                    }
+                });
             }
-            $.each(uploader.files, function(i, file) {
-                if (file.loaded < file.size) {
-                     disableDeposit = true;
-                }
-            });
-            $('#deposit').toggleClass('disabled', disableDeposit)
-                         .attr('disabled', disableDeposit ? 'disabled' : null);
+            change_deposit_button_state(state);
         }
 
         uploader.init();

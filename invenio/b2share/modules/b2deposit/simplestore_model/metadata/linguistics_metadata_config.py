@@ -5,6 +5,7 @@ import json
 domain = "Linguistics"
 table_name = 'CLARIN'
 image = 'domain-clarin.png'
+domaindesc = 'Linguistic data.'
 
 fields = [{'name':'language_code',
            'display_text':'Language Code',

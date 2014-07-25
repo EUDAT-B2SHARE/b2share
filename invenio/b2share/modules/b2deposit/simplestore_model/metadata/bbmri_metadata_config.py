@@ -6,7 +6,7 @@ display_name = 'Biomedical Research'
 table_name = 'BBMRI'
 image = 'domain-bbmri.png'
 kind = 'project'
-
+domaindesc = 'Biomedical research data.'
 
 fields = [
     {
