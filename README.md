@@ -3,9 +3,27 @@ invenio-scripts
 
 Utility scripts for installing B2SHARE & Invenio:
 
-### Installation
+## Development Installation
+
+Below is a guide for a full installation of Invenio on a CentOS VM via Vagrant (with Virtualbox).
+
+
+### Install development dependencies
+
+Download and install the following packages listed below for your operating system:
+
+*NOTE: most Linux and OSX systems already have git installed. Windows users please use this guide: [`http://www.enrise.com/2012/12/git-and-vagrant-in-a-windows-environment/`](http://www.enrise.com/2012/12/git-and-vagrant-in-a-windows-environment/)*
+
+1. VirtualBox: [`https://www.virtualbox.org/wiki/Downloads`](https://www.virtualbox.org/wiki/Downloads)
+2. Vagrant: [`http://www.vagrantup.com/downloads.html`](http://www.vagrantup.com/downloads.html)
+3. Git: [`http://git-scm.com/downloads`](http://git-scm.com/downloads) or [`http://git-scm.com/downloads/guis`](http://git-scm.com/downloads/guis)
+
+
+### Running installation scripts
 
 On your host machine, create a clean folder and copy into it the whole content of `invenio-scripts/install`. Or clone `invenio-scripts` from github. Change working directory to this folder (`cd...`)
+
+*NOTE: Typically a HOST OS is the current machine you're using, which runs VirtualBox with Vagrant to run a GUEST OS, which is the VM.*
 
 1. ON THE HOST: Clone git repository and goto the directory containing the Vagrantfile.
    ```bash
