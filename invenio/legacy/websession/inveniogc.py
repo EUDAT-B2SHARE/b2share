@@ -33,7 +33,8 @@ try:
     from invenio.legacy.dbquery import run_sql, wash_table_column_name
     from invenio.config import CFG_LOGDIR, CFG_TMPDIR, CFG_CACHEDIR, \
          CFG_TMPSHAREDDIR, CFG_WEBSEARCH_RSS_TTL, CFG_PREFIX, \
-         CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS
+         CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS, \
+         CFG_SIMPLESTORE_UPLOAD_FOLDER
     from invenio.legacy.bibsched.bibtask import task_init, task_set_option, task_get_option, \
          write_message, write_messages
     from invenio.modules.access.mailcookie import mail_cookie_gc
@@ -129,6 +130,11 @@ def clean_tempfiles():
         ' -atime +%s -exec gzip %s -9 {} \;' \
             % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
                CFG_MAX_ATIME_ZIP_FMT, vstr))
+
+    write_message(" -cleaning up the simplestore upload folder")
+    gc_exec_command('''find %s -regextype sed -regex '.*[a-z0-9]\{32\}' -type d'''
+        ''' -mtime +7 -exec rm -rf {} \;'''
+            % (CFG_SIMPLESTORE_UPLOAD_FOLDER))
 
     write_message("- deleting/gzipping temporary old "
             "OAIHarvest xml files")
