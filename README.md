@@ -12,11 +12,11 @@ Below is a guide for a full installation of Invenio on a CentOS VM via Vagrant (
 
 Download and install the following packages listed below for your operating system:
 
-*NOTE: most Linux and OSX systems already have git installed. Windows users please use this guide: `http://www.enrise.com/2012/12/git-and-vagrant-in-a-windows-environment/`*
+*NOTE: most Linux and OSX systems already have git installed. Windows users please use this guide: `[http://www.enrise.com/2012/12/git-and-vagrant-in-a-windows-environment/]`*
 
-1. VirtualBox: `https://www.virtualbox.org/wiki/Downloads`
-2. Vagrant: `http://www.vagrantup.com/downloads.html`
-3. Git: `http://git-scm.com/downloads` or `http://git-scm.com/downloads/guis`
+1. VirtualBox: `[https://www.virtualbox.org/wiki/Downloads]`
+2. Vagrant: `[http://www.vagrantup.com/downloads.html]`
+3. Git: `[http://git-scm.com/downloads]` or `[http://git-scm.com/downloads/guis]`
 
 
 ### Running installation scripts
