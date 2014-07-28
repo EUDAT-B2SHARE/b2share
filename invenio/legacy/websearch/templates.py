@@ -50,6 +50,7 @@ from invenio.config import \
      CFG_SITE_NAME_INTL, \
      CFG_VERSION, \
      CFG_SITE_URL, \
+     CFG_SITE_SECURE_URL, \
      CFG_SITE_SUPPORT_EMAIL, \
      CFG_SITE_ADMIN_EMAIL, \
      CFG_CERN_SITE, \
@@ -489,10 +490,10 @@ class Template:
             parameters['as'] = parameters['aas']
             del parameters['aas']
 
-        if c and c != CFG_SITE_NAME:
-            base = CFG_SITE_URL + '/collection/' + quote(c)
+        if c and c != CFG_SITE_NAME and c != CFG_SITE_SECURE_URL:
+            base = '/collection/' + quote(c)
         else:
-            base = CFG_SITE_URL
+            base = CFG_SITE_SECURE_URL
         return create_url(base, parameters)
 
     def build_rss_url(self, known_parameters, **kargs):
