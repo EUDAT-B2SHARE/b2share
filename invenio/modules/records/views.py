@@ -56,8 +56,17 @@ def request_record(f):
             check_user_can_view_record
         from invenio.legacy.websearch.adminlib import get_detailed_page_tabs,\
             get_detailed_page_tabs_counts
+        from invenio.b2share.modules.main.utils import check_fresh_record
         # ensure recid to be integer
         recid = int(recid)
+
+        from invenio.legacy.search_engine import record_exists, get_merged_recid
+        if record_exists(recid) == 0:
+            # record doesn't exist, abort so it doesn't get incorrectly cached
+            abort(apache.HTTP_NOT_FOUND)  # The record is gone!
+        if check_fresh_record(current_user, recid):
+            return render_template('record_waitforit.html', recid=recid)
+
         g.collection = collection = Collection.query.filter(
             Collection.name == guess_primary_collection_of_a_record(recid)).\
             one()
@@ -136,13 +145,20 @@ def request_record(f):
         @register_template_context_processor
         def record_context():
             from invenio.modules.comments.api import get_mini_reviews
+            from invenio.legacy.bibdocfile.api import BibRecDocs
+            all_files = [f for f in BibRecDocs(recid, human_readable=True).list_latest_files(list_hidden=False) \
+                         if not f.is_icon()]
+            files = [f for f in all_files if f.is_restricted(current_user)[0] == 0]
+            has_private_files = len(files) < len(all_files)
             return dict(recid=recid,
                         record=record,
                         tabs=tabs,
                         title=title,
                         get_mini_reviews=get_mini_reviews,
                         collection=collection,
-                        format_record=_format_record
+                        format_record=_format_record,
+                        has_private_files=has_private_files,
+                        files=files
                         )
 
         pre_template_render.send(
