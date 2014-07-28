@@ -695,16 +695,9 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
                         recid = int(path[0])
                 else:
                     recid = int(path[0])
-            except IndexError:
-                # display record #1 for URL /CFG_SITE_RECORD without a number
-                recid = 1
-            except ValueError:
-                if path[0] == '':
-                    # display record #1 for URL /CFG_SITE_RECORD/ without a number
-                    recid = 1
-                else:
-                    # display page not found for URLs like /CFG_SITE_RECORD/foo
-                    return None, []
+            except:
+              # 404 for /record/ and /record/foobarbaz
+              return None, []
 
             from intbitset import __maxelem__
             if recid <= 0 or recid > __maxelem__:

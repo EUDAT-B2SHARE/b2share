@@ -2156,8 +2156,11 @@ class Template:
 <div style="clear:both">&nbsp;</div>
 </div>
 <small>%(score)s</small>
+<br/>
+<a href="/abuse/%(recID)s">Report abuse</a>
 ''' % {'url': url,
         'score': score,
+        'recID': recID,
         'rate': _("Rate this document"),
         's1': s1,
         's2': s2,
