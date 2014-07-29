@@ -22,7 +22,36 @@ Installing B2SHARE requires an installation of Invenio first, than the deploymen
 
 ## Contributing
 
-* stub
+1. Fork `EUDAT-B2SHARE/b2share`;
+2. Create a new branch (for `b2share-next`) on your fork;
+3. Commit changes to your branch on your fork;
+4. Publish your local branch;
+5. Create a pull-request on `EUDAT-B2SHARE/b2share` branch: `b2share-next`
+
+## Syncing Fork
+
+After a pull-request you have to merge/ fast forward your fork with the latest commits from the master repository: `EUDAT-B2SHARE/b2share`
+
+**Github has documentation on it:**
+
+1. https://help.github.com/articles/configuring-a-remote-for-a-fork
+2. https://help.github.com/articles/syncing-a-fork
+
+**EUDAT-B2SHARE application:**
+
+```bash
+$ cd /path/to/your/fork/b2share
+# add `EUDAT-B2SHARE/b2share` repository upstream
+$ git add remote upstream https://github.com/EUDAT-B2SHARE/b2share.git
+# verify remote upstream
+$ git remote -v
+# fetch upstream
+$ git fetch upstream
+# make sure you're on the `b2share-next` branch
+$ git checkout b2share-next
+# merge upstream branch
+$ git merge upstream/b2share-next
+```
 
 ## Testing
 
