@@ -51,7 +51,7 @@ $ git fetch upstream
 $ git checkout b2share-next
 # merge upstream branch
 $ git merge upstream/b2share-next
-
+```
 
 ## Testing
 
