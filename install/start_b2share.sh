@@ -9,6 +9,11 @@ sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 4443 -j REDIRECT --to-
 source $WORKON_HOME/b2share/bin/activate
 cd $WORKON_HOME/b2share
 
+# bibsched.pid
+echo; echo "### Run bibsched"
+mkdir -p $WORKON_HOME/b2share/var/run
+$WORKON_HOME/b2share/bin/bibsched restart
+
 ps aux | grep -v grep | grep celeryd
 if [ $? -ne 0 ]; then
 	echo; echo "### Run celeryd"
