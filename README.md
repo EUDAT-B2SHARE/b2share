@@ -30,7 +30,7 @@ Installing B2SHARE requires an installation of Invenio first, than the deploymen
 
 ## Syncing Fork
 
-After a pull-request you have to merge/ fast forward your fork with the latest commits from the master repository: `EUDAT-B2SHARE/invenio-scripts`
+After a pull-request you have to merge/ fast forward your fork with the latest commits from the master repository: `EUDAT-B2SHARE/b2share`
 
 **Github has documentation on it:**
 
