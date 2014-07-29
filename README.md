@@ -83,6 +83,7 @@ $ workon b2share
 $ cd $WORKON_HOME/b2share/src/b2share
 $ git pull
 # or force reload (on local changes)
+# DANGER: THIS WILL RESET ALL YOUR LOCAL CHANGES!
 $ git fetch --all
 $ git reset --hard origin/b2share-next
 ```
