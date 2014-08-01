@@ -14,7 +14,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 export PATH="$PYPATH/bin:$PATH"
-source $PYPATH/bin/virtualenvwrapper.sh 
+source $PYPATH/bin/virtualenvwrapper.sh
 
 if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
    echo "!!! pip not installed or wrong path"
@@ -31,7 +31,7 @@ git clone -b $BRANCH https://github.com/b2share/b2share.git
 cd b2share
 
 echo; echo "### Install pip dependencies"
-pip install Babel 
+pip install Babel
 pip install flower # flower is for monitoring celery tasks
 pip install -r requirements-img.txt
 pip install -r requirements-b2share.txt
@@ -63,7 +63,7 @@ inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname cleancss | 
 echo; echo "### Config site name"
 inveniomanage config set CFG_SITE_NAME B2SHARE
 inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2SHARE'}"
-for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do 
+for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do
 	echo inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2SHARE'}"
 done
 
@@ -105,6 +105,9 @@ inveniomanage database create
 
 echo; echo "### Setup database collections"
 mysql -u root -D invenio --password=$MYSQL_ROOT < `dirname $0`/_collections.sql
+mysql -u root -D invenio --password=$MYSQL_ROOT -e \
+	"GRANT ALL PRIVILEGES ON invenio.* TO 'root'@'%' IDENTIFIED BY 'invenio';"
+
 
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
