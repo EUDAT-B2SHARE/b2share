@@ -18,6 +18,10 @@ Download and install the following packages listed below for your operating syst
 2. Vagrant: [`http://www.vagrantup.com/downloads.html`](http://www.vagrantup.com/downloads.html)
 3. Git: [`http://git-scm.com/downloads`](http://git-scm.com/downloads) or [`http://git-scm.com/downloads/guis`](http://git-scm.com/downloads/guis)
 
+### Changelog
+
+1. `vagrant (up/ ssh/ halt etc.)` is surpassed by `vagrant (up/ ssh/ halt) default`, Vagrant is expanded with a development environment requiring alternate calling the default (old VM) setup.
+
 
 ### Running installation scripts
 
@@ -36,9 +40,9 @@ On your host machine, create a clean folder and copy into it the whole content o
    ```bash
    # create the VM and provision it with B2Share and Invenio
    #  NOTE: this will take some time
-   $ vagrant up
+   $ vagrant up default
    # access the VM via SSH
-   $ vagrant ssh
+   $ vagrant ssh default
    ```
 
 3. ON THE GUEST VM: Run `start_b2share.sh`, which will start the b2share server in development mode. You can now go on the host machine to `http://localhost:4000` and the b2share/invenio site should show up.
@@ -56,7 +60,7 @@ On your host machine, create a clean folder and copy into it the whole content o
 
 After the installation the b2share sources are located in `$WORKON_HOME/b2share/src/b2share`. Use the following commands to go to that folder:
 ```bash
-$ vagrant ssh
+$ vagrant ssh default
 $ workon b2share
 $ cdvirtualenv
 $ cd src/b2share
@@ -78,7 +82,7 @@ Collect latest version from github: https://github.com/EUDAT-B2SHARE/b2share.git
 *NOTE: `inveniomanage runserver` will detect changes in files, and restart the service accordingly*
 
 ```bash
-$ vagrant ssh
+$ vagrant ssh default
 $ workon b2share
 $ cd $WORKON_HOME/b2share/src/b2share
 $ git pull
@@ -126,11 +130,13 @@ $ git merge upstream/b2share-next
 
 - **Vagrantfile** is a vagrant configuration for a suitable development machine. Should be used with vagrant to create and start a virtual machine.
 
-- **provision_system.sh** will install the necessary packages, python version and other dependencies needed by invenio. Must be called by the user.
+- **provision_system.sh** will install the necessary packages, python version and other dependencies needed by invenio. Called on VM provisioning.
 
-- **install_b2share.sh** will install b2share (the b2share-next branch) and create the necessary configuration settings. Must be called by the user.
+- **install_b2share.sh** will install b2share (the b2share-next branch) and create the necessary configuration settings. Called on VM provisioning.
 
-- **start_b2share.sh** will start b2share with the required prerequisites. Must be called by the user.
+- **install_b2share_dev.sh** will install b2share from a local B2SHARE repository. It will create the necessary configuration settings. Called on VM dev provisioning.
+
+- **start_b2share.sh** will start b2share with the required prerequisites. Must be called by the user via SSH.
 
 - **\_collections.sql** is a sql script that creates the needed b2share collections (metadata domains). It is automatically called by the `install_b2share.sh` script.
 
