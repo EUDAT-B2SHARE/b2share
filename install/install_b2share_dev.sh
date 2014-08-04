@@ -103,6 +103,8 @@ inveniomanage database create
 
 echo; echo "### Setup database collections"
 mysql -u root -D invenio --password=$MYSQL_ROOT < `dirname $0`/_collections.sql
+GRANT="grant all privileges on invenio.* to 'root'@'%' identified by '$MYSQL_ROOT';"
+mysql -u root --database=invenio --password=$MYSQL_ROOT -e "$GRANT"
 
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
