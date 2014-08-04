@@ -7,7 +7,7 @@ Utility scripts for installing B2SHARE & Invenio:
 
 Below is a guide for a full installation of Invenio on a CentOS VM via Vagrant (with Virtualbox).
 
-Use guide Deployment (1.) for installing the latest version of `b2share-next`, and Development (2.) for development purposes. Deployment will clone the latest version of `b2share-next`, whereas Development will share the B2SHARE repository on your local machine (which can be a cloned fork).
+Use guide Deployment (1.) for installing the latest version of `master`, and Development (2.) for development purposes. Deployment will clone the latest version of `master`, whereas Development will share the B2SHARE repository on your local machine (which can be a cloned fork).
 
 *NOTE: only one VM can be active at the same time due to portforwarding!*
 
@@ -38,7 +38,7 @@ On your host machine, create a clean folder and copy into it the whole content o
 1. ON THE HOST: Clone git repository and goto the directory containing the Vagrantfile.
    ```bash
    # clone the git repository to your local machine
-   $ git clone -b b2share-next https://github.com/EUDAT-B2SHARE/invenio-scripts
+   $ git clone -b master https://github.com/EUDAT-B2SHARE/invenio-scripts
    $ cd invenio-scripts/install
    ```
 
@@ -76,7 +76,7 @@ $ git pull
 # or force reload (on local changes)
 # DANGER: THIS WILL RESET ALL YOUR LOCAL CHANGES!
 $ git fetch --all
-$ git reset --hard origin/b2share-next
+$ git reset --hard origin/master
 ```
 
 
@@ -92,9 +92,9 @@ Moreover, on your host machine, create a clean folder and copy (or clone from gi
    ```bash
    cd /path/to/your/development-repos/
    # clone the invenio-scripts repository to your local machine
-   $ git clone -b b2share-next https://github.com/EUDAT-B2SHARE/invenio-scripts
+   $ git clone -b master https://github.com/EUDAT-B2SHARE/invenio-scripts
    # clone the b2share repository to your local machine (we recommend cloning your own fork of b2share!)
-   $ git clone -b b2share-next https://github.com/EUDAT-B2SHARE/b2share
+   $ git clone -b master https://github.com/EUDAT-B2SHARE/b2share
    $ cd invenio-scripts/install
    ```
 
@@ -123,14 +123,13 @@ After the installation the b2share sources are located in `$WORKON_HOME/b2share/
 *NOTE: `inveniomanage runserver` will detect changes in files, and restart the service accordingly*
 
 
-
 ## Contributing
 
 1. Fork `EUDAT-B2SHARE/invenio-scripts`;
-2. Create a new branch (for `b2share-next`) on your fork;
+2. Create a new branch (for `master`) on your fork;
 3. Commit changes to your branch on your fork;
 4. Publish your local branch;
-5. Create a pull-request on `EUDAT-B2SHARE/invenio-scripts` branch: `b2share-next`
+5. Create a pull-request on `EUDAT-B2SHARE/invenio-scripts` branch: `master`
 
 ### Syncing Fork
 
@@ -151,10 +150,10 @@ $ git add remote upstream https://github.com/EUDAT-B2SHARE/invenio-scripts.git
 $ git remote -v
 # fetch upstream
 $ git fetch upstream
-# make sure you're on the `b2share-next` branch
-$ git checkout b2share-next
+# make sure you're on the `master` branch
+$ git checkout master
 # merge upstream branch
-$ git merge upstream/b2share-next
+$ git merge upstream/master
 ```
 
 
@@ -164,7 +163,7 @@ $ git merge upstream/b2share-next
 
 - **provision_system.sh** will install the necessary packages, python version and other dependencies needed by invenio. Called on VM provisioning.
 
-- **install_b2share.sh** will install b2share (the b2share-next branch) and create the necessary configuration settings. Called on VM provisioning.
+- **install_b2share.sh** will install b2share (the master branch) and create the necessary configuration settings. Called on VM provisioning.
 
 - **install_b2share_dev.sh** will install b2share from a local B2SHARE repository. It will create the necessary configuration settings. Called on VM dev provisioning.
 
