@@ -6,7 +6,7 @@
 MYSQL_ROOT=invenio
 USER=vagrant
 PYPATH=/opt/python-2.7.6
-BRANCH=b2share-next
+BRANCH=master
 
 if [[ $EUID -eq 0 ]]; then
    echo "This script should not be run as root"
