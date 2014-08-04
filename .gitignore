@@ -17,6 +17,7 @@
 .pydevproject
 .settings
 .version
+.ropeproject
 Invenio.egg-info
 Makefile
 Makefile.in
