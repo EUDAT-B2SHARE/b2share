@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-## This file is part of SimpleStore.
+## This file is part of B2SHARE.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
-## SimpleStore is free software; you can redistribute it and/or
+## B2SHARE is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 2 of the
 ## License, or (at your option) any later version.
 ##
-## SimpleStore is distributed in the hope that it will be useful, but
+## B2SHARE is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
+## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
@@ -183,7 +183,7 @@ class SelectWithInput(Select):
         if field.cardinality > 1:
             html.append('class="multiselect" multiple="multiple" ')
         html.append('%s>' % html_params(name=field.name, **kwargs))
-                
+
         for val, label, selected in field.iter_choices():
             html.append(self.render_option(val, label, selected))
         html.append('</select>')
@@ -200,9 +200,9 @@ class SelectFieldWithInput(SelectField):
     filtering = ""
     other = ""
 
-    def __init__(self, other="", filtering="", cardinality=1, 
+    def __init__(self, other="", filtering="", cardinality=1,
                        data_provide="", data_source="", **field_args):
-        self.cardinality = cardinality        
+        self.cardinality = cardinality
         self.other = other
         self.filtering = filtering
         # make list of tuples for SelectField (only once)
@@ -211,7 +211,7 @@ class SelectFieldWithInput(SelectField):
             if other:
                 field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
-          
+
 
 class AddFieldInput(Input):
     input_type = "text"
@@ -221,7 +221,7 @@ class AddFieldInput(Input):
         html = ['<div id="'+field.name+'_div">']
         html.append('<div id="rowNum0">')
         html.append('<input class="add_field" type="text" id="inputRowNum0" placeholder="{0}" {1}>'
-            .format(field.placeholder, self.html_params(name=field.name, **kwargs)))                             
+            .format(field.placeholder, self.html_params(name=field.name, **kwargs)))
         html.append('<div class="plus" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}"></div>'
             .format(field.placeholder, field.cardinality, field.name))
         html.append('</div>')
@@ -307,12 +307,12 @@ class HTML5ModelConverter(ModelConverter):
             return hidden
 
         if 'data_provide' in field_args:
-            if field_args['data_provide'] == 'typeahead':  
+            if field_args['data_provide'] == 'typeahead':
                 return TypeAheadStringField(**field_args)
-           
-            if field_args['data_provide'] == 'select':                                      
+
+            if field_args['data_provide'] == 'select':
                 return SelectFieldWithInput(**field_args)
-           
+
         if 'cardinality' in field_args:
             return AddField(**field_args)
 

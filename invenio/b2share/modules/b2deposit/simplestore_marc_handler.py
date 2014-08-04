@@ -1,18 +1,18 @@
-## This file is part of SimpleStore.
+## This file is part of B2SHARE.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
-## SimpleStore is free software; you can redistribute it and/or
+## B2SHARE is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 2 of the
 ## License, or (at your option) any later version.
 ##
-## SimpleStore is distributed in the hope that it will be useful, but
+## B2SHARE is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
+## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import os
@@ -40,12 +40,12 @@ def add_basic_fields(rec, form, email):
         if form['title']:
             record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
 
-        if form['creator']:        
+        if form['creator']:
             fields = form.getlist('creator')
             for f in fields:
                 if f and not f.isspace():
                     record_add_field(rec, '100', subfields=[('a', remove_html_markup(f.strip()))])
-            
+
         if form['domain']:
             record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
         pubfields = []
@@ -67,7 +67,7 @@ def add_basic_fields(rec, form, email):
         record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
 
         if form['contact_email']:
-            record_add_field(rec,'270',subfields=[('m', remove_html_markup(form['contact_email']))])        
+            record_add_field(rec,'270',subfields=[('m', remove_html_markup(form['contact_email']))])
 
         if form['keywords']:
             for kw in form['keywords'].split(','):
@@ -146,7 +146,7 @@ def add_file_info(rec, form, email, sub_id, recid):
                          #('t', 'Type'), # TODO
                          # unfortunately s is used for a timestamp, not file size
                          #('s', 'timestamp'), # s is a timestamp
-                         #('w', str(metadata['size'])), # size should be derived automatically, 
+                         #('w', str(metadata['size'])), # size should be derived automatically,
                          #                              # but storing it into 'document_moreinfo' field
                          ('r', fft_status)])
 
@@ -182,7 +182,7 @@ def add_domain_fields(rec, form):
                         if f and not f.isspace():
                             record_add_field(rec, '690',
                                      subfields=[('a', k), ('b', f)])
- 
+
 
 def add_epic_pid(rec, recid, checksum):
     """ Adds EPIC PID to the record. If registration fails, can
