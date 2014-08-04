@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of SimpleStore.
+## This file is part of B2SHARE.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
-## SimpleStore is free software; you can redistribute it and/or
+## B2SHARE is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 2 of the
 ## License, or (at your option) any later version.
 ##
-## SimpleStore is distributed in the hope that it will be useful, but
+## B2SHARE is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
+## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Latest deposits"""
 from invenio.legacy.search_engine import perform_request_search
 from invenio.modules.formatter import engine as bibformat_engine
 from invenio.modules.formatter.format_elements import bfe_authors, bfe_title, bfe_abstract, bfe_creation_date
-	
+
 
 # class MockRequest:
 #     str = ""
@@ -47,9 +47,9 @@ def get_latest_deposits():
 		"date": bfe_creation_date.format_element(bfo),
 		"author": bfe_authors.format_element(bfo, "1"),
 		"title": bfe_title.format_element(bfo),
-		"description": bfe_abstract.format_element(bfo, 
-			prefix_en="", prefix_fr="", suffix_en="", suffix_fr="",	
+		"description": bfe_abstract.format_element(bfo,
+			prefix_en="", prefix_fr="", suffix_en="", suffix_fr="",
 			limit="", max_chars="72", extension_en="...", extension_fr="..."),
-		"category": bfo.field("980__a"), 
+		"category": bfo.field("980__a"),
 	} for bfo in bfo_list]
 	return recs
