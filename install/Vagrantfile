@@ -29,7 +29,7 @@ Vagrant.configure("2") do |config|
       q << "  B2SHARE repository not found in: `#{B2SHARE_DEV_REPO}`"
       q << "  - Consider cloning a version of B2SHARE:"
       q << "    $ cd #{INVENIO_SCRIPTS_REPO}"
-      q << "    $ git clone -b b2share-next https://github.com/EUDAT-B2SHARE/b2share.git"
+      q << "    $ git clone -b master https://github.com/EUDAT-B2SHARE/b2share.git"
       puts q.join("\n")
       exit 1
     end
