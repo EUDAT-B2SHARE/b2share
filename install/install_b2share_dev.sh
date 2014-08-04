@@ -6,7 +6,6 @@
 MYSQL_ROOT=invenio
 USER=vagrant
 PYPATH=/opt/python-2.7.6
-BRANCH=b2share-next
 
 if [[ $EUID -eq 0 ]]; then
    echo "This script should not be run as root"
@@ -14,6 +13,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 export PATH="$PYPATH/bin:$PATH"
+chown -R vagrant: /home/vagrant
 source $PYPATH/bin/virtualenvwrapper.sh
 
 if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
@@ -24,10 +24,8 @@ fi
 echo; echo "### Make and switch to virtualenv b2share"
 mkvirtualenv b2share
 cdvirtualenv
+# NOTE: path is already bound via Vagrantfile: synced_folder
 mkdir src; cd src
-
-echo; echo "### Clone b2share/b2share"
-git clone -b $BRANCH https://github.com/b2share/b2share.git
 cd b2share
 
 echo; echo "### Install pip dependencies"
@@ -105,9 +103,6 @@ inveniomanage database create
 
 echo; echo "### Setup database collections"
 mysql -u root -D invenio --password=$MYSQL_ROOT < `dirname $0`/_collections.sql
-mysql -u root -D invenio --password=$MYSQL_ROOT -e \
-	"GRANT ALL PRIVILEGES ON invenio.* TO 'root'@'%' IDENTIFIED BY 'invenio';"
-
 
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
