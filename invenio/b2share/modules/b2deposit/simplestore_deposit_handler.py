@@ -85,8 +85,8 @@ def addmeta(request, sub_id):
         #just return to deposit
         return redirect(url_for('.deposit'))
 
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get("CFG_SIMPLESTORE_UPLOAD_FOLDER")
-    updir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
+    updir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
     if (not os.path.isdir(updir)) or (not os.listdir(updir)):
         return render_template('500.html', message="Uploads not found"), 500
 

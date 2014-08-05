@@ -26,10 +26,10 @@ class MetadataClasses:
         from flask import current_app
         configured_domains = None
 
-        CFG_SIMPLESTORE_DOMAINS = current_app.config.get('CFG_SIMPLESTORE_DOMAINS')
-        if CFG_SIMPLESTORE_DOMAINS:
+        CFG_B2SHARE_DOMAINS = current_app.config.get('CFG_B2SHARE_DOMAINS')
+        if CFG_B2SHARE_DOMAINS:
             configured_domains = [d.strip().lower() for d in
-                                  CFG_SIMPLESTORE_DOMAINS.split(',')]
+                                  CFG_B2SHARE_DOMAINS.split(',')]
 
         domains = {SubmissionMetadata.domain.lower(): SubmissionMetadata}
         pck = metadata

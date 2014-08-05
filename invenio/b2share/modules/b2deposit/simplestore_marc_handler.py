@@ -117,8 +117,8 @@ def add_file_info(rec, form, email, sub_id, recid):
     """
     Adds the path to the file and access rights to ther record.
     """
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get("CFG_SIMPLESTORE_UPLOAD_FOLDER")
-    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
+    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
     files = os.listdir(upload_dir)
     if 'open_access' in form:
         fft_status = 'firerole: allow any\n'
@@ -234,8 +234,8 @@ def create_checksum(rec, sub_id, buffersize=64 * 1024):
     Returns: checksum as a hex string
     """
     sha = hashlib.sha256()
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get("CFG_SIMPLESTORE_UPLOAD_FOLDER")
-    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
+    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
     files = sorted(os.listdir(upload_dir))
     for f in files:
         filepath = os.path.join(upload_dir, f)

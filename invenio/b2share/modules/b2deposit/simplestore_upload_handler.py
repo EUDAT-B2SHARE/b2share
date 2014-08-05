@@ -70,14 +70,14 @@ def upload(request, sub_id):
         current_chunk = request.files['file']
 
 
-        CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
-                                "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
 
-        if not os.path.exists(CFG_SIMPLESTORE_UPLOAD_FOLDER):
-            os.makedirs(CFG_SIMPLESTORE_UPLOAD_FOLDER)
+        if not os.path.exists(CFG_B2SHARE_UPLOAD_FOLDER):
+            os.makedirs(CFG_B2SHARE_UPLOAD_FOLDER)
 
         # webdeposit also adds userid and deptype folders, we just use unique id
-        upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
 
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
@@ -130,10 +130,10 @@ def delete(request, sub_id):
 
     result = ""
 
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
-                            "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                            "CFG_B2SHARE_UPLOAD_FOLDER")
 
-    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
     filename = request.form['filename']
 
     safename, md5 = encode_filename(filename)
@@ -166,18 +166,18 @@ def get_file(request, sub_id):
     I don't really think we need this, but it's easier to implement than to
     remove the functionality.
     """
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
-                            "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                            "CFG_B2SHARE_UPLOAD_FOLDER")
 
     filename = request.args.get('filename')
-    # make sure that request doesn't go outside the CFG_SIMPLESTORE_UPLOAD_FOLDER
+    # make sure that request doesn't go outside the CFG_B2SHARE_UPLOAD_FOLDER
     if not os.path.samefile(
-                            CFG_SIMPLESTORE_UPLOAD_FOLDER,
-                            os.path.commonprefix([CFG_SIMPLESTORE_UPLOAD_FOLDER,
+                            CFG_B2SHARE_UPLOAD_FOLDER,
+                            os.path.commonprefix([CFG_B2SHARE_UPLOAD_FOLDER,
                               os.path.realpath(filename)])):
         return "File " + filename + " not found", 404
 
-    f = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id, filename)
+    f = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id, filename)
     if (os.path.isfile(f)):
         return send_file(f, attachment_filename=filename, as_attachment=True)
     else:
