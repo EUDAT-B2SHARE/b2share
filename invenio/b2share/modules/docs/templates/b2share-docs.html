@@ -17,10 +17,17 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-{% from "_formhelpers.html" import render_filter_form with context %}
+
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
+{# {% from "_formhelpers.html" import render_filter_form with context %}
 {% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
 {% from "deposits.html" import render_deposits with context %}
-{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %} #}
+
+{# {% import flask with context %}
+ #}
+{{ url_for('docs.static', filename='b2share_register.png') }}
 
 {% extends "page.html" %}
 
@@ -37,19 +44,19 @@
 {% endblock breadcrumbs %}
 
 {% block searchbar %}
-{% if collection.is_restricted %}
+{# {% if collection.is_restricted %}
     {{ search_form(collection) }}
 {% else %}
     {% cache 24*60*60, collection.name, g.ln %}
         {{ search_form(collection) }}
     {% endcache %}
-{% endif %}
+{% endif %} #}
 {% endblock %}
 
 {% block body %}
     <div class="row websearch">
         <div class="span12">
-	    {{ render_markdown_from_file("b2share-about.markdown")|safe }}
+	    {{ markdown_render|safe }}
         </div>
     </div>
 {% endblock %}
@@ -60,5 +67,5 @@
     $('[rel=tooltip]').tooltip();
 })(jQuery);
 </script>
-{{ search_form_javascript(collection)}}
+{# {{ search_form_javascript(collection)}} #}
 {% endblock %}
