@@ -25,19 +25,19 @@ def _read_markdown_as_html(target):
 def b2share_about():
     html = _read_markdown_as_html("/templates/about.md")
     # collection = Collection.query.get_or_404(1)
-    return render_template('b2share-docs.html', markdown_render=html)
+    return render_template('docs.html', markdown_render=html)
 
 @blueprint.route('/b2share-tou', methods=['GET'])
 def b2share_tou():
     html = _read_markdown_as_html("/templates/tou.md")
     # collection = Collection.query.get_or_404(1)
-    return render_template('b2share-docs.html', markdown_render=html)
+    return render_template('docs.html', markdown_render=html)
 
 @blueprint.route('/b2share-faq', methods=['GET'])
 def b2share_faq():
     html = _read_markdown_as_html("/templates/faq.md")
     # collection = Collection.query.get_or_404(1)
-    return render_template('b2share-docs.html', markdown_render=html)
+    return render_template('docs.html', markdown_render=html)
 
 @blueprint.route('/b2share-guide', methods=['GET'])
 def b2share_guide():
