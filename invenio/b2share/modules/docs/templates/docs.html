@@ -18,8 +18,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
-{% from "_formhelpers.html" import render_filter_form with context %}
-{% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
+{% from "search/helpers.html" import search_form, search_form_javascript with context %}
 {% from "deposits.html" import render_deposits with context %}
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
@@ -27,27 +26,26 @@
  #}
 {% extends "page.html" %}
 
-{% block header %}
+{% block header1 %}
     {{ super() }}
-{% endblock %}
-
-{% block title %}
-    {{ super() }}
+    {#% css 'css/websearch_index.css' %#}
+    {% css 'css/simplestore-style.css' %}
+    {#% js "js/websearch_typeahead.js" %#}
+    {% js "js/bootstrap-select.js" %}
 {% endblock %}
 
 {% block breadcrumbs %}
-    {{ render_breadcrumbs('visible', True) }}
+    {{ render_breadcrumbs('hidden', True) }}
 {% endblock breadcrumbs %}
 
 {% block searchbar %}
-{# {% if collection.is_restricted %}
-    {{ search_form(collection) }}
-{% else %}
-    {% cache 24*60*60, collection.name, g.ln %}
-        {{ search_form(collection) }}
-    {% endcache %}
-{% endif %} #}
+    <div class="searchbar">
+        <div class="container" style="background-color: rgb(34, 69, 138)">
+            {%- include "search/form/index.html" -%}
+        </div>
+    </div>
 {% endblock %}
+
 
 {% block body %}
     <div class="row websearch">
