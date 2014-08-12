@@ -13,7 +13,7 @@ blueprint = Blueprint('docs', __name__, url_prefix="/docs",  static_url_path='/d
                       template_folder='templates', static_folder='static')
 
 
-# from invenio.modules.search.models import Collection
+from invenio.modules.search.models import Collection
 
 
 def _read_markdown_as_html(target):
@@ -24,26 +24,26 @@ def _read_markdown_as_html(target):
 @blueprint.route('/b2share-about', methods=['GET'])
 def b2share_about():
     html = _read_markdown_as_html("/templates/about.md")
-    # collection = Collection.query.get_or_404(1)
-    return render_template('docs.html', markdown_render=html)
+    collection = Collection.query.get_or_404(1)
+    return render_template('docs.html', markdown_render=html, collection=collection)
 
 @blueprint.route('/b2share-tou', methods=['GET'])
 def b2share_tou():
     html = _read_markdown_as_html("/templates/tou.md")
-    # collection = Collection.query.get_or_404(1)
-    return render_template('docs.html', markdown_render=html)
+    collection = Collection.query.get_or_404(1)
+    return render_template('docs.html', markdown_render=html, collection=collection)
 
 @blueprint.route('/b2share-faq', methods=['GET'])
 def b2share_faq():
     html = _read_markdown_as_html("/templates/faq.md")
-    # collection = Collection.query.get_or_404(1)
-    return render_template('docs.html', markdown_render=html)
+    collection = Collection.query.get_or_404(1)
+    return render_template('docs.html', markdown_render=html, collection=collection)
 
 @blueprint.route('/b2share-guide', methods=['GET'])
 def b2share_guide():
     html = _read_markdown_as_html("/templates/user-docs.md")
-    # collection = Collection.query.get_or_404(1)
-    return render_template('docs.html', markdown_render=html)
+    collection = Collection.query.get_or_404(1)
+    return render_template('docs.html', markdown_render=html, collection=collection)
 
 @blueprint.route('/', methods=['GET'])
 def index():
