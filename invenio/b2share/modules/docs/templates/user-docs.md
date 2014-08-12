@@ -31,7 +31,7 @@ Registered and unregistered users can use the search field on the B2SHARE home p
 By clicking the down-pointing arrow to the right of the search field, a more specific search form will open as shown in the screenshot below. This form is for specifying search queries and has two search modes, simple and advanced. The default search mode is simple search, which provides an input box where your queries can be typed, followed by a possibility to choose one of the common indexes to search within. Usually it is sufficient to just type some keywords one is interested in and hit return.
 For advanced search, it is possible to specify search fields, use boolean methods in various indices and use regular expressions and other search operators (spans, refersto, citedby). An extensive search guide is available by clicking the question mark to the left of the search field in the top bar.
 
-![](./../img/guide/b2share_search.png)
+![](img/guide/b2share_search.png)
 
 Files can be downloaded either by clicking on the download symbol to the right of each item in the search result list or by first clicking on a title in the search result page and then click on the download-button in the displayed view.
 
@@ -42,7 +42,7 @@ Register as a user
 
 Users must register in order to upload and share data. To register, go to the [registration page](https://b2share.eudat.eu/youraccount/register) on the B2SHARE website. In the form you are required to include your e-mail address, a user name and password and then click the button "Sign up".  An email will be sent to the account that you specify to validate the registration.
 
-![](./../img/guide/b2share_register.png)
+![](img/guide/b2share_register.png)
 
 Log in
 ------
@@ -58,15 +58,15 @@ Only registered users can upload data. To upload data, first click "Deposit" in 
 
 1.  Select and upload one or several data resources either by dragging and dropping from your file browser window to the field marked "Drag and drop files here" (see screnshot below), or by first clicking the button marked "Select files" and select a file to upload in the pop-up file browser window. Repeat the process for uploading more than one file. If you make a mistake, it is possible to remove the uploaded copy by clicking the dust-bin to the right of the file name. When ready, click the button marked "Start upload".
 
-    ![](./../img/guide/b2share_select_upload.png)
+    ![](img/guide/b2share_select_upload.png)
 
 2.  Select a domain or project specific metadata set to describe the resource(s). Choose the domain or project which best fits to your data.
 
-    ![](./../img/guide/b2share_domain_upload.png)
+    ![](img/guide/b2share_domain_upload.png)
 
 3.  Fill in the metadata form. Fields marked with an asterisk are mandatory. The selection of fields (and whether they are mandatory or not) that appear depends on the chosen description set. e.g. for the generic set (like in the figure below), title and description are mandatory fields, while creator, open access, licence, publisher, publication date and tags are optional. Hovering the mouse-pointer over the icon to the right of the field will show a description of the purpose of the field. Clicking the button "Add more details?" will show more metadata fields. Once you have completed the metadata, deposit the selected resource and its metadata elements by clicking the button "Deposit". The deposit takes a moment to be processed. You will get a reference URL immediately.
 
-    ![](./../img/guide/b2share_metadata_upload.png)
+    ![](img/guide/b2share_metadata_upload.png)
 
 Uploaded files are normally downloadable by anyone. Clicking the button marked "On" in the field "Open Access" will restrict file access so files can not be downloaded by unregistered users. Metadata will always be publicly available.
 
