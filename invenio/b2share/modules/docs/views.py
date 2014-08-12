@@ -9,7 +9,7 @@ import markdown, os
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # set blueprint
-blueprint = Blueprint('docs', __name__, url_prefix="/docs",  static_url_path='/%s' % __name__,
+blueprint = Blueprint('docs', __name__, url_prefix="/docs",  static_url_path='/docs',
                       template_folder='templates', static_folder='static')
 
 
@@ -17,33 +17,36 @@ blueprint = Blueprint('docs', __name__, url_prefix="/docs",  static_url_path='/%
 
 
 def _read_markdown_as_html(target):
-    # load from website? https://raw.githubusercontent.com/wiki/EUDAT-B2SHARE/b2share/User-Documentation.md
     input_file = markdown.codecs.open(CURRENT_DIR + target, mode="r",
                                       encoding="utf-8")
     return markdown.markdown(input_file.read())
 
 @blueprint.route('/b2share-about', methods=['GET'])
 def b2share_about():
-    html = _read_markdown_as_html("/templates/B2SHARE-About.md")
+    html = _read_markdown_as_html("/templates/about.md")
     # collection = Collection.query.get_or_404(1)
     return render_template('b2share-docs.html', markdown_render=html)
 
 @blueprint.route('/b2share-tou', methods=['GET'])
 def b2share_tou():
-    html = _read_markdown_as_html("/templates/B2SHARE-TOU.md")
+    html = _read_markdown_as_html("/templates/tou.md")
     # collection = Collection.query.get_or_404(1)
     return render_template('b2share-docs.html', markdown_render=html)
 
 @blueprint.route('/b2share-faq', methods=['GET'])
 def b2share_faq():
-    html = _read_markdown_as_html("/templates/B2SHARE-FAQ.md")
+    html = _read_markdown_as_html("/templates/faq.md")
     # collection = Collection.query.get_or_404(1)
     return render_template('b2share-docs.html', markdown_render=html)
 
 @blueprint.route('/b2share-guide', methods=['GET'])
 def b2share_guide():
-    html = _read_markdown_as_html("/templates/User-Documentation.md")
+    html = _read_markdown_as_html("/templates/user-docs.md")
     # collection = Collection.query.get_or_404(1)
-    return render_template('b2share-docs.html', markdown_render=html)
+    return render_template('docs.html', markdown_render=html)
 
+@blueprint.route('/', methods=['GET'])
+def index():
+    # TODO: redirect to homepage
+    pass
 

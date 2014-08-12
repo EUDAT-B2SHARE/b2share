@@ -57,7 +57,6 @@ EXTENSIONS = [
 ]
 
 PACKAGES = [
-    'invenio.modules.*',
     'invenio.b2share.modules.*',
     'invenio.base',
     'invenio.modules.*'
