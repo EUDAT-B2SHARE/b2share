@@ -17,40 +17,39 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-
-{% from "search/helpers.html" import search_form, search_form_javascript with context %}
+{% from "_formhelpers.html" import render_filter_form with context %}
+{% from "websearch_helpers.html" import collection_tree, portalbox_sidebar, search_also, search_form, search_form_javascript  with context %}
 {% from "deposits.html" import render_deposits with context %}
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
-{# {% import flask with context %}
- #}
 {% extends "page.html" %}
 
-{% block header1 %}
+{% block header %}
     {{ super() }}
-    {#% css 'css/websearch_index.css' %#}
-    {% css 'css/simplestore-style.css' %}
-    {#% js "js/websearch_typeahead.js" %#}
-    {% js "js/bootstrap-select.js" %}
+{% endblock %}
+
+{% block title %}
+    {{ super() }}
 {% endblock %}
 
 {% block breadcrumbs %}
-    {{ render_breadcrumbs('hidden', True) }}
+    {{ render_breadcrumbs('visible', True) }}
 {% endblock breadcrumbs %}
 
 {% block searchbar %}
-    <div class="searchbar">
-        <div class="container" style="background-color: rgb(34, 69, 138)">
-            {%- include "search/form/index.html" -%}
-        </div>
-    </div>
+{% if collection.is_restricted %}
+    {{ search_form(collection) }}
+{% else %}
+    {% cache 24*60*60, collection.name, g.ln %}
+        {{ search_form(collection) }}
+    {% endcache %}
+{% endif %}
 {% endblock %}
-
 
 {% block body %}
     <div class="row websearch">
         <div class="span12">
-	    {{ markdown_render|safe }}
+	    {{ render_markdown_from_file("b2share-about.markdown")|safe }}
         </div>
     </div>
 {% endblock %}
@@ -61,5 +60,5 @@
     $('[rel=tooltip]').tooltip();
 })(jQuery);
 </script>
-{# {{ search_form_javascript(collection)}} #}
+{{ search_form_javascript(collection)}}
 {% endblock %}
