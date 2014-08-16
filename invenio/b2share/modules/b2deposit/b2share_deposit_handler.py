@@ -29,9 +29,9 @@ from wtforms.ext.sqlalchemy.orm import model_form
 from invenio.utils.forms import InvenioBaseForm
 from invenio.ext.login import current_user
 
-from simplestore_model.HTML5ModelConverter import HTML5ModelConverter
-from simplestore_model import metadata_classes
-import simplestore_marc_handler as mh
+from b2share_model.HTML5ModelConverter import HTML5ModelConverter
+from b2share_model import metadata_classes
+import b2share_marc_handler as mh
 
 
 
@@ -42,7 +42,7 @@ class FormWithKey(InvenioBaseForm):
 
 def deposit(request):
     """ Renders the deposit start page """
-    return render_template('simplestore-deposit.html',
+    return render_template('b2share-deposit.html',
                            url_prefix=url_for('.deposit'),
                            domains=metadata_classes().values(),
                            sub_id=uuid.uuid1().hex)
@@ -57,7 +57,7 @@ def getform(request, sub_id, domain):
     if domain in metadata_classes():
         meta = metadata_classes()[domain]()
     else:
-        from simplestore_model.model import SubmissionMetadata
+        from b2share_model.model import SubmissionMetadata
         meta = SubmissionMetadata()
 
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
@@ -67,7 +67,7 @@ def getform(request, sub_id, domain):
     meta_form = MetaForm(request.form, meta)
 
     return render_template(
-        'simplestore-addmeta-table.html',
+        'b2share-addmeta-table.html',
         sub_id=sub_id,
         metadata=meta,
         form=meta_form,
@@ -94,7 +94,7 @@ def addmeta(request, sub_id):
     if domain in metadata_classes():
         meta = metadata_classes()[domain]()
     else:
-        from simplestore_model.model import SubmissionMetadata
+        from b2share_model.model import SubmissionMetadata
         meta = SubmissionMetadata()
 
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
@@ -118,7 +118,7 @@ def addmeta(request, sub_id):
 
     current_app.logger.error("returning form addmeta")
     return jsonify(valid=False,
-                   html=render_template('simplestore-addmeta-table.html',
+                   html=render_template('b2share-addmeta-table.html',
                                         sub_id=sub_id,
                                         metadata=meta,
                                         form=meta_form,

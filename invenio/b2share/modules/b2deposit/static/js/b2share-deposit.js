@@ -84,7 +84,7 @@ $(document).ready(function() {
     $('#deposit').click(deposit_click_handler);
 
     // the url values are put into html by the flask template renderer
-    simplestore_init_plupload('#fileupload',
+    b2share_init_plupload('#fileupload',
         $("#url_for_upload").attr("value"),
         $("#url_for_delete").attr("value"),
         $("#url_for_get_file").attr("value"));
@@ -103,7 +103,7 @@ $(document).ready(function() {
 });
 
 //removed db_files for simplicity - add restarting later if reqd
-function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
+function b2share_init_plupload(selector, url, delete_url, get_file_url) {
 
         uploader = new plupload.Uploader({
                 // General settings

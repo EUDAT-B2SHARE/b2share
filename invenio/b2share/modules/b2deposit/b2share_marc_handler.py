@@ -24,8 +24,8 @@ from flask import current_app
 from invenio.legacy.dbquery import run_sql
 from invenio.legacy.bibrecord import record_add_field, record_xml_output
 from werkzeug.exceptions import HTTPException
-from simplestore_epic import createHandle
-from simplestore_model import metadata_classes
+from b2share_epic import createHandle
+from b2share_model import metadata_classes
 from invenio.utils.html import remove_html_markup
 
 def add_basic_fields(rec, form, email):

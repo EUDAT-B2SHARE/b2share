@@ -21,8 +21,8 @@
 from flask import request, Blueprint
 from flask.ext.login import login_required
 from invenio.base.i18n import _
-import invenio.b2share.modules.b2deposit.simplestore_upload_handler as uph
-import invenio.b2share.modules.b2deposit.simplestore_deposit_handler as dep
+import invenio.b2share.modules.b2deposit.b2share_upload_handler as uph
+import invenio.b2share.modules.b2deposit.b2share_deposit_handler as dep
 
 blueprint = Blueprint('b2deposit', __name__, url_prefix="/b2deposit",
                       template_folder='templates', static_folder='static')
