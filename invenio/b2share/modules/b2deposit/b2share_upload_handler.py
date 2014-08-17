@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of SimpleStore.
+## This file is part of B2SHARE.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
-## SimpleStore is free software; you can redistribute it and/or
+## B2SHARE is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 2 of the
 ## License, or (at your option) any later version.
 ##
-## SimpleStore is distributed in the hope that it will be useful, but
+## B2SHARE is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
+## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-SimpleStore File Upload
+B2SHARE File Upload
 
 Functions to handle plupload js calls from deposit page.
 Based on WebDeposit code.
@@ -70,14 +70,14 @@ def upload(request, sub_id):
         current_chunk = request.files['file']
 
 
-        CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
-                                "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
 
-        if not os.path.exists(CFG_SIMPLESTORE_UPLOAD_FOLDER):
-            os.makedirs(CFG_SIMPLESTORE_UPLOAD_FOLDER)
+        if not os.path.exists(CFG_B2SHARE_UPLOAD_FOLDER):
+            os.makedirs(CFG_B2SHARE_UPLOAD_FOLDER)
 
         # webdeposit also adds userid and deptype folders, we just use unique id
-        upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
 
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
@@ -130,10 +130,10 @@ def delete(request, sub_id):
 
     result = ""
 
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
-                            "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                            "CFG_B2SHARE_UPLOAD_FOLDER")
 
-    upload_dir = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id)
+    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
     filename = request.form['filename']
 
     safename, md5 = encode_filename(filename)
@@ -166,18 +166,18 @@ def get_file(request, sub_id):
     I don't really think we need this, but it's easier to implement than to
     remove the functionality.
     """
-    CFG_SIMPLESTORE_UPLOAD_FOLDER = current_app.config.get(
-                            "CFG_SIMPLESTORE_UPLOAD_FOLDER")
+    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                            "CFG_B2SHARE_UPLOAD_FOLDER")
 
     filename = request.args.get('filename')
-    # make sure that request doesn't go outside the CFG_SIMPLESTORE_UPLOAD_FOLDER
+    # make sure that request doesn't go outside the CFG_B2SHARE_UPLOAD_FOLDER
     if not os.path.samefile(
-                            CFG_SIMPLESTORE_UPLOAD_FOLDER,
-                            os.path.commonprefix([CFG_SIMPLESTORE_UPLOAD_FOLDER,
+                            CFG_B2SHARE_UPLOAD_FOLDER,
+                            os.path.commonprefix([CFG_B2SHARE_UPLOAD_FOLDER,
                               os.path.realpath(filename)])):
         return "File " + filename + " not found", 404
 
-    f = os.path.join(CFG_SIMPLESTORE_UPLOAD_FOLDER, sub_id, filename)
+    f = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id, filename)
     if (os.path.isfile(f)):
         return send_file(f, attachment_filename=filename, as_attachment=True)
     else:

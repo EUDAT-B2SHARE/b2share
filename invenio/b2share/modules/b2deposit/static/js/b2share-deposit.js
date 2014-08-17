@@ -1,19 +1,19 @@
 /*
- * This file is part of SimpleStore.
+ * This file is part of B2SHARE.
  * Copyright (C) 2013 EPCC, The University of Edinburgh.
  *
- * SimpleStore is free software; you can redistribute it and/or
+ * B2SHARE is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
  * License, or (at your option) any later version.
  *
- * SimpleStore is distributed in the hope that it will be useful, but
+ * B2SHARE is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
+ * along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
 
@@ -84,7 +84,7 @@ $(document).ready(function() {
     $('#deposit').click(deposit_click_handler);
 
     // the url values are put into html by the flask template renderer
-    simplestore_init_plupload('#fileupload',
+    b2share_init_plupload('#fileupload',
         $("#url_for_upload").attr("value"),
         $("#url_for_delete").attr("value"),
         $("#url_for_get_file").attr("value"));
@@ -136,7 +136,7 @@ function change_deposit_button_state(state) {
 
 
 //removed db_files for simplicity - add restarting later if reqd
-function simplestore_init_plupload(selector, url, delete_url, get_file_url) {
+function b2share_init_plupload(selector, url, delete_url, get_file_url) {
 
         uploader = new plupload.Uploader({
                 // General settings
