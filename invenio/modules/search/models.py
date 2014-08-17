@@ -190,7 +190,7 @@ class Collection(db.Model):
         else:
             return [{'code': u'hb',
                      'name': _("HTML %(format)s", format=_("brief")),
-                     'content_type': u'text/html'}]
+                     'content_type': u'text/html', 'visibility': 1}]
 
     formatoptions = property(formatoptions)
 

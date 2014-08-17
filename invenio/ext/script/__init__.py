@@ -167,3 +167,6 @@ def register_manager(manager):
 
     from invenio.ext.collect import collect
     collect.init_script(manager)
+
+    # Added for B2SHARE for debugging purposes
+    print("Available blueprints:", [x.name for x in manager.app.blueprints.values()])
