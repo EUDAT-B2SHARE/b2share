@@ -25,7 +25,8 @@ from cerberus import Validator
 from fs.opener import opener
 from flask import request, current_app
 from flask.ext.login import current_user
-from flask.ext.restful import Resource, abort
+from flask.ext.restful import Resource, abort,\
+    reqparse, fields, marshal
 from functools import wraps
 from werkzeug.utils import secure_filename
 from werkzeug.http import parse_options_header
@@ -34,6 +35,10 @@ from invenio.ext.restful import require_api_auth, error_codes, require_header
 
 from . import errors
 from .api import Document
+
+from intbitset import intbitset
+from invenio.legacy.dbquery import run_sql
+import itertools
 
 
 class APIValidator(Validator):
@@ -98,6 +103,23 @@ document_decorators = [
     require_api_auth(),
     error_handler,
 ]
+
+output_fields = {
+    'recordID': fields.Integer,
+    'comment': fields.String,
+    'description': fields.String,
+    'eformat': fields.String,
+    'full_name': fields.String,
+    'magic': fields.String,
+    'name': fields.String,
+    'size': fields.Integer,
+    'status': fields.String,
+    'subformat': fields.String,
+    'superformat': fields.String,
+    'type': fields.String,
+    'url': fields.String,
+    'version': fields.Integer
+}
 
 
 # =========
@@ -188,9 +210,118 @@ class DocumentFileResource(Resource):
         abort(405)
 
 
+class AllDepositionList(Resource):
+    """
+    Collection of depositions
+    """
+    method_decorators = document_decorators
+
+    def get(self, oauth, domain_name):
+        """
+        List all depositions for a specific domain
+
+        """
+
+        from invenio.legacy.bibdocfile.api import BibRecDocs,\
+            InvenioBibDocFileError
+        from invenio.legacy.bibrecord import create_record,\
+            record_get_field_instances, field_get_subfield_values
+        from invenio.legacy.search_engine import print_record
+
+        query1 = "SELECT id FROM bib98x WHERE value = '" + domain_name + "'"
+        domain_id = run_sql(query1)
+        '''
+        TODO Check if Domain id is null or not;
+            if it is Null the domain has no deposition record
+        '''
+        new_list = intbitset(domain_id)
+        query2 = "SELECT id_bibrec FROM bibrec_bib98x WHERE id_bibxxx = "\
+            + str(new_list[0])
+        domain_records_id = run_sql(query2)
+
+        files_list = []
+        for recid in intbitset(domain_records_id):
+            try:
+                recdocs = BibRecDocs(recid)
+            except InvenioBibDocFileError:
+                return []
+
+            latest_files = recdocs.list_latest_files()
+            for afile in latest_files:
+                file_dict = {}
+                file_dict['recordID'] = recid
+                file_dict['comment'] = afile.get_comment()
+                file_dict['description'] = afile.get_description()
+                file_dict['eformat'] = afile.get_format()
+                file_dict['full_name'] = afile.get_full_name()
+                file_dict['magic'] = afile.get_magic()
+                file_dict['name'] = afile.get_name()
+                file_dict['size'] = afile.get_size()
+                file_dict['status'] = afile.get_status()
+                file_dict['subformat'] = afile.get_subformat()
+                file_dict['superformat'] = afile.get_superformat()
+                file_dict['type'] = afile.get_type()
+                file_dict['url'] = afile.get_url()
+                file_dict['version'] = afile.get_version()
+
+                marcxml = print_record(recid, 'xm')
+                record = create_record(marcxml)[0]
+                authors = record_get_field_instances(record, '100')
+                '''
+                authors is a list, it should be a string
+                temp = list(itertools.chain(*authors))
+                file_dict['authors'] = authors
+                '''
+                print "authors: ", authors
+                record_title = record_get_field_instances(record, '245')
+                print "record_title: ", record_title
+
+                record_description = record_get_field_instances(record, '520')
+                print "record_description: ", record_description
+
+                record_domain = record_get_field_instances(record, '980')
+                print "record_domain: ", record_domain
+
+                record_date = record_get_field_instances(record, '260')
+                print "record_date ", record_date
+
+                record_licence = record_get_field_instances(record, '540')
+                print "record_licence ", record_licence
+
+                record_PID = record_get_field_instances(record, '024a')
+                print "record_PID ", record_PID
+
+                files_list.append(file_dict)
+
+        return marshal(files_list, output_fields)
+
+    @require_header('Content-Type', 'application/json')
+    def post(self, oauth):
+        """
+        Create a new deposition
+        """
+        abort(405)
+
+    def put(self, oauth):
+        abort(405)
+
+    def delete(self, oauth):
+        abort(405)
+
+    def head(self, oauth):
+        abort(405)
+
+    def options(self, oauth):
+        abort(405)
+
+    def patch(self, oauth):
+        abort(405)
+
 #
 # Register API resources
 #
+
+
 def setup_app(app, api):
     api.add_resource(
         DocumentListResource,
@@ -199,4 +330,8 @@ def setup_app(app, api):
     api.add_resource(
         DocumentFileResource,
         '/api/document/<string:document_uuid>',
+    )
+    api.add_resource(
+        AllDepositionList,
+        '/api/deposit/depositions/<string:domain_name>',
     )
