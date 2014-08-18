@@ -21,5 +21,8 @@ if [ $? -ne 0 ]; then
 	sleep 1 # give a bit of time to celery
 fi
 
+echo; echo "### Preloading assets"
+inveniomanage collect
+
 echo; echo "### Run invenio server"
 inveniomanage runserver -d -r
