@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of SimpleStore.
+## This file is part of B2SHARE.
 ## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
-## SimpleStore is free software; you can redistribute it and/or
+## B2SHARE is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 2 of the
 ## License, or (at your option) any later version.
 ##
-## SimpleStore is distributed in the hope that it will be useful, but
+## B2SHARE is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with SimpleStore; if not, write to the Free Software Foundation, Inc.,
+## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from flask import render_template, request, redirect, url_for, jsonify
@@ -48,7 +48,7 @@ def abuse_form(request,recid):
 
 def abuse_submit(request):
 	link = request.form.get('element_9_1','')
-	subject = request.form.get('element_1','')	
+	subject = request.form.get('element_1','')
 	reason = request.form.get('element_7','')
 	first_name = request.form.get('element_3_1','')
 	last_name = request.form.get('element_3_2','')
@@ -65,11 +65,11 @@ def abuse_submit(request):
 	recaptcha_response = request.form.get('recaptcha_response_field','')
 	subject_text = "Unknown subject"
 
-	if(link == '' or len(link)>256): 
-		return render_template('abuse_form.html',warning_msg="Link is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)	
-	
+	if(link == '' or len(link)>256):
+		return render_template('abuse_form.html',warning_msg="Link is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
+
 	if(subject == ''):
-		return render_template('abuse_form.html',warning_msg="Subject is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)	
+		return render_template('abuse_form.html',warning_msg="Subject is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
 	else:
 		if(subject == "1"):
 			subject_text = "Abuse or Inappropriate content"
@@ -91,11 +91,11 @@ def abuse_submit(request):
 
 	if(affiliation == '' or len(affiliation) > 256):
 		return render_template('abuse_form.html',warning_msg="Affiliation is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
-	
+
 	if(email == '' or validate_email(email,verify=False) == False):
 		return render_template('abuse_form.html',warning_msg="Email address missing or format is invalid",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
 
-	if(street_address == '' or len(street_address) > 256):	
+	if(street_address == '' or len(street_address) > 256):
 		return render_template('abuse_form.html',warning_msg="Street Address is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
 
 	if(len(street_address2) > 256):
@@ -112,7 +112,7 @@ def abuse_submit(request):
 
 	if(recaptcha_challenge == ''):
 		return render_template('abuse_form.html',warning_msg="Recaptcha Challenge is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
-	
+
 	if(recaptcha_response == ''):
 		return render_template('abuse_form.html',warning_msg="Recaptcha Response is missing",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
 
@@ -122,7 +122,7 @@ def abuse_submit(request):
 		CFG_CAPTCHA_PRIVATE_KEY,
 		request.remote_addr
 	)
-	
+
 	if not submit_response.is_valid:
 		return render_template('abuse_form.html',warning_msg="Incorrect Captcha response",recaptcha_public_key=CFG_CAPTCHA_PUBLIC_KEY)
 
