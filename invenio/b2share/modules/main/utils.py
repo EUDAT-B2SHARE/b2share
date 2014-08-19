@@ -18,13 +18,8 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Utility functions for b2share"""
-<<<<<<< HEAD
 from invenio.legacy.bibrecord import get_fieldvalues
-	
-=======
-from invenio.search_engine_utils import get_fieldvalues
 
->>>>>>> 223660e... Replacing SimpleStore in comments
 def check_fresh_record(user_info, recid):
     """
     Check if the record is just submitted (has a record id) but not yet fully in the database.
