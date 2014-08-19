@@ -28,7 +28,7 @@ from invenio.config import \
      CFG_WEBALERT_MAX_NUM_OF_RECORDS_IN_ALERT_EMAIL, \
      CFG_SITE_RECORD
 from invenio.base.i18n import gettext_set_language
-from invenio.legacy.webalert.htmlparser import get_as_text, wrap, wrap_records
+from invenio.legacy.webalert.htmlparser_local import get_as_text, wrap, wrap_records
 from invenio.utils.url import create_html_link
 
 from invenio.legacy.search_engine import guess_primary_collection_of_a_record, get_coll_ancestors
