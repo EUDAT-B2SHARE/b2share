@@ -83,10 +83,10 @@ inveniomanage config set CFG_WEBALERT_ALERT_ENGINE_EMAIL admin@localhost
 inveniomanage config set CFG_WEBCOMMENT_ALERT_ENGINE_EMAIL admin@localhost
 
 echo; echo "### Config upload folder"
-inveniomanage config set CFG_SIMPLESTORE_UPLOAD_FOLDER /tmp/ss/
+inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/
 
-echo; echo "### Config simplestore domains"
-inveniomanage config set CFG_SIMPLESTORE_DOMAINS "generic, drihm, linguistics, euon, bbmri"
+echo; echo "### Config b2share domains"
+inveniomanage config set CFG_B2SHARE_DOMAINS "generic, drihm, linguistics, euon, bbmri"
 
 echo; echo "### Config epic credentials"
 inveniomanage config set CFG_EPIC_USERNAME ""
