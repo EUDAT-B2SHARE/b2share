@@ -18,7 +18,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Utility functions for b2share"""
-from invenio.search_engine_utils import get_fieldvalues
+from invenio.legacy.bibrecord import get_fieldvalues
 
 def check_fresh_record(user_info, recid):
     """
