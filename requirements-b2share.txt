@@ -2,4 +2,3 @@ markdown2
 validate_email
 recaptcha-client
 markdown
-HTMLParser
