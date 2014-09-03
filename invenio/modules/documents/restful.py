@@ -221,17 +221,17 @@ class AllDepositionList(Resource):
         from invenio.legacy.search_engine import print_record
 
         # get domain id from domain name
-        domain_id_sql = "SELECT id FROM bib98x WHERE value = '" + domain_name + "'"
-        domain_ids = run_sql(domain_id_sql)
+        domain_id_sql = "SELECT id FROM bib98x WHERE value = %s"
+        domain_ids = run_sql(domain_id_sql, [domain_name])
         if len(domain_ids) != 1:
             return []
         new_list = intbitset(domain_ids)
         if len(new_list) != 1:
             return []
 
-        bibrec_id_sql = "SELECT id_bibrec FROM bibrec_bib98x WHERE id_bibxxx = "\
-            + str(new_list[0])
-        domain_records_ids = run_sql(bibrec_id_sql)
+        bibrec_id_sql = "SELECT id_bibrec FROM bibrec_bib98x WHERE id_bibxxx =\
+            %s"
+        domain_records_ids = run_sql(bibrec_id_sql, [str(new_list[0])])
 
         files_list = []
         for recid in intbitset(domain_records_ids):
