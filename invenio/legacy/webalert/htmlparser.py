@@ -17,6 +17,8 @@
 
 """HTML parser for records."""
 
+from __future__ import absolute_import
+
 __revision__ = "$Id$"
 
 import re
