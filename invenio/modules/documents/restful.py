@@ -276,7 +276,7 @@ class AllDepositionList(Resource):
                 '''
                 # print "authors: ", authors
                 record_title = record_get_field_instances(record, '245')
-                print "record_title: ", record_title
+                # print "record_title: ", record_title
 
                 record_description = record_get_field_instances(record, '520')
                 # print "record_description: ", record_description
