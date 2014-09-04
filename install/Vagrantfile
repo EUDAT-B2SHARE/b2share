@@ -4,17 +4,16 @@ B2SHARE_DEV_REPO = File.absolute_path(File.dirname(__FILE__) + "/../../b2share/"
 
 Vagrant.configure("2") do |config|
   config.vm.define "default" do |c|
-    config.vm.box = "centos65x64"
-    config.vm.box_url = "https://github.com/2creatives/vagrant-centos/releases/download/v6.5.1/centos65-x86_64-20131205.box"
+    c.vm.box = "centos65x64"
+    c.vm.box_url = "https://github.com/2creatives/vagrant-centos/releases/download/v6.5.1/centos65-x86_64-20131205.box"
 
-    config.vm.network :forwarded_port, guest:4000, host: 4000
-    config.vm.network :forwarded_port, guest:4443, host: 4443
-    config.vm.provision :shell, path: ".vagrant/bootstrap/provision.sh"
-    config.vm.provider :virtualbox do |vb|
+    c.vm.network :forwarded_port, guest:4000, host: 4000
+    c.vm.network :forwarded_port, guest:4443, host: 4443
+    c.vm.provision :shell, path: ".vagrant/bootstrap/provision.sh"
+    c.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "2048"]
     end
   end
-
   config.vm.define "dev" do |c|
     c.vm.box = "centos65x64"
     c.vm.box_url = "https://github.com/2creatives/vagrant-centos/releases/download/v6.5.1/centos65-x86_64-20131205.box"
@@ -34,7 +33,7 @@ Vagrant.configure("2") do |config|
       exit 1
     end
     c.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "1024"]
+      vb.customize ["modifyvm", :id, "--memory", "2048"]
     end
   end
 end
