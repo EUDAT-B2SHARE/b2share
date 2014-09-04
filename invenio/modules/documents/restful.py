@@ -228,19 +228,21 @@ class AllDepositionList(Resource):
             record_get_field_instances, field_get_subfield_values
         from invenio.legacy.search_engine import print_record
 
-        query1 = "SELECT id FROM bib98x WHERE value = '" + domain_name + "'"
-        domain_id = run_sql(query1)
-        '''
-        TODO Check if Domain id is null or not;
-            if it is Null the domain has no deposition record
-        '''
-        new_list = intbitset(domain_id)
-        query2 = "SELECT id_bibrec FROM bibrec_bib98x WHERE id_bibxxx = "\
-            + str(new_list[0])
-        domain_records_id = run_sql(query2)
+        # get domain id from domain name
+        domain_id_sql = "SELECT id FROM bib98x WHERE value = %s"
+        domain_ids = run_sql(domain_id_sql, [domain_name])
+        if len(domain_ids) != 1:
+            return []
+        new_list = intbitset(domain_ids)
+        if len(new_list) != 1:
+            return []
+
+        bibrec_id_sql = "SELECT id_bibrec FROM bibrec_bib98x WHERE id_bibxxx =\
+            %s"
+        domain_records_ids = run_sql(bibrec_id_sql, [str(new_list[0])])
 
         files_list = []
-        for recid in intbitset(domain_records_id):
+        for recid in intbitset(domain_records_ids):
             try:
                 recdocs = BibRecDocs(recid)
             except InvenioBibDocFileError:
@@ -272,24 +274,24 @@ class AllDepositionList(Resource):
                 temp = list(itertools.chain(*authors))
                 file_dict['authors'] = authors
                 '''
-                print "authors: ", authors
+                # print "authors: ", authors
                 record_title = record_get_field_instances(record, '245')
-                print "record_title: ", record_title
+                # print "record_title: ", record_title
 
                 record_description = record_get_field_instances(record, '520')
-                print "record_description: ", record_description
+                # print "record_description: ", record_description
 
                 record_domain = record_get_field_instances(record, '980')
-                print "record_domain: ", record_domain
+                # print "record_domain: ", record_domain
 
                 record_date = record_get_field_instances(record, '260')
-                print "record_date ", record_date
+                # print "record_date ", record_date
 
                 record_licence = record_get_field_instances(record, '540')
-                print "record_licence ", record_licence
+                # print "record_licence ", record_licence
 
                 record_PID = record_get_field_instances(record, '024a')
-                print "record_PID ", record_PID
+                # print "record_PID ", record_PID
 
                 files_list.append(file_dict)
 
