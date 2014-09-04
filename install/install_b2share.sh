@@ -64,7 +64,7 @@ echo; echo "### Config site name"
 inveniomanage config set CFG_SITE_NAME B2SHARE
 inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2SHARE'}"
 for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do
-	echo inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2SHARE'}"
+	inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2SHARE'}"
 done
 
 echo; echo "### Config bibsched user"
