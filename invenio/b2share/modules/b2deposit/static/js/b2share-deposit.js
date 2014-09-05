@@ -18,6 +18,8 @@
  */
 
 $(document).ready(function() {
+    "use strict";
+
     $('#domains input:radio').addClass('visuallyhidden');
 
     /**
@@ -117,6 +119,8 @@ $(document).ready(function() {
  * State can be one of: 'ready', 'nofile', 'uploading', 'depositing'
  */
 function change_deposit_button_state(state) {
+    "use strict";
+
     if (state === 'ready') {
         $('#deposit').removeClass('disabled').attr('disabled', null).show();
         $('#depositmsg').css('display', 'none');
@@ -137,186 +141,188 @@ function change_deposit_button_state(state) {
 
 //removed db_files for simplicity - add restarting later if reqd
 function b2share_init_plupload(selector, url, delete_url, get_file_url) {
+    "use strict";
 
-        uploader = new plupload.Uploader({
-                // General settings
-                runtimes : 'html5',
-                url : url,
-                max_file_size : '2048mb',
-                chunk_size : '20mb',
-                //unique_names : true,
-                browse_button : 'pickfiles',
-                drop_element : 'filebox'
+    var uploader = new plupload.Uploader({
+        // General settings
+        runtimes : 'html5',
+        url : url,
+        max_file_size : '2048mb',
+        chunk_size : '20mb',
+        //unique_names : true,
+        browse_button : 'pickfiles',
+        drop_element : 'filebox'
 
-                // Specify what files to browse for
-                //filters : [
-                //    {title : "Image files", extensions : "jpg,gif,png,tif"},
-                //    {title : "Compressed files", extensions : "rar,zip,tar,gz"},
-                //    {title : "PDF files", extensions : "pdf"}
-                //]
-        });
+        // Specify what files to browse for
+        //filters : [
+        //    {title : "Image files", extensions : "jpg,gif,png,tif"},
+        //    {title : "Compressed files", extensions : "rar,zip,tar,gz"},
+        //    {title : "PDF files", extensions : "pdf"}
+        //]
+    });
 
-        function setDepositBtnState() {
-            var state = 'ready';
-            if (!uploader.files.length) {
-                state = 'nofile';
-            } else {
-                $.each(uploader.files, function(i, file) {
-                    if (file.loaded < file.size) {
-                         state = 'uploading';
-                    }
-                });
-            }
-            change_deposit_button_state(state);
+    function setDepositBtnState() {
+        var state = 'ready';
+        if (!uploader.files.length) {
+            state = 'nofile';
+        } else {
+            $.each(uploader.files, function(i, file) {
+                if (file.loaded < file.size) {
+                     state = 'uploading';
+                }
+            });
         }
+        change_deposit_button_state(state);
+    }
 
-        uploader.init();
+    uploader.init();
+    setDepositBtnState();
+
+    $('#uploadfiles').click(function(e) {
+        $('#uploadfiles').hide();
+
+        uploader.start();
         setDepositBtnState();
 
-        $('#uploadfiles').click(function(e) {
-            $('#uploadfiles').hide();
+        $('#stopupload').show();
+        $('#domains').removeClass('hide');
+        $('#domains').slideDown();
+        e.preventDefault();
+    });
 
-            uploader.start();
+    $('#stopupload').click(function(d){
+        $('#stopupload').hide();
+
+        uploader.stop();
+
+        $('#uploadfiles').show();
+        $.each(uploader.files, function(i, file) {
+            if (file.loaded < file.size){
+                $("#" + file.id + "_rm").show();
+                $('#' + file.id + " .bar").css('width', "0%");
+            }
+        });
+    });
+
+    uploader.bind('FilesRemoved', function(up, files) {
+        $.each(files, function(i, file) {
+            $('#filelist #' + file.id).hide('fast');
+            if (file.loaded == file.size) {
+                $.ajax({
+                    type: "POST",
+                    url: delete_url,
+                    data: $.param({
+                            filename: file.name,
+                    })
+                });
+            }
+        });
+        if(uploader.files.length === 0){
+            $('#uploadfiles').addClass("disabled");
+            $('#file-table').hide('slow');
+        }
+        setDepositBtnState();
+    });
+
+    uploader.bind('UploadProgress', function(up, file) {
+        $('#' + file.id + " .bar").css('width', file.percent + "%");
+        setDepositBtnState();
+    });
+
+    uploader.bind('UploadFile', function(up, file) {
+        $('#' + file.id + "_rm").hide();
+        setDepositBtnState();
+    });
+
+    function splitFileNameExtension(filename) {
+        function endsWith(str, suffix) {
+            return str.indexOf(suffix, str.length - suffix.length) !== -1;
+        }
+        var ext = "";
+        if (endsWith(filename, ".tar.gz")) {
+            ext = ".tar.gz";
+        } else if (endsWith(filename, ".tar.bz2")) {
+            ext = ".tar.bz2";
+        } else {
+            var arr = filename.split(".");
+            if (arr.length > 1) {
+                ext = "." + arr.pop();
+            }
+        }
+        if (filename === ext || ext === ".") {
+            ext = "";
+        }
+        var name = filename.substring(0, filename.length - ext.length);
+        return {
+            "name": name,
+            "ext": ext
+        };
+    }
+
+    uploader.bind('FilesAdded', function(up, files) {
+        var no_files_with_content = true;
+        
+        for (var t = files.length - 1; t >= 0; t--) {
+            if (files[t].size === 0) {
+                alert("File " + files[t].name + " is empty");
+                uploader.removeFile(files[t]);
+                files.splice(t, 1);
+            } else if (files[t].size > 0) {
+                no_files_with_content = false;
+            }
+        }
+        if (no_files_with_content === true) { 
             setDepositBtnState();
-
-            $('#stopupload').show();
-            $('#domains').removeClass('hide');
-            $('#domains').slideDown();
-            e.preventDefault();
-        });
-
-        $('#stopupload').click(function(d){
-                $('#stopupload').hide();
-
-                uploader.stop();
-
-                $('#uploadfiles').show();
-                $.each(uploader.files, function(i, file) {
-                        if (file.loaded < file.size){
-                                $("#" + file.id + "_rm").show();
-                                $('#' + file.id + " .bar").css('width', "0%");
-                        }
-                });
-        });
-
-        uploader.bind('FilesRemoved', function(up, files) {
-                $.each(files, function(i, file) {
-                        $('#filelist #' + file.id).hide('fast');
-                        if (file.loaded == file.size) {
-                                $.ajax({
-                                        type: "POST",
-                                        url: delete_url,
-                                        data: $.param({
-                                                filename: file.name,
-                                        })
-                                });
-                        }
-                });
-                if(uploader.files.length === 0){
-                        $('#uploadfiles').addClass("disabled");
-                        $('#file-table').hide('slow');
-                }
-                setDepositBtnState();
-        });
-
-        uploader.bind('UploadProgress', function(up, file) {
-                $('#' + file.id + " .bar").css('width', file.percent + "%");
-                setDepositBtnState();
-        });
-
-        uploader.bind('UploadFile', function(up, file) {
-                $('#' + file.id + "_rm").hide();
-                setDepositBtnState();
-        });
-
-        function splitFileNameExtension(filename) {
-            function endsWith(str, suffix) {
-                return str.indexOf(suffix, str.length - suffix.length) !== -1;
-            }
-            var ext = "";
-            if (endsWith(filename, ".tar.gz")) {
-                ext = ".tar.gz";
-            } else if (endsWith(filename, ".tar.bz2")) {
-                ext = ".tar.bz2";
-            } else {
-                var arr = filename.split(".");
-                if (arr.length > 1) {
-                    ext = "." + arr.pop();
-                }
-            }
-            if (filename === ext || ext === ".") {
-                ext = "";
-            }
-            var name = filename.substring(0, filename.length - ext.length);
-            return {
-                "name": name,
-                "ext": ext
-            };
+            return; 
         }
 
-        uploader.bind('FilesAdded', function(up, files) {
-                no_files_with_content = true;
-                
-                for (var t = files.length - 1; t >= 0; t--) {
-                    if (files[t].size === 0) {
-                        alert("File " + files[t].name + " is empty");
-                        uploader.removeFile(files[t]);
-                        files.splice(t, 1);
-                    } else if (files[t].size > 0) {
-                        no_files_with_content = false;
-                    }
+        var hashmap = {};
+        $.each(uploader.files, function(i, file) {
+            if (hashmap[file.name]) {
+                var split = splitFileNameExtension(file.name);
+                var name = split.name, ext = split.ext;
+                var suffix = 1;
+                while (hashmap[name +"_" + suffix + ext]) {
+                    suffix ++;
                 }
-                if (no_files_with_content === true) { 
-                    setDepositBtnState();
-                    return; 
-                }
-
-                var hashmap = {};
-                $.each(uploader.files, function(i, file) {
-                    if (hashmap[file.name]) {
-                        var split = splitFileNameExtension(file.name);
-                        var name = split.name, ext = split.ext;
-                        var suffix = 1;
-                        while (hashmap[name +"_" + suffix + ext]) {
-                            suffix ++;
-                        }
-                        var oldname = file.name;
-                        file.name = name +"_" + suffix + ext;
-                    }
-                    hashmap[file.name] = true;
-                });
-
-                $('#uploadfiles').removeClass("disabled");
-                $('#file-table').show('slow');
-                $.each(files, function(i, file) {
-                        $('#filelist').append(
-                                '<tr id="' + file.id + '" style="display:none;z-index:-100;">' +
-                                '<td id="' + file.id + '_link">' + file.name + '</td>' +
-                                '<td>' + plupload.formatSize(file.size) + '</td>' +
-                                '<td width="30%"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></td>' +
-                                '<td><a id="' + file.id + '_rm" class="rmlink"><i class="glyphicon glyphicon-trash"></i></a></td>' +
-                                '</tr>');
-                        $('#filelist #' + file.id).show('fast');
-                        $('#' + file.id + '_rm').on("click", function(event){
-                                uploader.removeFile(file);
-                                setDepositBtnState();
-                        });
-                });
-                setDepositBtnState();
+                var oldname = file.name;
+                file.name = name +"_" + suffix + ext;
+            }
+            hashmap[file.name] = true;
         });
 
-        uploader.bind('FileUploaded', function(up, file, responseObj) {
-                $('#' + file.id + " .progress").removeClass("progress-striped");
-                $('#' + file.id + " .bar").css('width', "100%");
-                $('#' + file.id + '_rm').show();
-                $('#' + file.id + '_link').html('<a href="' + get_file_url + "?filename=" + responseObj.response + '">' + file.name + '</a>');
-                file.unique_filename = responseObj.response;
-                if (uploader.total.queued === 0)
-                        $('#stopupload').hide();
-
-                $('#uploadfiles').addClass('disabled');
-                $('#uploadfiles').show();
-                $('#deposit').addClass('btn-primary');
+        $('#uploadfiles').removeClass("disabled");
+        $('#file-table').show('slow');
+        $.each(files, function(i, file) {
+            $('#filelist').append(
+                '<tr id="' + file.id + '" style="display:none;z-index:-100;">' +
+                '<td id="' + file.id + '_link">' + file.name + '</td>' +
+                '<td>' + plupload.formatSize(file.size) + '</td>' +
+                '<td width="30%"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></td>' +
+                '<td><a id="' + file.id + '_rm" class="rmlink"><i class="glyphicon glyphicon-trash"></i></a></td>' +
+                '</tr>');
+            $('#filelist #' + file.id).show('fast');
+            $('#' + file.id + '_rm').on("click", function(event){
+                uploader.removeFile(file);
                 setDepositBtnState();
+            });
         });
+        setDepositBtnState();
+    });
+
+    uploader.bind('FileUploaded', function(up, file, responseObj) {
+        $('#' + file.id + " .progress").removeClass("progress-striped");
+        $('#' + file.id + " .bar").css('width', "100%");
+        $('#' + file.id + '_rm').show();
+        $('#' + file.id + '_link').html('<a href="' + get_file_url + "?filename=" + responseObj.response + '">' + file.name + '</a>');
+        file.unique_filename = responseObj.response;
+        if (uploader.total.queued === 0) {
+            $('#stopupload').hide();
+        }
+
+        $('#uploadfiles').addClass('disabled');
+        $('#uploadfiles').show();
+        $('#deposit').addClass('btn-primary');
+        setDepositBtnState();
+    });
 }
