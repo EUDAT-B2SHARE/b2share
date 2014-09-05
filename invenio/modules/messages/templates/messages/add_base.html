@@ -20,6 +20,67 @@
 {% extends "page.html" %}
 {% set title = _("Write a message") %}
 
+{% block header %}
+  {{ super() }}
+  {%- css url_for("static", filename="css/jquery-ui.css") -%}
+  {%- js url_for("static", filename="js/jqueryui/jquery-ui.js") -%}
+  {%- js url_for("static", filename="js/jquery-ui-timepicker-addon.js") -%}
+{% endblock header %}
+{% block javascript %}
+    <script type="text/javascript">
+    $(document).ready(function(){
+        function split( val ) {
+            return val.split(/,\s*/);
+        }
+        function extractLast( term ) {
+          return split(term).pop();
+        }
+        var selectLast = function( event, ui ) {
+            var terms = split(this.value);
+            terms.pop();
+            terms.push(ui.item.value);
+            terms.push("");
+            this.value = terms.join(", ");
+            return false;
+        }
+
+        $("#sent_to_user_nicks").autocomplete({
+            minLength: 3,
+            source: function(request, response) {
+                $.ajax({
+                    url: "{{ url_for('webgroup.search')|safe }}",
+                    data: {
+                        query: "users",
+                        term: extractLast(request.term)
+                    },
+                    focus: function() {
+                        return false;
+                    },
+                    success: function(data, textStatus, jqXHR){
+                        response(data["nicknames"]);
+                    }
+                })},
+            select: selectLast });
+        $("#sent_to_group_names").autocomplete({
+            minLength: 3,
+            source: function(request, response) {
+                $.ajax({
+                    url: "{{ url_for('webgroup.search')|safe }}",
+                    data: {
+                        query: "groups",
+                        term: extractLast(request.term)
+                    },
+                    focus: function() {
+                        return false;
+                    },
+                    success: function(data, textStatus, jqXHR){
+                        response(data["groups"]);
+                    }
+                });
+            },
+            select: selectLast
+        });
+
 {% block global_bundles %}
   {{ super() }}
   {% bundle "messages.js" %}
