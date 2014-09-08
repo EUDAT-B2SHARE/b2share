@@ -21,8 +21,8 @@
 {% set title = _("Write a message") %}
 {% block header %}
   {{ super() }}
-  {%- css url_for("static", filename="js/jquery-ui/jquery-ui.css") -%}
-  {%- js url_for("static", filename="js/jquery-ui.js") -%}
+  {%- css url_for("static", filename="css/jquery-ui.css") -%}
+  {%- js url_for("static", filename="js/jqueryui/jquery-ui.js") -%}
   {%- js url_for("static", filename="js/jquery-ui-timepicker-addon.js") -%}
 {% endblock header %}
 {% block javascript %}
