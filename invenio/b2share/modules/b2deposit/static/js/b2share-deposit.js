@@ -51,7 +51,7 @@ $(document).ready(function() {
      * Should get appropriate metadata form.
      */
     function domain_click_handler(e) {
-        inputEl = $(this).find('input');
+        var inputEl = $(this).find('input');
         if (!inputEl.prop('checked')) {
             inputEl.prop('checked', true);
             $('#domains .domain').removeClass('highlight-icon');
