@@ -22,11 +22,12 @@
 {% from "format/record/Default_HTML_brief_macros.tpl" import render_record_footer, render_fulltext_snippets, record_info with context %}
 
 {% block above_record_header %}
-  {{ bfe_fulltext(bfo, show_icons="yes", prefix='<ul class="nav nav-pills pull-right" style="margin-top: -10px;"><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" rel="tooltip" title="Download" href="#"> <i class="glyphicon glyphicon-download-alt"></i><span class="caret"></span></a><ul class="dropdown-menu pull-right"><li>', suffix='</li></ul>', focus_on_main_file="yes", separator="</li><li>") }}
+  {{ bfe_fulltext(bfo, show_icons="yes", prefix='<ul class="nav nav-pills pull-right" style="margin-top: -10px;"><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" rel="tooltip" title="Download" href="#"> <i class="glyphicon glyphicon-download-alt"></i><span class="caret"></span></a><ul class="dropdown-menu pull-right"><li>', suffix='</li></ul></li></ul>', focus_on_main_file="yes", separator="</li><li>") }}
 {% endblock %}
 
 {% block record_header %}
   <a href="{{ url_for('record.metadata', recid=record['recid']) }}">
+    {{ bfe_title(bfo) }}
     {{ record.get('title.title', '') }}
     {{- record.get('title.volume', '')|prefix(', ') }}
     {{- record.get('title.subtitle', '')|prefix(': ') }}
@@ -35,6 +36,7 @@
 {% endblock %}
 
 {% block record_content %}
+  {{ bfe_abstract(bfo, limit="3") }}
   {{ record.get('abstract.summary', '')|sentences(3) }}
 {% endblock %}
 
