@@ -52,7 +52,7 @@ fields = [
         'name': 'disease',
         'col_type': db.String(256),
         'display_text': 'Disease',
-        'description': 'The disease of main interest in the sample collection, if any. Can be several values MIABIS-38',
+        'description': 'The disease of main interest in the sample collection, if any. Can be several values MIABIS-21',
         'required': False
     },
     {
