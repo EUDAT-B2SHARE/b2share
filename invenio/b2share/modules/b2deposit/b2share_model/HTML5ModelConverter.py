@@ -32,16 +32,13 @@ class SwitchInput(Input):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
-        if 'value' not in kwargs:
-            kwargs['value'] = field._value()
 
-        checked = ""
         if getattr(field, 'checked', field.data):
             checked = "checked"
 
         return HTMLString(
-            '<div class="switch" data-on="success" data-off="danger">'
-            '<input {0} {1}></div>'.format(checked, self.html_params(name=field.name, **kwargs)))
+            '<input class="switcher" data-on-color="success" data-off-color="danger" {0} {1}>'
+                .format(checked, self.html_params(name=field.name, **kwargs)))
 
 
 class SwitchField(BooleanField):

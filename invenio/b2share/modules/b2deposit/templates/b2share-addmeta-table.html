@@ -66,15 +66,16 @@
   </fieldset>
 {% endfor %}
 <script type="text/javascript">
-  $('.switch')['bootstrapSwitch']();
-
-  $('.datepicker').datepicker({
-      showButtonPanel: true,
-      changeMonth: true,
-      changeYear: true,
-      dateFormat: 'dd-mm-yy',
-      defaultDate: new Date()
+  $(document).ready(function() {
+    $('.switcher').bootstrapSwitch();
+    $('.datepicker').datepicker({
+        showButtonPanel: true,
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: 'dd-mm-yy',
+        defaultDate: new Date()
     });
+  });
 </script>
 
 <script type="text/javascript">
