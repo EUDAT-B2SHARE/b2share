@@ -80,7 +80,6 @@ def addmeta(request, sub_id):
     Returns a new page with success message if valid, otherwise it returns a
     form with the errors marked.
     """
-    current_app.logger.error("Adding metadata")
     if sub_id is None:
         #just return to deposit
         return redirect(url_for('.deposit'))
@@ -104,7 +103,6 @@ def addmeta(request, sub_id):
 
     meta_form = MetaForm(request.form, meta)
 
-    current_app.logger.error("about to validate")
     if meta_form.validate_on_submit():
         recid, marc = mh.create_marc(
             request.form, sub_id, current_user['email'])
@@ -116,7 +114,6 @@ def addmeta(request, sub_id):
                        newurl=url_for("record.metadata", recid=recid),
                        html=render_template('record_waitforit.html', recid=recid, marc=marc))
 
-    current_app.logger.error("returning form addmeta")
     return jsonify(valid=False,
                    html=render_template('b2share-addmeta-table.html',
                                         sub_id=sub_id,
