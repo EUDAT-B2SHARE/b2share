@@ -18,6 +18,8 @@ Download and install the following packages listed below for your operating syst
 
 *NOTE: most Linux and OSX systems already have git installed. Windows users please use this guide: [`http://www.enrise.com/2012/12/git-and-vagrant-in-a-windows-environment/`](http://www.enrise.com/2012/12/git-and-vagrant-in-a-windows-environment/)*
 
+*NOTE: use a fairly recent version of Vagrant. If you have Vagrant installed and get syntax error messages for the Vagrant file, you may need to upgrade your Vagrant installation.*
+
 1. VirtualBox: [`https://www.virtualbox.org/wiki/Downloads`](https://www.virtualbox.org/wiki/Downloads)
 2. Vagrant: [`http://www.vagrantup.com/downloads.html`](http://www.vagrantup.com/downloads.html)
 3. Git: [`http://git-scm.com/downloads`](http://git-scm.com/downloads) or [`http://git-scm.com/downloads/guis`](http://git-scm.com/downloads/guis)
