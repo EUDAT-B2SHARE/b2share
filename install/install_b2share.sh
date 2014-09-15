@@ -112,8 +112,8 @@ mysql -u root -D invenio --password=$MYSQL_ROOT -e \
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
 
-echo; echo "### Setup bibtasks: bibreformat"
-bibreformat -oHB -s5m -uadmin
+# echo; echo "### Setup bibtasks: bibreformat"
+# bibreformat -oHB -s5m -uadmin
 
 echo; echo "### Setup bibtasks: webcoll"
 webcoll -v0 -s5m -uadmin
