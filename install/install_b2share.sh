@@ -126,6 +126,6 @@ bibsort -s5m -uadmin
 
 echo; echo "### Config for development"
 inveniomanage config set CFG_SITE_FUNCTION "Development Environment"
-inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.dummy.Mail
+inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.smtp.Mail
 inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
 inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
