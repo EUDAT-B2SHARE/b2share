@@ -28,8 +28,6 @@ services:
 language: python
 
 python:
-# FIXME: the build times out on Python 2.6 (inveniosoftware/invenio#1789)
-#  - "2.6"
   - "2.7"
 
 before_install:
