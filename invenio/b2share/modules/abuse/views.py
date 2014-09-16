@@ -18,14 +18,12 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """ B2SHARE Abuse Form Blueprint"""
-from flask import request
-from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
-import invenio.abuse_form as abuse
+from flask import request, Blueprint
+import invenio.b2share.modules.abuse.abuse_form as abuse
 
-blueprint = InvenioBlueprint('abuse_form', __name__,
-	url_prefix='/abuse'
-	)
-
+blueprint = Blueprint('abuse_form', __name__, 
+                      url_prefix='/abuse',
+                      template_folder='templates')
 @blueprint.route('/', methods=['GET'])
 def abuse_form_noparams():
 	return abuse.abuse_form(request,-1)
