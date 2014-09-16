@@ -70,6 +70,11 @@ exclude-result-prefixes="marc fn">
             </dc:language>
         </xsl:for-each>
 	<!-- Author/Creator -->
+        <xsl:for-each select="datafield[@tag=546]">
+            <dc:language>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:language>
+        </xsl:for-each>
         <xsl:for-each select="datafield[@tag=100]">
             <dc:creator>
                 <xsl:value-of select="subfield[@code='a']"/>
@@ -117,8 +122,16 @@ exclude-result-prefixes="marc fn">
 	<xsl:for-each select="datafield[@tag=088]">
           <dc:identifier><xsl:value-of select="subfield[@code='a']"/></dc:identifier>
         </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=653 and @ind1=1]">
+            <dc:subject>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:subject>
+        </xsl:for-each>
 	<!-- Files -->
 <!--        <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
+=======
+
+        <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
             <dc:identifier>
                 <xsl:value-of select="subfield[@code='u']"/>
             </dc:identifier>
