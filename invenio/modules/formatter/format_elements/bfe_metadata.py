@@ -26,6 +26,8 @@ def format_element(bfo):
     ret = '<div><table class="metadata_table table table-striped'\
           ' table-condensed">'
 
+    html = '<tr><th><div style="white-space:nowrap">{0}:</div></th><td><div style="word-break:break-all">{1}</div></td></tr>'
+
     ids = bfo.fields("0247_")
     for i in ids:
         val = i['a']
@@ -34,36 +36,33 @@ def format_element(bfo):
                 val = '<a href="{0}">{0}</a>'.format(i['a'])
             except ImportError:
                 None
-
-            ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(
-                i['2'][0].upper() + i['2'][1:], val)
+            ret += html.format(i['2'][0].upper() + i['2'][1:], val)
 
     ver = bfo.field("250__a")
     if ver:
-        ret += '<tr><th>Version:</th><td>{0}</td></tr>'.format(ver)
+        ret += html.format('Version', ver)
 
     pub = bfo.field("260__")
     if pub:
-        ret += '<tr><th>Publication:</th><td>{0}</td></tr>'.format(pub.get('b'))
+        ret += html.format('Publication', pub.get('b'))
         if 'c' in pub:
-            ret += '<tr><th>Publication Date:</th><td>{0}</td></tr>'.format(
-                   pub['c'])
+            ret += html.format('Publication Date', pub['c'])
 
     licence = bfo.field("540__a")
     if licence:
-        ret += '<tr><th>Licence:</th><td>{0}</td></tr>'.format(licence)
+        ret += html.format('Licence', licence)
 
     uploader = bfo.field("8560_f")
     if uploader:
-        ret += '<tr><th>Uploaded by:</th><td>{0}</td></tr>'.format(uploader)
+        ret += html.format('Uploaded by', uploader)
 
     contact_email = bfo.field("270__m")
     if contact_email:
-        ret += '<tr><th>Contact email:</th><td>{0}</td></tr>'.format(contact_email)
+        ret += html.format('Contact email', contact_email)
 
     domain = bfo.field("980__a")
     if domain:
-        ret += '<tr><th>Domain:</th><td>{0}</td></tr>'.format(domain)
+        ret += html.format('Domain', domain)
 
     md_class = None
     if domain.lower() in metadata_classes():
@@ -75,15 +74,13 @@ def format_element(bfo):
             field = md_class.field_args.get(md['a'], {'label': md['a']})
         else:
             field = {'label': md['a']}
-        ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(
-            field['label'], md['b'])
+        ret += html.format(field['label'], md['b'])
 
     ids = bfo.fields("0247_")
     for i in ids:
         val = i['a']
         if i['2'] != "PID":
-            ret += '<tr><th>{0}:</th><td>{1}</td></tr>'.format(
-                i['2'][0].upper() + i['2'][1:], val)
+            ret += html.format(i['2'][0].upper() + i['2'][1:], val)
 
     ret += '</table></div>'
 

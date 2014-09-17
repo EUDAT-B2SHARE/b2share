@@ -49,7 +49,7 @@ def template_context_function(recID):
     except:
         return ""
 
-    if recids:
+    if recids and not (recID in recids):
         return render_template_to_string('records/back_to_search_links.html',
                                          recID=int(recID),
                                          last_query=cfg['CFG_SITE_URL'] + last_query,
