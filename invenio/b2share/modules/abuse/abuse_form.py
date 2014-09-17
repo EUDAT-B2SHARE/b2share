@@ -92,11 +92,11 @@ def abuse_submit(request):
 	if(len(street_address2) > 256):
 		return render_template('abuse_form.html',warning_msg="Street Address2 format is invalid",recaptcha_public_key=recaptcha_public_key)
 
-        if(postal_code == '' or len(postal_code) > 20):
-                return render_template('abuse_form.html',warning_msg="Postal Code is missing",recaptcha_public_key=recaptcha_public_key)
+	if(postal_code == '' or len(postal_code) > 20):
+		return render_template('abuse_form.html',warning_msg="Postal Code is missing",recaptcha_public_key=recaptcha_public_key)
 
-        if(country == ''or len(country) > 256):
-                return render_template('abuse_form.html',warning_msg="Country is missing",recaptcha_public_key=recaptcha_public_key)
+	if(country == ''or len(country) > 256):
+		return render_template('abuse_form.html',warning_msg="Country is missing",recaptcha_public_key=recaptcha_public_key)
 
 	if(phone == '' or check_phone(phone) == False or len(phone) > 30):
 		return render_template('abuse_form.html',warning_msg="Phone is missing or invalid format",recaptcha_public_key=recaptcha_public_key)

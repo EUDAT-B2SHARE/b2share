@@ -18,13 +18,12 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-from flask import request
-from invenio.webinterface_handler_flask_utils import _, InvenioBlueprint
-import invenio.request_data_form as reqdata
+from flask import request, Blueprint
+import invenio.b2share.modules.datarequest.request_data_form as reqdata
 
-blueprint = InvenioBlueprint('request_data_form', __name__,
-	url_prefix='/reqdata'
-	)
+blueprint = Blueprint('request_data_form', __name__,
+					  url_prefix='/reqdata',
+                      template_folder='templates')
 
 @blueprint.route('/', methods=['GET'])
 def request_data_form_noparams():
