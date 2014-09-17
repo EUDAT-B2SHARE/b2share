@@ -92,7 +92,7 @@ div.star:hover {
                   <td><a href="{{file.get_url()}}">{{ file.get_full_name() }}</a></td>
                   <td>{{ file.md.strftime('%d %b %Y') }}</td>
                   <td>{{ file.size|filesizeformat }}</td>
-                  <td><span class="pull-right">{% if file.get_superformat() == '.pdf' %}<button class="btn preview-link" data-url="{{file.get_full_url()}}"><i class="icon-eye-open"></i> {{_("Preview")}}</button>{% endif %} <a class="btn" href="{{file.get_full_url(download=True)}}"><i class="icon-download"></i> {{_("Download")}}</a></span></td>
+                  <td> <span class="pull-right"> <a class="btn" href="{{file.get_full_url(download=True)}}"><i class="icon-download"></i> {{_("Download")}}</a> </span> </td>
                 </tr>
               {%- endfor -%}
             </tbody>
@@ -102,8 +102,8 @@ div.star:hover {
       </div>
       {% endif%}
       {% if has_private_files %}
-      <p><i class="icon-lock"></i>This record contains private files, which are not listed here.</p>
-    <br><p><a href="/reqdata/{{ recid }}">Request Data</a></p>
+        <p><i class="icon-lock"></i>This record contains private files, which are not listed here.</p>
+        <br><p><a href="/reqdata/{{ recid }}">Request Data</a></p>
       {% endif%}
     </div>
     </div>
