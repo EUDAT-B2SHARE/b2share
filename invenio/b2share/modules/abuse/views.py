@@ -24,6 +24,7 @@ import invenio.b2share.modules.abuse.abuse_form as abuse
 blueprint = Blueprint('abuse_form', __name__, 
                       url_prefix='/abuse',
                       template_folder='templates')
+
 @blueprint.route('/', methods=['GET'])
 def abuse_form_noparams():
 	return abuse.abuse_form(request,-1)
