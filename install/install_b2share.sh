@@ -61,10 +61,10 @@ inveniomanage config set LESS_BIN `find $PWD/node_modules -iname lessc | head -1
 inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname cleancss | head -1`
 
 echo; echo "### Config site name"
-inveniomanage config set CFG_SITE_NAME B2SHARE
-inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2SHARE'}"
+inveniomanage config set CFG_SITE_NAME B2Share
+inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2Share'}"
 for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do
-	inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2SHARE'}"
+	inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2Share'}"
 done
 
 echo; echo "### Config bibsched user"
