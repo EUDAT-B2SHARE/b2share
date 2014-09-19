@@ -17,6 +17,12 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
+{# Brand and toggle get grouped for better mobile display #}
+{%- set nbrecs = collection.nbrecs -%}
+{%- if not collection.nbrecs -%}
+  {%- set nbrecs = 0 -%}
+{%- endif -%}
+
 {%- block search_form_ctrls_input -%}
 <input autocomplete="off"
        data-items="4"
@@ -24,6 +30,7 @@
        class="form-control"
        type="text"
        tabindex="1"
+       placeholder="{{- _("Search %(x_num)s records for", x_num=nbrecs) -}}"
        value="{{ request.args.get('p', '') }}"
        {%- if request.endpoint == 'search.index' %}
        autofocus
