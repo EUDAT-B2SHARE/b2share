@@ -25,9 +25,15 @@
   {% bundles "search.js", "search.css" %}
 {% endblock %}
 
-{% block body %}
-  {%- include "search/form/index.html" -%}
+{% block searchbar %}
+    <div class="searchbar">
+        <div class="container" style="background-color: rgb(34, 69, 138)">
+            {%- include "search/form/index.html" -%}
+        </div>
+    </div>
+{% endblock %}
 
+{% block body %}
   {% block inner_content %}{% endblock %}
 {% endblock %}
 
