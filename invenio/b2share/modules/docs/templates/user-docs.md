@@ -1,13 +1,11 @@
 Synopsis
 ========
 
-Researchers often hold a large number of small files, like spread-sheet files with research data or analysis results, which may contain important data but do not easily fit in with regular data management and often end up being stored on personal computers, laptops or offline disk drives. As there is a risk of such data being lost or inaccessible for other researchers, EUDAT provides the B2SHARE service with the purpose of allowing registered users to upload smaller scientific data collections.
-
-The B2SHARE service is intended for researchers who do not have adequate facilities for storing and sharing data, cannot guarantee long-term persistence of their locally stored data and lack means to easily share such data with colleagues worldwide.
+Researchers often hold a large number of small files, like spread-sheet files with research data or analysis results, which may contain important data but do not easily fit in with regular data management and often end up being stored on personal computers, laptops or offline disk drives. EUDAT provides the B2SHARE service with the purpose of allowing registered users to upload smaller scientific data collections. The B2SHARE service is intended for researchers who do not have adequate facilities for storing and sharing data, cannot guarantee long-term persistence of their locally stored data and lack means to easily share such data with colleagues worldwide.
 
 B2SHARE is a web-based service for storing and sharing small data sets, intended for European scientists. The service utilises other EUDAT services for reliability and data retention, while storing the data at trusted repositories with national backing, in order to provide a professionally managed and supported IT environment. B2SHARE service providers have agreed on a Memorandum of Understanding with the EUDAT consortium and keep the data accessible for at least 2 years. In the unlikely event that the service will be terminated, the service provider has the obligation to announce this at least one month in advance, and all deposited data and metadata will either be kept accessible or handed over to another EUDAT service provider so that the service can be continued. Monitoring of the service is provided via the EUDAT central monitoring facilities.
 
-B2SHARE is designed to be easy to use and currently supports access restrictions, registration of a PID for any uploaded data object, add on of checksums and transition of all metadata information to the EUDAT metadata search. Importantly, B2SHARE enforces the inclusion of metadata accompanying the deposited data, so as to increase the value and facilitate sharing of your assets.
+B2SHARE is designed to be easy to use and currently supports access restrictions, registration of a PID for any uploaded data object, add on of checksums and transition of all metadata information to the EUDAT metadata search. Importantly, B2SHARE enforces the inclusion of metadata accompanying the deposited data, so as to increase the value and facilitate sharing of your assets. As a default, uploaded materials are published with open access. Although access can be restricted at the time of upload, EUDAT strongly encourages open access to research data in accordance with the policy of the European Commission.
 
 How to access the B2SHARE service
 =================================
@@ -69,11 +67,6 @@ Only registered users can upload data. To upload data, first click "Deposit" in 
     ![](img/guide/b2share_metadata_upload.png)
 
 Uploaded files are normally downloadable by anyone. Clicking the button marked "On" in the field "Open Access" will restrict file access so files can not be downloaded by unregistered users. Metadata will always be publicly available.
-
-Your account
-------------
-
-When you are logged in, clicking on your user name on the right side of the home page will show your account information and list your submitted materials.
 
 Log out
 -------
