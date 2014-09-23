@@ -339,3 +339,10 @@ li.deposit-title {
 .footer_links a:hover {
     color: #224A7B;
 }
+
+
+/* Hack for correctly displaying the search bar on Firefox */
+/* see https://github.com/EUDAT-B2SHARE/b2share/issues/415 */
+div.navbar div.navbar-collapse div.navbar-form {
+   width: 100%;
+}
