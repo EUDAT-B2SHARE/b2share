@@ -4,8 +4,6 @@
 -e git+git://github.com/jek/blinker.git#egg=blinker
 -e git+git://github.com/mitsuhiko/flask.git#egg=flask
 
--e git+git://github.com/mrjoes/flask-admin.git#egg=Flask-Admin-1.0.9.dev0",
-
 -e git+git://github.com/inveniosoftware/dictdiffer.git#egg=dictdiffer
 -e git+git://github.com/inveniosoftware/intbitset.git#egg=intbitset
 -e git+git://github.com/inveniosoftware/workflow.git#egg=workflow

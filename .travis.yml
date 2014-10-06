@@ -48,6 +48,8 @@ install:
   - "sudo a2enmod rewrite"
   - "sudo mkdir /etc/apache2/ssl"
   - "sudo /usr/sbin/make-ssl-cert generate-default-snakeoil /etc/apache2/ssl/apache.pem"
+  #--allow-unverified Flask-Admin
+  - "travis_retry pip install -e git+git://github.com/mrjoes/flask-admin.git#egg=Flask-Admin-1.0.9.dev0 --allow-all-external --quiet"
   - "travis_retry pip install -r .travis-$REQUIREMENTS-requirements.txt --allow-all-external --quiet"
   - "travis_retry pip install -e .[docs] --quiet --process-dependency-links"
   - "travis_retry pip install -r requirements-b2share.txt --allow-all-external --quiet"
