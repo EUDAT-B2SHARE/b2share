@@ -63,8 +63,6 @@ install:
   - "inveniomanage config set CFG_TMPDIR /tmp"  # test all packages
   - "sudo su -c \"npm update\""
   - "sudo su -c \"npm install --silent -g bower less clean-css uglify-js requirejs grunt-cli\""
-  - "npm update"
-  - "npm install"
   - "inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname \"cleancss\" | grep \"\\.bin\" | head -1`"
   - "inveniomanage config set LESS_BIN `find $PWD/node_modules -iname \"lessc\" | grep \"\\.bin\" | head -1`"
   # HEAD: - "inveniomanage config set CLEANCSS_BIN false"  # deactivate all the things
