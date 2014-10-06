@@ -28,8 +28,8 @@ services:
 language: python
 
 env:
-  - REQUIREMENTS=lowest
-  - REQUIREMENTS=release
+  # - REQUIREMENTS=lowest
+  # - REQUIREMENTS=release
   - REQUIREMENTS=devel
 
 python:
@@ -38,7 +38,7 @@ python:
 before_install:
   - "sudo add-apt-repository -y ppa:chris-lea/node.js"
   - "sudo apt-get update"
-  - "python requirements.py > .travis-lowest-requirements.txt"
+  - "python requirements.py > .travis-devel-requirements.txt"
   - "touch .travis-release-requirements.txt"
 
 install:
