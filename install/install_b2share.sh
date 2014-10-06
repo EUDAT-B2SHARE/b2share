@@ -13,6 +13,12 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
+ENVIRONMENT=$1
+if [ "$ENVIRONMENT" != "production" ]  && [ "$ENVIRONMENT" != "development" ]; then
+   echo "Usage: install_b2share.sh production|development"
+   exit 1
+fi
+
 export PATH="$PYPATH/bin:$PATH"
 source $PYPATH/bin/virtualenvwrapper.sh
 
@@ -27,7 +33,11 @@ cdvirtualenv
 mkdir src; cd src
 
 echo; echo "### Clone b2share/b2share"
-git clone -b $BRANCH https://github.com/b2share/b2share.git
+if [ "$ENVIRONMENT" == "production" ]; then
+   git clone -b $BRANCH https://github.com/b2share/b2share.git
+else
+   echo "*** Expecting b2share to be already cloned and mapped via Vagrantfile: synced_folder"
+fi
 cd b2share
 
 echo; echo "### Install pip dependencies"
@@ -63,6 +73,7 @@ inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname cleancss | 
 echo; echo "### Config site name"
 inveniomanage config set CFG_SITE_NAME B2Share
 inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2Share'}"
+inveniomanage config set CFG_SITE_LANGS "[u'en']"
 for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do
 	inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2Share'}"
 done
@@ -85,7 +96,7 @@ inveniomanage config set CFG_WEBCOMMENT_ALERT_ENGINE_EMAIL admin@localhost
 echo; echo "### Config upload folder"
 inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/
 
-echo; echo "### Config b2share domains"
+echo; echo "### Config B2SHARE domains"
 inveniomanage config set CFG_B2SHARE_DOMAINS "generic, drihm, linguistics, euon, bbmri"
 
 echo; echo "### Config epic credentials"
@@ -105,9 +116,8 @@ inveniomanage database create
 
 echo; echo "### Setup database collections"
 mysql -u root -D invenio --password=$MYSQL_ROOT < `dirname $0`/_collections.sql
-mysql -u root -D invenio --password=$MYSQL_ROOT -e \
-	"GRANT ALL PRIVILEGES ON invenio.* TO 'root'@'%' IDENTIFIED BY 'invenio';"
-
+GRANT="GRANT ALL PRIVILEGES ON invenio.* TO 'root'@'%' IDENTIFIED BY '$MYSQL_ROOT';"
+mysql -u root --database=invenio --password=$MYSQL_ROOT -e "$GRANT"
 
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
@@ -125,7 +135,16 @@ echo; echo "### Setup bibtasks: bibsort"
 bibsort -s5m -uadmin
 
 echo; echo "### Config for development"
-inveniomanage config set CFG_SITE_FUNCTION "Development Environment"
-inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.smtp.Mail
-inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
-inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
+if [ "$ENVIRONMENT" == "production" ]; then
+   inveniomanage config set CFG_SITE_URL https://0.0.0.0
+   inveniomanage config set CFG_SITE_SECURE_URL https://0.0.0.0
+   inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.smtp.Mail
+   inveniomanage config set CFG_SITE_FUNCTION ""
+else
+   inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
+   inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
+   inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.dummy.Mail
+   inveniomanage config set CFG_SITE_FUNCTION "Development Environment"
+   inveniomanage config set DEBUG True
+   inveniomanage config set ASSETS_DEBUG True
+fi
