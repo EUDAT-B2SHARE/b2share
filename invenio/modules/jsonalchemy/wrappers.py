@@ -37,6 +37,14 @@ class StorageEngine(type):
 
     """Storage metaclass for parsing application config."""
 
+    __storage_engine_registry__ = []
+
+    def __init__(cls, name, bases, dct):
+        """Register cls to type registry."""
+        if hasattr(cls, '__storagename__'):
+            cls.__storage_engine_registry__.append(cls)
+        super(StorageEngine, cls).__init__(name, bases, dct)
+
     @property
     def storage_engine(cls):
         """Return an instance of storage engine defined in application config.
@@ -319,7 +327,7 @@ class SmartJson(SmartDict):
         raise NotImplementedError()
 
     def dumps(self, without_meta_metadata=False, with_calculated_fields=False,
-              clean=False):
+              clean=False, keywords=None):
         """Create the JSON friendly representation of the current object.
 
         :param without_meta_metadata: by default ``False``, if set to ``True``
@@ -328,6 +336,7 @@ class SmartJson(SmartDict):
             dump, if they are needed in the output set it to ``True``
         :param clean: if set to ``True`` all the keys stating with ``_`` will
             be removed from the ouput
+        :param keywords: list of keywords to dump. if None, return all
 
         :return: JSON friendly object
         """
@@ -343,6 +352,11 @@ class SmartJson(SmartDict):
             for key in list(dict_.keys()):
                 if key.startswith('_'):
                     del dict_[key]
+
+        # Filter keywords
+        if keywords is not None and any(keywords):
+            dict_ = dict(((k, v) for (k, v) in six.iteritems(dict_) if k in keywords))
+
         return dict_
 
     def loads(self, without_meta_metadata=False, with_calculated_fields=True,
@@ -403,7 +417,7 @@ class SmartJson(SmartDict):
         See: (Cerberus)[http://cerberus.readthedocs.org/en/latest].
 
         :param validator: Validator to be used, if `None`
-            :class:`~.validator:Validator`
+            :class:`~.validator.Validator`
         """
         if validator is None:
             from .validator import Validator as validator

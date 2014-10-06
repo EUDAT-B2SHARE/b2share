@@ -31,9 +31,19 @@
   {% endif %}
 {% endblock metaheader %}
 
-{% block global_css %}
+{%- block header %}
+  {%- include "base/scripts.html" %}
+  {{- super() }}
+{%- endblock header %}
+{%- block _bottom_assets %}
+  {# The legacy page requires that the scripts are loaded from the <head>
+   # rather than at the bottom of the page.
+   #}
+{%- endblock %}
+
+{% block global_bundles %}
   {{ super() }}
-  {%- css url_for('static', filename='css/formatter/templates_detailed.css'), '00-records' -%}
+  {% bundles "records.js", "formatter.css" %}
 {% endblock %}
 
 {% block body %}
@@ -73,17 +83,3 @@
   </div>
 <div style="clear: both;"></div>
 {% endblock %}
-
-{% block javascript %}
-  {{ super() }}
-  {%- js url_for('record.static', filename='js/records/records.js'), '20-record' -%}
-{% endblock javascript %}
-
-{% block _top_assets %}
-{% assets get_js_bundle() %}
-  <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-{% endassets %}
-{% endblock _top_assets %}
-
-{% block _bottom_assets %}
-{% endblock _bottom_assets %}

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2012 CERN.
+## Copyright (C) 2008, 2009, 2010, 2011, 2012, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -75,6 +75,11 @@ from invenio.legacy.bibcirculation.config import \
     CFG_BIBCIRCULATION_PROPOSAL_STATUS_RECEIVED, \
     CFG_BIBCIRCULATION_PROPOSAL_TYPE, \
     CFG_BIBCIRCULATION_PROPOSAL_STATUS
+
+
+JQUERY_TABLESORTER_BASE = "vendors/jquery-tablesorter"
+JQUERY_TABLESORTER = JQUERY_TABLESORTER_BASE + "/jquery.tablesorter.min.js"
+
 
 def load_menu(ln=CFG_SITE_LANG):
 
@@ -338,9 +343,9 @@ class Template:
 
         out = """
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+            <script src="/{0}" type="text/javascript"></script>
             <script type="text/javascript">
-            """
+            """.format(JQUERY_TABLESORTER)
 
         if is_periodical(recid):
             out += """
@@ -603,7 +608,7 @@ class Template:
         else:
             out += """
                       <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                      <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                      <script src="/%s" type="text/javascript"></script>
                       <script type="text/javascript">
                       $(document).ready(function() {
                         $('#table_loans').tablesorter()
@@ -621,7 +626,8 @@ class Template:
                         </tr>
                       </thead>
                       <tbody>
-                     """ % (_("Item"),
+                     """ % (JQUERY_TABLESORTER,
+                            _("Item"),
                             _("Loaned on"),
                             _("Due date"),
                             _("Action(s)"))
@@ -677,7 +683,7 @@ class Template:
             out += """
                    <h1 class="headline">%s</h1>
                    <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                   <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                   <script src="/%s" type="text/javascript"></script>
                    <script type="text/javascript">
                    $(document).ready(function() {
                         $('#table_requests').tablesorter()
@@ -694,7 +700,8 @@ class Template:
                    </tr>
                    </thead>
                    <tbody>
-                   """ % (_("Your Requests"),
+                   """ % (JQUERY_TABLESORTER,
+                          _("Your Requests"),
                           _("Item"),
                           _("Request date"),
                           _("Status"),
@@ -758,7 +765,7 @@ class Template:
             out += """
                    <h1 class="headline">%s</h1>
                    <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                   <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                   <script src="/%s" type="text/javascript"></script>
                    <script type="text/javascript">
                    $(document).ready(function() {
                         $('#table_requests').tablesorter()
@@ -773,7 +780,8 @@ class Template:
                    </tr>
                    </thead>
                    <tbody>
-                   """ % (_("Your Proposals under review"),
+                   """ % (JQUERY_TABLESORTER,
+                          _("Your Proposals under review"),
                           _("Item"),
                           _("Proposal date"))
 
@@ -832,7 +840,7 @@ class Template:
         out = """<div class="bibcirctop_bottom">
                     <br /> <br />
                     <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                    <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                    <script src="/%s" type="text/javascript"></script>
                     <script type="text/javascript">
                     $(document).ready(function(){
                         $('#table_hist').tablesorter()
@@ -849,7 +857,8 @@ class Template:
                     </tr>
                     </thead>
                     <tbody>
-                    """ % (_("Item"),
+                    """ % (JQUERY_TABLESORTER,
+                           _("Item"),
                            _("Loaned"),
                            _("Returned"),
                            _("Renewals"))
@@ -916,8 +925,9 @@ class Template:
 
         out = """
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />
-        <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+        <link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />
+        <link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/theme.css\" type=\"text/css\" />
+        <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
             <form name="request_form" action="%s/%s/%s/holdings/send" method="post" >
             <br />
@@ -1082,10 +1092,10 @@ class Template:
         out = load_menu(ln)
 
         out += """
-            <style type="text/css"> @import url("/js/tablesorter/themes/blue/style.css"); </style>
-            <style type="text/css"> @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
+            <style type="text/css"> @import url("/%s/themes/blue/style.css"); </style>
+            <style type="text/css"> @import url("/%s/addons/pager/jquery.tablesorter.pager.css"); </style>
+            <script src="/%s" type="text/javascript"></script>
+            <script src="/%s/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
             <script type="text/javascript">
 
             $(document).ready(function(){
@@ -1112,7 +1122,11 @@ class Template:
             <br />
 
             <div class="bibcircbottom">
-            """ % (_("Delete this request?"), CFG_SITE_URL,
+            """ % (JQUERY_TABLESORTER_BASE,
+                   JQUERY_TABLESORTER,
+                   JQUERY_TABLESORTER_BASE,
+                   JQUERY_TABLESORTER_BASE,
+                   _("Delete this request?"), CFG_SITE_URL,
                    _("Request not deleted."))
 
         if len(result) == 0:
@@ -1288,10 +1302,10 @@ class Template:
         out = load_menu(ln)
 
         out += """
-            <style type="text/css"> @import url("/js/tablesorter/themes/blue/style.css"); </style>
-            <style type="text/css"> @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
+            <style type="text/css"> @import url("/{0}/themes/blue/style.css"); </style>
+            <style type="text/css"> @import url("/{0}/addons/pager/jquery.tablesorter.pager.css"); </style>
+            <script src="/{1}" type="text/javascript"></script>
+            <script src="/{0}/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function(){
                 $("#table_all_loans")
@@ -1305,7 +1319,7 @@ class Template:
             <br />
 
             <div class="bibcircbottom">
-            """
+            """.format(JQUERY_TABLESORTER_BASE, JQUERY_TABLESORTER)
 
         if len(result) == 0:
             out += """
@@ -1646,7 +1660,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
         if result:
             out += """
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+            <script src="/%s" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function() {
               $('#table_requests').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -1672,7 +1686,8 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
             </thead>
             </tbody>
 
-            """% (_("Waiting requests"),
+            """% (JQUERY_TABLESORTER,
+                  _("Waiting requests"),
                   _("Name"),
                   _("Item"),
                   _("Request status"),
@@ -2409,7 +2424,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
         out += """
             <div class="bibcircbottom">
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script type="text/javascript" language='JavaScript'>
+            <script type="text/javascript">
             function groupDatePicker(){
                 var index = 0;
                 var datepicker = null;
@@ -2470,7 +2485,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
                           </tr>
                 </table>
 
-                <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+                <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
                 <table class="tablesorter" border="0" cellpadding="0" cellspacing="1">
                 <thead>
@@ -3175,7 +3190,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
 
         out += """
 
-        <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+        <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
         <form name="request_form" action="%s/admin2/bibcirculation/create_new_request_step4"
               method="post" >
@@ -3673,7 +3688,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
 
         out += """
 
-                <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+                <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
                 <table class="bibcirctable">
                   <tr class="bibcirctableheader">
@@ -4150,7 +4165,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
 
         out += """
 
-                <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+                <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
                 <table class="bibcirctable">
                   <tr class="bibcirctableheader">
@@ -4296,7 +4311,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
 
         out += """
 
-            <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+            <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
             <table class="bibcirctable">
               <tr align="left">
@@ -4625,10 +4640,10 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
         out += load_menu(ln)
 
         out += """
-            <style type="text/css"> @import url("/js/tablesorter/themes/blue/style.css"); </style>
-            <style type="text/css"> @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
+            <style type="text/css"> @import url("/{0}/themes/blue/style.css"); </style>
+            <style type="text/css"> @import url("/{0}/addons/pager/jquery.tablesorter.pager.css"); </style>
+            <script src="/{1}" type="text/javascript"></script>
+            <script src="/{0}/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function(){
                 $("#table_all_loans")
@@ -4642,7 +4657,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
             <br />
 
             <div class="bibcircbottom">
-            """
+            """.format(JQUERY_TABLESORTER_BASE, JQUERY_TABLESORTER)
 
         if len(result) == 0:
             out += """
@@ -4799,10 +4814,10 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
         out += load_menu(ln)
 
         out += """
-            <style type="text/css"> @import url("/js/tablesorter/themes/blue/style.css"); </style>
-            <style type="text/css"> @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
+            <style type="text/css"> @import url("/{0}/themes/blue/style.css"); </style>
+            <style type="text/css"> @import url("/{0}/addons/pager/jquery.tablesorter.pager.css"); </style>
+            <script src="/{1}" type="text/javascript"></script>
+            <script src="/{0}/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function(){
                 $("#table_all_loans")
@@ -4816,7 +4831,7 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
             <br />
 
             <div class="bibcircbottom">
-            """
+            """.format(JQUERY_TABLESORTER_BAES, JQUERY_TABLESORTER)
 
         if len(result) == 0:
             out += """
@@ -5003,10 +5018,10 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
 
         else:
             out += """
-            <style type="text/css"> @import url("/js/tablesorter/themes/blue/style.css"); </style>
-            <style type="text/css"> @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
+            <style type="text/css"> @import url("/%s/themes/blue/style.css"); </style>
+            <style type="text/css"> @import url("/%s/addons/pager/jquery.tablesorter.pager.css"); </style>
+            <script src="/%s" type="text/javascript"></script>
+            <script src="/%s/addons/pager/jquery.tablesorter.pager.js" type="text/javascript"></script>
             <script type="text/javascript">
 
             $(document).ready(function(){
@@ -5035,7 +5050,11 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
               </tr>
             </thead>
             <tbody>
-         """% (_("Name"),
+         """% (JQUERY_TABLESORTER_BASE,
+               JQUERY_TABLESORTER_BASE,
+               JQUERY_TABLESORTER,
+               JQUERY_TABLESORTER_BASE,
+               _("Name"),
                _("Item"),
                _('Library'),
                _("Location"),
@@ -5294,19 +5313,18 @@ onClick="location.href='%s/admin2/bibcirculation/create_loan?ln=%s&request_id=%s
             <style type="text/css">
                 @import url("/css/tablesorter.css");
             </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
 
             <style type="text/css">
-                @import url("/js/tablesorter/themes/blue/style.css");
+                @import url("/{1}/themes/blue/style.css");
             </style>
             <style type="text/css">
-                @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css");
+                @import url("/{1}/addons/pager/jquery.tablesorter.pager.css");
             </style>
 
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js"
+            <script src="/{0}" type="text/javascript"></script>
+            <script src="/{1}/addons/pager/jquery.tablesorter.pager.js"
                     type="text/javascript"></script>
-            """
+            """.format(JQUERY_TABLESORTER, JQUERY_TABLESORTER_BASE)
 
         if record_is_periodical:
             out += """
@@ -5682,7 +5700,7 @@ onClick="location.href='%s/admin2/bibcirculation/list_purchase?ln=%s&status=%s&r
         else:
             out += """
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+            <script src="/%s" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function() {
               $('#table_requests').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -5709,7 +5727,8 @@ onClick="location.href='%s/admin2/bibcirculation/list_purchase?ln=%s&status=%s&r
                     </tr>
                 </thead>
                 <tbody>
-                  """% (CFG_SITE_URL,
+                  """% (JQUERY_TABLESORTER,
+                        CFG_SITE_URL,
                         _("Borrower"),
                         _("Status"),
                         _("Library"),
@@ -5797,7 +5816,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
             out += """
             <div class="bibcircbottom">
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+            <script src="/%s" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function() {
               $('#table_loans').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -5828,7 +5847,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                     </tr>
                 </thead>
                 <tbody>
-                """% (_("Borrower"),
+                """% (JQUERY_TABLESORTER,
+                      _("Borrower"),
                       _("Barcode"),
                       _("Loaned on"),
                       _("Due date"),
@@ -5953,7 +5973,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
             out += """
              <div class="bibcircbottom">
              <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+            <script src="/%s" type="text/javascript"></script>
             <script type="text/javascript">
             $(document).ready(function() {
               $('#table_holdings').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -5975,7 +5995,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
               </tr>
               </thead>
               </tbody>
-                     """ % (_("Borrower"),
+                     """ % (JQUERY_TABLESORTER,
+                            _("Borrower"),
                             _("Barcode"),
                             _("Library"),
                             _("Location"),
@@ -6042,7 +6063,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """<div class="bibcircbottom">
                   <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                  <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                  <script src="/%s" type="text/javascript"></script>
                   <script type="text/javascript">
                   $(document).ready(function() {
                     $('#table_loans').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -6066,7 +6087,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                      </tr>
                      </thead>
                      <tbody>
-                     """ % (_("Borrower"),
+                     """ % (JQUERY_TABLESORTER,
+                            _("Borrower"),
                             _("Barcode"),
                             _("Library"),
                             _("Location"),
@@ -6880,16 +6902,16 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
             </style>
 
             <style type="text/css">
-                @import url("/js/tablesorter/themes/blue/style.css");
+                @import url("/{0}/themes/blue/style.css");
             </style>
             <style type="text/css">
-                @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css");
+                @import url("/{0}/addons/pager/jquery.tablesorter.pager.css");
             </style>
 
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js"
+            <script src="/{1}" type="text/javascript"></script>
+            <script src="/{0}/addons/pager/jquery.tablesorter.pager.js"
                     type="text/javascript"></script>
-            """
+            """.format(JQUERY_TABLESORTER_BASE, JQUERY_TABLESORTER)
 
         if record_is_periodical:
             out += """
@@ -7450,16 +7472,16 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
             </style>
 
             <style type="text/css">
-                @import url("/js/tablesorter/themes/blue/style.css");
+                @import url("/{0}/themes/blue/style.css");
             </style>
             <style type="text/css">
-                @import url("/js/tablesorter/addons/pager/jquery.tablesorter.pager.css");
+                @import url("/{0}/addons/pager/jquery.tablesorter.pager.css");
             </style>
 
-            <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
-            <script src="/js/tablesorter/addons/pager/jquery.tablesorter.pager.js"
+            <script src="/{1}" type="text/javascript"></script>
+            <script src="/{0}/addons/pager/jquery.tablesorter.pager.js"
                     type="text/javascript"></script>
-            """
+            """.format(JQUERY_TABLESORTER_BASE, JQUERY_TABLESORTER)
 
         if record_is_periodical:
             out += """
@@ -8158,7 +8180,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
         else:
             out += """
          <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-         <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+         <script src="/%s" type="text/javascript"></script>
          <script type="text/javascript">
            $(document).ready(function() {
              $('#table_requests').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -8182,7 +8204,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
               </thead>
               <tbody>
         </form>
-         """% (CFG_SITE_URL,
+         """% (JQUERY_TABLESORTER,
+               CFG_SITE_URL,
                _("Item"),
                _("Request status"),
                _("Library"),
@@ -8271,7 +8294,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
         <div class="bibcircbottom">
 
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+        <script src="/%s" type="text/javascript"></script>
         <script type="text/javascript">
         $(document).ready(function() {
           $('#table_loans').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -8296,7 +8319,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
              </thead>
              <tbody>
 
-         """% (CFG_SITE_URL,
+         """% (JQUERY_TABLESORTER,
+               CFG_SITE_URL,
                borrower_id,
                _("Item"),
                _("Barcode"),
@@ -8439,7 +8463,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
             out += """<div class="bibcircbottom">
                     <br /> <br />
                     <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                    <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                    <script src="/%s" type="text/javascript"></script>
                     <script type="text/javascript">
                       $(document).ready(function() {
                         $('#table_requests').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -8459,7 +8483,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                      </tr>
                     <thead>
                     <tbody>
-                    """ % (_("Item"), _("Barcode"), _("Library"),
+                    """ % (JQUERY_TABLESORTER,
+                           _("Item"), _("Barcode"), _("Library"),
                            _("Location"), _("From"),
                            _("To"), _("Request date"))
 
@@ -8527,7 +8552,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
         else:
             out += """<div class="bibcircbottom">
                       <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-                      <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+                      <script src="/%s" type="text/javascript"></script>
                       <script type="text/javascript">
                         $(document).ready(function() {
                           $('#table_loans').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -8550,7 +8575,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                      </tr>
                    </thead>
                    <tbody>
-                     """ % (_("Item"),
+                     """ % (JQUERY_TABLESORTER,
+                            _("Item"),
                             _("Barcode"),
                             _("Library"),
                             _("Location"),
@@ -9179,7 +9205,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+        <script src="/%s" type="text/javascript"></script>
         <script type="text/javascript">
         $(document).ready(function() {
           $('#table_ill').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -9203,7 +9229,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
           </tr>
         </thead>
         <tbody>
-         """ % (_("ILL ID"),
+         """ % (JQUERY_TABLESORTER,
+                _("ILL ID"),
                 _("Item"),
                 _("Supplier"),
                 _("Request date"),
@@ -9389,7 +9416,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+            <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
             """% CFG_SITE_URL
 
         out += """
@@ -9607,7 +9634,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                    _("ISBN"))
 
         out += """
-        <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+        <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
              <table class="bibcirctable">
                 <tr align="center">
@@ -10519,7 +10546,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                    _("ISSN"))
 
         out += """
-            <script type="text/javascript" language='JavaScript' src="%s/js/ui.datepicker.min.js"></script>
+            <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
              <table class="bibcirctable">
                 <tr align="center">
@@ -11063,8 +11090,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                       _("Standard number"), standard_number)
 
         out += """
-            <script type="text/javascript" language='JavaScript'
-                    src="%s/js/ui.datepicker.min.js"></script>
+            <script type="text/javascript"
+                    src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
 
              <table class="bibcirctable">
                 <tr align="center">
@@ -11436,9 +11463,10 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
         <div class="bibcircbottom">
-        <link rel=\"stylesheet\" href=\"%(site_url)s/img/jquery-ui.css\" type=\"text/css\" />
-        <script type="text/javascript" language='JavaScript'
-                src="%(site_url)s/js/ui.datepicker.min.js"></script>
+        <link rel=\"stylesheet\" href=\"%(site_url)s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />
+        <link rel=\"stylesheet\" href=\"%(site_url)s/vendors/jquery-ui/themes/redmond/theme.css\" type=\"text/css\" />
+        <script type="text/javascript"
+                src="%(site_url)s/vendors/jquery-ui/jquery-ui.min.js"></script>
         <form name="search_form"
               action="%(site_url)s/admin2/bibcirculation/ill_search_result"
               method="get" >
@@ -11578,8 +11606,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
             <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script type="text/javascript" language='JavaScript'
-                    src="%s/js/ui.datepicker.min.js"></script>
+            <script type="text/javascript"
+                    src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
             """% CFG_SITE_URL
 
         (_borrower_id, borrower_name, borrower_email, borrower_mailbox,
@@ -12211,7 +12239,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                           <th width="100" valign="top">%s</th>
                           <td>
                             <table class="bibcircnotes">
-                    """ % (_("Barcode"), barcode or 'No barcode asociated',
+                    """ % (_("Barcode"), barcode or 'No barcode associated',
                            _("Previous notes"))
 
             out += notes
@@ -12553,8 +12581,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
             <style  type="text/css"> @import url("/css/tablesorter.css"); </style>
-            <script type="text/javascript" language='JavaScript'
-                    src="%s/js/ui.datepicker.min.js"></script>
+            <script type="text/javascript" src="%s/vendors/jquery-ui/jquery-ui.min.js"></script>
             """% CFG_SITE_URL
 
         (_borrower_id, borrower_name, borrower_email,
@@ -13497,7 +13524,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+        <script src="/%s" type="text/javascript"></script>
         <script type="text/javascript">
         $(document).ready(function() {
           $('#table_ill').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -13521,7 +13548,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                     </tr>
                 </thead>
                 <tbody>
-            """% (_("Borrower"),
+            """% (JQUERY_TABLESORTER,
+                  _("Borrower"),
                   _("Item"),
                   _("Supplier"),
                   _("Status"),
@@ -13629,7 +13657,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+        <script src="/%s" type="text/javascript"></script>
         <script type="text/javascript">
         $(document).ready(function() {
           $('#table_ill').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -13654,7 +13682,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                     </tr>
              </thead>
              <tbody>
-            """% (_("Borrower"),
+            """% (JQUERY_TABLESORTER,
+                  _("Borrower"),
                   _("Item"),
                   _("No. purchases"),
                   _("Supplier"),
@@ -13748,7 +13777,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+        <script src="/%s" type="text/javascript"></script>
         <script type="text/javascript">
         $(document).ready(function() {
           $('#table_ill').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -13773,7 +13802,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                     </tr>
              </thead>
              <tbody>
-            """% (_("ID"),
+            """% (JQUERY_TABLESORTER,
+                  _("ID"),
                   _("Proposal date"),
                   _("Proposer"),
                   _("Requests"),
@@ -13868,7 +13898,7 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
 
         out += """
         <style type="text/css"> @import url("/css/tablesorter.css"); </style>
-        <script src="/js/tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+        <script src="/%s" type="text/javascript"></script>
         <script type="text/javascript">
         $(document).ready(function() {
           $('#table_ill').tablesorter({widthFixed: true, widgets: ['zebra']})
@@ -13890,7 +13920,8 @@ onClick="location.href='%s/admin2/bibcirculation/get_item_requests_details?recid
                     </tr>
              </thead>
              <tbody>
-            """% (_("Req.ID"),
+            """% (JQUERY_TABLESORTER,
+                  _("Req.ID"),
                   _("Requester"),
                   _("Period of Interest: From"),
                   _("Period of Interest: To"),

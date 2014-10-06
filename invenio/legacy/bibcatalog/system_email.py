@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011, 2013 CERN.
+## Copyright (C) 2009, 2010, 2011, 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -58,7 +58,7 @@ class BibCatalogSystemEmail(BibCatalogSystem):
         raise NotImplementedError
 
     def ticket_submit(self, uid=None, subject="", recordid=-1, text="", queue="", priority="", owner="", requestor=""):
-        """creates a ticket. return true on success, otherwise false"""
+        """creates a ticket. Returns ticket_id on success, otherwise None"""
 
         if not EMAIL_SUBMIT_CONFIGURED:
             register_exception(stream='warning',
@@ -70,28 +70,28 @@ class BibCatalogSystemEmail(BibCatalogSystem):
         queueset = ""
         requestorset = ""
         ownerset = ""
-        recidset = " cf-recordID:" + escape_shell_arg(str(recordid)) + '\n'
+        recidset = " cf-recordID: %s\n" % recordid
         textset = ""
         subjectset = ""
         if subject:
-            subjectset = 'ticket #' + ticket_id + ' - ' + escape_shell_arg(subject)
+            subjectset = 'ticket #%s - %s' % (ticket_id, subject)
         if priority:
-            priorityset = " priority:" + escape_shell_arg(str(priority)) + '\n'
+            priorityset = " priority: %s\n" % priority
         if queue:
-            queueset = " queue:" + escape_shell_arg(queue) + '\n'
+            queueset = " queue: %s\n" % queue
         if requestor:
-            requestorset = " requestor:" + escape_shell_arg(requestor) + '\n'
+            requestorset = " requestor: %s\n" % requestor
         if owner:
             ownerprefs = invenio.legacy.webuser.get_user_preferences(owner)
             if "bibcatalog_username" in ownerprefs:
                 owner = ownerprefs["bibcatalog_username"]
-            ownerset = " owner:" + escape_shell_arg(owner) + '\n'
+            ownerset = " owner: %s\n" % owner
 
-        textset = textset + ownerset + requestorset + recidset + queueset + priorityset + '\n'
+        textset += ownerset + requestorset + recidset + queueset + priorityset + '\n'
 
-        textset = textset + escape_shell_arg(text) + '\n'
+        textset += text + '\n'
 
-        ok = send_email(fromaddr=FROM_ADDRESS, toaddr=TO_ADDRESS, subject=subjectset, header='Hello,\n\n', content=textset)
+        ok = send_email(fromaddr=FROM_ADDRESS, toaddr=TO_ADDRESS, subject=subjectset, content=textset)
         if ok:
             return ticket_id
         return None

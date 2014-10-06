@@ -19,6 +19,7 @@
 {% from "_formhelpers.html" import render_field with context %}
 {% extends "page.html" %}
 {% set title = _("Write a message") %}
+
 {% block header %}
   {{ super() }}
   {%- css url_for("static", filename="css/jquery-ui.css") -%}
@@ -80,22 +81,31 @@
             select: selectLast
         });
 
-        $('input.datepicker').datepicker({
-          dateFormat: 'yy-mm-dd'
-        });
 
-        $('input.datetimepicker').datetimepicker({
-          showSecond: true,
-          dateFormat: 'yy-mm-dd',
-          timeFormat: 'hh:mm:ss'
-        });
+{% block global_bundles %}
+  {{ super() }}
+  {% bundle "messages.js" %}
+{% endblock %}
 
-        $('input.timepicker').timepicker({
-          timeFormat: 'hh:mm:ss',
-          showSecond: true
-        });
 
-    });
+{% block header %}
+  {{ super() }}
+  <link rel="stylesheet" type="text/css"
+        href="{{ url_for("static", filename="vendors/jquery-ui/themes/redmond/jquery-ui.css") }}"/>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+      require(['jquery', 'js/messages/add'], function($, add) {
+        $(function(){
+          add({
+            url: {
+              search: "{{ url_for('webgroup.search')|safe }}",
+              {#lang: 'fr' // match the plugin language #}
+            }
+          })
+        })
+      })
     </script>
 {% endblock javascript %}
 {% block body %}

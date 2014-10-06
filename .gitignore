@@ -2,6 +2,7 @@
 *.cmucl.core
 *.fas
 *.fasl
+*.kdev4
 *.kdevelop
 *.kdevses
 *.lib
@@ -12,6 +13,7 @@
 *~
 .DS_Store
 .coverage
+.kdev4/
 .noseids
 .project
 .pydevproject
@@ -56,4 +58,6 @@ po/POTFILES
 po/POTFILES-py
 po/POTFILES-webdoc
 po/stamp-po
-tags
+/tags
+
+invenio/base/static/*

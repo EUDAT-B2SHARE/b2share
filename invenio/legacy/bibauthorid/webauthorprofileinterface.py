@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2011 CERN.
+## Copyright (C) 2011, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -25,17 +25,24 @@ from invenio.legacy.bibauthorid.config import CLAIMPAPER_USER_ROLE #emitting #py
 
 from invenio.legacy.bibauthorid.frontinterface import get_bibrefrec_name_string #emitting #pylint: disable-msg=W0611
 
+from invenio.legacy.bibauthorid.webapi import author_has_papers #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.webapi import is_valid_bibref #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.webapi import search_person_ids_by_name #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.webapi import get_papers_by_person_id #emitting #pylint: disable-msg=W0611
-from invenio.legacy.bibauthorid.dbinterface import get_person_db_names_count #emitting #pylint: disable-msg=W0611
-from invenio.legacy.bibauthorid.dbinterface import get_existing_personids #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_names_of_author #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_existing_authors #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.webapi import get_person_redirect_link #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.webapi import is_valid_canonical_id #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.webapi import get_person_id_from_paper #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.webapi import get_person_id_from_canonical_id #emitting #pylint: disable-msg=W0611
-from invenio.legacy.bibauthorid.dbinterface import  get_person_names_count #emitting #pylint: disable-msg=W0611
-from invenio.legacy.bibauthorid.dbinterface import get_canonical_id_from_personid #emitting #pylint: disable-msg=W0611
-from invenio.legacy.bibauthorid.dbinterface import get_coauthor_pids #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_names_count_of_author #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_canonical_name_of_author#emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_coauthors_of_author #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_confirmed_papers_of_author #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_title_of_paper #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.dbinterface import get_orcid_id_of_author, get_arxiv_papers_of_author #emitting #pylint: disable-msg=W0611
+from invenio.legacy.bibauthorid.webapi import get_hepnames
+from invenio.legacy.bibauthorid.backinterface import remove_empty_authors
 
 from invenio.legacy.bibauthorid.name_utils import create_normalized_name #emitting #pylint: disable-msg=W0611
 from invenio.legacy.bibauthorid.name_utils import split_name_parts #emitting #pylint: disable-msg=W0611
@@ -46,4 +53,4 @@ from invenio.legacy.bibauthorid.config import AID_ON_AUTHORPAGES #emitting #pyli
 from invenio.legacy.bibauthorid import searchinterface as pt #emitting #pylint: disable-msg=W0611
 
 def gathered_names_by_personid(pid):
-    return [p[0] for p in get_person_names_count(pid)]
+    return [p[0] for p in get_names_count_of_author(pid)]

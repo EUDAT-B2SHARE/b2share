@@ -579,7 +579,7 @@ a.footer:hover {
    color: #000;
    background: #fff;
    padding: 1px;
-   margin: 5px 0px 5px 0px;
+   /*margin: 5px 0px 5px 0px;*/
    border-collapse: collapse;
    /*border-top: 1px solid #36c;*/
 }
@@ -652,6 +652,19 @@ a.footer:hover {
    margin: 20px 20px 5px 0px;
    border-collapse: collapse;
    /*border-top: 1px solid #36c;*/
+}
+span.collection-father-has-grandchildren a{
+    font-weight:800;
+}
+ul.collection-second-level{
+    padding-left: 0;
+    margin: 0;
+}
+ul.collection-second-level li{
+    font-size:small;
+    list-style: none;
+    display: inline;
+    white-space: nowrap;
 }
 .searchalsosearchboxheader {
    color: #000;
@@ -939,6 +952,21 @@ th.youraccountheader a:hover {
    color: #603;
    background: #fff;
    padding: 0px;
+}
+.searchservicebox {
+    margin-top: 15px;
+    margin-bottom: 4px;
+    font-size: small;
+}
+.searchservicebox a.searchserviceitem {
+    color: #333;
+}
+.searchservicebox a.searchserviceitem:hover {
+    color: #36c;
+}
+.searchservicebox a.lessserviceitemslink, .searchservicebox a.moreserviceitemslink {
+    font-size: smaller;
+    color: #060;
 }
 a.nearestterms:link {
    color: #603;
@@ -3271,6 +3299,29 @@ div.bibcircbottom {
     width: 50%;
 }
 
+
+/* add-to-search */
+
+#advbox{
+    padding-bottom: 20px;
+    white-space: nowrap;
+}
+
+a#advbox-toggle{
+    text-decoration: none;
+    color: #3366CC;
+}
+
+#advbox-toggle-button{
+    background-color: #DDDDDD;
+    border-radius: 3px 3px 3px 3px;
+    color: #3366CC;
+    font-weight: 400;
+    padding: 1px 6px;
+    text-decoration: none;
+}
+
+/*End - add-to-search*/
 
 /* Rollover menus */
 

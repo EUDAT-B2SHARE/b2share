@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
+## Copyright (C) 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -19,6 +19,7 @@
 
 """Unit tests for search views."""
 
+from intbitset import intbitset
 from flask import url_for, current_app
 from invenio.testsuite import InvenioTestCase, make_test_suite, \
     run_test_suite

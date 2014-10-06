@@ -16,115 +16,50 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Additional extensions and functions for the `flask.ext.assets` module."""
+"""
+Additional extensions and functions for the `flask.ext.assets` module.
 
-import six
-from webassets.bundle import is_url
-from flask import current_app
-from flask.ext.assets import Environment, Bundle, FlaskResolver
-from .extensions import CollectionExtension
+.. py:data:: command
+
+    Flask-Script command that deals with assets.
+
+    Documentation is on: `webassets` :ref:`webassets:script-commands`
+
+    .. code-block:: python
+
+        # How to install it
+        from flask.ext.script import Manager
+        manager = Manager()
+        manager.add_command("assets", command)
+
+.. py:data:: registry
+
+    Flask-Registry registry that handles the bundles. Use it directly as it's
+    lazy loaded.
+"""
+
+from .commands import AssetsCommand, BowerCommand
+from .extensions import BundleExtension
+from .registry import bundles
+from .wrappers import Bundle
 
 
-__all__ = ('CollectionExtension', 'setup_app')
+__all__ = ("bower", "bundles", "command", "setup_app", "Bundle")
 
-
-class InvenioResolver(FlaskResolver):
-
-    """Custom resource resolver for webassets."""
-
-    def resolve_source(self, item):
-        """Return the absolute path of the resource.
-
-        .. seealso:: :py:function:`webassets.env.Resolver:resolve_source`
-        """
-        if not isinstance(item, six.string_types) or is_url(item):
-            return item
-        if item.startswith(self.env.url):
-            item = item[len(self.env.url):]
-        return self.search_for_source(item)
-
-    def resolve_source_to_url(self, filepath, item):
-        """Return the url of the resource.
-
-        Displaying them as is in debug mode as the webserver knows where to
-        search for them.
-
-        .. seealso:: :py:function:`webassets.env.Resolver:resolve_source_to_url`
-        """
-        if self.env.debug:
-            return item
-        return super(InvenioResolver, self).resolve_source_to_url(filepath,
-                                                                  item)
-
-    def search_for_source(self, item):
-        """Return absolute path of the resource.
-
-        :param item: resource filename
-        :return: absolute path
-        .. seealso:: :py:function:`webassets.env.Resolver:search_for_source`
-        """
-        try:
-            abspath = super(InvenioResolver, self).search_env_directory(item)
-        except:
-            # If a file is missing in production (non-debug mode), we want
-            # to not break and will use /dev/null instead. The exception
-            # is caught and logged.
-            if not current_app.debug:
-                error = "Missing asset file: {0}".format(item)
-                current_app.logger.exception(error)
-                abspath = "/dev/null"
-            else:
-                raise
-
-        return abspath
-
-Environment.resolver_class = InvenioResolver
+command = AssetsCommand()
+bower = BowerCommand()
 
 
 def setup_app(app):
-    """Initialize Assets extension."""
-    app.config.setdefault("LESS_RUN_IN_DEBUG", False)
-    assets = Environment(app)
-    assets.url = app.static_url_path + "/"
-    assets.directory = app.static_folder
+    """Initialize Assets extension.
 
-    commands = (("LESS_BIN", "lessc"),
-                ("CLEANCSS_BIN", "cleancss"))
-    import subprocess
-    for key, cmd in commands:
-        try:
-            command = app.config.get(key, cmd)
-            subprocess.call([command, "--version"],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-        except OSError:
-            app.logger.error("Executable `{0}` was not found. You can specify "
-                             "it via {1}."
-                             .format(cmd, key))
-            app.config["ASSETS_DEBUG"] = True
-            assets.debug = True
+    Use the ``ASSETS_BUNDLES_DIR`` option to change the name of the directory
+    where the assets are generated (by default ``gen``).
 
-    def _jinja2_new_bundle(tag, collection, name=None, filters=None):
-        if len(collection):
-            name = "invenio" if name is None else name
-            sig = hash(",".join(collection) + "|" + str(filters))
-            kwargs = {
-                "output": "{0}/{1}-{2}.{0}".format(tag, name, sig),
-                "filters": filters,
-                "extra": {"rel": "stylesheet"}
-            }
+    :param app: Flask application
+    """
+    app.config.setdefault("ASSETS_BUNDLES_DIR", "gen")
 
-            # If LESS_RUN_IN_DEBUG is set to False, then the filters are
-            # removed and each less file will be parsed by the less JavaScript
-            # library.
-            if assets.debug and not app.config.get("LESS_RUN_IN_DEBUG", True):
-                kwargs["extra"]["rel"] = "stylesheet/less"
-                kwargs["filters"] = None
-
-            return Bundle(*collection, **kwargs)
-
-    app.jinja_env.extend(new_bundle=_jinja2_new_bundle,
-                         default_bundle_name='90-invenio')
-    app.jinja_env.add_extension(CollectionExtension)
+    BundleExtension.install(app)
 
     return app

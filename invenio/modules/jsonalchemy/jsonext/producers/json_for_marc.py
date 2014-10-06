@@ -96,8 +96,8 @@ def produce(self, fields=None):
 
     Produces a list of dictionaries will all the possible marc tags as keys.
 
-    :param fields: list of tags to include in the output, if None or
-        empty list all available tags will be included.
+    :param fields: list of fields to include in the output, if None or
+                empty list all available tags will be included.
     """
     from invenio.base.utils import try_to_eval
 
@@ -142,10 +142,11 @@ def produce(self, fields=None):
                                 tmp_dict[marc_tag] = value[subfield]
                             except:
                                 try:
-                                    tmp_dict[marc_tag] = try_to_eval(
-                                        subfield, functions(
-                                            self.additional_info.namespace),
-                                        value=value, self=self)
+                                    tmp_dict[marc_tag] = try_to_eval(subfield,
+                                                                     functions(
+                                                                         self.additional_info.namespace),
+                                                                     value=value,
+                                                                     self=self)
                                 except ImportError:
                                     pass
                                 except Exception as e:

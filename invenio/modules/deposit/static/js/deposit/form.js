@@ -18,9 +18,57 @@
  */
 
 
-var DEPOSIT_FORM = (function( $ ){
+define(function(require, exports, module) {
+    'use strict';
+
+    var $ = require('jquery'),
+        defineComponent = require('flight/component'),
+        tpl_file_entry = require('hgn!./templates/file_entry'),
+        tpl_file_link = require('hgn!./templates/file_link'),
+        tpl_flash_message = require('hgn!./templates/flash_message'),
+        tpl_field_message = require('hgn!./templates/field_message'),
+        tpl_save_error = require('hgn!./templates/save_error'),
+        tpl_status_saving = require('hgn!./templates/status_saving'),
+        tpl_status_error = require('hgn!./templates/status_error'),
+        tpl_status_saved = require('hgn!./templates/status_saved'),
+        tpl_status_saved_with_error = require('hgn!./templates/status_saved_with_error'),
+        tpl_success = require('hgn!./templates/success'),
+        tpl_loader = require('hgn!./templates/loader'),
+        tpl_loader_success = require('hgn!./templates/loader_success'),
+        tpl_loader_failed = require('hgn!./templates/loader_failed')
+
+    // provides $.fn.dynamicFieldList
+    require('./dynamic_field_list')
+    // provides $.fn.sortable
+    require('ui/sortable')
+    // provides $.fn.datepicker
+    require('ui/datepicker')
+    // provides $.fn.typeahead
+    require('typeahead')
 
   var empty_cssclass = "empty-element";
+
+  return defineComponent(depositForm);
+
+  function depositForm() {
+    this.defaultAttrs({
+        save_url: "",
+        save_all_url: "",
+        complete_url: "",
+        autocomplete_url: "",
+        datepicker_options: {dateFormat: "yy-mm-dd"},
+
+        // Selectors
+        datepickerSelector: '.datepicker',
+        formSelector: '#submitForm',
+        formDialogSelector: '#form-submit-dialog',
+
+        // Classes
+        formSaveClass: '.form-save',
+        formSubmitClass: '.form-submit',
+        dynamicFieldListClass : ".dynamic-field-list",
+        pluploaderClass: ".pluploader"
+      });
 
   //
   // Helpers
@@ -47,39 +95,25 @@ var DEPOSIT_FORM = (function( $ ){
       };
   }
 
-  function serialize_files(selector) {
-      var ids, files, result;
-
-      // Extract ids
-      ids = $(selector).find('tr[id]').map(function(){ return $(this).attr('id');});
-      // Build search dict
-      files = {};
-      $.each(uploader.files, function(idx, elem){
-          files[elem.id] = elem;
-      });
-      // Build ordered list of server ids.
-      result = [];
-      $.each(ids, function(idx, id){
-          var file = files[id];
-          if(file !== undefined && file.status == 5) {
-              result.push(file.server_id);
-          }
-      });
-      return result;
-  }
-
   /**
    * Serialize a form
    */
-  function serialize_form(selector){
+  this.serialize_form = function(selector){
       // Sync CKEditor before serializing
-      for(var instance in CKEDITOR.instances){
-          var editor = CKEDITOR.instances[instance];
-          $('#'+instance).val(editor.getData());
+      if (typeof CKEDITOR !== 'undefined') {
+        $.each(CKEDITOR.instances, function(instance, editor) {
+          $("#" + instance).val(editor.getData())
+        });
       }
-      fields = $(selector).serializeArray();
-      if(uploader !== null){
-          fields.push({name: 'files', value: serialize_files('#filelist')});
+      var fields = $(selector).serializeArray(),
+          $pluploader = $(this.attr.pluploaderClass);
+
+      if ( $pluploader.length ) {
+        // There is a pluploader instance in the form
+        fields.push({
+          name: 'files',
+          value: $pluploader.data('pluploadWidget').val()
+        });
       }
       return serialize_object(fields);
   }
@@ -178,7 +212,7 @@ var DEPOSIT_FORM = (function( $ ){
     bytes = +bytes / Math.pow( 2, 10*i );
 
     // Rounds to 2 decimals places.
-      bytes_to_fixed = bytes.toFixed(2);
+      var bytes_to_fixed = bytes.toFixed(2);
       if( bytes.toString().length > bytes_to_fixed.toString().length ){
           bytes = bytes_to_fixed;
       }
@@ -211,28 +245,42 @@ var DEPOSIT_FORM = (function( $ ){
           // if(!$('#state-' + name)){
           //     alert("Problem");
           // }
-          $('#state-' + name).html(
-              tpl_field_message.render({
-                  name: name,
-                  state: state,
-                  messages: data.messages
-              })
-          );
+          var $state_name = $("#state-" + name);
+          var $state_group_name = $("#state-group-" + name);
 
+          var msgs = $.map(data.messages, function(value, top_index) {
+            if (typeof value !== "string") {
+              return $.map(value, function(msg, index) {
+                return msg;
+              });
+            } else {
+              return [value];
+            }
+          });
 
-          ['info','warning','error','success'].map(function(s){
-              $("#state-group-" + name).removeClass(s);
-              $("#state-" + name).removeClass('alert-'+s);
+          $state_name.html(tpl_field_message({
+            name: name,
+            state: state,
+            messages: msgs
+          }));
+
+          var error_state = 'danger';
+
+          ['info', 'warning', 'error', 'success'].forEach(function(s){
+              $state_group_name.removeClass(s);
+              $state_name.removeClass('alert-'+s);
               if(s == state) {
+                  $state_group_name.addClass(state);
                   if(s == 'error') {
                       has_error = true;
+                      $state_name.addClass('alert-'+error_state);
                   }
-                  $("#state-group-" + name).addClass(state);
-                  $("#state-" + name).addClass('alert-'+state);
+                  else
+                      $state_name.addClass('alert-'+state);
               }
           });
 
-          $('#state-' + name).show('fast');
+          $state_name.show('fast');
           return has_error;
       } else {
           clear_error(name);
@@ -265,7 +313,7 @@ var DEPOSIT_FORM = (function( $ ){
                   size: file.size
               };
 
-              $('#filelist').append(tpl_file_entry.render({
+              $('#filelist').append(tpl_file_entry({
                   id: id,
                   filename: file.name,
                   filesize: getBytesWithUnit(file.size)
@@ -275,7 +323,7 @@ var DEPOSIT_FORM = (function( $ ){
           $('#file-table').show('fast');
       } else {
           clear_error(name);
-          has_ckeditor = $('[name=' + name + ']').data('ckeditor');
+          var has_ckeditor = $('[name=' + name + ']').data('ckeditor');
           if( has_ckeditor === 1) {
               if(CKEDITOR.instances[name].getData(value) != value) {
                   CKEDITOR.instances[name].setData(value);
@@ -336,21 +384,21 @@ var DEPOSIT_FORM = (function( $ ){
   /**
    * Set value of status indicator in form (e.g. saving, saved, ...)
    */
-  function set_status(tpl, ctx) {
+  function set_status(html) {
       $('.status-indicator').show();
-      $('.status-indicator').html(tpl.render(ctx));
+      $('.status-indicator').html(html);
   }
 
-  function set_loader(selector, tpl, ctx) {
+  function set_loader(selector, html) {
       $(selector).show();
-      $(selector).html(tpl.render(ctx));
+      $(selector).html(html);
   }
 
   /**
    * Flash a message in the top.
    */
   function _flash_message(ctx) {
-      $('#flash-message').html(tpl_flash_message.render(ctx));
+      $('#flash-message').html(tpl_flash_message(ctx));
       $('#flash-message').show('fast');
   }
 
@@ -358,40 +406,53 @@ var DEPOSIT_FORM = (function( $ ){
    * Save field value value
    */
   function save_field(url, name, value) {
-      request_data = {};
+      var request_data = {};
       request_data[name] = value;
       save_data(url, request_data);
   }
+
+  /**
+   * Fired when a form field has to be saved
+   *
+   * @event dataSaveField
+   * @param ev {Event}
+   * @param data {Object}
+   */
+  this.onSaveField = function(ev, data) {
+    save_field(data.save_url, data.name, data.value);
+  }
+
+
   /**
    * Save field value value
    */
   function save_data(url, request_data, flash_message, success_callback, failure_callback) {
-      loader_selector = '#' + name + '-loader';
+      var loader_selector = '#' + name + '-loader';
 
       if(flash_message === undefined){
           flash_message = false;
       }
 
-      set_status(tpl_webdeposit_status_saving, request_data);
-      set_loader(loader_selector, tpl_loader, request_data);
+      set_status(tpl_status_saving());
+      set_loader(loader_selector, tpl_loader());
 
       $.ajax(
           json_options({url: url, data: request_data})
       ).done(function(data) {
           var errors = handle_response(data);
-          set_loader(loader_selector, tpl_loader_success, request_data);
+          set_loader(loader_selector, tpl_loader_success());
           if(errors) {
-              set_status(tpl_webdeposit_status_saved_with_errors, request_data);
+              set_status(tpl_status_saved_with_error());
               if(flash_message) {
-                  _flash_message({state:'warning', message: tpl_message_errors.render({})});
+                  _flash_message({state:'warning', message: tpl_save_error()});
               }
               if(failure_callback !== undefined){
                   failure_callback();
               }
           } else {
-              set_status(tpl_webdeposit_status_saved, request_data);
+              set_status(tpl_status_saved());
               if(flash_message) {
-                  _flash_message({state:'success', message: tpl_message_success.render({})});
+                  _flash_message({state:'success', message: tpl_success()});
               }
               if(success_callback !== undefined){
                   success_callback();
@@ -399,429 +460,51 @@ var DEPOSIT_FORM = (function( $ ){
           }
 
       }).fail(function() {
-          set_status(tpl_webdeposit_status_error, request_data);
-          set_loader(loader_selector, tpl_loader_success, request_data);
+          set_status(tpl_status_error());
+          set_loader(loader_selector, tpl_loader_failed());
       });
   }
 
   /**
+   * Fired on save button click
+   *
+   * @event click
+   * @param event {Event}
    */
-  function check_status(url){
-      setInterval(function() {
-          $.ajax({
-              type: 'GET',
-              url: url
-          }).done(function(data) {
-              if (data.status == 1)
-                  location.reload();
-          });
-      }, 10000);
+  this.onSaveClick = function (event) {
+      event.preventDefault();
+      this.trigger('dataFormSave', {
+        url: this.attr.save_all_url,
+        form_selector: this.attr.formSelector,
+        show: true
+      });
+      return false;
   }
 
 
   /**
-   * Initialize PLUpload
+   * Fired on submit button click
+   * @event click
+   * @param event {Event}
    */
-  function init_plupload(max_size, selector, save_url, url, delete_url, get_file_url, db_files, dropbox_url, uuid, newdep_url, continue_url) {
-      if($(selector).length === 0){
-          uploader = null;
-          return;
-      }
-
-      var had_error = false;
-      uploader = new plupload.Uploader({
-          // General settings
-          runtimes : 'html5',
-          url : url,
-          max_file_size : max_size,
-          chunk_size : '10mb',
-          //unique_names : true,
-          browse_button : 'pickfiles',
-          drop_element : 'field-plupload_file'
-
-          // Specify what files to browse for
-          //filters : [
-          //    {title : "Image files", extensions : "jpg,gif,png,tif"},
-          //    {title : "Compressed files", extensions : "rar,zip,tar,gz"},
-          //    {title : "PDF files", extensions : "pdf"}
-          //]
+  this.onSubmitClick = function (event) {
+      event.preventDefault();
+      this.trigger('dataFormSubmit', {
+        url: this.attr.complete_url,
+        form_selector: this.attr.formSelector,
+        dialog: this.attr.formDialogSelector
       });
-
-      function init_uuid(){
-          if(uuid === null){
-              uuid = create_deposition(newdep_url);
-              url = url.replace("-1", uuid);
-              uploader.settings.url = url.replace("-1", uuid);
-              delete_url = delete_url.replace("-1", uuid);
-              get_file_url = get_file_url.replace("-1", uuid);
-              dropbox_url = dropbox_url.replace("-1", uuid);
-              continue_url = continue_url.replace("-1", uuid);
-          }
-      }
-
-      queue_progress = new plupload.QueueProgress();
-
-      uploader.init();
-
-      function fake_file(file){
-          var plfile = new plupload.File({
-              id: file.id,
-              name: file.name,
-              size: file.size
-          });
-          // Dont touch it!
-          // For some reason the constructor doesn't initialize
-          // the data members
-          plfile.id = file.id;
-          plfile.server_id = file.server_id || file.id;
-          plfile.name = file.name;
-          plfile.size = file.size;
-          // loaded is set to 0 as a temporary fix plupload's bug in
-          // calculating current upload speed. For checking if a file
-          // has been uploaded, check file.status
-          plfile.loaded = 0; //file.size;
-          plfile.status = 5; //status = plupload.DONE
-          plfile.percent = 100;
-          return plfile;
-      }
-
-      $(function() {
-          if (!jQuery.isEmptyObject(db_files)) {
-              $('#file-table').show('slow');
-
-              $.each(db_files, function(i, file) {
-                  // Simulate a plupload file object
-                  var plfile = fake_file(file);
-
-                  uploader.files.push(plfile);
-                  $('#filelist').append(tpl_file_entry.render({
-                      id: plfile.id,
-                      filename: plfile.name,
-                      filesize: getBytesWithUnit(plfile.size),
-                      download_url: get_file_url + "?file_id=" + plfile.id,
-                      removeable: true,
-                      completed: true,
-                  }));
-                  $('#filelist #' + plfile.id).show('fast');
-                  $("#" + plfile.id + " .rmlink").on("click", function(event) {
-                      uploader.removeFile(plfile);
-                  });
-              });
-          }
-      });
-
-      function init_button_states(){
-          $('#uploadfiles').addClass("disabled");
-          $('#stopupload').hide();
-          $('#uploadfiles').show();
-          $('#upload_speed').html('');
-          had_error = false;
-      }
-
-      function redirect(){
-          if(continue_url){
-              if( window.location != continue_url ){
-                  window.location = continue_url;
-              }
-          }
-      }
-
-      function upload_dropbox_finished() {
-          dropbox_files = [];
-          redirect();
-          init_button_states();
-      }
-
-      function upload_dropbox_file(i) {
-          var file = dropbox_files[i];
-
-          $('#' + file.id + " .progress").hide();
-          $('#' + file.id + " .progress-bar").css('width', "100%");
-          $('#' + file.id + " .progress").addClass("progress-striped");
-          $('#' + file.id + " .progress").show();
-
-          $.ajax({
-              type: 'POST',
-              url: dropbox_url,
-              data: $.param({
-                  name: file.name,
-                  size: file.size,
-                  url: file.url
-              }),
-              dataType: "json"
-          }).done(function(data){
-              file.server_id = data['id'];
-
-              $('#' + file.id + " .progress").removeClass("progress-striped");
-              $('#' + file.id + " .progress").hide();
-              $('#' + file.id + " .progress-bar").css('width', "100%");
-              $('#' + file.id + '_link').html(tpl_file_link.render({
-                  filename: file.name,
-                  download_url: get_file_url + "?file_id=" + data['id']
-              }));
-
-              var plfile = fake_file(file);
-              uploader.files.push(plfile);
-
-              i++;
-              if(i < dropbox_files.length){
-                  upload_dropbox_file(i);
-              } else {
-                  upload_dropbox_finished();
-              }
-          });
-      }
-
-      function start_dropbox_upload() {
-          init_uuid();
-
-          if(dropbox_files.length > 0) {
-              upload_dropbox_file(0);
-          } else {
-              init_button_states();
-          }
-      }
-
-      $('#uploadfiles').click(function(e) {
-          e.preventDefault();
-
-          $('#uploadfiles').addClass('disabled');
-          $('#uploadfiles').hide();
-          $('#stopupload').show();
-
-          if(uploader.files.length > 0){
-              uploader.start();
-          } else if (dropbox_files.length > 0) {
-              start_dropbox_upload();
-          }
-      });
-
-      $('#stopupload').click(function(d){
-          uploader.stop();
-          $('#stopupload').hide();
-          $('#uploadfiles').show();
-          $('#uploadfiles').removeClass('disabled');
-          $.each(uploader.files, function(i, file) {
-              if (file.loaded < file.size) {
-                  $("#" + file.id + " .rmlink").show();
-                  //$('#' + file.id + " .progress-bar").css('width', "0%");
-              }
-          });
-          $('#upload_speed').html('');
-          uploader.total.reset();
-      });
-
-      uploader.bind('FilesRemoved', function(up, files) {
-          $.each(files, function(i, file) {
-              $('#filelist #' + file.id).hide('fast', function(){
-                  $('#filelist #' + file.id).remove();
-                  if($('#filelist').children().length === 0){
-                      $('#uploadfiles').addClass("disabled");
-                  }
-              });
-              if (file.status === plupload.DONE) { //If file has been successfully uploaded
-                  $.ajax({
-                      type: "POST",
-                      url: delete_url,
-                      data: $.param({
-                          file_id: file.id
-                      })
-                  });
-              }
-
-          });
-      });
-
-      uploader.bind('UploadProgress', function(up, file) {
-          $('#' + file.id + " .progress-bar").css('width', file.percent + "%");
-          upload_speed = getBytesWithUnit(up.total.bytesPerSec) + " per sec";
-          console.log("Progress " + file.name + " - " + file.percent);
-          $('#upload_speed').html(upload_speed);
-          up.total.reset();
-      });
-
-      uploader.bind('BeforeUpload', function(up, file) {
-          init_uuid();
-      });
-
-      uploader.bind('UploadFile', function(up, file) {
-          $('#' + file.id + " .rmlink").hide();
-      });
-
-      uploader.bind('FilesAdded', function(up, files) {
-          var remove_files = [];
-          $.each(up.files, function(i, file) {
-
-          });
-
-          $(selector).removeClass("hide");
-          $('#uploadfiles').removeClass("disabled");
-          $('#file-table').show('slow');
-          up.total.reset();
-          var filename_already_exists = [];
-          $.each(files, function(i, file) {
-              // Check for existing file
-              var removed = false;
-              for(var j = 0; j<up.files.length; j++){
-                  existing_file = up.files[j];
-                  if(existing_file.id != file.id && file.name == existing_file.name){
-                      filename_already_exists.push(file.name);
-                      up.removeFile(file);
-                      var removed = true;
-                  }
-              }
-              if(!removed){
-                  $('#filelist').append(tpl_file_entry.render({
-                          id: file.id,
-                          filename: file.name,
-                          filesize: getBytesWithUnit(file.size),
-                          removeable: true,
-                          progress: 0
-                  }));
-                  $('#filelist #' + file.id).show('fast');
-                  $('#' + file.id + ' .rmlink').on("click", function(event){
-                      uploader.removeFile(file);
-                  });
-              }
-          });
-          if(filename_already_exists.length > 0) {
-              $('#upload-errors').hide();
-              $('#upload-errors').append('<div class="alert alert-warning"><a class="close" data-dismiss="alert" href="#">&times;</a><strong>Warning:</strong>' + filename_already_exists.join(", ") + " already exist.</div>");
-              $('#upload-errors').show('fast');
-          }
-      });
-
-      uploader.bind('FileUploaded', function(up, file, responseObj) {
-          try{
-              res_data = JSON.parse(responseObj.response);
-          } catch (err) {}
-
-          file.server_id = res_data.id;
-
-          $('#' + file.id + " .progress").removeClass("progress-striped");
-          $('#' + file.id + " .progress-bar").css('width', "100%");
-          $('#' + file.id + ' .rmlink').show();
-          $('#' + file.id + " .progress").hide();
-          $('#' + file.id + '_link').html(tpl_file_link.render({
-              filename: file.name,
-              download_url: get_file_url + "?file_id=" + res_data['id']
-          }));
-          if (uploader.total.queued === 0)
-              $('#stopupload').hide();
-
-          file.loaded = 0;
-          $('#upload_speed').html('');
-          up.total.reset();
-      });
-
-      function error_message(err) {
-          var error_messages = {}, message, http_errors;
-
-          error_messages[plupload.FILE_EXTENSION_ERROR] = "the file extensions is not allowed.";
-          error_messages[plupload.FILE_SIZE_ERROR] = "the file is too big.";
-          error_messages[plupload.GENERIC_ERROR] = "an unknown error.";
-          error_messages[plupload.IO_ERROR] = "problems reading the file on disk.";
-          error_messages[plupload.SECURITY_ERROR] = "problems reading the file on disk.";
-
-          message = error_messages[err.code];
-
-          if (message !== undefined) {
-              return message;
-          }
-
-          if (err.code == plupload.HTTP_ERROR) {
-              http_errors = {};
-              http_errors[401] = "an authentication error. Please login first.";
-              http_errors[403] = "lack of permissions.";
-              http_errors[404] = "a server error.";
-              http_errors[500] = "a server error.";
-
-              message = http_errors[err.status];
-
-              if (message !== undefined) {
-                 return message;
-              }
-          }
-
-          return "an unknown error occurred";
-      }
-
-      uploader.bind('Error', function(up, err) {
-          had_error = true;
-          var message = error_message(err);
-          $('#upload-errors').hide();
-          if (err.file){
-              $('#' + err.file.id + " .progress").removeClass("progress-striped").addClass("progress-danger");
-              $('#upload-errors').append('<div class="alert alert-danger"><strong>Error:</strong> Could not upload ' + err.file.name +" due to " + message + "</div>");
-          } else {
-              $('#upload-errors').append('<div class="alert alert-danger"><strong>Error:</strong> ' + message + "</div>");
-          }
-          $('#upload-errors').show('fast');
-          $('#uploadfiles').addClass("disabled");
-          $('#stopupload').hide();
-          $('#uploadfiles').show();
-          up.refresh(); // Reposition Flash/Silverlight
-      });
-
-      uploader.bind('UploadComplete', function(up, files) {
-          if(dropbox_files.length > 0 && !had_error) {
-              start_dropbox_upload();
-          } else {
-              if(!had_error) {
-                  redirect();
-              }
-              init_button_states();
-          }
-      });
-
-      $("#filelist").sortable({
-          forcePlaceholderSize: true,
-          forceHelperSizeType: true,
-          handle: ".sortlink",
-          start: function(event, ui) {
-              $(ui.placeholder).show();
-              $(ui.placeholder).html("<td></td><td></td><td></td><td></td>");
-              $(ui.placeholder).css("visibility", "");
-              header_ths = $("#file-table thead th");
-              item_tds = $(ui.helper).find("td");
-              placeholder_tds = $(ui.placeholder).find("td");
-              for(var i = 0; i < header_ths.length; i++){
-                  $(item_tds[i]).width($(header_ths[i]).width());
-                  $(placeholder_tds[i]).width($(header_ths[i]).width());
-              }
-          },
-          update: function(event, ui){
-              if(save_url) {
-                  save_field(save_url, 'files', serialize_files("#filelist"));
-              }
-          }
-      });
-      $("#filelist").disableSelection();
   }
 
   /**
-   * Initialize save-button
+   * Fired when the form data has to be submitted
+   *
+   * @event dataFormSubmit
+   * @param ev {Event}
+   * @param data {Object}
    */
-  function init_save(url, selector, form_selector) {
-      $(selector).click(function(e){
-          e.preventDefault();
-          save_data(url, serialize_form(form_selector), true);
-          return false;
-      });
-  }
-
-
-  /**
-   * Initialize submit-button
-   */
-  function init_submit(url, selector, form_selector, dialog) {
-      $(selector).click(function(e){
-          e.preventDefault();
-          submit(url, form_selector, dialog);
-      });
-  }
-
-  function submit(url, form_selector, dialog){
+  this.submitForm = function (ev, data) {
+      var dialog = data.dialog;
       if(dialog !== undefined){
           $(dialog).modal({
               backdrop: 'static',
@@ -830,8 +513,8 @@ var DEPOSIT_FORM = (function( $ ){
           });
       }
       save_data(
-           url,
-           serialize_form(form_selector),
+           data.url,
+           this.serialize_form(data.form_selector),
            true,
            function success_callback() {
               window.location.reload();
@@ -852,7 +535,7 @@ var DEPOSIT_FORM = (function( $ ){
   function init_field_lists(selector, url, autocomplete_selector, url_autocomplete) {
     function serialize_and_save(options) {
       // Save list on remove element, sorting and paste of list
-      data = $('#'+options.prefix).serialize_object();
+      var data = $('#'+options.prefix).serialize_object();
       if($.isEmptyObject(data)){
           data[options.prefix] = [];
       }
@@ -877,8 +560,8 @@ var DEPOSIT_FORM = (function( $ ){
       pasted: serialize_and_save,
     };
 
-    $(selector).each(function(){
-      field_lists[$(this).attr('id')] = $(this).fieldlist(opts);
+    $(selector).dynamicFieldList(opts).each(function(index, fieldList){
+      field_lists[fieldList.element.id] = fieldList;
     });
   }
 
@@ -894,14 +577,18 @@ var DEPOSIT_FORM = (function( $ ){
       });
   }
 
+  this.onFieldChanged = function (event) {
+    if(event.target.name.indexOf('__input__') == -1){
+              save_field(this.attr.save_url, event.target.name, event.target.value);
+          }
+  }
+
   /**
    * Click form-button
    */
-  function init_buttons(selector, url) {
-      $(selector).click( function() {
-          save_field(url, this.name, true);
-          return false;
-      });
+  this.onButtonClick = function (event) {
+    save_field(this.attr.save_url, this.name, true);
+    return false;
   }
 
 
@@ -916,7 +603,7 @@ var DEPOSIT_FORM = (function( $ ){
           } else {
               CKEDITOR.replace(this, options);
           }
-          ckeditor = CKEDITOR.instances[$(this).attr('name')];
+          var ckeditor = CKEDITOR.instances[$(this).attr('name')];
           ckeditor.on('blur',function(e){
               save_field(url, e.editor.name, e.editor.getData());
           });
@@ -936,7 +623,7 @@ var DEPOSIT_FORM = (function( $ ){
               handle_selection = typeahead_selection;
           }
 
-          if($(item).parents('.' + empty_cssclass).length == 0) {
+          if($(item).parents('.' + empty_cssclass).length === 0) {
               init_typeaheadjs(item, url, save_url, handle_selection);
           }
       });
@@ -956,7 +643,7 @@ var DEPOSIT_FORM = (function( $ ){
           autocomplete_request = $.ajax({
               type: 'GET',
               url: url,
-              data: $.param({term: query})
+              data: $.param({term: query, limit: $(item).data("autocomplete-limit")})
           }).done(function(data) {
               process(data);
               $(item).removeClass('ui-autocomplete-loading');
@@ -1001,9 +688,12 @@ var DEPOSIT_FORM = (function( $ ){
                   // Clear typeahead field
                   try {
                      $(item).typeahead('val', "");
-                  } catch (error) {} //Suppress error
+                  } catch (error) {
+                     //Suppress error
+                     console.error(error)
+                  }
                   // Save list
-                  data = $('#'+field_list_name).serialize_object();
+                  var data = $('#'+field_list_name).serialize_object();
                   if($.isEmptyObject(data)){
                       data[options.prefix] = [];
                   }
@@ -1017,58 +707,16 @@ var DEPOSIT_FORM = (function( $ ){
               if(field_name == name) {
                   try {
                      $(item).typeahead('setQuery', datum.fields[field_name]);
-                  } catch (error) {} //Suppress error
+                  } catch (error) {
+                     //Suppress error
+                     console.error(error)
+                  }
               }
           }
           //FIXME: sends wrong field names
           save_data(save_url, datum.fields);
       }
   }
-
-
-  var dropbox_files = [];
-
-  if (document.getElementById("db-chooser") !== null) {
-      document.getElementById("db-chooser").addEventListener("DbxChooserSuccess",
-          function(e) {
-              $('.pluploader').show();
-              $('#file-table').show('fast');
-              $.each(e.files, function(i, file){
-                  id = unique_id();
-
-                  dbfile = {
-                      id: id,
-                      name: file.name,
-                      size: file.bytes,
-                      url: file.link
-                  };
-
-                  $('#filelist').append(tpl_file_entry.render({
-                      id: dbfile.id,
-                      filename: file.name,
-                      filesize: getBytesWithUnit(file.bytes),
-                      removeable: true
-                  }));
-                  $('#filelist #' + id).show('fast');
-                  $('#uploadfiles').removeClass("disabled");
-                  $('#' + dbfile.id + ' .rmlink').on("click", function(event){
-                      $('#' + dbfile.id).hide('fast', function() {
-                          $('#' + dbfile.id).remove();
-                          if($('#filelist').children().length === 0){
-                             $('#uploadfiles').addClass("disabled");
-                          }
-                      });
-                      dropbox_files = dropbox_files.filter(function(element){
-                          return element.id != dbfile.id;
-                      });
-                  });
-
-                  dropbox_files.push(dbfile);
-              });
-          }, false);
-  }
-
-
 
   /**
    * Split paste text into multiple fields and elements.
@@ -1083,359 +731,47 @@ var DEPOSIT_FORM = (function( $ ){
       });
   }
 
-
   /**
+   * Fired when the form data has to be saved
    *
+   * @event dataFormSave
+   * @param ev {Event}
+   * @param data {Object}
    */
-  $.fn.fieldlist = function(opts) {
-      var options = $.extend({}, $.fn.fieldlist.defaults, opts);
-      if (options.prefix === null) {
-          options.prefix = this.attr('id');
-      }
-      var template = this.find('.' + options.empty_cssclass);
-      var last_index = $("#" + options.prefix + options.sep +  options.last_index);
-      var field_regex = new RegExp("(" + options.prefix + options.sep + "(\\d+|" + options.index_suffix + "))"+ options.sep +"(.+)");
-      // Get template name from options or the empty elements data attribute
-      var tag_template = Hogan.compile($(this).data('tagTemplate') || '');
+  this.saveForm = function(ev, data) {
+    save_data(data.url, this.serialize_form(data.form_selector), data.show);
+  }
 
-      /**
-       * Get next index
-       */
-      var get_next_index = function(){
-          return parseInt(last_index.val(), 10) + 1;
-      };
+  this.after('initialize', function() {
+    // Custom handlers
+    this.on('dataFormSave', this.saveForm);
+    this.on('dataFormSubmit', this.submitForm);
+    this.on('dataSaveField', this.onSaveField);
 
-      /**
-       * Set value of last index
-       */
-      var set_last_index = function(idx){
-          return last_index.val(idx);
-      };
+    this.on(document, "click", {
+      formSaveClass: this.onSaveClick,
+      formSubmitClass: this.onSubmitClick
+    });
 
-      /**
-       * Update attributes in a single tag
-       */
-      var update_attr_index = function(tag, idx) {
-          var id_regex = new RegExp("(" + options.prefix + options.sep + "(\\d+|" + options.index_suffix + "))");
-          var new_id = options.prefix + options.sep + idx;
-          ['for', 'id', 'name'].forEach(function(attr_name){
-              if($(tag).attr(attr_name)){
-                 $(tag).attr(attr_name, $(tag).attr(attr_name).replace(id_regex, new_id));
-              }
-          });
-      };
+    this.on(this.attr.formSelector + ' .form-button', "click", this.onButtonClick);
+    this.on('#submitForm input, #submitForm textarea, #submitForm select', "change", this.onFieldChanged);
 
-      /**
-       * Update index in attributes for a single element (i.e all tags inside
-       * element)
-       */
-      var update_element_index = function(element, idx) {
-          update_attr_index(element, idx);
-          $(element).find('*').each(function(){
-              update_attr_index(this, idx);
-          });
-      };
+    init_autocomplete('[data-autocomplete="1"]', this.attr.save_url, this.attr.autocomplete_url);
+    init_field_lists(this.attr.formSelector + ' .dynamic-field-list', this.attr.save_url, '[data-autocomplete="1"]', this.attr.autocomplete_url);
+    init_ckeditor(this.attr.formSelector + ' textarea[data-ckeditor="1"]', this.attr.save_url);
+    // Initialize rest of jquery plugins
+    // Fix issue with typeahead.js drop-down partly cut-off due to overflow ???
 
-      /**
-       * Update indexes of all elements
-       */
-      var update_elements_indexes = function(){
-          // Update elements indexes of all other elements
-          var all_elements = $('#' + options.prefix + " ." + options.element_css_class);
-          var num_elements = all_elements.length;
-          for (var i=0; i<num_elements; i++) {
-              update_element_index(all_elements[i], i);
-          }
-          set_last_index(num_elements-1);
-      };
+    //FIXME remove these hacks
+    $('#webdeposit_form_accordion').on('hide', function (e) {
+      $(e.target).css("overflow","hidden");
+    });
+    $('#webdeposit_form_accordion').on('shown', function (e) {
+      $(e.target).css("overflow", "visible");
+    })
+    // Initialize jquery_plugins
+    $(this.attr.datepickerSelector).datepicker(this.attr.datepicker_options);
+  });
 
-      /**
-       * Update values of fields for an element
-       */
-      var update_element_values = function (root, data, field_prefix_index, selector_prefix){
-          var field_prefix, newdata;
-
-          if(selector_prefix ===undefined){
-              selector_prefix = '#'+options.prefix+options.sep+options.index_suffix+options.sep;
-          }
-
-          if(field_prefix_index === undefined){
-              field_prefix = options.prefix+options.sep+options.index_suffix+options.sep;
-          } else {
-              field_prefix = options.prefix+options.sep+field_prefix_index+options.sep;
-          }
-          if(root === null) {
-              root = $(document);
-          }
-
-          //Update field values if data exists
-          if(data !== null){
-              // Remove prefix from field name
-              newdata = {};
-              if (typeof data == 'object'){
-                  for(var field in data) {
-                      if(field.indexOf(field_prefix) === 0){
-                          newdata[field.slice(field_prefix.length)] = data[field];
-                      } else {
-                          newdata[field] = data[field];
-                      }
-                  }
-                  // Update value for each field.
-                  $.each(newdata, function(field, value){
-                      var input = root.find(selector_prefix+field);
-                      if(input.length !== 0) {
-                          input.val(value);
-                      }
-                  });
-              } else {
-                  newdata['value'] = data;
-                  var input = root.find('#'+options.prefix+options.sep+options.index_suffix);
-                  if(input.length !== 0) {
-                      // Keep old value
-                      input.val(input.val()+data);
-                  }
-              }
-
-              root.find("."+options.tag_title_cssclass).html(
-                  tag_template.render(newdata)
-              );
-          }
-      };
-
-      var get_field_name = function(name_or_id) {
-          result = field_regex.exec(name_or_id);
-          if(result !== null){
-              return result[3];
-          }
-          return null;
-      };
-
-      var get_field_prefix = function(name_or_id) {
-          result = field_regex.exec(name_or_id);
-          if(result !== null){
-              return result[1];
-          }
-          return null;
-      };
-
-      /**
-       * Handler for remove element events
-       */
-      var remove_element = function(e){
-          //
-          // Delete action
-          //
-          e.preventDefault();
-
-          // Find and remove element
-          var old_element = $(this).parents("." + options.element_css_class);
-          old_element.hide('fast', function(){
-              // Give hide animation time to complete
-              old_element.remove();
-              update_elements_indexes();
-
-              // Callback
-              if (options.removed) {
-                  options.removed(options, old_element);
-              }
-          });
-      };
-
-      /**
-       * Handler for sort element events
-       */
-      var sort_element = function (e, ui) {
-          update_elements_indexes();
-          // Callback
-          if (options.updated) {
-              options.updated(options, ui.item);
-          }
-      };
-
-      var update_element = function (data, idx){
-          //
-          // Update action
-          //
-
-          // Update elements indexes of all other elements
-          var all_elements = $('#' + options.prefix + " ." + options.element_css_class);
-          var num_elements = all_elements.length;
-          if (idx < num_elements){
-              element = $(all_elements[idx]);
-              update_element_values(element, data, idx, '#'+options.prefix+options.sep+idx+options.sep);
-          }
-      };
-
-      /**
-       * Handler for add new element events
-       */
-      var append_element = function (data, field_prefix_index){
-          //
-          // Append action
-          //
-          var new_element = template.clone();
-          var next_index = get_next_index();
-          // Remove class
-          new_element.removeClass(options.empty_cssclass);
-          new_element.addClass(options.element_css_class);
-          // Pre-populate field values
-          update_element_values(new_element, data, field_prefix_index);
-          // Update ids
-          update_element_index(new_element, next_index);
-          // Insert before template element
-          new_element.hide();
-          new_element.insertBefore($(template));
-          new_element.show('fast');
-          // Update last_index
-          set_last_index(next_index);
-          // Add delete button handler
-          new_element.find('.' + options.remove_cssclass).click(remove_element);
-          // Add paste handler for some fields
-          if( options.on_paste !== null && options.on_paste_elements !== null) {
-              new_element.find(options.on_paste_elements).on('paste', on_paste);
-          }
-          // Callback
-          if (options.added) {
-              options.added(options, new_element);
-          }
-      };
-
-      /**
-       * On paste event handler, wrapping the user-defined paste handler to
-       * for ease of use.
-       */
-      var on_paste = function (e){
-          var element = $(e.target);
-          var root_element = element.parents("." + options.element_css_class);
-          var data = e.originalEvent.clipboardData.getData("text/plain");
-          var field_name = get_field_name(element.attr("id"));
-          var prefix = "#" + get_field_prefix(element.attr("id")) + options.sep;
-
-          if(options.on_paste !== null && data !== null) {
-              if(options.on_paste(root_element, element, prefix, field_name, data, append_element)) {
-                  e.preventDefault();
-              }
-          }
-      };
-
-      /**
-       * Factory method for creating on paste event handlers. Allow handlers to
-       * only care about splitting string into data elements.
-       */
-      var create_paste_handler = function (splitter){
-          var on_paste_handler = function(root_element, element, selector_prefix, field, clipboard_data, append_element){
-              var elements_values = splitter(field, clipboard_data);
-              if(elements_values.length > 0) {
-                  $.each(elements_values, function(idx, clipboard_data){
-                      if(idx === 0) {
-                          update_element_values(root_element, clipboard_data, undefined, selector_prefix);
-                      } else {
-                          append_element(clipboard_data);
-                      }
-                  });
-                  // Callback
-                  if (options.pasted) {
-                      options.pasted(options);
-                  }
-                  return true;
-              } else {
-                  return false;
-              }
-          };
-
-          return on_paste_handler;
-      };
-
-      var create = function(item){
-          // Hook add/remove buttons on already rendered elements
-          $('#' + options.prefix + " ." + options.element_css_class + " ." + options.remove_cssclass).click(remove_element);
-          $('#' + options.prefix + " ." + options.add_cssclass).click(append_element);
-
-          // Hook for detecting on paste events
-          if( options.on_paste !== null && options.on_paste_elements !== null) {
-              options.on_paste = create_paste_handler(options.on_paste);
-              $('#' + options.prefix + " " + options.on_paste_elements).on('paste', on_paste);
-          }
-
-          // Make list sortable
-          if(options.sortable){
-              var sortable_options = {
-                  items: "." + options.element_css_class,
-                  update: sort_element,
-              };
-
-              if($(item).find("."+options.sort_cssclass).length !== 0){
-                  sortable_options.handle = "." + options.sort_cssclass;
-              }
-
-              $(item).sortable(sortable_options);
-          }
-
-          return item;
-      };
-
-      create(this);
-
-      return {
-          append_element: append_element,
-          update_element: update_element,
-          options: options,
-      };
-  };
-
-  /** Field list plugin defaults */
-  $.fn.fieldlist.defaults = {
-      prefix: null,
-      sep: '-',
-      last_index: "__last_index__",
-      index_suffix: "__index__",
-      empty_cssclass: empty_cssclass,
-      element_css_class: "field-list-element",
-      remove_cssclass: "remove-element",
-      add_cssclass: "add-element",
-      sort_cssclass: "sort-element",
-      tag_title_cssclass: "tag-title",
-      added: null,
-      removed: null,
-      updated: null,
-      pasted: null,
-      on_paste_elements: "input",
-      on_paste: null, //paste_newline_splitter,
-      sortable: true,
-      js_template: null,
-  };
-
-  // Return public methods
-  return {
-    check_status: check_status,
-    clear_error: clear_error,
-    create_deposition: create_deposition,
-    flash_message: _flash_message,
-    getBytesWithUnit: getBytesWithUnit,
-    handle_field_msg: handle_field_msg,
-    handle_field_values: handle_field_values,
-    handle_response: handle_response,
-    init_autocomplete: init_autocomplete,
-    init_buttons: init_buttons,
-    init_ckeditor: init_ckeditor,
-    init_field_lists: init_field_lists,
-    init_inputs: init_inputs,
-    init_plupload: init_plupload,
-    init_save: init_save,
-    init_submit: init_submit,
-    init_typeaheadjs: init_typeaheadjs,
-    json_options: json_options,
-    paste_newline_splitter: paste_newline_splitter,
-    save_data: save_data,
-    save_field: save_field,
-    serialize_files: serialize_files,
-    serialize_form: serialize_form,
-    serialize_object: serialize_object,
-    set_loader: set_loader,
-    set_status: set_status,
-    submit: submit,
-    typeahead_selection: typeahead_selection,
-    unique_id: unique_id,
-  };
-
-}( window.jQuery ));
+  }
+})

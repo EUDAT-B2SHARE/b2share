@@ -1,5 +1,5 @@
 ## This file is part of Invenio.
-## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
+## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -345,8 +345,8 @@ CFG_OAUTH1_CONFIGURATIONS = {
 #	for finding where the id, email or nickname is.
 CFG_OAUTH2_CONFIGURATIONS =  {
     'facebook': {
-        'consumer_key': '118319526393',
-        'consumer_secret': '8d675eb0ef89f2f8fbbe4ee56ab473c6',
+        'consumer_key': '',
+        'consumer_secret': '',
         'access_token_url': 'https://graph.facebook.com/oauth/access_token',
         'authorize_url': 'https://www.facebook.com/dialog/oauth',
         'authorize_parameters': {
@@ -445,7 +445,7 @@ if CFG_OPENID_AUTHENTICATION:
 
 # If OAuth1 authentication is enabled, add 'oauth1' to login methods.
 CFG_OAUTH1_AUTHENTICATION = bool(CFG_OAUTH1_PROVIDERS)
-if CFG_OAUTH1_PROVIDERS:
+if CFG_OAUTH1_AUTHENTICATION:
     from invenio.legacy.external_authentication.oauth1 import ExternalOAuth1
     CFG_EXTERNAL_AUTHENTICATION['oauth1'] = ExternalOAuth1(enforce_external_nicknames=True)
 
@@ -480,40 +480,9 @@ DEF_ROLES = ((SUPERADMINROLE, 'superuser with all rights', 'deny any'),
              ('paperclaimviewers', 'Users who can view "claim my paper" facilities.', 'allow all'),
              ('paperattributionviewers', 'Users who can view "attribute this paper" facilities', 'allow all'),
              ('paperattributionlinkviewers', 'Users who can see attribution links in the search', 'allow all'),
+             ('authorlistusers', 'Users who can user Authorlist tools', 'deny all'),
              )
 
-# Demo site roles
-DEF_DEMO_ROLES = (('photocurator', 'Photo collection curator', 'deny any'),
-                  ('thesesviewer', 'Theses and Drafts viewer', 'allow group "Theses and Drafts viewers"'),
-                  ('ALEPHviewer', 'ALEPH viewer', 'allow group "ALEPH viewers"'),
-                  ('ISOLDEnotesviewer', 'ISOLDE Internal Notes viewer', 'allow group "ISOLDE Internal Notes viewers"'),                  ('thesescurator', 'Theses collection curator', 'deny any'),
-                  ('swordcurator', 'BibSword client curator', 'deny any'),
-                  ('referee_DEMOBOO_*', 'Book collection curator', 'deny any'),
-                  ('restrictedpicturesviewer', 'Restricted pictures viewer', 'deny any'),
-                  ('curator', 'Curator', 'deny any'),
-                  ('basketusers', 'Users who can use baskets', 'deny email "hyde@cds.cern.ch"\nallow any'),
-                  ('claimpaperusers', 'Users who can perform changes to their own paper attributions without the need for an operator\'s approval', 'deny email "hyde@cds.cern.ch"\nallow any'),
-                  ('submit_DEMOJRN_*', 'Users who can submit (and modify) "Atlantis Times" articles', 'deny all'),
-                  ('atlantiseditor', 'Users who can configure "Atlantis Times" journal', 'deny all'),
-                  ('commentmoderator', 'Users who can moderate comments', 'deny all'),
-                  ('poetrycommentreader', 'Users who can view comments in Poetry collection', 'deny all'))
-
-DEF_DEMO_USER_ROLES = (('jekyll@cds.cern.ch', 'thesesviewer'),
-                       ('balthasar.montague@cds.cern.ch', 'ALEPHviewer'),
-                       ('dorian.gray@cds.cern.ch', 'ISOLDEnotesviewer'),
-                       ('jekyll@cds.cern.ch', 'swordcurator'),
-                       ('jekyll@cds.cern.ch', 'claimpaperusers'),
-                       ('dorian.gray@cds.cern.ch', 'referee_DEMOBOO_*'),
-                       ('balthasar.montague@cds.cern.ch', 'curator'),
-                       ('romeo.montague@cds.cern.ch', 'restrictedpicturesviewer'),
-                       ('romeo.montague@cds.cern.ch', 'swordcurator'),
-                       ('romeo.montague@cds.cern.ch', 'thesescurator'),
-                       ('juliet.capulet@cds.cern.ch', 'restrictedpicturesviewer'),
-                       ('juliet.capulet@cds.cern.ch', 'photocurator'),
-                       ('romeo.montague@cds.cern.ch', 'submit_DEMOJRN_*'),
-                       ('juliet.capulet@cds.cern.ch', 'submit_DEMOJRN_*'),
-                       ('balthasar.montague@cds.cern.ch', 'atlantiseditor'),
-                       ('romeo.montague@cds.cern.ch', 'poetrycommentreader'))
 
 # users
 # list of e-mail addresses
@@ -552,6 +521,7 @@ DEF_ACTIONS = (
                ('runwebstatadmin', 'run WebStadAdmin', '', 'no'),
                ('runinveniogc', 'run InvenioGC', '', 'no'),
                ('runbibexport', 'run BibExport', '', 'no'),
+               ('runauthorlist', 'run Authorlist tools', '', 'no'),
                ('referee', 'referee document type doctype/category categ', 'doctype,categ', 'yes'),
                ('submit', 'use webSubmit', 'doctype,act,categ', 'yes'),
                ('viewrestrdoc', 'view restricted document', 'status', 'no'),
@@ -585,8 +555,19 @@ DEF_ACTIONS = (
                ('claimpaper_change_own_data', 'Change data associated to his own person ID', '', 'no'),
                ('claimpaper_change_others_data', 'Change data of any person ID', '', 'no'),
                ('runbibtasklet', 'run BibTaskLet', '', 'no'),
-               ('cfgbibsched', 'configure BibSched', '', 'no')
+               ('cfgbibsched', 'configure BibSched', '', 'no'),
+               ('runinfomanager', 'run Info Space Manager', '', 'no')
               )
+
+
+from invenio.ext.principal.wrappers import Action
+
+for action in DEF_ACTIONS:
+    type(action[0], (Action, ), {
+        '__doc__': action[1],
+        'allowedkeywords': action[2].split(','),
+        'optional': action[3] == "yes"
+    })
 
 # Default authorizations
 #              role          action        arguments
@@ -597,6 +578,7 @@ DEF_AUTHS = (('basketusers', 'usebaskets', {}),
              ('messageusers', 'usemessages', {}),
              ('holdingsusers', 'viewholdings', {}),
              ('statisticsusers', 'viewstatistics', {}),
+             ('authorlistusers', 'runauthorlist', {}),
              ('claimpaperusers', 'claimpaper_view_pid_universe', {}),
              ('claimpaperoperators', 'claimpaper_view_pid_universe', {}),
              ('claimpaperusers', 'claimpaper_claim_own_papers', {}),
@@ -607,59 +589,31 @@ DEF_AUTHS = (('basketusers', 'usebaskets', {}),
              ('claimpaperoperators', 'claimpaper_change_others_data', {}),
              )
 
-# Demo site authorizations
-#    role          action        arguments
-DEF_DEMO_AUTHS = (
-    ('photocurator', 'runwebcoll', {'collection': 'Pictures'}),
-    ('restrictedpicturesviewer', 'viewrestrdoc', {'status': 'restricted_picture'}),
-    ('thesesviewer', VIEWRESTRCOLL, {'collection': 'Theses'}),
-    ('thesesviewer', VIEWRESTRCOLL, {'collection': 'Drafts'}),
-    ('ALEPHviewer', VIEWRESTRCOLL, {'collection': 'ALEPH Theses'}),
-    ('ALEPHviewer', VIEWRESTRCOLL, {'collection': 'ALEPH Internal Notes'}),
-    ('ISOLDEnotesviewer', VIEWRESTRCOLL, {'collection': 'ISOLDE Internal Notes'}),
-    ('referee_DEMOBOO_*', 'referee', {'doctype': 'DEMOBOO', 'categ': '*'}),
-    ('curator', 'cfgbibknowledge', {}),
-    ('curator', 'runbibedit', {}),
-    ('curator', 'runbibeditmulti', {}),
-    ('curator', 'runbibmerge', {}),
-    ('swordcurator', 'runbibswordclient', {}),
-    ('thesescurator', 'runbibedit', {'collection': 'Theses'}),
-    ('thesescurator', VIEWRESTRCOLL, {'collection': 'Theses'}),
-    ('photocurator', 'runbibedit', {'collection': 'Pictures'}),
-    ('referee_DEMOBOO_*', 'runbibedit', {'collection': 'Books'}),
-    ('submit_DEMOJRN_*', 'submit', {'doctype': 'DEMOJRN', 'act': 'SBI', 'categ': '*'}),
-    ('submit_DEMOJRN_*', 'submit', {'doctype': 'DEMOJRN', 'act': 'MBI', 'categ': '*'}),
-    ('submit_DEMOJRN_*', 'cfgwebjournal', {'name': 'AtlantisTimes', 'with_editor_rights': 'no'}),
-    ('atlantiseditor', 'cfgwebjournal', {'name': 'AtlantisTimes', 'with_editor_rights': 'yes'}),
-    ('referee_DEMOBOO_*', 'runbatchuploader', {'collection': 'Books'}),
-    ('poetrycommentreader', 'viewcomment', {'collection': 'Poetry'}),
-    ('atlantiseditor', VIEWRESTRCOLL, {'collection': 'Atlantis Times Drafts'}),
-    ('anyuser', 'submit', {'doctype': 'DEMOART', 'act': 'SBI', 'categ': 'ARTICLE'}),
-)
 
 # Activities (i.e. actions) for which exists an administrative web interface.
 CFG_ACC_ACTIVITIES_URLS = {
-    'runbibedit': (_("Run Record Editor"), "%s/%s/edit/?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
-    'runbibeditmulti': (_("Run Multi-Record Editor"), "%s/%s/multiedit/?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
-    'runbibdocfile': (_("Run Document File Manager"), "%s/%s/managedocfiles?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
-    'runbibmerge': (_("Run Record Merger"), "%s/%s/merge/?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
-    'runbibswordclient': (_("Run BibSword client"), "%s/bibsword/?ln=%%s" % CFG_SITE_URL),
-    'cfgbibknowledge': (_("Configure BibKnowledge"), "%s/kb?ln=%%s" % CFG_SITE_URL),
-    'cfgbibformat': (_("Configure BibFormat"), "%s/admin/bibformat/bibformatadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgoaiharvest': (_("Configure OAI Harvest"), "%s/admin/oaiharvest/oaiharvestadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgoairepository': (_("Configure OAI Repository"), "%s/admin/oairepository/oairepositoryadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgbibindex': (_("Configure BibIndex"), "%s/admin/bibindex/bibindexadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgbibrank': (_("Configure BibRank"), "%s/admin/bibrank/bibrankadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgwebaccess': (_("Configure WebAccess"), "%s/admin/webaccess/webaccessadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgwebcomment': (_("Configure WebComment"), "%s/admin/webcomment/webcommentadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgweblinkback': (_("Configure WebLinkback"), "%s/admin/weblinkback/weblinkbackadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgwebsearch': (_("Configure WebSearch"), "%s/admin/websearch/websearchadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgwebsubmit': (_("Configure WebSubmit"), "%s/admin/websubmit/websubmitadmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgwebjournal': (_("Configure WebJournal"), "%s/admin/webjournal/webjournaladmin.py?ln=%%s" % CFG_SITE_URL),
-    'cfgbibsort': (_("Configure BibSort"), "%s/admin/bibsort/bibsortadmin.py?ln=%%s" % CFG_SITE_URL),
-    'runbibcirculation': (_("Run BibCirculation"), "%s/admin/bibcirculation/bibcirculationadmin.py?ln=%%s" % CFG_SITE_URL),
-    'runbatchuploader': (_("Run Batch Uploader"), "%s/batchuploader/metadata?ln=%%s" % CFG_SITE_URL),
-    'claimpaper_claim_others_papers': (_("Run Person/Author Manager"), "%s/person/search?ln=%%s" % CFG_SITE_URL)
+    'runbibedit' : (_("Run Record Editor"), "%s/%s/edit/?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
+    'runbibeditmulti' : (_("Run Multi-Record Editor"), "%s/%s/multiedit/?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
+    'runbibdocfile' : (_("Run Document File Manager"), "%s/%s/managedocfiles?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
+    'runbibmerge' : (_("Run Record Merger"), "%s/%s/merge/?ln=%%s" % (CFG_SITE_URL, CFG_SITE_RECORD)),
+    'runbibswordclient' : (_("Run BibSword client"), "%s/bibsword/?ln=%%s" % CFG_SITE_URL),
+    'cfgbibknowledge' : (_("Configure BibKnowledge"), "%s/kb?ln=%%s" % CFG_SITE_URL),
+    'cfgbibformat' : (_("Configure BibFormat"), "%s/admin/bibformat/bibformatadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgoaiharvest' : (_("Configure OAI Harvest"), "%s/admin/oaiharvest/oaiharvestadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgoairepository' : (_("Configure OAI Repository"), "%s/admin/oairepository/oairepositoryadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgbibindex' : (_("Configure BibIndex"), "%s/admin/bibindex/bibindexadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgbibrank' : (_("Configure BibRank"), "%s/admin/bibrank/bibrankadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgwebaccess' : (_("Configure WebAccess"), "%s/admin/webaccess/webaccessadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgwebcomment' : (_("Configure WebComment"), "%s/admin/webcomment/webcommentadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgweblinkback' : (_("Configure WebLinkback"), "%s/admin/weblinkback/weblinkbackadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgwebsearch' : (_("Configure WebSearch"), "%s/admin/websearch/websearchadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgwebsubmit' : (_("Configure WebSubmit"), "%s/admin/websubmit/websubmitadmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgwebjournal' : (_("Configure WebJournal"), "%s/admin/webjournal/webjournaladmin.py?ln=%%s" % CFG_SITE_URL),
+    'cfgbibsort' : (_("Configure BibSort"), "%s/admin/bibsort/bibsortadmin.py?ln=%%s" % CFG_SITE_URL),
+    'runbibcirculation' : (_("Run BibCirculation"), "%s/admin/bibcirculation/bibcirculationadmin.py?ln=%%s" % CFG_SITE_URL),
+    'runbatchuploader' : (_("Run Batch Uploader"), "%s/batchuploader/metadata?ln=%%s" % CFG_SITE_URL),
+    'runinfomanager' : (_("Run Info Space Manager"), "%s/info/manage?ln=%%s" % CFG_SITE_URL),
+    'claimpaper_claim_others_papers' : (_("Run Person/Author Manager"), "%s/author/search?ln=%%s" % CFG_SITE_URL)
 }
 
 CFG_WEBACCESS_MSGS = {
@@ -671,7 +625,9 @@ CFG_WEBACCESS_MSGS = {
     5: 'Authorization failure',
     6: '%s temporarily closed' % CFG_SITE_NAME,
     7: 'This functionality is temporarily closed due to server maintenance. Please use only the search engine in the meantime.',
-    8: 'Functionality temporarily closed'
+    8: 'Functionality temporarily closed',
+    9: '<br />If you think this is not correct, please contact: <a href="mailto:%s">%s</a>',
+   10: '<br />You might also want to check <a href="%s">%s</a>',
 }
 
 CFG_WEBACCESS_WARNING_MSGS = {

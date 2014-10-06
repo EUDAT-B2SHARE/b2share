@@ -17,34 +17,57 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from __future__ import print_function, absolute_import
+"""Various utility functions for use across the workflows module."""
 
-import re
-import redis
+import msgpack
 
-from six import iteritems
+from invenio.ext.cache import cache
+from .registry import workflows
 
-from invenio.ext.logging import register_exception
 
-REGEXP_RECORD = re.compile("<record.*?>(.*?)</record>", re.DOTALL)
+def convert_marcxml_to_bibfield(marcxml):
+    """Return a SmartJson representation of MARC XML string.
+
+    This function converts a MARCXML string to a JSON-like
+    dictionary using the the jsonalchemy (aka. BibField) config.
+
+    :param marcxml: MARCXML string to parse
+    :type marcxml: string
+
+    :return: SmartJson object.
+    """
+    from invenio.modules.jsonalchemy.reader import Reader
+    from invenio.modules.jsonalchemy.wrappers import SmartJson
+    if isinstance(marcxml, unicode):
+        marcxml = marcxml.encode(errors='ignore')
+    return Reader.translate(marcxml,
+                            SmartJson,
+                            master_format='marc',
+                            namespace='recordext')
 
 
 class BibWorkflowObjectIdContainer(object):
-    """
-    This class is only made to be able to store a workflow ID and
-    to retrieve easily the workflow from this ID. It is used maily
-    to overide some problem with SQLAlchemy when we change of
-    execution thread ( for example Celery )
+
+    """Mapping from an ID to BibWorkflowObject.
+
+    This class is only used to be able to store a workflow ID and
+    to retrieve easily the workflow from this ID from another process,
+    such as a Celery worker process.
+
+    It is used mainly to avoid problems with SQLAlchemy sessions
+    when we use different processes.
     """
 
     def __init__(self, bibworkflowobject=None):
+        """Initialize the object, optionally passing a BibWorkflowObject."""
         if bibworkflowobject is not None:
             self.id = bibworkflowobject.id
         else:
             self.id = None
 
     def get_object(self):
-        from invenio.modules.workflows.models import BibWorkflowObject
+        """Get the BibWorkflowObject from self.id."""
+        from .models import BibWorkflowObject
 
         if self.id is not None:
             return BibWorkflowObject.query.filter(
@@ -54,235 +77,349 @@ class BibWorkflowObjectIdContainer(object):
             return None
 
     def from_dict(self, dict_to_process):
+        """Take a dict with special keys and set the current id.
+
+        :param dict_to_process: dict created before with to_dict()
+        :type dict_to_process: dict
+
+        :return: self, BibWorkflowObjectIdContainer.
+        """
         self.id = dict_to_process[str(self.__class__)]["id"]
         return self
 
     def to_dict(self):
+        """Create a dict with special keys for later retrieval."""
         return {str(self.__class__): self.__dict__}
-
-    def __str__(self):
-        return "BibWorkflowObject(%s)" % (str(self.id),)
-
-
-class WorkflowsTaskResult(object):
-    """
-    Class to contain the current task results.
-    """
-
-    def __init__(self, task_name, name, result):
-        self.task_name = task_name
-        self.name = name
-        self.result = result
 
 
 def get_workflow_definition(name):
-    """ Tries to load the given workflow from the system. """
-    from .registry import workflows
-
+    """Try to load the given workflow from the system."""
     if name in workflows:
         return getattr(workflows[name], "workflow", None)
     else:
+        from .definitions import WorkflowMissing
         return WorkflowMissing.workflow
 
 
-def determineDataType(data):
-    # If data is a dictionary and contains type key,
-    # we can directly derive the data_type
-    if isinstance(data, dict):
-        if 'type' in data:
-            data_type = data['type']
-        else:
-            data_type = 'dict'
-    else:
-
-        # If data is not a dictionary, we try to guess MIME type
-        # by using magic library
-        try:
-            from magic import Magic
-
-            mime_checker = Magic(mime=True)
-            data_type = mime_checker.from_buffer(data)  # noqa
-        except:
-            register_exception(
-                stream="warning",
-                prefix="BibWorkflowObject.determineDataType:"
-                       " Impossible to resolve data type."
-            )
-            data_type = ""
-    return data_type
-
-
-## TODO special thanks to http://code.activestate.com/recipes/440514-dictproperty-properties-for-dictionary-attributes/
 class dictproperty(object):
+
+    """Use a dict attribute as a @property.
+
+    This is a minimal descriptor class that creates a proxy object,
+    which implements __getitem__, __setitem__ and __delitem__,
+    passing requests through to the functions that the user
+    provided to the dictproperty constructor.
+    """
+
     class _proxy(object):
 
+        """The proxy object."""
+
         def __init__(self, obj, fget, fset, fdel):
+            """Init the proxy object."""
             self._obj = obj
             self._fget = fget
             self._fset = fset
             self._fdel = fdel
 
         def __getitem__(self, key):
-            try:
-                return self._fget(self._obj, key)
-            except TypeError:
-                print("can't read item")
+            """Get value from key."""
+            return self._fget(self._obj, key)
 
         def __setitem__(self, key, value):
-            try:
-                self._fset(self._obj, key, value)
-            except TypeError:
-                print("can't set item %s: %s" % (str(key), str(value),))
+            """Set value for key."""
+            self._fset(self._obj, key, value)
 
         def __delitem__(self, key):
-            try:
-                self._fdel(self._obj, key)
-            except TypeError:
-                print("can't delete item")
+            """Delete value for key."""
+            self._fdel(self._obj, key)
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        """Init descriptor class."""
         self._fget = fget
         self._fset = fset
         self._fdel = fdel
         self.__doc__ = doc
 
     def __get__(self, obj, objtype=None):
+        """Return proxy or self."""
         if obj is None:
             return self
         return self._proxy(obj, self._fget, self._fset, self._fdel)
 
 
-def redis_create_search_entry(bwobject):
-    redis_server = set_up_redis()
-
-    extra_data = bwobject.get_extra_data()
-    #creates database entries to not loose key value pairs in redis
-
-    for key, value in iteritems(extra_data["redis_search"]):
-        redis_server.sadd("holdingpen_sort", str(key))
-        redis_server.sadd("holdingpen_sort:%s" % (str(key),), str(value))
-        redis_server.sadd("holdingpen_sort:%s:%s" % (str(key), str(value),),
-                          bwobject.id)
-
-    redis_server.sadd("holdingpen_sort", "owner")
-    redis_server.sadd("holdingpen_sort:owner", extra_data['owner'])
-    redis_server.sadd("holdingpen_sort:owner:%s" % (extra_data['owner'],),
-                      bwobject.id)
-    redis_server.sadd("holdingpen_sort:last_task_name:%s" %
-                      (extra_data['_last_task_name'],), bwobject.id)
-
-
-def filter_holdingpen_results(key, *args):
-    """Function filters holdingpen entries by given key: value pair.
-    It returns list of IDs."""
-    redis_server = set_up_redis()
-    new_args = []
-    for a in args:
-        new_args.append("holdingpen_sort:" + a)
-    return redis_server.sinter("holdingpen_sort:" + key, *new_args)
-
-
-def get_redis_keys(key=None):
-    redis_server = set_up_redis()
-    if key:
-        return list(redis_server.smembers("holdingpen_sort:%s" % (str(key),)))
-    else:
-        return list(redis_server.smembers("holdingpen_sort"))
-
-
-def get_redis_values(key):
-    redis_server = set_up_redis()
-    return redis_server.smembers("holdingpen_sort:%s" % (str(key),))
-
-
-def set_up_redis():
-    """
-    Sets up the redis server for the saving of the HPContainers
-
-    @return: Redis server object.
-    """
-    from flask import current_app
-
-    redis_server = redis.Redis.from_url(
-        current_app.config.get('CACHE_REDIS_URL', 'redis://localhost:6379')
-    )
-    return redis_server
-
-
-def empty_redis():
-    redis_server = set_up_redis()
-    redis_server.flushall()
-
-
 def sort_bwolist(bwolist, iSortCol_0, sSortDir_0):
+    """Sort a list of BibWorkflowObjects for DataTables."""
+    should_we_reverse = False
+    if sSortDir_0 == 'desc':
+        should_we_reverse = True
     if iSortCol_0 == 0:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.id, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.id, reverse=False)
+        bwolist.sort(key=lambda x: x.id, reverse=should_we_reverse)
     elif iSortCol_0 == 1:
-        pass
-        # if sSortDir_0 == 'desc':
-        #     bwolist.sort(key=lambda x: x.id_user, reverse=True)
-        # else:
-        #     bwolist.sort(key=lambda x: x.id_user, reverse=False)
+        bwolist.sort(key=lambda x: x.id, reverse=should_we_reverse)
     elif iSortCol_0 == 2:
-        pass
-        # if sSortDir_0 == 'desc':
-        #     bwolist.sort(key=lambda x: x.id_user, reverse=True)
-        # else:
-        #     bwolist.sort(key=lambda x: x.id_user, reverse=False)
+        bwolist.sort(key=lambda x: msgpack.loads(cache.get(x.id))["title"], reverse=should_we_reverse)
     elif iSortCol_0 == 3:
-        pass
-        # if sSortDir_0 == 'desc':
-        #     bwolist.sort(key=lambda x: x.id_user, reverse=True)
-        # else:
-        #     bwolist.sort(key=lambda x: x.id_user, reverse=False)
+        bwolist.sort(key=lambda x: msgpack.loads(cache.get(x.id))["description"], reverse=should_we_reverse)
     elif iSortCol_0 == 4:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.id_workflow, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.id_workflow, reverse=False)
+        bwolist.sort(key=lambda x: x.created, reverse=should_we_reverse)
     elif iSortCol_0 == 5:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.id_user, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.id_user, reverse=False)
+        bwolist.sort(key=lambda x: x.version, reverse=should_we_reverse)
     elif iSortCol_0 == 6:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.created, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.created, reverse=False)
+        bwolist.sort(key=lambda x: x.data_type, reverse=should_we_reverse)
     elif iSortCol_0 == 7:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.version, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.version, reverse=False)
+        bwolist.sort(key=lambda x: x.version, reverse=should_we_reverse)
     elif iSortCol_0 == 8:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.version, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.version, reverse=False)
-    elif iSortCol_0 == 9:
-        if sSortDir_0 == 'desc':
-            bwolist.sort(key=lambda x: x.version, reverse=True)
-        else:
-            bwolist.sort(key=lambda x: x.version, reverse=False)
-
+        bwolist.sort(key=lambda x: x.version, reverse=should_we_reverse)
     return bwolist
 
 
 def parse_bwids(bwolist):
+    """Use ast to eval a string representing a list."""
     import ast
-
     return list(ast.literal_eval(bwolist))
 
 
-def dummy_function(obj, eng):
-    """Workflow function not found for workflow."""
-    pass
+def get_holdingpen_objects(ptags=[]):
+    """Get BibWorkflowObject's for display in Holding Pen.
+
+    Uses DataTable naming for filtering/sorting. Work in progress.
+    """
+    from .models import (BibWorkflowObject,
+                         ObjectVersion)
+
+    tags_copy = ptags[:]
+    version_showing = []
+    for i in range(len(tags_copy) - 1, -1, -1):
+        if tags_copy[i] in ObjectVersion.MAPPING.values():
+            version_showing.append(ObjectVersion.REVERSE_MAPPING[tags_copy[i]])
+            del tags_copy[i]
+
+    if version_showing is None:
+        version_showing = ObjectVersion.MAPPING.keys()
+    ssearch = tags_copy
+    bwobject_list = BibWorkflowObject.query.filter(
+        BibWorkflowObject.id_parent == None  # noqa E711
+    ).filter(not version_showing or BibWorkflowObject.version.in_(
+        version_showing)).all()
+
+    if ssearch and ssearch[0]:
+        if not isinstance(ssearch, list):
+            if "," in ssearch:
+                ssearch = ssearch.split(",")
+            else:
+                ssearch = [ssearch]
+
+        bwobject_list_tmp = []
+        for bwo in bwobject_list:
+            results = {
+                "created": get_pretty_date(bwo),
+                "type": get_type(bwo),
+                "title": None,
+                "description": None
+            }
+            results.update(get_formatted_holdingpen_object(bwo))
+
+            if check_ssearch_over_data(ssearch, results):
+                bwobject_list_tmp.append(bwo)
+
+        bwobject_list = bwobject_list_tmp
+    return bwobject_list
 
 
-class WorkflowMissing(object):
-    """ Workflow is missing """
-    workflow = [dummy_function]
+def get_versions_from_tags(tags):
+    """Return a tuple with versions from tags.
+
+    :param tags: list of tags
+    :return: tuple of (versions to show, cleaned tags list)
+    """
+    from .models import ObjectVersion
+
+    tags_copy = tags[:]
+    version_showing = []
+    for i in range(len(tags_copy) - 1, -1, -1):
+        if tags_copy[i] in ObjectVersion.MAPPING.values():
+            version_showing.append(ObjectVersion.REVERSE_MAPPING[tags_copy[i]])
+            del tags_copy[i]
+    return version_showing, tags_copy
+
+
+def get_formatted_holdingpen_object(bwo, date_format='%Y-%m-%d %H:%M:%S.%f'):
+    """Return the formatted output, from cache if available."""
+    results = cache.get(str(bwo.id))
+    if results:
+        results = msgpack.loads(cache.get(str((bwo.id))))
+        if results["date"] == bwo.modified.strftime(date_format):
+            return results
+    results = generate_formatted_holdingpen_object(bwo)
+    cache.set(str(bwo.id), msgpack.dumps(results))
+    return results
+
+
+def generate_formatted_holdingpen_object(bwo, date_format='%Y-%m-%d %H:%M:%S.%f'):
+    """Generate a dict with formatted column data from Holding Pen object."""
+    from .definitions import WorkflowBase
+
+    workflows_name = bwo.get_workflow_name()
+
+    if workflows_name and workflows_name in workflows and \
+       hasattr(workflows[workflows_name], 'get_description'):
+        workflow_definition = workflows[workflows_name]
+    else:
+        workflow_definition = WorkflowBase
+
+    results = {
+        "name": workflows_name,
+        "description": workflow_definition.get_description(bwo),
+        "title": workflow_definition.get_title(bwo),
+        "date": bwo.modified.strftime(date_format)
+    }
+    return results
+
+
+def check_ssearch_over_data(ssearch, data):
+    """Check for DataTables search request.
+
+    Checks if the data match with one of the search tags in data.
+
+    :param ssearch: list of tags used for filtering.
+    :param data: data to check.
+
+    :return: True if present, False otherwise.
+    """
+    total = 0
+    for terms in ssearch:
+        for datum in data:
+            if data[datum] and terms.lower() in data[datum].lower():
+                total += 1
+                break
+    return total == len(ssearch)
+
+
+def get_pretty_date(bwo):
+    """Get the pretty date from bwo.created."""
+    from invenio.utils.date import pretty_date
+    return pretty_date(bwo.created)
+
+
+def get_type(bwo):
+    """Get the type of the Object."""
+    return bwo.data_type
+
+
+def get_info(bwobject):
+    """Parse the hpobject and extracts its info to a dictionary."""
+    info = {}
+    if bwobject.get_extra_data()['owner'] != {}:
+        info['owner'] = bwobject.get_extra_data()['owner']
+    else:
+        info['owner'] = 'None'
+    info['parent id'] = bwobject.id_parent
+    info['workflow id'] = bwobject.id_workflow
+    info['object id'] = bwobject.id
+    info['action'] = bwobject.get_action()
+    return info
+
+
+def extract_data(bwobject):
+    """Extract needed metadata from BibWorkflowObject.
+
+    Used for rendering the Record's holdingpen table row and
+    details and action page.
+    """
+    from .models import (BibWorkflowObject,
+                         Workflow)
+    extracted_data = {}
+    if bwobject.id_parent is not None:
+        extracted_data['bwparent'] = \
+            BibWorkflowObject.query.get(bwobject.id_parent)
+    else:
+        extracted_data['bwparent'] = None
+
+    # TODO: read the logstuff from the db
+    extracted_data['loginfo'] = ""
+    extracted_data['logtext'] = {}
+
+    for log in extracted_data['loginfo']:
+        extracted_data['logtext'][log.get_extra_data()['_last_task_name']] = \
+            log.message
+
+    extracted_data['info'] = get_info(bwobject)
+    try:
+        extracted_data['info']['action'] = bwobject.get_action()
+    except (KeyError, AttributeError):
+        pass
+
+    extracted_data['w_metadata'] = \
+        Workflow.query.filter(Workflow.uuid == bwobject.id_workflow).first()
+    if extracted_data['w_metadata']:
+        workflow_def = get_workflow_definition(extracted_data['w_metadata'].name)
+        extracted_data['workflow_func'] = workflow_def
+    else:
+        extracted_data['workflow_func'] = []
+    return extracted_data
+
+
+def get_action_list(object_list):
+    """Return a dict of action names mapped to halted objects.
+
+    Get a dictionary mapping from action name to number of Pending
+    actions (i.e. halted objects). Used in the holdingpen.index page.
+    """
+    from .registry import actions
+
+    action_dict = {}
+    found_actions = []
+
+    # First get a list of all to count up later
+    for bwo in object_list:
+        action_name = bwo.get_action()
+        if action_name is not None:
+            found_actions.append(action_name)
+
+    # Get "real" action name only once per action
+    for action_name in set(found_actions):
+        if action_name not in actions:
+            # Perhaps some old action? Use stored name.
+            action_nicename = action_name
+        else:
+            action = actions[action_name]
+            action_nicename = getattr(action, "name", action_name)
+        action_dict[action_nicename] = found_actions.count(action_name)
+    return action_dict
+
+
+def get_rendered_task_results(obj):
+    """Return a list of rendered results from BibWorkflowObject task results."""
+    from flask import render_template
+
+    results = []
+    for res in obj.get_tasks_results().values():
+        for result in res:
+            results.append(render_template(
+                result.get("template", "workflows/results/default.html"),
+                results=result,
+                obj=obj
+            ))
+    return results
+
+
+def get_previous_next_objects(object_list, current_object_id):
+    """Return tuple of (previous, next) object for given Holding Pen object."""
+    try:
+        current_index = object_list.index(current_object_id)
+        try:
+            next_object_id = object_list[current_index + 1]
+        except IndexError:
+            next_object_id = None
+        try:
+            if current_index == 0:
+                previous_object_id = None
+            else:
+                previous_object_id = object_list[current_index - 1]
+        except IndexError:
+            previous_object_id = None
+    except ValueError:
+        next_object_id = object_list[0]
+        previous_object_id = None
+    return previous_object_id, next_object_id

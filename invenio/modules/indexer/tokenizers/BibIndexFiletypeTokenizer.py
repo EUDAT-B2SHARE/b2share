@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012, 2013 CERN.
+## Copyright (C) 2010, 2011, 2012, 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -20,11 +20,10 @@
    Tokenizer is adapted to work with recjson and its get_record function.
 """
 
+from invenio.modules.indexer.tokenizers.BibIndexRecJsonTokenizer import BibIndexRecJsonTokenizer
 
-from invenio.modules.indexer.tokenizers.BibIndexEmptyTokenizer import BibIndexEmptyTokenizer
 
-
-class BibIndexFiletypeTokenizer(BibIndexEmptyTokenizer):
+class BibIndexFiletypeTokenizer(BibIndexRecJsonTokenizer):
     """
         Tokenizes for file extensions.
         Tokenizer is adapted to work with recjson and its get_record function.
@@ -58,6 +57,15 @@ class BibIndexFiletypeTokenizer(BibIndexEmptyTokenizer):
         except TypeError:
             return []
         return values
+
+    def tokenize_for_words(self, record):
+        return self.tokenize(record)
+
+    def tokenize_for_pairs(self, record):
+        return self.tokenize(record)
+
+    def tokenize_for_phrases(self, record):
+        return self.tokenize(record)
 
     def get_tokenizing_function(self, wordtable_type):
         return self.tokenize

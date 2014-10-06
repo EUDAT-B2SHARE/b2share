@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
+## Copyright (C) 2012, 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -17,12 +17,12 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""WebSearch Flask Blueprint"""
+"""WebSearch Flask Blueprint."""
 
 from functools import wraps
 from six import iteritems
 from flask import g, render_template, request, flash, redirect, url_for, \
-    current_app, abort, Blueprint
+    current_app, abort, Blueprint, send_file
 from flask.ext.login import current_user
 
 from invenio.base.decorators import wash_arguments
@@ -32,6 +32,7 @@ from invenio.ext.template.context_processor import \
     register_template_context_processor
 from invenio.modules.search.models import Collection
 from invenio.modules.search.signals import record_viewed
+from invenio.modules.records.api import get_record
 from invenio.modules.records.models import Record as Bibrec
 from invenio.base.i18n import _
 from invenio.base.signals import pre_template_render
@@ -86,7 +87,6 @@ def request_record(f):
             flash(auth_msg, 'error')
             abort(apache.HTTP_UNAUTHORIZED)
 
-        from invenio.modules.records.api import get_record
         from invenio.legacy.search_engine import record_exists, get_merged_recid
         # check if the current record has been deleted
         # and has been merged, case in which the deleted record
@@ -173,9 +173,9 @@ def request_record(f):
 @blueprint.route('/<int:recid>/', methods=['GET', 'POST'])
 @blueprint.route('/<int:recid>', methods=['GET', 'POST'])
 @blueprint.route('/<int:recid>/export/<of>', methods=['GET', 'POST'])
-@wash_arguments({'of': (unicode, 'hd')})
+@wash_arguments({'of': (unicode, 'hd'), 'ot': (unicode, None)})
 @request_record
-def metadata(recid, of='hd'):
+def metadata(recid, of='hd', ot=None):
     from invenio.legacy.bibrank.downloads_similarity import register_page_view_event
     from invenio.modules.formatter import get_output_format_content_type
     register_page_view_event(recid, current_user.get_id(), str(request.remote_addr))
@@ -190,7 +190,7 @@ def metadata(recid, of='hd'):
         id_user=current_user.get_id(),
         request=request)
 
-    return render_template('records/metadata.html', of=of)
+    return render_template('records/metadata.html', of=of, ot=ot)
 
 
 @blueprint.route('/<int:recid>/references', methods=['GET', 'POST'])
@@ -209,6 +209,21 @@ def files(recid):
                 yield file.get_url()
 
     return render_template('records/files.html', files=list(get_files()))
+
+
+@blueprint.route('/<int:recid>/files/<path:filename>', methods=['GET'])
+@request_record
+def file(recid, filename):
+    from invenio.modules.documents import api
+    record = get_record(recid)
+    duuid = [uuid for (k, uuid) in record.get('_documents', [])
+             if k == filename]
+    if len(duuid) != 1:
+        #TODO log
+        abort(404)
+    document = api.Document.get_document(duuid[0])
+    #TODO document.can_access(current_user)
+    return send_file(document['uri'])
 
 
 @blueprint.route('/<int:recid>/citations', methods=['GET', 'POST'])

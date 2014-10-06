@@ -17,6 +17,8 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""Database script functions."""
+
 from __future__ import print_function
 
 import os
@@ -34,6 +36,8 @@ manager = Manager(usage="Perform database operations")
 # Shortcuts for manager options to keep code DRY.
 option_yes_i_know = manager.option('--yes-i-know', action='store_true',
                                    dest='yes_i_know', help='use with care!')
+option_quiet = manager.option('--quiet', action='store_true',
+                              dest='quiet', help='show less output')
 option_default_data = manager.option(
     '--no-data', action='store_false',
     dest='default_data',
@@ -45,7 +49,7 @@ option_default_data = manager.option(
 @manager.option('-p', '--password', dest='password', default="")
 @option_yes_i_know
 def init(user='root', password='', yes_i_know=False):
-    """Initializes database and user."""
+    """Initialize database and user."""
     from invenio.ext.sqlalchemy import db
     from invenio.utils.text import wrap_text_in_a_box, wait_for_user
 
@@ -90,18 +94,18 @@ def init(user='root', password='', yes_i_know=False):
 
 
 @option_yes_i_know
-def drop(yes_i_know=False):
-    """Drops database tables"""
-
+@option_quiet
+def drop(yes_i_know=False, quiet=False):
+    """Drop database tables."""
     print(">>> Going to drop tables and related data on filesystem ...")
 
     from sqlalchemy import event
     from invenio.utils.date import get_time_estimator
     from invenio.utils.text import wrap_text_in_a_box, wait_for_user
-    from invenio.legacy.webstat.api import destroy_customevents
-    from invenio.legacy.inveniocfg import test_db_connection
+    from invenio.ext.sqlalchemy.utils import test_sqla_connection, test_sqla_utf8_chain
     from invenio.ext.sqlalchemy import db, models
     from invenio.legacy.bibdocfile.api import _make_base_dir
+    from invenio.modules.jsonalchemy.wrappers import StorageEngine
 
     ## Step 0: confirm deletion
     wait_for_user(wrap_text_in_a_box(
@@ -109,7 +113,8 @@ def drop(yes_i_know=False):
         "data on filesystem!"))
 
     ## Step 1: test database connection
-    test_db_connection()
+    test_sqla_connection()
+    test_sqla_utf8_chain()
     list(models)
 
     ## Step 2: disable foreign key checks
@@ -118,6 +123,7 @@ def drop(yes_i_know=False):
 
     ## Step 3: destroy associated data
     try:
+        from invenio.legacy.webstat.api import destroy_customevents
         msg = destroy_customevents()
         if msg:
             print(msg)
@@ -140,47 +146,55 @@ def drop(yes_i_know=False):
     event.listen(Bibdoc.__table__, "before_drop", bibdoc_before_drop)
 
     tables = list(reversed(db.metadata.sorted_tables))
-    N = len(tables)
 
-    prefix = '>>> Dropping %d tables ...' % N
+    def _dropper(items, prefix, dropper):
+        N = len(items)
+        prefix = prefix.format(N)
+        e = get_time_estimator(N)
+        dropped = 0
+        if quiet:
+            print(prefix)
 
-    e = get_time_estimator(N)
-    dropped = 0
+        for i, table in enumerate(items):
+            try:
+                if not quiet:
+                    print_progress(
+                        1.0 * (i+1) / N, prefix=prefix,
+                        suffix=str(datetime.timedelta(seconds=e()[0])))
+                dropper(table)
+                dropped += 1
+            except:
+                print('\r', '>>> problem with dropping ', table)
+                current_app.logger.exception(table)
 
-    for i, table in enumerate(tables):
-        try:
-            print_progress(1.0 * i / N, prefix=prefix,
-                           suffix=str(datetime.timedelta(seconds=e()[0])))
-            table.drop(bind=db.engine)
-            dropped += 1
-        except:
-            print('\r', '>>> problem with dropping table', table)
+        if dropped == N:
+            print(">>> Everything has been dropped successfully.")
+        else:
+            print("ERROR: not all items were properly dropped.")
+            print(">>> Dropped", dropped, 'out of', N)
 
-    print
-    if dropped == N:
-        print(">>> Tables dropped successfully.")
-    else:
-        print("ERROR: not all tables were properly dropped.")
-        print(">>> Dropped", dropped, 'out of', N)
+    _dropper(tables, '>>> Dropping {0} tables ...',
+             lambda table: table.drop(bind=db.engine))
+
+    _dropper(StorageEngine.__storage_engine_registry__,
+             '>>> Dropping {0} storage engines ...',
+             lambda api: api.storage_engine.drop())
 
 
 @option_default_data
-def create(default_data=True):
-    """Creates database tables from sqlalchemy models"""
-
+@option_quiet
+def create(default_data=True, quiet=False):
+    """Create database tables from sqlalchemy models."""
     print(">>> Going to create tables...")
 
     from sqlalchemy import event
     from invenio.utils.date import get_time_estimator
-    from invenio.legacy.inveniocfg import test_db_connection
+    from invenio.ext.sqlalchemy.utils import test_sqla_connection, test_sqla_utf8_chain
     from invenio.ext.sqlalchemy import db, models
-    try:
-        test_db_connection()
-    except Exception as e:
-        from invenio.ext.logging.wrappers import get_traceback
-        print('Cannot connect with the db:', e.message)
-        print(get_traceback())
-        return
+    from invenio.modules.jsonalchemy.wrappers import StorageEngine
+
+    test_sqla_connection()
+    test_sqla_utf8_chain()
 
     list(models)
 
@@ -197,37 +211,50 @@ def create(default_data=True):
     event.listen(CollectionFieldFieldvalue.__table__, "after_create", cfv_after_create)
 
     tables = db.metadata.sorted_tables
-    N = len(tables)
 
-    prefix = '>>> Creating %d tables ...' % N
+    def _creator(items, prefix, creator):
+        N = len(items)
+        prefix = prefix.format(N)
+        e = get_time_estimator(N)
+        created = 0
+        if quiet:
+            print(prefix)
 
-    e = get_time_estimator(N)
-    created = 0
+        for i, table in enumerate(items):
+            try:
+                if not quiet:
+                    print_progress(
+                        1.0 * (i+1) / N, prefix=prefix,
+                        suffix=str(datetime.timedelta(seconds=e()[0])))
+                creator(table)
+                created += 1
+            except:
+                print('\r', '>>> problem with creating ', table)
+                current_app.logger.exception(table)
 
-    for i, table in enumerate(tables):
-        try:
-            print_progress(1.0 * i / N, prefix=prefix,
-                           suffix=str(datetime.timedelta(seconds=e()[0])))
-            table.create(bind=db.engine)
-            created += 1
-        except:
-            print('\r', '>>> problem with creating table', table)
+        if created == N:
+            print(">>> Everything has been created successfully.")
+        else:
+            print("ERROR: not all items were properly created.")
+            print(">>> Created", created, 'out of', N)
 
-    print('\n')
+    _creator(tables, '>>> Creating {0} tables ...',
+             lambda table: table.create(bind=db.engine))
 
-    if created == N:
-        print(">>> Tables created successfully.")
-    else:
-        print("ERROR: not all tables were properly created.")
-        print(">>> Created", created, 'out of', N)
+    _creator(StorageEngine.__storage_engine_registry__,
+             '>>> Creating {0} storage engines ...',
+             lambda api: api.storage_engine.create())
 
-    populate(default_data)
+
+@manager.command
+def dump():
+    """Export all the tables, similar to `dbdump`."""
+    print('>>> Dumping the DataBase.')
 
 
 @manager.command
 def diff():
-    """Diff database against SQLAlchemy models"""
-
+    """Diff database against SQLAlchemy models."""
     try:
         from migrate.versioning import schemadiff  # noqa
     except ImportError:
@@ -242,98 +269,18 @@ def diff():
 
 @option_yes_i_know
 @option_default_data
-def recreate(yes_i_know=False, default_data=True):
-    """Recreates database tables (same as issuing 'drop' and then 'create')"""
-    drop()
-    create(default_data)
+@option_quiet
+def recreate(yes_i_know=False, default_data=True, quiet=False):
+    """Recreate database tables (same as issuing 'drop' and then 'create')."""
+    drop(quiet=quiet)
+    create(default_data=default_data, quiet=quiet)
 
 
 @manager.command
 def uri():
-    """Prints SQLAlchemy database uri."""
+    """Print SQLAlchemy database uri."""
     from flask import current_app
     print(current_app.config['SQLALCHEMY_DATABASE_URI'])
-
-
-def load_fixtures(packages=['invenio.modules.*'], truncate_tables_first=False):
-    from invenio.base.utils import import_module_from_packages
-    from invenio.ext.sqlalchemy import db, models
-    from fixture import SQLAlchemyFixture
-
-    fixture_modules = list(import_module_from_packages('fixtures',
-                                                       packages=packages))
-    model_modules = list(models)
-    fixtures = dict((f, getattr(ff, f)) for ff in fixture_modules
-                    for f in dir(ff) if f[-4:] == 'Data')
-    fixture_names = fixtures.keys()
-    models = dict((m+'Data', getattr(mm, m)) for mm in model_modules
-                  for m in dir(mm) if m+'Data' in fixture_names)
-
-    dbfixture = SQLAlchemyFixture(env=models, engine=db.metadata.bind,
-                                  session=db.session)
-    data = dbfixture.data(
-        *[f for (n, f) in iteritems(fixtures) if n in models]
-    )
-    if len(models) != len(fixtures):
-        print(
-            ">>> ERROR: There are",
-            len(models),
-            "tables and",
-            len(fixtures),
-            "fixtures."
-        )
-        print(">>>", set(fixture_names) ^ set(models.keys()))
-    else:
-        print(">>> There are", len(models), "tables to be loaded.")
-
-    if truncate_tables_first:
-        print(">>> Going to truncate following tables:",
-              map(lambda t: t.__tablename__, models.values()))
-        db.session.execute("TRUNCATE %s" % ('collectionname', ))
-        db.session.execute("TRUNCATE %s" % ('collection_externalcollection', ))
-        for m in models.values():
-            db.session.execute("TRUNCATE %s" % (m.__tablename__, ))
-        db.session.commit()
-    data.setup()
-    db.session.commit()
-
-
-@option_default_data
-@manager.option('--truncate', action='store_true',
-                dest='truncate_tables_first', help='use with care!')
-def populate(default_data=True, truncate_tables_first=False):
-    """Populate database with default data"""
-
-    from invenio.config import CFG_PREFIX
-    from invenio.base.scripts.config import get_conf
-
-    if not default_data:
-        print('>>> No data filled...')
-        return
-
-    print(">>> Going to fill tables...")
-
-    load_fixtures(truncate_tables_first=truncate_tables_first)
-
-    conf = get_conf()
-
-    from invenio.legacy.inveniocfg import cli_cmd_reset_sitename, \
-        cli_cmd_reset_siteadminemail, cli_cmd_reset_fieldnames
-
-    cli_cmd_reset_sitename(conf)
-    cli_cmd_reset_siteadminemail(conf)
-    cli_cmd_reset_fieldnames(conf)
-
-    for cmd in ["%s/bin/webaccessadmin -u admin -c -a" % CFG_PREFIX]:
-        if os.system(cmd):
-            print("ERROR: failed execution of", cmd)
-            sys.exit(1)
-
-    from invenio.modules.upgrader.engine import InvenioUpgrader
-    iu = InvenioUpgrader()
-    map(iu.register_success, iu.get_upgrades())
-
-    print(">>> Tables filled successfully.")
 
 
 def version():
@@ -364,10 +311,10 @@ def driver_info(verbose=False):
 @manager.option('-s', '--separator', dest='separator', default="\n")
 @change_command_name
 def mysql_info(separator=None, line_format=None):
-    """
-    Detect and print(MySQL details useful for debugging problems on various OS.
-    """
+    """Detect and print MySQL details.
 
+    Useful for debugging problems on various OS.
+    """
     from invenio.ext.sqlalchemy import db
     if db.engine.name != 'mysql':
         raise Exception('Database engine is not mysql.')
@@ -400,6 +347,7 @@ def mysql_info(separator=None, line_format=None):
 
 
 def main():
+    """Main."""
     from invenio.base.factory import create_app
     app = create_app()
     manager.app = app

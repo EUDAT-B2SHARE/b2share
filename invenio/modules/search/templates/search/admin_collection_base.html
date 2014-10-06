@@ -27,10 +27,10 @@
 {% endif %}
 {% set personalize_selected = True %}
 
-{% block header %}
+{% block global_bundles %}
   {{ super() }}
-  {%- js url_for("static", filename="js/jqueryui/jquery-ui.custom.min.js") -%}
-{% endblock header %}
+  {% bundle "admin/search.js" %}
+{% endblock -%}
 
 {% block body %}
 <div class="tabbable">
@@ -62,3 +62,15 @@
 </div>
 
 {% endblock body %}
+
+{% block javascript %}
+<script type="text/javascript">
+require(["jquery", "js/admin/search/portalboxes"], function($, portalboxes) {
+  $(function() {
+    portalboxes({
+      url: "{{url_for('.manage_portalboxes_order')}}"
+    })
+  })
+})
+</script>
+{% endblock javascript %}

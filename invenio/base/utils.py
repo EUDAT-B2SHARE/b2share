@@ -30,14 +30,17 @@ from functools import partial
 
 
 def import_module_from_packages(name, app=None, packages=None, silent=False):
+    warnings.warn("Use of import_module_from_packages has been deprecated."
+                  " Please use Flask-Registry instead.",  DeprecationWarning)
+
+    if app is None and has_app_context():
+        app = current_app
+    if app is None:
+        raise Exception(
+            'Working outside application context or provide app'
+        )
+
     if packages is None:
-        if app is None and has_app_context():
-            app = current_app
-        if app is None:
-            raise Exception(
-                'Working outside application context or provide app'
-            )
-        #FIXME
         packages = app.config.get('PACKAGES', [])
 
     for package in packages:
@@ -47,27 +50,23 @@ def import_module_from_packages(name, app=None, packages=None, silent=False):
                     yield import_string(module + '.' + name, silent)
                 except ImportError:
                     pass
-                except Exception as e:
-                    import traceback
-                    traceback.print_exc()
-                    app.logger.error('Could not import: "%s.%s: %s',
-                                     module, name, str(e))
-                    pass
+                except Exception:
+                    app.logger.exception("could not import %s.%s",
+                                         package, name)
             continue
         try:
             yield import_string(package + '.' + name, silent)
         except ImportError:
             pass
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            app.logger.error('Could not import: "%s.%s: %s',
-                             package, name, str(e))
-            pass
+        except Exception:
+            app.logger.exception("could not import %s.%s", package, name)
 
 
 def import_submodules_from_packages(name, app=None, packages=None,
                                     silent=False):
+    warnings.warn("Use of import_submodules_from_packages has been deprecated."
+                  " Please use Flask-Registry instead.",  DeprecationWarning)
+
     discover = partial(import_module_from_packages, name)
     out = []
     for p in discover(app=app, packages=packages, silent=silent):
@@ -75,9 +74,9 @@ def import_submodules_from_packages(name, app=None, packages=None,
             for m in find_modules(p.__name__):
                 try:
                     out.append(import_string(m, silent))
-                except Exception as e:
+                except Exception:
                     if not silent:
-                        raise e
+                        raise
     return out
 
 
@@ -108,20 +107,23 @@ def try_to_eval(string, context={}, **general_context):
     res = None
     imports = []
     general_context.update(context)
-
-    while (True):
+    simple = False
+    while True:
         try:
             res = eval(string, globals().update(general_context), locals())  # kwalitee: disable=eval
         except NameError as err:
             #Try first to import using werkzeug import_string
             try:
                 from werkzeug.utils import import_string
-                part = string.split('.')[0]
-                import_string(part)
-                for i in string.split('.')[1:]:
-                    part += '.' + i
+                if "." in string:
+                    part = string.split('.')[0]
                     import_string(part)
-                continue
+                    for i in string.split('.')[1:]:
+                        part += '.' + i
+                        import_string(part)
+                    continue
+                else:
+                    simple = True
             except:
                 pass
 
@@ -133,9 +135,19 @@ def try_to_eval(string, context={}, **general_context):
                     globals()[import_name] = __import__(import_name)
                     imports.append(import_name)
                 continue
-            raise ImportError(
-                "Can't import the needed module to evaluate %s" (string, )
-            )
+            elif simple:
+                import_name = str(err).split("'")[0]
+                if import_name in context:
+                    globals()[import_name] = context[import_name]
+                else:
+                    globals()[import_name] = __import__(import_name)
+                    imports.append(import_name)
+                continue
+
+            raise ImportError("Can't import the needed module to evaluate %s" (string, ))
+        import os
+        if isinstance(res, type(os)):
+            raise ImportError
         return res
 
 

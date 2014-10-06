@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2010, 2011 CERN.
+## Copyright (C) 2006, 2007, 2008, 2010, 2011, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -26,12 +26,7 @@ __revision__ = "$Id$"
 import os
 import pkg_resources
 
-from invenio.config import CFG_ETCDIR, CFG_PYLIBDIR
-
-# True if old php format written in EL must be used by Invenio.
-# False if new python format must be used. If set to 'False' but
-# new format cannot be found, old format will be used.
-CFG_BIBFORMAT_USE_OLD_BIBFORMAT = False
+from invenio.config import CFG_ETCDIR
 
 # Paths to main formats directories
 CFG_BIBFORMAT_TEMPLATES_DIR = "format_templates"
@@ -47,6 +42,11 @@ CFG_BIBFORMAT_HIDDEN_TAGS = [595,]
 CFG_BIBFORMAT_FORMAT_TEMPLATE_EXTENSION = "bft"
 CFG_BIBFORMAT_FORMAT_JINJA_TEMPLATE_EXTENSION = "tpl"
 CFG_BIBFORMAT_FORMAT_OUTPUT_EXTENSION = "bfo"
+
+# CFG_BIBFORMAT_CACHED_FORMATS -- Specify a list of cached formats
+# We need to know which ones are cached because bibformat will save the
+# of these in a db table
+CFG_BIBFORMAT_CACHED_FORMATS = []
 
 assert CFG_BIBFORMAT_FORMAT_TEMPLATE_EXTENSION != CFG_BIBFORMAT_FORMAT_JINJA_TEMPLATE_EXTENSION, \
     "CFG_BIBFORMAT_FORMAT_TEMPLATE_EXTENSION and CFG_BIBFORMAT_FORMAT_JINJA_TEMPLATE_EXTENSION must be different"
@@ -65,21 +65,25 @@ assert len(CFG_BIBFORMAT_FORMAT_OUTPUT_EXTENSION) == 3, \
 
 class InvenioBibFormatError(Exception):
     """A generic error for BibFormat."""
+
     def __init__(self, message):
         """Initialisation."""
+        Exception.__init__(self)
         self.message = message
 
     def __str__(self):
         """String representation."""
-        return repr(self.message)
+        return self.message
 
 # Exceptions: warnings
 
 
 class InvenioBibFormatWarning(Exception):
     """A generic warning for BibFormat."""
+
     def __init__(self, message):
         """Initialisation."""
+        Exception.__init__(self)
         self.message = message
 
     def __str__(self):
