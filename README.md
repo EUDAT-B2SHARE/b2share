@@ -165,9 +165,7 @@ $ git merge upstream/master
 
 - **provision_system.sh** will install the necessary packages, python version and other dependencies needed by invenio. Called on VM provisioning.
 
-- **install_b2share.sh** will install b2share (the master branch) and create the necessary configuration settings. Called on VM provisioning.
-
-- **install_b2share_dev.sh** will install b2share from a local B2SHARE repository. It will create the necessary configuration settings. Called on VM dev provisioning.
+- **install_b2share.sh** will install b2share from the master branch. It takes a parameter (either "production" or "development") and creates corresponding default configurations. Called on VM provisioning.
 
 - **start_b2share.sh** will start b2share with the required prerequisites. Must be called by the user via SSH.
 
