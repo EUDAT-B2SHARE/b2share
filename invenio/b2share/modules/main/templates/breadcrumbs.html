@@ -16,27 +16,21 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-{% macro render_breadcrumbs(visibile, show_login_button) %}
-<div class="row" style="visibility: {{visible}}">
+{% macro render_breadcrumbs(show_login_button) %}
+<div class="row">
     <div class="col-md-6">
-        {% if breadcrumbs|length >= 1 %}
-        <ul class="breadcrumb">
-            {% for breadcrumb in breadcrumbs %}
-            {% if loop.last %}
-            <li class="active">
-                {{ breadcrumb[0] }}
-            </li>
-            {% else %}
-            <li>
-                {% set url_args = breadcrumb[2] or {} %}
-                <a href="{{ url_for(breadcrumb[1], **url_args) }}"
-                     class="navtrail">
-                    {{ breadcrumb[0] }}
-                </a> <span class="divider">/</span>
-            </li>
-            {% endif %}
-            {% endfor %}
-        </ul>
+        {% if breadcrumbs|length > 1 %}
+        <div class="container">
+            <ul class="breadcrumb" itemprop="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                {% if loop.last %}
+                <li class="active">{{ breadcrumb.text|safe }}</li>
+                {% else %}
+                <li> <a href="{{ breadcrumb.url }}" class="navtrail"> {{ breadcrumb.text|safe }} </a> </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
     </div>
     {% if show_login_button %}
@@ -49,19 +43,19 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: inline-block; padding-left: 5px;">
             <span class="caret"></span>&nbsp;</a>
             <ul class="dropdown-menu">
-              {%- for item in current_menu.submenu('personalize').children if item.visible %}
-              <li><a href="{{ item.url }}">{{ item.text|safe }}</a></li>
-              {% endfor %}
-              <li class="divider"></li>
-              {% if current_user.is_guest %}
-              <li><a href="{{ url_for('webaccount.login', referer=request.url) }}">
-                <i class="glyphicon glyphicon-lock"></i> {{ _("Login") }}
-              </a></li>
-              {% else %}
-              <li><a href="{{ url_for('webaccount.logout') }}">
-                <i class="glyphicon glyphicon-off"></i> {{ _("Logout") }}
-              </a></li>
-              {% endif %}
+                {%- for item in current_menu.submenu('personalize').children if item.visible %}
+                <li><a href="{{ item.url }}">{{ item.text|safe }}</a></li>
+                {% endfor %}
+                <li class="divider"></li>
+                {% if current_user.is_guest %}
+                <li><a href="{{ url_for('webaccount.login', referer=request.url) }}">
+                    <i class="glyphicon glyphicon-lock"></i> {{ _("Login") }}
+                </a></li>
+                {% else %}
+                <li><a href="{{ url_for('webaccount.logout') }}">
+                    <i class="glyphicon glyphicon-off"></i> {{ _("Logout") }}
+                </a></li>
+                {% endif %}
             </ul>
             {% endif %}
         </div>
