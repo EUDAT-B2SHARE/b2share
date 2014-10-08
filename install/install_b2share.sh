@@ -53,7 +53,10 @@ echo; echo "### Run pybabel"
 pybabel compile -fd invenio/base/translations/
 
 echo; echo "### Run npm install"
+sudo npm install -g bower grunt-cli
+npm update
 npm install
+
 echo; echo "### Run bower install"
 bower install
 echo; echo "### Run grunt"
