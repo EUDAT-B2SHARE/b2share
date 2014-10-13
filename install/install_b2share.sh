@@ -100,7 +100,7 @@ echo; echo "### Config upload folder"
 inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/
 
 echo; echo "### Config B2SHARE domains"
-inveniomanage config set CFG_B2SHARE_DOMAINS "generic, drihm, linguistics, euon, bbmri"
+inveniomanage config set CFG_B2SHARE_DOMAINS "generic, drihm, linguistics, euon, bbmri, nrm"
 
 echo; echo "### Config epic credentials"
 inveniomanage config set CFG_EPIC_USERNAME ""
