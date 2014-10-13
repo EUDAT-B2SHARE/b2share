@@ -3,4 +3,3 @@ validate_email
 recaptcha-client
 markdown
 httplib2
-# Flask-DebugToolbar (development)

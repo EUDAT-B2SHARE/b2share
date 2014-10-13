@@ -1,0 +1,4 @@
+ipython
+ipdb
+Flask-DebugToolbar
+qrcode
