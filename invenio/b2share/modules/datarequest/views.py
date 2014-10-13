@@ -19,6 +19,8 @@
 
 
 from flask import request, Blueprint
+from flask.ext.breadcrumbs import register_breadcrumb
+from invenio.base.i18n import _
 import invenio.b2share.modules.datarequest.request_data_form as reqdata
 
 blueprint = Blueprint('request_data_form', __name__,
@@ -30,6 +32,7 @@ def request_data_form_noparams():
     return reqdata.request_data_form(request,-1)
 
 @blueprint.route('/<recid>',methods=['GET'])
+@register_breadcrumb(blueprint, 'breadcrumbs.reqdata', _('Request Data'))
 def request_data_form(recid):
     return reqdata.request_data_form(request,recid)
 

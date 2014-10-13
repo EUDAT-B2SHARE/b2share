@@ -97,26 +97,6 @@ values copied from bootstrap ones for higher than xs size counterparts -> to be 
   width: 100%;
 }
 
-/*
-  too keep searchbar with buttons in one line
-*/
-@media (min-width: 768px) { /* ld size */
-  #searchform-input-group {
-    width: 670px;
-  }
-}
-
-@media (min-width: 992px) { /* md size */
-  #searchform-input-group {
-    width: 710px;
-  }
-}
-
-@media (min-width: 1200px) { /* ld size */
-  #searchform-input-group {
-    width: 915px;
-  }
-}
 
 /*
   showing dropdown stil as dropdown
