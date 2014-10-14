@@ -62,14 +62,5 @@ po/stamp-po
 
 invenio/base/static/*
 
-Flask_Testing-*
-httpretty-*
-mock-*
-nose-*
-selenium-*
-six-*
-unittest2-*
-urllib3-*
-
-
+*.egg
 
