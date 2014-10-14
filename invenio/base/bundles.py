@@ -187,3 +187,33 @@ almondjs = Bundle(
         "almond": "latest"
     }
 )
+
+
+# b2share bundles, should be moved to its own b2share package
+b2s_deps_js = Bundle(
+    "vendors/plupload/js/plupload.full.min.js",
+    "vendors/bootstrap-switch/dist/js/bootstrap-switch.js",
+    "vendors/bootstrap-multiselect/js/bootstrap-multiselect.js",
+    "vendors/typeahead.js/dist/typeahead.bundle.min.js",
+    output="b2s_deps.js",
+    filters="uglifyjs",
+    bower={
+        "bootstrap-switch": "3.0.2",
+        "bootstrap-multiselect": "latest",
+        "plupload": "latest",
+        "typeahead.js": "latest",
+    },
+    weight=50,
+)
+
+b2s_deps_css = Bundle(
+    "vendors/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css", 
+    "vendors/bootstrap-multiselect/css/bootstrap-multiselect.css",
+    output="b2s_deps.css",
+    filters="cleancss",
+    bower={
+        "bootstrap-switch": "3.0.2",
+        "bootstrap-multiselect": "latest",
+    },
+    weight=50,
+)

@@ -2,22 +2,10 @@
 
 {% extends "page.html" %}
 
-{%- block global_css %}
+{%- block global_bundles %}
     {{ super() }}
-    {% css 'css/b2share-style.css', '50-b2share' %}
-    {% css 'css/bootstrap-switch.css', '50-b2share' %}
-    {% css 'css/bootstrap-multiselect.css', '50-b2share' %}
-    {% css 'css/jquery-ui.css', '50-b2share' %}
-{%- endblock global_css -%}
-
-{%- block global_javascript -%}
-    {{ super() }}
-    {%- js 'plupload/plupload.full.min.js', '50-b2share' -%}
-    {%- js 'js/bootstrap-switch.min.js', '50-b2share' -%}
-    {%- js 'js/bootstrap-multiselect.js', '50-b2share' -%}
-    {%- js 'js/jquery-ui-1.10.3.custom.min.js', '50-b2share' -%}
-    {%- js 'js/b2share-deposit.js', '50-b2share' -%}
-{%- endblock global_javascript -%}
+    {% bundles "b2s_deposit.css", "b2s_deposit.js" %}
+{%- endblock %}
 
 {% block breadcrumbs %}
     {{ render_breadcrumbs('visible', False) }}
