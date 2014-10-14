@@ -19,6 +19,8 @@
 
 """ B2SHARE Abuse Form Blueprint"""
 from flask import request, Blueprint
+from flask.ext.breadcrumbs import register_breadcrumb
+from invenio.base.i18n import _
 import invenio.b2share.modules.abuse.abuse_form as abuse
 
 blueprint = Blueprint('abuse_form', __name__, 
@@ -30,6 +32,7 @@ def abuse_form_noparams():
 	return abuse.abuse_form(request,-1)
 
 @blueprint.route('/<recid>',methods=['GET'])
+@register_breadcrumb(blueprint, 'breadcrumbs.abuse', _('Abuse'))
 def abuse_form(recid):
 	return abuse.abuse_form(request,recid)
 

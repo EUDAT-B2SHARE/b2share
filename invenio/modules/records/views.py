@@ -24,6 +24,7 @@ from six import iteritems
 from flask import g, render_template, request, flash, redirect, url_for, \
     current_app, abort, Blueprint, send_file
 from flask.ext.login import current_user
+from flask.ext.breadcrumbs import register_breadcrumb
 
 from invenio.base.decorators import wash_arguments
 from invenio.base.globals import cfg
@@ -43,7 +44,7 @@ blueprint = Blueprint('record', __name__, url_prefix="/" + CFG_SITE_RECORD,
                       static_url_path='/record', template_folder='templates',
                       static_folder='static')
 
-default_breadcrumb_root(blueprint, '.')
+default_breadcrumb_root(blueprint, 'breadcrumbs.record')
 
 
 def request_record(f):
@@ -173,7 +174,9 @@ def request_record(f):
 @blueprint.route('/<int:recid>/', methods=['GET', 'POST'])
 @blueprint.route('/<int:recid>', methods=['GET', 'POST'])
 @blueprint.route('/<int:recid>/export/<of>', methods=['GET', 'POST'])
-@wash_arguments({'of': (unicode, 'hd'), 'ot': (unicode, None)})
+# @wash_arguments({'of': (unicode, 'hd'), 'ot': (unicode, None)})
+@register_breadcrumb(blueprint, '.', _('Record'))
+@wash_arguments({'of': (unicode, 'hd')})
 @request_record
 def metadata(recid, of='hd', ot=None):
     from invenio.legacy.bibrank.downloads_similarity import register_page_view_event
