@@ -1,11 +1,10 @@
 {
-    "! is a ": "Follow the INSTALL procedure to set it up for your overlay.",
-    "! note ": "Thank you and have fun!",
-    "! this ": "NOTE: this file is only intended to be used by Travis CI.",
     "dependencies": {
         "MathJax": "~2.4",
         "almond": "latest",
         "bootstrap": "3.2.0",
+        "bootstrap-multiselect": "latest",
+        "bootstrap-switch": "3.0.2",
         "bootstrap-tagsinput": "latest",
         "datatables": "~1.10",
         "datatables-plugins": "https://github.com/greut/Plugins.git#amdify",
@@ -28,6 +27,7 @@
         "json2": "latest",
         "less": "latest",
         "mediaelement": "latest",
+        "plupload": "latest",
         "prism": "gh-pages",
         "requirejs": "latest",
         "requirejs-hogan-plugin": "latest",
@@ -41,5 +41,5 @@
         "bootstrap": "~3.2",
         "jquery": "~1.11"
     },
-    "version": "1.9999.3.dev20140929155259"
+    "version": "1.9999.4.dev20141006144521"
 }
