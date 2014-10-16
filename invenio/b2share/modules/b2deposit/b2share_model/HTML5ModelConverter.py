@@ -204,9 +204,11 @@ class SelectFieldWithInput(SelectField):
         self.filtering = filtering
         # make list of tuples for SelectField (only once)
         if isinstance(data_source[0], basestring):
-            field_args['choices'] = [(x,x) for x in data_source]
-            if other:
-                field_args['choices'].append(('other', other))
+            field_args['choices'] = [(x, x) for x in data_source]
+        elif isinstance(data_source[0], (tuple, list, set)) and len(data_source[0]) == 2:
+            field_args['choices'] = [tuple(it[:2]) for it in data_source]
+        if other:
+            field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
