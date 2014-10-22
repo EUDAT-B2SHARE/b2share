@@ -18,13 +18,14 @@
 
 from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms import validators
-from flask.ext.wtf.html5 import IntegerField, DecimalField, DateField
+from flask.ext.wtf.html5 import IntegerField, DecimalField
 from wtforms import DateTimeField as _DateTimeField
 from wtforms import DateField as _DateField
 from wtforms import BooleanField, StringField
 from wtforms import SelectField
 from wtforms import HiddenField as _HiddenField
 from wtforms.widgets import Input, Select, HTMLString, html_params
+
 
 class SwitchInput(Input):
     input_type = "checkbox"
@@ -37,8 +38,8 @@ class SwitchInput(Input):
             checked = "checked"
 
         return HTMLString(
-            '<input class="switcher" data-on-color="success" data-off-color="danger" {0} {1}>'
-                .format(checked, self.html_params(name=field.name, **kwargs)))
+            '<input class="switcher" data-on-color="success" data-off-color="danger" {0} {1}>'.format(
+                checked, self.html_params(name=field.name, **kwargs)))
 
 
 class SwitchField(BooleanField):
@@ -70,6 +71,7 @@ class DateTimeInput(Input):
             '<div class="datetime" >'
             '<input type="text" {0}/></div>'.format(self.html_params(name=field.name, **kwargs)))
 
+
 class DateTimeField(_DateTimeField):
     widget = DateTimeInput()
 
@@ -78,6 +80,7 @@ class DateTimeField(_DateTimeField):
             self.data = self.default
         else:
             self.data = value
+
 
 class DateInput(Input):
     """
@@ -90,20 +93,22 @@ class DateInput(Input):
         kwargs.setdefault('type', self.input_type)
         return HTMLString('<input type="text" class="datepicker" {0}/>'.format(self.html_params(name=field.name, **kwargs)))
 
+
 class DateField(_DateField):
     widget = DateInput()
 
-    def __init__(self,  *args, **kwargs):
-        date_format='%d-%m-%Y'
+    def __init__(self, *args, **kwargs):
+        date_format = '%d-%m-%Y'
         if 'format' in kwargs:
             kwargs.pop('format')
-        super(_DateField, self ).__init__(format=date_format, *args, **kwargs)
+        super(_DateField, self).__init__(format=date_format, *args, **kwargs)
 
     def process_data(self, value):
         if value is None:
             self.data = self.default
         else:
             self.data = value
+
 
 class DecimalInput(Input):
     input_type = "number"
@@ -152,14 +157,14 @@ class PlaceholderStringInput(Input):
     input_type = "text"
 
     def __call__(self, field, placeholder="", **kwargs):
-         kwargs.setdefault('id', field.id)
-         kwargs.setdefault('type', self.input_type)
-         if 'value' not in kwargs:
-             kwargs['value'] = field._value()
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
 
-         return HTMLString(
-             '<input placeholder="{0}" {1}>'.format(
-             field.placeholder, self.html_params(name=field.name, **kwargs)))
+        return HTMLString(
+            '<input placeholder="{0}" {1}>'.format(
+                field.placeholder, self.html_params(name=field.name, **kwargs)))
 
 
 class PlaceholderStringField(StringField):
@@ -168,8 +173,8 @@ class PlaceholderStringField(StringField):
     placeholder = ""
 
     def __init__(self, placeholder="", **kwargs):
-         self.placeholder = placeholder
-         super(PlaceholderStringField, self).__init__(**kwargs)
+        self.placeholder = placeholder
+        super(PlaceholderStringField, self).__init__(**kwargs)
 
 
 class SelectWithInput(Select):
@@ -186,8 +191,8 @@ class SelectWithInput(Select):
         html.append('</select>')
         if field.other:
             html.append('<input type=text style="display: none" {0} {1} >'
-            .format(html_params(name=field.name+"_input"),
-                    html_params(id=field.name+"_input")))
+                        .format(html_params(name=field.name + "_input"),
+                                html_params(id=field.name + "_input")))
         return HTMLString(''.join(html))
 
 
@@ -198,15 +203,17 @@ class SelectFieldWithInput(SelectField):
     other = ""
 
     def __init__(self, other="", filtering="", cardinality=1,
-                       data_provide="", data_source="", **field_args):
+                 data_provide="", data_source="", **field_args):
         self.cardinality = cardinality
         self.other = other
         self.filtering = filtering
         # make list of tuples for SelectField (only once)
         if isinstance(data_source[0], basestring):
-            field_args['choices'] = [(x,x) for x in data_source]
-            if other:
-                field_args['choices'].append(('other', other))
+            field_args['choices'] = [(x, x) for x in data_source]
+        elif isinstance(data_source[0], (tuple, list, set)) and len(data_source[0]) == 2:
+            field_args['choices'] = [tuple(it[:2]) for it in data_source]
+        if other:
+            field_args['choices'].append(('other', other))
         super(SelectFieldWithInput, self).__init__(**field_args)
 
 
@@ -225,6 +232,7 @@ class AddFieldInput(Input):
         html.append('</div>')
         return HTMLString(''.join(html))
 
+
 class AddField(StringField):
     widget = AddFieldInput()
     placeholder = ""
@@ -240,11 +248,11 @@ class HiddenInput(Input):
     input_type = "hidden"
 
     def __call__(self, field, value="", **kwargs):
-         kwargs.setdefault('id', field.id)
-         kwargs.setdefault('type', self.input_type)
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
 
-         return HTMLString(
-             '<input type=hidden {0}>'.format(
+        return HTMLString(
+            '<input type=hidden {0}>'.format(
                 self.html_params(value=field.value, name=field.id, **kwargs)))
 
 
@@ -254,7 +262,7 @@ class HiddenField(_HiddenField):
 
     def __init__(self, hidden="", value="", **kwargs):
         self.value = value
-        super(HiddenField, self ).__init__(**kwargs)
+        super(HiddenField, self).__init__(**kwargs)
 
 
 class HTML5ModelConverter(ModelConverter):
@@ -306,8 +314,7 @@ class HTML5ModelConverter(ModelConverter):
         if 'data_provide' in field_args:
             if field_args['data_provide'] == 'typeahead':
                 return TypeAheadStringField(**field_args)
-
-            if field_args['data_provide'] == 'select':
+            elif field_args['data_provide'] == 'select':
                 return SelectFieldWithInput(**field_args)
 
         if 'cardinality' in field_args:
