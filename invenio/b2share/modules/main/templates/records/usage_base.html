@@ -34,8 +34,8 @@
   </li>
   {%- endfor -%}
   <hr/>
-  </div>
   </ul>
+  </div>
   {%- endif -%}
 
   {%- if downloadsimilarity -%}
@@ -49,8 +49,8 @@
   </li>
   {%- endfor -%}
   <hr/>
-  </div>
   </ul>
+  </div>
   {%- endif -%}
 
   {%- if downloadgraph -%}
@@ -59,6 +59,7 @@
   <ul class="list-unstyled">
   {{ downloadgraph|safe }}
   </ul>
+  </div>
   {%- endif -%}
 
 {% endblock %}
