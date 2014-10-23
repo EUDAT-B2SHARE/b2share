@@ -20,8 +20,6 @@
 {% extends "records/base_base.html" %}
 
 {% block body %}
-  {{ super() }}
-
   {% block record_restriction_flag %}
   {% if g.bibrec.is_restricted %}
   <div class="alert alert-danger"><b>{{ _('Restricted') }}</b>
