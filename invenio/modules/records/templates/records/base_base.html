@@ -50,7 +50,6 @@
   {% block record_tabs %}
   <ul id="record-links" class="nav nav-tabs">
   {%- for tab in tabs|sort(attribute='order') -%}
-  {%- if tab.label not in [_('References'), _('Citations'), _('Keywords'), _('Files'), _('Plots'), _('Holdings'), _('Linkbacks')] -%}
   {%- if tab.visible -%}
     <li class="{{ 'active' if tab.key == request.endpoint }} {{ 'disabled' if not tab.enabled }}">
       <a href="{{ url_for(tab.key, recid=recid) if tab.enabled else '#' }}">
@@ -60,7 +59,6 @@
         {% endif %}
       </a>
     </li>
-  {%- endif -%}
   {%- endif -%}
   {%- endfor -%}
   </ul>
