@@ -43,8 +43,10 @@ cd b2share
 echo; echo "### Install pip dependencies"
 pip install Babel
 pip install flower # flower is for monitoring celery tasks
-pip install -r requirements-img.txt
-pip install -r requirements-b2share.txt
+for f in requirements*.txt; do
+   echo; echo "### pip install -r $f"
+   pip install -r $f;
+done
 
 echo; echo "### Install invenio egg"
 pip install -e . --process-dependency-links --allow-all-external
@@ -148,6 +150,8 @@ else
    inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
    inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.dummy.Mail
    inveniomanage config set CFG_SITE_FUNCTION "Development Environment"
+   inveniomanage config set COLLECT_STORAGE invenio.ext.collect.storage.link
    inveniomanage config set DEBUG True
    inveniomanage config set ASSETS_DEBUG True
+   inveniomanage config set DEBUG_TB_INTERCEPT_REDIRECTS False
 fi
