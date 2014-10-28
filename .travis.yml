@@ -61,6 +61,7 @@ install:
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
 
+
 before_script:
   - "inveniomanage apache create-config"
   - "sudo ln -s $VIRTUAL_ENV/var/invenio.base-instance/apache/invenio-apache-vhost.conf /etc/apache2/sites-enabled/invenio.conf"
