@@ -57,7 +57,7 @@ install:
   - "npm install"
   - "inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname \"cleancss\" | grep \"\\.bin\" | head -1`"
   - "inveniomanage config set LESS_BIN `find $PWD/node_modules -iname \"lessc\" | grep \"\\.bin\" | head -1`"
-  - "bower install"
+  - "travis_retry bower install"
   - "travis_retry grunt"
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
