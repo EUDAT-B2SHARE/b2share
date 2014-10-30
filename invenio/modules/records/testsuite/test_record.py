@@ -546,30 +546,30 @@ class TestMarcRecordCreation(InvenioTestCase):
         self.assertTrue('reference' in r)
         self.assertEquals(len(r['reference']), 36)
 
-    def test_error_catching(self):
-        """ Record - catch any record conversion issues """
-        from invenio.modules.jsonalchemy.errors import ReaderException
-        blob = """<?xml version="1.0" encoding="UTF-8"?>
-        <collection>
-        <record>
-          <datafield tag="FFT" ind1=" " ind2=" ">
-            <subfield code="a">/path/to</subfield>
-            <subfield code="t">Test</subfield>
-            </datafield></record>
-        </collection>
-        """
-        blob = unicode(blob)
+    # def test_error_catching(self):
+    #     """ Record - catch any record conversion issues """
+    #     from invenio.modules.jsonalchemy.errors import ReaderException
+    #     blob = """<?xml version="1.0" encoding="UTF-8"?>
+    #     <collection>
+    #     <record>
+    #       <datafield tag="FFT" ind1=" " ind2=" ">
+    #         <subfield code="a">/path/to</subfield>
+    #         <subfield code="t">Test</subfield>
+    #         </datafield></record>
+    #     </collection>
+    #     """
+    #     blob = unicode(blob)
 
-        # Should raise an error that Unicode strings with
-        # encoding declaration are not supported
-        self.assertRaises(
-            ReaderException,
-            Record.create,
-            blob,
-            master_format='marc',
-            namespace='testsuite',
-            schema='xml'
-        )
+    #     # Should raise an error that Unicode strings with
+    #     # encoding declaration are not supported
+    #     self.assertRaises(
+    #         ReaderException,
+    #         Record.create,
+    #         blob,
+    #         master_format='marc',
+    #         namespace='testsuite',
+    #         schema='xml'
+    #     )
 
 
 class TestRecordDocuments(InvenioTestCase):
