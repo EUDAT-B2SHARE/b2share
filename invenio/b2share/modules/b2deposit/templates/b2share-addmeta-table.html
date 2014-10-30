@@ -148,3 +148,35 @@
     $('.multiselect').multiselect();
   });
 </script>
+
+<script type="text/javascript">
+  // setup typeahead
+  $(document).ready(function() {
+    var substringMatcher = function(strs) {
+        return function findMatches(q, cb) {
+            var matches = [];
+            var substrRegex = new RegExp(q, 'i');
+            $.each(strs, function(i, str) {
+                if (substrRegex.test(str)) {
+                    matches.push({ value: str });
+                }
+            });
+            cb(matches);
+        };
+    };
+
+    $("#meta input[data-provide='typeahead']").each(function() {
+        var qthis = $(this);
+        var dataset = JSON.parse(qthis.attr('data-source'));
+        console.log("typeahead: ", this, dataset);
+        qthis.typeahead('destroy');
+        qthis.typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 1
+        }, {
+            source: substringMatcher(dataset)
+        });
+    });
+  });
+</script>

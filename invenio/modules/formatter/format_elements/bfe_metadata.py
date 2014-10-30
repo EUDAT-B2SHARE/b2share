@@ -21,6 +21,7 @@ __revision__ = "$Id$"
 
 from invenio.b2share.modules.b2deposit.b2share_model import metadata_classes
 
+
 def format_element(bfo):
 
     ret = '<div><table class="metadata_table table table-striped'\
@@ -70,11 +71,17 @@ def format_element(bfo):
 
     domain_data = bfo.fields("690__")
     for md in domain_data:
+        field = md['a']
+        value = md['b']
         if md_class:
-            field = md_class.field_args.get(md['a'], {'label': md['a']})
-        else:
-            field = {'label': md['a']}
-        ret += html.format(field['label'], md['b'])
+            field_args = md_class.field_args.get(field)
+            if field_args:
+                data_source = field_args.get('data_source')
+                field = field_args.get('label', field)
+                if (data_source and len(data_source) and
+                        isinstance(data_source[0], (list, tuple, set)) and len(data_source[0]) == 2):
+                    value = next((v for k, v in data_source if k == value), value)
+        ret += html.format(field, value)
 
     ids = bfo.fields("0247_")
     for i in ids:
@@ -84,7 +91,7 @@ def format_element(bfo):
 
     ret += '</table></div>'
 
-    return  ret
+    return ret
 
 
 def escape_values(bfo):
