@@ -25,8 +25,7 @@ from flask import url_for
 
 from invenio.ext.template import render_template_to_string
 from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
-from invenio.testsuite import unittest
-
+from invenio.testsuite import unittest, nottest
 
 class TemplateTest(InvenioTestCase):
     """
@@ -96,7 +95,7 @@ class TemplateArgsTest(InvenioTestCase):
             'invenio.testsuite.test_ext_template.TemplateArgsTest']
         return cfg
 
-    @notest
+    @nottest
     def test_template_args_loading(self):
         self.client.get(url_for('search.index'))
         self.assertEqual(self.get_context_variable('foo'), 'foo')
