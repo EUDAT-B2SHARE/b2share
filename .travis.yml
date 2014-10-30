@@ -53,7 +53,7 @@ install:
   - "travis_retry pip install -r .travis-$REQUIREMENTS-requirements.txt --allow-all-external --quiet"
   - "travis_retry pip install -e .[docs] --quiet --process-dependency-links"
   - "travis_retry pip install -r requirements-b2share.txt --allow-all-external --quiet"
-  - "travis_retry pip install -r requirements.txt --quiet"
+  - "travis_retry pip install -r requirements.txt --allow-all-external"
   - "pybabel compile -f -d invenio/base/translations/"
   - "python setup.py compile_catalog"
   - "inveniomanage config create secret-key"
@@ -73,7 +73,6 @@ install:
   - "inveniomanage config set REQUIREJS_BIN false"
   - "inveniomanage config set UGLIFYJS_BIN false"
   - "inveniomanage config set ASSETS_AUTO_BUILD False"
-
 
 before_script:
   - "inveniomanage apache create-config"
