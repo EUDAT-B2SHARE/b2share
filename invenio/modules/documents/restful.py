@@ -141,16 +141,16 @@ output_fields = {
 # =========
 
 
-def _flatten(lst):
+def flatten(lst):
     if type(lst) not in (tuple, list):
         return (lst,)
     if len(lst) == 0:
         return tuple(lst)
-    return _flatten(lst[0]) + _flatten(lst[1:])
+    return flatten(lst[0]) + flatten(lst[1:])
 
 
-def _get_value(res):
-    temp = list(_flatten(res))
+def get_value(res):
+    temp = list(flatten(res))
     if len(temp) == 6:
         return temp[1]
     elif len(temp) == 8:
@@ -195,31 +195,31 @@ def get_record_details(recid):
             record = create_record(marcxml)[0]
 
             authors = record_get_field_instances(record, '100')
-            file_dict['authors'] = _get_value(authors)
+            file_dict['authors'] = get_value(authors)
 
             record_title = record_get_field_instances(record, '245')
-            file_dict['title'] = _get_value(record_title)
+            file_dict['title'] = get_value(record_title)
 
             record_description = record_get_field_instances(record, '520')
-            file_dict['description'] = _get_value(record_description)
+            file_dict['description'] = get_value(record_description)
 
             record_domain = record_get_field_instances(record, '980')
-            file_dict['domain'] = _get_value(record_domain)
+            file_dict['domain'] = get_value(record_domain)
 
             record_date = record_get_field_instances(record, '260')
-            file_dict['date'] = _get_value(record_date)
+            file_dict['date'] = get_value(record_date)
 
             record_licence = record_get_field_instances(record, '540')
-            file_dict['licence'] = _get_value(record_licence)
+            file_dict['licence'] = get_value(record_licence)
 
             record_PID = record_get_field_instances(record, '024')
-            file_dict['pid'] = _get_value(record_PID)
+            file_dict['pid'] = get_value(record_PID)
 
             user_email = record_get_field_instances(record, '856', '0')
-            file_dict['email'] = _get_value(user_email)
+            file_dict['email'] = get_value(user_email)
 
             file_url = record_get_field_instances(record, '856', '4')
-            file_dict['file_url'] = _get_value(file_url)
+            file_dict['file_url'] = get_value(file_url)
 
         return file_dict
 
