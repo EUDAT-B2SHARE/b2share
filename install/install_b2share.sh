@@ -155,3 +155,9 @@ else
    inveniomanage config set ASSETS_DEBUG True
    inveniomanage config set DEBUG_TB_INTERCEPT_REDIRECTS False
 fi
+
+echo "##########################################################"
+echo "  Don't forget to run \`vagrant rsync\` to sync your files"
+echo "##########################################################"
+
+

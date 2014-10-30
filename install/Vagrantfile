@@ -1,6 +1,5 @@
 
-INVENIO_SCRIPTS_REPO = File.absolute_path(File.dirname(__FILE__) + "/../../")
-B2SHARE_DEV_REPO = File.absolute_path(File.dirname(__FILE__) + "/../../b2share/")
+REPO = File.absolute_path(File.dirname(__FILE__) + "/../")
 
 Vagrant.configure("2") do |config|
   config.vm.define "default" do |c|
@@ -22,16 +21,17 @@ Vagrant.configure("2") do |config|
     c.vm.network :forwarded_port, guest:4000, host: 4000
     c.vm.network :forwarded_port, guest:4443, host: 4443
     c.vm.network :forwarded_port, guest:3306, host: 9306
-    if File.exists? B2SHARE_DEV_REPO
-      c.vm.synced_folder B2SHARE_DEV_REPO, "/home/vagrant/.virtualenvs/b2share/src/b2share"
-    else
-      q = []
-      q << "  B2SHARE repository not found in: `#{B2SHARE_DEV_REPO}`"
-      q << "  - Consider cloning a version of B2SHARE:"
-      q << "    $ cd #{INVENIO_SCRIPTS_REPO}"
-      q << "    $ git clone -b master https://github.com/EUDAT-B2SHARE/b2share.git"
-      puts q.join("\n")
-      exit 1
+    # attach current repository via rsync as code source
+    if File.exists? REPO
+      c.vm.synced_folder REPO, "/home/vagrant/.virtualenvs/b2share/src/b2share", type: "rsync"
+    # else
+    #   q = []
+    #   q << "  B2SHARE repository not found in: `#{B2SHARE_DEV_REPO}`"
+    #   q << "  - Consider cloning a version of B2SHARE:"
+    #   q << "    $ cd #{SCRIPTS_REPO}"
+    #   q << "    $ git clone -b master https://github.com/EUDAT-B2SHARE/b2share.git"
+    #   puts q.join("\n")
+    #   exit 1
     end
     c.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "2048"]
