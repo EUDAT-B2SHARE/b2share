@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from flask import Blueprint
-from flask import make_response, g, request, flash, jsonify, \
-    redirect, url_for, current_app, abort, session, Blueprint, \
-    render_template
-from flask.ext.menu import register_menu
-from flask.ext.breadcrumbs import register_breadcrumb
+from flask import Blueprint, g, request, redirect, url_for, current_app
 
 from invenio.ext.template.context_processor import \
     register_template_context_processor
-from invenio.base.i18n import _
 from invenio.base.decorators import templated
 from invenio.modules.formatter import format_record
 from invenio.modules.search.models import Collection
@@ -25,8 +19,6 @@ blueprint = Blueprint('main', __name__, url_prefix="",
 
 @blueprint.route('/', methods=['GET', 'POST'])
 @templated('index.html')
-# @register_menu(blueprint, 'main.b2share', _('B2Share'), order=1)
-# @register_breadcrumb(blueprint, '.', _('Home'))
 def index():
     """ Renders homepage. """
 
