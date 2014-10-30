@@ -58,8 +58,10 @@ po/POTFILES-webdoc
 po/stamp-po
 tags
 
+# static assets
 invenio/base/static/*
 
+# test binaries
 Flask_Testing-*
 httpretty-*
 mock-*
@@ -68,3 +70,7 @@ selenium-*
 six-*
 unittest2-*
 urllib3-*
+
+# install binaries
+install/.vagrant/machines/*
+
