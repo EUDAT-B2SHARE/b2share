@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
     c.vm.network :forwarded_port, guest:4443, host: 4443
     c.vm.provision :shell, path: ".vagrant/bootstrap/provision.sh"
     c.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
     end
   end
 
@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
     #   exit 1
     end
     c.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
     end
   end
 end
