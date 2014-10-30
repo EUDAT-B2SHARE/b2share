@@ -546,6 +546,7 @@ class TestMarcRecordCreation(InvenioTestCase):
         self.assertTrue('reference' in r)
         self.assertEquals(len(r['reference']), 36)
 
+    @nottest
     def test_error_catching(self):
         """ Record - catch any record conversion issues """
         from invenio.modules.jsonalchemy.errors import ReaderException
@@ -566,7 +567,6 @@ class TestMarcRecordCreation(InvenioTestCase):
             with self.assertRaises(ReaderException):
                 Record.create(blob, master_format='marc',
                               namespace='testsuite', schema='xml')
-
 
 class TestRecordDocuments(InvenioTestCase):
 
