@@ -16,13 +16,11 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-{%- if not request.is_xhr -%}
-  {% extends "records/base.html" %}
-{%- endif -%}
+{%- extends "records/usage_base.html" -%}
 
 {% block record_content %}
   <div class="page-header">
-    {{ format_record(recid, 'hs', ln=g.ln)|safe }}
+    {{ format_record(recid, 'hd', ln=g.ln)|safe }}
   </div>
 
   {%- if viewsimilarity -%}
@@ -36,8 +34,8 @@
   </li>
   {%- endfor -%}
   <hr/>
-  </div>
   </ul>
+  </div>
   {%- endif -%}
 
   {%- if downloadsimilarity -%}
@@ -51,8 +49,8 @@
   </li>
   {%- endfor -%}
   <hr/>
-  </div>
   </ul>
+  </div>
   {%- endif -%}
 
   {%- if downloadgraph -%}
@@ -61,6 +59,7 @@
   <ul class="list-unstyled">
   {{ downloadgraph|safe }}
   </ul>
+  </div>
   {%- endif -%}
 
 {% endblock %}
