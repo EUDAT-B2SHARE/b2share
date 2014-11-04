@@ -29,6 +29,8 @@ from invenio.ext.restful import require_api_auth, error_codes, require_header
 
 from intbitset import intbitset
 from invenio.legacy.dbquery import run_sql
+from invenio.ext.sqlalchemy import db
+from invenio.modules.editor.models import Bib98x, BibrecBib98x
 
 MAX_PAGE_SIZE = 20
 
@@ -185,18 +187,13 @@ class DepositionDomains(Resource):
             page_offset = kwargs['page_offset']
 
         # get domain id from domain name
-        domain_id_sql = "SELECT id FROM bib98x WHERE value = %s"
-        domain_ids = run_sql(domain_id_sql, [domain_name])
-        if len(domain_ids) != 1:
-            abort(404, message="Please try a valid domain name: Generic, EUON, DRIHM, Linguistics, BBMRI", status=404)
-        new_list = intbitset(domain_ids)
-        if len(new_list) != 1:
+        domain = Bib98x.query.filter_by(value=domain_name).first()
+        if domain is None:
             abort(404, message="Please try a valid domain name: Generic, EUON, DRIHM, Linguistics, BBMRI", status=404)
 
-        bibrec_id_sql = "SELECT id_bibrec FROM bibrec_bib98x WHERE\
-            id_bibxxx =%s"
-        domain_records_ids = run_sql(bibrec_id_sql, [str(new_list[0])])
-        record_ids = intbitset(domain_records_ids)
+        domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
+        record_ids = []
+        record_ids = [record.id_bibrec for record in domain_records]
 
         record_list = []
         for record_id in record_ids[page_offset * page_size:page_offset * page_size + page_size]:
@@ -204,6 +201,7 @@ class DepositionDomains(Resource):
             record_list.append(record_details)
 
         return marshal(record_list, output_fields)
+
 
     @require_header('Content-Type', 'application/json')
     def post(self, oauth):
