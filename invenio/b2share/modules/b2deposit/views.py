@@ -20,6 +20,7 @@
 """B2SHARE Flask Blueprint"""
 from flask import request, Blueprint
 from flask.ext.login import login_required
+from flask.ext.breadcrumbs import default_breadcrumb_root, register_breadcrumb
 from invenio.base.i18n import _
 import invenio.b2share.modules.b2deposit.b2share_upload_handler as uph
 import invenio.b2share.modules.b2deposit.b2share_deposit_handler as dep
@@ -27,7 +28,10 @@ import invenio.b2share.modules.b2deposit.b2share_deposit_handler as dep
 blueprint = Blueprint('b2deposit', __name__, url_prefix="/b2deposit",
                       template_folder='templates', static_folder='static')
 
+default_breadcrumb_root(blueprint, 'breadcrumbs.b2deposit')
+
 @blueprint.route('/', methods=['GET'])
+@register_breadcrumb(blueprint, '.', _('Deposit'))
 @login_required
 def deposit():
     return dep.deposit(request)
