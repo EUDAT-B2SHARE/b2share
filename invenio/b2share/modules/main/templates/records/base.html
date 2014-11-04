@@ -17,28 +17,9 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
-{% extends "page.html" %}
-
-{#
-{% set title = title %}
-#}
-{% block title %}
-{% endblock title %}
-
-{% block metaheader %}
-  {% if recid != -1 and config.CFG_WEBSEARCH_DETAILED_META_FORMAT %}
-  {{ format_record(recid, of=config.CFG_WEBSEARCH_DETAILED_META_FORMAT, ln = g.ln)|safe }}
-  {% endif %}
-{% endblock metaheader %}
-
-{% block global_css %}
-  {{ super() }}
-  {%- css url_for('static', filename='css/formatter/templates_detailed.css'), '00-records' -%}
-{% endblock %}
+{% extends "records/base_base.html" %}
 
 {% block body %}
-  {{ super() }}
-
   {% block record_restriction_flag %}
   {% if g.bibrec.is_restricted %}
   <div class="alert alert-danger"><b>{{ _('Restricted') }}</b>
@@ -50,6 +31,7 @@
   {% block record_tabs %}
   <ul id="record-links" class="nav nav-tabs">
   {%- for tab in tabs|sort(attribute='order') -%}
+  {%- if tab.label not in [_('References'), _('Citations'), _('Keywords'), _('Files'), _('Plots'), _('Holdings'), _('Linkbacks')] -%}
   {%- if tab.visible -%}
     <li class="{{ 'active' if tab.key == request.endpoint }} {{ 'disabled' if not tab.enabled }}">
       <a href="{{ url_for(tab.key, recid=recid) if tab.enabled else '#' }}">
@@ -59,6 +41,7 @@
         {% endif %}
       </a>
     </li>
+  {%- endif -%}
   {%- endif -%}
   {%- endfor -%}
   </ul>
@@ -71,17 +54,3 @@
   </div>
 <div style="clear: both;"></div>
 {% endblock %}
-
-{% block javascript %}
-  {{ super() }}
-  {%- js url_for('record.static', filename='js/records/records.js'), '20-record' -%}
-{% endblock javascript %}
-
-{% block _top_assets %}
-{% assets get_js_bundle() %}
-  <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-{% endassets %}
-{% endblock _top_assets %}
-
-{% block _bottom_assets %}
-{% endblock _bottom_assets %}
