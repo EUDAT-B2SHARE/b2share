@@ -45,7 +45,7 @@ install:
   - "travis_retry pip install -r requirements-mongo.txt --allow-all-external --quiet"
   - "travis_retry pip install -r requirements-img.txt --quiet"
   - "travis_retry pip install -r requirements-extras.txt --quiet"
-  # - "travis_retry pip install -r requirements.txt --allow-all-external"
+  - "travis_retry pip install -r requirements.txt --allow-all-external"
   - "pybabel compile -f -d invenio/base/translations/"
   - "inveniomanage config create secret-key"
   - "inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail"
@@ -61,6 +61,7 @@ install:
   - "travis_retry grunt"
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
+
 
 before_script:
   - "inveniomanage apache create-config"
@@ -80,3 +81,4 @@ before_script:
 script:
   - "python setup.py test"
 #  - "wget -O /dev/null http://localhost"
+
