@@ -57,3 +57,6 @@ po/POTFILES-py
 po/POTFILES-webdoc
 po/stamp-po
 tags
+
+install/.vagrant/
+invenio/base/static/

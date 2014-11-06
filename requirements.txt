@@ -49,8 +49,8 @@ Flask-RESTful==0.2.12
 Flask-OAuthlib==0.4.3
 #Flask-SQLAlchemy==1.0
 git+https://github.com/mitsuhiko/flask-sqlalchemy#egg=Flask-SQLAlchemy-1.99
-git+https://github.com/inveniosoftware/flask-menu.git#egg=Flask-Menu-0.1
-git+https://github.com/inveniosoftware/flask-breadcrumbs.git#egg=Flask-Breadcrumbs-0.1
+git+https://github.com/inveniosoftware/flask-menu.git@fd8c41c4aef2893cbd3162a0dcfd14a9e45a9e88#egg=Flask-Menu-0.1
+git+https://github.com/inveniosoftware/flask-breadcrumbs.git@5c1d454801b553b9a4ddf9d485e2a279a699abab#egg=Flask-Breadcrumbs-0.1
 git+https://github.com/inveniosoftware/flask-registry.git#egg=Flask-Registry-0.1
 Flask-Script>=2.0.3
 #Flask-Testing==0.4
