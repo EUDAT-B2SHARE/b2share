@@ -15,242 +15,225 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
 """Custom `Jinja2` extensions."""
 
-from operator import itemgetter
+import os
+import six
+from flask import current_app, _request_ctx_stack
+from flask.ext.assets import Environment, FlaskResolver
 from jinja2 import nodes
 from jinja2.ext import Extension
+from webassets.bundle import is_url
 
-ENV_PREFIX = '_collected_'
+from . import registry
 
 
-def prepare_tag_bundle(cls, tag):
-    """Prepare the css and js tags.
-
-    Construct function that returns collected data specified
-    in jinja2 template like `{% <tag> <value> %}` in correct
-    order.
-
-    Here is an example that shows the final order when template
-    inheritance is used.
-
-    .. code-block:: jinja
-
-       <!-- example.html -->
-       {% extends 'page.html' %}
-       {% css 'template2.css' %}
-       {% css 'template3.css' %}
-
-       <!-- page.html -->
-       {% css 'template1.css' %}
-       {{ get_css_bundle() }}
-
-    Output:
-
-    .. code-block:: python
-
-       [template1.css, template2.css, template3.css]
+class BundleExtension(Extension):
 
     """
-    def get_data_by_key(data, key):
-        collection = []
-        filters = None
-        for bundle_name, filename, f in data:
-            if bundle_name == key:
-                collection.append(filename)
-                if not filters:
-                    filters = f
-        return collection, filters
+    Jinja extension for css and js bundles.
 
-    def get_bundle(key=None, iterate=False):
-        data = getattr(cls.environment, ENV_PREFIX + tag)
-
-        if iterate:
-            bundles = sorted(set(map(itemgetter(0), data)))
-
-            def _generate_bundles():
-                for bundle in bundles:
-                    cls._reset(tag, bundle)
-                    collection, filters = get_data_by_key(data, bundle)
-                    yield cls.environment.new_bundle(tag,
-                                                     collection,
-                                                     bundle,
-                                                     filters)
-            return _generate_bundles()
-        else:
-            collection = []
-            filters = None
-            if key is not None:
-                collection, filters = get_data_by_key(data, key)
-            else:
-                bundles = sorted(set(map(itemgetter(0), data)))
-                for bundle in bundles:
-                    c, f = get_data_by_key(data, bundle)
-                    collection += c
-                    if not filters:
-                        filters = f
-
-            cls._reset(tag, key)
-            return cls.environment.new_bundle(tag, collection, key, filters)
-
-    return get_bundle
-
-
-class CollectionExtension(Extension):
-
-    """Jinja extension for css and js bundles.
-
-    CollectionExtension adds new tags `css` and `js` and functions
-    ``get_css_bundle`` and ``get_js_bundle`` for jinja2 templates.
-    The ``new_bundle`` method is used to create bundle from
-    list of file names collected using `css` and `js` tags.
-
-    **Example:** simple case
+    Definition of the required bundles.
 
     .. code-block:: jinja
 
-        {% css url_for('static', filename='css/invenio.css') %}
-        {% js url_for('static', filename='js/jquery.js') %}
-        {% js url_for('static', filename='js/invenio.js') %}
-        ...
-        {% assets get_css_bundle() %}
-           <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
-        {% endassets %}
-        {% assets get_js_bundle() %}
-           In template, use {{ ASSETS_URL }} for printing file URL.
-        {% endassets %}
+        {%- bundles "jquery.js", "invenio.css" -%}
+        {%- bundle "require.js" -%}
 
-    **Example:** named bundles
+    Usage.
 
     .. code-block:: jinja
 
-        <!-- record.html -->
-        {% extend 'page.html' %}
-        {% css url_for('static', filename='css/may-vary.css') %}
-        {#
-         # default bundle name can be changed in application factory
-         # app.jinja_env.extend(default_bundle_name='90-default')
-         #}
-        {% css url_for('static', filename='css/record.css'), '10-record' %}
-        {% css url_for('static', filename='css/form.css'), '10-record' %}
-
-        <!-- page.html -->
-        {% css url_for('static', filename='css/bootstrap.css'), '00-base' %}
-        {% css url_for('static', filename='css/invenio.css'), '00-base' %}
-        ...
-        {% for bundle in get_css_bundle(iterate=True) %}
-          {% assets bundle %}
-            <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
-          {% endassets %}
-        {% endfor %}
-
-    Output:
-
-    .. code-block:: html
-
-       <link rel="stylesheet" type="text/css" href="/css/00-base.css">
-       <link rel="stylesheet" type="text/css" href="/css/10-record.css">
-       <link rel="stylesheet" type="text/css" href="/css/90-default.css">
-
-    **Note:** If you decide not to use assets bundle but directly print
-    stylesheet and script html tags, you MUST define:
-
-    .. code-block:: python
-
-       _app.jinja_env.extend(
-           use_bundle = False,
-           collection_templates = {
-               'css': '<link rel="stylesheet" type="text/css" href="/%s">',
-               'js': '<script type="text/javascript" src="/%s"></script>'
-           })
-
-    Both callable and string with ``%s`` are allowed in
-    ``collection_templates``.
+        {%- for bundle in get_bundle('js') %}
+          <!-- {{ bundle.output }} -->
+          {%- assets bundle %}
+            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+          {%- endassets %}
+        {%- endfor %}
+        </body>
+        </html>
     """
 
-    tags = set(['css', 'js'])
+    tags = set(('bundle', 'bundles'))
+
+    @classmethod
+    def storage(cls):
+        """Store used bundles on request context stack."""
+        ctx = _request_ctx_stack.top
+        if ctx is not None:
+            if not hasattr(ctx, "_bundles"):
+                setattr(ctx, "_bundles", set())
+            return ctx._bundles
+
+    @classmethod
+    def install(cls, app):
+        """Install the extension into the application."""
+        Environment.resolver_class = InvenioResolver
+        env = Environment(app)
+        env.url = "{0}/{1}/".format(app.static_url_path,
+                                    app.config["ASSETS_BUNDLES_DIR"])
+        env.directory = os.path.join(app.static_folder,
+                                     app.config["ASSETS_BUNDLES_DIR"])
+        env.append_path(app.static_folder)
+        env.auto_build = app.config.get("ASSETS_AUTO_BUILD", True)
+
+        # The filters less and requirejs don't have the same behaviour by
+        # default. Make sure we are respecting that.
+        app.config.setdefault("LESS_RUN_IN_DEBUG", True)
+        app.config.setdefault("REQUIREJS_RUN_IN_DEBUG", False)
+        # Fixing some paths as we forced the output directory with the
+        # .directory
+        app.config.setdefault("REQUIREJS_BASEURL", app.static_folder)
+        requirejs_config = os.path.join(env.directory,
+                                        app.config["REQUIREJS_CONFIG"])
+        if not os.path.exists(requirejs_config):
+            app.config["REQUIREJS_CONFIG"] = os.path.relpath(
+                os.path.join(app.static_folder,
+                             app.config["REQUIREJS_CONFIG"]),
+                env.directory)
+
+        app.jinja_env.add_extension(BundleExtension)
+        app.context_processor(BundleExtension.inject)
+
+    @classmethod
+    def inject(cls):
+        """Inject the get_bundle function into the jinja templates."""
+        _bundles = {}
+
+        def get_bundle(suffix):
+            # lazy build the bundles
+            if not _bundles:
+                for pkg, bundle in registry.bundles:
+                    if bundle.output in _bundles:
+                        raise ValueError("{0} was already defined!"
+                                         .format(bundle.output))
+                    _bundles[bundle.output] = bundle
+
+            env = current_app.jinja_env.assets_environment
+            # disable the compilation in debug mode iff asked.
+            less_debug = env.debug and \
+                not current_app.config.get("LESS_RUN_IN_DEBUG")
+            requirejs_debug = env.debug and \
+                not current_app.config.get("REQUIREJS_RUN_IN_DEBUG")
+
+            static_url_path = current_app.static_url_path + "/"
+            bundles = []
+            for bundle_name in cls.storage():
+                if bundle_name.endswith(suffix):
+                    bundle = _bundles[bundle_name]
+                    if suffix == "css":
+                        bundle.extra.update(rel="stylesheet")
+                    bundles.append((bundle.weight, bundle))
+
+            for _, bundle in sorted(bundles):
+                # A little bit of madness to readd the "/" at the
+                # beginning of the assets in ran in debug mode as well as
+                # killing the filters if they are not wanted in debug mode.
+                if env.debug:
+                    bundle.extra.update(static_url_path=static_url_path)
+                    if bundle.has_filter("less"):
+                        if less_debug:
+                            bundle.filters = None
+                            bundle.extra.update(rel="stylesheet/less")
+                        else:
+                            bundle.extra.update(static_url_path="")
+                    if bundle.has_filter("requirejs"):
+                        if requirejs_debug:
+                            bundle.filters = None
+                        else:
+                            bundle.extra.update(static_url_path="")
+                yield bundle
+
+        return dict(get_bundle=get_bundle)
 
     def __init__(self, environment):
-        """Create the extension."""
-        super(CollectionExtension, self).__init__(environment)
-        ext = dict(('get_%s_bundle' % tag, prepare_tag_bundle(self, tag))
-                   for tag in self.tags)
-        environment.extend(
-            default_bundle_name='10-default',
-            use_bundle=True,
-            collection_templates=dict((tag, lambda x: x) for tag in self.tags),
-            new_bundle=lambda tag, collection, name, filters: (collection, filters),
-            **ext)
-        for tag in self.tags:
-            self._reset(tag)
+        """Initialize the extension."""
+        super(BundleExtension, self).__init__(environment)
 
-    def _reset(self, tag, key=None):
-        """Empty list of used scripts."""
-        if key is None:
-            setattr(self.environment, ENV_PREFIX + tag, [])
+    def _update(self, filename, bundles, caller):
+        """Update the environment bundles.
+
+        :return: empty html or html comment in debug mode.
+        :rtype: str
+        """
+        self.storage().update(bundles)
+        if current_app.debug:
+            return "<!-- {0}: {1} -->\n".format(filename, ", ".join(bundles))
         else:
-            data = filter(lambda (k, v, _): k != key,
-                          getattr(self.environment, ENV_PREFIX + tag))
-            setattr(self.environment, ENV_PREFIX + tag, data)
-
-    def _update(self, tag, value, bundle_name, filters, caller=None):
-        """Update list of used scripts."""
-        try:
-            values = getattr(self.environment, ENV_PREFIX + tag)
-            values.append((bundle_name, value, filters))
-        except:
-            values = [(bundle_name, value, filters)]
-
-        setattr(self.environment, ENV_PREFIX + tag, values)
-        return ''
+            return ''
 
     def parse(self, parser):
-        """
-        Parse Jinja statement tag defined in `self.tags` (default: css, js).
+        """Parse the bundles block and feed the bundles environment.
 
-        This accually tries to build corresponding html script tag
-        or collect script file name in jinja2 environment variable.
-        If you use bundles it is important to call ``get_css_bundle``
-        or ``get_js_bundle`` in template after all occurrences of
-        script tags (e.g. {% css ... %}, {% js ...%}).
+        Bundles entries are replaced by an empty string.
         """
-        tag = parser.stream.current.value
         lineno = next(parser.stream).lineno
 
-        default_bundle_name = u"%s" % (self.environment.default_bundle_name)
-        default_bundle_name.encode('utf-8')
-        bundle_name = nodes.Const(default_bundle_name)
-        filters = nodes.Const(None)
-
-        #parse filename
-        if parser.stream.current.type != 'block_end':
+        bundles = []
+        while parser.stream.current.type != "block_end":
             value = parser.parse_expression()
-            # get first optional argument: bundle_name
-            if parser.stream.skip_if('comma'):
-                bundle_name = parser.parse_expression()
-                if isinstance(bundle_name, nodes.Name):
-                    bundle_name = nodes.Name(bundle_name.name, 'load')
-            # get the second optional argument: filters
-            if parser.stream.skip_if('comma'):
-                filters = parser.parse_expression()
-        else:
-            value = parser.parse_tuple()
+            bundles.append(value)
+            parser.stream.skip_if("comma")
 
-        args = [nodes.Const(tag), value, bundle_name, filters]
+        call = self.call_method("_update", args=[nodes.Const(parser.name),
+                                                 nodes.List(bundles)])
+        call_block = nodes.CallBlock(call, [], [], '')
+        call_block.set_lineno(lineno)
+        return call_block
 
-        # Return html tag with link to corresponding script file.
-        if self.environment.use_bundle is False:
-            value = value.value
-            if callable(self.environment.collection_templates[tag]):
-                node = self.environment.collection_templates[tag](value)
+
+class InvenioResolver(FlaskResolver):
+
+    """Custom resource resolver for webassets."""
+
+    def resolve_source(self, ctx, item):
+        """Return the absolute path of the resource."""
+        if not isinstance(item, six.string_types) or is_url(item):
+            return item
+        if item.startswith(ctx.url):
+            item = item[len(ctx.url):]
+        return self.search_for_source(ctx, item)
+
+    def resolve_source_to_url(self, ctx, filepath, item):
+        """Return the url of the resource.
+
+        Displaying them as is in debug mode as the web server knows where to
+        search for them.
+
+        :py:meth:`webassets.env.Resolver.resolve_source_to_url`
+        """
+        if ctx.debug:
+            return item
+        return super(InvenioResolver, self).resolve_source_to_url(ctx,
+                                                                  filepath,
+                                                                  item)
+
+    def search_for_source(self, ctx, item):
+        """Return absolute path of the resource.
+
+        :py:meth:`webassets.env.Resolver.search_for_source`
+
+        :param ctx: environment
+        :param item: resource filename
+        :return: absolute path
+        """
+        try:
+            if ctx.load_path:
+                abspath = super(InvenioResolver, self) \
+                    .search_load_path(ctx, item)
             else:
-                node = self.environment.collection_templates[tag] % value
-            return nodes.Output([
-                nodes.MarkSafeIfAutoescape(nodes.Const(node))
-            ])
+                abspath = super(InvenioResolver, self) \
+                    .search_env_directory(ctx, item)
+        except:  # FIXME do not catch all!
+            # If a file is missing in production (non-debug mode), we want
+            # to not break and will use /dev/null instead. The exception
+            # is caught and logged.
+            if not current_app.debug:
+                error = "Error loading asset file: {0}".format(item)
+                current_app.logger.exception(error)
+                abspath = "/dev/null"
+            else:
+                raise
 
-        # Call :meth:`_update` to collect names of used scripts.
-        return nodes.CallBlock(self.call_method('_update',
-                                                args=args,
-                                                lineno=lineno),
-                               [], [], '')
+        return abspath

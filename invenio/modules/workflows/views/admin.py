@@ -25,7 +25,6 @@
     WARNING: Currently not fully working.
 """
 
-from __future__ import print_function
 from six import text_type
 
 from flask import Blueprint
@@ -36,9 +35,7 @@ from invenio.base.decorators import wash_arguments, templated
 from flask.ext.breadcrumbs import default_breadcrumb_root, register_breadcrumb
 
 from ..api import start_delayed
-from ..utils import (get_workflow_definition,
-                     get_redis_keys as utils_get_redis_keys,
-                     filter_holdingpen_results)
+from ..utils import get_workflow_definition
 
 from ..models import Workflow, BibWorkflowObject, BibWorkflowEngineLog
 from ..registry import workflows
@@ -60,8 +57,7 @@ def index():
     Dispalys main interface of BibWorkflow.
     """
     w = Workflow.query.all()
-    filter_keys = utils_get_redis_keys()
-    return dict(workflows=w, filter_keys=filter_keys)
+    return dict(workflows=w)
 
 
 @blueprint.route('/details/<int:objectid>', methods=['GET', 'POST'])
@@ -144,32 +140,11 @@ def entry_data_preview(oid, of):
     return _entry_data_preview(workflow_object.get_data(), of)
 
 
-@blueprint.route('/get_redis_keys', methods=['GET', 'POST'])
-@login_required
-@wash_arguments({'key': (text_type, "")})
-def get_redis_keys(key):
-    keys = utils_get_redis_keys(str(key))
-    options = ""
-    for key in keys:
-        options += "<option>%s</option>" % (key,)
-    return options
-
-
-@blueprint.route('/get_redis_values', methods=['GET', 'POST'])
-@login_required
-@wash_arguments({'key': (text_type, "")})
-def get_redis_values(key):
-    values = filter_holdingpen_results(key)
-    return str(values)
-
-
 def _entry_data_preview(data, of='default'):
     if format == 'hd' or format == 'xm':
         from invenio.modules.formatter import format_record
-        try:
-            data['record'] = format_record(recID=None, of=of,
-                                           xml_record=data['record'])
-            return data['record']
-        except ValueError:
-            print("This is not a XML string")
+
+        data['record'] = format_record(recID=None, of=of,
+                                       xml_record=data['record'])
+        return data['record']
     return data

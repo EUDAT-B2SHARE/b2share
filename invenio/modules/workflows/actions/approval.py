@@ -17,63 +17,56 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from ..hp_field_widgets import (bootstrap_accept, bootstrap_accept_mini,
-                                bootstrap_reject, bootstrap_reject_mini)
+"""Generic Approval action."""
 
-from wtforms import SubmitField, Form
 from invenio.base.i18n import _
+from flask import render_template, url_for
 
 
-__all__ = ['approval']
+class approval(object):
+    """Class representing the approval action."""
+    name = _("Approve")
+    url = url_for("holdingpen.resolve_action")
 
+    def render_mini(self, obj):
+        """Method to render the minified action."""
+        return render_template(
+            'workflows/actions/approval_mini.html',
+            message=obj.get_action_message(),
+            object=obj,
+            resolve_url=self.url,
+        )
 
-class approval(Form):
-    reject = SubmitField(label=_('Reject'), widget=bootstrap_reject)
-    accept = SubmitField(label=_('Accept'), widget=bootstrap_accept)
+    def render(self, obj):
+        """Method to render the action."""
+        return {
+            "side": render_template('workflows/actions/approval_side.html',
+                                    message=obj.get_action_message(),
+                                    object=obj,
+                                    resolve_url=self.url,),
+            "main": render_template('workflows/actions/approval_main.html',
+                                    message=obj.get_action_message(),
+                                    object=obj,
+                                    resolve_url=self.url,)
+        }
 
-    class mini_action(Form):
-        reject = SubmitField(label=_('Reject'), widget=bootstrap_reject_mini)
-        accept = SubmitField(label=_('Accept'), widget=bootstrap_accept_mini)
+    def resolve(self, bwo):
+        """Resolve the action taken in the approval action."""
+        from flask import request
+        value = request.form.get("value", None)
 
-    def render(self, bwobject_list, bwparent_list, info_list,
-               logtext_list, w_metadata_list,
-               workflow_func_list, *args, **kwargs):
-        data_preview_list = []
-        # setting up approval action
-        for bwo in bwobject_list:
-            data_preview_list.append(bwo.get_formatted_data())
-
-        return ('workflows/hp_approval_widget.html',
-                {'bwobject_list': bwobject_list,
-                 'bwparent_list': bwparent_list,
-                 'action': approval(),
-                 'data_preview_list': data_preview_list,
-                 'obj_number': len(bwobject_list),
-                 'info_list': info_list,
-                 'logtext_list': logtext_list,
-                 'w_metadata_list': w_metadata_list,
-                 'workflow_func_list': workflow_func_list})
-
-    def run(self, objectid):
-        """
-        Resolves the action taken in the approval action
-        """
-        from flask import request, flash
-        from ..api import continue_oid
-        from ..models import BibWorkflowObject
-
-        bwobject = BibWorkflowObject.query.get(objectid)
-
-        if request.form['decision'] == 'Accept':
-            bwobject.remove_action()
-            continue_oid(objectid)
-            flash('Record Accepted')
-
-        elif request.form['decision'] == 'Reject':
-            BibWorkflowObject.delete(objectid)
-            flash('Record Rejected')
-
-approval.__title__ = 'Approve Record'
-approval.static = ["js/workflows/actions/approval.js"]
-
-action = approval()
+        if value == 'accept':
+            bwo.remove_action()
+            bwo.save()
+            bwo.continue_workflow(delayed=True)
+            return {
+                "message": "Record has been accepted!",
+                "category": "primary",
+            }
+        elif value == 'reject':
+            from invenio.modules.workflows.models import BibWorkflowObject
+            BibWorkflowObject.delete(bwo.id)
+            return {
+                "message": "Record has been rejected (deleted)",
+                "category": "warning",
+            }

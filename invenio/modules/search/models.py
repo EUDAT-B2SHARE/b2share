@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 ## This file is part of Invenio.
-## Copyright (C) 2011, 2012, 2013 CERN.
+## Copyright (C) 2011, 2012, 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -35,7 +35,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.collections import collection
 
 from invenio.base.globals import cfg
-from invenio.base.i18n import _
+from invenio.base.i18n import _, gettext_set_language
 from invenio.ext.sqlalchemy import db
 
 # Create your models here.
@@ -159,7 +159,15 @@ class Collection(db.Model):
     """Represents a Collection record."""
 
     def __repr__(self):
-        return "%s(%s)" % (self.__class__.__name__, self.id)
+        return 'Collection <id: {0.id}, name: {0.name}, dbquery: {0.query}, ' \
+               'nbrecs: {0.nbrecs}>'.format(self)
+
+    def __unicode__(self):
+        suffix = ' ({0})'.format(_('default')) if self.id == 1 else ''
+        return "{0.id}. {0.name}{1}".format(self, suffix)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
 
     __tablename__ = 'collection'
     id = db.Column(db.MediumInteger(9, unsigned=True),
@@ -180,6 +188,14 @@ class Collection(db.Model):
 
     names = association_proxy('_names', 'value',
                 creator=lambda k, v: Collectionname(ln_type=k, value=v))
+
+    _boxes = db.relationship(lambda: Collectionboxname,
+                backref='collection',
+                collection_class=attribute_mapped_collection('ln_type'),
+                cascade="all, delete, delete-orphan")
+
+    boxes = association_proxy('_boxes', 'value',
+                creator=lambda k, v: Collectionboxname(ln_type=k, value=v))
 
     _formatoptions = association_proxy('formats', 'format')
 
@@ -366,14 +382,56 @@ class Collection(db.Model):
             foreign_keys=lambda: Collectionname.id_collection
             )
 
-    # Gets the translation according to the lang code
     def translation(self, lang):
+        """Get the translation according to the language code."""
         try:
             return db.object_session(self).query(Collectionname).\
                 with_parent(self).filter(db.and_(Collectionname.ln == lang,
                     Collectionname.type == 'ln')).first().value
         except:
             return ""
+
+
+    def get_collectionbox_name(self, ln=None, box_type="r"):
+        """Return collection-specific labelling subtrees.
+
+        - 'Focus on': regular collection
+        - 'Narrow by': virtual collection
+        - 'Latest addition': boxes
+
+        If translation for given language does not exist, use label
+        for CFG_SITE_LANG. If no custom label is defined for
+        CFG_SITE_LANG, return default label for the box.
+
+        :param ln: the language of the label
+        :param box_type: can be 'r' (=Narrow by), 'v' (=Focus on),
+                         'l' (=Latest additions)
+        """
+        if ln is None:
+            ln = g.ln
+        collectionboxnamequery = db.object_session(self).query(
+            Collectionboxname).with_parent(self)
+        try:
+            collectionboxname = collectionboxnamequery.filter(db.and_(
+                Collectionboxname.ln == ln,
+                Collectionboxname.type == box_type,
+            )).one()
+        except:
+            try:
+                collectionboxname = collectionboxnamequery.filter(db.and_(
+                    Collectionboxname.ln == ln,
+                    Collectionboxname.type == box_type,
+                )).one()
+            except:
+                collectionboxname = None
+
+        if collectionboxname is None:
+            # load the right message language
+            _ = gettext_set_language(ln)
+            return _(Collectionboxname.TYPES.get(box_type, ''))
+        else:
+            return collectionboxname.value
+
 
     portal_boxes_ln = db.relationship(
             lambda: CollectionPortalbox,
@@ -446,6 +504,34 @@ class Collectionname(db.Model):
 #    print initiator.__dict__
 
 #event.listen(Collection.names, 'append', collection_append_listener)
+
+
+class Collectionboxname(db.Model):
+    """Represents a Collectionboxname record."""
+    __tablename__ = 'collectionboxname'
+
+    TYPES = {
+        'v': 'Focus on:',
+        'r': 'Narrow by collection:',
+        'l': 'Latest additions:',
+    }
+
+    id_collection = db.Column(db.MediumInteger(9, unsigned=True),
+                              db.ForeignKey(Collection.id),
+                              nullable=False, primary_key=True)
+    ln = db.Column(db.Char(5), nullable=False, primary_key=True,
+                   server_default='')
+    type = db.Column(db.Char(3), nullable=False, primary_key=True,
+                     server_default='r')
+    value = db.Column(db.String(255), nullable=False)
+
+    @db.hybrid_property
+    def ln_type(self):
+        return (self.ln, self.type)
+
+    @ln_type.setter
+    def set_ln_type(self, value):
+        (self.ln, self.type) = value
 
 
 class Collectiondetailedrecordpagetabs(db.Model):
@@ -663,6 +749,7 @@ class Tag(db.Model):
     id = db.Column(db.MediumInteger(9, unsigned=True), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     value = db.Column(db.Char(6), nullable=False)
+    recjson_value = db.Column(db.Text)
 
     def __init__(self, tup=None, *args, **kwargs):
         if tup is not None and isinstance(tup, tuple):
@@ -751,6 +838,47 @@ class CollectionFieldFieldvalue(db.Model):
                 lazy='joined')
 
 
+class FacetCollection(db.Model):
+
+    """Facet configuration for collection."""
+
+    __tablename__ = 'facet_collection'
+
+    id = db.Column(db.Integer, primary_key=True)
+    id_collection = db.Column(db.Integer, db.ForeignKey(Collection.id))
+    order = db.Column(db.Integer)
+    facet_name = db.Column(db.String(80))
+
+    collection = db.relationship(Collection, backref='facets')
+
+    def __repr__(self):
+        return ('FacetCollection <id: {0.id}, id_collection: {0.id_collection},'
+                ' order: {0.order}, facet_name: {0.facet_name}>'.format(self))
+
+    @classmethod
+    def is_place_taken(cls, id_collection, order):
+        """Check if there is already a facet on the given position.
+
+        .. note:: This works well as a pre-check, however saving can still fail
+            if somebody else creates the same record in other session
+            (phantom reads).
+        """
+        return bool(cls.query.filter(
+            cls.id_collection == id_collection,
+            cls.order == order).count())
+
+    @classmethod
+    def is_duplicated(cls, id_collection, facet_name):
+        """Check if the given facet is already assigned to this collection.
+
+        .. note:: This works well as a pre-check, however saving can still fail
+            if somebody else creates the same record in other session
+            (phantom reads).
+        """
+        return bool(cls.query.filter(
+            cls.id_collection == id_collection,
+            cls.facet_name == facet_name).count())
+
 __all__ = ['Collection',
            'Collectionname',
            'Collectiondetailedrecordpagetabs',
@@ -769,4 +897,5 @@ __all__ = ['Collection',
            'FieldTag',
            'WebQuery',
            'UserQuery',
-           'CollectionFieldFieldvalue']
+           'CollectionFieldFieldvalue',
+           'FacetCollection']

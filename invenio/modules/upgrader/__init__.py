@@ -19,16 +19,16 @@
 
 
 """
-Usage (via ``inveniomanage``):
+Usage (via ``inveniomanage``).
 
 .. code-block:: console
 
-    $ inveniomanage upgrade create recipe -p invenio.modules.search
-    $ inveniomanage upgrade create release -r invenio -p invenio.base
-    $ inveniomanage upgrade show applied
-    $ inveniomanage upgrade show pending
-    $ inveniomanage upgrade check
-    $ inveniomanage upgrade run
+    $ inveniomanage upgrader create recipe -p invenio.modules.search
+    $ inveniomanage upgrader create release -r invenio -p invenio.base
+    $ inveniomanage upgrader show applied
+    $ inveniomanage upgrader show pending
+    $ inveniomanage upgrader check
+    $ inveniomanage upgrader run
 
 Recommendations for writing upgrades
 ------------------------------------
@@ -46,7 +46,7 @@ Recommendations for writing upgrades
  * For every software release, make a ``<repository>_release_<x>_<y>_<z>.py``
    that depends on all upgrades between the previous release and the new, so
    future upgrades can depend on this upgrade. The command
-   ``inveniomanage upgrade create release`` can help you with this.
+   ``inveniomanage upgrader create release`` can help you with this.
  * Upgrades may query for user input, but must be able to run in unattended
    mode when ``--yes-i-know option`` is being used, thus good defaults/guessing
    should be used.
@@ -73,3 +73,15 @@ will be run respecting the dependency graph). The engine will detect cycles in
 the graph and will refuse to run any upgrades until the cycles have been
 broken.
 """
+
+
+def populate_existing_upgrades(sender, yes_i_know=False, drop=True, **kwargs):
+    """Populate existing upgrades."""
+    from .engine import InvenioUpgrader
+    iu = InvenioUpgrader()
+    map(iu.register_success, iu.get_upgrades())
+
+from invenio.base import signals
+from invenio.base.scripts.database import create, recreate
+signals.post_command.connect(populate_existing_upgrades, sender=create)
+signals.post_command.connect(populate_existing_upgrades, sender=recreate)

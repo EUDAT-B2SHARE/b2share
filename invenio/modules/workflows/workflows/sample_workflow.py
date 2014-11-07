@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 ## This file is part of Invenio.
 ## Copyright (C) 2012, 2013, 2014 CERN.
 ##
@@ -16,17 +17,18 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from ..tasks.sample_tasks import (add_data,
-                                  print_data)
+"""Showcase a sample workflow definition."""
+
+from ..definitions import WorkflowBase
+from ..tasks.sample_tasks import add_data
 from ..tasks.logic_tasks import execute_if
 from ..tasks.marcxml_tasks import approve_record
 
 
-class sample_workflow(object):
-    """
-    This is a sample workflow.
-    """
+class sample_workflow(WorkflowBase):
+
+    """This is a sample workflow."""
+
     workflow = [execute_if(add_data(1), lambda obj, eng: True),
-                approve_record,
-                print_data]
+                approve_record]
     title = "Sample workflow"

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012 CERN.
+## Copyright (C) 2010, 2011, 2012, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -20,11 +20,10 @@
    owned by the library in the real world.
 """
 
-from invenio.modules.indexer.tokenizers.BibIndexEmptyTokenizer import BibIndexEmptyTokenizer
+from invenio.modules.indexer.tokenizers.BibIndexRecJsonTokenizer import BibIndexRecJsonTokenizer
 
 
-
-class BibIndexItemCountTokenizer(BibIndexEmptyTokenizer):
+class BibIndexItemCountTokenizer(BibIndexRecJsonTokenizer):
     """
         Returns a number of copies of a book which is owned by the library.
     """
@@ -44,6 +43,14 @@ class BibIndexItemCountTokenizer(BibIndexEmptyTokenizer):
             return []
         return [str(count)]
 
+    def tokenize_for_words(self, record):
+        return self.tokenize(record)
+
+    def tokenize_for_pairs(self, record):
+        return self.tokenize(record)
+
+    def tokenize_for_phrases(self, record):
+        return self.tokenize(record)
 
     def get_tokenizing_function(self, wordtable_type):
         return self.tokenize

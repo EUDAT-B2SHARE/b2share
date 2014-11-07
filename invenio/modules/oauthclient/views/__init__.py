@@ -17,11 +17,13 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+""" Blueprints for oauthclient. """
+
 from __future__ import absolute_import
 from .client import blueprint as client_blueprint
 from .settings import blueprint as settings_blueprint
 
 blueprints = [
     client_blueprint,
-    settings_blueprint
+    settings_blueprint,
 ]

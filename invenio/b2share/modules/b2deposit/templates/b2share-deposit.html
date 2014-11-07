@@ -2,24 +2,11 @@
 
 {% extends "page.html" %}
 
-{%- block global_css %}
+{%- block global_bundles %}
     {{ super() }}
-    {% css 'css/b2share-style.css', '50-b2share' %}
-    {% css 'css/bootstrap-switch.css', '50-b2share' %}
-    {% css 'css/bootstrap-multiselect.css', '50-b2share' %}
-    {% css 'css/jquery-ui.css', '50-b2share' %}
-    {% css 'css/typeahead.js-bootstrap.css' %}
-{%- endblock global_css -%}
+    {% bundles "b2s_deposit.css", "b2s_deposit.js" %}
+{%- endblock %}
 
-{%- block global_javascript -%}
-    {{ super() }}
-    {%- js 'plupload/plupload.full.min.js', '50-b2share' -%}
-    {%- js 'js/bootstrap-switch.min.js', '50-b2share' -%}
-    {%- js 'js/bootstrap-multiselect.js', '50-b2share' -%}
-    {%- js 'js/jquery-ui-1.10.3.custom.min.js', '50-b2share' -%}
-    {%- js 'js/b2share-deposit.js', '50-b2share' -%}
-    {%- js "js/typeahead.js" -%}
-{%- endblock global_javascript -%}
 
 {% block breadcrumbs %}
     {{ render_breadcrumbs(False) }}
@@ -47,17 +34,17 @@
 
     <div class="newdeposit col-sm-7">
 
-        <div id="fileupload"> 
+        <div id="fileupload">
             <div id="filebox">
                 <h2>
-                    <p class="step-number">Step 01</p> 
+                    <p class="step-number">Step 01</p>
                     <p>Drag and drop files here</p>
                 </h2>
 
                 <div class="row">
                     <div id="drag_and_drop_text" class="col-sm-8 well well-b2sblue" style="height: 70px"></div>
                     <div class="col-sm-4">
-                        <a class="btn btn-b2sblue" id="pickfiles">Select files</a> 
+                        <a class="btn btn-b2sblue" id="pickfiles">Select files</a>
                         <p> </p>
                         <a class="btn btn-b2sblue disabled" id="uploadfiles">Start upload</a>
                         <a class="btn btn-b2sblue" id="stopupload" style="display:none">Stop upload</a>
@@ -79,23 +66,23 @@
             </table>
 
             <div id="upload-errors"></div>
-    
+
             {# these hidden inputs are used to transfer flask dynamic values to javascript -#}
-            <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input> 
-            <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input> 
+            <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"></input>
+            <input type="hidden" id="url_prefix" name="url_prefix" value="{{ url_prefix }}"></input>
             <input type="hidden" id="url_for_upload" name="url_for_upload" value="{{ url_for('.upload', sub_id=sub_id) }}"></input>
             <input type="hidden" id="url_for_delete" name="url_for_delete" value="{{ url_for('.delete', sub_id=sub_id) }}"></input>
             <input type="hidden" id="url_for_get_file" name="url_for_get_file" value="{{ url_for('.get_file', sub_id=sub_id) }}"></input>
             <input type="hidden" id="url_for_getform" name="url_for_getform" value="{{ url_for('.getform', sub_id=sub_id, domain='') }}"></input>
             <input type="hidden" id="url_for_addmeta" name="url_for_addmeta" value="{{ url_for('.addmeta', sub_id=sub_id) }}"></input>
             <input type="hidden" id="filelist" name="filelist" value=""></input>
-    
+
         </div>
 
         <div id="domains" class="hide">
 
             <h2 style="margin-top:30px">
-                <p class="step-number">Step 02</p> 
+                <p class="step-number">Step 02</p>
                 <p>Select a domain or project</p>
             </h2>
 
@@ -105,7 +92,7 @@
                     <div class="col-sm-12">
                         {% for d in domains %}
                         <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}" title="{{ d.domaindesc if d.domaindesc != None }}" rel='tooltip'>
-                            <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}" 
+                            <input type="radio" class="visuallyhidden" name="domain" id="{{ d.domain }}" value="{{ d.domain }}"
                                 {% if d.domain == default_domain %}checked="checked"{% endif %}/>
                             <label for="{{ d.domain }}">
                                 {% if d.display_name %}
@@ -126,18 +113,18 @@
 
                 <div id="metaform" class="hide">
                     <h2 style="margin-top:30px">
-                        <p class="step-number">Step 03</p> 
+                        <p class="step-number">Step 03</p>
                         <p>Add basic details</p>
                     </h2>
                     <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
 
                     <div id="meta">
                         <div id="meta-fields">Loading form...</div>
-                        <div id="reqfootnote" class="footnote hide">* indicates required field</div> 
+                        <div id="reqfootnote" class="footnote hide">* indicates required field</div>
 
                         <div id="submitbutton" class="hide">
                             <h2 style="margin-top:30px">
-                                <p class="step-number">Step 04</p> 
+                                <p class="step-number">Step 04</p>
                                 <p id="depositmsg" style="display:none; font-size: 16px">Please wait...</p>
                                 <button id="deposit" name="action_save" class="btn btn-large btn-block disabled">Deposit</button>
                             </h2>

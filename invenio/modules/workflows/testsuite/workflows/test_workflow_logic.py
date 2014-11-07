@@ -16,26 +16,21 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-""" Implements a workflow for testing """
+""" Implements a workflow for testing."""
 
-from invenio.modules.workflows.tasks.logic_tasks import (end_for,
-                                                         foreach,
-                                                         simple_for,
-                                                         workflow_else,
-                                                         workflow_if,
-                                                         compare_logic)
-from invenio.modules.workflows.tasks.sample_tasks import add_data
+from ...tasks.logic_tasks import (end_for, foreach, simple_for, workflow_else,
+                                  workflow_if, compare_logic,)
+from ...tasks.sample_tasks import add_data
 
-from invenio.modules.workflows.tasks.workflows_tasks import interrupt_workflow
+from ...tasks.workflows_tasks import interrupt_workflow
 
-from invenio.modules.workflows.tasks.marcxml_tasks import (get_data,
-                                                           set_obj_extra_data_key)
+from ...tasks.marcxml_tasks import get_data, set_obj_extra_data_key
 
 
 class test_workflow_logic(object):
-    """
-    Test workflow for unit-tests.
-    """
+
+    """Test workflow for unit-tests."""
+
     workflow = [
         foreach([0, 1, 4, 10], "step", True),
         [
@@ -44,7 +39,6 @@ class test_workflow_logic(object):
                 add_data(1),
             ],
             end_for,
-
             workflow_if(compare_logic(get_data, 9, "gte")),
             [
                 set_obj_extra_data_key("test", "gte9"),

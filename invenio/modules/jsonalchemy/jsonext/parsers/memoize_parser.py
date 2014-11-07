@@ -32,8 +32,11 @@ from invenio.modules.jsonalchemy.registry import functions
 
 
 class MemoizeParser(DecoratorAfterEvalBaseExtensionParser):
+
     """
-    Handles the @memoze decorator::
+    Handle the ``@memoze`` decorator.
+
+    .. code-block:: ini
 
         number_of_comments:
             calculated:
@@ -42,31 +45,34 @@ class MemoizeParser(DecoratorAfterEvalBaseExtensionParser):
 
     This decorator works only with calculated fields and it has three different
     ways of doing it:
-        1) No decorator is specified, the value of the field will be calculated
-           every time that somebody asks for it and its value will not be stored
-           in the DB. This way is useful to create fields that return objects
-           that can't be stored in the DB in a JSON friendly manner or a field
-           that changes a lot its value and the calculated function is really
-           light.
-        2) The decorator is used without any time, ``@memoize()``. This means
-           that the value of the field is calculated when the record is created,
-           it is stored in the DB and it is the job of the client that modifies
-           the data, which is used to calculated the field, to update the field
-           value in the DB.
-           This way should be used for fields that are typically updated just by
-           a few clients, like ``bibupload``, ``bibrank``, etc.
-        3) A lifetime is set with the decorator ``@memoize(300)``. In this case
-           the field value is only calculated when somebody asks for it and its
-           value is stored in a general cache (``invenio.ext.cache``) using the
-           timeout from the decorator.
-           This form of the memoize decorator should be used with a field that
-           changes a lot its value and the function to calculate it is not
-           light.
-           Keep in mind that the value that someone might get could be
-           outdated. To avoid this situation the client that modifies the data
-           where the value is calculated from could also invalidate the cache or
-           modify the cached value.
-           One good example of the use of it is the field ``number_of_comments``
+
+    1. No decorator is specified, the value of the field will be calculated
+       every time that somebody asks for it and its value will not be stored
+       in the DB. This way is useful to create fields that return objects
+       that can't be stored in the DB in a JSON friendly manner or a field
+       that changes a lot its value and the calculated function is really
+       light.
+
+    2. The decorator is used without any time, ``@memoize()``. This means
+       that the value of the field is calculated when the record is created,
+       it is stored in the DB and it is the job of the client that modifies
+       the data, which is used to calculated the field, to update the field
+       value in the DB.
+       This way should be used for fields that are typically updated just by
+       a few clients, like ``bibupload``, ``bibrank``, etc.
+
+    3. A lifetime is set with the decorator ``@memoize(300)``. In this case
+       the field value is only calculated when somebody asks for it and its
+       value is stored in a general cache (``invenio.ext.cache``) using the
+       timeout from the decorator.
+       This form of the memoize decorator should be used with a field that
+       changes a lot its value and the function to calculate it is not
+       light.
+       Keep in mind that the value that someone might get could be
+       outdated. To avoid this situation the client that modifies the data
+       where the value is calculated from could also invalidate the cache or
+       modify the cached value.
+       One good example of the use of it is the field ``number_of_comments``
 
     The cache engine used by this decorator could be set using
     ``CFG_JSONALCHEMY_CACHE`` in your instance configuration, by default
@@ -91,18 +97,18 @@ class MemoizeParser(DecoratorAfterEvalBaseExtensionParser):
 
     @classmethod
     def parse_element(cls, indent_stack):
-        """Sets ``memoize`` attribute to the rule"""
+        """Set ``memoize`` attribute to the rule."""
         return (Keyword("@memoize").suppress() +
                 Literal('(').suppress() +
                 SkipTo(')') +
                 Literal(')').suppress()
-               ).setResultsName("memoize")
+                ).setResultsName("memoize")
 
     @classmethod
     def create_element(cls, rule, field_def, content, namespace):
-        """
-        Tries to evaluate the memoize value to int if it fails it sets the
-        default value from ``DEFAULT_TIMEOUT``
+        """Try to evaluate the memoize value to int.
+
+        If it fails it sets the default value from ``DEFAULT_TIMEOUT``.
         """
         try:
             return int(content[0])
@@ -118,29 +124,31 @@ class MemoizeParser(DecoratorAfterEvalBaseExtensionParser):
 
     @classmethod
     def evaluate(cls, json, field_name, action, args):
-        """
+        """Evaluate the parser.
+
         When getting a json field compare the timestamp and the lifetime of it
         and, if it the lifetime is over calculate its value again.
 
         If the value of the field has changed since the last time it gets
         updated in the DB.
         """
-        if cls.__cache == None:
+        if cls.__cache is None:
             cls.__cache = import_string(cfg.get('CFG_JSONALCHEMY_CACHE',
                                                 'invenio.ext.cache:cache'))
+
         @cls.__cache.memoize(timeout=args)
         def memoize(_id, field_name):
-            func = reduce(lambda obj, key: obj[key], \
-                              json.meta_metadata[field_name]['function'], \
-                              FieldParser.field_definitions(
-                                  json.additional_info.namespace))
+            func = reduce(lambda obj, key: obj[key],
+                          json.meta_metadata[field_name]['function'],
+                          FieldParser.field_definitions(
+                              json.additional_info.namespace))
             return try_to_eval(func, functions(json.additional_info.namespace),
                                self=json)
 
         if args == cls.DEFAULT_TIMEOUT:
             return
         if action == 'get':
-            if args == 0: # No cached version is stored, retrieve it
+            if args == 0:  # No cached version is stored, retrieve it
                 func = reduce(lambda obj, key: obj[key],
                               json.meta_metadata[field_name]['function'],
                               FieldParser.field_definitions(
@@ -153,7 +161,7 @@ class MemoizeParser(DecoratorAfterEvalBaseExtensionParser):
                 json._dict_bson[field_name] = memoize(json.get('_id'),
                                                       field_name)
         elif action == 'set':
-            if args >= 0: # Don't store anything
+            if args >= 0:  # Don't store anything
                 json._dict_bson[field_name] = None
 
 parser = MemoizeParser

@@ -36,31 +36,31 @@ from __future__ import print_function
 import os
 import sys
 
-requirements = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "requirements.txt")
-_html_theme = open(requirements, "r").readline().strip()
+
+_html_theme = "default"
 _html_theme_path = []
 try:
-    theme = __import__(_html_theme, globals(), locals(), [], -1)
-    _html_theme_path = [theme.get_html_theme_path()]
+    import sphinx_rtd_theme
+    _html_theme = "sphinx_rtd_theme"
+    _html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 except ImportError:
-    print("Template {0} not found, run:\n\n\tpip install -r {1}\n"
-          .format(_html_theme, requirements),
+    print("Template `sphinx_rtd_theme` not found, pip install it",
           file=sys.stderr)
-    _html_theme = "default"
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.append(os.path.abspath('_ext'))
-sys.path.append(os.path.abspath('_themes'))
+#sys.path.append(os.path.abspath('_themes'))
 #sys.path.append(os.path.abspath('.'))
 sys.path.append(os.path.abspath('../invenio'))
+
 
 def setup(app):
     """Custom application tweaks."""
     app.add_stylesheet("theme_overrides.css")
+
 
 # -- General configuration ----------------------------------------------------
 
@@ -307,6 +307,10 @@ intersphinx_mapping = {
     'werkzeug': ('http://werkzeug.pocoo.org/docs/', None),
     'flask': ('http://flask.pocoo.org/docs/', None),
     'flaskassets': ('http://flask-assets.readthedocs.org/en/latest/', None),
+    'flaskscript': ('http://flask-script.readthedocs.org/en/latest/', None),
     'sqlalchemy': ('http://docs.sqlalchemy.org/en/latest/', None),
     'jinja': ('http://jinja.pocoo.org/docs/', None),
+    'webassets': ('http://webassets.readthedocs.org/en/latest/', None),
+    # FIXME not readable due to ValueError: unknown or unsupported inv version
+    #'flasklogin': ('http://flask-login.readthedocs.org/en/latest/')
 }

@@ -2,6 +2,7 @@
 *.cmucl.core
 *.fas
 *.fasl
+*.kdev4
 *.kdevelop
 *.kdevses
 *.lib
@@ -12,6 +13,7 @@
 *~
 .DS_Store
 .coverage
+.kdev4/
 .noseids
 .project
 .pydevproject
@@ -56,20 +58,14 @@ po/POTFILES
 po/POTFILES-py
 po/POTFILES-webdoc
 po/stamp-po
-tags
+/tags
 
 # static assets
 invenio/base/static/*
 
 # test binaries
-Flask_Testing-*
-httpretty-*
-mock-*
-nose-*
-selenium-*
-six-*
-unittest2-*
-urllib3-*
+*.egg
+
 
 # install binaries
 install/.vagrant/machines/*

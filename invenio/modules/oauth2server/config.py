@@ -17,6 +17,8 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""OAuth2Server configuration variables."""
+
 OAUTH2_CACHE_TYPE = 'redis'
 """ Type of cache to use for storing the temporary grant token """
 
@@ -35,12 +37,8 @@ OAUTH2_CLIENT_SECRET_SALT_LEN = 60
 OAUTH2_TOKEN_PERSONAL_SALT_LEN = 60
 """ Length of the personal access token """
 
-OAUTH2_DEFAULT_SCOPES = {
-    'user:email': 'Read access to user email only.',
-}
-
 OAUTH2_ALLOWED_GRANT_TYPES = [
-    'authorization_code', 'client_credentials', 'refresh_token'
+    'authorization_code', 'client_credentials', 'refresh_token',
 ]
 """
 A list of allowed grant types - allowed values are `authorization_code`,
@@ -53,6 +51,8 @@ OAUTH2_ALLOWED_RESPONSE_TYPES = [
     "code", "token"
 ]
 """
-A list of allowed grant types - allowed values are `authorization_code`,
-`password`, `client_credentials`, `refresh_token`)
+A list of allowed response types - allowed values are `code` and `token`.
+
+- ``code`` is used for authorization_code grant types
+- ``token`` is used for implicit grant types
 """

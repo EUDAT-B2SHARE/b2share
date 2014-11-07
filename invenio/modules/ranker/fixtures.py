@@ -29,36 +29,11 @@ class RnkMETHODData(DataSet):
         name = u'wrd'
 
 
-class RnkCITATIONDATAData(DataSet):
-
-    class RnkCITATIONDATA_1:
-        object_name = u'citationdict'
-        last_updated = None
-        id = 1
-        object_value = None
-
-    class RnkCITATIONDATA_2:
-        object_name = u'reversedict'
-        last_updated = None
-        id = 2
-        object_value = None
-
-    class RnkCITATIONDATA_3:
-        object_name = u'selfcitdict'
-        last_updated = None
-        id = 3
-        object_value = None
-
-    class RnkCITATIONDATA_4:
-        object_name = u'selfcitedbydict'
-        last_updated = None
-        id = 4
-        object_value = None
-
-
 class CollectionRnkMETHODData(DataSet):
 
     class CollectionRnkMETHOD_1_1:
         score = 100
         id_rnkMETHOD = RnkMETHODData.RnkMETHOD_1.ref('id')
-        id_collection = 1 #CollectionData.siteCollection.ref('id')
+        id_collection = CollectionData.siteCollection.ref('id')
+
+__all__ = ('RnkMETHODData', 'CollectionRnkMETHODData')

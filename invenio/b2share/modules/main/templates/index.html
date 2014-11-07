@@ -1,21 +1,19 @@
-
 {#
-## This file is part of Invenio.
-## Copyright (C) 2012 CERN.
-## Portions Copyright (C) 2013 EPCC, The University of Edinburgh.
+## This file is part of B2SHARE.
+## Copyright (C) 2013 EPCC, The University of Edinburgh.
 ##
-## Invenio is free software; you can redistribute it and/or
+## B2SHARE is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 2 of the
 ## License, or (at your option) any later version.
 ##
-## Invenio is distributed in the hope that it will be useful, but
+## B2SHARE is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
+## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 {% from "search/helpers.html" import search_form, search_form_javascript with context %}
@@ -29,13 +27,10 @@
     {%- do portalboxes.update({k:l}) -%}
 {%- endfor -%}
 
-{% block header1 %}
-    {{ super() }}
-    {#% css 'css/websearch_index.css' %#}
-    {% css 'css/b2share-style.css' %}
-    {#% js "js/websearch_typeahead.js" %#}
-    {% js "js/bootstrap-select.js" %}
-{% endblock %}
+{% block breadcrumbs %}
+    {{ render_breadcrumbs('hidden') }}
+{% endblock breadcrumbs %}
+
 
 {% block searchbar %}
     <div class="searchbar">
@@ -49,7 +44,7 @@
     <div class="row websearch">
         {{ render_deposits('visible') }}
         <div class="col-sm-7">
-            <h2 class="title">               
+            <h2 class="title">
                 <div style="position:absolute; left:400px"><font color="red">{{ site_function }}</font></div>
                 <div style="display:inline-block; float: left">
                     STORE AND SHARE<br/> YOUR RESEARCH DATA

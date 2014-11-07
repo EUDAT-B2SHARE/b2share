@@ -20,6 +20,7 @@
 from __future__ import absolute_import, print_function
 
 from datetime import date
+from invenio.base.globals import cfg
 from invenio.base.i18n import _
 from invenio.testsuite import make_test_suite, run_test_suite
 from flask import url_for
@@ -79,7 +80,10 @@ class SimpleRecordTest(DepositionTestCase):
         pass
 
     def test_registration(self):
-        self.assert401(self.client.get(url_for('webdeposit.index')))
+        self.assert401(self.client.get(url_for('webdeposit.index'),
+                                       follow_redirects=True,
+                                       base_url=cfg['CFG_SITE_SECURE_URL']))
+
         self.login("admin", "")
 
         res = self.client.get(url_for('webdeposit.index'))

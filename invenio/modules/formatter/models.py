@@ -39,7 +39,7 @@ class Format(db.Model):
 
     name = db.Column(db.String(255), nullable=False)
 
-    code = db.Column(db.String(6), nullable=False, unique=True)
+    code = db.Column(db.String(20), nullable=False, unique=True)
 
     description = db.Column(db.String(255), server_default='')
 
@@ -126,9 +126,6 @@ class Formatname(db.Model):
 class Bibfmt(db.Model):
     """Represents a Bibfmt record."""
 
-    def __init__(self):
-        pass
-
     __tablename__ = 'bibfmt'
 
     id_bibrec = db.Column(
@@ -146,6 +143,13 @@ class Bibfmt(db.Model):
         primary_key=True,
         index=True)
 
+    kind = db.Column(
+        db.String(10),
+        nullable=False,
+        server_default='',
+        index=True
+        )
+
     last_updated = db.Column(
         db.DateTime,
         nullable=False,
@@ -153,6 +157,8 @@ class Bibfmt(db.Model):
         index=True)
 
     value = db.Column(db.iLargeBinary)
+
+    needs_2nd_pass = db.Column(db.TinyInteger(1), server_default='0')
 
     bibrec = db.relationship(Bibrec, backref='bibfmt')
 

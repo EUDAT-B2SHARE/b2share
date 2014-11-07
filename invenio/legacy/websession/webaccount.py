@@ -1,5 +1,5 @@
 ## This file is part of Invenio.
-## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
+## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -276,7 +276,8 @@ def perform_delete(ln):
     # TODO
     return websession_templates.tmpl_account_delete(ln = ln)
 
-def perform_set(email, ln, can_config_bibcatalog = False, verbose = 0):
+def perform_set(email, ln, can_config_bibcatalog=False,
+                can_config_profiling=False, verbose=0, csrf_token=''):
     """Perform_set(email,password): edit your account parameters, email and
     password.
     If can_config_bibcatalog is True, show the bibcatalog dialog (if configured).
@@ -286,7 +287,7 @@ def perform_set(email, ln, can_config_bibcatalog = False, verbose = 0):
         res = run_sql("SELECT id, nickname FROM user WHERE email=%s", (email,))
         uid = res[0][0]
         nickname = res[0][1]
-    except:
+    except IndexError:
         uid = 0
         nickname = ""
 
@@ -301,12 +302,13 @@ def perform_set(email, ln, can_config_bibcatalog = False, verbose = 0):
              email_disabled = (CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS_LOCAL >= 2),
              password_disabled = (CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS_LOCAL >= 3),
              nickname = nickname,
+             csrf_token = csrf_token
            )
     if len(CFG_EXTERNAL_AUTHENTICATION) > 1:
         try:
             uid = run_sql("SELECT id FROM user where email=%s", (email,))
             uid = uid[0][0]
-        except:
+        except IndexError:
             uid = 0
         current_login_method = prefs['login_method']
         methods = CFG_EXTERNAL_AUTHENTICATION.keys()
@@ -329,7 +331,8 @@ def perform_set(email, ln, can_config_bibcatalog = False, verbose = 0):
                     ln = ln,
                     methods = methods,
                     current = current_login_method,
-                    method_disabled = (CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS >= 4)
+                    method_disabled = (CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS >= 4),
+                    csrf_token = csrf_token,
                 )
 
     current_group_records = prefs.get('websearch_group_records', 10)
@@ -340,18 +343,21 @@ def perform_set(email, ln, can_config_bibcatalog = False, verbose = 0):
                 current = current_group_records,
                 show_latestbox = show_latestbox,
                 show_helpbox = show_helpbox,
+                csrf_token = csrf_token,
                 )
 
     preferred_lang = prefs.get('language', ln)
     out += websession_templates.tmpl_user_lang_edit(
                 ln = ln,
-                preferred_lang = preferred_lang
+                preferred_lang = preferred_lang,
+                csrf_token = csrf_token,
                 )
 
     keys_info = web_api_key.show_web_api_keys(uid=uid)
     out+=websession_templates.tmpl_user_api_key(
                 ln = ln,
-                keys_info = keys_info
+                keys_info = keys_info,
+                csrf_token = csrf_token,
                 )
 
     #show this dialog only if the system has been configured to use a ticket system
@@ -359,8 +365,14 @@ def perform_set(email, ln, can_config_bibcatalog = False, verbose = 0):
     if CFG_BIBCATALOG_SYSTEM and can_config_bibcatalog:
         bibcatalog_username = prefs.get('bibcatalog_username', "")
         bibcatalog_password = prefs.get('bibcatalog_password', "")
-        out += websession_templates.tmpl_user_bibcatalog_auth(bibcatalog_username, \
-                                                          bibcatalog_password, ln=ln)
+        out += websession_templates.tmpl_user_bibcatalog_auth(bibcatalog_username,
+                                                              bibcatalog_password, ln=ln,
+                                                              csrf_token=csrf_token)
+
+    if can_config_profiling:
+        out += websession_templates.tmpl_user_profiling_settings(ln=ln,
+                                                                 enable_profiling=prefs.get('enable_profiling'),
+                                                                 csrf_token=csrf_token)
 
     if verbose >= 9:
         for key, value in prefs.items():

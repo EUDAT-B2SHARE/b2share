@@ -17,28 +17,35 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""Database models for OAuth2 server."""
+
 from __future__ import absolute_import
+
 
 from flask import current_app
 from flask.ext.login import current_user
+
 from werkzeug.security import gen_salt
 from wtforms import validators
-from wtforms import widgets
 from sqlalchemy_utils import URLType
+import six
 
 from invenio.ext.sqlalchemy import db
 from invenio.ext.login.legacy_user import UserInfo
 
+from .validators import validate_redirect_uri, validate_scopes
+from .errors import ScopeDoesNotExists
 
-class OAuthUserProxy():
-    """
-    Proxy object to an Invenio User
-    """
+
+class OAuthUserProxy(object):
+
+    """Proxy object to an Invenio User."""
+
     def __init__(self, user):
         self._user = user
 
     def __getattr__(self, name):
-        """ Pass any undefined attribute to the underlying object """
+        """Pass any undefined attribute to the underlying object."""
         return getattr(self._user, name)
 
     def __getstate__(self):
@@ -59,11 +66,20 @@ class OAuthUserProxy():
         return cls(current_user._get_current_object())
 
 
+class Scope(object):
+    def __init__(self, id_, help_text='', group='', internal=False):
+        self.id = id_
+        self.group = group
+        self.help_text = help_text
+        self.is_internal = internal
+
+
 class Client(db.Model):
-    """
-    A client is the app which want to use the resource of a user. It is
-    suggested that the client is registered by a user on your site, but it
-    is not required.
+
+    """A client is the app which want to use the resource of a user.
+
+    It is suggested that the client is registered by a user on your site, but
+    it is not required.
 
     The client should contain at least these information:
 
@@ -79,7 +95,6 @@ class Client(db.Model):
         allowed_grant_types: A list of grant types
         allowed_response_types: A list of response types
         validate_scopes: A function to validate scopes
-
     """
 
     __tablename__ = 'oauth2CLIENT'
@@ -92,7 +107,7 @@ class Client(db.Model):
             validators=[validators.Required()]
         )
     )
-    """ Human readable name of the application """
+    """Human readable name of the application."""
 
     description = db.Column(
         db.Text(),
@@ -103,7 +118,7 @@ class Client(db.Model):
                         ' (displayed to users).',
         )
     )
-    """ Human readable description """
+    """Human readable description."""
 
     website = db.Column(
         URLType(),
@@ -115,36 +130,34 @@ class Client(db.Model):
     )
 
     user_id = db.Column(db.ForeignKey('user.id'))
-    """ Creator of the client application """
+    """Creator of the client application."""
 
     client_id = db.Column(db.String(255), primary_key=True)
-    """ Client application ID """
+    """Client application ID."""
 
     client_secret = db.Column(
         db.String(255), unique=True, index=True, nullable=False
     )
-    """ Client application secret """
+    """Client application secret."""
 
     is_confidential = db.Column(db.Boolean, default=True)
-    """ Determine if client application is public or not.  """
+    """Determine if client application is public or not."""
 
     is_internal = db.Column(db.Boolean, default=False)
-    """ Determins if client application is an internal application """
+    """Determins if client application is an internal application."""
 
     _redirect_uris = db.Column(db.Text)
-    """
-    A comma-separated list of redirect URIs. First URI is the default URI.
-    """
+    """A newline-separated list of redirect URIs. First is the default URI."""
 
     _default_scopes = db.Column(db.Text)
-    """
-    A comma-separated list of default scopes of the client. The value of the
-    scope parameter is expressed as a list of space-delimited,
+    """A space-separated list of default scopes of the client.
+
+    The value of the scope parameter is expressed as a list of space-delimited,
     case-sensitive strings.
     """
 
     user = db.relationship('User')
-    """ Relationship to user """
+    """Relationship to user."""
 
     @property
     def allowed_grant_types(self):
@@ -166,8 +179,21 @@ class Client(db.Model):
     @property
     def redirect_uris(self):
         if self._redirect_uris:
-            return self._redirect_uris.split()
+            return self._redirect_uris.splitlines()
         return []
+
+    @redirect_uris.setter
+    def redirect_uris(self, value):
+        """Validate and store redirect URIs for client."""
+        if isinstance(value, six.text_type):
+            value = value.split("\n")
+
+        value = [v.strip() for v in value]
+
+        for v in value:
+            validate_redirect_uri(v)
+
+        self._redirect_uris = "\n".join(value) or ""
 
     @property
     def default_redirect_uri(self):
@@ -178,9 +204,24 @@ class Client(db.Model):
 
     @property
     def default_scopes(self):
+        """List of default scopes for client."""
         if self._default_scopes:
-            return self._default_scopes.split()
+            return self._default_scopes.split(" ")
         return []
+
+    @default_scopes.setter
+    def default_scopes(self, scopes):
+        """Set default scopes for client."""
+        validate_scopes(scopes)
+        self._default_scopes = " ".join(set(scopes)) if scopes else ""
+
+    def validate_scopes(self, scopes):
+        """Validate if client is allowed to access scopes."""
+        try:
+            validate_scopes(scopes)
+            return True
+        except ScopeDoesNotExists:
+            return False
 
     def gen_salt(self):
         self.reset_client_id()
@@ -198,47 +239,47 @@ class Client(db.Model):
 
 
 class Token(db.Model):
-    """
-    A bearer token is the final token that can be use by the client.
-    """
+
+    """A bearer token is the final token that can be used by the client."""
+
     __tablename__ = 'oauth2TOKEN'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    """ Object ID """
+    """Object ID."""
 
     client_id = db.Column(
         db.String(40), db.ForeignKey('oauth2CLIENT.client_id'),
         nullable=False,
     )
-    """ Foreign key to client application """
+    """Foreign key to client application."""
 
     client = db.relationship('Client')
-    """ SQLAlchemy relationship to client application """
+    """SQLAlchemy relationship to client application."""
 
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id')
     )
-    """ Foreign key to user """
+    """Foreign key to user."""
 
     user = db.relationship('User')
-    """ SQLAlchemy relationship to user """
+    """SQLAlchemy relationship to user."""
 
     token_type = db.Column(db.String(255), default='bearer')
-    """ Token type - only bearer is supported at the moment """
+    """Token type - only bearer is supported at the moment."""
 
     access_token = db.Column(db.String(255), unique=True)
 
-    refresh_token = db.Column(db.String(255), unique=True)
+    refresh_token = db.Column(db.String(255), unique=True, nullable=True)
 
     expires = db.Column(db.DateTime, nullable=True)
 
     _scopes = db.Column(db.Text)
 
     is_personal = db.Column(db.Boolean, default=False)
-    """ Personal accesss token """
+    """Personal accesss token."""
 
     is_internal = db.Column(db.Boolean, default=False)
-    """ Determines if token is an internally generated token. """
+    """Determines if token is an internally generated token."""
 
     @property
     def scopes(self):
@@ -246,11 +287,22 @@ class Token(db.Model):
             return self._scopes.split()
         return []
 
+    @scopes.setter
+    def scopes(self, scopes):
+        validate_scopes(scopes)
+        self._scopes = " ".join(set(scopes)) if scopes else ""
+
+    def get_visible_scopes(self):
+        """Get list of non-internal scopes for token."""
+        from .registry import scopes as scopes_registry
+        return [k for k, s in scopes_registry.choices() if k in self.scopes]
+
     @classmethod
     def create_personal(cls, name, user_id, scopes=None, is_internal=False):
-        """
-        Create a personal access token (a token that is bound to a specific
-        user and which doesn't expire).
+        """Create a personal access token.
+
+        A token that is bound to a specific user and which doesn't expire, i.e.
+        similar to the concept of an API key.
         """
         scopes = " ".join(scopes) if scopes else ""
 

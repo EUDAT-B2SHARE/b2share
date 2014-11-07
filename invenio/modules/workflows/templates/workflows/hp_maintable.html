@@ -21,24 +21,8 @@
 
 {% block header%}
     {{ super() }}
-    {% css url_for('static', filename='css/dataTables.colVis.css') %}
-    {% css url_for('static', filename='css/dataTables.bootstrap.css') %}
-    {% css url_for('static', filename='css/bootstrap-tagsinput.css') %}
+    {% bundles "workflows.js", "vendors.js", "datatables.js", "vendors.css", "actions.js", "jquery.js" %}
 {% endblock header %}
-
-{% js url_for('static', filename='js/jquery.dataTables.min.js'), '30-datatables' %}
-{% js url_for('static', filename='js/dataTables.colVis.js'), '30-datatables' %}
-{% js url_for('static', filename='js/bootstrap.js'), '30-datatables' %}
-{% js url_for('static', filename='js/dataTables.bootstrap.js'), '30-datatables' %}
-{% js url_for('static', filename='js/bootstrap-tagsinput.min.js'), '30-datatables' %}
-{% js url_for('workflows.static', filename='js/workflows/hp_maintable.js'), '50-workflows' %}
-{% js url_for('workflows.static', filename='js/workflows/hp_tags.js'), '50-workflows' %}
-{% js url_for('workflows.static', filename='js/workflows/hp_selection.js'), '50-workflows' %}
-{% js url_for('workflows.static', filename='js/workflows/hp_utilities.js'), '50-workflows' %}
-
-{% for file in action_static %}
-    {% js url_for('workflows.static', filename=file), '50-workflows' %}
-{% endfor %}
 
 {% block javascript %}
     {{ super() }}
@@ -52,12 +36,6 @@
             success: function(data) {
                 WORKFLOWS_HOLDINGPEN.init(data);
                 WORKFLOWS_HOLDINGPEN.init_datatable(WORKFLOWS_HP_SELECTION);
-                WORKFLOWS_HP_TAGS.init();
-                WORKFLOWS_HP_UTILITIES.init();
-                for (var i = data.actions.length - 1; i >= 0; i--) {
-                    window[data.actions[i]] = window[data.actions[i]](window.jQuery, WORKFLOWS_HOLDINGPEN);
-                    window[data.actions[i]].init(data);
-                };
             }
         });
     });
@@ -65,7 +43,6 @@
 {% endblock javascript %}
 
 {% block hpbody %}
-    <div id="alert-message"></div>
     <nav class="navbar navbar-default navbar-static-top" role="navigation">
       <!-- Brand and toggle get grouped for better mobile display -->
 
@@ -81,7 +58,7 @@
                         {% set i = 0 %}
                         {% for task, object_count in action_list.items() %}
                             <li><a id="task{{i}}" class="task-btn" tabindex="-1" name="{{task}}">{{task}}: {{object_count}}</a></li>
-                            {% set i = i+1 %}
+                            {% set i = i + 1 %}
                         {% endfor %}
                     {% else %}
                             <li><a class="task-btn">No actions left</a></li>
@@ -91,10 +68,16 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle dropdown-headline" data-toggle="dropdown">Status<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a id="version-halted" class="version-selection" name="Halted">Need action</a></li>
-                    <li><a id="version-completed" class="version-selection" name="Completed">Done</a></li>
-                    <li><a id="version-running" class="version-selection" name="Running">In process</a></li>
-                    <li><a id="version-initial" class="version-selection" name="Initial">New</a></li>
+                    <li><a id="version-halted" class="version-selection" name="Need action">Need action</a></li>
+                    <li><a id="version-completed" class="version-selection" name="Done">Done</a></li>
+                    <li><a id="version-running" class="version-selection" name="In process">In process</a></li>
+                    <li><a id="version-initial" class="version-selection" name="New">New</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle dropdown-headline" data-toggle="dropdown">Options<b class="caret"></b></a>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a id="option-autorefresh" name="autorefresh-option">Auto-refresh</a></li>
                 </ul>
             </li>
         </ul>
@@ -102,9 +85,7 @@
         </ul>
       </div>
     </nav>
-
-
-    <input class="tags" id="tags" type="text" placeholder="Add tags"/>
+    <input class="tags" id="tags" type="text" placeholder="{{ _("Add to search") }}" value="{{tags}}"/>
     <br>
 
     <div class="container">
@@ -115,28 +96,15 @@
                         <th>Id</th>
                         <th><input id="select-all" type="checkbox"></th>
                         <th>Title</th>
-                        <th>Source</th>
-                        <th>Category</th>
+                        <th>Description</th>
                         <th>Created</th>
                         <th>Status</th>
                         <th>Type</th>
-                        <th>Details</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+
                 </tbody>
             </table>
         </div>

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ## This file is part of Invenio.
 ## Copyright (C) 2013, 2014 CERN.
 ##
@@ -16,91 +17,204 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-Invenio
------
-
-Invenio is a digital library framework. And before you ask:
-It's GNU/GPLv2 licensed!
-
-Invenio is Fun
-``````````````
-
-.. code:: python
-
-    from invenio.base import create_app
-    app = create_app()
-
-    if __name__ == "__main__":
-        app.run()
-
-And Easy to Setup
-`````````````````
-
-.. code:: bash
-
-    $ pip install invenio
-    $ inveniomanage runserver
-     * Running on http://localhost:4000/
+Invenio is Fun.
 
 Links
-`````
+-----
 
 * `website <http://invenio-software.org/>`_
-* `documentation <TODO>`_
-* `development version <http://invenio-software.org/repo/invenio>`_
+* `documentation <http://invenio.readthedocs.org/en/latest/>`_
+* `development version <https://github.com/inveniosoftware/invenio>`_
 
 """
-from __future__ import print_function
 
-import glob
 import os
-import re
+import sys
 
 from setuptools import setup, find_packages
+from setuptools.command.install_lib import install_lib
+from distutils.command.build import build
+
+
+class _build(build):
+
+    """Compile catalog before building the package."""
+
+    sub_commands = [('compile_catalog', None)] + build.sub_commands
+
+
+class _install_lib(install_lib):
+
+    """Custom install_lib command."""
+
+    def run(self):
+        """Compile catalog before running installation command."""
+        self.run_command('compile_catalog')
+        install_lib.run(self)
+
+dependency_links = [
+    "git+git://github.com/mrjoes/flask-admin.git#egg=Flask-Admin-1.0.9.dev0",
+    "git+git://github.com/inveniosoftware/workflow.git@e41299579501704b1486c72cc2509a9f82e63ea6#egg=workflow",
+]
+
+install_requires = [
+    "alembic>=0.6.6",
+    "Babel>=1.3",
+    "bagit>=1.5.1",
+    "BeautifulSoup>=3.2.1",
+    "BeautifulSoup4>=4.3.2",
+    "celery>=3.1.8",
+    # Cerberus>=0.7.1 api changes and is not yet supported
+    "Cerberus>=0.7,<0.7.1",
+    "dictdiffer>=0.0.3",
+    "feedparser>=5.1",
+    "fixture>=1.5",
+    "Flask>=0.10.1",
+    # Development version is used, will switch to >=1.0.9 once released.
+    "Flask-Admin>=1.0.9.dev0",
+    "Flask-Assets>=0.10",
+    "Flask-Babel>=0.9",
+    "Flask-Breadcrumbs>=0.1",
+    "Flask-Cache>=0.12",
+    "Flask-Collect>=0.2.3",
+    "Flask-Email>=1.4.4",
+    "Flask-Gravatar>=0.4",
+    "Flask-Login>=0.2.7",
+    "Flask-Menu>=0.1",
+    "Flask-OAuthlib>=0.6.0,<0.7",  # quick fix for issue #2158
+    "Flask-Principal>=0.4",
+    "Flask-Registry>=0.2",
+    "Flask-RESTful>=0.2.12",
+    "Flask-Script>=2.0.5",
+    # Development version is used, will switch to >=2.0 once released.
+    "Flask-SQLAlchemy>=2.0",
+    "Flask-WTF>=0.9.5",
+    "fs>=0.4",
+    "intbitset>=2.0",
+    "jellyfish>=0.3.2",
+    "Jinja2>=2.7",
+    "libmagic>=1.0",
+    "lxml>=3.3",
+    "mechanize>=0.2.5",
+    "msgpack-python>=0.3",
+    "MySQL-python>=1.2.5",
+    "numpy>=1.7",
+    "nydus>=0.10.8",
+    # pyparsing>=2.0.2 has a new api and is not compatible yet
+    "pycrypto>=2.0.1",
+    "pyparsing>=2.0.1,<2.0.2",
+    "python-twitter>=0.8.7",
+    "pyPDF>=1.13",
+    "pyPDF2",
+    "PyLD>=0.5.2",
+    "pyStemmer>=1.3",
+    # python-dateutil>=2.0 is only for Python3
+    "python-dateutil>=1.5,<2.0",
+    "python-magic>=0.4.6",
+    "pytz",
+    "rauth",
+    "raven>=5.0.0",
+    "rdflib>=4.1.2",
+    "redis==2.8.0",  # Is it explicitly required?
+    "reportlab>=2.7,<3.2",
+    "requests>=2.3,<2.4",
+    "setuptools>=2.2",
+    "six>=1.7.2",
+    "Sphinx",
+    # SQLAlchemy 0.9 is not compatible yet
+    "SQLAlchemy>=0.8.3,<0.9",
+    # SQLAlchemy-Utils>0.24 depends on SQLAlchemy>=0.9.3
+    "SQLAlchemy-Utils>=0.23.5,<0.24",
+    "unidecode",
+    "workflow>=1.1.0",
+    # Flask-WTF 0.9.5 doesn't support WTForms 2.0 as of yet.
+    "WTForms>=1.0.5,<2.0",
+    "wtforms-alchemy>=0.12.6"
+]
+
+
+extras_require = {
+    "docs": [
+        "sphinx_rtd_theme"
+    ],
+    "development": [
+        "Flask-DebugToolbar==0.9.0",
+    ],
+    "elasticsearch": [
+        "pyelasticsearch>=0.6.1"
+    ],
+    "img": [
+        "qrcode",
+        "Pillow"
+    ],
+    "mongo": [
+        "pymongo"
+    ],
+    "misc": [  # was requirements-extras
+        "apiclient",  # extra=cloud?
+        "dropbox",  # extra=cloud?
+        "gnuplot-py==1.8",
+        "flake8",  # extra=kwalitee?
+        "pep8",  # extra=kwalitee?
+        "pychecker==0.8.19",  # extra=kwalitee?
+        "pylint",  # extra=kwalitee?
+        "nosexcover",  # test?
+        "oauth2client",  # extra=cloud?
+        "python-onedrive",  # extra=cloud?
+        "python-openid",  # extra=sso?
+        "urllib3",  # extra=cloud?
+    ],
+    "sso": [
+        "Flask-SSO>=0.1"
+    ],
+    "postgresql": [
+        "psycopg2>=2.5",
+    ],
+    # Alternative XML parser
+    #
+    # For pyRXP, the version on PyPI many not be the right one.
+    #
+    # $ pip install
+    # >    https://www.reportlab.com/ftp/pyRXP-1.16-daily-unix.tar.gz#egg=pyRXP
+    #
+    "pyrxp": [
+        # Any other versions are not supported.
+        "pyRXP==1.16-daily-unix"
+    ],
+    "github": [
+        "github3.py>=0.9"
+    ],
+}
+
+extras_require["docs"] += extras_require["elasticsearch"]
+extras_require["docs"] += extras_require["img"]
+extras_require["docs"] += extras_require["mongo"]
+extras_require["docs"] += extras_require["sso"]
+extras_require["docs"] += extras_require["github"]
+
+tests_require = [
+    "httpretty>=0.8",
+    "Flask-Testing>=0.4.1",
+    "mock",
+    "nose",
+    "selenium",
+    "unittest2>=0.5",
+]
+
+
+# Compatibility with Python 2.6
+if sys.version_info < (2, 7):
+    install_requires += [
+        "argparse",
+        "importlib"
+    ]
 
 
 # Get the version string.  Cannot be done with import!
-with open(os.path.join('invenio', 'version.py'), 'rt') as f:
-    version = re.search(
-        '__version__\s*=\s*"(?P<version>.*)"\n',
-        f.read()
-    ).group('version')
-
-
-def match_feature_name(filename):
-    return re.match(r".*requirements-(\w+).txt$", filename).group(1)
-
-
-def match_egg_name_and_version(dependency_link, version='>='):
-    eggname = re.sub(r'^.+://.*[@#&]egg=([^&]+).*$', r'\1', dependency_link)
-    return re.sub(r'-([\d\.]+(?:-dev)?)$', r'{0}\1'.format(version), eggname)
-
-
-def read_requirements(filename='requirements.txt'):
-    req = []
-    dep = []
-    with open(filename, 'r') as f:
-        for line in f.readlines():
-            line = line.strip('\n')
-            if line.startswith('#'):
-                continue
-            if '://' in line:
-                dep.append(str(line))
-                req.append(match_egg_name_and_version(str(line)))
-            else:
-                req.append(str(line))
-    return req, dep
-
-
-install_requires, dependency_links = read_requirements()
-
-# Finds all `requirements-*.txt` files and prepares dictionary with extra
-# requirements (NOTE: no links are allowed here!)
-extras_require = dict(map(
-    lambda filename: (match_feature_name(filename),
-                      read_requirements(filename)[0]),
-    glob.glob('requirements-*.txt') +
-    glob.glob('invenio/modules/*/requirements-*.txt')))
+g = {}
+with open(os.path.join("invenio", "version.py"), "rt") as fp:
+    exec(fp.read(), g)
+version = g["__version__"]
 
 packages = find_packages(exclude=['docs'])
 packages.append('invenio_docs')
@@ -108,7 +222,7 @@ packages.append('invenio_docs')
 setup(
     name='Invenio',
     version=version,
-    url='http://invenio-sofrware.org/repo/invenio',
+    url='https://github.com/inveniosoftware/invenio',
     license='GPLv2',
     author='CERN',
     author_email='info@invenio-software.org',
@@ -123,7 +237,7 @@ setup(
         'console_scripts': [
             'inveniomanage = invenio.base.manage:main',
             'plotextractor = invenio.utils.scripts.plotextractor:main',
-            ## Legacy
+            # Legacy
             'alertengine = invenio.legacy.webalert.scripts.alertengine:main',
             'batchuploader = invenio.legacy.bibupload.scripts.batchuploader',
             'bibcircd = invenio.legacy.bibcirculation.scripts.bibcircd:main',
@@ -154,6 +268,7 @@ setup(
             'inveniounoconv = invenio.legacy.websubmit.scripts.inveniounoconv:main',
             'oaiharvest = invenio.legacy.oaiharvest.scripts.oaiharvest:main',
             'oairepositoryupdater = invenio.legacy.oairepository.scripts.oairepositoryupdater:main',
+            'arxiv-pdf-checker = invenio.legacy.pdfchecker:main',
             'refextract = invenio.legacy.refextract.scripts.refextract:main',
             'textmarc2xmlmarc = invenio.legacy.bibrecord.scripts.textmarc2xmlmarc:main',
             'webaccessadmin = invenio.modules.access.scripts.webaccessadmin:main',
@@ -179,7 +294,15 @@ setup(
         'License :: OSI Approved :: GPLv2 License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    test_suite='invenio.testsuite.suite'
+    test_suite='invenio.testsuite.suite',
+    tests_require=tests_require,
+    cmdclass={
+        'build': _build,
+        'install_lib': _install_lib,
+    },
 )

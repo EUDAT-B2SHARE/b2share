@@ -2,3 +2,5 @@ markdown2
 validate_email
 recaptcha-client
 markdown
+httplib2
+pycrypto

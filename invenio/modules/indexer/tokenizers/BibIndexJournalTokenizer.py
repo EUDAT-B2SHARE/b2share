@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012 CERN.
+## Copyright (C) 2010, 2011, 2012, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -26,11 +26,12 @@
 """
 
 from invenio.legacy.dbquery import run_sql
-from invenio.modules.indexer.tokenizers.BibIndexEmptyTokenizer import BibIndexEmptyTokenizer
+from invenio.modules.indexer.tokenizers.BibIndexMultiFieldTokenizer import BibIndexMultiFieldTokenizer
 from invenio.config import \
     CFG_CERN_SITE, \
     CFG_INSPIRE_SITE
-
+from invenio.legacy.bibindex.engine_utils import get_values_recursively
+from invenio.modules.records.api import get_record
 
 if CFG_CERN_SITE:
     CFG_JOURNAL_TAG = '773__%'
@@ -46,15 +47,19 @@ else:
     CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK = r'^\w.*\s\w.*\s\(\d+\)\s\w.*$'
 
 
-
-class BibIndexJournalTokenizer(BibIndexEmptyTokenizer):
+class BibIndexJournalTokenizer(BibIndexMultiFieldTokenizer):
     """
-        Tokenizer for journal index. It returns joined title/volume/year/page as a word from journal tag.
-        (In fact it's an aggregator.)
+        Tokenizer for journal index.
+        Returns joined title/volume/year/page as a word from journal tag.
+
+        Tokenizer works on multiple tags.
+        For more information on tokenizers working on per-record basis
+        take a look on BibIndexJournalTokenizer base class.
     """
 
     def __init__(self, stemming_language = None, remove_stopwords = False, remove_html_markup = False, remove_latex_markup = False):
         self.tag = CFG_JOURNAL_TAG
+        self.nonmarc_tag = 'journal_info'
         self.journal_pubinfo_standard_form = CFG_JOURNAL_PUBINFO_STANDARD_FORM
         self.journal_pubinfo_standard_form_regexp_check = CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK
 
@@ -104,5 +109,33 @@ class BibIndexJournalTokenizer(BibIndexEmptyTokenizer):
         # return list of words and pubinfos:
         return lwords
 
+    def tokenize_via_recjson(self, recID):
+        """
+        Tokenizes for journal info.
+        Uses bibfield.
+        """
+        phrases = []
+        rec = get_record(recID)
+        recjson_field = rec.get(self.nonmarc_tag)
+        get_values_recursively(recjson_field, phrases)
+        final = []
+        append = final.append
+        for phrase in phrases:
+            info = phrase.split("-", 1)
+            append(info[0])
+        return final
+
+    def tokenize_for_words(self, recID):
+        return self.tokenize(recID)
+
+    def tokenize_for_pairs(self, recID):
+        return self.tokenize(recID)
+
+    def tokenize_for_phrases(self, recID):
+        return self.tokenize(recID)
+
     def get_tokenizing_function(self, wordtable_type):
         return self.tokenize
+
+    def get_nonmarc_tokenizing_function(self, table_type):
+        return self.tokenize_via_recjson
