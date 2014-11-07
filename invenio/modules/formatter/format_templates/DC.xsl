@@ -69,15 +69,12 @@ exclude-result-prefixes="marc fn">
                 <xsl:value-of select="subfield[@code='a']"/>
             </dc:language>
         </xsl:for-each>
-<<<<<<< HEAD
         <xsl:for-each select="datafield[@tag=546]">
             <dc:language>
                 <xsl:value-of select="subfield[@code='a']"/>
             </dc:language>
         </xsl:for-each>
-=======
 	<!-- Author/Creator -->
->>>>>>> invenio/next
         <xsl:for-each select="datafield[@tag=100]">
             <dc:creator>
                 <xsl:value-of select="subfield[@code='a']"/>

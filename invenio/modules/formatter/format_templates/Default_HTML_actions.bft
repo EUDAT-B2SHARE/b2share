@@ -1,7 +1,5 @@
 <name>Actions HTML detailed</name>
 <description>Output the various actions available on a record</description>
-
-<<<<<<< HEAD
 <div class="well">
 <h4>Export</h4>
 <ul class="detailedrecordactions list-unstyled">

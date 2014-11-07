@@ -60,6 +60,13 @@ po/POTFILES-webdoc
 po/stamp-po
 /tags
 
+# static assets
 invenio/base/static/*
 
+# test binaries
 *.egg
+
+
+# install binaries
+install/.vagrant/machines/*
+
