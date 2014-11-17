@@ -18,7 +18,6 @@
 from invenio.ext.sqlalchemy import db
 from flask import current_app
 from datetime import date
-import babel
 
 
 class FieldSet:
@@ -205,10 +204,11 @@ def _create_metadata_class(cfg):
 
     def __init__(self):
         super(type(self), self).__init__()
-        self.fieldsets.append(FieldSet(
-            cfg.domain,
-            basic_fields=list(basic_field_iter()),
-            optional_fields=list(optional_field_iter())))
+        if len(cfg.fields) > 0:
+            self.fieldsets.append(FieldSet(
+                cfg.domain,
+                basic_fields=list(basic_field_iter()),
+                optional_fields=list(optional_field_iter())))
 
     clsname = cfg.domain + "Metadata"
 
