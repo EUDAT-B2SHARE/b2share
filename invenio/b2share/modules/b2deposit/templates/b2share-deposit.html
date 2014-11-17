@@ -29,7 +29,7 @@
 
 <div class="container">
 <div class="row">
-    <div class="description col-sm-5">
+    <div class="description col-sm-4">
         <div style="margin: 100px 50px 0 50px">
             <p>You are logged in. Username: <strong><a href="/youraccount/display">{{ current_user.nickname }}</a></strong></p>
             <!--p>If you hover over the <strong>project-logos</strong> in step 02 we offer detailed description below.</p-->
@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <div class="newdeposit col-sm-7">
+    <div class="newdeposit col-sm-8">
 
         <div id="fileupload"> 
             <div id="filebox">
@@ -54,8 +54,8 @@
                     <p>Drag and drop files here</p>
                 </h2>
 
-                <div class="row">
-                    <div id="drag_and_drop_text" class="col-sm-8 well well-b2sblue" style="height: 70px"></div>
+                <div class="row" style="margin-left:0">
+                    <div id="drag_and_drop_text" class="col-sm-8 well well-b2sblue" style="height: 78px"></div>
                     <div class="col-sm-4">
                         <a class="btn btn-b2sblue" id="pickfiles">Select files</a> 
                         <p> </p>
@@ -101,7 +101,7 @@
 
             <form class="form form-horizontal meta-form" method="post" id="metaform_form">
 
-                <div id="projects" class="row">
+                <div id="projects" class="row" style="margin-left:0;margin-right:0">
                     <div class="col-sm-12">
                         {% for d in domains %}
                         <div class="domain{% if d.domain == default_domain %} highlight-icon{% endif %}" title="{{ d.domaindesc if d.domaindesc != None }}" rel='tooltip'>
@@ -153,4 +153,3 @@
 </div>
 
 {% endblock body %}
-
