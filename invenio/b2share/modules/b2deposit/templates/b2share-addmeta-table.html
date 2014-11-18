@@ -181,3 +181,17 @@
     });
   });
 </script>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    'use strict';
+    var licenseField = $('input#licence');
+    var lbtn = $("<button class='btn btn-b2scolor btn-sm' style='margin-left:10px'>Select Licence</button>");
+    lbtn.insertAfter(licenseField);
+    lbtn.licenseSelector({
+      onLicenseSelected: function(license) {
+        licenseField.val(license.name);
+      }
+    });
+  });
+</script>
