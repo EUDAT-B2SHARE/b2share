@@ -36,6 +36,7 @@ class TestBibAuthorityEngine(InvenioTestCase):
                          prefix)
 
 TEST_SUITE = make_test_suite(TestBibAuthorityEngine)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

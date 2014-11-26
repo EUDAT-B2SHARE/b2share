@@ -42,6 +42,7 @@ class TestHashUtils(InvenioTestCase):
                          'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3')
 
 TEST_SUITE = make_test_suite(TestHashUtils, )
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

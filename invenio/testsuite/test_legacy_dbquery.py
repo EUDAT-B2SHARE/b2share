@@ -106,6 +106,7 @@ class WashTableColumnNameTest(InvenioTestCase):
 
 
 TEST_SUITE = make_test_suite(TableUpdateTimesTest, WashTableColumnNameTest)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

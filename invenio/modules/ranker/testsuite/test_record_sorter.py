@@ -49,6 +49,7 @@ class TestListSetOperations(InvenioTestCase):
 {"Gi":(0, 50.0), 1: (3, 4.0), 2: (4, 5.0), 5: (1, 3.5)}, hitset, {}, {}, 0, None))
 
 TEST_SUITE = make_test_suite(TestListSetOperations,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

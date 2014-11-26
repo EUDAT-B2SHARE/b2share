@@ -40,6 +40,7 @@ class TestListSetOperations(InvenioTestCase):
         self.assertEqual([[0, 500], [600, 1000]], split_ranges("0-500,600-1000"))
 
 TEST_SUITE = make_test_suite(TestListSetOperations,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

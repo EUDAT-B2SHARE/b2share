@@ -203,6 +203,7 @@ class AccessControlFireRoleTest(InvenioTestCase):
             compile_role_definition("deny guest '0'\ndeny all")))
 
 TEST_SUITE = make_test_suite(AccessControlFireRoleTest,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

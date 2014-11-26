@@ -413,6 +413,7 @@ TEST_SUITE = make_test_suite(SetupTester,
                              ## TestMetadataFunctions,
                              TestBatchEngineFunctions,
                              TestDaemonFunctions)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     from invenio.utils.text import wait_for_user

@@ -104,6 +104,7 @@ class SnippetCutOutCoreCreation(InvenioTestCase):
 TEST_SUITE = make_test_suite(WordsStartsWithPatternTest,
                              SnippetCutOutCoreCreation,
                              )
+test_suite = TEST_SUITE
 
 
 if __name__ == '__main__':

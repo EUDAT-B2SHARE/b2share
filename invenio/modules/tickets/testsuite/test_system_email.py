@@ -76,6 +76,7 @@ class BibCatalogSystemEmailTest(MailTestCase):
 
 
 TEST_SUITE = make_test_suite(BibCatalogSystemEmailTest)
+test_suite = TEST_SUITE
 
 
 if __name__ == "__main__":

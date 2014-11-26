@@ -28,6 +28,7 @@
 from invenio.testsuite import make_test_suite, run_test_suite  # , InvenioTestCase
 
 TEST_SUITE = make_test_suite()
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

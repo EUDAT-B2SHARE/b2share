@@ -138,6 +138,7 @@ I didn't!*&lt;script&gt;malicious code&lt;/script&gt;
 
 
 TEST_SUITE = make_test_suite(TestQuotingMessage)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

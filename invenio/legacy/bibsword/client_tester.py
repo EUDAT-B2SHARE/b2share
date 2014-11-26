@@ -665,6 +665,7 @@ TEST_SUITE = make_test_suite(Test_format_marcxml_file,
                              #Test_format_metadata_atom)
                              #Test_list_submitted_resources)
                              #Test_submission_process)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

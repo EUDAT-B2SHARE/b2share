@@ -122,7 +122,7 @@ class DataCiteTestCase(InvenioTestCase):
 
 
 TEST_SUITE = make_test_suite(DataCiteTestCase)
-
+test_suite = TEST_SUITE
 
 @with_app_context()
 def main():
