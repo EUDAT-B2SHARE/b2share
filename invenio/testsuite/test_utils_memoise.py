@@ -35,6 +35,7 @@ class MemoiseTest(InvenioTestCase):
         self.assertEqual(fib(17), fib_memoised(17))
 
 TEST_SUITE = make_test_suite(MemoiseTest, )
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

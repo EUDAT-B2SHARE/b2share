@@ -146,6 +146,7 @@ class TestSplitLinkbacksInInsertionDayGroups(InvenioTestCase):
         self.assertEqual(self.test_data[0], result[5][0])
 
 TEST_SUITE = make_test_suite(TestSplitLinkbacksInInsertionDayGroups)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

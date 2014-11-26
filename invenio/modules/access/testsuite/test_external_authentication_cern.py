@@ -60,6 +60,7 @@ class ExternalAuthenticationCernTest(InvenioTestCase):
         #self.assertRaises(KeyError, self.cern.fetch_user_preferences('patata', 'patata')['email'])
 
 TEST_SUITE = make_test_suite(ExternalAuthenticationCernTest,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

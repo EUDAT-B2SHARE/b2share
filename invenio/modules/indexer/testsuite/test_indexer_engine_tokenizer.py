@@ -363,7 +363,7 @@ TEST_SUITE = make_test_suite(TestAuthorTokenizerScanning,
                              TestAuthorTokenizerTokens,
                              TestExactAuthorTokenizer,
                              TestCJKTokenizer)
-
+test_suite = TEST_SUITE
 
 if __name__ == '__main__':
     run_test_suite(TEST_SUITE)

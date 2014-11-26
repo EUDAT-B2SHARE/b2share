@@ -100,6 +100,7 @@ class ExtCollTests(InvenioTestCase):
 
 # FIXME: the above tests not plugged into global unit test suite
 TEST_SUITE = make_test_suite() #ExtCollTests,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     build_search_urls_test()

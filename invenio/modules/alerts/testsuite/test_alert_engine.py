@@ -59,6 +59,7 @@ class TestWashHTMLtoText(InvenioTestCase):
         self.assertEqual('Python is cool', htparser.result)
 
 TEST_SUITE = make_test_suite(TestWashHTMLtoText)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

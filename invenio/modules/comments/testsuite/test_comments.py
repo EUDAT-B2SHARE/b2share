@@ -46,6 +46,7 @@ class TestCalculateStartDate(InvenioTestCase):
         self.assert_(calculate_start_date('20d') > '2009-06-19 14:51:55')
 
 TEST_SUITE = make_test_suite(TestCalculateStartDate)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

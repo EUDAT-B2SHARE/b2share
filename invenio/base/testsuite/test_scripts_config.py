@@ -141,3 +141,4 @@ DEBUG = True
 
 
 TEST_SUITE = make_test_suite(TestConfig)
+test_suite = TEST_SUITE

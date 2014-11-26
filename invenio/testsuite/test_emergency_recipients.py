@@ -79,6 +79,7 @@ class TestGetEmergencyRecipients(InvenioTestCase):
         self.assertEqual(set(result), set(expected))
 
 TEST_SUITE = make_test_suite(TestGetEmergencyRecipients,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

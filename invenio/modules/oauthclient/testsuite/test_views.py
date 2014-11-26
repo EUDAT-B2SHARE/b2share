@@ -279,6 +279,7 @@ class RemoteAccountTestCase(OAuth2ClientTestCase):
 
 
 TEST_SUITE = make_test_suite(RemoteAccountTestCase)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

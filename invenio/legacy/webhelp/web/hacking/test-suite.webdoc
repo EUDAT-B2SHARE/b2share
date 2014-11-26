@@ -172,6 +172,7 @@ TEST_SUITE = make_test_suite(TestWashQueryParameters,
                              TestStripAccents,
                              TestQueryParser,)
 [...]
+test_suite = TEST_SUITE
 </pre>
 </blockquote>
 </p>

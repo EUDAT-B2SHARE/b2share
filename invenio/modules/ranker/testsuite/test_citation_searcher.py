@@ -52,6 +52,7 @@ class TestCitationSearcher(InvenioTestCase):
         # FIXME: test postponed
 
 TEST_SUITE = make_test_suite(TestCitationSearcher,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

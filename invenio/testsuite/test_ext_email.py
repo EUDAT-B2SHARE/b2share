@@ -285,6 +285,7 @@ To: %s""" % (CFG_SITE_ADMIN_EMAIL, )
 
 
 TEST_SUITE = make_test_suite(TestMailUtils, TestAdminMailBackend)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

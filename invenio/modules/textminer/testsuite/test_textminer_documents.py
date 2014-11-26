@@ -225,6 +225,7 @@ class DocExtractTest(InvenioTestCase):
         compare_references(self, '\n'.join(lines), expected_response())
 
 TEST_SUITE = make_test_suite(DocExtractTest)
+test_suite = TEST_SUITE
 
 if __name__ == '__main__':
     run_test_suite(TEST_SUITE)

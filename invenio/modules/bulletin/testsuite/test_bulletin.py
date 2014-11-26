@@ -80,6 +80,7 @@ class TestCompareIssues(InvenioTestCase):
         self.assertEqual(issue_is_later_than(issue1, issue2), False)
 
 TEST_SUITE = make_test_suite(TestCompareIssues)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

@@ -60,6 +60,7 @@ class TestPaginationUtils(InvenioTestCase):
 
 
 TEST_SUITE = make_test_suite(TestPaginationUtils,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

@@ -481,7 +481,7 @@ TEST_SUITE = make_test_suite(WrapTextInABoxTest, GuessMinimumEncodingTest,
                              WashForXMLTest, WashForUTF8Test, DecodeToUnicodeTest,
                              Latex2UnicodeTest, TestStripping,
                              TestALALC)
-
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

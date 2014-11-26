@@ -82,6 +82,7 @@ class TestStemmer(InvenioTestCase):
                              bibindex_engine_stemmer.stem(test_word, "el"))
 
 TEST_SUITE = make_test_suite(TestStemmer,)
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)
