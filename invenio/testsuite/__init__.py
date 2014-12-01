@@ -1235,7 +1235,7 @@ def build_and_run_flask_test_suite():
 from invenio.base.utils import import_submodules_from_packages
 
 
-def iter_suites():
+def iter_suites(args):
     """Yield all testsuites."""
     app = create_app()
     packages = ['invenio', 'invenio.base', 'invenio.celery', 'invenio.b2share']
@@ -1243,16 +1243,21 @@ def iter_suites():
 
     for module in import_submodules_from_packages('testsuite',
                                                   packages=packages):
+        # has specific testsuite (-a)
+        if len(args) > 0:
+            # name matches
+            if module.__name__ != args:
+                continue
         if not module.__name__.split('.')[-1].startswith('test_'):
             continue
         if hasattr(module, 'TEST_SUITE'):
             yield module.TEST_SUITE
 
 
-def suite():
+def suite(args):
     """Create the testsuite that has all the tests."""
     suite = unittest.TestSuite()
-    for other_suite in iter_suites():
+    for other_suite in iter_suites(args):
         suite.addTest(other_suite)
     return suite
 

@@ -121,7 +121,7 @@ class PyTestCmd(TestCommand):
 
     def run_tests(self):
         from invenio.testsuite import suite, run_test_suite
-        suites = suite()
+        suites = suite(self.pytest_args)
         run_test_suite(suites)
 
 setup(

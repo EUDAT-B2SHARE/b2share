@@ -51,7 +51,7 @@ class TestB2depositRestapiRecord(InvenioTestCase):
 
 TEST_SUITE = make_test_suite(
                 TestB2depositRestapiConnect,
-                # TestB2depositRestapiRecord
+                TestB2depositRestapiRecord
             )
 test_suite = TEST_SUITE
 
