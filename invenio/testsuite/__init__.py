@@ -240,7 +240,7 @@ def make_flask_test_suite(*test_cases):
                                                           test_cases))])
 
 
-@nottest
+# @nottest
 def run_test_suite(testsuite, warn_user=False):
     """"Run given testsuite and ask for confirmation if warn_user is True.
 

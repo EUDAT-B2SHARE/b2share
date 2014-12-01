@@ -105,6 +105,25 @@ extras_require = dict(map(
 packages = find_packages(exclude=['docs'])
 packages.append('invenio_docs')
 
+import sys
+from setuptools.command.test import test as TestCommand
+class PyTestCmd(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to suite()")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        from invenio.testsuite import suite, run_test_suite
+        suites = suite()
+        run_test_suite(suites)
+
 setup(
     name='Invenio',
     version=version,
@@ -181,5 +200,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    test_suite='invenio.testsuite.suite'
+    test_suite='invenio.testsuite.suite',
+    cmdclass={'test': PyTestCmd}
 )

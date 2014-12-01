@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """Unit Tests for B2share restapi"""
 
-from invenio.testsuite import InvenioTestCase
-from invenio.testsuite import make_test_suite, run_test_suite
+from invenio.base.wrappers import lazy_import
+from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
+from cgi import parse_qs
+from flask_oauthlib.utils import extract_params
+from invenio.modules.oauth2server.provider import oauth2
 
 
 class TestB2depositRestapiConnect(InvenioTestCase):
@@ -10,6 +13,9 @@ class TestB2depositRestapiConnect(InvenioTestCase):
 
     def test_connect_with_oauth(self):
         # TODO: implement!
+        print("test")
+        print oauth2 #flask_oauthlib.provider.oauth2.OAuth2Provider object at 0x7a8b790
+
         self.assertTrue(False)
 
 class TestB2depositRestapiRecord(InvenioTestCase):
@@ -43,8 +49,11 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         # TODO: implement!
         self.assertTrue(False)
 
-TEST_SUITE = make_test_suite(TestB2depositRestapiConnect,
-                TestB2depositRestapiRecord)
+TEST_SUITE = make_test_suite(
+                TestB2depositRestapiConnect,
+                # TestB2depositRestapiRecord
+            )
+test_suite = TEST_SUITE
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)
