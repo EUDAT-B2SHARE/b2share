@@ -122,12 +122,16 @@ class PyTestCmd(TestCommand):
     def run_tests(self):
         from invenio.testsuite import suite, run_test_suite
         suites = suite(self.pytest_args)
-        run_test_suite(suites)
+        ret = run_test_suite(suites)
+        if ret:
+            sys.exit(0)
+        else:
+            sys.exit(1)
 
 setup(
     name='Invenio',
     version=version,
-    url='http://invenio-sofrware.org/repo/invenio',
+    url='http://invenio-software.org/repo/invenio',
     license='GPLv2',
     author='CERN',
     author_email='info@invenio-software.org',
@@ -200,6 +204,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    test_suite='invenio.testsuite.suite',
+    # test_suite='invenio.testsuite.suite',
     cmdclass={'test': PyTestCmd}
 )
