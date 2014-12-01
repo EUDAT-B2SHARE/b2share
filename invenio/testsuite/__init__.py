@@ -1238,7 +1238,7 @@ from invenio.base.utils import import_submodules_from_packages
 def iter_suites():
     """Yield all testsuites."""
     app = create_app()
-    packages = ['invenio', 'invenio.base', 'invenio.celery']
+    packages = ['invenio', 'invenio.base', 'invenio.celery', 'invenio.b2share']
     packages += app.config.get('PACKAGES', [])
 
     for module in import_submodules_from_packages('testsuite',
