@@ -5,18 +5,78 @@ from invenio.base.wrappers import lazy_import
 from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
 from cgi import parse_qs
 from flask_oauthlib.utils import extract_params
-from invenio.modules.oauth2server.provider import oauth2
 
+from invenio.modules.oauth2server.provider import oauth2
+from invenio.ext.sqlalchemy import db
+
+from invenio.modules.oauth2server.models import Token, Client
+from invenio.modules.accounts.models import User
+
+from werkzeug.security import gen_salt
+from flask import current_app
+
+import requests, logging
+logging.getLogger("requests").setLevel(logging.WARNING)
+
+
+class RestApi(object):
+
+    def __init__(self, url=None, access_token=None):
+        self.url = url + "/api"
+        self.at = access_token
+        # self.prefix = "/api"
+
+    def get_deposits(self):
+        r = requests.get(self.url + "/depositions/?access_token=" + self.at)
+        return r
 
 class TestB2depositRestapiConnect(InvenioTestCase):
     """Unit tests for restapi connecting"""
 
-    def test_connect_with_oauth(self):
-        # TODO: implement!
-        print("test")
-        print oauth2 #flask_oauthlib.provider.oauth2.OAuth2Provider object at 0x7a8b790
+    def setUp(self):
+        # get user
+        admin_user = User.query.filter_by(email='admin@localhost').first()
+        self.assertIsNotNone(admin_user)
+        admin_user_id = admin_user.get_id()
+        # get token
+        token = Token.query.filter_by(user_id=admin_user_id).first()
+        if token == None:
+            # create client object
+            client = Client(name="test_client", user_id=admin_user_id, is_internal=True,
+                is_confidential=False)
+            self.assertIsNotNone(client)
+            client.gen_salt()
+            db.session.add(client)
+            # create login token
+            access_token = gen_salt(current_app.config.get('OAUTH2_TOKEN_PERSONAL_SALT_LEN'))
+            token = Token(client_id=client.client_id, user_id=admin_user_id,
+                access_token=access_token, expires=None, is_personal=True,
+                is_internal=True)
+            db.session.add(self._token)
+            db.session.commit()
+        # verify info
+        self.assertIsNotNone(token)
+        self.assertTrue(len(token.access_token) == 60)
+        self.access_token = token.access_token
+        self.current_app_url = current_app.config.get('CFG_SITE_URL')
 
-        self.assertTrue(False)
+    def test_connect_with_oauth(self):
+        api = RestApi(url=self.current_app_url, access_token=self.access_token)
+        r = api.get_deposits()
+        # request deposit list
+        self.assertEqual(r.status_code, 200)
+        body_json = r.json()
+        self.assertTrue(isinstance(body_json,list))
+        # print r
+
+
+
+        # print(self.access_token)
+
+    # TODO: add get token handle
+    # def test_get_token(self):
+    #     self.assertTrue(False)
+
 
 class TestB2depositRestapiRecord(InvenioTestCase):
     """Unit tests for restapi record"""
@@ -51,7 +111,7 @@ class TestB2depositRestapiRecord(InvenioTestCase):
 
 TEST_SUITE = make_test_suite(
                 TestB2depositRestapiConnect,
-                TestB2depositRestapiRecord
+                # TestB2depositRestapiRecord
             )
 
 if __name__ == "__main__":
