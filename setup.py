@@ -108,7 +108,10 @@ packages.append('invenio_docs')
 import sys
 from setuptools.command.test import test as TestCommand
 class PyTestCmd(TestCommand):
-    user_options = [('pytest-args=', 'a', "Arguments to pass to suite()")]
+    user_options = [
+        ('pytest-args=', 's', ""),
+        ('pytest-args=', 'm', ""),
+    ]
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
