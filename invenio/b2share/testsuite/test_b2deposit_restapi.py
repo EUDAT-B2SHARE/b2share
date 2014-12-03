@@ -36,6 +36,11 @@ class TestB2depositRestapiConnect(InvenioTestCase):
     def setUp(self):
         # get user
         admin_user = User.query.filter_by(email='admin@localhost').first()
+        if admin_user == None:
+            # TODO: create user here!
+            admin_user = User(email="admin@localhost", note="1", nickname="admin", password="admin")
+            db.session.add(admin_user)
+            db.session.commit()
         self.assertIsNotNone(admin_user)
         admin_user_id = admin_user.get_id()
         # get token
@@ -52,7 +57,7 @@ class TestB2depositRestapiConnect(InvenioTestCase):
             token = Token(client_id=client.client_id, user_id=admin_user_id,
                 access_token=access_token, expires=None, is_personal=True,
                 is_internal=True)
-            db.session.add(self._token)
+            db.session.add(token)
             db.session.commit()
         # verify info
         self.assertIsNotNone(token)
