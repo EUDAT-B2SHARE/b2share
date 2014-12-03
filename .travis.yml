@@ -62,7 +62,6 @@ install:
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
 
-
 before_script:
   - "inveniomanage apache create-config"
   - "sudo ln -s $VIRTUAL_ENV/var/invenio.base-instance/apache/invenio-apache-vhost.conf /etc/apache2/sites-enabled/invenio.conf"
@@ -75,6 +74,8 @@ before_script:
   - "sudo apachectl configtest && sudo service apache2 restart || echo 'Apache failed ...'"
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create || echo ':('"
+  - "$VIRTUAL_ENV/src/b2share/install/start_b2share.sh &"
+  - "sleep 120"
 #  - "inveniomanage demosite create"
 #  - "inveniomanage demosite populate"
 
