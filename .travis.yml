@@ -74,7 +74,7 @@ before_script:
   - "sudo apachectl configtest && sudo service apache2 restart || echo 'Apache failed ...'"
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create || echo ':('"
-  - "$VIRTUAL_ENV/src/b2share/install/start_b2share.sh &"
+  - "/home/travis/build/EUDAT-B2SHARE/b2share/install/start_b2share.sh &"
   - "sleep 120"
 #  - "inveniomanage demosite create"
 #  - "inveniomanage demosite populate"
