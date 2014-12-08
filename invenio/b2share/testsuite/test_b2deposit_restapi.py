@@ -69,6 +69,10 @@ class InitHelper(object):
         test_case.access_token = token.access_token
         test_case.current_app_url = current_app.config.get('CFG_SITE_URL')
 
+    @staticmethod
+    def init_records(test_case):
+        pass
+
 
 class TestB2depositRestapiConnect(InvenioTestCase):
     """Unit tests for restapi connecting"""
@@ -83,6 +87,7 @@ class TestB2depositRestapiConnect(InvenioTestCase):
         self.assertEqual(r.status_code, 200)
         body_json = r.json()
         self.assertTrue(isinstance(body_json,list))
+        print body_json
 
     # TODO: add get token handle
     # def test_get_token(self):
@@ -94,10 +99,17 @@ class TestB2depositRestapiRecord(InvenioTestCase):
 
     def setUp(self):
         InitHelper.init_user_token(self)
+        InitHelper.init_records(self)
 
     def test_records(self):
-        # TODO: implement!
-        self.assertTrue(False)
+        api = RestApi(url=self.current_app_url, access_token=self.access_token)
+        r = api.get_deposits()
+        # request deposit list
+        self.assertEqual(r.status_code, 200)
+        body_json = r.json()
+        self.assertTrue(isinstance(body_json,list))
+
+
 
     def test_records_paginate(self):
         # TODO: implement!
