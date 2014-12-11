@@ -18,7 +18,6 @@
 from invenio.ext.sqlalchemy import db
 from flask import current_app
 from datetime import date
-import babel
 
 
 class FieldSet:
@@ -120,12 +119,10 @@ class SubmissionMetadata(db.Model):
             'Denote the version of the resource.'
         }
         self.field_args['licence'] = {
-            'data_provide': 'typeahead',
-            'data_source': '["GPL","Apache v2","Commercial", "Other"]',
-            'description': 'Specify whether users need to sign a licence ' +\
-                           'agreement to access the data (e.g. GPL, ' +\
-                           'Apache v2 or Commercial); if no licence applies ' +\
-                           'leave this field blank.'
+            'description': 'Specify the license under which this data set '+\
+                           'is available to the users (e.g. GPL, Apache v2 '+\
+                           'or Commercial). Please use the License Selector '+\
+                           'for help and additional information.'
         }
         self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
@@ -205,10 +202,11 @@ def _create_metadata_class(cfg):
 
     def __init__(self):
         super(type(self), self).__init__()
-        self.fieldsets.append(FieldSet(
-            cfg.domain,
-            basic_fields=list(basic_field_iter()),
-            optional_fields=list(optional_field_iter())))
+        if len(cfg.fields) > 0:
+            self.fieldsets.append(FieldSet(
+                cfg.domain,
+                basic_fields=list(basic_field_iter()),
+                optional_fields=list(optional_field_iter())))
 
     clsname = cfg.domain + "Metadata"
 

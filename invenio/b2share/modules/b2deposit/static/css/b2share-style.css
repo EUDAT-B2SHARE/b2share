@@ -21,10 +21,19 @@
     text-shadow: none;
     text-align: left;
     padding-left: 20px;
-    width: 75%;
+    width: 90%;
 }
 
-
+.newdeposit .btn-b2scolor {
+    color: black;
+    font-weight: bold;
+    background-color: rgb(141, 172, 193);
+    background-image: none;
+    border: 1px solid rgb(141, 172, 193);
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
 
 
 /* -- commented out by edima; grepping shows these styles are not used in the new UI
@@ -301,18 +310,9 @@ a.description:hover span {
     background-color:#666; color:#fff
 }
 
-.plus, .minus {
-  width:30px;
-  height:30px;
-  overflow:hidden;
-}
-
-.plus {
-  background: url(/img/plus.png);
-}
-
-.minus {
-  background: url(/img/minus.png);
+a.plus, a.minus {
+  padding: 3px 5px;
+  color: rgb(141, 172, 193);
 }
 
 .add_field {

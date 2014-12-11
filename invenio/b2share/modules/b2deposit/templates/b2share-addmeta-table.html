@@ -42,29 +42,30 @@
 
 
 {% for s in metadata.fieldsets %}
-<fieldset>
+  <fieldset>
+
     <legend>{{ s.name }} </legend>
+    <table>
+      {% for f in s.basic_fields %}
+          {{ meta_field(getattr(form, f)) }}
+      {% endfor %}
+    </table>
 
-<table>
-    {% for f in s.basic_fields %}
-        {{ meta_field(getattr(form, f)) }}
-    {% endfor %}
-
-    {% if s.optional_fields %}
-      <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#adv-fields-{{ s.name }}">
-                    Add more details?
-      </button>
-</table>
-      <div id="adv-fields-{{ s.name }}" class="collapse">
-<table>
+  {% if s.optional_fields %}
+    <button type="button" class="btn btn-b2scolor" style="width:300px; margin: 10px 0" data-toggle="collapse" 
+        data-target="#adv-fields-{{ s.name }}"> Add more details? </button>
+    <div id="adv-fields-{{ s.name }}" class="collapse">
+      <table>
         {% for f in s.optional_fields %}
           {{ meta_field(getattr(form, f)) }}
         {% endfor %}
-      </div>
-    {% endif %}
-</table>
+      </table>
+    </div>
+  {% endif %}
+
   </fieldset>
 {% endfor %}
+
 <script type="text/javascript">
   $(document).ready(function() {
     $('.switcher').bootstrapSwitch();
@@ -117,7 +118,8 @@
         
       var row = '<div id="rowNum'+rowNum+'">';
       row += '<input class="add_field" id="inputRowNum'+rowNum+'" type="text" name="'+name+'" placeholder="'+placeholder+'">';
-      row += '<div class="minus" data-name="'+name+'" data-cardinality="'+cardinality+'" data-row="'+rowNum+'"></div>';
+      row += '<a class="minus btn btn-sm btn-default" data-name="'+name+'" data-cardinality="'+cardinality+'" data-row="'+rowNum+
+                   '"><span class="glyphicon glyphicon-minus-sign"></span></a>';
       row += '</div>';
       $('#'+name+"_div").append(row);
         
@@ -168,7 +170,6 @@
     $("#meta input[data-provide='typeahead']").each(function() {
         var qthis = $(this);
         var dataset = JSON.parse(qthis.attr('data-source'));
-        console.log("typeahead: ", this, dataset);
         qthis.typeahead('destroy');
         qthis.typeahead({
             hint: true,
@@ -177,6 +178,20 @@
         }, {
             source: substringMatcher(dataset)
         });
+    });
+  });
+</script>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    'use strict';
+    var licenseField = $('input#licence');
+    var lbtn = $("<button class='btn btn-b2scolor btn-sm' style='margin-left:10px'>Select Licence</button>");
+    lbtn.insertAfter(licenseField);
+    lbtn.licenseSelector({
+      onLicenseSelected: function(license) {
+        licenseField.val(license.name);
+      }
     });
   });
 </script>
