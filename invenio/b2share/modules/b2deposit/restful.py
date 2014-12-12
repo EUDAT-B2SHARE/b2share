@@ -19,17 +19,19 @@
 
 from __future__ import absolute_import
 
-from flask import request, current_app
+# from flask import request, current_app
 from flask.ext.login import current_user
 from flask.ext.restful import Resource, abort,\
-    reqparse, fields, marshal
-from functools import wraps
+    fields, marshal
+# from flask.ext.restful import reqparse,
+# from functools import wraps
 
-from invenio.ext.restful import require_api_auth, error_codes, require_header
+from invenio.ext.restful import require_api_auth, require_header
+# from invenio.ext.restful import error_codes
 
-from intbitset import intbitset
-from invenio.legacy.dbquery import run_sql
-from invenio.ext.sqlalchemy import db
+# from intbitset import intbitset
+# from invenio.legacy.dbquery import run_sql
+# from invenio.ext.sqlalchemy import db
 from invenio.modules.editor.models import Bib98x, BibrecBib98x
 
 MAX_PAGE_SIZE = 20
@@ -42,21 +44,24 @@ deposit_decorators = [
     require_api_auth(),
 ]
 
+files_fields = {
+    'full_name': fields.String,
+    'size': fields.Integer,
+    'url': fields.String,
+    # 'name': fields.String,
+    # 'comment': fields.String,
+    # 'description': fields.String,
+    # 'eformat': fields.String,
+    # 'magic': fields.String,
+    # 'status': fields.String,
+    # 'subformat': fields.String,
+    # 'superformat': fields.String,
+    # 'type': fields.String,
+    # 'version': fields.Integer,
+}
+
 output_fields = {
     'recordID': fields.Integer,
-    'comment': fields.String,
-    'description': fields.String,
-    'eformat': fields.String,
-    'full_name': fields.String,
-    'magic': fields.String,
-    'name': fields.String,
-    'size': fields.Integer,
-    'status': fields.String,
-    'subformat': fields.String,
-    'superformat': fields.String,
-    'type': fields.String,
-    'url': fields.String,
-    'version': fields.Integer,
     'authors': fields.String,
     'title': fields.String,
     'description': fields.String,
@@ -65,6 +70,8 @@ output_fields = {
     'pid': fields.String,
     'email': fields.String,
     'file_url': fields.String,
+    'licence': fields.String,
+    'files': fields.Nested(files_fields),
 }
 
 # =========
@@ -80,12 +87,15 @@ def flatten(lst):
     return flatten(lst[0]) + flatten(lst[1:])
 
 
-def get_value(res):
+def get_value(res, tag):
     temp = list(flatten(res))
-    if len(temp) == 6:
+
+    if len(temp) == 6 and tag == "":
         return temp[1]
-    elif len(temp) == 8:
+    elif len(temp) == 8 and tag == "":
         return temp[3]
+    elif tag == "file_url":
+        return filter(lambda element: "http" in str(element), temp)
     return None
 
 
@@ -105,52 +115,57 @@ def get_record_details(recid):
     if len(latest_files) == 0:
         return []
     else:
+        file_dict = {}
+        content = []
+        atts = {}
         for afile in latest_files:
-            file_dict = {}
-            file_dict['recordID'] = recid
-            file_dict['comment'] = afile.get_comment()
-            file_dict['description'] = afile.get_description()
-            file_dict['eformat'] = afile.get_format()
-            file_dict['full_name'] = afile.get_full_name()
-            file_dict['magic'] = afile.get_magic()
-            file_dict['name'] = afile.get_name()
-            file_dict['size'] = afile.get_size()
-            file_dict['status'] = afile.get_status()
-            file_dict['subformat'] = afile.get_subformat()
-            file_dict['superformat'] = afile.get_superformat()
-            file_dict['type'] = afile.get_type()
-            file_dict['url'] = afile.get_url()
-            file_dict['version'] = afile.get_version()
+            atts['full_name'] = afile.get_full_name()
+            atts['size'] = afile.get_size()
+            atts['url'] = afile.get_url()
+            content.append(atts.copy())
+            # atts['comment'] = afile.get_comment()
+            # atts['description'] = afile.get_description()
+            # atts['eformat'] = afile.get_format()
+            # atts['magic'] = afile.get_magic()
+            # atts['name'] = afile.get_name()
+            # atts['status'] = afile.get_status()
+            # atts['subformat'] = afile.get_subformat()
+            # atts['superformat'] = afile.get_superformat()
+            # atts['type'] = afile.get_type()
+            # atts['version'] = afile.get_version()
 
-            marcxml = print_record(recid, 'xm')
-            record = create_record(marcxml)[0]
+        file_dict['files'] = content
+        file_dict['recordID'] = recid
 
-            authors = record_get_field_instances(record, '100')
-            file_dict['authors'] = get_value(authors)
+        marcxml = print_record(recid, 'xm')
+        record = create_record(marcxml)[0]
 
-            record_title = record_get_field_instances(record, '245')
-            file_dict['title'] = get_value(record_title)
+        authors = record_get_field_instances(record, '100')
+        file_dict['authors'] = get_value(authors, "")
 
-            record_description = record_get_field_instances(record, '520')
-            file_dict['description'] = get_value(record_description)
+        record_title = record_get_field_instances(record, '245')
+        file_dict['title'] = get_value(record_title, "")
 
-            record_domain = record_get_field_instances(record, '980')
-            file_dict['domain'] = get_value(record_domain)
+        record_description = record_get_field_instances(record, '520')
+        file_dict['description'] = get_value(record_description, "")
 
-            record_date = record_get_field_instances(record, '260')
-            file_dict['date'] = get_value(record_date)
+        record_domain = record_get_field_instances(record, '980')
+        file_dict['domain'] = get_value(record_domain, "")
 
-            record_licence = record_get_field_instances(record, '540')
-            file_dict['licence'] = get_value(record_licence)
+        record_date = record_get_field_instances(record, '260')
+        file_dict['date'] = get_value(record_date, "")
 
-            record_PID = record_get_field_instances(record, '024')
-            file_dict['pid'] = get_value(record_PID)
+        record_licence = record_get_field_instances(record, '540')
+        file_dict['licence'] = get_value(record_licence, "")
 
-            user_email = record_get_field_instances(record, '856', '0')
-            file_dict['email'] = get_value(user_email)
+        record_PID = record_get_field_instances(record, '024')
+        file_dict['pid'] = get_value(record_PID, "")
 
-            file_url = record_get_field_instances(record, '856', '4')
-            file_dict['file_url'] = get_value(file_url)
+        user_email = record_get_field_instances(record, '856', '0')
+        file_dict['email'] = get_value(user_email, "")
+
+        file_url = record_get_field_instances(record, '856', '4')
+        file_dict['file_url'] = get_value(file_url, "file_url")
 
         return file_dict
 
@@ -189,7 +204,8 @@ class DepositionDomains(Resource):
         # get domain id from domain name
         domain = Bib98x.query.filter_by(value=domain_name).first()
         if domain is None:
-            abort(404, message="Please try a valid domain name: Generic, EUON, DRIHM, Linguistics, BBMRI", status=404)
+            abort(404, message="Please try a valid domain name:\
+                 Generic, EUON, DRIHM, Linguistics, BBMRI", status=404)
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
         record_ids = []
@@ -201,7 +217,6 @@ class DepositionDomains(Resource):
             record_list.append(record_details)
 
         return marshal(record_list, output_fields)
-
 
     @require_header('Content-Type', 'application/json')
     def post(self, oauth):
@@ -238,7 +253,7 @@ class DepositionListRecord(Resource):
 
         """
         from invenio.legacy.search_engine import perform_request_search
-        from invenio.modules.accounts.models import User
+        # from invenio.modules.accounts.models import User
 
         if len(kwargs) == 0:
             page_size = 5
