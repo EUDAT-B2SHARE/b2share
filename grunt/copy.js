@@ -103,6 +103,7 @@ module.exports = {
              ,'prism/prism.js'
              ,'lodash/dist/lodash.min.js'
              ,'lindat-license-selector/license-selector.min.js'
+             ,'lindat-license-selector/license-selector.min.js.map'
              ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js'
              ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js.map'],
         dest: '<%= globalConfig.installation_path %>/js/'
