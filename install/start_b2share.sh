@@ -4,7 +4,7 @@ PYPATH=/opt/python-2.7.6
 
 echo; echo "### Setup iptables to redirect 4443 to 4000 (sudo!)"
 sudo iptables -t nat -F # clean up tables!
-sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 4443 -j REDIRECT --to-port 4000
+sudo iptables -A PREROUTING -t nat -p tcp --dport 4443 -j REDIRECT --to-port 4000
 
 source $WORKON_HOME/b2share/bin/activate
 cd $WORKON_HOME/b2share

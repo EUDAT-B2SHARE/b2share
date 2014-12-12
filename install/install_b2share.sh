@@ -19,13 +19,19 @@ if [ "$ENVIRONMENT" != "production" ]  && [ "$ENVIRONMENT" != "development" ]; t
    exit 1
 fi
 
-export PATH="$PYPATH/bin:$PATH"
-source $PYPATH/bin/virtualenvwrapper.sh
-
-if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
-   echo "!!! pip not installed or wrong path"
-   exit 1
+if [[ -e $PYPATH ]]; then
+    export PATH="$PYPATH/bin:$PATH"
+    source $PYPATH/bin/virtualenvwrapper.sh
+    if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
+       echo "!!! pip not installed or wrong path"
+       exit 1
+    fi
+else
+    # assume python 2.7 as system default:
+    PYPATH=/usr
+    source /usr/bin/virtualenvwrapper.sh
 fi
+
 
 echo; echo "### Make and switch to virtualenv b2share"
 mkvirtualenv b2share
@@ -50,6 +56,9 @@ done
 
 echo; echo "### Install invenio egg"
 pip install -e . --process-dependency-links --allow-all-external
+if [[ $? -ne 0 ]]; then
+  pip install -e . --allow-all-external
+fi
 
 echo; echo "### Run pybabel"
 pybabel compile -fd invenio/base/translations/
