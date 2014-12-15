@@ -47,17 +47,17 @@ fi
 cd b2share
 
 echo; echo "### Install pip dependencies"
-pip install Babel
-pip install flower # flower is for monitoring celery tasks
+pip install -q Babel
+pip install -q flower # flower is for monitoring celery tasks
 for f in requirements*.txt; do
    echo; echo "### pip install -r $f"
-   pip install -r $f;
+   pip install -q -r $f;
 done
 
 echo; echo "### Install invenio egg"
-pip install -e . --process-dependency-links --allow-all-external
+pip install -q -e . --process-dependency-links --allow-all-external
 if [[ $? -ne 0 ]]; then
-  pip install -e . --allow-all-external
+  pip install -q -e . --allow-all-external
 fi
 
 echo; echo "### Run pybabel"
