@@ -33,6 +33,7 @@
     "typeahead.js-bootstrap3.less": "0.2.2",
     "DataTables-Plugins": "https://github.com/DataTables/Plugins.git",
     "plupload": "*",
+    "lindat-license-selector": "0.0.3",
     "bootstrap-switch": "https://github.com/nostalgiaz/bootstrap-switch.git#3.0",
     "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect.git",
     "font-awesome": "*",
