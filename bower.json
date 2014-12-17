@@ -35,7 +35,7 @@
     "plupload": "*",
     "lindat-license-selector": "0.0.3",
     "bootstrap-switch": "https://github.com/nostalgiaz/bootstrap-switch.git#3.0",
-    "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect.git",
+    "bootstrap-multiselect": "0.9.10",
     "font-awesome": "*",
     "bootstrap-tagsinput": "*",
     "jquery.caret": "https://github.com/acdvorak/jquery.caret.git",

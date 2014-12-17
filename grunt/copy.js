@@ -35,7 +35,7 @@ module.exports = {
                ,'prism/themes/prism.css'
                ,'lindat-license-selector/license-selector.min.css'
                ,'bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css'
-               ,'bootstrap-multiselect/css/bootstrap-multiselect.css'
+               ,'bootstrap-multiselect/dist/css/bootstrap-multiselect.css'
                ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.css'],
         dest: '<%= globalConfig.installation_path %>/css/'
     },
@@ -86,7 +86,7 @@ module.exports = {
              ,'bootstrap/dist/js/bootstrap.min.js'
              ,'bootstrap-switch/dist/js/bootstrap-switch.js'
              ,'bootstrap-switch/dist/js/bootstrap-switch.min.js'
-             ,'bootstrap-multiselect/js/bootstrap-multiselect.js'
+             ,'bootstrap-multiselect/dist/js/bootstrap-multiselect.js'
              ,'jquery/dist/jquery.min.js'
              ,'jquery/dist/jquery.min.map'
              ,'jquery-tokeninput/src/jquery.tokeninput.js'
