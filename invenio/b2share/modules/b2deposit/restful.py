@@ -91,13 +91,13 @@ def get_value(res, tag):
     temp = list(flatten(res))
 
     if len(temp) == 6 and tag == "":
-        return temp[1]
+        return temp[1].decode('utf-8')
     elif len(temp) == 8 and tag == "":
-        return temp[3]
+        return temp[3].decode('utf-8')
     elif tag == "file_url":
         return filter(lambda element: "http" in str(element), temp)
     elif tag == "authors":
-        return [temp[i] for i in range(1, len(temp), 6)]
+        return [temp[i].decode('utf-8') for i in range(1, len(temp), 6)]
     return None
 
 
@@ -121,7 +121,7 @@ def get_record_details(recid):
         content = []
         atts = {}
         for afile in latest_files:
-            atts['full_name'] = afile.get_full_name()
+            atts['full_name'] = afile.get_full_name().decode('utf-8')
             atts['size'] = afile.get_size()
             atts['url'] = afile.get_url()
             content.append(atts.copy())
