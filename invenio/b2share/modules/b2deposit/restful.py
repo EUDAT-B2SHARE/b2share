@@ -96,6 +96,8 @@ def get_value(res, tag):
         return temp[3]
     elif tag == "file_url":
         return filter(lambda element: "http" in str(element), temp)
+    elif tag == "authors":
+        return [temp[i] for i in range(1, len(temp), 6)]
     return None
 
 
@@ -141,7 +143,7 @@ def get_record_details(recid):
         record = create_record(marcxml)[0]
 
         authors = record_get_field_instances(record, '100')
-        file_dict['authors'] = get_value(authors, "")
+        file_dict['authors'] = get_value(authors, "authors")
 
         record_title = record_get_field_instances(record, '245')
         file_dict['title'] = get_value(record_title, "")
