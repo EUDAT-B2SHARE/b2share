@@ -180,47 +180,31 @@ def _create_metadata_class(cfg):
     if not hasattr(cfg, 'fields'):
         cfg.fields = []
 
-    # TODO: this can be done in a simpler and clearer way now
-    def basic_field_iter():
+    def basic_fields():
+        return [f for f in cfg.fields if not ('extra' in f and f['extra'])]
 
-        #Normal field if extra is false or not set
-        for f in cfg.fields:
-            try:
-                if not f['extra']:
-                    yield f['name']
-            except KeyError:
-                yield f['name']
-
-    def optional_field_iter():
-
-        for f in cfg.fields:
-            try:
-                if f['extra']:
-                    yield f['name']
-            except KeyError:
-                pass
+    def optional_fields():
+        return [f for f in cfg.fields if ('extra' in f and f['extra'])]
 
     def __init__(self):
         super(type(self), self).__init__()
         if len(cfg.fields) > 0:
-            self.fieldsets.append(FieldSet(
-                cfg.domain,
-                basic_fields=list(basic_field_iter()),
-                optional_fields=list(optional_field_iter())))
+            self.fieldsets.append(
+                FieldSet(cfg.domain, basic_fields=basic_fields(), 
+                                     optional_fields=optional_fields()))
 
     clsname = cfg.domain + "Metadata"
 
     args = {'__init__': __init__,
             '__tablename__': cfg.table_name,
             '__mapper_args__': {'polymorphic_identity': cfg.table_name},
-            'id': db.Column(
-                db.Integer, db.ForeignKey('submission_metadata.id'),
-                primary_key=True),
+            'id': db.Column(db.Integer, 
+                            db.ForeignKey('submission_metadata.id'),
+                            primary_key=True),
             'field_args': {}}
 
     #The following function and call just add all external attrs manually
     def is_external_attr(n):
-
         # don't like this bit; problem is we don't want to include the
         # db import and I don't know how to exclude them except via name
         if n in ['db', 'fields']:
@@ -236,25 +220,13 @@ def _create_metadata_class(cfg):
     for f in cfg.fields:
         nullable = not f.get('required', False)
         args[f['name']] = db.Column(f['col_type'], nullable=nullable)
-        # Doesn't seem pythonic, but show me a better way
-        args['field_args'][f['name']] = {}
-        if 'display_text' in f:
-            args['field_args'][f['name']]['label'] = f.get('display_text')
-        if 'description' in f:
-            args['field_args'][f['name']]['description'] = f.get('description')
-        if 'data_provide' in f:
-            args['field_args'][f['name']]['data_provide'] = f.get('data_provide')
-        if 'data_source' in f:
-            args['field_args'][f['name']]['data_source'] = f.get('data_source')
-        if 'default' in f:
-            args['field_args'][f['name']]['default'] = f.get('default')
-        if 'placeholder' in f:
-            args['field_args'][f['name']]['placeholder'] = f.get('placeholder')
-        if 'value' in f:
-            args['field_args'][f['name']]['value'] = f.get('value')
-        if 'other' in f:
-            args['field_args'][f['name']]['other'] = f.get('other')
-        if 'cardinality' in f:
-            args['field_args'][f['name']]['cardinality'] = f.get('cardinality')
+        field_dict = {}
+        for k in f:
+            if k in ['description', 'data_provide', 'data_source', 'default', 
+                     'placeholder', 'value', 'other', 'cardinality']:
+                field_dict[k] = f.get(k)
+            elif k == 'display_text':
+                field_dict['label'] = f.get(k)
+        args['field_args'][f['name']] = field_dict
 
     return type(clsname, (SubmissionMetadata,), args)
