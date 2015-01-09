@@ -85,16 +85,14 @@ class SubmissionMetadata(db.Model):
                                     optional_fields=self.optional_fields))]
         self.field_args['title'] = {
             'placeholder': "Title of the resource",
-            'description':
-            'The title of the uploaded resource - a name that ' +\
-            'indicates the content to be expected.'
+            'description': 'The title of the uploaded resource - a name ' +\
+                           'that indicates the content to be expected.'
         }
         self.field_args['description'] = {
-            'description':
-            'A more elaborate description of the resource. ' +\
-            'Focus on a description of ' +\
-            'content making it easy for others to find it and to ' +\
-            'interpret its relevance quickly.'
+            'description': 'A more elaborate description of the resource. ' +\
+                           'Focus on a description of content making it ' +\
+                           'easy for others to find it and to interpret ' +\
+                           'its relevance quickly.'
         }
         self.field_args['publisher'] = {
             'hidden': True,
@@ -115,8 +113,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['version'] = {
             'placeholder': 'e.g. v1.02',
-            'description':
-            'Denote the version of the resource.'
+            'description': 'Denote the version of the resource.'
         }
         self.field_args['licence'] = {
             'description': 'Specify the license under which this data set '+\
@@ -126,23 +123,21 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
-            'description':
-            'A comma separated list of keywords that ' +\
-            'characterize the content.'
+            'description': 'A comma separated list of keywords that ' +\
+                           'characterize the content.'
         }
         self.field_args['open_access'] = {
-            'description':
-            'Indicate whether the resource is open or access ' +\
-            'is restricted. In case of restricted access the uploaded files ' +\
-            'will not be public, however the metadata will be.'
+            'description': 'Indicate whether the resource is open or ' +\
+                           'access is restricted. In case of restricted ' +\
+                           'access the uploaded files will not be public, ' +\
+                           'however the metadata will be.'
         }
         self.field_args['contributors'] = {
             'placeholder': 'contributor',
             'cardinality': 'n',
-            'description':
-            'A semicolon separated list of all other ' +\
-            'contributors. Mention all ' +\
-            'other persons that were relevant in the creation of the resource.'
+            'description': 'A semicolon separated list of all other ' +\
+                           'contributors. Mention all other persons that ' +\
+                           'were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
             'hidden': True,
@@ -154,23 +149,21 @@ class SubmissionMetadata(db.Model):
             'data_provide': 'select',
             'cardinality': 'n',
             'data_source': ['Text', 'Image', 'Video', 'Other'],
-            'description':
-            'Select the type of the resource.'
+            'description': 'Select the type of the resource.'
         }
         self.field_args['alternate_identifier'] = {
             'placeholder': 'Other reference, such as URI, ISBN, etc.',
-            'description':
-            'Any kind of other reference such as a URN, URI or an ISBN number.'
+            'description': 'Any kind of other reference such as a URN, URI ' +\
+                           'or an ISBN number.'
         }
         self.field_args['creator'] = {
             'placeholder': 'author',
             'cardinality': 'n',
-            'description':
-            'A semicolon separated list of authors of the resource.'
+            'description': 'The author(s) of the resource.'
         }
         self.field_args['contact_email'] = {
             'placeholder': 'contact email',
-             'description': 'Contact email information for this record'
+            'description': 'Contact email information for this record'
         }
 
 def _create_metadata_class(cfg):
