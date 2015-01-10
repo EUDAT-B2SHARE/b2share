@@ -19,11 +19,10 @@
 
 from __future__ import absolute_import
 
-import json
-
-from flask import current_app, Response
+from flask import current_app
 from flask.ext.login import current_user
-from flask.ext.restful import Resource, abort
+from flask.ext.restful import Resource, abort, reqparse
+
 
 from invenio.ext.restful import require_api_auth, require_header
 from invenio.modules.editor.models import Bib98x, BibrecBib98x
@@ -32,7 +31,8 @@ from invenio.modules.formatter import engine as bibformat_engine
 from invenio.b2share.modules.b2deposit.b2share_model import metadata_classes
 
 
-MAX_PAGE_SIZE = 20
+PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
 
 
 # =========
@@ -154,6 +154,11 @@ def get_record_details(recid):
 # =========
 # Resources
 # =========
+
+pager = reqparse.RequestParser()
+pager.add_argument('page_size', type=int, help='Number of items to return')
+pager.add_argument('page_offset', type=int, help='Index of the first returned item')
+
 class DepositionDomains(Resource):
     """
     Collection of depositions: specific Domain
@@ -165,22 +170,11 @@ class DepositionDomains(Resource):
         List all deposits for a specific domain
 
         """
-
-        if len(kwargs) == 0:
-            page_size = 5
-            page_offset = 0
-        elif len(kwargs) == 1:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = 0
-        elif len(kwargs) == 2:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = kwargs['page_offset']
+        pag = pager.parse_args()
+        page_size = pag.get('page_size', PAGE_SIZE)
+        page_offset = pag.get('page_offset', 0)
+        if page_size > MAX_PAGE_SIZE:
+            page_size = MAX_PAGE_SIZE
 
         # get domain id from domain name
         domain = Bib98x.query.filter_by(value=domain_name).first()
@@ -236,21 +230,11 @@ class DepositionListRecord(Resource):
         from invenio.legacy.search_engine import perform_request_search
         # from invenio.modules.accounts.models import User
 
-        if len(kwargs) == 0:
-            page_size = 5
-            page_offset = 0
-        elif len(kwargs) == 1:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = 0
-        elif len(kwargs) == 2:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = kwargs['page_offset']
+        pag = pager.parse_args()
+        page_size = pag.get('page_size') or PAGE_SIZE
+        page_offset = pag.get('page_offset') or 0
+        if page_size > MAX_PAGE_SIZE:
+            page_size = MAX_PAGE_SIZE
 
         email_field = "8560_"
         email = current_user['email']
@@ -328,19 +312,6 @@ class DepositionRecord(Resource):
 
 
 def setup_app(app, api):
-    api.add_resource(
-        DepositionDomains,
-        '/api/depositions/<string:domain_name>',
-        '/api/depositions/<string:domain_name>/<int:page_size>',
-        '/api/depositions/<string:domain_name>/<int:page_size>/<int:page_offset>',
-    )
-    api.add_resource(
-        DepositionListRecord,
-        '/api/depositions/',
-        '/api/depositions/<int:page_size>/',
-        '/api/depositions/<int:page_size>/<int:page_offset>',
-    )
-    api.add_resource(
-        DepositionRecord,
-        '/api/deposit/<int:record_id>',
-    )
+    api.add_resource(DepositionDomains, '/api/depositions/<string:domain_name>')
+    api.add_resource(DepositionListRecord, '/api/depositions/')
+    api.add_resource(DepositionRecord, '/api/deposit/<int:record_id>')
