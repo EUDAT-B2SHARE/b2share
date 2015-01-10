@@ -174,10 +174,10 @@ def _create_metadata_class(cfg):
         cfg.fields = []
 
     def basic_fields():
-        return [f for f in cfg.fields if not ('extra' in f and f['extra'])]
+        return [f['name'] for f in cfg.fields if not f.get('extra')]
 
     def optional_fields():
-        return [f for f in cfg.fields if ('extra' in f and f['extra'])]
+        return [f['name'] for f in cfg.fields if f.get('extra')]
 
     def __init__(self):
         super(type(self), self).__init__()
