@@ -37,24 +37,26 @@ def add_basic_fields(rec, form, email):
     """
     # why aren't subfields a dictionary?!
     try:
-        if form['title']:
+        if form.get('title'):
             record_add_field(rec, '245', subfields=[('a', remove_html_markup(form['title']))])
 
-        if form['creator']:
+        if form.get('creator'):
             fields = form.getlist('creator')
             for f in fields:
                 if f and not f.isspace():
                     record_add_field(rec, '100', subfields=[('a', remove_html_markup(f.strip()))])
 
-        if form['domain']:
+        if form.get('domain'):
             record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
+
         pubfields = []
-        if form['publisher']:
+        if form.get('publisher'):
             pubfields.append(('b', remove_html_markup(form['publisher'])))
         if form.get('publication_date'):
             pubfields.append(('c', remove_html_markup(form['publication_date'])))
         if pubfields:
             record_add_field(rec, '260', subfields=pubfields)
+
         record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
 
         if 'open_access' in form:
@@ -62,21 +64,21 @@ def add_basic_fields(rec, form, email):
         else:
             record_add_field(rec, '542', subfields=[('l', 'restricted')])
 
-        if form['licence']:
+        if form.get('licence'):
             record_add_field(rec, '540', subfields=[('a', remove_html_markup(form['licence']))])
         record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
 
-        if form['contact_email']:
+        if form.get('contact_email'):
             record_add_field(rec,'270',subfields=[('m', remove_html_markup(form['contact_email']))])
 
-        if form['keywords']:
+        if form.get('keywords'):
             for kw in form['keywords'].split(','):
                 if kw and not kw.isspace():
                     record_add_field(rec, '653',
                                  ind1='1',
                                  subfields=[('a', remove_html_markup(kw.strip()))])
 
-        if 'contributors' in form and form['contributors']:
+        if form.get('contributors'):
             fields = form.getlist('contributors')
             for f in fields:
                 if f and not f.isspace():
@@ -85,16 +87,16 @@ def add_basic_fields(rec, form, email):
         record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
-        if 'resource_type' in form and form['resource_type']:
+        if form.get('resource_type'):
             fields = form.getlist('resource_type')
             for f in fields:
                 record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['resource_type']))])
 
-        if 'alternate_identifier' in form and form['alternate_identifier']:
+        if form.get('alternate_identifier'):
             record_add_field(rec, '024',
                              subfields=[('a', remove_html_markup(form['alternate_identifier']))])
 
-        if 'version' in form and form['version']:
+        if form.get('version'):
             record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
 
         CFG_SITE_NAME = current_app.config.get("CFG_SITE_NAME")
@@ -145,8 +147,7 @@ def add_file_info(rec, form, email, sub_id, recid):
         fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
             email)
     for metadata in get_depositing_files_metadata(sub_id):
-        f = metadata.name
-        path = metadata.file
+        path = metadata['file']
         record_add_field(rec, 'FFT',
                          subfields=[('a', path),
                          ('n', metadata['name']), # name of the file
@@ -160,7 +161,7 @@ def add_file_info(rec, form, email, sub_id, recid):
         #seems to be impossible to add file size data, thought this would work
 
         CFG_SITE_SECURE_URL = current_app.config.get("CFG_SITE_SECURE_URL")
-        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, f)
+        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, metadata['name'])
         record_add_field(rec, '856', ind1='4',
                          subfields=[('u', url),
                                     ('s', str(os.path.getsize(path))),
