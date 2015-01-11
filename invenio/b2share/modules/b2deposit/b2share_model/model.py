@@ -85,16 +85,14 @@ class SubmissionMetadata(db.Model):
                                     optional_fields=self.optional_fields))]
         self.field_args['title'] = {
             'placeholder': "Title of the resource",
-            'description':
-            'The title of the uploaded resource - a name that ' +\
-            'indicates the content to be expected.'
+            'description': 'The title of the uploaded resource - a name ' +\
+                           'that indicates the content to be expected.'
         }
         self.field_args['description'] = {
-            'description':
-            'A more elaborate description of the resource. ' +\
-            'Focus on a description of ' +\
-            'content making it easy for others to find it and to ' +\
-            'interpret its relevance quickly.'
+            'description': 'A more elaborate description of the resource. ' +\
+                           'Focus on a description of content making it ' +\
+                           'easy for others to find it and to interpret ' +\
+                           'its relevance quickly.'
         }
         self.field_args['publisher'] = {
             'hidden': True,
@@ -115,8 +113,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['version'] = {
             'placeholder': 'e.g. v1.02',
-            'description':
-            'Denote the version of the resource.'
+            'description': 'Denote the version of the resource.'
         }
         self.field_args['licence'] = {
             'description': 'Specify the license under which this data set '+\
@@ -126,23 +123,21 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
-            'description':
-            'A comma separated list of keywords that ' +\
-            'characterize the content.'
+            'description': 'A comma separated list of keywords that ' +\
+                           'characterize the content.'
         }
         self.field_args['open_access'] = {
-            'description':
-            'Indicate whether the resource is open or access ' +\
-            'is restricted. In case of restricted access the uploaded files ' +\
-            'will not be public, however the metadata will be.'
+            'description': 'Indicate whether the resource is open or ' +\
+                           'access is restricted. In case of restricted ' +\
+                           'access the uploaded files will not be public, ' +\
+                           'however the metadata will be.'
         }
         self.field_args['contributors'] = {
             'placeholder': 'contributor',
             'cardinality': 'n',
-            'description':
-            'A semicolon separated list of all other ' +\
-            'contributors. Mention all ' +\
-            'other persons that were relevant in the creation of the resource.'
+            'description': 'A semicolon separated list of all other ' +\
+                           'contributors. Mention all other persons that ' +\
+                           'were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
             'hidden': True,
@@ -154,23 +149,21 @@ class SubmissionMetadata(db.Model):
             'data_provide': 'select',
             'cardinality': 'n',
             'data_source': ['Text', 'Image', 'Video', 'Other'],
-            'description':
-            'Select the type of the resource.'
+            'description': 'Select the type of the resource.'
         }
         self.field_args['alternate_identifier'] = {
             'placeholder': 'Other reference, such as URI, ISBN, etc.',
-            'description':
-            'Any kind of other reference such as a URN, URI or an ISBN number.'
+            'description': 'Any kind of other reference such as a URN, URI ' +\
+                           'or an ISBN number.'
         }
         self.field_args['creator'] = {
             'placeholder': 'author',
             'cardinality': 'n',
-            'description':
-            'A semicolon separated list of authors of the resource.'
+            'description': 'The author(s) of the resource.'
         }
         self.field_args['contact_email'] = {
             'placeholder': 'contact email',
-             'description': 'Contact email information for this record'
+            'description': 'Contact email information for this record'
         }
 
 def _create_metadata_class(cfg):
@@ -180,47 +173,31 @@ def _create_metadata_class(cfg):
     if not hasattr(cfg, 'fields'):
         cfg.fields = []
 
-    # TODO: this can be done in a simpler and clearer way now
-    def basic_field_iter():
+    def basic_fields():
+        return [f['name'] for f in cfg.fields if not f.get('extra')]
 
-        #Normal field if extra is false or not set
-        for f in cfg.fields:
-            try:
-                if not f['extra']:
-                    yield f['name']
-            except KeyError:
-                yield f['name']
-
-    def optional_field_iter():
-
-        for f in cfg.fields:
-            try:
-                if f['extra']:
-                    yield f['name']
-            except KeyError:
-                pass
+    def optional_fields():
+        return [f['name'] for f in cfg.fields if f.get('extra')]
 
     def __init__(self):
         super(type(self), self).__init__()
         if len(cfg.fields) > 0:
-            self.fieldsets.append(FieldSet(
-                cfg.domain,
-                basic_fields=list(basic_field_iter()),
-                optional_fields=list(optional_field_iter())))
+            self.fieldsets.append(
+                FieldSet(cfg.domain, basic_fields=basic_fields(), 
+                                     optional_fields=optional_fields()))
 
     clsname = cfg.domain + "Metadata"
 
     args = {'__init__': __init__,
             '__tablename__': cfg.table_name,
             '__mapper_args__': {'polymorphic_identity': cfg.table_name},
-            'id': db.Column(
-                db.Integer, db.ForeignKey('submission_metadata.id'),
-                primary_key=True),
+            'id': db.Column(db.Integer, 
+                            db.ForeignKey('submission_metadata.id'),
+                            primary_key=True),
             'field_args': {}}
 
     #The following function and call just add all external attrs manually
     def is_external_attr(n):
-
         # don't like this bit; problem is we don't want to include the
         # db import and I don't know how to exclude them except via name
         if n in ['db', 'fields']:
@@ -236,25 +213,13 @@ def _create_metadata_class(cfg):
     for f in cfg.fields:
         nullable = not f.get('required', False)
         args[f['name']] = db.Column(f['col_type'], nullable=nullable)
-        # Doesn't seem pythonic, but show me a better way
-        args['field_args'][f['name']] = {}
-        if 'display_text' in f:
-            args['field_args'][f['name']]['label'] = f.get('display_text')
-        if 'description' in f:
-            args['field_args'][f['name']]['description'] = f.get('description')
-        if 'data_provide' in f:
-            args['field_args'][f['name']]['data_provide'] = f.get('data_provide')
-        if 'data_source' in f:
-            args['field_args'][f['name']]['data_source'] = f.get('data_source')
-        if 'default' in f:
-            args['field_args'][f['name']]['default'] = f.get('default')
-        if 'placeholder' in f:
-            args['field_args'][f['name']]['placeholder'] = f.get('placeholder')
-        if 'value' in f:
-            args['field_args'][f['name']]['value'] = f.get('value')
-        if 'other' in f:
-            args['field_args'][f['name']]['other'] = f.get('other')
-        if 'cardinality' in f:
-            args['field_args'][f['name']]['cardinality'] = f.get('cardinality')
+        field_dict = {}
+        for k in f:
+            if k in ['description', 'data_provide', 'data_source', 'default', 
+                     'placeholder', 'value', 'other', 'cardinality']:
+                field_dict[k] = f.get(k)
+            elif k == 'display_text':
+                field_dict['label'] = f.get(k)
+        args['field_args'][f['name']] = field_dict
 
     return type(clsname, (SubmissionMetadata,), args)
