@@ -112,19 +112,11 @@ def create_recid():
     return run_sql("INSERT INTO bibrec(creation_date, modification_date) "
                    "values(NOW(), NOW())")
 
-
-def add_file_info(rec, form, email, sub_id, recid):
-    """
-    Adds the path to the file and access rights to ther record.
-    """
+def get_depositing_files_metadata(deposit_id):
     CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
-    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
+    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
     files = os.listdir(upload_dir)
-    if 'open_access' in form:
-        fft_status = 'firerole: allow any\n'
-    else:
-        fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
-            email)
+    ret = []
     for f in files:
         path = os.path.join(upload_dir, f)
         if f.startswith('metadata_'):
@@ -139,7 +131,22 @@ def add_file_info(rec, form, email, sub_id, recid):
         else:
             current_app.logger.error('Submitted file \'%s\' is missing metadata file, using default' % f)
             metadata = dict(name=f, file=path, size=str(os.path.getsize(path)))
+        ret.append(metadata)
+    return ret
 
+
+def add_file_info(rec, form, email, sub_id, recid):
+    """
+    Adds the path to the file and access rights to ther record.
+    """
+    if 'open_access' in form:
+        fft_status = 'firerole: allow any\n'
+    else:
+        fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
+            email)
+    for metadata in get_depositing_files_metadata(sub_id):
+        f = metadata.name
+        path = metadata.file
         record_add_field(rec, 'FFT',
                          subfields=[('a', path),
                          ('n', metadata['name']), # name of the file

@@ -19,28 +19,23 @@
 
 from __future__ import absolute_import
 
-from flask import current_app
-from flask.ext.login import current_user
+import os, os.path, uuid
+
+from flask import current_app, request
 from flask.ext.restful import Resource, abort, reqparse
 
-
-from invenio.ext.restful import require_api_auth, require_header
+from invenio.ext.restful import require_api_auth
 from invenio.modules.editor.models import Bib98x, BibrecBib98x
 from invenio.modules.formatter import engine as bibformat_engine
 
 from invenio.b2share.modules.b2deposit.b2share_model import metadata_classes
-
+from invenio.b2share.modules.b2deposit.b2share_upload_handler \
+    import encode_filename, get_extension, create_file_metadata
+from invenio.b2share.modules.b2deposit.b2share_marc_handler \
+    import get_depositing_files_metadata
 
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
-
-
-# =========
-# Mix-ins
-# =========
-deposit_decorators = [
-    require_api_auth(),
-]
 
 
 ###############################################################################
@@ -159,20 +154,27 @@ pager = reqparse.RequestParser()
 pager.add_argument('page_size', type=int, help='Number of items to return')
 pager.add_argument('page_offset', type=int, help='Index of the first returned item')
 
-class DepositionDomains(Resource):
-    """
-    Collection of depositions: specific Domain
-    """
-    method_decorators = deposit_decorators
+class B2Resource(Resource):
+    method_decorators = [require_api_auth()]
+    def get(self, oauth, **kwargs): abort(405)
+    def post(self, oauth, **kwargs): abort(405)
+    def put(self, oauth, **kwargs): abort(405)
+    def delete(self, oauth, **kwargs): abort(405)
+    def head(self, oauth, **kwargs): abort(405)
+    def options(self, oauth, **kwargs): abort(405)
+    def patch(self, oauth, **kwargs): abort(405)
 
+class ListRecordsByDomain(B2Resource):
+    """
+    The resource representing the collection of all records, filtered by domain
+
+    Can only list the available resources, 
+    use POST to /depositions to create a new one
+    """
     def get(self, oauth, domain_name, **kwargs):
-        """
-        List all deposits for a specific domain
-
-        """
         pag = pager.parse_args()
-        page_size = pag.get('page_size', PAGE_SIZE)
-        page_offset = pag.get('page_offset', 0)
+        page_size = pag.get('page_size') or PAGE_SIZE
+        page_offset = pag.get('page_offset') or 0
         if page_size > MAX_PAGE_SIZE:
             page_size = MAX_PAGE_SIZE
 
@@ -187,46 +189,22 @@ class DepositionDomains(Resource):
         record_ids = [record.id_bibrec for record in domain_records]
 
         record_list = []
-        for record_id in record_ids[page_offset * page_size:page_offset * page_size + page_size]:
+        start = page_offset * page_size
+        for record_id in record_ids[start : start + page_size]:
             record_details = get_record_details(record_id)
             record_list.append(record_details)
 
         return record_list
 
-    @require_header('Content-Type', 'application/json')
-    def post(self, oauth):
-        """
-        Create a new deposition
-        """
-        abort(405)
 
-    def put(self, oauth):
-        abort(405)
-
-    def delete(self, oauth):
-        abort(405)
-
-    def head(self, oauth):
-        abort(405)
-
-    def options(self, oauth):
-        abort(405)
-
-    def patch(self, oauth):
-        abort(405)
-
-
-class DepositionListRecord(Resource):
+class ListRecords(B2Resource):
     """
-    Collection of depositions: specific user
-    """
-    method_decorators = deposit_decorators
+    The resource representing the collection of all records
 
+    Can only list the available records, 
+    use POST to /depositions to create a new one
+    """
     def get(self, oauth, **kwargs):
-        """
-        List depositions
-
-        """
         from invenio.legacy.search_engine import perform_request_search
         # from invenio.modules.accounts.models import User
 
@@ -236,75 +214,104 @@ class DepositionListRecord(Resource):
         if page_size > MAX_PAGE_SIZE:
             page_size = MAX_PAGE_SIZE
 
-        email_field = "8560_"
-        email = current_user['email']
-        record_ids = perform_request_search(f=email_field, p=email, of="id")
-        record_list = []
+        # enumerate all valid ids
+        record_ids = perform_request_search(of="id", sf="005")
 
-        for record_id in record_ids[page_offset * page_size:page_offset * page_size + page_size]:
+        record_list = []
+        start = page_offset * page_size
+        for record_id in record_ids[start : start + page_size]:
             record_details = get_record_details(record_id)
             record_list.append(record_details)
         return record_list
 
-    def post(self, oauth):
-        """
-        Create a new deposition
-        """
-        pass
 
-    def put(self, oauth):
-        abort(405)
-
-    def delete(self, oauth):
-        abort(405)
-
-    def head(self, oauth):
-        abort(405)
-
-    def options(self, oauth):
-        abort(405)
-
-    def patch(self, oauth):
-        abort(405)
-
-
-class DepositionRecord(Resource):
+class RecordRes(B2Resource):
     """
-    Deposition item
+    A record resource is (for now) immutable, can be read with GET
     """
-    method_decorators = deposit_decorators
-
-    def get(self, oauth, record_id):
-        """
-        Retrieve requested record
-
-        """
+    def get(self, oauth, record_id, **kwargs):
         record_details = get_record_details(record_id)
         if not record_details:
             abort(404, message="Deposition not found", status=404)
         return record_details
 
-    def post(self, oauth):
-        """
-        Create a new deposition
-        """
+
+class ListDepositions(B2Resource):
+    """
+    The resource representing the active deposits.
+    A deposit is mutable and private, while a record is immutable and public
+    """
+    def get(self, oauth, **kwargs):
+        # TODO: ideally we'd be able to list all depositIDs of the current user
+        #       but right now we don't know which ones belong to the user
+        abort(405)
+
+    def post(self, oauth, **kwargs): 
+        """Creates a new deposition"""
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        deposit_id = uuid.uuid1().hex
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        os.makedirs(upload_dir)
+        location = "/api/deposition/" + deposit_id,
+        json_data = { 
+            'message': "New deposition created",
+            'location': "/api/deposition/" + deposit_id,
+        }
+        return json_data, 201, {'Location' : location} # return location header
+
+
+class DepositionFiles(B2Resource):
+    """
+    The resource representing the list of files in a deposition.
+    """
+    def check_user(self, deposit_id):
+        # TODO: make sure the deposition folder is only readable by its owner
         pass
 
-    def put(self, oauth):
-        abort(405)
+    def get(self, oauth, deposit_id, **kwargs):
+        """Get the list of files already uploaded"""
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        if not os.path.exists(upload_dir):
+            # don't use abort(404), it adds its own bad error message
+            return {'message':'bad deposit_id parameter', 'status':404}, 404
+        self.check_user(deposit_id)
+        files = [{'name': f['name'], 'size': f['size'] } 
+                 for f in get_depositing_files_metadata(deposit_id)]
+        return files
 
-    def delete(self, oauth):
-        abort(405)
+    def post(self, oauth, deposit_id, **kwargs): 
+        """Adds a new deposition file"""
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        if not os.path.exists(upload_dir):
+            # don't use abort(404), it adds its own bad error message
+            return {'message':'bad deposit_id parameter', 'status':404}, 404
 
-    def head(self, oauth):
-        abort(405)
+        self.check_user(deposit_id)
 
-    def options(self, oauth):
-        abort(405)
+        file_names = []
+        for f in request.files.values():
+            safename, md5 = encode_filename(f.filename)
+            file_unique_name = safename + "_" + md5 + get_extension(safename)
+            file_path = os.path.join(upload_dir, file_unique_name)
+            f.save(file_path)
+            create_file_metadata(upload_dir, f.filename, file_unique_name, file_path)
+            file_names.append({'name':f.filename})
+        return {'message':'File(s) saved', 'files':file_names}
 
-    def patch(self, oauth):
+class DepositionCommit(B2Resource):
+    """
+    The resource representing a deposition commit action.
+    By POSTing valid metadata here the deposition is transformed into a record
+    """
+    def post(self, oauth, deposit_id, **kwargs): 
+        """Creates a new deposition"""
+        # import ipdb; ipdb.set_trace()
         abort(405)
-
 
 #
 # Register API resources
@@ -312,6 +319,10 @@ class DepositionRecord(Resource):
 
 
 def setup_app(app, api):
-    api.add_resource(DepositionDomains, '/api/depositions/<string:domain_name>')
-    api.add_resource(DepositionListRecord, '/api/depositions/')
-    api.add_resource(DepositionRecord, '/api/deposit/<int:record_id>')
+    api.add_resource(ListRecords, '/api/records/')
+    api.add_resource(ListRecordsByDomain, '/api/records/<string:domain_name>')
+    api.add_resource(RecordRes, '/api/record/<int:record_id>')
+
+    api.add_resource(ListDepositions, '/api/depositions/')
+    api.add_resource(DepositionFiles, '/api/deposition/<string:deposit_id>')
+    # api.add_resource(DepositionCommit, '/api/deposition/<string:deposit_id>/commit')

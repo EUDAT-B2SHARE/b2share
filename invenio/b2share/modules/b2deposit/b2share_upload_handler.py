@@ -110,7 +110,9 @@ def merge_chunks_and_create_metadata(upload_dir, name, md5, safename):
             with open(chunk, 'rb') as chunk_fd:
                 shutil.copyfileobj(chunk_fd, destination)
             os.remove(chunk)
+    create_file_metadata(upload_dir, name, file_unique_name, file_path)
 
+def create_file_metadata(upload_dir, name, file_unique_name, file_path):
     size = os.path.getsize(file_path)
     file_metadata = dict(name=name, file=file_path, size=size)
 
