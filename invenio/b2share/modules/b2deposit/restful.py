@@ -380,7 +380,8 @@ class DepositionCommit(B2Resource):
 
         domain = form.get('domain', '').lower()
         if domain in metadata_classes():
-            meta = metadata_classes()[domain]()
+            metaclass = metadata_classes()[domain]
+            meta = metaclass()
         else: 
             domains = ", ".join(metadata_classes().keys())
             json_data = {
@@ -429,6 +430,8 @@ class DepositionCommit(B2Resource):
             for (fname, field) in meta.field_args.iteritems():
                 if not field.get('hidden'):
                     fields[fname] = { 'description' : field.get('description') }
+                    if self.is_required_field(metaclass, fname):
+                        fields[fname]['required'] = True
                     if field.get('cardinality') == 'n':
                         fields[fname]['multiple'] = True
                     if field.get('data_source'):
@@ -440,6 +443,16 @@ class DepositionCommit(B2Resource):
                 'fields': fields,
             }
             return json_data, 400
+
+    def is_required_field(self, cls, propname):
+        from sqlalchemy.orm import class_mapper
+        import sqlalchemy
+        for prop in class_mapper(cls).iterate_properties:
+            if isinstance(prop, sqlalchemy.orm.ColumnProperty) and prop.key == propname:
+                for col in prop.columns:
+                    if col.nullable == False:
+                        return True
+        return False
 
 #
 # Register API resources
