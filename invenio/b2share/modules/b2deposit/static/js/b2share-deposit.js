@@ -199,7 +199,7 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
         $.each(uploader.files, function(i, file) {
             if (file.loaded < file.size){
                 $("#" + file.id + "_rm").show();
-                $('#' + file.id + " .bar").css('width', "0%");
+                $('#' + file.id + " .progress-bar").css('width', "0%");
             }
         });
     });
@@ -225,7 +225,7 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
     });
 
     uploader.bind('UploadProgress', function(up, file) {
-        $('#' + file.id + " .bar").css('width', file.percent + "%");
+        $('#' + file.id + " .progress-bar").css('width', file.percent + "%");
         setDepositBtnState();
     });
 
@@ -298,7 +298,7 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
                 '<tr id="' + file.id + '" style="display:none;z-index:-100;">' +
                 '<td id="' + file.id + '_link">' + file.name + '</td>' +
                 '<td>' + plupload.formatSize(file.size) + '</td>' +
-                '<td width="30%"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></td>' +
+                '<td width="30%"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 0%;"></div></div></td>' +
                 '<td><a id="' + file.id + '_rm" class="rmlink"><i class="glyphicon glyphicon-trash"></i></a></td>' +
                 '</tr>');
             $('#filelist #' + file.id).show('fast');
@@ -311,8 +311,8 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
     });
 
     uploader.bind('FileUploaded', function(up, file, responseObj) {
-        $('#' + file.id + " .progress").removeClass("progress-striped");
-        $('#' + file.id + " .bar").css('width', "100%");
+        $('#' + file.id + " .progress-bar").removeClass("active");
+        $('#' + file.id + " .progress-bar").css('width', "100%");
         $('#' + file.id + '_rm').show();
         $('#' + file.id + '_link').html('<a href="' + get_file_url + "?filename=" + responseObj.response + '">' + file.name + '</a>');
         file.unique_filename = responseObj.response;

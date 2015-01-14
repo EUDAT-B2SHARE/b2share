@@ -92,7 +92,7 @@ def upload(request, sub_id):
 
         if (chunks is None) or (int(chunk) == int(chunks) - 1):
             '''All chunks have been uploaded! Start merging the chunks!'''
-            merge_chunks_and_create_metadata(upload_dir, name, md5, safename)
+            filename = merge_chunks_and_create_metadata(upload_dir, name, md5, safename)
         return filename
 
 def merge_chunks_and_create_metadata(upload_dir, name, md5, safename):
@@ -110,7 +110,9 @@ def merge_chunks_and_create_metadata(upload_dir, name, md5, safename):
             with open(chunk, 'rb') as chunk_fd:
                 shutil.copyfileobj(chunk_fd, destination)
             os.remove(chunk)
+    create_file_metadata(upload_dir, name, file_unique_name, file_path)
 
+def create_file_metadata(upload_dir, name, file_unique_name, file_path):
     size = os.path.getsize(file_path)
     file_metadata = dict(name=name, file=file_path, size=size)
 
@@ -118,6 +120,7 @@ def merge_chunks_and_create_metadata(upload_dir, name, md5, safename):
     metadata_file_path = os.path.join(upload_dir, 'metadata_' + file_unique_name)
     pickle.dump(file_metadata, open(metadata_file_path, 'wb'))
     current_app.logger.info("finished uploading: %s, size %d, in %s" % (name, size, file_path))
+    return file_unique_name
 
 def delete(request, sub_id):
     """
@@ -170,14 +173,14 @@ def get_file(request, sub_id):
                             "CFG_B2SHARE_UPLOAD_FOLDER")
 
     filename = request.args.get('filename')
+    f = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id, filename)
     # make sure that request doesn't go outside the CFG_B2SHARE_UPLOAD_FOLDER
     if not os.path.samefile(
                             CFG_B2SHARE_UPLOAD_FOLDER,
                             os.path.commonprefix([CFG_B2SHARE_UPLOAD_FOLDER,
-                              os.path.realpath(filename)])):
+                              os.path.realpath(f)])):
         return "File " + filename + " not found", 404
 
-    f = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id, filename)
     if (os.path.isfile(f)):
         return send_file(f, attachment_filename=filename, as_attachment=True)
     else:
