@@ -33,8 +33,9 @@ module.exports = {
                ,'datatables-colvis/css/dataTables.colVis.css'
                ,'DataTables-Plugins/integration/bootstrap/3/dataTables.bootstrap.css'
                ,'prism/themes/prism.css'
+               ,'lindat-license-selector/license-selector.min.css'
                ,'bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css'
-               ,'bootstrap-multiselect/css/bootstrap-multiselect.css'
+               ,'bootstrap-multiselect/dist/css/bootstrap-multiselect.css'
                ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.css'],
         dest: '<%= globalConfig.installation_path %>/css/'
     },
@@ -85,7 +86,7 @@ module.exports = {
              ,'bootstrap/dist/js/bootstrap.min.js'
              ,'bootstrap-switch/dist/js/bootstrap-switch.js'
              ,'bootstrap-switch/dist/js/bootstrap-switch.min.js'
-             ,'bootstrap-multiselect/js/bootstrap-multiselect.js'
+             ,'bootstrap-multiselect/dist/js/bootstrap-multiselect.js'
              ,'jquery/dist/jquery.min.js'
              ,'jquery/dist/jquery.min.map'
              ,'jquery-tokeninput/src/jquery.tokeninput.js'
@@ -100,6 +101,9 @@ module.exports = {
              ,'datatables-colvis/js/dataTables.colVis.js'
              ,'DataTables-Plugins/integration/bootstrap/3/dataTables.bootstrap.js'
              ,'prism/prism.js'
+             ,'lodash/dist/lodash.min.js'
+             ,'lindat-license-selector/license-selector.min.js'
+             ,'lindat-license-selector/license-selector.min.js.map'
              ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js'
              ,'bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js.map'],
         dest: '<%= globalConfig.installation_path %>/js/'

@@ -19,312 +19,440 @@
 
 from __future__ import absolute_import
 
-from flask import request, current_app
+import os, os.path, uuid
+
+from flask import current_app, request
 from flask.ext.login import current_user
-from flask.ext.restful import Resource, abort,\
-    reqparse, fields, marshal
-from functools import wraps
+from flask.ext.restful import Resource, abort, reqparse
 
-from invenio.ext.restful import require_api_auth, error_codes, require_header
+from werkzeug.datastructures import ImmutableMultiDict
 
-from intbitset import intbitset
-from invenio.legacy.dbquery import run_sql
-from invenio.ext.sqlalchemy import db
+from wtforms.ext.sqlalchemy.orm import model_form
+
+from invenio.ext.restful import require_api_auth
 from invenio.modules.editor.models import Bib98x, BibrecBib98x
+from invenio.modules.formatter import engine as bibformat_engine
 
-MAX_PAGE_SIZE = 20
+from invenio.b2share.modules.b2deposit.b2share_model import metadata_classes
+from invenio.b2share.modules.b2deposit.b2share_model.HTML5ModelConverter \
+    import HTML5ModelConverter
+from invenio.b2share.modules.b2deposit.b2share_upload_handler \
+    import encode_filename, get_extension, create_file_metadata
+from invenio.b2share.modules.b2deposit.b2share_marc_handler \
+    import get_depositing_files_metadata, create_marc
+from invenio.b2share.modules.b2deposit.b2share_deposit_handler \
+    import write_marc_to_temp_file, FormWithKey
 
 
-# =========
-# Mix-ins
-# =========
-deposit_decorators = [
-    require_api_auth(),
-]
+PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
 
-output_fields = {
-    'recordID': fields.Integer,
-    'comment': fields.String,
-    'description': fields.String,
-    'eformat': fields.String,
-    'full_name': fields.String,
-    'magic': fields.String,
-    'name': fields.String,
-    'size': fields.Integer,
-    'status': fields.String,
-    'subformat': fields.String,
-    'superformat': fields.String,
-    'type': fields.String,
-    'url': fields.String,
-    'version': fields.Integer,
-    'authors': fields.String,
-    'title': fields.String,
-    'description': fields.String,
-    'domain': fields.String,
-    'date': fields.String,
-    'pid': fields.String,
-    'email': fields.String,
-    'file_url': fields.String,
+
+###############################################################################
+# Conversion table for the set of basic fields of a record,
+# as expressed in the b2share_model/metdata/metadata.py:
+#
+#     1. the field name, spelled as in the metadata model
+#     2. their encoding as marc fields in the database,
+#     3. their multiplicity in the database (True of False)
+#
+#    FIELD_NAME              MARC      MULTIPLE
+basic_fields_meta = {
+    'creator':              ('100__a', True),
+    'title':                ('245__a', False),
+    'description':          ('520__a', False),
+    'keywords':             ('6531_a', True),
+    'contributors':         ('700__a', True),
+    'domain':               ('980__a', False), #\ same marctag
+    'resource_type':        ('980__a', True),  #/ same marctag
+    'publication_date':     ('260__c', False),
+    'contact_email':        ('270__m', False),
+    'open_access':          ('542__l', False),
+    'licence':              ('540__a', False),
+    'version':              ('250__a', False),
+    'alternate_identifier': ('024__a', False),
 }
 
-# =========
-# Helpers
-# =========
-
-
-def flatten(lst):
-    if type(lst) not in (tuple, list):
-        return (lst,)
-    if len(lst) == 0:
-        return tuple(lst)
-    return flatten(lst[0]) + flatten(lst[1:])
-
-
-def get_value(res):
-    temp = list(flatten(res))
-    if len(temp) == 6:
-        return temp[1]
-    elif len(temp) == 8:
-        return temp[3]
+def read_basic_medata_field_from_marc(bfo, fieldname):
+    if fieldname in basic_fields_meta:
+        marctag = basic_fields_meta[fieldname][0]
+        multiple = basic_fields_meta[fieldname][1]
+        if marctag == '980__a':
+            # duplicated marc tag, serves as domain specifier
+            #   and also as resource_type specifier
+            ret = bfo.fields(marctag)
+            if fieldname == 'domain':
+                ret = [r.lower() for r in ret if r.lower() in metadata_classes()]
+            else:
+                ret = [r for r in ret if r.lower() not in metadata_classes()]
+            return ret if multiple else ", ".join(ret)
+        elif marctag:
+            if multiple:
+                return bfo.fields(marctag)
+            else:
+                return bfo.field(marctag)
     return None
 
+def read_domain_specific_medata_field_from_marc(bfo, fieldname, multiple):
+    ret = [fx.get('b') for fx in bfo.fields('690__')
+                           if fx.get('a') == fieldname and fx.get('b')]
+    return ret if multiple else ", ".join(ret)
+
+def get_domain_metadata(domain_class, fieldset, bfo):
+    ret = {}
+    for fieldname in fieldset.optional_fields + fieldset.basic_fields:
+        field = domain_class.field_args[fieldname]
+        multiple = 'cardinality' in field and field['cardinality'] == 'n'
+        ret[fieldname] = read_domain_specific_medata_field_from_marc(bfo, fieldname, multiple)
+    return ret
 
 def get_record_details(recid):
-    from invenio.legacy.bibdocfile.api import BibRecDocs,\
-        InvenioBibDocFileError
-    from invenio.legacy.bibrecord import create_record,\
-        record_get_field_instances
-    from invenio.legacy.search_engine import print_record
-
+    from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
         recdocs = BibRecDocs(recid)
-    except InvenioBibDocFileError:
+    except:
+        current_app.logger.error("REST API: Error while building BibRecDocs for record %d" % (recid,))
         return []
 
     latest_files = recdocs.list_latest_files()
     if len(latest_files) == 0:
+        current_app.logger.error("REST API: BibRecDocs reports 0 files for record %d" % (recid,))
         return []
+
+    # bibformat uses get_record, usually is one db hit per object; should be fastest
+    bfo = bibformat_engine.BibFormatObject(recid)
+
+    # first put the recordID and list of files
+    ret = {
+        'recordID': recid,
+        'files': [{
+                        'name': afile.get_full_name().decode('utf-8'),
+                        'size': afile.get_size(),
+                        'url': afile.get_full_url(),
+                  } for afile in latest_files ],
+    }
+
+    # add basic metadata fields
+    for fieldname in basic_fields_meta:
+        ret[fieldname] = read_basic_medata_field_from_marc(bfo, fieldname)
+
+    # add 'PID'
+    for fx in bfo.fields('0247_'):
+        if fx.get('2') == "PID":
+            ret[fx.get('2')] = fx.get('a')
+
+    # add 'domain'
+    domain = read_basic_medata_field_from_marc(bfo, 'domain')
+    ret['domain'] = domain
+
+    # add domain-specific metadata fields
+    if domain not in metadata_classes():
+        current_app.logger.error("Bad domain metadata class for record %d" % (recid,))
     else:
-        for afile in latest_files:
-            file_dict = {}
-            file_dict['recordID'] = recid
-            file_dict['comment'] = afile.get_comment()
-            file_dict['description'] = afile.get_description()
-            file_dict['eformat'] = afile.get_format()
-            file_dict['full_name'] = afile.get_full_name()
-            file_dict['magic'] = afile.get_magic()
-            file_dict['name'] = afile.get_name()
-            file_dict['size'] = afile.get_size()
-            file_dict['status'] = afile.get_status()
-            file_dict['subformat'] = afile.get_subformat()
-            file_dict['superformat'] = afile.get_superformat()
-            file_dict['type'] = afile.get_type()
-            file_dict['url'] = afile.get_url()
-            file_dict['version'] = afile.get_version()
+        domain_class = metadata_classes()[domain]()
+        for fieldset in domain_class.fieldsets:
+            if fieldset.name != 'Generic':
+                ret['domain_metadata'] = get_domain_metadata(domain_class, fieldset, bfo)
 
-            marcxml = print_record(recid, 'xm')
-            record = create_record(marcxml)[0]
-
-            authors = record_get_field_instances(record, '100')
-            file_dict['authors'] = get_value(authors)
-
-            record_title = record_get_field_instances(record, '245')
-            file_dict['title'] = get_value(record_title)
-
-            record_description = record_get_field_instances(record, '520')
-            file_dict['description'] = get_value(record_description)
-
-            record_domain = record_get_field_instances(record, '980')
-            file_dict['domain'] = get_value(record_domain)
-
-            record_date = record_get_field_instances(record, '260')
-            file_dict['date'] = get_value(record_date)
-
-            record_licence = record_get_field_instances(record, '540')
-            file_dict['licence'] = get_value(record_licence)
-
-            record_PID = record_get_field_instances(record, '024')
-            file_dict['pid'] = get_value(record_PID)
-
-            user_email = record_get_field_instances(record, '856', '0')
-            file_dict['email'] = get_value(user_email)
-
-            file_url = record_get_field_instances(record, '856', '4')
-            file_dict['file_url'] = get_value(file_url)
-
-        return file_dict
-
+    return ret
 
 # =========
 # Resources
 # =========
-class DepositionDomains(Resource):
-    """
-    Collection of depositions: specific Domain
-    """
-    method_decorators = deposit_decorators
 
+pager = reqparse.RequestParser()
+pager.add_argument('page_size', type=int, help='Number of items to return')
+pager.add_argument('page_offset', type=int, help='Index of the first returned item')
+
+class B2Resource(Resource):
+    method_decorators = [require_api_auth()]
+    def get(self, oauth, **kwargs): abort(405)
+    def post(self, oauth, **kwargs): abort(405)
+    def put(self, oauth, **kwargs): abort(405)
+    def delete(self, oauth, **kwargs): abort(405)
+    def head(self, oauth, **kwargs): abort(405)
+    def options(self, oauth, **kwargs): abort(405)
+    def patch(self, oauth, **kwargs): abort(405)
+
+class ListRecordsByDomain(B2Resource):
+    """
+    The resource representing the collection of all records, filtered by domain
+
+    Can only list the available resources,
+    use POST to /depositions to create a new one
+    """
     def get(self, oauth, domain_name, **kwargs):
-        """
-        List all deposits for a specific domain
-
-        """
-
-        if len(kwargs) == 0:
-            page_size = 5
-            page_offset = 0
-        elif len(kwargs) == 1:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = 0
-        elif len(kwargs) == 2:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = kwargs['page_offset']
+        pag = pager.parse_args()
+        page_size = pag.get('page_size') or PAGE_SIZE
+        page_offset = pag.get('page_offset') or 0
+        if page_size > MAX_PAGE_SIZE:
+            page_size = MAX_PAGE_SIZE
 
         # get domain id from domain name
         domain = Bib98x.query.filter_by(value=domain_name).first()
         if domain is None:
-            abort(404, message="Please try a valid domain name: Generic, EUON, DRIHM, Linguistics, BBMRI", status=404)
+            abort(404, status=404,
+                  message="Please try a valid domain name: " +
+                         ", ".join(metadata_classes().keys()))
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
-        record_ids = []
         record_ids = [record.id_bibrec for record in domain_records]
 
         record_list = []
-        for record_id in record_ids[page_offset * page_size:page_offset * page_size + page_size]:
+        start = page_offset * page_size
+        stop = start + page_size
+        for record_id in record_ids[start : stop]:
             record_details = get_record_details(record_id)
             record_list.append(record_details)
-
-        return marshal(record_list, output_fields)
-
-
-    @require_header('Content-Type', 'application/json')
-    def post(self, oauth):
-        """
-        Create a new deposition
-        """
-        abort(405)
-
-    def put(self, oauth):
-        abort(405)
-
-    def delete(self, oauth):
-        abort(405)
-
-    def head(self, oauth):
-        abort(405)
-
-    def options(self, oauth):
-        abort(405)
-
-    def patch(self, oauth):
-        abort(405)
+        if stop < len(record_ids):
+            record_list.append('...') # continuation indicator
+        return record_list
 
 
-class DepositionListRecord(Resource):
+class ListRecords(B2Resource):
     """
-    Collection of depositions: specific user
-    """
-    method_decorators = deposit_decorators
+    The resource representing the collection of all records
 
+    Can only list the available records,
+    use POST to /depositions to create a new one
+    """
     def get(self, oauth, **kwargs):
-        """
-        List depositions
-
-        """
         from invenio.legacy.search_engine import perform_request_search
-        from invenio.modules.accounts.models import User
+        # from invenio.modules.accounts.models import User
 
-        if len(kwargs) == 0:
-            page_size = 5
-            page_offset = 0
-        elif len(kwargs) == 1:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = 0
-        elif len(kwargs) == 2:
-            if kwargs['page_size'] > MAX_PAGE_SIZE:
-                page_size = MAX_PAGE_SIZE
-            else:
-                page_size = kwargs['page_size']
-            page_offset = kwargs['page_offset']
+        pag = pager.parse_args()
+        page_size = pag.get('page_size') or PAGE_SIZE
+        page_offset = pag.get('page_offset') or 0
+        if page_size > MAX_PAGE_SIZE:
+            page_size = MAX_PAGE_SIZE
 
-        email_field = "8560_"
-        email = current_user['email']
-        record_ids = perform_request_search(f=email_field, p=email, of="id")
+        # enumerate all valid ids
+        record_ids = perform_request_search(of="id", sf="005")
+
         record_list = []
-
-        for record_id in record_ids[page_offset * page_size:page_offset * page_size + page_size]:
+        start = page_offset * page_size
+        stop = start + page_size
+        for record_id in record_ids[start : stop]:
             record_details = get_record_details(record_id)
             record_list.append(record_details)
-        return marshal(record_list, output_fields)
-
-    def post(self, oauth):
-        """
-        Create a new deposition
-        """
-        pass
-
-    def put(self, oauth):
-        abort(405)
-
-    def delete(self, oauth):
-        abort(405)
-
-    def head(self, oauth):
-        abort(405)
-
-    def options(self, oauth):
-        abort(405)
-
-    def patch(self, oauth):
-        abort(405)
+        if stop < len(record_ids):
+            record_list.append('...') # continuation indicator
+        return record_list
 
 
-class DepositionRecord(Resource):
+class RecordRes(B2Resource):
     """
-    Deposition item
+    A record resource is (for now) immutable, can be read with GET
     """
-    method_decorators = deposit_decorators
-
-    def get(self, oauth, record_id):
-        """
-        Retrieve requested record
-
-        """
+    def get(self, oauth, record_id, **kwargs):
         record_details = get_record_details(record_id)
         if not record_details:
             abort(404, message="Deposition not found", status=404)
-        return marshal(record_details, output_fields)
+        return record_details
 
-    def post(self, oauth):
+
+class ListDepositions(B2Resource):
+    """
+    The resource representing the active deposits.
+    A deposit is mutable and private, while a record is immutable and public
+    """
+    def get(self, oauth, **kwargs):
+        # TODO: ideally we'd be able to list all depositIDs of the current user
+        #       but right now we don't know which ones belong to this user
+        abort(405)
+
+    def post(self, oauth, **kwargs):
         """
-        Create a new deposition
+        Creates a new deposition
+
+        Test this with:
+        $ curl -v -X POST http://0.0.0.0:4000/api/depositions?access_token=xxx
+        should return a new Location URL
         """
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        deposit_id = uuid.uuid1().hex
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        os.makedirs(upload_dir)
+        location = "/api/deposition/" + deposit_id,
+        json_data = {
+            'message': "New deposition created",
+            'location': "/api/deposition/" + deposit_id,
+        }
+        return json_data, 201, {'Location' : location} # return location header
+
+
+class Deposition(B2Resource):
+    """
+    The resource representing a deposition.
+    """
+    def get(self, oauth, deposit_id, **kwargs):
+        """
+        Test this with:
+        $ curl -v http://0.0.0.0:4000/api/deposition/DEPOSITION_ID?access_token=xxx
+        """
+        prefix = '/api/deposition/'+deposit_id
+        return {'message':'valid deposition resource',
+                'locations': [ prefix + '/files', prefix + '/commit']}
+
+class DepositionFiles(B2Resource):
+    """
+    The resource representing the list of files in a deposition.
+    """
+    def check_user(self, deposit_id):
+        # TODO: make sure the deposition folder is only readable by its owner
         pass
 
-    def put(self, oauth):
-        abort(405)
+    def get(self, oauth, deposit_id, **kwargs):
+        """
+        Get the list of files already uploaded
 
-    def delete(self, oauth):
-        abort(405)
+        Test this with:
+        $ curl -v http://0.0.0.0:4000/api/deposition/DEPOSITION_ID/files?access_token=xxx
+        should return the list of deposited files
+        """
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        if not os.path.exists(upload_dir):
+            # don't use abort(404), it adds its own bad error message
+            return {'message':'bad deposit_id parameter', 'status':404}, 404
+        self.check_user(deposit_id)
+        files = [{'name': f['name'], 'size': f['size'] }
+                 for f in get_depositing_files_metadata(deposit_id)]
+        return files
 
-    def head(self, oauth):
-        abort(405)
+    def post(self, oauth, deposit_id, **kwargs):
+        """
+        Adds a new deposition file
 
-    def options(self, oauth):
-        abort(405)
+        Test this with:
+        $ curl -v -X POST -F file=@TestFileToBeUploaded.txt
+          http://0.0.0.0:4000/api/deposition/DEPOSITION_ID/files?access_token=xxx
+        should return the newly deposited files
+        """
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        if not os.path.exists(upload_dir):
+            # don't use abort(404), it adds its own bad error message
+            return {'message':'bad deposit_id parameter', 'status':404}, 404
 
-    def patch(self, oauth):
-        abort(405)
+        self.check_user(deposit_id)
 
+        file_names = []
+        for f in request.files.values():
+            safename, md5 = encode_filename(f.filename)
+            file_unique_name = safename + "_" + md5 + get_extension(safename)
+            file_path = os.path.join(upload_dir, file_unique_name)
+            f.save(file_path)
+            create_file_metadata(upload_dir, f.filename, file_unique_name, file_path)
+            file_names.append({'name':f.filename})
+        return {'message':'File(s) saved', 'files':file_names}
+
+class DepositionCommit(B2Resource):
+    """
+    The resource representing a deposition commit action.
+    By POSTing valid metadata here the deposition is transformed into a record
+    """
+    def post(self, oauth, deposit_id, **kwargs):
+        """
+        Creates a new deposition
+
+        Test this with:
+        $ curl -v -X POST -H "Content-Type: application/json"
+          -d '{"domain":"generic", "title":"REST Test Title", "description":"REST Test Description"}'
+          http://0.0.0.0:4000/api/deposition/DEPOSITION_ID/commit\?access_token\=xxx
+        """
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                "CFG_B2SHARE_UPLOAD_FOLDER")
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        if not os.path.exists(upload_dir):
+            # don't use abort(404), it adds its own bad error message
+            return {'message':'bad deposit_id parameter', 'status':404}, 404
+        if not os.listdir(upload_dir):
+            return {'message':'no files: add files to this deposition first', 'status':400}, 400
+
+        try:
+            form = request.get_json()
+        except:
+            return {'message':'Invalid POST data', 'status':400}, 400
+
+        domain = form.get('domain', '').lower()
+        if domain in metadata_classes():
+            metaclass = metadata_classes()[domain]
+            meta = metaclass()
+        else:
+            domains = ", ".join(metadata_classes().keys())
+            json_data = {
+                'message': 'Invalid domain. The submitted metadata must '+\
+                            'contain a valid "domain" field. Valid domains '+\
+                            'are: '+ domains,
+                'status': 400,
+            }
+            return json_data, 400
+
+        if 'open_access' not in form:
+            return {'message':'open_access boolean field required', 'status':400}, 400
+        if not form['open_access'] or form['open_access'] == 'restricted':
+            del form['open_access'] # action required by the b2share_marc_handler
+
+        if not form.get('language'):
+            form['language'] = meta.language_default
+
+        form = ImmutableMultiDict(form)
+
+        MetaForm = model_form(meta.__class__, base_class=FormWithKey,
+                              exclude=['submission', 'submission_type'],
+                              field_args=meta.field_args,
+                              converter=HTML5ModelConverter())
+
+        meta_form = MetaForm(form, meta, csrf_enabled=False)
+
+        if meta_form.validate_on_submit():
+            recid, marc = create_marc(form, deposit_id, current_user['email'])
+            tmp_file = write_marc_to_temp_file(marc)
+            # all usual tasks have priority 0; we want the bibuploads to run first
+            from invenio.legacy.bibsched.bibtask import task_low_level_submission
+            task_low_level_submission('bibupload', 'webdeposit', '--priority', '1', '-r', tmp_file)
+
+            #TODO: remove the existing deposition folder?; the user can now
+            #      repeatedly create records with the same deposition
+
+            location = "/api/record/%d" % (recid,)
+            json_data = {
+                'message': "New record submitted for processing",
+                'location': "/api/record/%d" % (recid,)
+            }
+            return json_data, 201, {'Location':location} # return location header
+        else:
+            fields = {}
+            for (fname, field) in meta.field_args.iteritems():
+                if not field.get('hidden'):
+                    fields[fname] = { 'description' : field.get('description') }
+                    if self.is_required_field(metaclass, fname):
+                        fields[fname]['required'] = True
+                    if field.get('cardinality') == 'n':
+                        fields[fname]['multiple'] = True
+                    if field.get('data_source'):
+                        fields[fname]['options'] = field.get('data_source')
+
+            json_data = {
+                'message': 'Invalid metadata, please review the required fields',
+                'status': 400,
+                'fields': fields,
+            }
+            return json_data, 400
+
+    def is_required_field(self, cls, propname):
+        from sqlalchemy.orm import class_mapper
+        import sqlalchemy
+        for prop in class_mapper(cls).iterate_properties:
+            if isinstance(prop, sqlalchemy.orm.ColumnProperty) and prop.key == propname:
+                for col in prop.columns:
+                    if col.nullable == False:
+                        return True
+        return False
 
 #
 # Register API resources
@@ -332,19 +460,11 @@ class DepositionRecord(Resource):
 
 
 def setup_app(app, api):
-    api.add_resource(
-        DepositionDomains,
-        '/api/depositions/<string:domain_name>',
-        '/api/depositions/<string:domain_name>/<int:page_size>',
-        '/api/depositions/<string:domain_name>/<int:page_size>/<int:page_offset>',
-    )
-    api.add_resource(
-        DepositionListRecord,
-        '/api/depositions/',
-        '/api/depositions/<int:page_size>/',
-        '/api/depositions/<int:page_size>/<int:page_offset>',
-    )
-    api.add_resource(
-        DepositionRecord,
-        '/api/deposit/<int:record_id>',
-    )
+    api.add_resource(ListRecords, '/api/records/')
+    api.add_resource(ListRecordsByDomain, '/api/records/<string:domain_name>')
+    api.add_resource(RecordRes, '/api/record/<int:record_id>')
+
+    api.add_resource(ListDepositions, '/api/depositions/')
+    api.add_resource(Deposition, '/api/deposition/<string:deposit_id>')
+    api.add_resource(DepositionFiles, '/api/deposition/<string:deposit_id>/files')
+    api.add_resource(DepositionCommit, '/api/deposition/<string:deposit_id>/commit')

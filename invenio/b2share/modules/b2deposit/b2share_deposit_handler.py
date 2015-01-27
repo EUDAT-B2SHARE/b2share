@@ -31,7 +31,7 @@ from invenio.ext.login import current_user
 
 from b2share_model.HTML5ModelConverter import HTML5ModelConverter
 from b2share_model import metadata_classes
-import b2share_marc_handler as mh
+import b2share_marc_handler
 
 
 
@@ -104,7 +104,7 @@ def addmeta(request, sub_id):
     meta_form = MetaForm(request.form, meta)
 
     if meta_form.validate_on_submit():
-        recid, marc = mh.create_marc(
+        recid, marc = b2share_marc_handler.create_marc(
             request.form, sub_id, current_user['email'])
         tmp_file = write_marc_to_temp_file(marc)
         # all usual tasks have priority 0; we want the bibuploads to run first
