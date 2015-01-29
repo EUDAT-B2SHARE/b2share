@@ -62,6 +62,7 @@ install:
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
   - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
+  - "inveniomanage config set CFG_B2SHARE_DOMAINS \"generic, drihm, linguistics, euon, bbmri, nrm, gbif\""
 
 before_script:
   - "inveniomanage apache create-config"

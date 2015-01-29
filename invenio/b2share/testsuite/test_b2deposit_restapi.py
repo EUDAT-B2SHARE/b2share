@@ -78,10 +78,10 @@ class InitHelper(object):
     @staticmethod
     def init_user_token(test_case):
         # get user
-        admin_user = User.query.filter_by(email='admin@localhost').first()
+        admin_user = User.query.filter_by(email='b2share@localhost').first()
         if admin_user == None:
             # TODO: create user here!
-            admin_user = User(email="admin@localhost", note="1", nickname="admin", password="admin")
+            admin_user = User(email="b2share@localhost", note="1", nickname="b2share", password="b2share")
             db.session.add(admin_user)
             db.session.commit()
         test_case.assertIsNotNone(admin_user)
