@@ -61,6 +61,7 @@ install:
   - "travis_retry grunt"
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
+  - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
 
 before_script:
   - "inveniomanage apache create-config"
