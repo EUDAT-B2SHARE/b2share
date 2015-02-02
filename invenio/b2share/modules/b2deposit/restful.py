@@ -43,6 +43,8 @@ from invenio.b2share.modules.b2deposit.b2share_marc_handler \
 from invenio.b2share.modules.b2deposit.b2share_deposit_handler \
     import write_marc_to_temp_file, FormWithKey
 
+import shutil
+
 
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
@@ -280,7 +282,9 @@ class ListDepositions(B2Resource):
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
         deposit_id = uuid.uuid1().hex
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        deposit_id_folder = 'temp/' + deposit_id
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id_folder)
+
         os.makedirs(upload_dir)
         location = "/api/deposition/" + deposit_id,
         json_data = {
@@ -321,13 +325,14 @@ class DepositionFiles(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        deposit_id_folder = 'temp/' + deposit_id
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id_folder)
         if not os.path.exists(upload_dir):
             # don't use abort(404), it adds its own bad error message
             return {'message':'bad deposit_id parameter', 'status':404}, 404
         self.check_user(deposit_id)
         files = [{'name': f['name'], 'size': f['size'] }
-                 for f in get_depositing_files_metadata(deposit_id)]
+                 for f in get_depositing_files_metadata(deposit_id_folder)]
         return files
 
     def post(self, oauth, deposit_id, **kwargs):
@@ -341,7 +346,8 @@ class DepositionFiles(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        deposit_id_folder = 'temp/' + deposit_id
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id_folder)
         if not os.path.exists(upload_dir):
             # don't use abort(404), it adds its own bad error message
             return {'message':'bad deposit_id parameter', 'status':404}, 404
@@ -374,6 +380,10 @@ class DepositionCommit(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
+
+        src = CFG_B2SHARE_UPLOAD_FOLDER + 'temp/' + deposit_id
+        shutil.move(src, CFG_B2SHARE_UPLOAD_FOLDER)
+
         upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
         if not os.path.exists(upload_dir):
             # don't use abort(404), it adds its own bad error message
@@ -424,14 +434,12 @@ class DepositionCommit(B2Resource):
             from invenio.legacy.bibsched.bibtask import task_low_level_submission
             task_low_level_submission('bibupload', 'webdeposit', '--priority', '1', '-r', tmp_file)
 
-            #TODO: remove the existing deposition folder?; the user can now
-            #      repeatedly create records with the same deposition
-
             location = "/api/record/%d" % (recid,)
             json_data = {
                 'message': "New record submitted for processing",
                 'location': "/api/record/%d" % (recid,)
             }
+
             return json_data, 201, {'Location':location} # return location header
         else:
             fields = {}
