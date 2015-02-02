@@ -43,6 +43,8 @@ from invenio.b2share.modules.b2deposit.b2share_marc_handler \
 from invenio.b2share.modules.b2deposit.b2share_deposit_handler \
     import write_marc_to_temp_file, FormWithKey
 
+import shutil
+
 
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
@@ -66,6 +68,7 @@ basic_fields_meta = {
     'domain':               ('980__a', False), #\ same marctag
     'resource_type':        ('980__a', True),  #/ same marctag
     'publication_date':     ('260__c', False),
+    'publisher':            ('8560_f', False),
     'contact_email':        ('270__m', False),
     'open_access':          ('542__l', False),
     'licence':              ('540__a', False),
@@ -106,7 +109,7 @@ def get_domain_metadata(domain_class, fieldset, bfo):
         ret[fieldname] = read_domain_specific_medata_field_from_marc(bfo, fieldname, multiple)
     return ret
 
-def get_record_details(recid):
+def get_record_details(recid, curr_user_email):
     from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
         recdocs = BibRecDocs(recid)
@@ -131,10 +134,15 @@ def get_record_details(recid):
                         'url': afile.get_full_url(),
                   } for afile in latest_files ],
     }
- 
+
     # add basic metadata fields
     for fieldname in basic_fields_meta:
-        ret[fieldname] = read_basic_medata_field_from_marc(bfo, fieldname)
+        if fieldname == "open_access" and read_basic_medata_field_from_marc(bfo, fieldname) == "restricted":
+            if read_basic_medata_field_from_marc(bfo, "publisher") != curr_user_email:
+                ret['files'] = "RESTRICTED"
+                ret[fieldname] = read_basic_medata_field_from_marc(bfo, fieldname)
+        else:
+            ret[fieldname] = read_basic_medata_field_from_marc(bfo, fieldname)
 
     # add 'PID'
     for fx in bfo.fields('0247_'):
@@ -178,7 +186,7 @@ class ListRecordsByDomain(B2Resource):
     """
     The resource representing the collection of all records, filtered by domain
 
-    Can only list the available resources, 
+    Can only list the available resources,
     use POST to /depositions to create a new one
     """
     def get(self, oauth, domain_name, **kwargs):
@@ -192,17 +200,19 @@ class ListRecordsByDomain(B2Resource):
         domain = Bib98x.query.filter_by(value=domain_name).first()
         if domain is None:
             abort(404, status=404,
-                  message="Please try a valid domain name: " +
+                  message="Invalid domain name or Empty domain. Valid domain names: " +
                          ", ".join(metadata_classes().keys()))
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
         record_ids = [record.id_bibrec for record in domain_records]
 
+        curr_user_email = current_user['email']
+
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
         for record_id in record_ids[start : stop]:
-            record_details = get_record_details(record_id)
+            record_details = get_record_details(record_id, curr_user_email)
             record_list.append(record_details)
         if stop < len(record_ids):
             record_list.append('...') # continuation indicator
@@ -213,7 +223,7 @@ class ListRecords(B2Resource):
     """
     The resource representing the collection of all records
 
-    Can only list the available records, 
+    Can only list the available records,
     use POST to /depositions to create a new one
     """
     def get(self, oauth, **kwargs):
@@ -228,12 +238,12 @@ class ListRecords(B2Resource):
 
         # enumerate all valid ids
         record_ids = perform_request_search(of="id", sf="005")
-
+        curr_user_email = current_user['email']
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
         for record_id in record_ids[start : stop]:
-            record_details = get_record_details(record_id)
+            record_details = get_record_details(record_id, curr_user_email)
             record_list.append(record_details)
         if stop < len(record_ids):
             record_list.append('...') # continuation indicator
@@ -245,7 +255,8 @@ class RecordRes(B2Resource):
     A record resource is (for now) immutable, can be read with GET
     """
     def get(self, oauth, record_id, **kwargs):
-        record_details = get_record_details(record_id)
+        curr_user_email = current_user['email']
+        record_details = get_record_details(record_id, curr_user_email)
         if not record_details:
             abort(404, message="Deposition not found", status=404)
         return record_details
@@ -261,7 +272,7 @@ class ListDepositions(B2Resource):
         #       but right now we don't know which ones belong to this user
         abort(405)
 
-    def post(self, oauth, **kwargs): 
+    def post(self, oauth, **kwargs):
         """
         Creates a new deposition
 
@@ -272,10 +283,12 @@ class ListDepositions(B2Resource):
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
         deposit_id = uuid.uuid1().hex
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        deposit_id_folder = 'temp/' + deposit_id
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id_folder)
+
         os.makedirs(upload_dir)
         location = "/api/deposition/" + deposit_id,
-        json_data = { 
+        json_data = {
             'message': "New deposition created",
             'location': "/api/deposition/" + deposit_id,
         }
@@ -313,16 +326,17 @@ class DepositionFiles(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        deposit_id_folder = 'temp/' + deposit_id
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id_folder)
         if not os.path.exists(upload_dir):
             # don't use abort(404), it adds its own bad error message
             return {'message':'bad deposit_id parameter', 'status':404}, 404
         self.check_user(deposit_id)
-        files = [{'name': f['name'], 'size': f['size'] } 
-                 for f in get_depositing_files_metadata(deposit_id)]
+        files = [{'name': f['name'], 'size': f['size'] }
+                 for f in get_depositing_files_metadata(deposit_id_folder)]
         return files
 
-    def post(self, oauth, deposit_id, **kwargs): 
+    def post(self, oauth, deposit_id, **kwargs):
         """
         Adds a new deposition file
 
@@ -333,7 +347,8 @@ class DepositionFiles(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
+        deposit_id_folder = 'temp/' + deposit_id
+        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id_folder)
         if not os.path.exists(upload_dir):
             # don't use abort(404), it adds its own bad error message
             return {'message':'bad deposit_id parameter', 'status':404}, 404
@@ -355,17 +370,21 @@ class DepositionCommit(B2Resource):
     The resource representing a deposition commit action.
     By POSTing valid metadata here the deposition is transformed into a record
     """
-    def post(self, oauth, deposit_id, **kwargs): 
+    def post(self, oauth, deposit_id, **kwargs):
         """
         Creates a new deposition
 
         Test this with:
-        $ curl -v -X POST -H "Content-Type: application/json" 
-          -d '{"domain":"generic", "title":"REST Test Title", "description":"REST Test Description"}' 
+        $ curl -v -X POST -H "Content-Type: application/json"
+          -d '{"domain":"generic", "title":"REST Test Title", "description":"REST Test Description"}'
           http://0.0.0.0:4000/api/deposition/DEPOSITION_ID/commit\?access_token\=xxx
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
+
+        src = CFG_B2SHARE_UPLOAD_FOLDER + 'temp/' + deposit_id
+        shutil.move(src, CFG_B2SHARE_UPLOAD_FOLDER)
+
         upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
         if not os.path.exists(upload_dir):
             # don't use abort(404), it adds its own bad error message
@@ -382,14 +401,14 @@ class DepositionCommit(B2Resource):
         if domain in metadata_classes():
             metaclass = metadata_classes()[domain]
             meta = metaclass()
-        else: 
+        else:
             domains = ", ".join(metadata_classes().keys())
             json_data = {
                 'message': 'Invalid domain. The submitted metadata must '+\
                             'contain a valid "domain" field. Valid domains '+\
                             'are: '+ domains,
                 'status': 400,
-            }            
+            }
             return json_data, 400
 
         if 'open_access' not in form:
@@ -416,14 +435,12 @@ class DepositionCommit(B2Resource):
             from invenio.legacy.bibsched.bibtask import task_low_level_submission
             task_low_level_submission('bibupload', 'webdeposit', '--priority', '1', '-r', tmp_file)
 
-            #TODO: remove the existing deposition folder?; the user can now 
-            #      repeatedly create records with the same deposition
-
             location = "/api/record/%d" % (recid,)
-            json_data = { 
+            json_data = {
                 'message': "New record submitted for processing",
                 'location': "/api/record/%d" % (recid,)
             }
+
             return json_data, 201, {'Location':location} # return location header
         else:
             fields = {}

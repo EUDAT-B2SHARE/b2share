@@ -148,6 +148,11 @@ def add_file_info(rec, form, email, sub_id, recid):
             email)
     for metadata in get_depositing_files_metadata(sub_id):
         path = metadata['file']
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
+        prefix = CFG_B2SHARE_UPLOAD_FOLDER + 'temp'
+        if path.startswith(prefix):
+            path = path[:7] + path[12:]
+
         record_add_field(rec, 'FFT',
                          subfields=[('a', path),
                          ('n', metadata['name']), # name of the file
