@@ -90,7 +90,13 @@ def add_basic_fields(rec, form, email):
         if form.get('resource_type'):
             fields = form.getlist('resource_type')
             for f in fields:
-                record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['resource_type']))])
+                record_add_field(rec, '980', subfields=[('a', remove_html_markup(f))])
+        # special case for the Linguistics domain:
+        # all the ling_resource_type(s) are also resource_type(s), going in field 980
+        if form.get('ling_resource_type'):
+            fields = form.getlist('ling_resource_type')
+            for f in fields:
+                record_add_field(rec, '980', subfields=[('a', remove_html_markup(f))])
 
         if form.get('alternate_identifier'):
             record_add_field(rec, '024',
