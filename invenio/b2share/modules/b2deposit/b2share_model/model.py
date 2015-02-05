@@ -148,7 +148,7 @@ class SubmissionMetadata(db.Model):
         self.field_args['resource_type'] = {
             'data_provide': 'select',
             'cardinality': 'n',
-            'data_source': ['Text', 'Image', 'Video', 'Other'],
+            'data_source': ['Text', 'Image', 'Video', 'Audio', 'Time-Series', 'Other'],
             'description': 'Select the type of the resource.'
         }
         self.field_args['alternate_identifier'] = {

@@ -151,9 +151,10 @@
   });
 </script>
 
+{# setup typeahead #}
 <script type="text/javascript">
-  // setup typeahead
   $(document).ready(function() {
+    'use strict';
     var substringMatcher = function(strs) {
         return function findMatches(q, cb) {
             var matches = [];
@@ -182,6 +183,7 @@
   });
 </script>
 
+{# dynamically add license selector button #}
 <script type="text/javascript">
   $(document).ready(function() {
     'use strict';
@@ -195,3 +197,13 @@
     });
   });
 </script>
+
+{# if Linguistics domain, remove the duplicated resource_type input #}
+{% if metadata.domain.lower() == 'linguistics' -%}
+<script type="text/javascript">
+  $(document).ready(function() {
+    'use strict';
+    $('#resource_type').closest('tr').remove();
+  });
+</script>
+{%- endif %}

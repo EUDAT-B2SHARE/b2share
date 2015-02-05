@@ -278,7 +278,7 @@ img.desaturate {
     display: none;
 }
 
-input, textarea {
+input[type='text'], textarea {
     width: 270px;
 }
 textarea {
