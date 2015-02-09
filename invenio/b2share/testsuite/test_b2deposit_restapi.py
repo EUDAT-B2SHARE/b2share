@@ -15,7 +15,7 @@ from invenio.modules.accounts.models import User
 from werkzeug.security import gen_salt
 from flask import current_app
 
-import requests, logging, os, json
+import requests, logging, os, json, time
 # only log warnings (building requests)
 logging.getLogger("requests").setLevel(logging.WARNING)
 # logging.getLogger("requests").setLevel(logging.DEBUG)
@@ -258,13 +258,59 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         self.assertTrue(body_json['location'].startswith("/api/record/"))
         location = body_json['location']
 
-        # # get record (via location)
-        # record = api.get_by_uri(location)
-        # print record
-        # print record.json()
-
-        # TODO: download file
-
+        # get record (via location) and wait for it to be made
+        record = None
+        i = 0
+        while True:
+            record = api.get_by_uri(location)
+            print "record: %s" % record.status_code
+            if record.status_code == 200:
+                break
+            self.assertTrue(i < 10)
+            print "sleeping(%s)" % i
+            time.sleep(5)
+            i += 1
+        # verify record
+        self.assertTrue(record.status_code == 200)
+        body_json = record.json()
+        self.assertTrue(isinstance(body_json, dict))
+        self.assertTrue('files' in body_json)
+        self.assertTrue(isinstance(body_json['files'], list))
+        self.assertEquals(len(body_json['files']), 1)
+        self.assertTrue('url' in body_json['files'][0])
+        self.assertTrue('testfile1' in body_json['files'][0]['url'])
+        self.assertTrue('name' in body_json['files'][0])
+        self.assertTrue('testfile1' in body_json['files'][0]['name'])
+        self.assertTrue('size' in body_json['files'][0])
+        self.assertEquals(body_json['files'][0]['size'], 11)
+        self.assertTrue('domain' in body_json)
+        self.assertEquals(body_json['domain'], "generic")
+        self.assertTrue('description' in body_json)
+        self.assertEquals(body_json['description'], "Test file 1 via RestAPI description.")
+        self.assertTrue('contributors' in body_json)
+        self.assertEquals(len(body_json['contributors']), 0)
+        self.assertTrue('creator' in body_json)
+        self.assertEquals(len(body_json['creator']), 0)
+        self.assertTrue('recordID' in body_json)
+        self.assertTrue(isinstance(body_json['recordID'], int))
+        self.assertTrue('title' in body_json)
+        self.assertEquals(body_json['title'], "Test File 1 via RestAPI")
+        self.assertTrue('open_access' in body_json)
+        self.assertEquals(body_json['open_access'], "open")
+        self.assertTrue('version' in body_json)
+        self.assertEquals(body_json['version'], "")
+        self.assertTrue('contact_email' in body_json)
+        self.assertEquals(body_json['contact_email'], "")
+        self.assertTrue('licence' in body_json)
+        self.assertEquals(body_json['licence'], "")
+        self.assertTrue('publication_date' in body_json)
+        self.assertEquals(body_json['publication_date'], "")
+        self.assertTrue('keywords' in body_json)
+        self.assertEquals(len(body_json['keywords']), 0)
+        self.assertTrue('alternate_identifier' in body_json)
+        self.assertEquals(body_json['alternate_identifier'], "")
+        self.assertTrue('resource_type' in body_json)
+        self.assertEquals(len(body_json['resource_type']), 0)
 
     def test_commit_into_invalid_deposit(self):
         pass
