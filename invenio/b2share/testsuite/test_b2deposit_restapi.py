@@ -266,7 +266,7 @@ class TestB2depositRestapiRecord(InvenioTestCase):
             print "record: %s" % record.status_code
             if record.status_code == 200:
                 break
-            self.assertTrue(i < 10)
+            self.assertTrue(i < 100)
             print "sleeping(%s)" % i
             time.sleep(5)
             i += 1

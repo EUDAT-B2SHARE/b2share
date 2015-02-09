@@ -77,6 +77,8 @@ before_script:
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create || echo ':('"
   - "/home/travis/build/EUDAT-B2SHARE/b2share/install/start_b2share.sh &"
+  - "which bibsched"
+  - "$VIRTUAL_ENV/bin/bibsched restart"
   - "sleep 120"
 #  - "inveniomanage demosite create"
 #  - "inveniomanage demosite populate"
