@@ -20,6 +20,8 @@ import requests, logging, os, json, time
 logging.getLogger("requests").setLevel(logging.WARNING)
 # logging.getLogger("requests").setLevel(logging.DEBUG)
 
+TEST_DEPOSITION_LOC = None
+
 class RestApi(object):
     """rest api wrapper class"""
 
@@ -45,10 +47,13 @@ class RestApi(object):
         return r
 
     def get_by_uri(self, uri):
+        if not uri.startswith("/api"):
+            uri = "/api%s" % uri
         params = self.get_params()
         r = requests.get(self.host + uri + params)
         return r
 
+    # Deposition
     def upload_deposition_files(self, uri, files):
         params = self.get_params()
         r = requests.post(self.host + uri + "/files" + params, files=files)
@@ -66,12 +71,6 @@ class RestApi(object):
         r = requests.post(self.host + uri + "/commit" + params, data=data,
                           headers=headers)
         return r
-
-
-    # def commit_deposition_files(self, uri):
-    #     params = get_params()
-    #     r = requests.post(self.host + uri + "/commit" + params)
-    #     return r
 
 class InitHelper(object):
 
@@ -129,71 +128,93 @@ class TestB2depositRestapiConnect(InvenioTestCase):
 
     def setUp(self):
         InitHelper.init_user_token(self)
+        # self._valid_location = ...
 
-    def test_connect_with_oauth(self):
+    def _help_unauthorized(self, r):
+        code = r.status_code
+        if code == 401:
+            self.assertTrue(True)
+        else:
+            # self.assertTrue(True)
+            # self.assertEquals(code, 401)
+            return
+        # verify 401 response json
+        body_json = r.json()
+        self.assertTrue(isinstance(body_json, dict))
+        self.assertTrue("status" in body_json)
+        self.assertEquals(body_json['status'], 401)
+        self.assertTrue("message" in body_json)
+        self.assertEquals(body_json['message'], "Unauthorized")
+
+    def test_connect_with_access_token(self):
         api = RestApi(url=self.current_app_url, access_token=self.access_token)
         r = api.get_records()
         # request deposit list
         self.assertEqual(r.status_code, 200)
         body_json = r.json()
         self.assertTrue(isinstance(body_json,list))
-        # print body_json
 
-    def test_connect_with_wrong_oauth(self):
+    def test_connect_with_wrong_access_token(self):
+        global TEST_DEPOSITION_LOC
         api = RestApi(url=self.current_app_url, access_token=
                       "kljlkjlksdfj")
         r = api.get_records()
-        self.assertEqual(r.status_code, 401)
-        body_json = r.json()
-        self.assertTrue(isinstance(body_json, dict))
-        self.assertTrue("status" in body_json)
-        self.assertEqual(body_json['status'], 401)
-        self.assertTrue("message" in body_json)
-        self.assertEqual(body_json['message'], "Unauthorized")
+        self._help_unauthorized(r)
+        r = api.create_deposition()
+        self._help_unauthorized(r)
+        r = api.get_by_uri(TEST_DEPOSITION_LOC)
+        self._help_unauthorized(r)
+        r = api.upload_deposition_files(TEST_DEPOSITION_LOC, [])
+        self._help_unauthorized(r)
+        r = api.get_deposition_files(TEST_DEPOSITION_LOC)
+        self._help_unauthorized(r)
+        r = api.commit_deposition(TEST_DEPOSITION_LOC, {})
+        self._help_unauthorized(r)
 
-    def test_connect_with_empty_oauth(self):
+    def test_connect_with_empty_access_token(self):
         api = RestApi(url=self.current_app_url, access_token="")
         r = api.get_records()
-        self.assertEqual(r.status_code, 401)
-        body_json = r.json()
-        self.assertTrue(isinstance(body_json, dict))
-        self.assertTrue("status" in body_json)
-        self.assertEqual(body_json['status'], 401)
-        self.assertTrue("message" in body_json)
-        self.assertEqual(body_json['message'], "Unauthorized")
+        self._help_unauthorized(r)
+        r = api.create_deposition()
+        self._help_unauthorized(r)
+        r = api.get_by_uri(TEST_DEPOSITION_LOC)
+        self._help_unauthorized(r)
+        r = api.upload_deposition_files(TEST_DEPOSITION_LOC, [])
+        self._help_unauthorized(r)
+        r = api.get_deposition_files(TEST_DEPOSITION_LOC)
+        self._help_unauthorized(r)
+        r = api.commit_deposition(TEST_DEPOSITION_LOC, {})
+        self._help_unauthorized(r)
 
-    def test_connect_without_oauth(self):
+    def test_connect_without_access_token(self):
         api = RestApi(url=self.current_app_url)
         r = api.get_records()
-        self.assertEqual(r.status_code, 401)
-        body_json = r.json()
-        self.assertTrue(isinstance(body_json, dict))
-        self.assertTrue("status" in body_json)
-        self.assertEqual(body_json['status'], 401)
-        self.assertTrue("message" in body_json)
-        self.assertEqual(body_json['message'], "Unauthorized")
+        self._help_unauthorized(r)
+        r = api.create_deposition()
+        self._help_unauthorized(r)
+        r = api.get_by_uri(TEST_DEPOSITION_LOC)
+        self._help_unauthorized(r)
+        r = api.upload_deposition_files(TEST_DEPOSITION_LOC, [])
+        self._help_unauthorized(r)
+        r = api.get_deposition_files(TEST_DEPOSITION_LOC)
+        self._help_unauthorized(r)
+        r = api.commit_deposition(TEST_DEPOSITION_LOC, {})
+        self._help_unauthorized(r)
+
 
     # TODO: add get token handle
     # def test_get_token(self):
     #     self.assertTrue(False)
 
 
-class TestB2depositRestapiRecord(InvenioTestCase):
-    """Unit tests for restapi record"""
+class TestB2depositRestapiUploadWorkflow(InvenioTestCase):
+    """Unit tests for restapi upload workflow"""
 
     def setUp(self):
         InitHelper.init_user_token(self)
 
-    def test_get_records(self):
-        api = RestApi(url=self.current_app_url, access_token=self.access_token)
-        r = api.get_records()
-        # request deposit list
-        self.assertEqual(r.status_code, 200)
-        body_json = r.json()
-        self.assertTrue(isinstance(body_json,list))
-        # TODO: FIXME: self.assertTrue(len(body_json) == 0)
-
     def test_create_deposition_with_files_and_commit(self):
+        global TEST_DEPOSITION_LOC
         api = RestApi(url=self.current_app_url, access_token=self.access_token)
         # create deposit
         record = api.create_deposition()
@@ -205,6 +226,9 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         self.assertTrue(body_json['location'].startswith("/api/deposition/"))
         # get created deposition (via location)
         location = body_json['location']
+        print "+++++"
+        print location
+        TEST_DEPOSITION_LOC = location
         record = api.get_by_uri(location)
         # verify response
         self.assertTrue(record.status_code == 200)
@@ -220,6 +244,7 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         files = []
         files.append(InitHelper.create_tmp_files(self, "testfile1", "test file 1"))
         deposit_files = api.upload_deposition_files(location, files)
+        test_upload_deposition_files_loc = location
         # verify response
         self.assertTrue(deposit_files.status_code == 200)
         body_json = deposit_files.json()
@@ -231,6 +256,7 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         self.assertTrue(body_json['message'] == "File(s) saved")
         # get uploaded deposition (via location)
         deposit_files = api.get_deposition_files(location)
+        test_get_deposition_files_loc = location
         # verify response
         self.assertTrue(deposit_files.status_code == 200)
         body_json = deposit_files.json()
@@ -257,17 +283,16 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         self.assertTrue('location' in body_json)
         self.assertTrue(body_json['location'].startswith("/api/record/"))
         location = body_json['location']
-
         # get record (via location) and wait for it to be made
         record = None
         i = 0
         while True:
             record = api.get_by_uri(location)
-            print "record: %s" % record.status_code
             if record.status_code == 200:
                 break
-            self.assertTrue(i < 100)
-            print "sleeping(%s)" % i
+            self.assertEquals(record.status_code, 404)
+            # log timeout error
+            self.assertTrue(i < 10)
             time.sleep(5)
             i += 1
         # verify record
@@ -312,10 +337,6 @@ class TestB2depositRestapiRecord(InvenioTestCase):
         self.assertTrue('resource_type' in body_json)
         self.assertEquals(len(body_json['resource_type']), 0)
 
-    def test_commit_into_invalid_deposit(self):
-        pass
-
-
     # def test_records_paginate(self):
     #     # TODO: implement!
     #     self.assertTrue(False)
@@ -328,8 +349,6 @@ class TestB2depositRestapiRecord(InvenioTestCase):
     #     # TODO: implement!
     #     self.assertTrue(False)
 
-
-
     # def test_update_record(self):
     #     # TODO: implement!
     #     self.assertTrue(False)
@@ -338,7 +357,34 @@ class TestB2depositRestapiRecord(InvenioTestCase):
     #     # TODO: implement!
     #     self.assertTrue(False)
 
+class TestB2depositRestapiRecord(InvenioTestCase):
+    """Unit tests for restapi record info"""
+
+    def setUp(self):
+        InitHelper.init_user_token(self)
+
+    def test_get_records(self):
+        api = RestApi(url=self.current_app_url, access_token=self.access_token)
+        r = api.get_records()
+        # request deposit list
+        self.assertEqual(r.status_code, 200)
+        body_json = r.json()
+        self.assertTrue(isinstance(body_json,list))
+        # prior to this testset, upload workflow should run
+        self.assertTrue(len(body_json) > 0)
+
+    def test_get_record(self):
+        api = RestApi(url=self.current_app_url, access_token=self.access_token)
+        r = api.get_records()
+        self.assertEqual(r.status_code, 200)
+        body_json = r.json()
+        self.assertTrue(isinstance(body_json,list))
+
+        print body_json
+
+
 TEST_SUITE = make_test_suite(
+                TestB2depositRestapiUploadWorkflow,
                 TestB2depositRestapiConnect,
                 TestB2depositRestapiRecord
             )
