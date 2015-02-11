@@ -49,9 +49,8 @@ def format_element(bfo):
         if 'c' in pub:
             ret += html.format('Publication Date', pub['c'])
 
-    licence = bfo.field("540__a")
-    if licence:
-        ret += html.format('Licence', licence)
+    licence = bfo.field("540__a") or 'Unspecified'
+    ret += html.format('Licence', licence)
 
     uploader = bfo.field("8560_f")
     if uploader:
