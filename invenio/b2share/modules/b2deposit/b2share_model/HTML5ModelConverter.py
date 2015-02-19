@@ -258,11 +258,30 @@ class HiddenInput(Input):
 
 class HiddenField(_HiddenField):
     widget = HiddenInput()
-    value = ""
 
     def __init__(self, hidden="", value="", **kwargs):
         self.value = value
         super(HiddenField, self).__init__(**kwargs)
+
+
+class PrefilledStringInput(Input):
+    input_type = "text"
+
+    def __call__(self, field, value="", **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+
+        return HTMLString(
+            '<input type=text {0}>'.format(
+                self.html_params(value=field.value, name=field.id, **kwargs)))
+
+
+class PrefilledStringField(StringField):
+    widget = PrefilledStringInput()
+
+    def __init__(self, value="", **kwargs):
+        self.value = value
+        super(StringField, self).__init__(**kwargs)
 
 
 class HTML5ModelConverter(ModelConverter):
@@ -315,5 +334,8 @@ class HTML5ModelConverter(ModelConverter):
 
         if 'placeholder' in field_args:
             return PlaceholderStringField(**field_args)
+
+        if 'value' in field_args:
+            return PrefilledStringField(**field_args)
 
         return StringField(**field_args)
