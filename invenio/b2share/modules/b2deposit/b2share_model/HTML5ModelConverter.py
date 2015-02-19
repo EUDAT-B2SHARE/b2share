@@ -269,10 +269,6 @@ class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
 
-    def handle_hidden_field(self, field_args):
-        if 'hidden' in field_args:
-            return HiddenField(**field_args)
-
     @converts('Integer', 'SmallInteger')
     def handle_integer_types(self, column, field_args, **extra):
         unsigned = getattr(column.type, 'unsigned', False)
@@ -289,16 +285,14 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
-        hidden = self.handle_hidden_field(field_args)
-        if hidden:
-            return hidden
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
-        hidden = self.handle_hidden_field(field_args)
-        if hidden:
-            return hidden
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
         return DateField(**field_args)
 
     @converts('Boolean')
@@ -307,9 +301,8 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
-        hidden = self.handle_hidden_field(field_args)
-        if hidden:
-            return hidden
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
 
         if 'data_provide' in field_args:
             if field_args['data_provide'] == 'typeahead':
