@@ -166,12 +166,10 @@ class SubmissionMetadata(db.Model):
             'description': 'Contact email information for this record'
         }
 
+
 def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
     details."""
-
-    if not hasattr(cfg, 'fields'):
-        cfg.fields = []
 
     def basic_fields():
         return [f['name'] for f in cfg.fields if not f.get('extra')]
@@ -179,12 +177,24 @@ def _create_metadata_class(cfg):
     def optional_fields():
         return [f['name'] for f in cfg.fields if f.get('extra')]
 
+    # The following function and call just add all external attrs manually
+    def is_external_attr(n):
+        # don't like this bit; problem is we don't want to include the
+        # db import and I don't know how to exclude them except via name
+        if n in ['db', 'fields']:
+            return False
+
+        return not n.startswith('__')
+
     def __init__(self):
         super(type(self), self).__init__()
         if len(cfg.fields) > 0:
             self.fieldsets.append(
                 FieldSet(cfg.domain, basic_fields=basic_fields(), 
                                      optional_fields=optional_fields()))
+
+    if not hasattr(cfg, 'fields'):
+        cfg.fields = []
 
     clsname = cfg.domain + "Metadata"
 
@@ -195,15 +205,6 @@ def _create_metadata_class(cfg):
                             db.ForeignKey('submission_metadata.id'),
                             primary_key=True),
             'field_args': {}}
-
-    #The following function and call just add all external attrs manually
-    def is_external_attr(n):
-        # don't like this bit; problem is we don't want to include the
-        # db import and I don't know how to exclude them except via name
-        if n in ['db', 'fields']:
-            return False
-
-        return not n.startswith('__')
 
     for attr in (filter(is_external_attr, dir(cfg))):
         args[attr] = getattr(cfg, attr)
