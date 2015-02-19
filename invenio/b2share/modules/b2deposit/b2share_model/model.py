@@ -57,7 +57,7 @@ class SubmissionMetadata(db.Model):
 
     # optional
     contributors = db.Column(db.String(256))
-    #language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
+    # language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     language = db.Column(db.String(128), default=language_default)
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
@@ -65,11 +65,10 @@ class SubmissionMetadata(db.Model):
 
     contact_email = db.Column(db.String(256))
 
-    basic_fields = ['title', 'description', 'creator', 'open_access',
-                    'licence', 'publisher', 'publication_date', 'language', 'keywords',
-                    'contact_email']
-    optional_fields = ['contributors', 'resource_type',
-                       'alternate_identifier', 'version']
+    basic_fields = ['title', 'description', 'creator', 'open_access', 'licence',
+                    'publication_date', 'keywords', 'contact_email']
+    optional_fields = ['contributors', 'resource_type', 'alternate_identifier',
+                       'version', 'publisher', 'language', ]
 
     # using joined table inheritance for the specific domains
     submission_type = db.Column(db.String(50))
@@ -97,13 +96,11 @@ class SubmissionMetadata(db.Model):
                            'its relevance quickly.'
         }
         self.field_args['publisher'] = {
-            'hidden': True,
-            'value': self.publisher_default
-            # 'description':
-            # 'Here should be stored the site that will host the BE2Share ' +\
-            # 'container, so that in case of access problems, people can ' +\
-            # 'be contacted. This element can be created automatically ' +\
-            # 'dependent on the centre.'
+            'value': self.publisher_default,
+            'description': 'Here should be stored the site that will host the B2SHARE '
+                           'container, so that in case of access problems, people can '
+                           'be contacted. This element can be created automatically '
+                           'dependent on the centre.'
         }
         self.field_args['publication_date'] = {
             'hidden': True,
@@ -142,10 +139,8 @@ class SubmissionMetadata(db.Model):
                            'were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
-            'hidden': True,
             'value': self.language_default,
-            # 'description':
-            # 'The name of the language the document is written in.'
+            'description': 'The name of the language the document is written in.'
         }
         self.field_args['resource_type'] = {
             'data_provide': 'select',
