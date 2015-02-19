@@ -192,6 +192,8 @@ def _create_metadata_class(cfg):
         if len(cfg.fields) > 0:
             basic_fields = [f['name'] for f in cfg.fields if not f.get('extra')]
             optional_fields = [f['name'] for f in cfg.fields if f.get('extra')]
+            basic_intersect = set(basic_fields).intersection(parent.basic_fields)
+            optional_intersect = set(optional_fields).intersection(parent.optional_fields)
             basic_dups = [x for x, y in collections.Counter(basic_fields).items() if y > 1]
             optional_dups = [x for x, y in collections.Counter(optional_fields).items() if y > 1]
 
@@ -199,6 +201,10 @@ def _create_metadata_class(cfg):
                 raise AttributeError("'{0}' duplicates in basic fields".format(", ".join(basic_dups)))
             if optional_dups:
                 raise AttributeError("'{0}' duplicates in optional fields".format(", ".join(optional_dups)))
+            if basic_intersect:
+                raise AttributeError("'{0}' conflicts in basic fields".format(", ".join(basic_intersect)))
+            if optional_intersect:
+                raise AttributeError("'{0}' conflicts in optional fields".format(", ".join(optional_intersect)))
 
             self.fieldsets.append(
                 FieldSet(cfg.domain,
