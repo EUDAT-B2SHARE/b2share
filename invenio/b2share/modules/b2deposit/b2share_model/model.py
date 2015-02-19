@@ -171,12 +171,6 @@ def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
     details."""
 
-    def basic_fields():
-        return [f['name'] for f in cfg.fields if not f.get('extra')]
-
-    def optional_fields():
-        return [f['name'] for f in cfg.fields if f.get('extra')]
-
     # The following function and call just add all external attrs manually
     def is_external_attr(n):
         # don't like this bit; problem is we don't want to include the
@@ -189,9 +183,12 @@ def _create_metadata_class(cfg):
     def __init__(self):
         super(type(self), self).__init__()
         if len(cfg.fields) > 0:
+            basic_fields = [f['name'] for f in cfg.fields if not f.get('extra')]
+            optional_fields = [f['name'] for f in cfg.fields if f.get('extra')]
             self.fieldsets.append(
-                FieldSet(cfg.domain, basic_fields=basic_fields(), 
-                                     optional_fields=optional_fields()))
+                FieldSet(cfg.domain,
+                         basic_fields=basic_fields,
+                         optional_fields=optional_fields))
 
     if not hasattr(cfg, 'fields'):
         cfg.fields = []
