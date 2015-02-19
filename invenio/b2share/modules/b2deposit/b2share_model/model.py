@@ -15,6 +15,8 @@
 ## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+import collections
+
 from invenio.ext.sqlalchemy import db
 from flask import current_app
 from datetime import date
@@ -181,10 +183,23 @@ def _create_metadata_class(cfg):
         return not n.startswith('__')
 
     def __init__(self):
-        super(type(self), self).__init__()
+        """
+        Init method for the newly created class type
+        """
+        parent = super(type(self), self)
+        parent.__init__()
+
         if len(cfg.fields) > 0:
             basic_fields = [f['name'] for f in cfg.fields if not f.get('extra')]
             optional_fields = [f['name'] for f in cfg.fields if f.get('extra')]
+            basic_dups = [x for x, y in collections.Counter(basic_fields).items() if y > 1]
+            optional_dups = [x for x, y in collections.Counter(optional_fields).items() if y > 1]
+
+            if basic_dups:
+                raise AttributeError("'{0}' duplicates in basic fields".format(", ".join(basic_dups)))
+            if optional_dups:
+                raise AttributeError("'{0}' duplicates in optional fields".format(", ".join(optional_dups)))
+
             self.fieldsets.append(
                 FieldSet(cfg.domain,
                          basic_fields=basic_fields,
