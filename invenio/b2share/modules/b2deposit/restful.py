@@ -66,6 +66,7 @@ basic_fields_meta = {
     'domain':               ('980__a', False), #\ same marctag
     'resource_type':        ('980__a', True),  #/ same marctag
     'publication_date':     ('260__c', False),
+    'uploaded_by':          ('8560_f', False),
     'contact_email':        ('270__m', False),
     'open_access':          ('542__l', False),
     'licence':              ('540__a', False),
@@ -106,7 +107,7 @@ def get_domain_metadata(domain_class, fieldset, bfo):
         ret[fieldname] = read_domain_specific_metadata_field_from_marc(bfo, fieldname, multiple)
     return ret
 
-def get_record_details(recid):
+def get_record_details(recid, curr_user_email):
     from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
         recdocs = BibRecDocs(recid)
@@ -134,7 +135,12 @@ def get_record_details(recid):
 
     # add basic metadata fields
     for fieldname in basic_fields_meta:
-        ret[fieldname] = read_basic_metadata_field_from_marc(bfo, fieldname)
+        if fieldname == "open_access" and read_basic_metadata_field_from_marc(bfo, fieldname) == "restricted":
+            if read_basic_metadata_field_from_marc(bfo, "uploaded_by") != curr_user_email:
+                ret['files'] = "RESTRICTED"
+                ret[fieldname] = read_basic_metadata_field_from_marc(bfo, fieldname)
+        else:
+            ret[fieldname] = read_basic_metadata_field_from_marc(bfo, fieldname)
 
     # add 'PID'
     for fx in bfo.fields('0247_'):
@@ -197,12 +203,13 @@ class ListRecordsByDomain(B2Resource):
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
         record_ids = [record.id_bibrec for record in domain_records]
+        curr_user_email = current_user['email']
 
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
         for record_id in record_ids[start : stop]:
-            record_details = get_record_details(record_id)
+            record_details = get_record_details(record_id, curr_user_email)
             record_list.append(record_details)
         if stop < len(record_ids):
             record_list.append('...') # continuation indicator
@@ -228,12 +235,12 @@ class ListRecords(B2Resource):
 
         # enumerate all valid ids
         record_ids = perform_request_search(of="id", sf="005")
-
+        curr_user_email = current_user['email']
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
         for record_id in record_ids[start : stop]:
-            record_details = get_record_details(record_id)
+            record_details = get_record_details(record_id, curr_user_email)
             record_list.append(record_details)
         if stop < len(record_ids):
             record_list.append('...') # continuation indicator
@@ -245,7 +252,8 @@ class RecordRes(B2Resource):
     A record resource is (for now) immutable, can be read with GET
     """
     def get(self, oauth, record_id, **kwargs):
-        record_details = get_record_details(record_id)
+        curr_user_email = current_user['email']
+        record_details = get_record_details(record_id, curr_user_email)
         if not record_details:
             abort(404, message="Deposition not found", status=404)
         return record_details
