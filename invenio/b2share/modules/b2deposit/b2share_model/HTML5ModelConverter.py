@@ -258,20 +258,35 @@ class HiddenInput(Input):
 
 class HiddenField(_HiddenField):
     widget = HiddenInput()
-    value = ""
 
     def __init__(self, hidden="", value="", **kwargs):
         self.value = value
         super(HiddenField, self).__init__(**kwargs)
 
 
+class PrefilledStringInput(Input):
+    input_type = "text"
+
+    def __call__(self, field, value="", **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+
+        return HTMLString(
+            '<input type=text {0}>'.format(
+                self.html_params(value=field.value, name=field.id, **kwargs)))
+
+
+class PrefilledStringField(StringField):
+    widget = PrefilledStringInput()
+
+    def __init__(self, value="", **kwargs):
+        self.value = value
+        super(StringField, self).__init__(**kwargs)
+
+
 class HTML5ModelConverter(ModelConverter):
     def __init__(self, extra_converters=None):
         super(HTML5ModelConverter, self).__init__(extra_converters)
-
-    def handle_hidden_field(self, field_args):
-        if 'hidden' in field_args:
-            return HiddenField(**field_args)
 
     @converts('Integer', 'SmallInteger')
     def handle_integer_types(self, column, field_args, **extra):
@@ -289,16 +304,14 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('DateTime')
     def conv_DateTime(self, field_args, **extra):
-        hidden = self.handle_hidden_field(field_args)
-        if hidden:
-            return hidden
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
         return DateTimeField(**field_args)
 
     @converts('Date')
     def conv_Date(self, field_args, **extra):
-        hidden = self.handle_hidden_field(field_args)
-        if hidden:
-            return hidden
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
         return DateField(**field_args)
 
     @converts('Boolean')
@@ -307,9 +320,8 @@ class HTML5ModelConverter(ModelConverter):
 
     @converts('String')
     def conv_String(self, field_args, **extra):
-        hidden = self.handle_hidden_field(field_args)
-        if hidden:
-            return hidden
+        if 'hidden' in field_args:
+            return HiddenField(**field_args)
 
         if 'data_provide' in field_args:
             if field_args['data_provide'] == 'typeahead':
@@ -322,5 +334,8 @@ class HTML5ModelConverter(ModelConverter):
 
         if 'placeholder' in field_args:
             return PlaceholderStringField(**field_args)
+
+        if 'value' in field_args:
+            return PrefilledStringField(**field_args)
 
         return StringField(**field_args)
