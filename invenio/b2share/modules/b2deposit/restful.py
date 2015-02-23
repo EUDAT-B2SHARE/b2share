@@ -418,7 +418,7 @@ class DepositionCommit(B2Resource):
         meta_form = MetaForm(form, meta, csrf_enabled=False)
 
         if meta_form.validate_on_submit():
-            recid, marc = create_marc(form, deposit_id, current_user['email'])
+            recid, marc = create_marc(form, deposit_id, current_user['email'], meta)
             tmp_file = write_marc_to_temp_file(marc)
             # all usual tasks have priority 0; we want the bibuploads to run first
             from invenio.legacy.bibsched.bibtask import task_low_level_submission

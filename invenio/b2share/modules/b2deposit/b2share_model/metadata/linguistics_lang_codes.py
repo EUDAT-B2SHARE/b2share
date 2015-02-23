@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 lang_codes = [
+    ('eng', 'English'),
     ('aaa', 'Ghotuo'),
     ('aab', 'Alumu-Tesu'),
     ('aac', 'Ari'),

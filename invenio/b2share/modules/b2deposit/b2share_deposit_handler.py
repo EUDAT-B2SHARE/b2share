@@ -105,7 +105,7 @@ def addmeta(request, sub_id):
 
     if meta_form.validate_on_submit():
         recid, marc = b2share_marc_handler.create_marc(
-            request.form, sub_id, current_user['email'])
+            request.form, sub_id, current_user['email'], meta)
         tmp_file = write_marc_to_temp_file(marc)
         # all usual tasks have priority 0; we want the bibuploads to run first
         from invenio.legacy.bibsched.bibtask import task_low_level_submission

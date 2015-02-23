@@ -97,10 +97,9 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['publisher'] = {
             'value': self.publisher_default,
-            'description': 'Here should be stored the site that will host the B2SHARE '
-                           'container, so that in case of access problems, people can '
-                           'be contacted. This element can be created automatically '
-                           'dependent on the centre.'
+            'description': 'The entity responsible for making the resource '
+                           'available, either a person, an organization, or '
+                           'a service.'
         }
         self.field_args['publication_date'] = {
             'hidden': True,
