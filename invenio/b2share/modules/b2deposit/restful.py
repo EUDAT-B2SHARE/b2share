@@ -180,6 +180,14 @@ class B2Resource(Resource):
     def options(self, oauth, **kwargs): abort(405)
     def patch(self, oauth, **kwargs): abort(405)
 
+class ApiRoot(B2Resource):
+    """
+    The root for all the REST API
+    """
+    def get(self, oauth, **kwargs):
+        return {"error": "Please go to /api/records or /api/depositions"}, 404
+
+
 class ListRecordsByDomain(B2Resource):
     """
     The resource representing the collection of all records, filtered by domain
@@ -468,6 +476,8 @@ class DepositionCommit(B2Resource):
 
 
 def setup_app(app, api):
+    api.add_resource(ApiRoot, '/api/')
+
     api.add_resource(ListRecords, '/api/records/')
     api.add_resource(ListRecordsByDomain, '/api/records/<string:domain_name>')
     api.add_resource(RecordRes, '/api/record/<int:record_id>')
