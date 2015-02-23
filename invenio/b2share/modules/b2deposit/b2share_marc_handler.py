@@ -25,10 +25,9 @@ from invenio.legacy.dbquery import run_sql
 from invenio.legacy.bibrecord import record_add_field, record_xml_output
 from werkzeug.exceptions import HTTPException
 from b2share_epic import createHandle
-from b2share_model import metadata_classes
 from invenio.utils.html import remove_html_markup
 
-def add_basic_fields(rec, form, email):
+def add_basic_fields(rec, form, email, meta):
     """
     Adds the basic fields from the form. Note that these fields are mapped
     to specific MARC fields. For information on the fields see the www.loc.gov
@@ -50,8 +49,8 @@ def add_basic_fields(rec, form, email):
             record_add_field(rec, '980', subfields=[('a', remove_html_markup(form['domain']))])
 
         pubfields = []
-        if form.get('publisher'):
-            pubfields.append(('b', remove_html_markup(form['publisher'])))
+        pubfields.append(('b', remove_html_markup(
+                            form.get('publisher', meta.publisher_default))))
         if form.get('publication_date'):
             pubfields.append(('c', remove_html_markup(form['publication_date'])))
         if pubfields:
@@ -84,7 +83,8 @@ def add_basic_fields(rec, form, email):
                 if f and not f.isspace():
                     record_add_field(rec, '700', subfields=[('a', remove_html_markup(f.strip()))])
 
-        record_add_field(rec, '546', subfields=[('a', remove_html_markup(form['language']))])
+        record_add_field(rec, '546', subfields=[('a', remove_html_markup(
+                            form.get('language', meta.language_default)))])
 
         # copying zenodo here, but I don't think 980 is the right MARC field
         if form.get('resource_type'):
@@ -167,26 +167,18 @@ def add_file_info(rec, form, email, sub_id, recid):
         #seems to be impossible to add file size data, thought this would work
 
         CFG_SITE_SECURE_URL = current_app.config.get("CFG_SITE_SECURE_URL")
-        url = "{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, metadata['name'])
+        url = u"{0}/record/{1}/files/{2}".format(CFG_SITE_SECURE_URL, recid, metadata['name'])
         record_add_field(rec, '856', ind1='4',
                          subfields=[('u', url),
                                     ('s', str(os.path.getsize(path))),
-                                    ('y',metadata['name'])])
+                                    ('y', metadata['name'])])
 
 
-def add_domain_fields(rec, form):
+def add_domain_fields(rec, form, meta):
     """
     Adds a domain specific fields. These are just added as name value pairs
     to field 690.
     """
-
-    domain = form['domain'].lower()
-    if domain in metadata_classes():
-        meta = metadata_classes()[domain]()
-    else:
-        #no domain stuff
-        return
-
     for fs in meta.fieldsets:
         if fs.name != 'Generic':  # TODO: this is brittle; get from somewhere
             for k in (fs.optional_fields + fs.basic_fields):
@@ -223,7 +215,7 @@ def add_epic_pid(rec, recid, checksum):
             raise e
 
 
-def create_marc(form, sub_id, email):
+def create_marc(form, sub_id, email, meta):
     """
     Generates MARC data used by Invenio from the filled out form, then
     submits it to the Invenio system.
@@ -231,8 +223,8 @@ def create_marc(form, sub_id, email):
     rec = {}
     recid = create_recid()
     record_add_field(rec, '001', controlfield_value=str(recid))
-    add_basic_fields(rec, form, email)
-    add_domain_fields(rec, form)
+    add_basic_fields(rec, form, email, meta)
+    add_domain_fields(rec, form, meta)
     add_file_info(rec, form, email, sub_id, recid)
     checksum = create_checksum(rec, sub_id)
     add_epic_pid(rec, recid, checksum)
