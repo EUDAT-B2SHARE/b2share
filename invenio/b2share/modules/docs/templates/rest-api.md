@@ -41,10 +41,6 @@ https://b2share.eudat.eu \- the base url for the production site.
 
 https://trng-b2share.eudat.eu \- the base url for the training site. Use this base URL for testing.
 
-[](#)[](#)
-
-*Note: during development are new versions of the API only available on the development server: https://test-eudatis.csc.fi*
-
 Each allowed request is described below as follows:
 
 Description - A description of the function of the request.
@@ -77,9 +73,13 @@ DEPOSITION\_ID - identifier for a specific deposition
 ### List all the records
 
 List all the records, without any filtering.
+
 * HTTP method: GET
+
 * URL path: /api/records
+
 * Required parameters: access\_token
+
 * Optional parameters: page_size, page_offset
 
 Example: curl -i http://example.org/api/records?access\_token=LKR35GP7TF&page_size=5&page_offset=2
@@ -87,10 +87,15 @@ Example: curl -i http://example.org/api/records?access\_token=LKR35GP7TF&page_si
 ### List records per community
 
 List all records of a specific community.
+
 * URL path: /api/records/COMMUNITY\_NAME
+
 * HTTP method: GET
+
 * Required parameters: access\_token
+
 * Optional parameters: page_size, page_offset
+
 * Returns: the list of records (in JSON format) or an error message with the list of valid community identifiers if the COMMUNITY_ID is invalid.
 
 Example: curl -i http://example.org/api/records/BBMRI?access\_token=LKR35GP7TF&page_size=10&page_offset=3
@@ -98,18 +103,25 @@ Example: curl -i http://example.org/api/records/BBMRI?access\_token=LKR35GP7TF&p
 ### List a specific record
 
 List the metadata of the record specified by RECORD_ID
+
 * URL path: /api/record/RECORD_ID
+
 * HTTP method: GET
+
 * Required parameters: access\_token
 
 Example: curl -i http://example.org/api/record/1?access\_token=LKR35GP7TF
 
 ### Create a new deposition
 
-Create a new deposition. 
+Create a new deposition
+
 * URL path: /api/depositions
+
 * HTTP method: POST
+
 * Required parameters: access\_token
+
 * Returns: the URL of the deposition (both as JSON and in the field 'Location' in the http header)
 
 Example: curl -i -X POST http://example.org/api/depositions?access\_token=LKR35GP7TF
@@ -117,10 +129,15 @@ Example: curl -i -X POST http://example.org/api/depositions?access\_token=LKR35G
 ### Upload a new file into a deposition object
 
 Upload a new file into a deposition object
+
 * URL path: /api/deposition/DEPOSITION_ID/files
+
 * HTTP Method: POST
+
 * Required input data: the file, sent as multipart/form-data
+
 * Required parameters: access\_token
+
 * Returns: the name and size of the newly uploaded file
 
 Example: curl -i -X POST -F file=@TestFileToBeUploaded.txt http://example.org/api/deposition/23k85hjfiu2y346/files?access\_token=LKR35GP7TF
@@ -128,9 +145,13 @@ Example: curl -i -X POST -F file=@TestFileToBeUploaded.txt http://example.org/ap
 ### List the files uploaded into a deposition object
 
 List the files uploaded into a deposition object
+
 * URL path: /api/deposition/DEPOSITION_ID/files
+
 * Http Method: GET
+
 * Required parameters: access\_token
+
 * Returns: the name and size of all the files in the deposition object
 
 Example: curl -i http://example.org/api/deposition/23k85hjfiu2y346/files?access\_token=LKR35GP7TF
@@ -138,16 +159,25 @@ Example: curl -i http://example.org/api/deposition/23k85hjfiu2y346/files?access\
 ### Commit deposition
 
 This action transforms a deposition into an immutable record.
+
 * URL path: /api/deposition/DEPOSITION_ID/commit
+
 * HTTP Method: POST
+
 * Required input data: the metadata for the record object to be created. This metadata must be sent as a list of fields (key:value pairs). The required fields are:
+
     - domain [string]: the id of the community to which the record belongs
+
     - open_access [boolean]: the access restriction of the new record
+
     - title [string]: the title of the new record
+
     - description [string]: the description of the new record
 
 Depending on the domain specification, other fields could be required in order to make a successful commit. The list of all the fields, with their description, multiplicity and controlled vocabulary, is automatically returned to the user in case one of the required fields is missing.
+
 * Required parameters: access\_token
+
 * Returns: the location URL of the new record if the submitted metadata is valid; otherwise, the list of all the metadata fields that can be filled in and details on each one.
 
 Example: curl -i -X POST -H "Content-Type: application/json" -d '{"domain":"generic", "title":"REST Test Title", "description":"REST Test Description", "open_access":"true"}' http://.../api/deposition/DEPOSITION_ID/commit\?access\_token=LKR35GP7TF
@@ -168,18 +198,4 @@ YYYY-MM-DDTHH:MM:SS+00:00
 
 ### Response Fields
 
-[](#)[](#)
-
-|Field name|JSON data type|Description|
-|:---------:|:-----------|:----------:|
-|recordID   |Number      |The depositions’s unique ID number|
-|authors|String|Creator’s full name (comma separated if more than one)|
-|title|String|Name of the deposition|
-|description|String|Description of the deposition|
-|domain|String|Scientific domain|
-|date|String|Deposit date|
-|pid|String|The persistent identifier for the deposition|
-|email|String|Depositor’s e-mail|
-|file\_url|String|URL(s) to the deposited file(s)|
-|licence|String|License type for the deposit|
-|files|Object Array|Deposited file’s/files’: [{"full\_name": file name with extension (String), "url": relative url path to file (String), "size": size of the file (Number)}]|
+![Response fields](img/rest-api/response-fields.png)
