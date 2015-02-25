@@ -50,7 +50,7 @@ To log in, click on the link "Login >>>" on the home page, then fill in user nam
 Deposit
 -------
 
-Only registered users can upload data. To upload data, first click "Deposit" in the top menu. Sign in to B2SHARE if you haven't already.
+Only registered users can upload data. To upload data, first click "Deposit>>>" to the left. Sign in to B2SHARE if you haven't already.
 
 **Deposit data in 3 steps:**
 
