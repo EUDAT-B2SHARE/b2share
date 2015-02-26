@@ -54,8 +54,7 @@ class SubmissionMetadata(db.Model):
 
     licence = db.Column(db.String(128))  # note we set licences in __init__
     publisher = db.Column(db.String(128), default=publisher_default)
-    publication_date = db.Column('publication_year', db.Date(),
-                                 default=publication_date_now)
+    publication_date = db.Column('publication_year', db.Date(), default=publication_date_now)
     keywords = db.Column(db.String(256))  # split on ,
     discipline = db.Column(db.String(256))
 
@@ -66,7 +65,6 @@ class SubmissionMetadata(db.Model):
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
     version = db.Column(db.String(128))
-
     contact_email = db.Column(db.String(256))
 
     basic_fields = ['title', 'description', 'creator', 'open_access', 'licence',
@@ -90,13 +88,13 @@ class SubmissionMetadata(db.Model):
                                     optional_fields=self.optional_fields))]
         self.field_args['title'] = {
             'placeholder': "Title of the resource",
-            'description': 'The title of the uploaded resource - a name ' +\
+            'description': 'The title of the uploaded resource - a name '
                            'that indicates the content to be expected.'
         }
         self.field_args['description'] = {
-            'description': 'A more elaborate description of the resource. ' +\
-                           'Focus on a description of content making it ' +\
-                           'easy for others to find it and to interpret ' +\
+            'description': 'A more elaborate description of the resource. '
+                           'Focus on a description of content making it '
+                           'easy for others to find it and to interpret '
                            'its relevance quickly.'
         }
         self.field_args['publisher'] = {
@@ -109,8 +107,8 @@ class SubmissionMetadata(db.Model):
             'hidden': True,
             'value': self.publication_date_now
             # 'description':
-            # 'This is the date that the resource was uploaded and thus ' +\
-            # 'being available broadly. Also this date can be extracted ' +\
+            # 'This is the date that the resource was uploaded and thus '
+            # 'being available broadly. Also this date can be extracted '
             # 'automatically.'
         }
         self.field_args['version'] = {
@@ -118,27 +116,27 @@ class SubmissionMetadata(db.Model):
             'description': 'Denote the version of the resource.'
         }
         self.field_args['licence'] = {
-            'description': 'Specify the license under which this data set '+\
-                           'is available to the users (e.g. GPL, Apache v2 '+\
-                           'or Commercial). Please use the License Selector '+\
+            'description': 'Specify the license under which this data set '
+                           'is available to the users (e.g. GPL, Apache v2 '
+                           'or Commercial). Please use the License Selector '
                            'for help and additional information.'
         }
         self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
-            'description': 'A comma separated list of keywords that ' +\
+            'description': 'A comma separated list of keywords that '
                            'characterize the content.'
         }
         self.field_args['open_access'] = {
-            'description': 'Indicate whether the resource is open or ' +\
-                           'access is restricted. In case of restricted ' +\
-                           'access the uploaded files will not be public, ' +\
+            'description': 'Indicate whether the resource is open or '
+                           'access is restricted. In case of restricted '
+                           'access the uploaded files will not be public, '
                            'however the metadata will be.'
         }
         self.field_args['contributors'] = {
             'placeholder': 'contributor',
             'cardinality': 'n',
-            'description': 'A semicolon separated list of all other ' +\
-                           'contributors. Mention all other persons that ' +\
+            'description': 'A semicolon separated list of all other '
+                           'contributors. Mention all other persons that '
                            'were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
@@ -153,7 +151,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['alternate_identifier'] = {
             'placeholder': 'Other reference, such as URI, ISBN, etc.',
-            'description': 'Any kind of other reference such as a URN, URI ' +\
+            'description': 'Any kind of other reference such as a URN, URI '
                            'or an ISBN number.'
         }
         self.field_args['creator'] = {
