@@ -52,6 +52,11 @@ def format_element(bfo):
     licence = bfo.field("540__a") or 'Unspecified'
     ret += html.format('Licence', licence)
 
+    disciplines = bfo.fields("526__a")
+    for discipline in disciplines:
+        if discipline:
+            ret += html.format('Discipline', discipline)
+
     uploader = bfo.field("8560_f")
     if uploader:
         ret += html.format('Uploaded by', uploader)

@@ -16,14 +16,17 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import collections
+import csv
+import os.path
 
 from invenio.ext.sqlalchemy import db
 from flask import current_app
 from datetime import date
 
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 
 class FieldSet:
-
     def __init__(self, name, basic_fields=[], optional_fields=[]):
         self.name = name
         self.basic_fields = basic_fields
@@ -54,6 +57,7 @@ class SubmissionMetadata(db.Model):
     publication_date = db.Column('publication_year', db.Date(),
                                  default=publication_date_now)
     keywords = db.Column(db.String(256))  # split on ,
+    discipline = db.Column(db.String(256))
 
     # optional
     contributors = db.Column(db.String(256))
@@ -66,7 +70,7 @@ class SubmissionMetadata(db.Model):
     contact_email = db.Column(db.String(256))
 
     basic_fields = ['title', 'description', 'creator', 'open_access', 'licence',
-                    'publication_date', 'keywords', 'contact_email']
+                    'publication_date', 'keywords', 'contact_email', 'discipline', ]
     optional_fields = ['contributors', 'resource_type', 'alternate_identifier',
                        'version', 'publisher', 'language', ]
 
@@ -161,6 +165,12 @@ class SubmissionMetadata(db.Model):
             'placeholder': 'contact email',
             'description': 'Contact email information for this record'
         }
+        self.field_args['discipline'] = {
+            'data_provide': 'select',
+            'cardinality': 'n',
+            'data_source': [(d[2], ' / '.join(d)) for d in generate_disciplines()],
+            'description': 'Select the discipline of the resource.'
+        }
 
 
 def _create_metadata_class(cfg):
@@ -236,3 +246,14 @@ def _create_metadata_class(cfg):
         args['field_args'][f['name']] = field_dict
 
     return type(clsname, (SubmissionMetadata,), args)
+
+
+def generate_disciplines():
+    """
+    Generator function that produces disciplines from a CSV file
+    """
+    with open(os.path.join(CURRENT_DIR, 'disciplines.tab')) as f:
+        reader = csv.reader(f, delimiter='\t')
+        next(reader)  # Skip header
+        for line in reader:
+            yield [l.strip() for l in line]  # Clean values

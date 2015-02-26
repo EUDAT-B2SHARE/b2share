@@ -105,6 +105,11 @@ def add_basic_fields(rec, form, email, meta):
         if form.get('version'):
             record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
 
+        if form.get('discipline'):
+            fields = form.getlist('discipline')
+            for f in fields:
+                record_add_field(rec, '526', subfields=[('a', remove_html_markup(f))])
+
         CFG_SITE_NAME = current_app.config.get("CFG_SITE_NAME")
         record_add_field(rec, '264',
                          subfields=[('b', CFG_SITE_NAME),
