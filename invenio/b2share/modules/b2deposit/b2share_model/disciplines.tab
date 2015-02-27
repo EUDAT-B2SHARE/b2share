@@ -1,0 +1,1605 @@
+#Id	SuperClass	RefName
+1	Humanities	Humanities
+1.1	Humanities	Human history
+1.1.1	Human history	African history
+1.1.2	Human history	American history
+1.1.3	Human history	Ancient history
+1.1.4	Human history	History of Australia|Australian History
+1.1.5	Human history	History of Asia|Asian History
+1.1.6	Human history	History of Europe|European History
+1.1.7	Human history	History of China|Chinese history
+1.1.8	Human history	Economic history of the world|Economic history
+1.1.9	Human history	Ancient Greece|Greek history
+1.1.10	Human history	History of Iran|Iranian history
+1.1.11	Human history	History of India|Indian history
+1.1.12	Human history	History of Indonesia|Indonesian history
+1.1.13	Human history	Intellectual history
+1.1.14	Human history	History of Latin America|Latin American History
+1.1.15	Human history	Modern history
+1.1.16	Human history	History of political thought|Political History
+1.1.17	Human history	Pre-Columbian era
+1.1.18	Human history	Ancient Rome|Roman History
+1.1.19	Human history	History of Russia|Russian History
+1.1.20	Human history	History of Science|Scientific History
+1.1.21	Human history	History of Technology|Technological History
+1.1.22	Human history	World history
+1.2	Humanities	Linguistics
+1.2.1	Linguistics	Languages
+1.2.1.1	Languages	Business English
+1.2.1.2	Languages	Classical language
+1.2.1.3	Languages	Modern language
+1.2.1.4	Languages	Standard English
+1.2.1.5	Languages	New Englishes|World Englishes
+1.2.2	Linguistics	Applied Linguistics
+1.2.3	Linguistics	Computational linguistics
+1.2.4	Linguistics	Discourse analysis
+1.2.5	Linguistics	Etymology
+1.2.6	Linguistics	Historical linguistics
+1.2.7	Linguistics	History of linguistics
+1.2.8	Linguistics	Interlinguistics
+1.2.9	Linguistics	Morphology (linguistics)|Morphology
+1.2.10	Linguistics	Philology
+1.2.11	Linguistics	Phonetics
+1.2.12	Linguistics	Phonology
+1.2.13	Linguistics	Pragmatics
+1.2.14	Linguistics	Semantics
+1.2.15	Linguistics	Semiotics
+1.2.16	Linguistics	Sociolinguistics
+1.2.17	Linguistics	Syntax
+1.2.18	Linguistics	Composition studies
+1.2.19	Linguistics	Rhetoric#Modern rhetoric|Rhetoric
+1.3	Humanities	Literature
+1.3.1	Literature	Poetry
+1.3.2	Literature	Comparative literature
+1.3.3	Literature	English literature
+1.3.4	Literature	World literature
+1.3.4.1	World literature	American literature
+1.3.4.2	World literature	British literature
+1.3.5	Literature	Historical
+1.3.5.1	Historical	Medieval literature
+1.3.5.2	Historical	Post-colonial literature
+1.3.5.3	Historical	Post-modern literature
+1.3.6	Literature	Literary theory
+1.3.6.1	Literary theory	Critical theory
+1.3.6.2	Literary theory	Literary criticism
+1.3.6.3	Literary theory	Poetics
+1.3.6.4	Literary theory	Rhetoric
+1.3.7	Literature	Creative writing
+1.3.7.1	Creative writing	Creative nonfiction
+1.3.7.2	Creative writing	Fiction
+1.3.7.3	Creative writing	Non-fiction
+1.3.7.4	Creative writing	Literary journalism
+1.3.7.5	Creative writing	Poetry
+1.3.7.6	Creative writing	Screenwriting
+1.3.7.7	Creative writing	Playwrighting
+1.4	Humanities	Arts
+1.4.1	Arts	Arts administration
+1.4.2	Arts	Music
+1.4.2.1	Music	Accompaniment|Accompanying
+1.4.2.2	Music	Chamber music
+1.4.2.3	Music	Church music
+1.4.2.4	Music	Musical composition
+1.4.2.5	Music	Conducting
+1.4.2.5.1	Conducting	Choir|Choral conducting
+1.4.2.5.2	Conducting	Orchestra|Orchestral conducting
+1.4.2.5.3	Conducting	Concert band|Wind ensemble conducting
+1.4.2.6	Music	Early music
+1.4.2.7	Music	Jazz|Jazz studies
+1.4.2.8	Music	Music education
+1.4.2.9	Music	Music history
+1.4.2.10	Music	Music theory
+1.4.2.11	Music	Musicology
+1.4.2.11.1	Musicology	Music history|Historical musicology
+1.4.2.11.2	Musicology	Systematic musicology
+1.4.2.11.3	Musicology	Ethnomusicology
+1.4.2.12	Music	Performance
+1.4.2.12.1	Performance	Organ (music)|Organ
+1.4.2.12.2	Performance	Piano
+1.4.2.12.3	Performance	String instrument|Strings
+1.4.2.12.4	Performance	Singing
+1.4.2.12.5	Performance	Woodwind instrument|Woodwinds
+1.4.2.13	Music	Recording
+1.4.2.14	Music	Orchestra|Orchestral studies
+1.4.3	Arts	Dance
+1.4.3.1	Dance	Choreography
+1.4.3.2	Dance	Dance notation
+1.4.3.3	Dance	Ethnochoreology
+1.4.3.4	Dance	History of dance
+1.4.4	Arts	Theatre
+1.4.4.1	Theatre	History of theater|History
+1.4.4.2	Theatre	Acting
+1.4.4.3	Theatre	Theatre director|Directing
+1.4.4.4	Theatre	Scenic design|Stage design
+1.4.4.5	Theatre	Dramaturgy
+1.4.4.6	Theatre	Playwrighting
+1.4.4.7	Theatre	Scenography
+1.4.4.8	Theatre	Musical theatre
+1.4.5	Arts	Film studies|Film
+1.4.5.1	Film studies|Film	Animation
+1.4.5.2	Film studies|Film	Live-action
+1.4.5.3	Film studies|Film	Filmmaking
+1.4.5.4	Film studies|Film	Film criticism
+1.4.5.5	Film studies|Film	Film theory
+1.4.6	Arts	Oral literature
+1.4.6.1	Oral literature	Public speaking
+1.4.6.2	Oral literature	Performance poetry
+1.4.6.3	Oral literature	Storytelling
+1.4.7	Arts	Animation
+1.4.8	Arts	Architecture
+1.4.9	Arts	Design
+1.4.9.1	Design	Video game design
+1.4.9.2	Design	Product design
+1.4.9.3	Design	Software design
+1.4.9.4	Design	Web design
+1.4.10	Arts	Drawing
+1.4.11	Arts	Painting
+1.4.12	Arts	Filmmaking
+1.4.13	Arts	Photography
+1.4.14	Arts	Sculpture
+1.4.15	Arts	Industrial design
+1.4.16	Arts	Graphic design
+1.4.17	Arts	Fashion Design|Fashion design
+1.4.18	Arts	Interior design
+1.4.19	Arts	Decorative arts
+1.4.20	Arts	Culinary art
+1.4.21	Arts	Fine arts
+1.4.22	Arts	Mixed Media
+1.4.23	Arts	Creative arts
+1.4.24	Arts	Art history
+1.4.25	Arts	Calligraphy
+1.4.26	Arts	Printmaking
+1.4.27	Arts	Studio art
+1.5	Humanities	Philosophy
+1.5.1	Philosophy	Meta-philosophy
+1.5.2	Philosophy	Metaphysics
+1.5.2.1	Metaphysics	Ontology
+1.5.2.2	Metaphysics	Teleology
+1.5.2.3	Metaphysics	Philosophy of mind
+1.5.2.3.1	Philosophy of mind	Philosophy of artificial intelligence
+1.5.2.3.2	Philosophy of mind	Philosophy of perception
+1.5.2.3.3	Philosophy of mind	Pain (philosophy)|Philosophy of pain
+1.5.2.4	Metaphysics	Philosophy of space and time
+1.5.2.5	Metaphysics	Action (philosophy)|Philosophy of Action
+1.5.2.6	Metaphysics	Theism
+1.5.2.7	Metaphysics	Determinism
+1.5.3	Philosophy	Epistemology
+1.5.3.1	Epistemology	Theory of justification|Justification
+1.5.3.2	Epistemology	List of fallacies#Informal fallacies|Reasoning errors
+1.5.4	Philosophy	Ethics
+1.5.4.1	Ethics	Meta-ethics
+1.5.4.2	Ethics	Normative ethics
+1.5.4.3	Ethics	Applied ethics
+1.5.4.3.1	Applied ethics	Animal rights
+1.5.4.3.2	Applied ethics	Bioethics
+1.5.4.3.3	Applied ethics	Environmental ethics
+1.5.4.4	Ethics	Moral psychology
+1.5.5	Philosophy	Aesthetics
+1.5.6	Philosophy	Social philosophy
+1.5.6.1	Social philosophy	Feminist philosophy
+1.5.6.2	Social philosophy	Anarchism
+1.5.6.3	Social philosophy	Marxism
+1.5.7	Philosophy	Philosophical movement|Philosophical traditions and schools
+1.5.7.1	Philosophical movement|Philosophical traditions and schools	African philosophy
+1.5.7.2	Philosophical movement|Philosophical traditions and schools	Platonism
+1.5.7.3	Philosophical movement|Philosophical traditions and schools	Aristotelianism
+1.5.7.4	Philosophical movement|Philosophical traditions and schools	Analytic philosophy
+1.5.7.5	Philosophical movement|Philosophical traditions and schools	Continental philosophy
+1.5.7.6	Philosophical movement|Philosophical traditions and schools	Eastern philosophy
+1.5.7.7	Philosophical movement|Philosophical traditions and schools	Feminist philosophy
+1.5.8	Philosophy	History of philosophy
+1.5.8.1	History of philosophy	Ancient philosophy
+1.5.8.2	History of philosophy	Medieval philosophy
+1.5.8.2.1	Medieval philosophy	Scholasticism
+1.5.8.2.2	Medieval philosophy	Humanism
+1.5.8.3	History of philosophy	Modern philosophy
+1.5.8.4	History of philosophy	Contemporary philosophy
+1.5.9	Philosophy	Logic
+1.5.9.1	Logic	Philosophical logic
+1.5.9.2	Logic	Mathematical logic
+1.5.10	Philosophy	Philosophy#Applied philosophy|Applied philosophy
+1.5.10.1	Philosophy#Applied philosophy|Applied philosophy	Philosophy of education
+1.5.10.2	Philosophy#Applied philosophy|Applied philosophy	Philosophy of history
+1.5.10.3	Philosophy#Applied philosophy|Applied philosophy	Philosophy of religion
+1.5.10.4	Philosophy#Applied philosophy|Applied philosophy	Philosophy of language
+1.5.10.5	Philosophy#Applied philosophy|Applied philosophy	Philosophy of law
+1.5.10.6	Philosophy#Applied philosophy|Applied philosophy	Philosophy of mathematics
+1.5.10.7	Philosophy#Applied philosophy|Applied philosophy	Philosophy of music
+1.5.10.8	Philosophy#Applied philosophy|Applied philosophy	Philosophy of science
+1.5.10.8.1	Philosophy of science	Philosophy of social science
+1.5.10.8.2	Philosophy of science	Philosophy of physics
+1.5.10.8.3	Philosophy of science	Philosophy of biology
+1.5.10.8.4	Philosophy of science	Philosophy of chemistry
+1.5.10.8.5	Philosophy of science	Philosophy and economics|Philosophy of economics
+1.5.10.8.6	Philosophy of science	Philosophy of psychology
+1.5.10.9	Philosophy#Applied philosophy|Applied philosophy	Philosophy of engineering
+1.5.10.10	Philosophy#Applied philosophy|Applied philosophy	Systems philosophy
+1.6	Humanities	Religion
+1.6.1	Religion	Abrahamic religions
+1.6.1.1	Abrahamic religions	Baha'i Faith
+1.6.1.2	Abrahamic religions	Christianity
+1.6.1.2.1	Christianity	Christian theology
+1.6.1.2.1.1	Christian theology	Biblical theology|Bibliology
+1.6.1.2.1.2	Christian theology	Hermeneutics
+1.6.1.2.1.3	Christian theology	Theology Proper
+1.6.1.2.1.3.1	Theology Proper	Christology
+1.6.1.2.1.3.2	Theology Proper	Pneumatology
+1.6.1.2.1.3.3	Theology Proper	Demonology
+1.6.1.2.1.4	Christian theology	Theological anthropology
+1.6.1.2.1.5	Christian theology	Soteriology
+1.6.1.2.1.6	Christian theology	Biblical law in Christianity|Nomology
+1.6.1.2.1.7	Christian theology	Ecclesiology
+1.6.1.2.1.8	Christian theology	Eschatology
+1.6.1.2.1.9	Christian theology	Christian ethics
+1.6.1.3	Abrahamic religions	Islam
+1.6.1.4	Abrahamic religions	Judaism
+1.6.2	Religion	Indian religions
+1.6.2.1	Indian religions	Buddhism
+1.6.2.2	Indian religions	Hinduism
+1.6.2.3	Indian religions	Jainism
+1.6.2.4	Indian religions	Sikhism
+1.6.3	Religion	East Asian religions
+1.6.3.1	East Asian religions	Chinese folk religion
+1.6.3.2	East Asian religions	Confucianism
+1.6.3.3	East Asian religions	Shinto
+1.6.3.4	East Asian religions	Daoism
+1.6.3.5	East Asian religions	I-Kuan Tao
+1.6.3.6	East Asian religions	Caodaism
+1.6.3.7	East Asian religions	Chondogyo
+1.6.3.8	East Asian religions	Tenrikyo
+1.6.3.9	East Asian religions	Oomoto
+1.6.4	Religion	Other religions
+1.6.4.1	Other religions	Religion in Africa|African religions
+1.6.4.2	Other religions	Ancient Egyptian religion
+1.6.4.3	Other religions	Indigenous peoples of the Americas|Native American religions
+1.6.4.4	Other religions	Gnosticism
+1.6.4.5	Other religions	Western Esotericism (academia)|Esotericism
+1.6.4.6	Other religions	New religious movements
+1.6.4.7	Other religions	Sumerian religion
+1.6.4.8	Other religions	Zoroastrianism
+1.6.5	Religion	Comparative religion
+1.6.6	Religion	Mythology
+1.6.7	Religion	Irreligion
+1.6.7.1	Irreligion	Agnostic
+1.6.7.2	Irreligion	Atheism
+2	Social sciences	Social sciences
+2.1	Social sciences	Anthropology
+2.1.1	Anthropology	Biological anthropology
+2.1.1.1	Biological anthropology	Forensic anthropology
+2.1.1.2	Biological anthropology	Dual inheritance theory|Gene-culture coevolution
+2.1.1.3	Biological anthropology	Human behavioral ecology
+2.1.1.4	Biological anthropology	Human evolution
+2.1.1.5	Biological anthropology	Medical anthropology
+2.1.1.6	Biological anthropology	Paleoanthropology
+2.1.1.7	Biological anthropology	Population genetics
+2.1.1.8	Biological anthropology	Primatology
+2.1.2	Anthropology	Anthropological linguistics
+2.1.2.1	Anthropological linguistics	Descriptive linguistics|Synchronic linguistics
+2.1.2.2	Anthropological linguistics	Diachronic linguistics
+2.1.2.3	Anthropological linguistics	Ethnolinguistics
+2.1.2.4	Anthropological linguistics	Sociolinguistics
+2.1.3	Anthropology	Cultural anthropology
+2.1.3.1	Cultural anthropology	Anthropology of religion
+2.1.3.2	Cultural anthropology	Economic anthropology
+2.1.3.3	Cultural anthropology	Ethnography
+2.1.3.4	Cultural anthropology	Ethnohistory
+2.1.3.5	Cultural anthropology	Ethnology
+2.1.3.6	Cultural anthropology	Ethnomusicology
+2.1.3.7	Cultural anthropology	Folklore
+2.1.3.8	Cultural anthropology	Mythology
+2.1.3.9	Cultural anthropology	Missiology
+2.1.3.10	Cultural anthropology	Political anthropology
+2.1.3.11	Cultural anthropology	Psychological anthropology
+2.2	Social sciences	Archaeology
+2.2.1	Archaeology	Classical archaeology
+2.2.2	Archaeology	Egyptology
+2.2.3	Archaeology	Architectural Analytics
+2.2.4	Archaeology	Experimental archaeology
+2.2.5	Archaeology	Maritime archaeology
+2.2.6	Archaeology	Near Eastern archaeology
+2.2.7	Archaeology	Paleoanthropology
+2.2.8	Archaeology	Prehistoric archaeology
+2.3	Social sciences	Area studies
+2.3.1	Area studies	African studies
+2.3.2	Area studies	American studies
+2.3.2.1	American studies	Appalachian studies
+2.3.2.2	American studies	Canadian studies
+2.3.2.3	American studies	Latin American studies
+2.3.3	Area studies	Asian studies
+2.3.3.1	Asian studies	Indology
+2.3.3.2	Asian studies	Iranian studies
+2.3.3.3	Asian studies	Japanology
+2.3.3.4	Asian studies	Korean studies
+2.3.3.5	Asian studies	Pakistan studies
+2.3.3.6	Asian studies	Sinology
+2.3.3.7	Asian studies	Southeast Asian studies
+2.3.4	Area studies	European studies
+2.3.4.1	European studies	Celtic studies
+2.3.4.2	European studies	German studies
+2.3.4.3	European studies	Scandinavian studies
+2.3.4.4	European studies	Slavic studies
+2.3.5	Area studies	Australian studies
+2.3.6	Area studies	Middle East studies
+2.4	Social sciences	Cultural and ethnic studies
+2.4.1	Cultural and ethnic studies	Asian studies
+2.4.2	Cultural and ethnic studies	Asian American studies
+2.4.3	Cultural and ethnic studies	Black studies
+2.4.4	Cultural and ethnic studies	Chicano studies
+2.4.5	Cultural and ethnic studies	Childhood studies
+2.4.6	Cultural and ethnic studies	Disability studies
+2.4.7	Cultural and ethnic studies	Latino studies
+2.4.8	Cultural and ethnic studies	Native American studies
+2.4.9	Cultural and ethnic studies	Deaf Studies
+2.5	Social sciences	Economics
+2.5.1	Economics	Agricultural economics
+2.5.2	Economics	Anarchist economics
+2.5.3	Economics	Behavioral economics
+2.5.4	Economics	Bioeconomics (biophysical)|Bioeconomics
+2.5.5	Economics	Complexity economics
+2.5.6	Economics	Computational economics
+2.5.7	Economics	Consumer economics
+2.5.8	Economics	Development economics
+2.5.9	Economics	Ecological economics
+2.5.10	Economics	Econometrics
+2.5.11	Economics	Economic geography
+2.5.12	Economics	Economic history
+2.5.13	Economics	Economic sociology
+2.5.14	Economics	Economic systems
+2.5.15	Economics	Energy economics
+2.5.16	Economics	Entrepreneurial economics
+2.5.17	Economics	Environmental economics
+2.5.18	Economics	Evolutionary economics
+2.5.19	Economics	Experimental economics
+2.5.20	Economics	Feminist economics
+2.5.21	Economics	Financial economics
+2.5.22	Economics	Financial econometrics
+2.5.23	Economics	Green economics
+2.5.24	Economics	Economic growth|Growth economics
+2.5.25	Economics	Human development theory
+2.5.26	Economics	Industrial organization
+2.5.27	Economics	Information economics
+2.5.28	Economics	Institutional economics
+2.5.29	Economics	International economics
+2.5.30	Economics	Islamic economics
+2.5.31	Economics	Labor economics
+2.5.32	Economics	Law and economics
+2.5.33	Economics	Macroeconomics
+2.5.34	Economics	Managerial economics
+2.5.35	Economics	Marxian economics
+2.5.36	Economics	Mathematical economics
+2.5.37	Economics	Microeconomics
+2.5.38	Economics	Monetary economics
+2.5.39	Economics	Neuroeconomics
+2.5.40	Economics	Participatory Economics
+2.5.41	Economics	Political economy
+2.5.42	Economics	Public finance
+2.5.43	Economics	Public economics
+2.5.44	Economics	Real estate economics
+2.5.45	Economics	Resource economics
+2.5.46	Economics	Social choice theory
+2.5.47	Economics	Socialist economics
+2.5.48	Economics	Socioeconomics
+2.5.49	Economics	Transport economics
+2.5.50	Economics	Welfare economics
+2.6	Social sciences	Gender and sexuality studies
+2.6.1	Gender and sexuality studies	Feminine psychology
+2.6.2	Gender and sexuality studies	Gender studies
+2.6.3	Gender and sexuality studies	Heterosexism
+2.6.4	Gender and sexuality studies	Human sexual behavior
+2.6.5	Gender and sexuality studies	Human sexuality
+2.6.6	Gender and sexuality studies	Masculine psychology
+2.6.7	Gender and sexuality studies	Men's studies
+2.6.8	Gender and sexuality studies	Queer studies
+2.6.9	Gender and sexuality studies	Sex education
+2.6.10	Gender and sexuality studies	Sexology
+2.6.11	Gender and sexuality studies	Women's studies
+2.7	Social sciences	Geography
+2.7.1	Geography	Cartography
+2.7.2	Geography	Human geography
+2.7.2.1	Human geography	Cultural geography
+2.7.2.1.1	Cultural geography	Feminist geography
+2.7.2.2	Human geography	Economic geography
+2.7.2.2.1	Economic geography	Development geography
+2.7.2.3	Human geography	Historical geography
+2.7.2.4	Human geography	Time geography
+2.7.2.5	Human geography	Political geography
+2.7.2.5.1	Political geography	Military geography
+2.7.2.5.2	Political geography	Strategic geography
+2.7.2.6	Human geography	Population geography
+2.7.2.7	Human geography	Social geography
+2.7.2.7.1	Social geography	Behavioral geography
+2.7.2.7.2	Social geography	Children's geographies
+2.7.2.7.3	Social geography	Health geography
+2.7.2.7.4	Social geography	Tourism geography
+2.7.2.8	Human geography	Urban geography
+2.7.3	Geography	Environmental geography
+2.7.4	Geography	Physical geography
+2.7.4.1	Physical geography	Biogeography
+2.7.4.2	Physical geography	Climatology
+2.7.4.2.1	Climatology	Palaeoclimatology
+2.7.4.3	Physical geography	Coastal geography
+2.7.4.4	Physical geography	Geomorphology
+2.7.4.5	Physical geography	Geodesy
+2.7.4.6	Physical geography	Hydrology
+2.7.4.6.1	Hydrology	Glaciology
+2.7.4.6.2	Hydrology	Limnology
+2.7.4.6.3	Hydrology	Oceanography
+2.7.4.7	Physical geography	Landscape ecology
+2.7.4.8	Physical geography	Palaeogeography
+2.7.5	Geography	Regional geography
+2.7.6	Geography	Remote sensing
+2.8	Social sciences	Political science
+2.8.1	Political science	American politics
+2.8.2	Political science	Canadian politics
+2.8.3	Political science	Civics
+2.8.4	Political science	Comparative politics
+2.8.5	Political science	European Studies
+2.8.6	Political science	Geopolitics
+2.8.7	Political science	International relations
+2.8.8	Political science	International organizations
+2.8.9	Political science	Nationalism studies
+2.8.10	Political science	Peace and conflict studies
+2.8.11	Political science	Policy studies
+2.8.12	Political science	Political behavior
+2.8.13	Political science	Political culture
+2.8.14	Political science	Political economy
+2.8.15	Political science	Political history
+2.8.16	Political science	Political philosophy
+2.8.17	Political science	Psephology
+2.8.18	Political science	Public administration
+2.8.18.1	Public administration	Nonprofit|Nonprofit administration
+2.8.18.2	Public administration	Non-governmental organization|Non-governmental organization (NGO) administration
+2.8.19	Political science	Public policy
+2.8.20	Political science	Social choice theory
+2.9	Social sciences	Psychology
+2.9.1	Psychology	Abnormal psychology
+2.9.2	Psychology	Applied psychology
+2.9.3	Psychology	Biological psychology
+2.9.4	Psychology	Clinical psychology
+2.9.5	Psychology	Clinical neuropsychology
+2.9.6	Psychology	Cognitive psychology
+2.9.7	Psychology	Community psychology
+2.9.8	Psychology	Comparative psychology
+2.9.9	Psychology	Conservation psychology
+2.9.10	Psychology	Consumer psychology
+2.9.11	Psychology	Counseling psychology
+2.9.12	Psychology	Cultural psychology
+2.9.13	Psychology	Differential psychology
+2.9.14	Psychology	Developmental psychology
+2.9.15	Psychology	Educational psychology
+2.9.16	Psychology	Environmental psychology
+2.9.17	Psychology	Evolutionary psychology
+2.9.18	Psychology	Experimental psychology
+2.9.19	Psychology	Group dynamics|Group psychology
+2.9.20	Psychology	Journal of Family Psychology|Family Psychology
+2.9.21	Psychology	Forensic psychology
+2.9.22	Psychology	Health psychology
+2.9.23	Psychology	Humanistic psychology
+2.9.24	Psychology	Legal psychology
+2.9.25	Psychology	Media psychology
+2.9.26	Psychology	Medical psychology
+2.9.27	Psychology	Military psychology
+2.9.28	Psychology	Moral psychology
+2.9.29	Psychology	Neuropsychology
+2.9.30	Psychology	Occupational health psychology
+2.9.31	Psychology	Industrial and organizational psychology|Organizational psychology
+2.9.32	Psychology	Parapsychology
+2.9.33	Psychology	Pediatric psychology
+2.9.34	Psychology	Personality psychology
+2.9.35	Psychology	Political psychology
+2.9.36	Psychology	Positive psychology
+2.9.37	Psychology	Psychoanalysis
+2.9.38	Psychology	Psychometrics
+2.9.39	Psychology	Psychology of religion
+2.9.40	Psychology	Psychophysics
+2.9.41	Psychology	Quantitative psychology
+2.9.42	Psychology	Rehabilitation Psychology (journal)|Rehabilitation Psychology
+2.9.43	Psychology	School psychology
+2.9.44	Psychology	Social psychology (psychology)|Social psychology
+2.9.45	Psychology	Sport psychology
+2.10	Social sciences	Sociology
+2.10.1	Sociology	Applied sociology
+2.10.1.1	Applied sociology	Political sociology
+2.10.1.2	Applied sociology	Public sociology
+2.10.1.3	Applied sociology	Social engineering (political science)|Social engineering
+2.10.1.4	Applied sociology	Leisure studies
+2.10.2	Sociology	Collective behavior
+2.10.2.1	Collective behavior	Social movements
+2.10.3	Sociology	Community informatics
+2.10.3.1	Community informatics	Social network analysis
+2.10.4	Sociology	Comparative sociology
+2.10.5	Sociology	Conflict theory
+2.10.6	Sociology	Cultural studies
+2.10.7	Sociology	Criminology
+2.10.8	Sociology	Critical management studies
+2.10.9	Sociology	Demography
+2.10.10	Sociology	Environmental sociology
+2.10.11	Sociology	Feminist sociology
+2.10.12	Sociology	Futures studies
+2.10.13	Sociology	Human ecology
+2.10.14	Sociology	Humanistic sociology
+2.10.15	Sociology	Interactionism
+2.10.15.1	Interactionism	Phenomenology (philosophy)|Phenomenology
+2.10.15.2	Interactionism	Ethnomethodology
+2.10.15.3	Interactionism	Symbolic interactionism
+2.10.15.4	Interactionism	Social constructionism
+2.10.16	Sociology	Medical sociology
+2.10.17	Sociology	Military sociology
+2.10.18	Sociology	Organizational studies
+2.10.19	Sociology	Science studies
+2.10.20	Sociology	Sexology
+2.10.21	Sociology	Social capital
+2.10.22	Sociology	Social change
+2.10.23	Sociology	Social transformation
+2.10.24	Sociology	Social control
+2.10.24.1	Social control	Pure sociology
+2.10.25	Sociology	Social economy
+2.10.26	Sociology	Social philosophy
+2.10.27	Sociology	Social psychology
+2.10.28	Sociology	Social policy
+2.10.29	Sociology	Social research
+2.10.29.1	Social research	Computational sociology
+2.10.29.2	Social research	Economic sociology
+2.10.29.2.1	Economic sociology	Economic development
+2.10.29.2.2	Economic sociology	Social development
+2.10.30	Sociology	Sociology of culture
+2.10.31	Sociology	Sociology of deviance
+2.10.32	Sociology	Sociology of education
+2.10.33	Sociology	Sociology of gender
+2.10.34	Sociology	Sociology of the family
+2.10.35	Sociology	Sociology of knowledge
+2.10.36	Sociology	Sociology of law
+2.10.37	Sociology	Sociology of religion
+2.10.38	Sociology	Sociology of sport
+2.10.39	Sociology	Sociology of work
+2.10.40	Sociology	Social theory
+2.10.41	Sociology	Social stratification
+2.10.42	Sociology	Sociological theory
+2.10.43	Sociology	Sociobiology
+2.10.44	Sociology	Sociocybernetics
+2.10.45	Sociology	Sociolinguistics
+2.10.46	Sociology	Urban studies
+2.10.47	Sociology	Visual sociology
+3	Natural sciences	Natural sciences
+3.1	Natural sciences	Biology
+3.1.1	Biology	Aerobiology
+3.1.2	Biology	Anatomy
+3.1.2.1	Anatomy	Comparative anatomy
+3.1.2.2	Anatomy	Human anatomy
+3.1.3	Biology	Biochemistry
+3.1.4	Biology	Bioinformatics
+3.1.5	Biology	Biophysics
+3.1.6	Biology	Biotechnology
+3.1.7	Biology	Botany
+3.1.7.1	Botany	Ethnobotany
+3.1.7.2	Botany	Phycology
+3.1.8	Biology	Cell biology
+3.1.9	Biology	Chronobiology
+3.1.10	Biology	Computational biology
+3.1.11	Biology	Cryobiology
+3.1.12	Biology	Developmental biology
+3.1.12.1	Developmental biology	Embryology
+3.1.12.2	Developmental biology	Teratology
+3.1.13	Biology	Ecology
+3.1.13.1	Ecology	Agroecology
+3.1.13.2	Ecology	Ethnoecology
+3.1.13.3	Ecology	Human ecology
+3.1.13.4	Ecology	Landscape ecology
+3.1.14	Biology	Genetics
+3.1.14.1	Genetics	Behavioural genetics
+3.1.14.2	Genetics	Molecular genetics
+3.1.14.3	Genetics	Population genetics
+3.1.15	Biology	Endocrinology
+3.1.16	Biology	Evolutionary biology
+3.1.17	Biology	Human biology
+3.1.18	Biology	Immunology
+3.1.19	Biology	Limnology
+3.1.20	Biology	Linnaean taxonomy
+3.1.21	Biology	Marine biology
+3.1.22	Biology	Mathematical biology
+3.1.23	Biology	Microbiology
+3.1.24	Biology	Molecular biology
+3.1.25	Biology	Mycology
+3.1.26	Biology	Nutrition
+3.1.27	Biology	Neuroscience
+3.1.27.1	Neuroscience	Behavioral neuroscience
+3.1.28	Biology	Paleobiology
+3.1.28.1	Paleobiology	Paleontology
+3.1.29	Biology	Parasitology
+3.1.30	Biology	Pathology
+3.1.31	Biology	Physiology
+3.1.31.1	Physiology	Human physiology
+3.1.31.1.1	Human physiology	Exercise physiology
+3.1.32	Biology	Systematics
+3.1.33	Biology	Systems biology
+3.1.34	Biology	Virology
+3.1.34.1	Virology	Molecular virology
+3.1.35	Biology	Xenobiology
+3.1.36	Biology	Zoology
+3.1.36.1	Zoology	Animal communication
+3.1.36.2	Zoology	Apiology
+3.1.36.3	Zoology	Arachnology
+3.1.36.4	Zoology	Carcinology
+3.1.36.5	Zoology	Cetology
+3.1.36.6	Zoology	Entomology
+3.1.36.7	Zoology	Ethnozoology
+3.1.36.8	Zoology	Ethology
+3.1.36.9	Zoology	Helminthology
+3.1.36.10	Zoology	Herpetology
+3.1.36.11	Zoology	Ichthyology
+3.1.36.12	Zoology	Mammalogy
+3.1.36.13	Zoology	Malacology
+3.1.36.13.1	Malacology	Conchology
+3.1.36.14	Zoology	Myrmecology
+3.1.36.15	Zoology	Nematology
+3.1.36.16	Zoology	Neuroethology
+3.1.36.17	Zoology	Oology
+3.1.36.18	Zoology	Ornithology
+3.1.36.19	Zoology	Planktology
+3.1.36.20	Zoology	Primatology
+3.1.36.21	Zoology	Zootomy
+3.1.36.22	Zoology	Zoosemiotics
+3.2	Natural sciences	Chemistry
+3.2.1	Chemistry	Agrochemistry
+3.2.2	Chemistry	Analytical chemistry
+3.2.3	Chemistry	Astrochemistry
+3.2.4	Chemistry	Atmospheric chemistry
+3.2.5	Chemistry	Biochemistry
+3.2.6	Chemistry	Chemical engineering
+3.2.7	Chemistry	Chemical biology
+3.2.8	Chemistry	Cheminformatics
+3.2.9	Chemistry	Computational chemistry
+3.2.10	Chemistry	Cosmochemistry
+3.2.11	Chemistry	Electrochemistry
+3.2.12	Chemistry	Environmental chemistry
+3.2.13	Chemistry	Femtochemistry
+3.2.14	Chemistry	Flavor
+3.2.15	Chemistry	Flow chemistry
+3.2.16	Chemistry	Geochemistry
+3.2.17	Chemistry	Green chemistry
+3.2.18	Chemistry	Histochemistry
+3.2.19	Chemistry	Hydrogenation
+3.2.20	Chemistry	Immunochemistry
+3.2.21	Chemistry	Inorganic chemistry
+3.2.22	Chemistry	Marine chemistry
+3.2.23	Chemistry	Mathematical chemistry
+3.2.24	Chemistry	Mechanochemistry
+3.2.25	Chemistry	Medicinal chemistry
+3.2.26	Chemistry	Molecular biology
+3.2.27	Chemistry	Molecular mechanics
+3.2.28	Chemistry	Nanotechnology
+3.2.29	Chemistry	Natural product chemistry
+3.2.30	Chemistry	Neurochemistry
+3.2.31	Chemistry	Oenology
+3.2.32	Chemistry	Organic chemistry
+3.2.33	Chemistry	Organometallic chemistry
+3.2.34	Chemistry	Petrochemistry
+3.2.35	Chemistry	Pharmacology
+3.2.36	Chemistry	Photochemistry
+3.2.37	Chemistry	Physical chemistry
+3.2.38	Chemistry	Physical organic chemistry
+3.2.39	Chemistry	Phytochemistry
+3.2.40	Chemistry	Polymer chemistry
+3.2.41	Chemistry	Quantum chemistry
+3.2.42	Chemistry	Radiochemistry
+3.2.43	Chemistry	Solid-state chemistry
+3.2.44	Chemistry	Sonochemistry
+3.2.45	Chemistry	Supramolecular chemistry
+3.2.46	Chemistry	Surface chemistry
+3.2.47	Chemistry	Synthetic chemistry
+3.2.48	Chemistry	Theoretical chemistry
+3.2.49	Chemistry	Thermochemistry
+3.3	Natural sciences	Earth sciences
+3.3.1	Earth sciences	Edaphology
+3.3.2	Earth sciences	Environmental science
+3.3.3	Earth sciences	Environmental chemistry
+3.3.4	Earth sciences	Gemology
+3.3.5	Earth sciences	Geodesy
+3.3.6	Earth sciences	Geography
+3.3.7	Earth sciences	Geology
+3.3.8	Earth sciences	Geochemistry
+3.3.9	Earth sciences	Geomorphology
+3.3.10	Earth sciences	Geophysics
+3.3.11	Earth sciences	Glaciology
+3.3.12	Earth sciences	Hydrogeology
+3.3.13	Earth sciences	Hydrology
+3.3.14	Earth sciences	Meteorology
+3.3.15	Earth sciences	Mineralogy
+3.3.16	Earth sciences	Oceanography
+3.3.17	Earth sciences	Pedology (soil study)|Pedology
+3.3.18	Earth sciences	Paleontology
+3.3.18.1	Paleontology	Paleobiology
+3.3.19	Earth sciences	Planetary science
+3.3.20	Earth sciences	Sedimentology
+3.3.21	Earth sciences	Soil science
+3.3.22	Earth sciences	Speleology
+3.3.23	Earth sciences	Tectonics
+3.3.24	Earth sciences	Volcanology
+3.4	Natural sciences	Physics
+3.4.1	Physics	Acoustics
+3.4.2	Physics	Applied Physics
+3.4.3	Physics	Astrophysics
+3.4.4	Physics	Atomic, molecular, and optical physics
+3.4.5	Physics	Biophysics
+3.4.6	Physics	Computational physics
+3.4.7	Physics	Condensed matter physics
+3.4.8	Physics	Cryogenics
+3.4.9	Physics	Electromagnetism
+3.4.10	Physics	Elementary particle physics
+3.4.11	Physics	Fluid dynamics
+3.4.12	Physics	Geophysics
+3.4.13	Physics	Mathematical physics
+3.4.14	Physics	Medical physics
+3.4.15	Physics	Mechanics
+3.4.16	Physics	Molecular physics
+3.4.17	Physics	Newton's laws of motion|Newtonian dynamics
+3.4.18	Physics	Nuclear physics
+3.4.19	Physics	Optics
+3.4.20	Physics	Plasma physics
+3.4.21	Physics	Quantum physics
+3.4.22	Physics	Solid mechanics
+3.4.23	Physics	Solid state physics
+3.4.24	Physics	Statistical mechanics
+3.4.25	Physics	Theoretical physics
+3.4.26	Physics	Thermodynamics
+3.4.27	Physics	Vehicle dynamics
+3.5	Natural sciences	Space sciences
+3.5.1	Space sciences	Astrobiology
+3.5.2	Space sciences	Astronomy
+3.5.2.1	Astronomy	Observational astronomy
+3.5.2.1.1	Observational astronomy	Radio astronomy
+3.5.2.1.2	Observational astronomy	Timeline of cosmic microwave background astronomy|Microwave astronomy
+3.5.2.1.3	Observational astronomy	Infrared astronomy
+3.5.2.1.4	Observational astronomy	Optical astronomy
+3.5.2.1.5	Observational astronomy	UV astronomy
+3.5.2.1.6	Observational astronomy	X-ray astronomy
+3.5.2.1.7	Observational astronomy	Gamma ray astronomy
+3.5.3	Space sciences	Astrophysics
+3.5.3.1	Astrophysics	Gravity|Gravitational astronomy
+3.5.3.1.1	Gravity|Gravitational astronomy	Black hole
+3.5.3.2	Astrophysics	Interstellar medium
+3.5.3.3	Astrophysics	Direct numerical simulation|Numerical simulations
+3.5.3.3.1	Direct numerical simulation|Numerical simulations	Astrophysical plasma
+3.5.3.3.2	Direct numerical simulation|Numerical simulations	Galaxy formation and evolution
+3.5.3.3.3	Direct numerical simulation|Numerical simulations	High-energy astronomy|High-energy astrophysics
+3.5.3.3.4	Direct numerical simulation|Numerical simulations	Hydrodynamics
+3.5.3.3.5	Direct numerical simulation|Numerical simulations	Magnetohydrodynamics
+3.5.3.3.6	Direct numerical simulation|Numerical simulations	Star formation
+3.5.3.4	Astrophysics	Physical cosmology
+3.5.3.5	Astrophysics	Star|Stellar astrophysics
+3.5.3.5.1	Star|Stellar astrophysics	Helioseismology
+3.5.3.5.2	Star|Stellar astrophysics	Stellar evolution
+3.5.3.5.3	Star|Stellar astrophysics	Stellar nucleosynthesis
+3.5.4	Space sciences	Planetary science
+4	Formal sciences	Formal sciences
+4.0.5	Space sciences	Statistics
+4.0.5.1	Statistics	Mathematical statistics
+4.0.5.2	Statistics	Econometrics
+4.0.5.3	Statistics	Actuarial science
+4.0.5.4	Statistics	Demography
+4.0.6	Space sciences	Approximation theory
+4.0.7	Space sciences	Numerical analysis
+4.0.8	Space sciences	Operations research
+4.0.8.1	Operations research	Mathematical optimization
+4.0.8.2	Operations research	Linear programming
+4.0.8.3	Operations research	Dynamic programming
+4.0.8.4	Operations research	Assignment problem
+4.0.8.5	Operations research	Decision analysis
+4.0.8.6	Operations research	Inventory theory
+4.0.8.7	Operations research	Job shop scheduling|Scheduling
+4.0.8.8	Operations research	Real options analysis
+4.0.8.9	Operations research	Systems analysis
+4.0.8.10	Operations research	Stochastic processes
+4.0.8.11	Operations research	Optimal maintenance
+4.0.9	Space sciences	Dynamical systems
+4.0.9.1	Dynamical systems	Chaos theory
+4.0.9.2	Dynamical systems	Fractal geometry
+4.0.10	Space sciences	Mathematical physics
+4.0.10.1	Mathematical physics	Quantum mechanics
+4.0.10.2	Mathematical physics	Quantum field theory
+4.0.10.3	Mathematical physics	Quantum gravity
+4.0.10.3.1	Quantum gravity	String theory
+4.0.10.4	Mathematical physics	Statistical mechanics
+4.0.11	Space sciences	Theory of computation
+4.0.11.1	Theory of computation	Computational complexity theory
+4.0.12	Space sciences	Information theory
+4.0.13	Space sciences	Cryptography
+4.0.14	Space sciences	Combinatorics
+4.0.14.1	Combinatorics	Coding theory
+4.0.15	Space sciences	Graph theory
+4.0.16	Space sciences	Game theory
+4.0.17	Space sciences	Algebra
+4.0.17.1	Algebra	Group theory
+4.0.17.1.1	Group theory	Group representation
+4.0.17.2	Algebra	Ring theory
+4.0.17.2.1	Ring theory	Commutative algebra
+4.0.17.2.2	Ring theory	Noncommutative algebra
+4.0.17.3	Algebra	Field theory (mathematics)|Field theory
+4.0.17.4	Algebra	Linear algebra
+4.0.17.5	Algebra	Multilinear algebra
+4.0.17.6	Algebra	Lie algebra
+4.0.17.7	Algebra	Associative algebra
+4.0.17.8	Algebra	Non-associative algebra
+4.0.17.9	Algebra	Universal algebra
+4.0.17.10	Algebra	Homological algebra
+4.0.17.11	Algebra	Differential algebra
+4.0.17.12	Algebra	Lattice theory
+4.0.17.13	Algebra	Representation theory
+4.0.17.14	Algebra	K-theory
+4.0.17.15	Algebra	Category theory
+4.0.17.15.1	Category theory	Topos|Topos theory
+4.0.18	Space sciences	Mathematical analysis|Analysis
+4.0.18.1	Mathematical analysis|Analysis	Real analysis
+4.0.18.1.1	Real analysis	Calculus
+4.0.18.2	Mathematical analysis|Analysis	Complex analysis
+4.0.18.3	Mathematical analysis|Analysis	Functional analysis
+4.0.18.3.1	Functional analysis	Operator theory
+4.0.18.4	Mathematical analysis|Analysis	Non-standard analysis
+4.0.18.5	Mathematical analysis|Analysis	Harmonic analysis
+4.0.18.5.1	Harmonic analysis	Fourier analysis
+4.0.18.6	Mathematical analysis|Analysis	p-adic analysis
+4.0.18.7	Mathematical analysis|Analysis	Ordinary differential equations
+4.0.18.8	Mathematical analysis|Analysis	Partial differential equations
+4.0.19	Space sciences	Probability theory
+4.0.19.1	Probability theory	Measure theory
+4.0.19.1.1	Measure theory	Integral geometry
+4.0.19.2	Probability theory	Ergodic theory
+4.0.19.3	Probability theory	Stochastic process
+4.0.20	Space sciences	Geometry
+4.0.20.1	Geometry	General topology
+4.0.20.2	Geometry	Algebraic topology
+4.0.20.3	Geometry	Geometric topology
+4.0.20.4	Geometry	Differential topology
+4.0.20.5	Geometry	Projective geometry
+4.0.20.6	Geometry	Affine geometry
+4.0.20.7	Geometry	Non-Euclidean geometry
+4.0.20.8	Geometry	Convex geometry
+4.0.20.9	Geometry	Discrete geometry
+4.0.20.10	Geometry	Integral geometry
+4.0.20.11	Geometry	Noncommutative geometry
+4.0.21	Space sciences	Number theory
+4.0.21.1	Number theory	Analytic number theory
+4.0.21.2	Number theory	Algebraic number theory
+4.0.21.3	Number theory	Geometric number theory
+4.0.22	Space sciences	Mathematical logic|Logic
+4.0.22.1	Mathematical logic|Logic	Set theory
+4.0.22.2	Mathematical logic|Logic	Proof theory
+4.0.22.3	Mathematical logic|Logic	Model theory
+4.0.22.4	Mathematical logic|Logic	Recursion theory
+4.0.22.5	Mathematical logic|Logic	Modal logic
+4.0.22.6	Mathematical logic|Logic	Intuitionistic logic
+4.1	Formal sciences	Computer sciences
+4.1.1	Computer sciences	Theory of computation
+4.1.1.1	Theory of computation	Automata theory
+4.1.1.2	Theory of computation	Computability theory (computer science)|Computability theory
+4.1.1.3	Theory of computation	Computational complexity theory
+4.1.1.4	Theory of computation	Concurrency (computer science)#Theory|Concurrency theory
+4.1.2	Computer sciences	Very-large-scale integration|VLSI design
+4.1.3	Computer sciences	Operating systems
+4.1.4	Computer sciences	Algorithm
+4.1.4.1	Algorithm	Randomized algorithms
+4.1.4.2	Algorithm	Distributed algorithms
+4.1.4.3	Algorithm	Parallel algorithms
+4.1.4.4	Algorithm	Computational geometry
+4.1.5	Computer sciences	Data structures
+4.1.6	Computer sciences	Computer architecture
+4.1.7	Computer sciences	Computer networking|Computer communications (networks)
+4.1.7.1	Computer networking|Computer communications (networks)	Information theory
+4.1.7.2	Computer networking|Computer communications (networks)	Internet
+4.1.7.3	Computer networking|Computer communications (networks)	Wireless computing
+4.1.7.4	Computer networking|Computer communications (networks)	Ubiquitous computing
+4.1.7.5	Computer networking|Computer communications (networks)	Cloud computing
+4.1.8	Computer sciences	Computer security
+4.1.8.1	Computer security	Cryptography
+4.1.8.2	Computer security	Fault-tolerant system|Fault-tolerant computing
+4.1.9	Computer sciences	Distributed computing
+4.1.9.1	Distributed computing	Grid computing
+4.1.10	Computer sciences	Parallel computing
+4.1.10.1	Parallel computing	High-performance computing
+4.1.11	Computer sciences	Quantum computing
+4.1.12	Computer sciences	Computer graphics
+4.1.12.1	Computer graphics	Image processing
+4.1.12.2	Computer graphics	Scientific visualization
+4.1.13	Computer sciences	Software engineering
+4.1.13.1	Software engineering	Formal methods
+4.1.14	Computer sciences	Programming languages
+4.1.14.1	Programming languages	Programming paradigms
+4.1.14.1.1	Programming paradigms	Imperative programming
+4.1.14.1.2	Programming paradigms	Object-oriented programming
+4.1.14.1.3	Programming paradigms	Functional programming
+4.1.14.1.4	Programming paradigms	Logic programming
+4.1.14.1.5	Programming paradigms	Concurrent programming language|Concurrent programming
+4.1.14.2	Programming languages	Program semantics
+4.1.14.3	Programming languages	Type theory
+4.1.14.4	Programming languages	Compilers
+4.1.15	Computer sciences	Human-computer interaction
+4.1.16	Computer sciences	Information science
+4.1.16.1	Information science	Data management
+4.1.16.2	Information science	Data mining
+4.1.16.3	Information science	Database
+4.1.16.3.1	Database	Relational database
+4.1.16.3.2	Database	Distributed database
+4.1.16.3.3	Database	Object database
+4.1.16.4	Information science	Information retrieval
+4.1.16.5	Information science	Information management
+4.1.16.6	Information science	Knowledge management
+4.1.16.7	Information science	Multimedia
+4.1.16.7.1	Multimedia	Sound and music computing
+4.1.17	Computer sciences	Artificial intelligence
+4.1.17.1	Artificial intelligence	Cognitive science
+4.1.17.1.1	Cognitive science	Automated reasoning
+4.1.17.1.2	Cognitive science	Machine learning
+4.1.17.1.2.1	Machine learning	Artificial neural network
+4.1.17.1.2.2	Machine learning	Support vector machine
+4.1.17.1.3	Cognitive science	Natural language processing
+4.1.17.1.4	Cognitive science	Computer vision
+4.1.17.2	Artificial intelligence	Expert systems
+4.1.17.3	Artificial intelligence	Robotics
+4.1.18	Computer sciences	Mathematics
+4.1.18.1	Mathematics	Numerical analysis
+4.1.18.2	Mathematics	Symbolic computation|Algebraic (symbolic) computation
+4.1.18.3	Mathematics	Computational number theory
+4.1.18.4	Mathematics	Computational mathematics
+4.1.18.5	Mathematics	Scientific computing|Scientific computing (Computational science)
+4.1.18.6	Mathematics	Computational biology|Computational biology (bioinformatics)
+4.1.18.7	Mathematics	Computational physics
+4.1.18.8	Mathematics	Computational chemistry
+4.1.18.9	Mathematics	Computational neuroscience
+4.1.18.10	Mathematics	Computer-aided engineering
+4.1.18.10.1	Computer-aided engineering	Finite element analysis
+4.1.18.10.2	Computer-aided engineering	Computational fluid dynamics
+4.1.19	Computer sciences	Social sciences
+4.1.19.1	Social sciences	Computational economics
+4.1.19.2	Social sciences	Computational sociology
+4.1.19.3	Social sciences	Computational finance
+4.1.19.4	Social sciences	Digital Humanities
+4.1.19.5	Social sciences	History of computer hardware
+4.1.19.6	Social sciences	History of computer science
+4.1.19.7	Social sciences	Humanistic informatics
+4.1.19.8	Social sciences	Community informatics
+4.2	Formal sciences	Logic
+4.2.1	Logic	Mathematical logic
+4.2.1.1	Mathematical logic	Set theory
+4.2.1.2	Mathematical logic	Proof theory
+4.2.1.3	Mathematical logic	Model theory
+4.2.1.4	Mathematical logic	Recursion theory
+4.2.1.5	Mathematical logic	Modal logic
+4.2.1.6	Mathematical logic	Intuitionistic logic
+4.2.2	Logic	Philosophical logic
+4.2.2.1	Philosophical logic	Logical reasoning
+4.2.2.2	Philosophical logic	Modal logic
+4.2.2.2.1	Modal logic	Deontic logic
+4.2.2.2.2	Modal logic	Doxastic logic
+4.2.3	Logic	Logic in computer science
+4.2.3.1	Logic in computer science	Formal semantics of programming languages|Programming language semantics
+4.2.3.2	Logic in computer science	Formal methods
+4.2.3.3	Logic in computer science	Type theory
+4.2.3.4	Logic in computer science	Logic programming
+4.2.3.5	Logic in computer science	Multi-valued logic
+4.2.3.5.1	Multi-valued logic	Fuzzy logic
+4.3	Formal sciences	Statistics
+4.3.1	Statistics	Computational statistics
+4.3.1.1	Computational statistics	Data mining
+4.3.1.2	Computational statistics	Regression analysis|Regression
+4.3.1.3	Computational statistics	Simulation
+4.3.1.3.1	Simulation	Bootstrap (statistics)
+4.3.2	Statistics	Design of experiments
+4.3.2.1	Design of experiments	Block design
+4.3.2.2	Design of experiments	Response surface methodology
+4.3.3	Statistics	Survey Sampling|Sample Survey
+4.3.3.1	Survey Sampling|Sample Survey	Statistical sampling|Sampling theory
+4.3.4	Statistics	Statistical model
+4.3.4.1	Statistical model	Biostatistics
+4.3.4.1.1	Biostatistics	Epidemiology
+4.3.4.2	Statistical model	Multivariate analysis
+4.3.4.2.1	Multivariate analysis	Structural equation model
+4.3.4.2.2	Multivariate analysis	Time series
+4.3.4.3	Statistical model	Reliability theory
+4.3.4.4	Statistical model	Quality control
+4.3.5	Statistics	Statistical theory
+4.3.5.1	Statistical theory	Decision theory
+4.3.5.2	Statistical theory	Mathematical statistics
+4.3.5.2.1	Mathematical statistics	Probability
+4.3.5.3	Statistical theory	Survey (statistics)|Survey methodology
+4.4	Formal sciences	Systems science
+4.4.1	Systems science	Complex systems
+4.4.2	Systems science	Cybernetics
+4.4.2.1	Cybernetics	Engineering cybernetics
+4.4.2.2	Cybernetics	Management cybernetics
+4.4.2.3	Cybernetics	Medical cybernetics
+4.4.2.4	Cybernetics	New Cybernetics
+4.4.2.5	Cybernetics	Second-order cybernetics
+4.4.3	Systems science	Control theory
+4.4.3.1	Control theory	Control engineering
+4.4.3.2	Control theory	Control systems
+4.4.3.3	Control theory	Dynamical systems
+4.4.4	Systems science	Operations research
+4.4.4.1	Operations research	Computational systems biology
+4.4.4.2	Operations research	Synthetic biology
+4.4.4.3	Operations research	Systems immunology
+4.4.5	Systems science	Systems dynamics
+4.4.5.1	Systems dynamics	Ecosystem ecology
+4.4.6	Systems science	Systems engineering
+4.4.6.1	Systems engineering	Earth systems engineering and management
+4.4.6.2	Systems engineering	Enterprise systems engineering
+4.4.6.3	Systems engineering	Systems analysis
+4.4.6.4	Systems engineering	Ergonomics
+4.4.6.5	Systems engineering	Systemic therapy
+4.4.7	Systems science	Systems theory
+4.4.7.1	Systems theory	Ecological systems theory
+4.4.7.2	Systems theory	Developmental systems theory
+4.4.7.3	Systems theory	General systems theory
+4.4.7.4	Systems theory	LTI system theory
+4.4.7.5	Systems theory	Sociotechnical systems theory
+4.4.7.6	Systems theory	Mathematical system theory
+5	Professions	Professions
+5.1	Professions	Agriculture
+5.1.1	Agriculture	Agroecology
+5.1.2	Agriculture	Agronomy
+5.1.3	Agriculture	Animal husbandry
+5.1.3.1	Animal husbandry	Beekeeping
+5.1.4	Agriculture	Agrology
+5.1.5	Agriculture	Entomology
+5.1.6	Agriculture	Agricultural economics
+5.1.7	Agriculture	Agricultural engineering
+5.1.7.1	Agricultural engineering	Biological systems engineering
+5.1.7.2	Agricultural engineering	Food engineering
+5.1.8	Agriculture	Aquaculture
+5.1.9	Agriculture	Enology
+5.1.10	Agriculture	Food science
+5.1.11	Agriculture	Horticulture
+5.1.12	Agriculture	Hydrology
+5.1.13	Agriculture	Plant science
+5.1.13.1	Plant science	Pomology
+5.1.14	Agriculture	Viticulture
+5.2	Professions	Architecture and design
+5.2.1	Architecture and design	Architecture
+5.2.1.1	Architecture	Architecture
+5.2.1.2	Architecture	Urban planning
+5.2.1.3	Architecture	Interior design
+5.2.1.4	Architecture	Landscape architecture
+5.2.2	Architecture and design	Architectural Analytics
+5.2.3	Architecture and design	Historic preservation
+5.2.4	Architecture and design	Visual communication
+5.2.4.1	Visual communication	Graphic design
+5.2.4.1.1	Graphic design	Type design
+5.2.4.2	Visual communication	Technical drawing
+5.2.5	Architecture and design	Industrial design
+5.2.5.1	Industrial design	Ergonomics
+5.2.5.2	Industrial design	Game design
+5.2.5.3	Industrial design	Toy|Toy and amusement design
+5.2.6	Architecture and design	User experience design
+5.2.6.1	User experience design	Interaction design
+5.2.6.2	User experience design	Information architecture
+5.2.6.3	User experience design	User interface design
+5.2.6.4	User experience design	User experience evaluation
+5.2.7	Architecture and design	Fashion design
+5.2.8	Architecture and design	Textile design
+5.3	Professions	Business
+5.3.1	Business	Accounting scholarship
+5.3.2	Business	Business administration
+5.3.3	Business	Business analysis
+5.3.4	Business	Business ethics
+5.3.5	Business	Business law
+5.3.6	Business	E-Business
+5.3.7	Business	Entrepreneurship
+5.3.8	Business	Finance
+5.3.9	Business	Industrial relations|Industrial and labor relations
+5.3.9.1	Industrial relations|Industrial and labor relations	Collective bargaining
+5.3.9.2	Industrial relations|Industrial and labor relations	Human resources
+5.3.9.3	Industrial relations|Industrial and labor relations	Organizational studies
+5.3.9.4	Industrial relations|Industrial and labor relations	Labor economics
+5.3.9.5	Industrial relations|Industrial and labor relations	Labor history (discipline)|Labor history
+5.3.10	Business	Information systems
+5.3.10.1	Information systems	Management information systems
+5.3.10.2	Information systems	Health informatics
+5.3.11	Business	Information technology
+5.3.12	Business	International trade
+5.3.13	Business	Marketing
+5.3.14	Business	Purchasing
+5.3.15	Business	Risk management
+5.3.16	Business	Systems science
+5.4	Professions	Divinity
+5.4.1	Divinity	Canon law
+5.4.2	Divinity	History of Christianity|Church history
+5.4.3	Divinity	Field ministry
+5.4.3.1	Field ministry	Pastoral counseling
+5.4.3.2	Field ministry	Pastoral theology
+5.4.3.3	Field ministry	Religious education
+5.4.3.4	Field ministry	Homiletics
+5.4.3.5	Field ministry	Liturgy
+5.4.3.6	Field ministry	Sacred music
+5.4.3.7	Field ministry	Missiology
+5.4.4	Divinity	Scriptural study and languages
+5.4.4.1	Scriptural study and languages	Biblical Hebrew language|Biblical Hebrew
+5.4.4.2	Scriptural study and languages	Biblical studies
+5.4.4.3	Scriptural study and languages	Koine Greek|New Testament Greek
+5.4.4.4	Scriptural study and languages	Latin
+5.4.4.5	Scriptural study and languages	Old Church Slavonic
+5.4.5	Divinity	Theology
+5.4.5.1	Theology	Dogmatic theology
+5.4.5.2	Theology	Ecclesiology
+5.4.5.3	Theology	Sacrament|Sacramental theology
+5.4.5.4	Theology	Systematic theology
+5.4.5.5	Theology	Christian ethics
+5.5	Professions	Education
+5.5.1	Education	Comparative Education
+5.5.2	Education	Consumer education
+5.5.3	Education	Critical pedagogy
+5.5.4	Education	Curriculum and instruction
+5.5.4.1	Curriculum and instruction	Alternative education
+5.5.4.2	Curriculum and instruction	Elementary education
+5.5.4.3	Curriculum and instruction	Secondary education
+5.5.4.4	Curriculum and instruction	Higher education
+5.5.4.5	Curriculum and instruction	Mastery learning
+5.5.4.6	Curriculum and instruction	Cooperative learning
+5.5.4.7	Curriculum and instruction	Agricultural education
+5.5.4.8	Curriculum and instruction	Art education
+5.5.4.9	Curriculum and instruction	Bilingual education
+5.5.4.10	Curriculum and instruction	Chemistry education
+5.5.4.11	Curriculum and instruction	Counselor education
+5.5.4.12	Curriculum and instruction	Language education
+5.5.4.13	Curriculum and instruction	Legal education
+5.5.4.14	Curriculum and instruction	Mathematics education
+5.5.4.15	Curriculum and instruction	Medical education
+5.5.4.16	Curriculum and instruction	Military education and training
+5.5.4.17	Curriculum and instruction	Music education
+5.5.4.18	Curriculum and instruction	Nursing education
+5.5.4.19	Curriculum and instruction	Peace education
+5.5.4.20	Curriculum and instruction	Physical education
+5.5.4.21	Curriculum and instruction	Physics education
+5.5.4.22	Curriculum and instruction	Reading education
+5.5.4.23	Curriculum and instruction	Religious education
+5.5.4.24	Curriculum and instruction	Science education
+5.5.4.25	Curriculum and instruction	Special education
+5.5.4.26	Curriculum and instruction	Sex education
+5.5.4.27	Curriculum and instruction	Sociology of education
+5.5.4.28	Curriculum and instruction	Technology education
+5.5.4.29	Curriculum and instruction	Vocational education
+5.5.5	Education	Educational leadership
+5.5.6	Education	Educational philosophy
+5.5.7	Education	Educational psychology
+5.5.8	Education	Educational technology
+5.5.9	Education	Distance education
+5.6	Professions	Engineering
+5.6.1	Engineering	Bioengineering
+5.6.1.1	Bioengineering	Biochemical engineering
+5.6.1.2	Bioengineering	Biomolecular engineering
+5.6.2	Engineering	Catalysis
+5.6.3	Engineering	Materials engineering
+5.6.4	Engineering	Molecular engineering
+5.6.5	Engineering	Nanotechnology
+5.6.6	Engineering	Polymer engineering
+5.6.7	Engineering	Process design
+5.6.7.1	Process design	Petroleum engineering
+5.6.7.2	Process design	Nuclear engineering
+5.6.7.3	Process design	Food engineering
+5.6.8	Engineering	Reaction engineering
+5.6.9	Engineering	Thermodynamics
+5.6.10	Engineering	Transport phenomena
+5.6.11	Engineering	Earthquake engineering
+5.6.12	Engineering	Ecological engineering
+5.6.13	Engineering	Environmental engineering
+5.6.14	Engineering	Geotechnical engineering
+5.6.14.1	Geotechnical engineering	Engineering geology
+5.6.14.2	Geotechnical engineering	Geoengineering
+5.6.15	Engineering	Hydraulic Engineering
+5.6.16	Engineering	Mining engineering
+5.6.17	Engineering	Transportation engineering
+5.6.17.1	Transportation engineering	Highway engineering
+5.6.18	Engineering	Structural engineering
+5.6.18.1	Structural engineering	Architectural engineering
+5.6.19	Engineering	Structural Mechanics
+5.6.20	Engineering	Surveying
+5.6.21	Engineering	Applied physics
+5.6.22	Engineering	Computer engineering
+5.6.23	Engineering	Computer Science
+5.6.24	Engineering	Control engineering|Control systems engineering
+5.6.24.1	Control engineering|Control systems engineering	Control theory
+5.6.25	Engineering	Electronic engineering
+5.6.25.1	Electronic engineering	Instrumentation engineering
+5.6.26	Engineering	Engineering physics
+5.6.26.1	Engineering physics	Photonics
+5.6.27	Engineering	Information theory
+5.6.28	Engineering	Mechatronics
+5.6.29	Engineering	Power engineering
+5.6.30	Engineering	Robotics
+5.6.31	Engineering	Semiconductors
+5.6.32	Engineering	Telecommunications engineering
+5.6.33	Engineering	Quantum Computing
+5.6.34	Engineering	Biomaterials
+5.6.35	Engineering	Ceramic engineering
+5.6.36	Engineering	Crystallography
+5.6.37	Engineering	Nanomaterials
+5.6.38	Engineering	Photonics
+5.6.39	Engineering	Metallurgy|Physical Metallurgy
+5.6.40	Engineering	Polymer engineering
+5.6.41	Engineering	Polymer science
+5.6.42	Engineering	Semiconductors
+5.6.43	Engineering	Aerospace engineering
+5.6.44	Engineering	Acoustical engineering
+5.6.45	Engineering	Automotive engineering
+5.6.46	Engineering	Biomedical engineering
+5.6.46.1	Biomedical engineering	Biomechanical engineering
+5.6.47	Engineering	Continuum mechanics
+5.6.48	Engineering	Fluid mechanics
+5.6.49	Engineering	Heat transfer
+5.6.50	Engineering	Industrial engineering
+5.6.51	Engineering	Manufacturing engineering
+5.6.52	Engineering	Marine propulsion|Marine engineering
+5.6.53	Engineering	Mass transfer
+5.6.54	Engineering	Mechatronics
+5.6.55	Engineering	Nanoengineering
+5.6.56	Engineering	Offshore construction|Ocean engineering
+5.6.57	Engineering	Optical engineering
+5.6.58	Engineering	Robotics
+5.6.59	Engineering	Thermodynamics
+5.7	Professions	Environmental studies and forestry
+5.7.1	Environmental studies and forestry	Environmental management
+5.7.1.1	Environmental management	Coastal management
+5.7.1.2	Environmental management	Fisheries management
+5.7.1.3	Environmental management	Land management
+5.7.1.4	Environmental management	Natural resource management
+5.7.1.5	Environmental management	Wildlife management
+5.7.2	Environmental studies and forestry	Environmental policy
+5.7.3	Environmental studies and forestry	Recreation ecology
+5.7.4	Environmental studies and forestry	Silviculture
+5.7.5	Environmental studies and forestry	Sustainability studies
+5.7.5.1	Sustainability studies	Sustainable development
+5.7.6	Environmental studies and forestry	Toxicology
+5.8	Professions	Family and consumer science
+5.8.1	Family and consumer science	Consumer education
+5.8.2	Family and consumer science	Housing
+5.8.3	Family and consumer science	Interior design
+5.8.4	Family and consumer science	Nutrition
+5.8.4.1	Nutrition	Foodservice|Foodservice management
+5.8.5	Family and consumer science	Textile
+5.9	Professions	Human physical performance and recreation
+5.9.1	Human physical performance and recreation	Biomechanics
+5.9.2	Human physical performance and recreation	Sports coaching
+5.9.3	Human physical performance and recreation	Dance
+5.9.4	Human physical performance and recreation	Ergonomics
+5.9.5	Human physical performance and recreation	Physical fitness
+5.9.5.1	Physical fitness	aerobics
+5.9.5.2	Physical fitness	Personal trainer
+5.9.6	Human physical performance and recreation	Game design
+5.9.7	Human physical performance and recreation	Exercise physiology
+5.9.8	Human physical performance and recreation	Kinesiology
+5.9.9	Human physical performance and recreation	Leisure studies
+5.9.10	Human physical performance and recreation	Physical education
+5.9.11	Human physical performance and recreation	Sociology of sport
+5.9.12	Human physical performance and recreation	Sexology
+5.9.13	Human physical performance and recreation	sportscasting
+5.9.14	Human physical performance and recreation	Sport management
+5.9.14.1	Sport management	Athletic Administration|Athletic director
+5.9.15	Human physical performance and recreation	Sport psychology
+5.9.16	Human physical performance and recreation	Sports medicine
+5.9.16.1	Sports medicine	Athletic training
+5.9.17	Human physical performance and recreation	Toy|Toy and amusement design
+5.10	Professions	Journalism, media studies and communication
+5.10.1	Journalism, media studies and communication	Journalism
+5.10.1.1	Journalism	Broadcast journalism
+5.10.1.2	Journalism	Literary journalism
+5.10.1.3	Journalism	New media|New media journalism
+5.10.1.4	Journalism	Print journalism
+5.10.1.5	Journalism	sportscasting
+5.10.2	Journalism, media studies and communication	Media studies
+5.10.2.1	Media studies	Newspaper
+5.10.2.2	Media studies	Magazine
+5.10.2.3	Media studies	Radio
+5.10.2.4	Media studies	Television
+5.10.2.4.1	Television	Television studies
+5.10.2.5	Media studies	Internet
+5.10.3	Journalism, media studies and communication	Communication studies
+5.10.3.1	Communication studies	Advertising
+5.10.3.2	Communication studies	Animal communication
+5.10.3.3	Communication studies	Communication design
+5.10.3.4	Communication studies	Environmental communication
+5.10.3.5	Communication studies	Information theory
+5.10.3.6	Communication studies	Cross-cultural communication|Intercultural communication
+5.10.3.7	Communication studies	Marketing
+5.10.3.8	Communication studies	Mass communication
+5.10.3.9	Communication studies	Nonverbal communication
+5.10.3.10	Communication studies	Organizational communication
+5.10.3.11	Communication studies	Propaganda
+5.10.3.12	Communication studies	Public relations
+5.10.3.13	Communication studies	Speech communication
+5.10.3.14	Communication studies	Technical writing
+5.10.3.15	Communication studies	Translation
+5.11	Professions	Law
+5.11.1	Law	Canon law
+5.11.2	Law	Comparative law
+5.11.3	Law	Constitutional law
+5.11.4	Law	Competition law
+5.11.5	Law	Criminal law
+5.11.5.1	Criminal law	Criminal procedure
+5.11.5.2	Criminal law	Criminal justice
+5.11.5.2.1	Criminal justice	Police science
+5.11.5.2.2	Criminal justice	Forensic science
+5.11.6	Law	Sharia|Islamic law
+5.11.7	Law	Jewish law
+5.11.8	Law	Jurisprudence
+5.11.9	Law	Civil law (common law)|Civil law
+5.11.9.1	Civil law (common law)|Civil law	Admiralty law
+5.11.9.2	Civil law (common law)|Civil law	Animal law
+5.11.9.3	Civil law (common law)|Civil law	Corporations
+5.11.9.4	Civil law (common law)|Civil law	Civil procedure
+5.11.9.5	Civil law (common law)|Civil law	Contract law
+5.11.9.6	Civil law (common law)|Civil law	Environmental law
+5.11.9.7	Civil law (common law)|Civil law	International law
+5.11.9.8	Civil law (common law)|Civil law	Labor law
+5.11.9.9	Civil law (common law)|Civil law	Paralegal|Paralegal studies
+5.11.9.10	Civil law (common law)|Civil law	Property law
+5.11.9.11	Civil law (common law)|Civil law	Tax law
+5.11.9.12	Civil law (common law)|Civil law	Tort law
+5.12	Professions	Library and museum studies
+5.12.1	Library and museum studies	Archival science
+5.12.2	Library and museum studies	Bibliometrics
+5.12.2.1	Bibliometrics	Citation analysis
+5.12.3	Library and museum studies	Conservation science (cultural heritage)|Conservation science
+5.12.4	Library and museum studies	Informatics (academic field)|Informatics
+5.12.5	Library and museum studies	Information architecture
+5.12.6	Library and museum studies	Museology
+5.12.6.1	Museology	Arts administration|Museum administration
+5.13	Professions	Medicine
+5.13.1	Medicine	Clinical laboratory sciences
+5.13.1.1	Clinical laboratory sciences	Clinical biochemistry
+5.13.1.2	Clinical laboratory sciences	Cytogenetics
+5.13.1.3	Clinical laboratory sciences	Cytohematology
+5.13.1.4	Clinical laboratory sciences	cell biology|Cytology
+5.13.1.5	Clinical laboratory sciences	Haemostasiology
+5.13.1.6	Clinical laboratory sciences	Histology
+5.13.1.7	Clinical laboratory sciences	Clinical immunology
+5.13.1.8	Clinical laboratory sciences	Clinical microbiology
+5.13.1.9	Clinical laboratory sciences	Molecular genetics
+5.13.1.10	Clinical laboratory sciences	Parasitology
+5.13.2	Medicine	Clinical Physiology
+5.13.3	Medicine	Dentistry
+5.13.3.1	Dentistry	Dental hygienist|Dental hygiene
+5.13.3.2	Dentistry	Dental surgery
+5.13.3.3	Dentistry	Endodontics
+5.13.3.4	Dentistry	Orthodontics
+5.13.3.5	Dentistry	Oral and maxillofacial surgery
+5.13.3.6	Dentistry	Periodontics
+5.13.3.7	Dentistry	Prosthodontics
+5.13.3.8	Dentistry	Dental implant|Implantology
+5.13.4	Medicine	Health informatics
+5.13.5	Medicine	Nursing
+5.13.5.1	Nursing	Nursing theory
+5.13.6	Medicine	Midwifery|Midwifery-Obstetrics
+5.13.7	Medicine	Nutrition
+5.13.8	Medicine	Optometry
+5.13.9	Medicine	Orthoptics
+5.13.10	Medicine	Physiotherapy
+5.13.11	Medicine	Occupational therapy
+5.13.12	Medicine	Speech and language pathology
+5.13.13	Medicine	Internal medicine
+5.13.13.1	Internal medicine	Preventive medicine
+5.13.13.2	Internal medicine	Cardiology
+5.13.13.3	Internal medicine	Dermatology
+5.13.13.4	Internal medicine	Pulmonology
+5.13.13.4.1	Pulmonology	Medical toxicology
+5.13.13.5	Internal medicine	Endocrinology
+5.13.13.6	Internal medicine	Gastroenterology
+5.13.13.6.1	Gastroenterology	Hepatology
+5.13.13.7	Internal medicine	Oncology
+5.13.13.8	Internal medicine	Geriatrics
+5.13.13.9	Internal medicine	Gynaecology
+5.13.13.10	Internal medicine	Hematology
+5.13.13.11	Internal medicine	Infectious disease
+5.13.13.12	Internal medicine	Nephrology
+5.13.13.13	Internal medicine	Neurology
+5.13.13.14	Internal medicine	Neurosurgery
+5.13.13.15	Internal medicine	Obstetrics
+5.13.13.16	Internal medicine	Ophthalmology
+5.13.13.17	Internal medicine	Orthopedic surgery
+5.13.13.17.1	Orthopedic surgery	Hand surgery
+5.13.13.17.2	Orthopedic surgery	Foot and ankle surgery
+5.13.13.17.3	Orthopedic surgery	Sports medicine
+5.13.13.17.4	Orthopedic surgery	Joint replacement
+5.13.13.17.5	Orthopedic surgery	Shoulder surgery
+5.13.13.18	Internal medicine	Otolaryngology
+5.13.13.19	Internal medicine	Pathology
+5.13.13.20	Internal medicine	Pediatrics
+5.13.14	Medicine	Pharmacy
+5.13.15	Medicine	Pharmaceutical sciences
+5.13.16	Medicine	Physical fitness
+5.13.16.1	Physical fitness	aerobics
+5.13.16.2	Physical fitness	Personal fitness training
+5.13.16.3	Physical fitness	Kinesiology
+5.13.17	Medicine	Podiatry
+5.13.18	Medicine	Primary care
+5.13.18.1	Primary care	General practice
+5.13.19	Medicine	Psychiatry
+5.13.19.1	Psychiatry	Addiction medicine
+5.13.20	Medicine	Psychology
+5.13.20.1	Psychology	Behavioral medicine
+5.13.20.2	Psychology	Clinical psychology
+5.13.20.3	Psychology	Health psychology
+5.13.20.4	Psychology	Medical psychology
+5.13.20.5	Psychology	Counseling psychology
+5.13.21	Medicine	Public health
+5.13.22	Medicine	Radiology
+5.13.23	Medicine	Recreation therapy
+5.13.24	Medicine	Rehabilitation medicine
+5.13.25	Medicine	Respiratory medicine
+5.13.25.1	Respiratory medicine	Pulmonology
+5.13.25.2	Respiratory medicine	Sleep medicine
+5.13.26	Medicine	Respiratory therapy
+5.13.27	Medicine	Rheumatology
+5.13.28	Medicine	Sports medicine
+5.13.29	Medicine	Surgery
+5.13.29.1	Surgery	Bariatric surgery
+5.13.29.2	Surgery	Cardiothoracic surgery
+5.13.29.3	Surgery	Neurosurgery
+5.13.29.4	Surgery	Plastic surgery
+5.13.29.5	Surgery	Traumatology
+5.13.30	Medicine	Urology
+5.13.30.1	Urology	Andrology
+5.13.31	Medicine	Veterinary medicine
+5.14	Professions	Military sciences
+5.14.1	Military sciences	Amphibious warfare
+5.14.2	Military sciences	Artillery
+5.14.3	Military sciences	Battlespace
+5.14.3.1	Battlespace	Aerial warfare|Air
+5.14.3.2	Battlespace	Information warfare|Information
+5.14.3.3	Battlespace	Ground warfare|Land
+5.14.3.4	Battlespace	Naval warfare|Sea
+5.14.3.5	Battlespace	Space warfare|Space
+5.14.4	Military sciences	Military campaign|Campaigning
+5.14.5	Military sciences	Military engineering
+5.14.6	Military sciences	Doctrine
+5.14.7	Military sciences	Game theory
+5.14.7.1	Game theory	Containment
+5.14.7.2	Game theory	Economic warfare
+5.14.7.3	Game theory	Military science
+5.14.7.4	Game theory	Philosophy of war
+5.14.7.5	Game theory	Strategic studies
+5.14.7.6	Game theory	Total war
+5.14.8	Military sciences	Leadership
+5.14.9	Military sciences	Military logistics|Logistics
+5.14.9.1	Military logistics|Logistics	Materiel
+5.14.9.2	Military logistics|Logistics	Military supply chain management|Supply chain management
+5.14.10	Military sciences	Military history
+5.14.10.1	Military history	Prehistoric warfare|Prehistoric
+5.14.10.2	Military history	Ancient warfare|Ancient
+5.14.10.3	Military history	Medieval warfare|Medieval
+5.14.10.4	Military history	Early modern warfare|Early modern
+5.14.10.5	Military history	Industrial warfare|Industrial
+5.14.10.6	Military history	Modern warfare|Modern
+5.14.10.7	Military history	Fourth-generation warfare
+5.14.11	Military sciences	Military intelligence
+5.14.12	Military sciences	Military law
+5.14.13	Military sciences	Military medicine
+5.14.14	Military sciences	Naval science
+5.14.14.1	Naval science	Naval engineering
+5.14.14.2	Naval science	Naval tactics
+5.14.14.3	Naval science	Naval architecture
+5.14.14.4	Naval science	Command and control
+5.14.14.5	Naval science	Doctrine
+5.14.14.6	Naval science	Military education and training|Education and training
+5.14.14.7	Naval science	Military engineering|Engineers
+5.14.14.8	Naval science	Military intelligence|Intelligence
+5.14.14.9	Naval science	Military rank|Ranks
+5.14.14.10	Naval science	Staff (military)|Staff
+5.14.14.11	Naval science	Military technology|Technology and equipment
+5.14.15	Military sciences	Strategy
+5.14.15.1	Strategy	Attrition warfare|Attrition
+5.14.15.2	Strategy	Military deception|Deception
+5.14.15.3	Strategy	Strategic defence|Defensive
+5.14.15.4	Strategy	Offensive (military)|Offensive
+5.14.15.5	Strategy	Counter-offensive
+5.14.15.6	Strategy	Strategic goal (military)|Goal
+5.14.15.7	Strategy	Naval strategy|Naval
+5.14.16	Military sciences	Military tactics|Tactics
+5.14.16.1	Military tactics|Tactics	Air combat manoeuvring|Aerial
+5.14.16.2	Military tactics|Tactics	Battle
+5.14.16.3	Military tactics|Tactics	Cavalry tactics|Cavalry
+5.14.16.4	Military tactics|Tactics	Charge (warfare)|Charge
+5.14.16.5	Military tactics|Tactics	Cover (military)|Cover
+5.14.16.6	Military tactics|Tactics	Counter-attack
+5.14.16.7	Military tactics|Tactics	Counter-insurgency
+5.14.16.8	Military tactics|Tactics	Defensive fighting position|Foxhole
+5.14.16.9	Military tactics|Tactics	Guerrilla warfare
+5.14.16.10	Military tactics|Tactics	Morale
+5.14.16.11	Military tactics|Tactics	Naval tactics
+5.14.16.12	Military tactics|Tactics	Siege
+5.14.16.13	Military tactics|Tactics	Tactical objective
+5.14.16.14	Military tactics|Tactics	Trench warfare
+5.14.17	Military sciences	Weapon|Military weapons
+5.14.17.1	Weapon|Military weapons	Armoured warfare|Armor
+5.14.17.2	Weapon|Military weapons	Artillery
+5.14.17.3	Weapon|Military weapons	Biological warfare|Biological
+5.14.17.4	Weapon|Military weapons	Cavalry
+5.14.17.5	Weapon|Military weapons	Conventional warfare|Conventional
+5.14.17.6	Weapon|Military weapons	Chemical warfare|Chemical
+5.14.17.7	Weapon|Military weapons	Cyberweapon|Cyber
+5.14.17.8	Weapon|Military weapons	Electronic warfare|Electronic
+5.14.17.9	Weapon|Military weapons	Infantry
+5.14.17.10	Weapon|Military weapons	Nuclear warfare|Nuclear
+5.14.17.11	Weapon|Military weapons	Psychological warfare|Psychological
+5.14.17.12	Weapon|Military weapons	Unconventional warfare|Unconventional
+5.14.18	Military sciences	Other Military
+5.14.18.1	Other Military	Asymmetric warfare
+5.14.18.2	Other Military	Cold war (general term)
+5.14.18.3	Other Military	Mercenary
+5.14.18.4	Other Military	Military campaign
+5.14.18.5	Other Military	Military operation
+5.14.18.6	Other Military	Network-centric warfare
+5.14.18.7	Other Military	Principles of war
+5.14.18.8	Other Military	Proxy war
+5.14.18.9	Other Military	Religious war
+5.14.18.10	Other Military	Theater (warfare)
+5.14.18.11	Other Military	War crime
+5.15	Professions	Public administration
+5.15.1	Public administration	Corrections
+5.15.2	Public administration	Conservation biology
+5.15.3	Public administration	Criminal justice
+5.15.4	Public administration	Emergency management
+5.15.5	Public administration	Fire safety
+5.15.6	Public administration	Fire ecology
+5.15.7	Public administration	Government|Governmental affairs
+5.15.8	Public administration	international relations|International affairs
+5.15.9	Public administration	Peace and conflict studies
+5.15.10	Public administration	Police science
+5.15.11	Public administration	Policy studies
+5.15.11.1	Policy studies	Policy analysis
+5.15.12	Public administration	Public administration
+5.15.12.1	Public administration	Nonprofit|Nonprofit administration
+5.15.12.2	Public administration	Non-governmental organization|Non-governmental organization (NGO) administration
+5.15.12.3	Public administration	Public policy doctrine
+5.15.12.4	Public administration	Public policy school
+5.15.12.5	Public administration	Regulation
+5.15.13	Public administration	Public policy (law)|Public policy
+5.15.13.1	Public policy (law)|Public policy	Agricultural policy|Agricultural
+5.15.13.2	Public policy (law)|Public policy	Commercial policy|Commercial
+5.15.13.3	Public policy (law)|Public policy	Cultural policy|Cultural
+5.15.13.4	Public policy (law)|Public policy	Domestic policy|Domestic
+5.15.13.5	Public policy (law)|Public policy	Drug policy|Drug
+5.15.13.5.1	Drug policy|Drug	Drug policy reform|Drug reform
+5.15.13.6	Public policy (law)|Public policy	Economic policy|Economic
+5.15.13.6.1	Economic policy|Economic	Fiscal policy|Fiscal
+5.15.13.6.2	Economic policy|Economic	Incomes policy|Incomes
+5.15.13.6.3	Economic policy|Economic	Industrial policy|Industrial
+5.15.13.6.4	Economic policy|Economic	Investment policy|Investment
+5.15.13.6.5	Economic policy|Economic	Monetary policy|Monetary
+5.15.13.6.6	Economic policy|Economic	Tax policy|Tax
+5.15.13.7	Public policy (law)|Public policy	Education policy|Education
+5.15.13.8	Public policy (law)|Public policy	Energy policy|Energy
+5.15.13.8.1	Energy policy|Energy	Nuclear energy policy|Nuclear energy
+5.15.13.8.2	Energy policy|Energy	Renewable energy policy|Renewable energy
+5.15.13.9	Public policy (law)|Public policy	Environmental policy|Environmental
+5.15.13.10	Public policy (law)|Public policy	Food policy|Food
+5.15.13.11	Public policy (law)|Public policy	Foreign policy|Foreign
+5.15.13.12	Public policy (law)|Public policy	Health policy|Health
+5.15.13.12.1	Health policy|Health	Pharmaceutical policy|Pharmaceutical
+5.15.13.12.2	Health policy|Health	Vaccination policy|Vaccination
+5.15.13.13	Public policy (law)|Public policy	Housing policy|Housing
+5.15.13.14	Public policy (law)|Public policy	Immigration policy|Immigration
+5.15.13.15	Public policy (law)|Public policy	Knowledge policy|Knowledge
+5.15.13.16	Public policy (law)|Public policy	Language policy|Language
+5.15.13.17	Public policy (law)|Public policy	Military policy|Military
+5.15.13.18	Public policy (law)|Public policy	Science policy|Science
+5.15.13.18.1	Science policy|Science	Climate change policy|Climate change
+5.15.13.18.2	Science policy|Science	Stem cell research policy|Stem cell
+5.15.13.18.3	Science policy|Science	Space policy|Space
+5.15.13.18.4	Science policy|Science	Technology policy|Technology
+5.15.13.19	Public policy (law)|Public policy	Social policy|Social
+5.15.13.20	Public policy (law)|Public policy	List of public policy topics by country|Public policy by country
+5.16	Professions	Social work
+5.16.1	Social work	Child welfare
+5.16.2	Social work	Community practice
+5.16.2.1	Community practice	Community organizing
+5.16.2.2	Community practice	Social policy
+5.16.3	Social work	Corrections
+5.16.4	Social work	Gerontology
+5.16.5	Social work	Medical social work
+5.16.6	Social work	Mental health
+5.16.7	Social work	School social worker|School social work
+5.17	Professions	Transportation
+5.17.1	Transportation	Highway safety
+5.17.2	Transportation	Infographics
+5.17.3	Transportation	Intermodal passenger transport|Intermodal transportation studies
+5.17.4	Transportation	Marine transportation
+5.17.4.1	Marine transportation	Port management
+5.17.5	Transportation	Operations research
+5.17.6	Transportation	Mass transit

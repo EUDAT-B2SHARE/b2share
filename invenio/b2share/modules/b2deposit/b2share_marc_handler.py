@@ -27,6 +27,7 @@ from werkzeug.exceptions import HTTPException
 from b2share_epic import createHandle
 from invenio.utils.html import remove_html_markup
 
+
 def add_basic_fields(rec, form, email, meta):
     """
     Adds the basic fields from the form. Note that these fields are mapped
@@ -68,14 +69,12 @@ def add_basic_fields(rec, form, email, meta):
         record_add_field(rec, '520', subfields=[('a', remove_html_markup(form['description']))])
 
         if form.get('contact_email'):
-            record_add_field(rec,'270',subfields=[('m', remove_html_markup(form['contact_email']))])
+            record_add_field(rec, '270', subfields=[('m', remove_html_markup(form['contact_email']))])
 
         if form.get('keywords'):
             for kw in form['keywords'].split(','):
                 if kw and not kw.isspace():
-                    record_add_field(rec, '653',
-                                 ind1='1',
-                                 subfields=[('a', remove_html_markup(kw.strip()))])
+                    record_add_field(rec, '653', ind1='1', subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form.get('contributors'):
             fields = form.getlist('contributors')
@@ -86,7 +85,7 @@ def add_basic_fields(rec, form, email, meta):
         record_add_field(rec, '546', subfields=[('a', remove_html_markup(
                             form.get('language', meta.language_default)))])
 
-        # copying zenodo here, but I don't think 980 is the right MARC field
+        # copying Zenodo here, but I don't think 980 is the right MARC field
         if form.get('resource_type'):
             fields = form.getlist('resource_type')
             for f in fields:
@@ -99,11 +98,15 @@ def add_basic_fields(rec, form, email, meta):
                 record_add_field(rec, '980', subfields=[('a', remove_html_markup(f))])
 
         if form.get('alternate_identifier'):
-            record_add_field(rec, '024',
-                             subfields=[('a', remove_html_markup(form['alternate_identifier']))])
+            record_add_field(rec, '024', subfields=[('a', remove_html_markup(form['alternate_identifier']))])
 
         if form.get('version'):
             record_add_field(rec, '250', subfields=[('a', remove_html_markup(form['version']))])
+
+        if form.get('discipline'):
+            fields = form.getlist('discipline')
+            for f in fields:
+                record_add_field(rec, '526', subfields=[('a', remove_html_markup(f))])
 
         CFG_SITE_NAME = current_app.config.get("CFG_SITE_NAME")
         record_add_field(rec, '264',
@@ -113,12 +116,14 @@ def add_basic_fields(rec, form, email, meta):
         current_app.logger.error(e)
         raise
 
+
 def create_recid():
     """
     Uses the DB to get a record id for the submission.
     """
     return run_sql("INSERT INTO bibrec(creation_date, modification_date) "
                    "values(NOW(), NOW())")
+
 
 def get_depositing_files_metadata(deposit_id):
     CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
