@@ -18,12 +18,15 @@
 import metadata
 import pkgutil
 
+
 class MetadataClasses:
     domains = None
+
     def load(self):
         # need to do this lazily due to config settings needing flask.current_app
         from model import _create_metadata_class, SubmissionMetadata
         from flask import current_app
+
         configured_domains = None
 
         CFG_B2SHARE_DOMAINS = current_app.config.get('CFG_B2SHARE_DOMAINS')
@@ -47,5 +50,6 @@ class MetadataClasses:
         if not MetadataClasses.domains:
             self.load()
         return MetadataClasses.domains
+
 
 metadata_classes = MetadataClasses()

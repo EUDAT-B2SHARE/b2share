@@ -15,13 +15,18 @@
 ## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+import collections
+import csv
+import os.path
+
 from invenio.ext.sqlalchemy import db
 from flask import current_app
 from datetime import date
 
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 
 class FieldSet:
-
     def __init__(self, name, basic_fields=[], optional_fields=[]):
         self.name = name
         self.basic_fields = basic_fields
@@ -49,25 +54,23 @@ class SubmissionMetadata(db.Model):
 
     licence = db.Column(db.String(128))  # note we set licences in __init__
     publisher = db.Column(db.String(128), default=publisher_default)
-    publication_date = db.Column('publication_year', db.Date(),
-                                 default=publication_date_now)
+    publication_date = db.Column('publication_year', db.Date(), default=publication_date_now)
     keywords = db.Column(db.String(256))  # split on ,
+    discipline = db.Column(db.String(256))
 
     # optional
     contributors = db.Column(db.String(256))
-    #language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
+    # language = db.Column(db.Enum(*babel.core.LOCALE_ALIASES.keys()))
     language = db.Column(db.String(128), default=language_default)
     resource_type = db.Column(db.String(256))  # XXX should be extracted to a separate class
     alternate_identifier = db.Column(db.String(256))
     version = db.Column(db.String(128))
-
     contact_email = db.Column(db.String(256))
 
-    basic_fields = ['title', 'description', 'creator', 'open_access',
-                    'licence', 'publisher', 'publication_date', 'language', 'keywords',
-                    'contact_email']
-    optional_fields = ['contributors', 'resource_type',
-                       'alternate_identifier', 'version']
+    basic_fields = ['title', 'description', 'creator', 'open_access', 'licence',
+                    'publication_date', 'keywords', 'contact_email', 'discipline', ]
+    optional_fields = ['contributors', 'resource_type', 'alternate_identifier',
+                       'version', 'publisher', 'language', ]
 
     # using joined table inheritance for the specific domains
     submission_type = db.Column(db.String(50))
@@ -85,30 +88,27 @@ class SubmissionMetadata(db.Model):
                                     optional_fields=self.optional_fields))]
         self.field_args['title'] = {
             'placeholder': "Title of the resource",
-            'description': 'The title of the uploaded resource - a name ' +\
+            'description': 'The title of the uploaded resource - a name '
                            'that indicates the content to be expected.'
         }
         self.field_args['description'] = {
-            'description': 'A more elaborate description of the resource. ' +\
-                           'Focus on a description of content making it ' +\
-                           'easy for others to find it and to interpret ' +\
+            'description': 'A more elaborate description of the resource. '
+                           'Focus on a description of content making it '
+                           'easy for others to find it and to interpret '
                            'its relevance quickly.'
         }
         self.field_args['publisher'] = {
-            'hidden': True,
-            'value': self.publisher_default
-            # 'description':
-            # 'Here should be stored the site that will host the BE2Share ' +\
-            # 'container, so that in case of access problems, people can ' +\
-            # 'be contacted. This element can be created automatically ' +\
-            # 'dependent on the centre.'
+            'value': self.publisher_default,
+            'description': 'The entity responsible for making the resource '
+                           'available, either a person, an organization, or '
+                           'a service.'
         }
         self.field_args['publication_date'] = {
             'hidden': True,
             'value': self.publication_date_now
             # 'description':
-            # 'This is the date that the resource was uploaded and thus ' +\
-            # 'being available broadly. Also this date can be extracted ' +\
+            # 'This is the date that the resource was uploaded and thus '
+            # 'being available broadly. Also this date can be extracted '
             # 'automatically.'
         }
         self.field_args['version'] = {
@@ -116,44 +116,42 @@ class SubmissionMetadata(db.Model):
             'description': 'Denote the version of the resource.'
         }
         self.field_args['licence'] = {
-            'description': 'Specify the license under which this data set '+\
-                           'is available to the users (e.g. GPL, Apache v2 '+\
-                           'or Commercial). Please use the License Selector '+\
+            'description': 'Specify the license under which this data set '
+                           'is available to the users (e.g. GPL, Apache v2 '
+                           'or Commercial). Please use the License Selector '
                            'for help and additional information.'
         }
         self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
-            'description': 'A comma separated list of keywords that ' +\
+            'description': 'A comma separated list of keywords that '
                            'characterize the content.'
         }
         self.field_args['open_access'] = {
-            'description': 'Indicate whether the resource is open or ' +\
-                           'access is restricted. In case of restricted ' +\
-                           'access the uploaded files will not be public, ' +\
+            'description': 'Indicate whether the resource is open or '
+                           'access is restricted. In case of restricted '
+                           'access the uploaded files will not be public, '
                            'however the metadata will be.'
         }
         self.field_args['contributors'] = {
             'placeholder': 'contributor',
             'cardinality': 'n',
-            'description': 'A semicolon separated list of all other ' +\
-                           'contributors. Mention all other persons that ' +\
+            'description': 'A semicolon separated list of all other '
+                           'contributors. Mention all other persons that '
                            'were relevant in the creation of the resource.'
         }
         self.field_args['language'] = {
-            'hidden': True,
             'value': self.language_default,
-            # 'description':
-            # 'The name of the language the document is written in.'
+            'description': 'The name of the language the document is written in.'
         }
         self.field_args['resource_type'] = {
             'data_provide': 'select',
             'cardinality': 'n',
-            'data_source': ['Text', 'Image', 'Video', 'Other'],
+            'data_source': ['Text', 'Image', 'Video', 'Audio', 'Time-Series', 'Other'],
             'description': 'Select the type of the resource.'
         }
         self.field_args['alternate_identifier'] = {
             'placeholder': 'Other reference, such as URI, ISBN, etc.',
-            'description': 'Any kind of other reference such as a URN, URI ' +\
+            'description': 'Any kind of other reference such as a URN, URI '
                            'or an ISBN number.'
         }
         self.field_args['creator'] = {
@@ -165,26 +163,58 @@ class SubmissionMetadata(db.Model):
             'placeholder': 'contact email',
             'description': 'Contact email information for this record'
         }
+        self.field_args['discipline'] = {
+            'data_provide': 'select',
+            'cardinality': 'n',
+            'data_source': [(d[2], ' / '.join(d)) for d in generate_disciplines()],
+            'description': 'Select the discipline of the resource.'
+        }
+
 
 def _create_metadata_class(cfg):
     """Creates domain classes that map form fields to databases plus some other
     details."""
 
-    if not hasattr(cfg, 'fields'):
-        cfg.fields = []
+    # The following function and call just add all external attrs manually
+    def is_external_attr(n):
+        # don't like this bit; problem is we don't want to include the
+        # db import and I don't know how to exclude them except via name
+        if n in ['db', 'fields']:
+            return False
 
-    def basic_fields():
-        return [f['name'] for f in cfg.fields if not f.get('extra')]
-
-    def optional_fields():
-        return [f['name'] for f in cfg.fields if f.get('extra')]
+        return not n.startswith('__')
 
     def __init__(self):
-        super(type(self), self).__init__()
+        """
+        Init method for the newly created class type
+        """
+        parent = super(type(self), self)
+        parent.__init__()
+
         if len(cfg.fields) > 0:
+            basic_fields = [f['name'] for f in cfg.fields if not f.get('extra')]
+            optional_fields = [f['name'] for f in cfg.fields if f.get('extra')]
+            basic_intersect = set(basic_fields).intersection(parent.basic_fields)
+            optional_intersect = set(optional_fields).intersection(parent.optional_fields)
+            basic_dups = [x for x, y in collections.Counter(basic_fields).items() if y > 1]
+            optional_dups = [x for x, y in collections.Counter(optional_fields).items() if y > 1]
+
+            if basic_dups:
+                raise AttributeError("'{0}' duplicates in basic fields".format(", ".join(basic_dups)))
+            if optional_dups:
+                raise AttributeError("'{0}' duplicates in optional fields".format(", ".join(optional_dups)))
+            if basic_intersect:
+                raise AttributeError("'{0}' conflicts in basic fields".format(", ".join(basic_intersect)))
+            if optional_intersect:
+                raise AttributeError("'{0}' conflicts in optional fields".format(", ".join(optional_intersect)))
+
             self.fieldsets.append(
-                FieldSet(cfg.domain, basic_fields=basic_fields(), 
-                                     optional_fields=optional_fields()))
+                FieldSet(cfg.domain,
+                         basic_fields=basic_fields,
+                         optional_fields=optional_fields))
+
+    if not hasattr(cfg, 'fields'):
+        cfg.fields = []
 
     clsname = cfg.domain + "Metadata"
 
@@ -195,15 +225,6 @@ def _create_metadata_class(cfg):
                             db.ForeignKey('submission_metadata.id'),
                             primary_key=True),
             'field_args': {}}
-
-    #The following function and call just add all external attrs manually
-    def is_external_attr(n):
-        # don't like this bit; problem is we don't want to include the
-        # db import and I don't know how to exclude them except via name
-        if n in ['db', 'fields']:
-            return False
-
-        return not n.startswith('__')
 
     for attr in (filter(is_external_attr, dir(cfg))):
         args[attr] = getattr(cfg, attr)
@@ -223,3 +244,14 @@ def _create_metadata_class(cfg):
         args['field_args'][f['name']] = field_dict
 
     return type(clsname, (SubmissionMetadata,), args)
+
+
+def generate_disciplines():
+    """
+    Generator function that produces disciplines from a CSV file
+    """
+    with open(os.path.join(CURRENT_DIR, 'disciplines.tab')) as f:
+        reader = csv.reader(f, delimiter='\t')
+        next(reader)  # Skip header
+        for line in reader:
+            yield [l.strip() for l in line]  # Clean values

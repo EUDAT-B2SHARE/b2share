@@ -47,6 +47,13 @@ def b2share_guide():
     collection = Collection.query.get_or_404(1)
     return render_template('docs.html', markdown_render=html, collection=collection)
 
+@blueprint.route('/b2share-rest-api', methods=['GET'])
+@register_breadcrumb(blueprint, 'breadcrumbs.rest-api', _('REST-API'))
+def b2share_rest_api():
+    html = _read_markdown_as_html("/templates/rest-api.md")
+    collection = Collection.query.get_or_404(1)
+    return render_template('docs.html', markdown_render=html, collection=collection)
+
 @blueprint.route('/', methods=['GET'])
 def index():
     return redirect("/")

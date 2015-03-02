@@ -31,6 +31,9 @@ fields = [
         'display_text': 'Resource Type',
         'col_type': db.String(256),
         'required': True,
+        'data_provide': 'select',
+        'cardinality': 'n',
+        'data_source': ['Text', 'Image', 'Video', 'Audio', 'Time-Series', 'Other'],
         'description': 'This element allows the depositor to specify the type '
                        'of the resource (Text, Audio, Video, Time-Series, Photo, etc.)'
     },
