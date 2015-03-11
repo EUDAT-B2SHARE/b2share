@@ -73,9 +73,9 @@ exclude-result-prefixes="marc fn">
             </dc:creator>
         </xsl:for-each>
         <xsl:for-each select="datafield[@tag=700]">
-            <dc:creator>
+            <dc:contributor>
                 <xsl:value-of select="subfield[@code='a']"/>
-            </dc:creator>
+            </dc:contributor>
         </xsl:for-each>
         <xsl:for-each select="datafield[@tag=245]">
             <dc:title>
