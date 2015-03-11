@@ -123,6 +123,10 @@ echo; echo "### Config captcha keys"
 inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY ""
 inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY ""
 
+echo; echo "### Config OAI interface"
+inveniomanage config set CFG_OAI_ID_PREFIX "b2share.eudat.eu"
+inveniomanage config set CFG_OAI_SAMPLE_IDENTIFIER "oai:b2share.eudat.eu:123"
+
 echo; echo "### Run inveniomanage database"
 # needs to be run after the site name is set (root collection is CFG_SITE_NAME)
 inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
@@ -147,6 +151,9 @@ bibrank -f50000 -s5m -uadmin
 
 echo; echo "### Setup bibtasks: bibsort"
 bibsort -s5m -uadmin
+
+echo; echo "### Setup bibtasks: oairepositoryupdater"
+oairepositoryupdater -s1d -uadmin
 
 echo; echo "### Config for development"
 if [ "$ENVIRONMENT" == "production" ]; then
