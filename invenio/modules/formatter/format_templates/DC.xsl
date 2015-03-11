@@ -100,6 +100,16 @@ exclude-result-prefixes="marc fn">
                 <xsl:value-of select="subfield[@code='a']"/>
             </dc:subject>
         </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=540]">
+            <dc:rights>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:rights>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=542]">
+            <dc:rights>
+                <xsl:value-of select="subfield[@code='l']"/>
+            </dc:rights>
+        </xsl:for-each>
         <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
             <dc:identifier>
                 <xsl:value-of select="subfield[@code='u']"/>
