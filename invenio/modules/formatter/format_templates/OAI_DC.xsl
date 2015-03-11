@@ -122,6 +122,9 @@
         <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
           <dc:identifier><xsl:value-of select="subfield[@code='u']"/></dc:identifier>
         </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=024]">
+          <dc:identifier><xsl:value-of select="subfield[@code='a']"/></dc:identifier>
+        </xsl:for-each>
         <dc:date><xsl:value-of select="fn:creation_date(controlfield[@tag=001])"/></dc:date>
       </xsl:otherwise>
     </xsl:choose>
