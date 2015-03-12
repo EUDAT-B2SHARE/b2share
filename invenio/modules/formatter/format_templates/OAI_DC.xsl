@@ -74,6 +74,9 @@
     <xsl:for-each select="datafield[@tag=653 and @ind1=1]">
       <dc:subject><xsl:value-of select="subfield[@code='a']"/></dc:subject>
     </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=526]">
+      <dc:subject><xsl:value-of select="subfield[@code='a']"/></dc:subject>
+    </xsl:for-each>
     <xsl:for-each select="datafield[@tag=540]">
       <dc:rights><xsl:value-of select="subfield[@code='a']"/></dc:rights>
     </xsl:for-each>
