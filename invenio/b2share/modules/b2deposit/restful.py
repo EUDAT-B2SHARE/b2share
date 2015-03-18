@@ -63,8 +63,8 @@ basic_fields_meta = {
     'description':          ('520__a', False),
     'keywords':             ('6531_a', True),
     'contributors':         ('700__a', True),
-    'domain':               ('980__a', False), #\ same marctag
-    'resource_type':        ('980__a', True),  #/ same marctag
+    'domain':               ('980__a', False),
+    'resource_type':        ('337__a', True),
     'publication_date':     ('260__c', False),
     'uploaded_by':          ('8560_f', False),
     'contact_email':        ('270__m', False),

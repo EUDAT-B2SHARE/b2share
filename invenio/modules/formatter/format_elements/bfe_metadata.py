@@ -57,6 +57,11 @@ def format_element(bfo):
         if discipline:
             ret += html.format('Discipline', discipline)
 
+    resource_types = bfo.fields("337__a")
+    for resource_type in resource_types:
+        if resource_type:
+            ret += html.format('Resource Type', resource_type)
+
     uploader = bfo.field("8560_f")
     if uploader:
         ret += html.format('Uploaded by', uploader)
