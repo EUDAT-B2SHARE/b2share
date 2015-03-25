@@ -16,14 +16,18 @@
 ## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
-from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField
-from wtforms import DateTimeField as _DateTimeField
-from wtforms import DateField as _DateField
-from wtforms import BooleanField, StringField
-from wtforms import SelectField
-from wtforms import HiddenField as _HiddenField
+from wtforms import (
+    validators,
+    BooleanField,
+    DateField as _DateField,
+    DateTimeField as _DateTimeField,
+    HiddenField as _HiddenField,
+    SelectField,
+    SelectMultipleField,
+    StringField,
+)
+from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms.widgets import Input, Select, HTMLString, html_params
 
 
@@ -225,8 +229,10 @@ class AddFieldInput(Input):
         html = ['<div id="'+field.name+'_div">']
         html.append('<div id="rowNum0">')
         html.append('<input class="add_field" type="text" id="inputRowNum0" placeholder="{0}" {1}>'
-            .format(field.placeholder, self.html_params(name=field.name, **kwargs)))
-        html.append('<a class="plus btn btn-sm btn-default" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}"><span class="glyphicon glyphicon-plus-sign"></span></a>'
+                    .format(field.placeholder, self.html_params(name=field.name, **kwargs)))
+        html.append(
+            '<a class="plus btn btn-sm btn-default" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}">'
+            '<span class="glyphicon glyphicon-plus-sign"></span></a>'
             .format(field.placeholder, field.cardinality, field.name))
         html.append('</div>')
         html.append('</div>')
