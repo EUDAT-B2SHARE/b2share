@@ -12,6 +12,7 @@ fields = [
         'display_text': 'Language Code',
         'col_type': db.String(128),
         'required': True,
+        'value': 'eng',
         'description': 'This element can be used to add an ISO language code from '
                        'ISO-639-3 to uniquely identify the language a document '
                        'is written in',
