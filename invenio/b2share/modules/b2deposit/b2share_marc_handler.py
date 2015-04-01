@@ -85,17 +85,16 @@ def add_basic_fields(rec, form, email, meta):
         record_add_field(rec, '546', subfields=[('a', remove_html_markup(
                             form.get('language', meta.language_default)))])
 
-        # copying Zenodo here, but I don't think 980 is the right MARC field
         if form.get('resource_type'):
             fields = form.getlist('resource_type')
             for f in fields:
-                record_add_field(rec, '980', subfields=[('a', remove_html_markup(f))])
-        # special case for the Linguistics domain:
-        # all the ling_resource_type(s) are also resource_type(s), going in field 980
+                record_add_field(rec, '337', subfields=[('a', remove_html_markup(f))])
+        # Special case for the 'Linguistics' domain:
+        # All the ling_resource_type(s) are also resource_type(s), going into '337'
         if form.get('ling_resource_type'):
             fields = form.getlist('ling_resource_type')
             for f in fields:
-                record_add_field(rec, '980', subfields=[('a', remove_html_markup(f))])
+                record_add_field(rec, '337', subfields=[('a', remove_html_markup(f))])
 
         if form.get('alternate_identifier'):
             record_add_field(rec, '024', subfields=[('a', remove_html_markup(form['alternate_identifier']))])

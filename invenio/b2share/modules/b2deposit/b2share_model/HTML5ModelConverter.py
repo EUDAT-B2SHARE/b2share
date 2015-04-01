@@ -16,14 +16,18 @@
 ## along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
-from wtforms import validators
 from flask.ext.wtf.html5 import IntegerField, DecimalField
-from wtforms import DateTimeField as _DateTimeField
-from wtforms import DateField as _DateField
-from wtforms import BooleanField, StringField
-from wtforms import SelectField
-from wtforms import HiddenField as _HiddenField
+from wtforms import (
+    validators,
+    BooleanField,
+    DateField as _DateField,
+    DateTimeField as _DateTimeField,
+    HiddenField as _HiddenField,
+    SelectField,
+    SelectMultipleField,
+    StringField,
+)
+from wtforms.ext.sqlalchemy.orm import ModelConverter, converts
 from wtforms.widgets import Input, Select, HTMLString, html_params
 
 
@@ -197,14 +201,13 @@ class SelectWithInput(Select):
         return HTMLString(''.join(html))
 
 
-class SelectFieldWithInput(SelectField):
+class SelectBaseFieldWithInput(SelectField):
     widget = SelectWithInput()
     cardinality = ""
     filtering = ""
     other = ""
 
-    def __init__(self, other="", filtering="", cardinality=1,
-                 data_provide="", data_source="", **field_args):
+    def __init__(self, other="", filtering="", cardinality=1, data_provide="", data_source="", **field_args):
         self.cardinality = cardinality
         self.other = other
         self.filtering = filtering
@@ -215,7 +218,34 @@ class SelectFieldWithInput(SelectField):
             field_args['choices'] = [tuple(it[:2]) for it in data_source]
         if other:
             field_args['choices'].append(('other', other))
+        super(SelectBaseFieldWithInput, self).__init__(**field_args)
+
+
+class SelectFieldWithInput(SelectBaseFieldWithInput, SelectField):
+    def __init__(self, value="", **field_args):
+        self.value = value
         super(SelectFieldWithInput, self).__init__(**field_args)
+
+    def process_data(self, value):
+        if value is None:
+            self.data = self.coerce(self.value)
+        else:
+            self.data = self.coerce(value)
+
+
+class SelectMultipleFieldWithInput(SelectBaseFieldWithInput, SelectMultipleField):
+    def __init__(self, value=None, **field_args):
+        if not value:
+            self.value = []
+        else:
+            self.value = value
+        super(SelectMultipleFieldWithInput, self).__init__(**field_args)
+
+    def process_data(self, value):
+        if value is None:
+            self.data = list(self.coerce(v) for v in self.value)
+        else:
+            self.data = list(self.coerce(v) for v in value)
 
 
 class AddFieldInput(Input):
@@ -226,8 +256,10 @@ class AddFieldInput(Input):
         html = ['<div id="'+field.name+'_div">']
         html.append('<div id="rowNum0">')
         html.append('<input class="add_field" type="text" id="inputRowNum0" placeholder="{0}" {1}>'
-            .format(field.placeholder, self.html_params(name=field.name, **kwargs)))
-        html.append('<a class="plus btn btn-sm btn-default" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}"><span class="glyphicon glyphicon-plus-sign"></span></a>'
+                    .format(field.placeholder, self.html_params(name=field.name, **kwargs)))
+        html.append(
+            '<a class="plus btn btn-sm btn-default" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}">'
+            '<span class="glyphicon glyphicon-plus-sign"></span></a>'
             .format(field.placeholder, field.cardinality, field.name))
         html.append('</div>')
         html.append('</div>')
@@ -328,7 +360,10 @@ class HTML5ModelConverter(ModelConverter):
             if field_args['data_provide'] == 'typeahead':
                 return TypeAheadStringField(**field_args)
             elif field_args['data_provide'] == 'select':
-                return SelectFieldWithInput(**field_args)
+                if field_args.get('cardinality', 1) == 1:
+                    return SelectFieldWithInput(**field_args)
+                else:
+                    return SelectMultipleFieldWithInput(**field_args)
 
         if 'cardinality' in field_args:
             return AddField(**field_args)

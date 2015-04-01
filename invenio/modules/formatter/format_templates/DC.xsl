@@ -73,9 +73,9 @@ exclude-result-prefixes="marc fn">
             </dc:creator>
         </xsl:for-each>
         <xsl:for-each select="datafield[@tag=700]">
-            <dc:creator>
+            <dc:contributor>
                 <xsl:value-of select="subfield[@code='a']"/>
-            </dc:creator>
+            </dc:contributor>
         </xsl:for-each>
         <xsl:for-each select="datafield[@tag=245]">
             <dc:title>
@@ -100,10 +100,35 @@ exclude-result-prefixes="marc fn">
                 <xsl:value-of select="subfield[@code='a']"/>
             </dc:subject>
         </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=526]">
+            <dc:subject>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:subject>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=540]">
+            <dc:rights>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:rights>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=542]">
+            <dc:rights>
+                <xsl:value-of select="subfield[@code='l']"/>
+            </dc:rights>
+        </xsl:for-each>
         <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
             <dc:identifier>
                 <xsl:value-of select="subfield[@code='u']"/>
             </dc:identifier>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=024]">
+            <dc:identifier>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:identifier>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=337]">
+            <dc:type>
+                <xsl:value-of select="subfield[@code='a']"/>
+            </dc:type>
         </xsl:for-each>
         <xsl:for-each select="datafield[@tag=520]">
             <dc:description>

@@ -47,11 +47,14 @@
     <xsl:for-each select="datafield[@tag=041]">
       <dc:language><xsl:value-of select="subfield[@code='a']"/></dc:language>
     </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=546]">
+      <dc:language><xsl:value-of select="subfield[@code='a']"/></dc:language>
+    </xsl:for-each>
     <xsl:for-each select="datafield[@tag=100]">
       <dc:creator><xsl:value-of select="subfield[@code='a']"/></dc:creator>
     </xsl:for-each>
     <xsl:for-each select="datafield[@tag=700]">
-      <dc:creator><xsl:value-of select="subfield[@code='a']"/></dc:creator>
+      <dc:contributor><xsl:value-of select="subfield[@code='a']"/></dc:contributor>
     </xsl:for-each>
     <xsl:for-each select="datafield[@tag=245]">
       <dc:title>
@@ -67,6 +70,18 @@
     </xsl:for-each>
     <xsl:for-each select="datafield[@tag=650 and @ind1=1 and @ind2=7]">
       <dc:subject><xsl:value-of select="subfield[@code='a']"/></dc:subject>
+    </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=653 and @ind1=1]">
+      <dc:subject><xsl:value-of select="subfield[@code='a']"/></dc:subject>
+    </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=526]">
+      <dc:subject><xsl:value-of select="subfield[@code='a']"/></dc:subject>
+    </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=540]">
+      <dc:rights><xsl:value-of select="subfield[@code='a']"/></dc:rights>
+    </xsl:for-each>
+    <xsl:for-each select="datafield[@tag=542]">
+      <dc:rights><xsl:value-of select="subfield[@code='l']"/></dc:rights>
     </xsl:for-each>
     <xsl:for-each select="datafield[@tag=520]">
       <dc:description><xsl:value-of select="subfield[@code='a']"/></dc:description>
@@ -109,6 +124,12 @@
       <xsl:otherwise>
         <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
           <dc:identifier><xsl:value-of select="subfield[@code='u']"/></dc:identifier>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=024]">
+          <dc:identifier><xsl:value-of select="subfield[@code='a']"/></dc:identifier>
+        </xsl:for-each>
+        <xsl:for-each select="datafield[@tag=337]">
+          <dc:type><xsl:value-of select="subfield[@code='a']"/></dc:type>
         </xsl:for-each>
         <dc:date><xsl:value-of select="fn:creation_date(controlfield[@tag=001])"/></dc:date>
       </xsl:otherwise>
