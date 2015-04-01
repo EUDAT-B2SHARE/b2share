@@ -21,7 +21,7 @@ from __future__ import absolute_import
 
 import os, os.path, uuid
 
-from flask import current_app, request
+from flask import current_app, request, jsonify
 from flask.ext.login import current_user
 from flask.ext.restful import Resource, abort, reqparse
 
@@ -73,6 +73,7 @@ basic_fields_meta = {
     'version':              ('250__a', False),
     'alternate_identifier': ('024__a', False),
 }
+
 
 def read_basic_metadata_field_from_marc(bfo, fieldname):
     if fieldname in basic_fields_meta:
@@ -205,9 +206,10 @@ class ListRecordsByDomain(B2Resource):
         # get domain id from domain name
         domain = Bib98x.query.filter_by(value=domain_name).first()
         if domain is None:
-            abort(404, status=404,
-                  message="Please try a valid domain name: " +
-                         ", ".join(metadata_classes().keys()))
+            if domain_name not in metadata_classes().keys():
+                abort(404, status=404, message="Please try a valid domain name: " + ", ".join(metadata_classes().keys()))
+            else:
+                return jsonify({})
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
         record_ids = [record.id_bibrec for record in domain_records]
@@ -216,12 +218,15 @@ class ListRecordsByDomain(B2Resource):
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
+
         for record_id in record_ids[start : stop]:
             record_details = get_record_details(record_id, curr_user_email)
             record_list.append(record_details)
-        if stop < len(record_ids):
-            record_list.append('...') # continuation indicator
-        return record_list
+
+        if len(record_list) == 0:
+            return jsonify({})
+        else:
+            return jsonify(Deposits = record_list)
 
 
 class ListRecords(B2Resource):
@@ -250,9 +255,10 @@ class ListRecords(B2Resource):
         for record_id in record_ids[start : stop]:
             record_details = get_record_details(record_id, curr_user_email)
             record_list.append(record_details)
-        if stop < len(record_ids):
-            record_list.append('...') # continuation indicator
-        return record_list
+        if len(record_list) == 0:
+            return jsonify({})
+        else:
+            return jsonify(Deposits = record_list)
 
 
 class RecordRes(B2Resource):
@@ -264,7 +270,7 @@ class RecordRes(B2Resource):
         record_details = get_record_details(record_id, curr_user_email)
         if not record_details:
             abort(404, message="Deposition not found", status=404)
-        return record_details
+        return jsonify(Deposit = record_details)
 
 
 class ListDepositions(B2Resource):
