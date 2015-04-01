@@ -38,6 +38,7 @@ class SwitchInput(Input):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
 
+        checked = ''
         if getattr(field, 'checked', field.data):
             checked = "checked"
 
