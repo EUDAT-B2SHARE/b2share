@@ -240,7 +240,7 @@ def make_flask_test_suite(*test_cases):
                                                           test_cases))])
 
 
-@nottest
+# @nottest
 def run_test_suite(testsuite, warn_user=False):
     """"Run given testsuite and ask for confirmation if warn_user is True.
 
@@ -1235,24 +1235,29 @@ def build_and_run_flask_test_suite():
 from invenio.base.utils import import_submodules_from_packages
 
 
-def iter_suites():
+def iter_suites(args):
     """Yield all testsuites."""
     app = create_app()
-    packages = ['invenio', 'invenio.base', 'invenio.celery']
+    packages = ['invenio', 'invenio.base', 'invenio.celery', 'invenio.b2share']
     packages += app.config.get('PACKAGES', [])
 
     for module in import_submodules_from_packages('testsuite',
                                                   packages=packages):
+        # has specific testsuite (-a)
+        if len(args) > 0:
+            # name matches
+            if module.__name__ != args:
+                continue
         if not module.__name__.split('.')[-1].startswith('test_'):
             continue
         if hasattr(module, 'TEST_SUITE'):
             yield module.TEST_SUITE
 
 
-def suite():
+def suite(args):
     """Create the testsuite that has all the tests."""
     suite = unittest.TestSuite()
-    for other_suite in iter_suites():
+    for other_suite in iter_suites(args):
         suite.addTest(other_suite)
     return suite
 

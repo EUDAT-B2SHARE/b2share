@@ -61,7 +61,8 @@ install:
   - "travis_retry grunt"
   - "inveniomanage config get PACKAGES"
   - "inveniomanage collect"
-
+  - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
+  - "inveniomanage config set CFG_B2SHARE_DOMAINS \"generic, drihm, linguistics, euon, bbmri, nrm, gbif\""
 
 before_script:
   - "inveniomanage apache create-config"
@@ -75,6 +76,9 @@ before_script:
   - "sudo apachectl configtest && sudo service apache2 restart || echo 'Apache failed ...'"
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create || echo ':('"
+  - "/home/travis/build/EUDAT-B2SHARE/b2share/install/start_b2share.sh &"
+  - "$VIRTUAL_ENV/bin/bibsched restart"
+  - "sleep 120"
 #  - "inveniomanage demosite create"
 #  - "inveniomanage demosite populate"
 
