@@ -23,10 +23,10 @@
 
 {%- extends "page_base.html" -%}
 
-{%- block global_css -%}
-  {{ super() }}
-  {%- css url_for('static', filename='css/b2s-common.css'), '10-b2share' -%}
-{%- endblock global_css -%}
+{%- block global_bundles %}
+    {{ super() }}
+    {% bundles "b2s_common.css" %}
+{%- endblock %}
 
 {% block breadcrumb %}
 {# -- Disable invenio breadcrumbs, we'll render our own #}

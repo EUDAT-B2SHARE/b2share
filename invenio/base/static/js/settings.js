@@ -52,6 +52,9 @@ require.config({
     "searchtypeahead-configuration": "js/search/default_typeahead_configuration",
     "jasmine-events": "js/jasmine/events_checker",
     "jasmine-initialization": "js/jasmine/initialization_checker",
+    "lindat-license-selector": "vendors/lindat-license-selector/license-selector",
+    "bootstrap-switch": "vendors/bootstrap-switch/dist/js/bootstrap-switch",
+    "bootstrap-multiselect": "vendors/bootstrap-multiselect/dist/js/bootstrap-multiselect",
   },
   shim: {
     jquery: {
@@ -148,6 +151,17 @@ require.config({
     },
     "jasmine-initialization": {
       deps: ["jasmine-boot"],
+    },
+    "lindat-license-selector": {
+      exports: "$.fn.licenseSelector",
+    },
+    "bootstrap-multiselect": {
+      deps: ["jquery"],
+      exports: "$.fn.multiselect",
+    },
+    "bootstrap-switch": {
+      deps: ["jquery"],
+      exports: "$.fn.bootstrapSwitch",
     },
   }
 });
