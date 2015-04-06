@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -561,8 +561,8 @@ def _unregister_unoconv():
     finally:
         _UNOCONV_DAEMON_LOCK.release()
 
-## NOTE: in case we switch back keeping LibreOffice running, uncomment
-## the following line.
+# NOTE: in case we switch back keeping LibreOffice running, uncomment
+# the following line.
 #atexit.register(_unregister_unoconv)
 
 def unoconv(input_file, output_file=None, output_format='txt', pdfopt=True, **dummy):
@@ -801,8 +801,7 @@ def pdf2pdfa(input_file, output_file=None, title=None, pdfopt=True, **dummy):
     @return [string] output_file input_file
     raise InvenioWebSubmitFileConverterError in case of errors.
     """
-
-    input_file, output_file, working_dir = prepare_io(input_file, output_file, '.pdf')
+    input_file, output_file, working_dir = prepare_io(input_file, output_file, '.pdf;pdfa')
 
     if title is None:
         stdout = execute_command(CFG_PATH_PDFINFO, input_file)
@@ -929,7 +928,7 @@ def ps2pdfa(input_file, output_file=None, title=None, pdfopt=True, **dummy):
     raise InvenioWebSubmitFileConverterError in case of errors.
     """
 
-    input_file, output_file, working_dir = prepare_io(input_file, output_file, '.pdf')
+    input_file, output_file, working_dir = prepare_io(input_file, output_file, '.pdf;pdfa')
     if input_file.endswith('.gz'):
         new_input_file = os.path.join(working_dir, 'input.ps')
         execute_command(CFG_PATH_GUNZIP, '-c', input_file, filename_out=new_input_file)
@@ -950,7 +949,7 @@ def ps2pdfa(input_file, output_file=None, title=None, pdfopt=True, **dummy):
     clean_working_dir(working_dir)
     return output_file
 
-def ps2pdf(input_file, output_file=None, pdfopt=True, **dummy):
+def ps2pdf(input_file, output_file=None, pdfopt=None, **dummy):
     """
     Transform any PS into a PDF
     @param input_file [string] the input file name
@@ -959,6 +958,9 @@ def ps2pdf(input_file, output_file=None, pdfopt=True, **dummy):
     @return [string] output_file input_file
     raise InvenioWebSubmitFileConverterError in case of errors.
     """
+    if pdfopt is None:
+        pdfopt = bool(CFG_PATH_PDFOPT)
+
     input_file, output_file, working_dir = prepare_io(input_file, output_file, '.pdf')
     if input_file.endswith('.gz'):
         new_input_file = os.path.join(working_dir, 'input.ps')
@@ -1365,7 +1367,18 @@ def execute_command(*args, **argd):
     """Wrapper to run_process_with_timeout."""
     get_file_converter_logger().debug("Executing: %s" % (args, ))
     args = [str(arg) for arg in args]
-    res, stdout, stderr = run_process_with_timeout(args, cwd=argd.get('cwd'), filename_out=argd.get('filename_out'), filename_err=argd.get('filename_err'), sudo=argd.get('sudo'))
+    sudo = argd.get('sudo') or None
+    if sudo:
+        pass
+        # May be forbidden by sudo
+        # args = ['CFG_OPENOFFICE_TMPDIR="%s"' % CFG_OPENOFFICE_TMPDIR] + args
+    else:
+        os.putenv('CFG_OPENOFFICE_TMPDIR', CFG_OPENOFFICE_TMPDIR)
+    res, stdout, stderr = run_process_with_timeout(args,
+                                        cwd=argd.get('cwd'),
+                                        filename_out=argd.get('filename_out'),
+                                        filename_err=argd.get('filename_err'),
+                                        sudo=sudo)
     get_file_converter_logger().debug('res: %s, stdout: %s, stderr: %s' % (res, stdout, stderr))
     if res != 0:
         message = "ERROR: Error in running %s\n stdout:\n%s\nstderr:\n%s\n" % (args, stdout, stderr)

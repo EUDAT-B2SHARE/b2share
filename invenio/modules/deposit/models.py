@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-"""
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""Deposition data model classes.
+
 Classes for wrapping BibWorkflowObject and friends to make it easier to
 work with the data attributes.
 """
@@ -31,7 +33,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 from flask import redirect, render_template, flash, url_for, request, \
-    session
+    session, current_app
 from flask.ext.login import current_user
 from flask.ext.restful import fields, marshal
 from invenio.ext.restful import UTCISODateTime
@@ -51,55 +53,57 @@ from .storage import Storage, DepositionStorage
 # Exceptions
 #
 class DepositionError(Exception):
-    """ Base class for deposition errors """
+    """Base class for deposition errors."""
     pass
 
 
 class InvalidDepositionType(DepositionError):
-    """ Raised when a deposition type cannot be found """
+    """Raise when a deposition type cannot be found."""
+    pass
+
+
+class InvalidDepositionAction(DepositionError):
+    """Raise when deposition is in an invalid state for action."""
     pass
 
 
 class DepositionDoesNotExists(DepositionError):
-    """ Raised when a deposition does not exists """
+    """Raise when a deposition does not exists."""
     pass
 
 
 class DraftDoesNotExists(DepositionError):
-    """ Raised when a draft does not exists """
+    """Raise when a draft does not exists."""
     pass
 
 
 class FormDoesNotExists(DepositionError):
-    """ Raised when a draft does not exists """
+    """Raise when a draft does not exists."""
     pass
 
 
 class FileDoesNotExists(DepositionError):
-    """ Raised when a draft does not exists """
+    """Raise when a draft does not exists."""
     pass
 
 
 class DepositionNotDeletable(DepositionError):
-    """ Raised when a deposition cannot be deleted """
+    """Raise when a deposition cannot be deleted."""
     pass
 
 
 class FilenameAlreadyExists(DepositionError):
-    """ Raised when an identical filename is already present in a deposition"""
+    """Raise when an identical filename is already present in a deposition."""
     pass
 
 
 class ForbiddenAction(DepositionError):
-    """
-    Raised when an action on a deposition, draft or file is not
-    authorized
-    """
+    """Raise when action on a deposition, draft or file is not authorized."""
     pass
 
 
 class InvalidApiAction(DepositionError):
-    """ Raised when an invalid API action is requested """
+    """Raise when an invalid API action is requested."""
     pass
 
 
@@ -107,9 +111,7 @@ class InvalidApiAction(DepositionError):
 # Helpers
 #
 class FactoryMixin(object):
-    """
-    Mix-in class to help create objects from persisted object state.
-    """
+    """Mix-in class to help create objects from persisted object state."""
     @classmethod
     def factory(cls, state, *args, **kwargs):
         obj = cls(*args, **kwargs)
@@ -456,7 +458,7 @@ class DepositionType(object):
         # Only reinitialize if really needed (i.e. you can only
         # reinitialize a fully completed workflow).
         wo = deposition.workflow_object
-        if wo.version == ObjectVersion.FINAL and \
+        if wo.version == ObjectVersion.COMPLETED and \
            wo.workflow.status == WorkflowStatus.COMPLETED:
 
             wo.version = ObjectVersion.INITIAL
@@ -469,13 +471,13 @@ class DepositionType(object):
     def stop_workflow(cls, deposition):
         # Only stop workflow if really needed
         wo = deposition.workflow_object
-        if wo.version != ObjectVersion.FINAL and \
+        if wo.version != ObjectVersion.COMPLETED and \
            wo.workflow.status != WorkflowStatus.COMPLETED:
 
             # Only workflows which has been fully completed once before
             # can be stopped
             if deposition.has_sip():
-                wo.version = ObjectVersion.FINAL
+                wo.version = ObjectVersion.COMPLETED
                 wo.workflow.status = WorkflowStatus.COMPLETED
 
                 # Clear all drafts
@@ -821,8 +823,8 @@ class DepositionDraft(FactoryMixin):
         # Determine changed messages
         changed_msgs = dict(
             (name, messages) for name, messages in post_processed_msgs.items()
-            if validated_msgs.get(name, []) != messages or process_field_names is None
-            or name in process_field_names
+            if validated_msgs.get(name, []) != messages
+            or process_field_names is None or name in process_field_names
         )
 
         result = {}
@@ -934,7 +936,8 @@ class Deposition(object):
             self.workflow_object = BibWorkflowObject.create_object(
                 id_user=user_id,
             )
-            self.workflow_object.set_data({})
+            # Ensure default data is set for all objects.
+            self.update()
         else:
             self.__setstate__(workflow_object.get_data())
         self.engine = None
@@ -1082,15 +1085,14 @@ class Deposition(object):
         for f in self.files:
             f.delete()
 
-        if self.workflow_object.id_workflow != '':
-            if self.workflow_object.id_workflow:
-                Workflow.delete(uuid=self.workflow_object.id_workflow)
+        if self.workflow_object.id_workflow:
+            Workflow.delete(uuid=self.workflow_object.id_workflow)
 
             BibWorkflowObject.query.filter_by(
                 id_workflow=self.workflow_object.id_workflow
             ).delete()
         else:
-            db.session.remove(self.workflow_object)
+            db.session.delete(self.workflow_object)
         db.session.commit()
 
     #
@@ -1129,8 +1131,8 @@ class Deposition(object):
         Reinitialize a workflow object (i.e. prepare it for editing)
         """
         if self.state != 'done':
-            raise DepositionError("Action only allowed for depositions in "
-                                  "state 'done'.")
+            raise InvalidDepositionAction("Action only allowed for "
+                                          "depositions in state 'done'.")
 
         if not self.authorize('reinitialize'):
             raise ForbiddenAction('reinitialize', self)
@@ -1142,8 +1144,8 @@ class Deposition(object):
         Stop a running workflow object (e.g. discard changes while editing).
         """
         if self.state != 'inprogress' or not self.submitted:
-            raise DepositionError("Action only allowed for depositions in "
-                                  "state 'inprogress'.")
+            raise InvalidDepositionAction("Action only allowed for "
+                                          "depositions in state 'inprogress'.")
 
         if not self.authorize('stop'):
             raise ForbiddenAction('stop', self)
@@ -1350,6 +1352,7 @@ class Deposition(object):
         if not t.authorize(None, 'create'):
             raise ForbiddenAction('create')
 
+        # Note: it is correct to pass 'type' and not 't' below to constructor.
         obj = cls(None, type=type, user_id=user.get_id())
         return obj
 
@@ -1366,8 +1369,11 @@ class Deposition(object):
             type = DepositionType.get(type)
 
         try:
-            workflow_object = BibWorkflowObject.query.filter_by(
-                id=object_id
+            workflow_object = BibWorkflowObject.query.filter(
+                BibWorkflowObject.id == object_id,
+                # id_user!=0 means current version, as opposed to some snapshot
+                # version.
+                BibWorkflowObject.id_user != 0,
             ).one()
         except NoResultFound:
             raise DepositionDoesNotExists(object_id)
@@ -1388,6 +1394,8 @@ class Deposition(object):
 
         if user:
             params.append(BibWorkflowObject.id_user == user.get_id())
+        else:
+            params.append(BibWorkflowObject.id_user != 0)
 
         if type:
             params.append(Workflow.name == type.get_identifier())
@@ -1397,7 +1405,11 @@ class Deposition(object):
             BibWorkflowObject.modified.desc()).all()
 
         def _create_obj(o):
-            obj = cls(o)
+            try:
+                obj = cls(o)
+            except InvalidDepositionType as err:
+                current_app.logger.exception(err)
+                return None
             if type is None or obj.type == type:
                 return obj
             return None
@@ -1406,8 +1418,8 @@ class Deposition(object):
 
 
 class SubmissionInformationPackage(FactoryMixin):
-    """
-    Submission information package (SIP)
+
+    """Submission information package (SIP).
 
     :param uuid: Unique identifier for this SIP
     :param metadata: Metadata in JSON for this submission information package
@@ -1419,6 +1431,7 @@ class SubmissionInformationPackage(FactoryMixin):
     :param task_ids: List of task ids submitted to ingest this package (may be
         appended to after SIP has been sealed).
     """
+
     def __init__(self, uuid=None, metadata={}):
         self.uuid = uuid or str(uuid4())
         self.metadata = metadata
@@ -1463,7 +1476,7 @@ class SubmissionInformationPackage(FactoryMixin):
 
         class DateTimeEncoder(json.JSONEncoder):
             def default(self, obj):
-                if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date):
+                if isinstance(obj, (datetime.datetime, datetime.date)):
                     encoded_object = obj.isoformat()
                 else:
                     encoded_object = json.JSONEncoder.default(self, obj)
@@ -1474,6 +1487,9 @@ class SubmissionInformationPackage(FactoryMixin):
 
 
 class Agent(FactoryMixin):
+
+    """Agent."""
+
     def __init__(self, role=None, from_request_context=False):
         self.role = role
         self.user_id = None

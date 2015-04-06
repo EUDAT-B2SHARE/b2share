@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
 """
-Usage (via ``inveniomanage``):
+Usage (via ``inveniomanage``).
 
 .. code-block:: console
 
-    $ inveniomanage upgrade create recipe -p invenio.modules.search
-    $ inveniomanage upgrade create release -r invenio -p invenio.base
-    $ inveniomanage upgrade show applied
-    $ inveniomanage upgrade show pending
-    $ inveniomanage upgrade check
-    $ inveniomanage upgrade run
+    $ inveniomanage upgrader create recipe -p invenio.modules.search
+    $ inveniomanage upgrader create release -r invenio -p invenio.base
+    $ inveniomanage upgrader show applied
+    $ inveniomanage upgrader show pending
+    $ inveniomanage upgrader check
+    $ inveniomanage upgrader run
 
 Recommendations for writing upgrades
 ------------------------------------
@@ -46,7 +46,7 @@ Recommendations for writing upgrades
  * For every software release, make a ``<repository>_release_<x>_<y>_<z>.py``
    that depends on all upgrades between the previous release and the new, so
    future upgrades can depend on this upgrade. The command
-   ``inveniomanage upgrade create release`` can help you with this.
+   ``inveniomanage upgrader create release`` can help you with this.
  * Upgrades may query for user input, but must be able to run in unattended
    mode when ``--yes-i-know option`` is being used, thus good defaults/guessing
    should be used.
@@ -73,3 +73,15 @@ will be run respecting the dependency graph). The engine will detect cycles in
 the graph and will refuse to run any upgrades until the cycles have been
 broken.
 """
+
+
+def populate_existing_upgrades(sender, yes_i_know=False, drop=True, **kwargs):
+    """Populate existing upgrades."""
+    from .engine import InvenioUpgrader
+    iu = InvenioUpgrader()
+    map(iu.register_success, iu.get_upgrades())
+
+from invenio.base import signals
+from invenio.base.scripts.database import create, recreate
+signals.post_command.connect(populate_existing_upgrades, sender=create)
+signals.post_command.connect(populate_existing_upgrades, sender=recreate)

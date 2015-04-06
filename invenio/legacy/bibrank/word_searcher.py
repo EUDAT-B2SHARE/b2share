@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
 import string
@@ -21,6 +21,7 @@ import time
 import math
 import re
 
+from operator import itemgetter
 from six import iteritems
 
 from invenio.legacy.dbquery import run_sql, deserialize_via_marshal
@@ -101,7 +102,7 @@ def find_similar(rank_method_code, recID, hitset, rank_limit_relevance,verbose, 
         voutput += "Total time used: %s<br />" % (str(time.time() - startCreate))
         rank_method_stat(rank_method_code, reclist, lwords)
 
-    return (reclist[:len(reclist)], methods[rank_method_code]["prefix"], methods[rank_method_code]["postfix"], voutput)
+    return (reclist, methods[rank_method_code]["prefix"], methods[rank_method_code]["postfix"], voutput)
 
 def calculate_record_relevance_findsimilar(term, invidx, hitset, recdict, rec_termcount, verbose, quick=None):
     """Calculating the relevance of the documents based on the input, calculates only one word
@@ -148,22 +149,21 @@ def sort_record_relevance_findsimilar(recdict, rec_termcount, hitset, rank_limit
     reclist = []
 
     #Multiply with the number of terms of the total number of terms in the query existing in the records
-    for j in recdict.keys():
-        if recdict[j] > 0 and rec_termcount[j] > 1:
-            recdict[j] = math.log((recdict[j] * rec_termcount[j]))
+    for recid in recdict.keys():
+        if recdict[recid] > 0 and rec_termcount[recid] > 1:
+            recdict[recid] = math.log((recdict[recid] * rec_termcount[recid]))
         else:
-            recdict[j] = 0
-
+            recdict[recid] = 0
     hitset -= recdict.keys()
     #gives each record a score between 0-100
     divideby = max(recdict.values())
-    for (j, w) in iteritems(recdict):
-        w = int(w * 100 / divideby)
-        if w >= rank_limit_relevance:
-            reclist.append((j, w))
+    for recid, score in iteritems(recdict):
+        score = int(score * 100 / divideby)
+        if score >= rank_limit_relevance:
+            reclist.append((recid, score))
 
     #sort scores
-    reclist.sort(lambda x, y: cmp(x[1], y[1]))
+    reclist.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
 
     if verbose > 0:
         voutput += "Number of records sorted: %s<br />" % len(reclist)
@@ -183,7 +183,6 @@ def word_similarity(rank_method_code, lwords, hitset, rank_limit_relevance, verb
     prefix - what to show before the rank value
     postfix - what to show after the rank value
     voutput - contains extra information, content dependent on verbose value"""
-
     voutput = ""
     startCreate = time.time()
 
@@ -232,7 +231,6 @@ def word_similarity(rank_method_code, lwords, hitset, rank_limit_relevance, verb
         voutput += "Total time used: %s<br />" % (str(time.time() - startCreate))
         voutput += str(reclist) + "<br />"
         rank_method_stat(rank_method_code, reclist, lwords)
-
     return (reclist, methods[rank_method_code]["prefix"], methods[rank_method_code]["postfix"], voutput)
 
 def calculate_record_relevance(term, invidx, hitset, recdict, rec_termcount, verbose, quick=None):
@@ -292,7 +290,8 @@ def sort_record_relevance(recdict, rec_termcount, hitset, rank_limit_relevance, 
             reclist.append((j, w))
 
     #sort scores
-    reclist.sort(lambda x, y: cmp(x[1], y[1]))
+    reclist.sort(key=itemgetter(1, 0))
+    # reclist.sort(lambda x, y: cmp(x[1], y[1]))
 
     if verbose > 0:
         voutput += "Number of records sorted: %s<br />" % len(reclist)

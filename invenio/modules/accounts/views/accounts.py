@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """WebAccount Flask Blueprint"""
 from __future__ import absolute_import
@@ -58,12 +58,12 @@ blueprint = Blueprint('webaccount', __name__, url_prefix="/youraccount",
                  'password': (unicode, None),
                  'login_method': (wash_login_method, 'Local'),
                  'action': (unicode, ''),
-                 'remember_me': (bool, False),
+                 'remember': (bool, False),
                  'referer': (unicode, None)})
 @register_breadcrumb(blueprint, '.login', _('Login'))
 @ssl_required
 def login(nickname=None, password=None, login_method=None, action='',
-          remember_me=False, referer=None):
+          remember=False, referer=None):
     if cfg.get('CFG_ACCESS_CONTROL_LEVEL_SITE') > 0:
         return abort(401)  # page is not authorized
 
@@ -88,7 +88,8 @@ def login(nickname=None, password=None, login_method=None, action='',
     if request.method == "POST":
         try:
             if login_method == 'Local' and form.validate_on_submit() and \
-               authenticate(nickname, password, login_method=login_method):
+               authenticate(nickname, password, login_method=login_method,
+                            remember=remember):
                 flash(
                     _("You are logged in as %(nick)s.", nick=nickname),
                     "success"
@@ -329,5 +330,6 @@ def access():
             'success'
         )
     except:
+        current_app.logger.exception("Authorization failed.")
         flash(_('The authorization token is invalid.'), 'error')
     return redirect('/')

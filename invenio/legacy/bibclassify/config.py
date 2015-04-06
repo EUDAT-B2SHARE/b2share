@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 BibClassify configuration file.
+
 When writing changes, please either delete the cached ontology in your
 temporary directory or use the rebuild-cache option in order to
 regenerate the cached ontology.
@@ -64,9 +65,6 @@ CFG_AUTH_FIELD = ''
 CFG_ACRON_FIELD = ''
 
 # ------------ bibclass config -------
-# USER AGENT
-CFG_BIBCLASSIFY_USER_AGENT = ""
-
 
 # PARTIAL_TEXT
 # Marks the part of the fulltext to keep when running a partial match.
@@ -102,10 +100,13 @@ CFG_EXTRACTION_TAXONOMY = 'HEP'
 # [http://en.wikipedia.org/wiki/English_plural]
 
 CFG_BIBCLASSIFY_INVARIABLE_WORDS = ("any", "big", "chi", "der", "eta", "few",
-    "low", "new", "non", "off", "one", "out", "phi", "psi", "rho", "tau",
-    "two", "van", "von", "hard", "weak", "four", "anti", "zero", "sinh",
-    "open", "high", "data", "dark", "free", "flux", "fine", "final", "heavy",
-    "strange")
+                                    "low", "new", "non", "off", "one", "out",
+                                    "phi", "psi", "rho", "tau",
+                                    "two", "van", "von", "hard", "weak", "four",
+                                    "anti", "zero", "sinh",
+                                    "open", "high", "data", "dark", "free",
+                                    "flux", "fine", "final", "heavy",
+                                    "strange")
 
 CFG_BIBCLASSIFY_EXCEPTIONS = {
     "aluminium": r"alumini?um",
@@ -131,7 +132,7 @@ CFG_BIBCLASSIFY_EXCEPTIONS = {
     "sum": r"sums?",
     "vertex": r"vert(ex(es)?|ices)",
     "vortex": r"vort(ex(es)?|ices)",
-    }
+}
 
 CFG_BIBCLASSIFY_UNCHANGE_REGULAR_EXPRESSIONS = (
     re.compile("[^e]ed$"),
@@ -140,7 +141,7 @@ CFG_BIBCLASSIFY_UNCHANGE_REGULAR_EXPRESSIONS = (
     re.compile("ium$"),
     re.compile("less$"),
     re.compile("ous$"),
-    )
+)
 
 # IDEAS
 # "al$" -> "al(ly)?"
@@ -160,7 +161,7 @@ CFG_BIBCLASSIFY_GENERAL_REGULAR_EXPRESSIONS = (
     (re.compile("([^aiouy])s$"), r"\1s?"),
     (re.compile("([^o])us$"), r"\1(i|us(es)?)"),
     (re.compile("um$"), r"(a|ums?)"),
-    )
+)
 
 # PUNCTUATION TRANSFORMATIONS
 
@@ -180,11 +181,11 @@ CFG_BIBCLASSIFY_SEPARATORS = {
     "*": r"[*\s]?",
     "- ": r"\s?\-\s",
     "+ ": r"\s?\+\s",
-    }
+}
 
 CFG_BIBCLASSIFY_SYMBOLS = {
     "'": r"\s?\'",
-    }
+}
 
 CFG_BIBCLASSIFY_WORD_WRAP = "[^\w-]%s[^\w-]"
 
@@ -196,8 +197,9 @@ CFG_BIBCLASSIFY_WORD_WRAP = "[^\w-]%s[^\w-]"
 
 CFG_BIBCLASSIFY_VALID_SEPARATORS = (
     "of", "of a", "of an", "of the", "of this", "of one", "of two", "of three",
-    "of new", "of other",  "of many", "of both", "of these", "of each", "is", "the"
-    )
+    "of new", "of other", "of many", "of both", "of these", "of each", "is",
+    "the"
+)
 
 # AUTHOR KEYWORDS
 
@@ -213,7 +215,7 @@ CFG_BIBCLASSIFY_AUTHOR_KW_END = (
     re.compile(r"\sPACS"),
     re.compile(r"(?i)1[. ]*introduction\W"),
     re.compile(r"(?i)mathematics subject classification\W"),
-    )
+)
 
 CFG_BIBCLASSIFY_AUTHOR_KW_SEPARATION = re.compile(" ?; ?| ?, ?| ?- ")
 
@@ -222,12 +224,10 @@ CFG_BIBCLASSIFY_AUTHOR_KW_SEPARATION = re.compile(" ?; ?| ?, ?| ?- ")
 #CFG_EXTERNAL_MODULES = {'webtag' : 'call_from_outside'}
 CFG_EXTERNAL_MODULES = {}
 
-
-
-
-
 log = None
 _loggers = []
+
+
 def get_logger(name):
     """Creates a logger for you - with the parent newseman logger and
     common configuration"""
@@ -236,7 +236,8 @@ def get_logger(name):
     else:
         logger = logging.getLogger(name)
         hdlr = logging.StreamHandler(sys.stderr)
-        formatter = logging.Formatter('%(levelname)s %(name)s:%(lineno)d    %(message)s')
+        formatter = logging.Formatter(
+            '%(levelname)s %(name)s:%(lineno)d    %(message)s')
         hdlr.setFormatter(formatter)
         logger.addHandler(hdlr)
         logger.setLevel(logging_level)
@@ -244,16 +245,19 @@ def get_logger(name):
     if logger not in _loggers:
         _loggers.append(logger)
     return logger
+
+
 def set_global_level(level):
     global logging_level
     logging_level = int(level)
     for l in _loggers:
         l.setLevel(logging_level)
 
+
 log = get_logger('bibclassify')
 
 STANDALONE = False
-## Standalone mode has been removed.
+# Standalone mode has been removed.
 #try:
 #    import invenio.legacy.search_engine
 #except:
@@ -271,7 +275,8 @@ if STANDALONE:
         etcdir = os.path.dirname(__file__)
 
     if not os.path.isdir(etcdir) or not os.access(etcdir, os.W_OK):
-        etcdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../etc"))
+        etcdir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../../etc"))
         if not os.path.isdir(etcdir) or not os.access(etcdir, os.W_OK):
             etcdir = tempfile.gettempdir()
 
@@ -294,14 +299,17 @@ CFG_TMPDIR = config.CFG_TMPDIR
 # Redefine variable definitions if local config exists
 try:
     from invenio import bibclassify_config_local as localconf
+
     for confid in dir(localconf):
         if 'CFG' in confid:
             if hasattr(config, confid):
-                log.info('Overriding global config %s with %s' % (confid, getattr(localconf, confid)))
+                log.info('Overriding global config %s with %s' % (
+                    confid, getattr(localconf, confid)))
                 setattr(config, confid, getattr(localconf, confid))
             if confid in globals():
                 globals()[confid] = getattr(localconf, confid)
-                log.info('Overriding bibclassify config %s with %s' % (confid, getattr(localconf, confid)))
+                log.info('Overriding bibclassify config %s with %s' % (
+                    confid, getattr(localconf, confid)))
 except ImportError:
     # No local configuration was found.
     pass

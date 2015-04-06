@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import absolute_import
 
@@ -37,9 +37,9 @@ from .api import Document
 
 
 class APIValidator(Validator):
-    """
-    Adds new datatype 'raw', that accepts anything.
-    """
+
+    """Adds new datatype 'raw', that accepts anything."""
+
     def _validate_type_any(self, field, value):
         pass
 
@@ -48,9 +48,7 @@ class APIValidator(Validator):
 # Decorators
 #
 def error_handler(f):
-    """
-    Decorator to handle deposition exceptions
-    """
+    """Decorator to handle deposition exceptions."""
     @wraps(f)
     def inner(*args, **kwargs):
         try:
@@ -67,9 +65,7 @@ def error_handler(f):
 
 
 def filter_errors(result):
-    """
-    Extract error messages from a draft.process() result dictionary.
-    """
+    """Extract error messages from a draft.process() result dictionary."""
     error_messages = []
     for field, msgs in result.get('messages', {}).items():
         if msgs.get('state', None) == 'error':
@@ -83,7 +79,7 @@ def filter_errors(result):
 
 
 def check_content_length(value):
-    """greater than 0"""
+    """Greater than 0."""
     return int(value) > 0
 
 
@@ -104,27 +100,23 @@ document_decorators = [
 # Resources
 # =========
 class DocumentListResource(Resource):
-    """
-    Collection of documents
-    """
+
+    """Collection of documents."""
+
     method_decorators = document_decorators
 
-    def get(self, oauth):
-        """
-        List all files.
-        """
+    def get(self):
+        """List all files."""
         return Document.storage_engine.search(
             {'creator': current_user.get_id()})
 
     @require_header('Content-Type', 'application/json')
-    def post(self, oauth):
-        """
-        Create a new document
-        """
+    def post(self):
+        """Create a new document."""
         abort(405)
 
     @require_header('Content-Length', check_content_length)
-    def put(self, oauth):
+    def put(self):
         filename = parse_options_header(
             request.headers.get('Content-Disposition', ''))[1].get('filename')
 
@@ -137,23 +129,23 @@ class DocumentListResource(Resource):
         )
         return d.dumps()
 
-    def delete(self, oauth):
+    def delete(self):
         abort(405)
 
-    def head(self, oauth):
+    def head(self):
         abort(405)
 
-    def options(self, oauth):
+    def options(self):
         abort(405)
 
-    def patch(self, oauth):
+    def patch(self):
         abort(405)
 
 
 class DocumentFileResource(Resource):
-    """
-    Represent a document file
-    """
+
+    """ Represent a document file. """
+
     method_decorators = document_decorators
 
     def get(self, document_uuid):

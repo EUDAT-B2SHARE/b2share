@@ -1,40 +1,29 @@
-## This file is part of Invenio.
-## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio Access Control Engine in mod_python."""
 
 __revision__ = "$Id$"
 
 import cgi
-import sys
 from urllib import quote
 
-if sys.hexversion < 0x2040000:
-    # pylint: disable=W0622
-    from sets import Set as set
-    # pylint: enable=W0622
-
-from invenio.modules.access.control import \
-    acc_find_possible_roles,\
-    acc_is_user_in_role, \
-    acc_is_user_in_any_role, \
-    CFG_SUPERADMINROLE_ID, acc_get_role_users, \
-    acc_get_roles_emails
-from invenio.modules.access.local_config import CFG_WEBACCESS_WARNING_MSGS, CFG_WEBACCESS_MSGS
+from .control import acc_find_possible_roles, acc_is_user_in_any_role, acc_get_roles_emails
+from .local_config import CFG_WEBACCESS_WARNING_MSGS, CFG_WEBACCESS_MSGS
 from invenio.legacy.webuser import collect_user_info
 from invenio.modules.access.firerole import load_role_definition, acc_firerole_extract_emails
 from flask.ext.login import current_user
@@ -90,6 +79,7 @@ def acc_authorize_action(req, name_action, authorized_if_no_roles=False, batch_a
             in_a_web_request_p = bool(user_info.get('uri', ''))
             ret_val = (1, "%s %s" % (CFG_WEBACCESS_WARNING_MSGS[1], (in_a_web_request_p and "%s %s" % (CFG_WEBACCESS_MSGS[0] % quote(user_info.get('uri', '')), CFG_WEBACCESS_MSGS[1]) or "")))
         result.append(ret_val)
+    # FIXME removed CERN specific hack!
     return result if batch_args else result[0]
 
 

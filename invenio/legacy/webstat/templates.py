@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 __revision__ = "$Id$"
 __lastupdated__ = "$Date$"
@@ -793,9 +793,12 @@ Distribution across %s
 <td align="right"><a href="%s/search?p=%s&ln=%s">%d</a></td>
 <td>%s</td>
 </tr>
-""" % (CFG_SITE_URL, cgi.escape(urllib.quote(query + " " + tag + ':"' + title + '"')), ln, number, cgi.escape(title))
-        out += """</table></div>
-<div><img src="%s" /></div>""" % cgi.escape(path.replace(CFG_WEBDIR, CFG_SITE_URL))
+""" % (CFG_SITE_URL, cgi.escape(urllib.quote(query + " " + tag + ':"' + title + '"')), ln, number,
+       cgi.escape(title))
+        out += """</table></div>"""
+        if path:
+            out += """<div><img src="%s" /></div>""" % cgi.escape(path.replace(CFG_WEBDIR,
+                                                                               CFG_SITE_URL))
         return out
 
     # INTERNALS
@@ -943,10 +946,12 @@ Distribution across %s
             else:
                 s_date = datetime.datetime.today().date().strftime("%m/%d/%Y %H:%M")
                 f_date = datetime.datetime.now().strftime("%m/%d/%Y %H:%M")
-            sel += """<link rel="stylesheet" href="%(CFG_SITE_URL)s/img/jquery-ui.css"
+            sel += """<link rel="stylesheet" href="%(CFG_SITE_URL)s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css"
                         type="text/css" />
-                      <script language="javascript" type="text/javascript" src="%(CFG_SITE_URL)s/js/jquery-ui.min.js"></script>
-                      <script type="text/javascript" src="%(CFG_SITE_URL)s/js/jquery-ui-timepicker-addon.js"></script>
+                      <link rel="stylesheet" href="%(CFG_SITE_URL)s/vendors/jqueryui-timepicker-addon/dist/jquery-ui-timepicker.min.css"
+                        type="text/css" />
+                      <script language="javascript" type="text/javascript" src="%(CFG_SITE_URL)s/vendors/jquery-ui/jquery-ui.min.js"></script>
+                      <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
 
                       <div id="selectDateTxt" style="position:relative;display:none">
                       <table align="center">

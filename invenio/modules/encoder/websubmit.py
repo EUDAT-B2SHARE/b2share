@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 This is an example for a WebSubmit element to upload videos to Invenio,
@@ -113,7 +113,7 @@ def websubmit_singlepage(curdir, doctype, uid, access, session_id):
 
 def form_body():
     return """
-    <link rel="stylesheet" href="%(CFG_SITE_URL)s/img/uploadify.css" type="text/css" />
+    <link rel="stylesheet" href="%(CFG_SITE_URL)s/vendors/uploadify/uploadify.css" type="text/css" />
         <div class="websubmit_demovid_form">
             <label for="DEMOVID_TITLE">Title: </label>
             <input type="text" name="DEMOVID_TITLE" id="DEMOVID_TITLE" size="64" maxlength="50"/>
@@ -169,9 +169,9 @@ def form_body():
 
 def form_javascript():
     return """
-            <script type="text/javascript" src="%(CFG_SITE_URL)s/js/jquery.min.js"></script>
-            <script type="text/javascript" src="%(CFG_SITE_URL)s/js/jquery.uploadify.min.js"></script>
-            <script type="text/javascript" src="%(CFG_SITE_URL)s/js/swfobject.js"></script>
+            <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/jquery/dist/jquery.min.js"></script>
+            <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/uploadify/jquery.uploadify.min.js"></script>
+            <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/swfobject/swfobject/swfobject.js"></script>
             <script type="text/javascript">
                 var global_resume = %(resume)s;
                 var global_site_url = "%(CFG_SITE_URL)s";

@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """ Templating for webbasket module """
 
@@ -1792,13 +1792,13 @@ class Template:
         @return: html output
         """
         _ = gettext_set_language(ln)
-        message = _("Are you sure you want to delete this basket?")
+        message = cgi.escape(_("Are you sure you want to delete this basket?"), True)
         if nb_users:
-            message += '<p>' + _("%(x_num)i users are subscribed to this basket.", x_num=nb_users) + '</p>'
+            message += '<p>' + cgi.escape(_("%(x_num)i users are subscribed to this basket.", x_num=nb_users), True) + '</p>'
         if nb_groups:
-            message += '<p>' + _("%(x_num)i user groups are subscribed to this basket.", x_num=nb_groups) + '</p>'
+            message += '<p>' + cgi.escape(_("%(x_num)i user groups are subscribed to this basket.", x_num=nb_groups), True) + '</p>'
         if nb_alerts:
-            message += '<p>' + _("You have set %(x_num)i alerts on this basket.", x_num=nb_alerts) + '</p>'
+            message += '<p>' + cgi.escape(_("You have set %(x_num)i alerts on this basket.", x_num=nb_alerts), True) + '</p>'
         out = """
 <table class="confirmoperation">
   <tr>
@@ -1828,7 +1828,7 @@ class Template:
       </form>
     </td>
   </tr>
-</table>"""% {'message': cgi.escape(message, True),
+</table>"""% {'message': message,
               'bskid': bskid,
               'url_ok': 'delete',
               'url_cancel': 'display',

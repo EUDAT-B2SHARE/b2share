@@ -1,21 +1,21 @@
-## -*- mode: python; coding: utf-8; -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# -*- mode: python; coding: utf-8; -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 Usage: bibsort [options]
@@ -41,7 +41,7 @@ Options:
                         for all the records that have been
                         modified/inserted from the last run of the sorting.
                         If you want to run the sorting for all records, you
-                        should use the '-B' option
+                        should use the '-R' option
   -M, --methods=METHODS Specify the sorting methods for which the
                         update_sorting or rebalancing will run
                         (ex: --methods=method1,method2,method3).
@@ -197,23 +197,23 @@ def print_sorting_methods():
 def main_op():
     """Runs program and handles command line options"""
     option_parser = optparse.OptionParser(description="""BibSort tool""")
-    option_parser.add_option('-L', '--load-config', action = 'store_true', \
-        help = 'Loads the configuration from bibsort.conf into the database')
-    option_parser.add_option('-D', '--dump-config', action = 'store_true', \
-        help = 'Outputs a database dump in form of a config file')
-    option_parser.add_option('-P', '--print-sorting-methods',
-        action = 'store_true', \
-        help = "Prints the available sorting methods")
-    option_parser.add_option('-R', '--rebalance', action = 'store_true', \
-        help = "Runs the sorting methods given in '--metods'and rebalances all the buckets. If no method is specified, the rebalance will be done for all the methods in the config file.")
-    option_parser.add_option('-S', '--update-sorting', action = 'store_true', \
-        help = "Runs the sorting methods given in '--methods' for the recids given in '--id'. If no method is specified, the update will be done for all the methods in the config file. If no recids are specified, the update will be done for all the records that have been modified/inserted from the last run of the sorting. If you want to run the sorting for all records, you should use the '-R' option")
-    option_parser.add_option('--methods', action = 'store', dest = 'methods', \
-        metavar = 'METHODS', \
-        help = "Specify the sorting methods for which the update_sorting or rebalancing will run (ex: --methods=method1,method2,method3).")
-    option_parser.add_option('--id', action = 'store', dest = 'recids', \
-        metavar = 'RECIDS', \
-        help = "Specify the records for which the update_sorting will run (ex: --id=1,2-56,72) ")
+    option_parser.add_option('-l', '--load-config', action='store_true', \
+        help='Loads the configuration from bibsort.conf into the database')
+    option_parser.add_option('-d', '--dump-config', action='store_true', \
+        help='Outputs a database dump in form of a config file')
+    option_parser.add_option('-p', '--print-sorting-methods',
+        action='store_true', \
+        help="Prints the available sorting methods")
+    option_parser.add_option('-R', '--rebalance', action='store_true', \
+        help="Runs the sorting methods given in '--methods and rebalances all the buckets. If no method is specified, the rebalance will be done for all the methods in the config file.")
+    option_parser.add_option('-S', '--update-sorting', action='store_true', \
+        help="Runs the sorting methods given in '--methods' for the recids given in '--id'. If no method is specified, the update will be done for all the methods in the config file. If no recids are specified, the update will be done for all the records that have been modified/inserted from the last run of the sorting. If you want to run the sorting for all records, you should use the '-R' option")
+    option_parser.add_option('--methods', action='store', dest='methods', \
+        metavar='METHODS', \
+        help="Specify the sorting methods for which the update_sorting or rebalancing will run (ex: --methods=method1,method2,method3).")
+    option_parser.add_option('--id', action='store', dest='recids', \
+        metavar='RECIDS', \
+        help="Specify the records for which the update_sorting will run (ex: --id=1,2-56,72) ")
     options, dummy = option_parser.parse_args()
 
     if options.load_config and options.dump_config:
@@ -250,7 +250,7 @@ def main():
   -d, --dump-config     Outputs a database dump in form of a config file
   -p, --print-sorting-methods
                         Prints the available sorting methods
-  -R, --rebalance       Runs the sorting methods given in '--metods'and
+  -R, --rebalance       Runs the sorting methods given in '--methods'and
                         rebalances all the buckets. If no method is
                         specified, the rebalance will be done for all
                         the methods in the config file.

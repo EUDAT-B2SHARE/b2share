@@ -1,21 +1,21 @@
-## -*- mode: python; coding: utf-8; -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# -*- mode: python; coding: utf-8; -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2010, 2011, 2012, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -34,17 +34,24 @@ try:
     from invenio.config import CFG_LOGDIR, CFG_TMPDIR, CFG_CACHEDIR, \
          CFG_TMPSHAREDDIR, CFG_WEBSEARCH_RSS_TTL, CFG_PREFIX, \
          CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS, \
-         CFG_SIMPLESTORE_UPLOAD_FOLDER
+         CFG_INSPIRE_SITE, CFG_SIMPLESTORE_UPLOAD_FOLDER
     from invenio.legacy.bibsched.bibtask import task_init, task_set_option, task_get_option, \
          write_message, write_messages
+    from invenio.legacy.bibsched.bibtask_config import CFG_BIBSCHED_LOGDIR
     from invenio.modules.access.mailcookie import mail_cookie_gc
     from invenio.legacy.bibdocfile.api import BibDoc
     from invenio.legacy.bibsched.cli import gc_tasks
     from invenio.legacy.websubmit.config import CFG_WEBSUBMIT_TMP_VIDEO_PREFIX
     from invenio.utils.date import convert_datestruct_to_datetext
+    from intbitset import intbitset
 except ImportError as e:
     print("Error: %s" % (e,))
     sys.exit(1)
+
+# Add trailing slash to CFG_TMPSHAREDDIR, for find command to work
+# with symlinks
+CFG_TMPSHAREDDIR = CFG_TMPSHAREDDIR + os.sep
+CFG_TMPDIR = CFG_TMPDIR + os.sep
 
 # configure variables
 CFG_MYSQL_ARGUMENTLIST_SIZE = 100
@@ -71,7 +78,7 @@ CFG_MAX_ATIME_RM_BIBSWORD = 28
 # After how many days to remove temporary video uploads
 CFG_MAX_ATIME_WEBSUBMIT_TMP_VIDEO = 3
 # After how many days to remove obsolete refextract xml output files
-CFG_MAX_ATIME_RM_REFEXTRACT = 28
+CFG_MAX_ATIME_RM_REFEXTRACT = 7
 # After how many days to remove obsolete bibdocfiles temporary files
 CFG_MAX_ATIME_RM_BIBDOC = 4
 # After how many days to remove obsolete WebSubmit-created temporary
@@ -88,6 +95,8 @@ CFG_MAX_ATIME_RM_WEBSUBMIT_CKEDITOR_FILE = 28
 # After how many days to remove obsolete temporary files related to BibEdit
 # cache
 CFG_MAX_ATIME_BIBEDIT_TMP = 3
+# After how many days to remove submitted XML files related to BibEdit
+CFG_MAX_ATIME_BIBEDIT_XML = 3
 
 def gc_exec_command(command):
     """ Exec the command logging in appropriate way its output."""
@@ -104,13 +113,13 @@ def clean_logs():
     vstr = task_get_option('verbose') > 1 and '-v' or ''
     gc_exec_command('find %s -name "bibsched_task_*"'
         ' -size 0c -exec rm %s -f {} \;' \
-            % (CFG_LOGDIR, vstr))
+            % (CFG_BIBSCHED_LOGDIR, vstr))
     gc_exec_command('find %s -name "bibsched_task_*"'
         ' -atime +%s -exec rm %s -f {} \;' \
-            % (CFG_LOGDIR, CFG_MAX_ATIME_RM_LOG, vstr))
+            % (CFG_BIBSCHED_LOGDIR, CFG_MAX_ATIME_RM_LOG, vstr))
     gc_exec_command('find %s -name "bibsched_task_*"'
         ' -atime +%s -exec gzip %s -9 {} \;' \
-            % (CFG_LOGDIR, CFG_MAX_ATIME_ZIP_LOG, vstr))
+            % (CFG_BIBSCHED_LOGDIR, CFG_MAX_ATIME_ZIP_LOG, vstr))
     write_message("""CLEANING OF LOG FILES FINISHED""")
 
 def clean_tempfiles():
@@ -119,17 +128,6 @@ def clean_tempfiles():
     write_message("- deleting/gzipping temporary empty/old "
             "BibReformat xml files")
     vstr = task_get_option('verbose') > 1 and '-v' or ''
-    gc_exec_command('find %s %s -name "rec_fmt_*"'
-        ' -size 0c -exec rm %s -f {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, vstr))
-    gc_exec_command('find %s %s -name "rec_fmt_*"'
-        ' -atime +%s -exec rm %s -f {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_RM_FMT, vstr))
-    gc_exec_command('find %s %s -name "rec_fmt_*"'
-        ' -atime +%s -exec gzip %s -9 {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_ZIP_FMT, vstr))
 
     write_message(" -cleaning up the simplestore upload folder")
     gc_exec_command('''find %s -regextype sed -regex '.*[a-z0-9]\{32\}' -type d'''
@@ -153,27 +151,24 @@ def clean_tempfiles():
         ' -mtime +%s -exec rm %s -rf {} \;' \
             % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
                CFG_MAX_ATIME_RM_OAI, vstr))
-    gc_exec_command('find %s %s -name "oai_archive*"'
-        ' -mtime +%s -exec rm %s -rf {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_RM_OAI, vstr))
 
-    write_message("- deleting/gzipping temporary old "
-            "BibSword files")
-    gc_exec_command('find %s %s -name "bibsword_*"'
-        ' -atime +%s -exec rm %s -f {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_RM_BIBSWORD, vstr))
-    gc_exec_command('find %s %s -name "bibsword_*"'
-        ' -atime +%s -exec gzip %s -9 {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_ZIP_BIBSWORD, vstr))
+    if not CFG_INSPIRE_SITE:
+        write_message("- deleting/gzipping temporary old "
+                "BibSword files")
+        gc_exec_command('find %s %s -name "bibsword_*"'
+            ' -atime +%s -exec rm %s -f {} \;' \
+                % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
+                CFG_MAX_ATIME_RM_BIBSWORD, vstr))
+        gc_exec_command('find %s %s -name "bibsword_*"'
+            ' -atime +%s -exec gzip %s -9 {} \;' \
+                % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
+                CFG_MAX_ATIME_ZIP_BIBSWORD, vstr))
 
-    # DELETE ALL FILES CREATED DURING VIDEO SUBMISSION
-    write_message("- deleting old video submissions")
-    gc_exec_command('find %s -name %s* -atime +%s -exec rm %s -f {} \;' \
-                    % (CFG_TMPSHAREDDIR, CFG_WEBSUBMIT_TMP_VIDEO_PREFIX,
-                       CFG_MAX_ATIME_WEBSUBMIT_TMP_VIDEO, vstr))
+        # DELETE ALL FILES CREATED DURING VIDEO SUBMISSION
+        write_message("- deleting old video submissions")
+        gc_exec_command('find %s -name %s* -atime +%s -exec rm %s -f {} \;' \
+                        % (CFG_TMPSHAREDDIR, CFG_WEBSUBMIT_TMP_VIDEO_PREFIX,
+                        CFG_MAX_ATIME_WEBSUBMIT_TMP_VIDEO, vstr))
 
     write_message("- deleting temporary old "
             "RefExtract files")
@@ -194,17 +189,18 @@ def clean_tempfiles():
             % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
                CFG_MAX_ATIME_RM_ICON, vstr))
 
-    write_message("- deleting old temporary WebSubmit stamps")
-    gc_exec_command('find %s %s -name "websubmit_file_stamper_*"'
-        ' -atime +%s -exec rm %s -f {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_RM_STAMP, vstr))
+    if not CFG_INSPIRE_SITE:
+        write_message("- deleting old temporary WebSubmit stamps")
+        gc_exec_command('find %s %s -name "websubmit_file_stamper_*"'
+            ' -atime +%s -exec rm %s -f {} \;' \
+                % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
+                CFG_MAX_ATIME_RM_STAMP, vstr))
 
-    write_message("- deleting old temporary WebJournal XML files")
-    gc_exec_command('find %s %s -name "webjournal_publish_*"'
-        ' -atime +%s -exec rm %s -f {} \;' \
-            % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
-               CFG_MAX_ATIME_RM_WEBJOURNAL_XML, vstr))
+        write_message("- deleting old temporary WebJournal XML files")
+        gc_exec_command('find %s %s -name "webjournal_publish_*"'
+            ' -atime +%s -exec rm %s -f {} \;' \
+                % (CFG_TMPDIR, CFG_TMPSHAREDDIR, \
+                CFG_MAX_ATIME_RM_WEBJOURNAL_XML, vstr))
 
     write_message("- deleting old temporary files attached with CKEditor")
     gc_exec_command('find %s/var/tmp/attachfile/ '
@@ -212,10 +208,10 @@ def clean_tempfiles():
             % (CFG_PREFIX, CFG_MAX_ATIME_RM_WEBSUBMIT_CKEDITOR_FILE,
                vstr))
 
-    write_message("- deleting old temporary files attached with BibEdit")
-    gc_exec_command('find %s -name "bibedit*.tmp"'
+    write_message("- deleting old XML files submitted via BibEdit")
+    gc_exec_command('find %s -name "bibedit*.xml"'
         ' -atime +%s -exec rm %s -f {} \;' \
-            % (CFG_TMPSHAREDDIR + '/bibedit-cache/', CFG_MAX_ATIME_BIBEDIT_TMP,
+            % (CFG_TMPSHAREDDIR + '/bibedit-cache/', CFG_MAX_ATIME_BIBEDIT_XML,
                vstr))
 
     write_message("""CLEANING OF TMP FILES FINISHED""")
@@ -241,26 +237,27 @@ def clean_cache():
     write_message("""%s rss cache file pruned out of %s.""" % (count, len(filenames)))
     write_message("""CLEANING OF OLD CACHED RSS REQUEST FINISHED""")
 
-    write_message("""CLEANING OF OLD CACHED WEBJOURNAL FILES STARTED""")
-    webjournal_cache_dir = "%s/webjournal/" % CFG_CACHEDIR
-    filenames = []
-    try:
-        for root, dummy, files in os.walk(webjournal_cache_dir):
-            filenames.extend(os.path.join(root, filename) for filename in files)
-    except OSError:
-        pass
-    count = 0
-    for filename in filenames:
-        filename = os.path.join(webjournal_cache_dir, filename)
-        last_update_time = datetime.datetime.fromtimestamp(os.stat(os.path.abspath(filename)).st_mtime)
-        if not (datetime.datetime.now() < last_update_time + datetime.timedelta(days=CFG_WEBJOURNAL_TTL)):
-            try:
-                os.remove(filename)
-                count += 1
-            except OSError as e:
-                write_message("Error: %s" % e)
-    write_message("""%s webjournal cache file pruned out of %s.""" % (count, len(filenames)))
-    write_message("""CLEANING OF OLD CACHED WEBJOURNAL FILES FINISHED""")
+    if not CFG_INSPIRE_SITE:
+        write_message("""CLEANING OF OLD CACHED WEBJOURNAL FILES STARTED""")
+        webjournal_cache_dir = "%s/webjournal/" % CFG_CACHEDIR
+        filenames = []
+        try:
+            for root, dummy, files in os.walk(webjournal_cache_dir):
+                filenames.extend(os.path.join(root, filename) for filename in files)
+        except OSError:
+            pass
+        count = 0
+        for filename in filenames:
+            filename = os.path.join(webjournal_cache_dir, filename)
+            last_update_time = datetime.datetime.fromtimestamp(os.stat(os.path.abspath(filename)).st_mtime)
+            if not (datetime.datetime.now() < last_update_time + datetime.timedelta(days=CFG_WEBJOURNAL_TTL)):
+                try:
+                    os.remove(filename)
+                    count += 1
+                except OSError, e:
+                    write_message("Error: %s" % e)
+        write_message("""%s webjournal cache file pruned out of %s.""" % (count, len(filenames)))
+        write_message("""CLEANING OF OLD CACHED WEBJOURNAL FILES FINISHED""")
 
 
 def clean_bibxxx():
@@ -336,6 +333,27 @@ def optimise_tables():
         table_name = row[0]
         write_message("optimising table %s" % table_name)
         run_sql("OPTIMIZE TABLE %s" % wash_table_column_name(table_name)) # kwalitee: disable=sql
+
+def clean_sessions():
+    """
+    Deletes expired sessions only.
+    """
+    if not CFG_INSPIRE_SITE:
+        deleted_sessions = 0
+        timelimit = convert_datestruct_to_datetext(time.gmtime())
+        write_message("Deleting expired sessions since %s" % (timelimit,))
+
+        query = "DELETE LOW_PRIORITY FROM session WHERE session_expiry < %s"
+        write_message(query % (timelimit,), verbose=9)
+        deleted_sessions += run_sql(query, (timelimit,))
+
+        write_message("Deleted %d sessions" % (deleted_sessions,))
+
+def clean_bibedit_cache():
+    """Deletes experied bibedit cache entries"""
+    datecut = datetime.datetime.now() - datetime.timedelta(days=CFG_MAX_ATIME_BIBEDIT_TMP)
+    datecut_str = datecut.strftime("%Y-%m-%d %H:%M:%S")
+    run_sql("DELETE FROM bibEDITCACHE WHERE post_date < %s", [datecut_str])
 
 def guest_user_garbage_collector():
     """Session Garbage Collector
@@ -417,22 +435,24 @@ def guest_user_garbage_collector():
         " non-existent users")
 
     # find user_queries referencing non-existent users
-    write_message("  SELECT DISTINCT uq.id_user\n"
-        "  FROM user_query AS uq LEFT JOIN user AS u\n"
-        "  ON uq.id_user = u.id\n  WHERE u.id IS NULL", verbose=9)
-    result = run_sql("""SELECT DISTINCT uq.id_user
-        FROM user_query AS uq LEFT JOIN user AS u
-        ON uq.id_user = u.id
-        WHERE u.id IS NULL""")
-    write_message(result, verbose=9)
 
+    users_with_queries = intbitset(run_sql("""SELECT DISTINCT id_user
+                                              FROM user_query"""))
+    existing_users = intbitset(run_sql("SELECT id FROM user"))
+    users_with_queries_to_be_deleted = users_with_queries - existing_users
+    write_message("  Users with queries: %s" % len(users_with_queries),
+                  verbose=9)
+    write_message("  Existing users: %s" % len(existing_users),
+                  verbose=9)
+    write_message("  Users with queries to be deleted: %s"
+                  % len(users_with_queries_to_be_deleted), verbose=9)
 
     # delete in user_query one by one
     write_message("  DELETE FROM user_query WHERE"
         " id_user = 'TRAVERSE LAST RESULT' \n", verbose=9)
-    for (id_user,) in result:
-        delcount['user_query'] += run_sql("""DELETE FROM user_query
-            WHERE id_user = %s""" % (id_user,))
+    for id_user in users_with_queries_to_be_deleted:
+        delcount['user_query'] += run_sql("""DELETE FROM user_query WHERE
+                                             id_user=%s""", (id_user, ))
 
     # delete the actual queries
     write_message("- deleting queries not attached to any user")
@@ -447,7 +467,7 @@ def guest_user_garbage_collector():
     write_message(result, verbose=9)
 
     # delete queries one by one
-    write_message("""  DELETE FROM query WHERE id = 'TRAVERSE LAST RESULT \n""", verbose=9)
+    write_message("""  DELETE FROM query WHERE id = 'TRAVERSE LAST RESULT' \n""", verbose=9)
     for (id_user,) in result:
         delcount['query'] += run_sql("""DELETE FROM query WHERE id = %s""", (id_user,))
 
@@ -535,20 +555,35 @@ def guest_user_garbage_collector():
 
 def main():
     """Main that construct all the bibtask."""
+    short_options = "lpgbdacTkoS"
+    long_options = ["logs",
+                    "tempfiles",
+                    "guests",
+                    "bibxxx",
+                    "documents",
+                    "all",
+                    "cache",
+                    "tasks",
+                    "check-tables",
+                    "optimise-tables",
+                    "sessions",
+                    "bibedit-cache"]
     task_init(authorization_action='runinveniogc',
             authorization_msg="InvenioGC Task Submission",
-            help_specific_usage="  -l, --logs\t\tClean old logs.\n" \
-                "  -p, --tempfiles\t\tClean old temporary files.\n" \
-                "  -g, --guests\t\tClean expired guest user related information. [default action]\n" \
-                "  -b, --bibxxx\t\tClean unreferenced bibliographic values in bibXXx tables.\n" \
-                "  -c, --cache\t\tClean cache by removing old files.\n" \
-                "  -d, --documents\tClean deleted documents and revisions older than %s days.\n" \
-                "  -T, --tasks\t\tClean the BibSched queue removing/archiving old DONE tasks.\n" \
-                "  -a, --all\t\tClean all of the above (but do not run check/optimise table options below).\n" \
-                "  -k, --check-tables\tCheck DB tables to discover potential problems.\n" \
-                "  -o, --optimise-tables\tOptimise DB tables to increase performance.\n" % CFG_DELETED_BIBDOC_MAXLIFE,
+            help_specific_usage="  -l, --logs\t\tClean old logs.\n"
+                "  -p, --tempfiles\tClean old temporary files.\n"
+                "  -g, --guests\t\tClean expired guest user related information. [default action]\n"
+                "  -b, --bibxxx\t\tClean unreferenced bibliographic values in bibXXx tables.\n"
+                "  -c, --cache\t\tClean cache by removing old files.\n"
+                "  -d, --documents\tClean deleted documents and revisions older than %s days.\n"
+                "  -T, --tasks\t\tClean the BibSched queue removing/archiving old DONE tasks.\n"
+                "  -a, --all\t\tClean all of the above (but do not run check/optimise table options below).\n"
+                "  -k, --check-tables\tCheck DB tables to discover potential problems.\n"
+                "  -o, --optimise-tables\tOptimise DB tables to increase performance.\n"
+                "  -S, --sessions\tClean expired sessions from the DB.\n"
+                "  --bibedit-cache Clean expired bibedit cache entries from the DB.\n" % CFG_DELETED_BIBDOC_MAXLIFE,
             version=__revision__,
-            specific_params=("lpgbdacTko", ["logs", "tempfiles", "guests", "bibxxx", "documents", "all", "cache", "tasks", "check-tables", "optimise-tables"]),
+            specific_params=(short_options, long_options),
             task_submit_elaborate_specific_parameter_fnc=task_submit_elaborate_specific_parameter,
             task_submit_check_options_fnc=task_submit_check_options,
             task_run_fnc=task_run_core)
@@ -562,7 +597,9 @@ def task_submit_check_options():
        not task_get_option('cache') and \
        not task_get_option('tasks') and \
        not task_get_option('check-tables') and \
-       not task_get_option('optimise-tables'):
+       not task_get_option('sessions') and \
+       not task_get_option('optimise-tables') and \
+       not task_get_option('bibedit-cache'):
         task_set_option('sessions', True)
     return True
 
@@ -604,6 +641,12 @@ def task_submit_elaborate_specific_parameter(key, value, opts, args):
     elif key in ('-o', '--optimise-tables'):
         task_set_option('optimise-tables', True)
         return True
+    elif key in ('-S', '--sessions'):
+        task_set_option('sessions', True)
+        return True
+    elif key == '--bibedit-cache':
+        task_set_option('bibedit-cache', True)
+        return True
     elif key in ('-a', '--all'):
         task_set_option('logs', True)
         task_set_option('tempfiles', True)
@@ -612,6 +655,8 @@ def task_submit_elaborate_specific_parameter(key, value, opts, args):
         task_set_option('documents', True)
         task_set_option('cache', True)
         task_set_option('tasks', True)
+        task_set_option('sessions', True)
+        task_set_option('bibedit-cache', True)
         return True
     return False
 
@@ -635,6 +680,10 @@ def task_run_core():
         check_tables()
     if task_get_option('optimise-tables'):
         optimise_tables()
+    if task_get_option('sessions'):
+        clean_sessions()
+    if task_get_option('bibedit-cache'):
+        clean_bibedit_cache()
     return True
 
 if __name__ == '__main__':

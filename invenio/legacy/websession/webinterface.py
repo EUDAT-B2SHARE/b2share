@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 from invenio.legacy.webstat.api import register_customevent
 
 """Invenio ACCOUNT HANDLING"""
@@ -49,7 +49,7 @@ from invenio.legacy.dbquery import run_sql
 from invenio.legacy.webmessage.api import account_new_mail
 from invenio.modules.access.engine import acc_authorize_action
 from invenio.ext.legacy.handler import wash_urlargd, WebInterfaceDirectory
-from invenio.utils.apache import SERVER_RETURN, HTTP_NOT_FOUND
+from invenio.utils import apache
 from invenio.utils.url import redirect_to_url, make_canonical_urlargd
 from invenio.legacy.websession import webgroup
 from invenio.legacy.websession import dblayer as webgroup_dblayer
@@ -263,8 +263,18 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
         args = wash_urlargd(form, {
                                    'key_description' : (str, None),
                                    'key_id' : (str, None),
-                                   'referer': (str, '')
+                                   'referer': (str, ''),
+                                   'csrf_token' : (str, None),
                                    })
+
+        # do not allow non-POST methods in here:
+        if req.method != 'POST':
+            raise apache.SERVER_RETURN(apache.HTTP_METHOD_NOT_ALLOWED)
+
+        # check CSRF token:
+        if not webuser.is_csrf_token_valid(req, args['csrf_token']):
+            raise apache.SERVER_RETURN(apache.HTTP_FORBIDDEN)
+
         uid = webuser.getUid(req)
         # load the right message language
         _ = gettext_set_language(args['ln'])
@@ -312,12 +322,19 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
             for key in keys:
                 body += "<b>%s</b>:%s<br />" % (key, user_info[key])
 
+        # set CSRF token:
+        csrf_token, dummy_csrf_token_time = webuser.regenerate_csrf_token_if_needed(req)
+
         #check if the user should see bibcatalog user name / passwd in the settings
         can_config_bibcatalog = (acc_authorize_action(user_info, 'runbibedit')[0] == 0)
+        can_config_profiling = (acc_authorize_action(user_info, 'profiling')[0] == 0)
         return page(title= _("Your Settings"),
                     body=body+webaccount.perform_set(webuser.get_email(uid),
-                                                     args['ln'], can_config_bibcatalog,
-                                                     verbose=args['verbose']),
+                                                     args['ln'],
+                                                     can_config_bibcatalog,
+                                                     can_config_profiling,
+                                                     verbose=args['verbose'],
+                                                     csrf_token=csrf_token),
                     navtrail="""<a class="navtrail" href="%s/youraccount/display?ln=%s">""" % (CFG_SITE_SECURE_URL, args['ln']) + _("Your Account") + """</a>""",
                     description=_("%(x_name)s Personalize, Your Settings", x_name=CFG_SITE_NAME_INTL.get(args['ln'], CFG_SITE_NAME)),
                     keywords=_("%(x_name)s, personalize", x_name=CFG_SITE_NAME_INTL.get(args['ln'], CFG_SITE_NAME)),
@@ -342,7 +359,17 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
             'lang' : (str, None),
             'bibcatalog_username' : (str, None),
             'bibcatalog_password' : (str, None),
+            'profiling' : (int, 0),
+            'csrf_token' : (str, None),
             })
+
+        # do not allow non-POST methods in here:
+        if req.method != 'POST':
+            raise apache.SERVER_RETURN(apache.HTTP_METHOD_NOT_ALLOWED)
+
+        # check CSRF token:
+        if not webuser.is_csrf_token_valid(req, args['csrf_token']):
+            raise apache.SERVER_RETURN(apache.HTTP_FORBIDDEN)
 
         ## Wash arguments:
         args['login_method'] = wash_login_method(args['login_method'])
@@ -539,13 +566,21 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
         if args['bibcatalog_username'] or args['bibcatalog_password']:
             act = "/youraccount/display?ln=%s" % args['ln']
             linkname = _("Show account")
-            if ((len(args['bibcatalog_username']) == 0) or (len(args['bibcatalog_password']) == 0)):
+            if len(args['bibcatalog_username']) == 0 or len(args['bibcatalog_password']) == 0:
                 title = _("Editing bibcatalog authorization failed")
                 mess += '<p>' + _("Empty username or password")
             else:
                 title = _("Settings edited")
                 prefs['bibcatalog_username'] = args['bibcatalog_username']
                 prefs['bibcatalog_password'] = args['bibcatalog_password']
+                webuser.set_user_preferences(uid, prefs)
+                mess += '<p>' + _("User settings saved correctly.")
+
+        if 'profiling' in args:
+            user_info = webuser.collect_user_info(req)
+            can_config_profiling = (acc_authorize_action(user_info, 'profiling')[0] == 0)
+            if can_config_profiling:
+                prefs['enable_profiling'] = bool(args['profiling'])
                 webuser.set_user_preferences(uid, prefs)
                 mess += '<p>' + _("User settings saved correctly.")
 
@@ -810,6 +845,7 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
             'p_un': (str, None),
             'p_pw': (str, None),
             'login_method': (str, None),
+            'provider': (str, None),
             'action': (str, ''),
             'remember_me' : (str, ''),
             'referer': (str, '')})
@@ -842,7 +878,6 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
                 action, arguments = mail_cookie_check_authorize_action(cookie)
             except InvenioWebAccessMailCookieError:
                 pass
-
         if not CFG_EXTERNAL_AUTH_USING_SSO:
             if (args['p_un'] is None or not args['login_method']) and (not args['login_method'] in ['openid', 'oauth1', 'oauth2']):
                 return page(title=_("Login"),
@@ -1214,8 +1249,8 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
 
             provider = OAuth2Service(
                                  name = provider_name,
-                                 consumer_key = config['consumer_key'],
-                                 consumer_secret = config['consumer_secret'],
+                                 client_id = config['consumer_key'],
+                                 client_secret = config['consumer_secret'],
                                  access_token_url = config['access_token_url'],
                                  authorize_url = config['authorize_url']
                                  )
@@ -1244,7 +1279,7 @@ class WebInterfaceYourAccountPages(WebInterfaceDirectory):
         # Construct the authorization url
         params = config.get('authorize_parameters', {})
         params['redirect_uri'] = '%s/youraccount/login?login_method=oauth2\
-&provider=%s' % (CFG_SITE_SECURE_URL, args['provider'])
+&provider=%s' % (CFG_SITE_URL, args['provider'])
         url = provider.get_authorize_url(**params)
 
         redirect_to_url(req, url)

@@ -1,30 +1,33 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+""" Logging part of workflows module."""
 
 import logging
 
 
-def get_logger(logger_name, db_handler_obj,
-               level=10, **kwargs):
+def get_logger(logger_name, db_handler_obj, level=10, **kwargs):
     """
-    Will initialize and return a Python logger object with
-    handlers to output logs in sys.stderr as well as the
-    datebase.
+    Initialize and return a Python logger object.
+
+
+    You can specifiy the handlers to output logs in sys.stderr as well as the
+    datebase or anything you want.
     """
     logging.basicConfig(level=level)
 
@@ -57,17 +60,18 @@ def get_logger(logger_name, db_handler_obj,
 
 
 class BibWorkflowLogHandler(logging.Handler, object):
-    """
-    Implements a handler for logging to database
-    """
+
+    """Implements a handler for logging to database."""
 
     def __init__(self, model, id_name):
+        """Instanciate a BibWorkflowLogHandler object."""
         super(BibWorkflowLogHandler, self).__init__()
 
         self.model = model
         self.id_name = id_name
 
     def emit(self, record):
+        """ Create the log object in database."""
         from invenio.ext.sqlalchemy import db
 
         log_obj = self.model(id_object=getattr(record.obj, self.id_name),
@@ -78,11 +82,15 @@ class BibWorkflowLogHandler(logging.Handler, object):
 
 
 class BibWorkflowLogAdapter(logging.LoggerAdapter):
+
     """
+    BibWorkflowLogAdapter class.
+
     This example adapter expects the passed in dict-like object to have a
     'obj' key, whose value in brackets is used during logging.
     """
 
     def process(self, msg, kwargs):
+        """ Save kwargs in extra."""
         kwargs['extra'] = self.extra
         return msg, kwargs

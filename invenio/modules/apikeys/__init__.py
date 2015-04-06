@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2010, 2011, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio utilities to perform a REST like authentication."""
 
@@ -30,12 +30,11 @@ except ImportError:
 
 from functools import wraps
 from flask import request, abort
-from .models import WebAPIKey
 
 
 def create_new_web_api_key(uid, key_description=None):
     """
-    Create a new pair REST API key / secret key for the user.
+    Create a new REST API key / secret key pair for the user.
 
     To do that it uses the uuid4 function.
 
@@ -44,6 +43,7 @@ def create_new_web_api_key(uid, key_description=None):
     :param key_description: User's description for the REST API key
     :type key_description: string
     """
+    from .models import WebAPIKey
     WebAPIKey.create_new(uid, key_description)
 
 
@@ -53,12 +53,13 @@ def show_web_api_keys(uid, diff_status=None):
 
     :param uid: User's id
     :type uid: int
-    :param diff_status: This string indicates if the query will show all the
-                        REST API keys or only the ones that still active
-                        (usefull in the admin part)
+    :param diff_status: This string indicates whether the query will show all the
+                        REST API keys or only those which are still active
+                        (usable in the admin part)
     :type diff_statusparam: string
 
     """
+    from .models import WebAPIKey
     return WebAPIKey.show_keys(uid, diff_status)
 
 
@@ -73,6 +74,7 @@ def mark_web_api_key_as_removed(key_id):
     :param key_id: The id of the REST key that will be "removed"
     :type key_id: string
     """
+    from .models import WebAPIKey
     WebAPIKey.mark_as(key_id, WebAPIKey.CFG_WEB_API_KEY_STATUS['REMOVED'])
 
 
@@ -87,6 +89,7 @@ def get_available_web_api_keys(uid):
     :return: WebAPIKey objects
 
     """
+    from .models import WebAPIKey
     return WebAPIKey.get_available(uid)
 
 
@@ -101,6 +104,7 @@ def acc_get_uid_from_request():
     :return: If everything goes well it returns the user's uid, if not -1
 
     """
+    from .models import WebAPIKey
     return WebAPIKey.acc_get_uid_from_request()
 
 
@@ -135,6 +139,7 @@ def build_web_request(path, params=None, uid=-1, api_key=None, timestamp=True):
     :return: Signed request string or, in case of error, ''
 
     """
+    from .models import WebAPIKey
     return WebAPIKey.build_web_request(path, params, uid, api_key, timestamp)
 
 
@@ -148,6 +153,7 @@ def api_key_required(f):
     @wraps(f)
     def auth_key(*args, **kwargs):
         if 'apikey' in request.values:
+            from .models import WebAPIKey
             from invenio.ext.login import login_user
             user_id = WebAPIKey.acc_get_uid_from_request()
             if user_id == -1:

@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio Multiple Record Editor web interface."""
 
@@ -147,7 +147,8 @@ class WebInterfaceMultiEditPages(WebInterfaceDirectory):
                                                     language,
                                                     output_tags,
                                                     collection,
-                                                    checked_records))
+                                                    req=req,
+                                                    checked_records=checked_records))
             json_response['display_info_box'] = 1
             json_response['info_html'] = ""
             return json.dumps(json_response)
@@ -173,6 +174,7 @@ class WebInterfaceMultiEditPages(WebInterfaceDirectory):
                                                     collection,
                                                     compute_modifications,
                                                     upload_mode,
+                                                    req,
                                                     checked_records))
             return json.dumps(json_response)
 
@@ -233,7 +235,7 @@ class WebInterfaceMultiEditPages(WebInterfaceDirectory):
             elif action == self._subfield_action_types.replace_text:
                 subfield_command = multi_edit_engine.ReplaceTextInSubfieldCommand(subfield_code, value, new_value, condition=condition, condition_exact_match=condition_exact_match, condition_does_not_exist=condition_does_not_exist, condition_subfield=condition_subfield, additional_values=additional_values)
             else:
-                subfield_command = multi_edit_engine.BaseFieldCommand(subfield_code, value, new_value)
+                raise ValueError("Invalid action: %s" % action)
 
             commands_list.append(subfield_command)
 
@@ -276,8 +278,7 @@ class WebInterfaceMultiEditPages(WebInterfaceDirectory):
             elif action == self._field_action_types.update:
                 command = multi_edit_engine.UpdateFieldCommand(tag, ind1, ind2, subfield_commands)
             else:
-                # if someone send wrong action type, we use empty command
-                command = multi_edit_engine.BaseFieldCommand()
+                raise ValueError("Invalid action: %s" % action)
 
             commands_list.append(command)
 

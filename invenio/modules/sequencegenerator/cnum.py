@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -51,7 +51,7 @@ class CnumSeq(SequenceGenerator):
                           LIKE %s AND seq_name=%s""",
                           (value + "%", self.seq_name))
 
-    def _next_value(self, recid=None, xml_record=None):
+    def _next_value(self, recid=None, xml_record=None, start_date=None):
         """
         Returns the next cnum for the given recid
 
@@ -61,22 +61,28 @@ class CnumSeq(SequenceGenerator):
         @param xml_record: record in xml format
         @type xml_record: string
 
+        @param start_date: use given start date
+        @type start_date: string
+
         @return: next cnum for the given recid. Format is Cyy-mm-dd.[.1n]
         @rtype: string
 
         @raises ConferenceNoStartDateError: No date information found in the
         given recid
         """
+        bibrecord = None
         if recid is None and xml_record is not None:
             bibrecord = create_record(xml_record)[0]
-        else:
+        elif recid is not None:
             bibrecord = get_bibrecord(recid)
 
-        start_date = record_get_field_value(bibrecord,
-                                            tag="111",
-                                            ind1="",
-                                            ind2="",
-                                            code="x")
+        if start_date is None and bibrecord is not None:
+            start_date = record_get_field_value(bibrecord,
+                                                tag="111",
+                                                ind1="",
+                                                ind2="",
+                                                code="x")
+
         if not start_date:
             raise ConferenceNoStartDateError
 
@@ -85,12 +91,10 @@ class CnumSeq(SequenceGenerator):
         record_cnums = self._get_record_cnums(base_cnum)
         if not record_cnums:
             new_cnum = base_cnum
-        elif len(record_cnums) == 1:
-            new_cnum = base_cnum + '.' + '1'
         else:
             # Get the max current revision, cnums are in format Cyy-mm-dd,
             # Cyy-mm-dd.1, Cyy-mm-dd.2
-            highest_revision = max([int(rev[0].split('.')[1]) for rev in record_cnums[1:]])
+            highest_revision = max([0] + [int(rev[0].split('.')[1]) for rev in record_cnums if '.' in rev[0]])
             new_cnum = base_cnum + '.' + str(highest_revision + 1)
 
         return new_cnum

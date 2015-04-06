@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import absolute_import
 
 import json
+from flask import url_for
 from flask_registry import RegistryError
-from invenio.testsuite import InvenioTestCase
+from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
 
 
 from ..models import Event, Receiver, InvalidPayload, CeleryReceiver, \
@@ -123,15 +124,24 @@ class ReceiverTestCase(InvenioTestCase):
         r = Receiver(self.callable)
         Receiver.register('test-receiver', r)
 
-        assert Receiver.get_hook_url('test-receiver', 'token') != \
-            'http://test.local/?access_token=token'
+        self.assertEqual(
+            Receiver.get_hook_url('test-receiver', 'token'),
+            url_for(
+                'receivereventlistresource',
+                receiver_id='test-receiver',
+                access_token='token',
+                _external=True
+            )
+        )
 
         self.app.config['WEBHOOKS_DEBUG_RECEIVER_URLS'] = {
             'test-receiver': 'http://test.local/?access_token=%(token)s'
         }
 
-        assert Receiver.get_hook_url('test-receiver', 'token') == \
+        self.assertEqual(
+            Receiver.get_hook_url('test-receiver', 'token'),
             'http://test.local/?access_token=token'
+        )
 
     def test_signature_checking(self):
         """
@@ -160,3 +170,10 @@ class ReceiverTestCase(InvenioTestCase):
                    ('X-Hub-Signature', get_hmac("somevalue"))]
         with self.app.test_request_context(headers=headers, data=payload):
             self.assertRaises(InvalidSignature, r.consume_event, 2)
+
+
+TEST_SUITE = make_test_suite(ReceiverTestCase)
+
+
+if __name__ == "__main__":
+    run_test_suite(TEST_SUITE)

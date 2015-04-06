@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -23,7 +23,7 @@ __revision__ = "$Id$"
 
 # check this: def acc_add_user_role(id_user, id_role=0, name_role=0):
 
-## import interesting modules:
+# import interesting modules:
 
 import sys
 import urlparse
@@ -39,7 +39,8 @@ from invenio.base.i18n import gettext_set_language
 from invenio.config import CFG_SITE_ADMIN_EMAIL, CFG_SITE_LANG, CFG_SITE_RECORD
 from invenio.modules.access.local_config import CFG_ACC_EMPTY_ROLE_DEFINITION_SER, \
     CFG_ACC_EMPTY_ROLE_DEFINITION_SRC, DELEGATEADDUSERROLE, SUPERADMINROLE, \
-    DEF_USERS, DEF_ROLES, DEF_AUTHS, DEF_ACTIONS, CFG_ACC_ACTIVITIES_URLS
+    DEF_USERS, DEF_ROLES, DEF_AUTHS, CFG_ACC_ACTIVITIES_URLS
+from invenio.ext import principal
 from invenio.legacy.dbquery import run_sql, ProgrammingError
 from invenio.modules.access.firerole import compile_role_definition, \
     acc_firerole_check_user, serialize, deserialize, load_role_definition
@@ -1181,9 +1182,9 @@ def acc_get_role_users(id_role):
 def acc_get_roles_emails(id_roles):
     from invenio.modules.accounts.models import User
     return set(map(lambda u: u.email.lower().strip(),
-        db.session.query(User.email).join(User.roles).filter(db.and_(
-            UserAccROLE.expiration >= db.func.now(),
-            UserAccROLE.id_accROLE.in_(id_roles))).all()))
+        db.session.query(db.func.distinct(User.email)).join(
+            User.active_roles
+        ).filter(UserAccROLE.id_accROLE.in_(id_roles)).all()))
 
 # ARGUMENT RELATED
 
@@ -1284,7 +1285,6 @@ def acc_find_possible_activities(user_info, ln=CFG_SITE_LANG):
     is allowed (i.e. all the administrative action which are connected to
     an web area in Invenio) and the corresponding url.
     """
-    _ = gettext_set_language(ln)
     your_role_actions = acc_find_user_role_actions(user_info)
     your_admin_activities = {}
     for (role, action) in your_role_actions:
@@ -1321,7 +1321,7 @@ def acc_find_possible_activities(user_info, ln=CFG_SITE_LANG):
 
     ret = {}
     for action, (name, url) in iteritems(your_admin_activities):
-        ret[_(name)] = url % ln
+        ret[name] = url % ln
 
     return ret
 
@@ -1826,12 +1826,17 @@ def acc_add_default_settings(superusers=(),
 
     # add actions
     insactions = []
-    for (name, description, allkeys, optional) in DEF_ACTIONS:
+    for action in principal.actions:
+        name = action.name
+        description = action.description
+        optional = 'yes' if action.optional else 'no'
+        allkeys = ','.join(action.allowedkeywords) \
+            if action.allowedkeywords is not None else ''
         # try to add action as new
         action_id = acc_add_action(name, description, optional, allkeys)
         # action with the name exist
         if not action_id:
-            action_id = acc_get_action_id(name_action=name)
+            action_id = acc_get_action_id(name_action=action.name)
             # update the action, necessary updates to the database
             # will also be done
             acc_update_action(id_action=action_id, optional=optional,

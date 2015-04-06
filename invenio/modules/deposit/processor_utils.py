@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 # from wtforms.validators import ValidationError, StopValidation, Regexp
 from werkzeug import MultiDict
@@ -42,7 +42,7 @@ def replace_field_data(field_name, getter=None):
 
 
 def set_flag(flag_name):
-    """ Return processor which will set a given flag on a field."""
+    """Return processor which will set a given flag on a field."""
     def _inner(form, field, submit=False, fields=None):
         setattr(field.flags, flag_name, True)
     return _inner
@@ -71,13 +71,23 @@ class PidNormalize(object):
 
     """Normalize a persistent identifier."""
 
-    def __init__(self, scheme_field=None):
+    def __init__(self, scheme_field=None, scheme=None):
         self.scheme_field = scheme_field
+        self.scheme = scheme
 
     def __call__(self, form, field, submit=False, fields=None):
-        scheme = getattr(form, self.scheme_field).data
+        scheme = None
+        if self.scheme_field:
+            scheme = getattr(form, self.scheme_field).data
+        elif self.scheme:
+            scheme = self.scheme
+        else:
+            schemes = pidutils.detect_identifier_schemes(field.data)
+            if schemes:
+                scheme = schemes[0]
         if scheme:
-            field.data = pidutils.normalize_pid(field.data, scheme=scheme)
+            if field.data:
+                field.data = pidutils.normalize_pid(field.data, scheme=scheme)
 
 
 #
@@ -124,7 +134,9 @@ class DataCiteLookup(object):
                 if self.mapping_func:
                     self.mapping_func(datacite, form, self.mapping)
                     if self.display_info:
-                        field.add_message("DOI metadata successfully imported from DataCite.", state='info')
+                        field.add_message(
+                            "DOI metadata successfully imported from "
+                            "DataCite.", state='info')
             except Exception:
                 # Ignore errors
                 pass
@@ -193,17 +205,21 @@ def sherpa_romeo_publisher_process(form, field, submit=False, fields=None):
         if isinstance(copyright_links, list):
             copyright_links_html = ""
             for copyright_link in copyright_links['copyrightlink']:
-                copyright_links_html += '<a href="' + copyright_link['copyrightlinkurl'] + \
-                                        '">' + copyright_link['copyrightlinktext'] + "</a><br>"
+                copyright_links_html += (
+                    '<a href="' + copyright_link['copyrightlinkurl'] +
+                    '">' + copyright_link['copyrightlinktext'] + "</a><br>")
         elif isinstance(copyright_links, dict):
             if isinstance(copyright_links['copyrightlink'], list):
                 for copyright_link in copyright_links['copyrightlink']:
-                    copyright_links_html = '<a href="' + copyright_link['copyrightlinkurl'] + \
-                                           '">' + copyright_link['copyrightlinktext'] + "</a><br>"
+                    copyright_links_html = (
+                        '<a href="' + copyright_link['copyrightlinkurl'] +
+                        '">' + copyright_link['copyrightlinktext'] +
+                        "</a><br>")
             else:
                 copyright_link = copyright_links['copyrightlink']
-                copyright_links_html = '<a href="' + copyright_link['copyrightlinkurl'] + \
-                                       '">' + copyright_link['copyrightlinktext'] + "</a><br>"
+                copyright_links_html = (
+                    '<a href="' + copyright_link['copyrightlinkurl'] +
+                    '">' + copyright_link['copyrightlinktext'] + "</a><br>")
 
         home_url = s.parser.get_publishers(attribute='homeurl')
         if home_url is not None and home_url != []:

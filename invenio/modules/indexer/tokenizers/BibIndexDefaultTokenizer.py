@@ -1,21 +1,21 @@
 # -*- coding:utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2010, 2011, 2012, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """BibIndexDefaultTokenizer: useful for almost all indexes.
    It performs standard tokenization. It splits phrases into words/pairs or doesnt split at all, strips accents,
    removes alphanumeric characters and html and latex markup if we want to. Also can stem words for a given language.
@@ -34,11 +34,11 @@ from invenio.legacy.bibindex.engine_utils import latex_formula_re, \
      re_punctuation, \
      re_separators, \
      re_arxiv
-from invenio.modules.indexer.tokenizers.BibIndexTokenizer import BibIndexTokenizer
+from invenio.modules.indexer.tokenizers.BibIndexStringTokenizer import BibIndexStringTokenizer
 
 
 
-class BibIndexDefaultTokenizer(BibIndexTokenizer):
+class BibIndexDefaultTokenizer(BibIndexStringTokenizer):
     """
         It's a standard tokenizer. It is useful for most of the indexes.
         Its behaviour depends on stemming, remove stopwords, remove html markup and remove latex markup parameters.
@@ -163,3 +163,11 @@ class BibIndexDefaultTokenizer(BibIndexTokenizer):
         """
         phrase = wash_for_utf8(phrase)
         return [phrase]
+
+    def get_nonmarc_tokenizing_function(self, table_type):
+        """
+        Picks correct tokenize_for_xxx function
+        depending on the type of tokenization
+        for non-marc standards.
+        """
+        return self.get_tokenizing_function(table_type)

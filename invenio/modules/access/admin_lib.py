@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio WebAccess Administrator Interface."""
 
@@ -21,7 +21,7 @@ __revision__ = "$Id$"
 
 __lastupdated__ = """$Date$"""
 
-## fill config variables:
+# fill config variables:
 
 import re
 import time
@@ -617,13 +617,12 @@ def perform_userarea(req, email_user_pattern=''):
                 for col in [(('add', 'addroleuser'),
                             ('remove', 'deleteuserrole')),
                             (('show details', 'showuserdetails'), )]:
-                    users[-1].append('<a href="%s?email_user_pattern=%s&amp;'
-                        'id_user=%s">%s</a>' % (col[0][1],
-                        email_user_pattern, id, col[0][0]))
+                    users[-1].append('<a href="%s?'
+                        'id_user=%s">%s</a>' % (col[0][1], id, col[0][0]))
                     for (str, function) in col[1:]:
-                        users[-1][-1] += ' / <a href="%s?email_user_pattern' \
-                            '=%s&amp;id_user=%s&amp;reverse=1">%s</a>' % \
-                            (function, email_user_pattern, id, str)
+                        users[-1][-1] += ' / <a href="%s?' \
+                            'id_user=%s&amp;reverse=1">%s</a>' % \
+                            (function, id, str)
 
             output += '<p>found <strong>%s</strong> matching users:</p>' % \
                 (len(users1), )

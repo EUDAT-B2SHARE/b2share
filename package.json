@@ -1,18 +1,8 @@
 {
-  "name": "invenio-grunt",
-  "version": "1.0.0",
-  "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-contrib-copy": "*",
-    "grunt-contrib-cssmin": "*",
-    "grunt-contrib-clean": "*",
-    "grunt-contrib-uglify": "*",
-    "grunt-contrib-less": "*",
-    "load-grunt-config": "*",
-    "grunt-newer": "*",
-    "grunt-concurrent": "*"
-  },
   "dependencies": {
-     "time-grunt": "*"
+    "less": "1.7.5",
+    "clean-css": "~2.2",
+    "requirejs": "*",
+    "uglify-js": "*"
   }
 }

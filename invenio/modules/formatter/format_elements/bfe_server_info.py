@@ -1,26 +1,29 @@
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """BibFormat element - Prints server info
 """
-__revision__ = "$Id$"
 
-from invenio.config import CFG_SITE_URL, CFG_SITE_ADMIN_EMAIL, CFG_SITE_LANG, \
-        CFG_SITE_NAME, CFG_VERSION, CFG_SITE_NAME_INTL, CFG_SITE_SUPPORT_EMAIL, \
-        CFG_SITE_RECORD
+import urllib
+import re
+from invenio.config import CFG_SITE_URL, CFG_BASE_URL, CFG_SITE_ADMIN_EMAIL, \
+        CFG_SITE_LANG, CFG_SITE_NAME, CFG_VERSION, CFG_SITE_NAME_INTL, \
+        CFG_SITE_SUPPORT_EMAIL, CFG_SITE_RECORD, CFG_BIBUPLOAD_INTERNAL_DOI_PATTERN
+from invenio.legacy.bibrecord import record_extract_dois
+
 
 def format_element(bfo, var=''):
     '''
@@ -35,10 +38,17 @@ def format_element(bfo, var=''):
            CFG_SITE_URL: the base url for the server
            searchurl: the search url for the server
            recurl: the base url for the record
+           recinternaldoiurl_or_recurl: the base url for the record, as an internal CFG_SITE_URL + '/doi' URL when DOI is available and matched by CFG_BIBUPLOAD_INTERNAL_DOI_PATTERN
     '''
+    dois = []
+    if var == 'recinternaldoiurl_or_recurl':
+        # Prepare list of internal DOIs of that record
+        dois = [doi for doi in record_extract_dois(bfo.get_record()) if \
+                re.compile(CFG_BIBUPLOAD_INTERNAL_DOI_PATTERN).match(doi)]
+
     recID = bfo.recID
     if var == '':
-        out =  ''
+        out = ''
     elif var in ['name', 'CFG_SITE_NAME']:
         out = CFG_SITE_NAME
     elif var in ['i18n_name', 'CFG_SITE_NAME_INTL']:
@@ -57,11 +67,30 @@ def format_element(bfo, var=''):
         out = CFG_SITE_URL
         if not out.endswith('/'):
             out += '/'
+    elif var in ['CFG_BASE_URL']:
+        out = CFG_BASE_URL
+        if not out.endswith('/'):
+            out += '/'
     elif var == 'searchurl':
+        out = CFG_BASE_URL + '/search'
+        if not out.endswith('/'):
+            out += '/'
+    elif var == 'absolutesearchurl':
         out = CFG_SITE_URL + '/search'
         if not out.endswith('/'):
             out += '/'
-    elif var == 'recurl':
+    elif var == 'absoluterecurl':
+        out = CFG_SITE_URL
+        if not out.endswith('/'):
+            out += '/'
+        out += CFG_SITE_RECORD + '/' + str(recID)
+    elif var == 'recinternaldoiurl_or_recurl' and \
+             dois:
+        out = CFG_SITE_URL
+        if not out.endswith('/'):
+            out += '/'
+        out += 'doi/' + urllib.quote(dois[0])
+    elif var in ('recurl', 'recinternaldoiurl_or_recurl'):
         out = CFG_SITE_URL
         if not out.endswith('/'):
             out += '/'

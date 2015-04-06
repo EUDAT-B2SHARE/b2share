@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio Multiple Record Editor Templates."""
 
@@ -27,6 +27,7 @@ from invenio.config import CFG_SITE_URL, CFG_BIBEDITMULTI_LIMIT_INSTANT_PROCESSI
                            CFG_SITE_ADMIN_EMAIL, \
                            CFG_SITE_RECORD
 from invenio.base.i18n import gettext_set_language
+from invenio.utils.url import auto_version_url
 
 
 class Template:
@@ -351,7 +352,6 @@ div .boxleft_2 {
 
         """% {"language" : language,
              "text_test_search" : _("Search"),
-             "text_next_step" : _("Next Step"),
              "text_search_criteria" : _("Search criteria"),
              "text_output_tags" : _("Output tags"),
              "text_filter_collection": _("Filter collection"),
@@ -815,7 +815,6 @@ div .boxleft_2 {
             <div class="divRecordCheckbox">
             <input type="checkbox" name="recordCheckbox" class="recordCheckbox" value="%(record_id)s"
             """ % {"record_id": record_id,
-                  "record": record
                   }
             if record_id in checked_records:
                 result += ' checked="checked"'
@@ -839,13 +838,15 @@ div .boxleft_2 {
     def scripts(self):
         """Returns the scripts that should be imported."""
 
-        scripts = ["json2.js",
-                   "bibeditmulti.js"]
+        scripts = [
+            "vendors/json2/json2.js",
+            "js/bibeditmulti.js"
+        ]
 
         result = ""
         for script in scripts:
-            result += '<script type="text/javascript" src="%s/js/%s">' \
-            '</script>\n' % (CFG_SITE_URL, script)
+            result += '<script type="text/javascript" src="%s/%s">' \
+            '</script>\n' % (CFG_SITE_URL, auto_version_url(script))
 
         return result
 

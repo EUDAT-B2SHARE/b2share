@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation,
-## Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Test *ArXiv* integration."""
 
@@ -40,7 +40,7 @@ class ArxivMixin(InvenioTestCase):
         cfg["EXTENSIONS"] = filter(
             lambda k: not k.startswith("invenio.ext.arxiv"),
             EXTENSIONS)
-        cfg["ARXIV_API_URL"] = "http://export.example.com/api/query"
+        cfg["ARXIV_API_URL"] = "http://export.example.org/oai2"
         return cfg
 
 
@@ -85,28 +85,56 @@ class TestArxivQuery(ArxivMixin):
         httpretty.register_uri(
             httpretty.GET,
             self.app.config["ARXIV_API_URL"] +
-            "?search_query=1007.5048&max_results=1",
+            "?verb=GetRecord&metadataPrefix=arXiv&identifier=oai:arXiv.org:1007.5048",
             body=pkg_resources.resource_string(
                 "invenio.testsuite", "data/response_export_arxiv.xml"),
             status=200
         )
 
         response = self.app.extensions["arxiv"].search("1007.5048")
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, 200)
 
     @httpretty.activate
     def test_zero_results_found(self):
         httpretty.register_uri(
             httpretty.GET,
             self.app.config["ARXIV_API_URL"] +
-            "?search_query=dead.beef&max_results=1",
+            "?verb=GetRecord&metadataPrefix=arXiv&identifier=oai:arXiv.org:dead.beef",
             body=pkg_resources.resource_string(
                 "invenio.testsuite", "data/response_export_arxiv_zero.xml"),
             status=200
         )
 
+        response = self.app.extensions["arxiv"].search("9999.9999")
+        self.assertEqual(response.status_code, 404)
+
+    @httpretty.activate
+    def test_unsupported_versioning(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            self.app.config["ARXIV_API_URL"] +
+            "?verb=GetRecord&metadataPrefix=arXiv&identifier=oai:arXiv.org:1007.5048v1",
+            body=pkg_resources.resource_string(
+                "invenio.testsuite", "data/response_export_arxiv_versioning.xml"),
+            status=200
+        )
+
+        response = self.app.extensions["arxiv"].search("1007.5048v1")
+        self.assertEqual(response.status_code, 415)
+
+    @httpretty.activate
+    def test_malformed_arxiv_id(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            self.app.config["ARXIV_API_URL"] +
+            "?verb=GetRecord&metadataPrefix=arXiv&identifier=oai:arXiv.org:dead.beef",
+            body=pkg_resources.resource_string(
+                "invenio.testsuite", "data/response_export_arxiv_malformed.xml"),
+            status=200
+        )
+
         response = self.app.extensions["arxiv"].search("dead.beef")
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, 422)
 
 TEST_SUITE = make_test_suite(TestArxiv, TestArxivQuery)
 

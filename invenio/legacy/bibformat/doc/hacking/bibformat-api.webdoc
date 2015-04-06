@@ -1,21 +1,21 @@
-## -*- mode: html; coding: utf-8; -*-
+# -*- mode: html; coding: utf-8; -*-
 
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 <!-- WebDoc-Page-Title: BibFormat API -->
 <!-- WebDoc-Page-Navtrail: <a class="navtrail" href="<CFG_SITE_URL>/help/hacking">Hacking Invenio</a> &gt; <a class="navtrail" href="bibformat-internals">BibFormat Internals</a> -->
@@ -684,7 +684,7 @@ value of the current record that is being displayed is used. To do so,
 you must use a format element brick. Either you know the name of the
 brick by heart, or you look for it in the elements documentation (see
 section 5.3). For example you would find there that you can print the
-title of the record by writting the HTML tag &lt;BFE_TITLE /> in your
+title of the record by writing the HTML tag &lt;BFE_TITLE /> in your
 format template, with parameter 'default' for a default value.
 
   &lt;h1>&lt;BFE_TITLE default="No Title"/>&lt;/h1>

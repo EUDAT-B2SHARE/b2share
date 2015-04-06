@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """WebSubmit function - Batch photo uploader
 
 To be used with WebSubmit element 'Upload_Photos' or one of its
@@ -363,9 +363,8 @@ def create_photos_manager_interface(sysno, session_id, uid,
                    'description': description})
 
     out += '''
-    <link rel="stylesheet" href="%(CFG_SITE_URL)s/img/jquery-ui/themes/base/jquery.ui.slider.css" type="text/css" charset="utf-8"/>
-    <link rel="stylesheet" href="%(CFG_SITE_URL)s/img/jquery-ui/themes/base/jquery.ui.core.css" type="text/css" charset="utf-8"/>
-    <link rel="stylesheet" href="%(CFG_SITE_URL)s/img/jquery-ui/themes/base/jquery.ui.theme.css" type="text/css" charset="utf-8"/>
+    <link rel="stylesheet" href="%(CFG_SITE_URL)s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css" type="text/css" charset="utf-8"/>
+    <link rel="stylesheet" href="%(CFG_SITE_URL)s/vendors/jquery-ui/themes/redmond/theme.css" type="text/css" charset="utf-8"/>
     <style type="text/css">
             #sortable { list-style-type: none; margin: 0; padding: 0; }
             #sortable li { margin: auto 3px; padding: 1px; float: left; width: 180px; font-size:small; text-align: center; position: relative;}
@@ -384,10 +383,10 @@ def create_photos_manager_interface(sysno, session_id, uid,
     </div>
 
 
-    <script type="text/javascript" src="%(CFG_SITE_URL)s/js/jquery.uploadify.min.js"></script>
-    <script type="text/javascript" src="%(CFG_SITE_URL)s/js/swfobject.js"></script>
-    <script type="text/javascript" src="%(CFG_SITE_URL)s/js/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="%(CFG_SITE_URL)s/img/uploadify.css" type="text/css" />
+    <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/uploadify/jquery.uploadify.min.js"></script>
+    <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/swfobject/swfobject/swfobject.js"></script>
+    <script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/jquery-ui/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="%(CFG_SITE_URL)s/vendors/uploadify/uploadify.css" type="text/css" />
 
     <script type="text/javascript">
 
@@ -396,9 +395,9 @@ def create_photos_manager_interface(sysno, session_id, uid,
         /* Uploading */
             if (%(can_upload_photos)s) {
             $('#uploadFile').uploadify({
-                    'uploader': '%(CFG_SITE_URL)s/img/uploadify.swf',
+                    'uploader': '%(CFG_SITE_URL)s/vendors/uploadify/uploadify.swf',
                     'script':    '/submit/uploadfile',
-                    'cancelImg': '%(CFG_SITE_URL)s/img/cancel.png',
+                    'cancelImg': '%(CFG_SITE_URL)s/vendors/uploadify/uploadify-cancel.png',
                     'multi' :    true,
                     'auto' :    true,
                     'simUploadLimit': 2,

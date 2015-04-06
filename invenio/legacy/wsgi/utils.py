@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 mod_python->WSGI Framework utilities
@@ -43,10 +44,6 @@ The code taken from mod_python is under the following License.
  #
  # $Id: apache.py 468216 2006-10-27 00:54:12Z grahamd $
 
-try:
-    import threading
-except:
-    import dummy_threading as threading
 from wsgiref.headers import Headers
 import time
 import re
@@ -64,10 +61,6 @@ from invenio.utils.apache import \
     InvenioWebInterfaceWSGIContentTypeError, \
     InvenioWebInterfaceWSGIContentMD5Error
 
-# Cache for values of PythonPath that have been seen already.
-_path_cache = {}
-_path_cache_lock = threading.Lock()
-
 class table(Headers):
     add = Headers.add_header
     iteritems = Headers.items
@@ -79,10 +72,10 @@ class table(Headers):
             return str(ret)
 
 
-## Some functions made public
+# Some functions made public
 exists_config_define = lambda dummy: True
 
-## Some constants
+# Some constants
 
 
 class metaCookie(type):
@@ -252,24 +245,25 @@ def add_cookies(req, cookies):
     for cookie in cookies:
         req.headers_out.add("Set-Cookie", str(cookie))
 
-def get_cookies(req, Class=Cookie, **kw):
+
+def get_cookies(req, cls=Cookie, **kw):
     """
     A shorthand for retrieveing and parsing cookies given
     a Cookie class. The class must be one of the classes from
     this module.
     """
-
-    if "cookie" not in req.headers_in:
+    if "cookie" not in getattr(req, "headers_in", {}):
         return {}
 
     cookies = req.headers_in["cookie"]
-    if type(cookies) == type([]):
+    if isinstance(cookies, list):
         cookies = '; '.join(cookies)
 
-    return Class.parse(cookies, **kw)
+    return cls.parse(cookies, **kw)
 
-def get_cookie(req, name, Class=Cookie, **kw):
-    cookies = get_cookies(req, Class, names=[name], **kw)
+
+def get_cookie(req, name, cls=Cookie, **kw):
+    cookies = get_cookies(req, cls, names=[name], **kw)
     if name in cookies:
         return cookies[name]
 
@@ -859,8 +853,8 @@ def handle_file_post(req, allowed_mimetypes=None):
     the_file = os.fdopen(fd, 'w')
     ## Let's read the file
     while True:
-        chunk = req.read(max(10240, clen))
-        if len(chunk) < clen:
+        chunk = req.read(min(10240, clen))
+        if len(chunk) < min(10240, clen):
             ## We expected to read at least clen (which is different than 0)
             ## but chunk was shorter! Gosh! Error! Panic!
             the_file.close()

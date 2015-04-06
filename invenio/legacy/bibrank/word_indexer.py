@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 __revision__ = "$Id$"
 
@@ -41,12 +41,12 @@ from invenio.modules.ranker.registry import configuration
 
 options = {} # global variable to hold task options
 
-## safety parameters concerning DB thread-multiplication problem:
+# safety parameters concerning DB thread-multiplication problem:
 CFG_CHECK_MYSQL_THREADS = 0 # to check or not to check the problem?
 CFG_MAX_MYSQL_THREADS = 50 # how many threads (connections) we consider as still safe
 CFG_MYSQL_THREAD_TIMEOUT = 20 # we'll kill threads that were sleeping for more than X seconds
 
-## override urllib's default password-asking behaviour:
+# override urllib's default password-asking behaviour:
 class MyFancyURLopener(urllib.FancyURLopener):
     def prompt_user_passwd(self, host, realm):
         # supply some dummy credentials by default
@@ -63,7 +63,7 @@ nb_char_in_line = 50  # for verbose pretty printing
 chunksize = 1000 # default size of chunks that the records will be treated by
 base_process_size = 4500 # process base size
 
-## Dictionary merging functions
+# Dictionary merging functions
 def dict_union(list1, list2):
     "Returns union of the two dictionaries."
     union_dict = {}
@@ -547,6 +547,14 @@ class WordTable:
         write_message("%s fetching existing words for records #%d-#%d ended" % \
                 (self.tablename, low, high), verbose=3)
 
+    def check_bad_words(self):
+        """
+        Finds bad words in reverse tables. Returns the number of bad words.
+        """
+        query = """SELECT count(1) FROM %sR WHERE type IN ('TEMPORARY','FUTURE')""" % (self.tablename[:-1])
+        res = run_sql(query)
+        return res[0][0]
+
     def report_on_table_consistency(self):
         """Check reverse words index tables (e.g. rnkWORD01R) for
         interesting states such as 'TEMPORARY' state.
@@ -560,56 +568,27 @@ class WordTable:
         else:
             nb_words = 0
 
-        # find number of records:
-        query = """SELECT COUNT(DISTINCT(id_bibrec)) FROM %sR""" % (self.tablename[:-1])
-        res = run_sql(query, None, 1)
-        if res:
-            nb_records = res[0][0]
-        else:
-            nb_records = 0
-
         # report stats:
-        write_message("%s contains %d words from %d records" % (self.tablename, nb_words, nb_records))
+        write_message("%s contains %d words" % (self.tablename, nb_words))
 
         # find possible bad states in reverse tables:
-        query = """SELECT COUNT(DISTINCT(id_bibrec)) FROM %sR WHERE type <> 'CURRENT'""" % (self.tablename[:-1])
-        res = run_sql(query)
-        if res:
-            nb_bad_records = res[0][0]
-        else:
-            nb_bad_records = 999999999
-        if nb_bad_records:
-            write_message("EMERGENCY: %s needs to repair %d of %d index records" % \
-                (self.tablename, nb_bad_records, nb_records))
+        nb_bad_words = self.check_bad_words()
+        if nb_bad_words:
+            write_message("EMERGENCY: %s needs to repair %d of %d index records" %
+                          (self.tablename, nb_bad_words, nb_words))
         else:
             write_message("%s is in consistent state" % (self.tablename))
-
-        return nb_bad_records
 
     def repair(self):
         """Repair the whole table"""
         # find possible bad states in reverse tables:
-        query = """SELECT COUNT(DISTINCT(id_bibrec)) FROM %sR WHERE type <> 'CURRENT'""" % (self.tablename[:-1])
-        res = run_sql(query, None, 1)
-        if res:
-            nb_bad_records = res[0][0]
-        else:
-            nb_bad_records = 0
-
-        # find number of records:
-        query = """SELECT COUNT(DISTINCT(id_bibrec)) FROM %sR""" % (self.tablename[:-1])
-        res = run_sql(query)
-        if res:
-            nb_records = res[0][0]
-        else:
-            nb_records = 0
-
-        if nb_bad_records == 0:
+        if self.check_bad_words() == 0:
             return
-        query = """SELECT id_bibrec FROM %sR WHERE type <> 'CURRENT' ORDER BY id_bibrec""" \
+
+        query = """SELECT id_bibrec FROM %sR WHERE type in ('TEMPORARY','FUTURE')""" \
                 % (self.tablename[:-1])
-        res = run_sql(query)
-        recIDs = create_range_list([row[0] for row in res])
+        res = intbitset(run_sql(query))
+        recIDs = create_range_list(list(res))
 
         flush_count = 0
         records_done = 0
@@ -973,6 +952,14 @@ def update_rnkWORD(table, terms):
     """Updates rnkWORDF and rnkWORDR with Gi and Nj values. For each term in rnkWORDF, a Gi value for the term is added. And for each term in each document, the Nj value for that document is added. In rnkWORDR, the Gi value for each term in each document is added. For description on how things are computed, look in the hacking docs.
     table - name of forward index to update
     terms - modified terms"""
+    from invenio.config import CFG_SITE_URL
+
+    zero_division_msg = """\
+ERROR: %s captured. This might be caused by not enough balanced indexes.
+Please, schedule a regular, e.g. weekly, rebalancing of the word similarity
+ranking indexes, by using e.g.
+"bibrank -f50000 -R -wwrd -s14d -LSunday"
+as recommended in %s/help/admin/howto-run"""
 
     stime = time.time()
     Gi = {}
@@ -1111,7 +1098,8 @@ def update_rnkWORD(table, terms):
                         (serialize_via_marshal(doc_terms), j))
             except (ZeroDivisionError, OverflowError) as e:
                 ## This is to try to isolate division by zero errors.
-                register_exception(prefix="Error when analysing the record %s (%s): %s\n" % (j, repr(docs_terms), e), alert_admin=True)
+                write_message(zero_division_msg % (e, CFG_SITE_URL), stream=sys.stderr)
+                register_exception(prefix=zero_division_msg % (e, CFG_SITE_URL), alert_admin=True)
         write_message("Phase 4: ......processed %s/%s records" % ((i+5000>len(records) and len(records) or (i+5000)), len(records)))
         i += 5000
     write_message("Phase 4: Finished calculating normalization value for all affected records and updating %sR" % table[:-1])
@@ -1136,7 +1124,8 @@ def update_rnkWORD(table, terms):
                 run_sql("UPDATE %s SET hitlist=%%s WHERE term=%%s" % table,
                         (serialize_via_marshal(term_docs), t))
             except (ZeroDivisionError, OverflowError) as e:
-                register_exception(prefix="Error when analysing the term %s (%s): %s\n" % (t, repr(terms_docs), e), alert_admin=True)
+                write_message(zero_division_msg % (e, CFG_SITE_URL), stream=sys.stderr)
+                register_exception(prefix=zero_division_msg % (e, CFG_SITE_URL), alert_admin=True)
         write_message("Phase 5: ......processed %s/%s terms" % ((i+5000>len(terms) and len(terms) or (i+5000)), len(terms)))
         i += 5000
     write_message("Phase 5:  Finished updating %s with new normalization values" % table)

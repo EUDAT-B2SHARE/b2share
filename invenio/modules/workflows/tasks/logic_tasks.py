@@ -1,38 +1,45 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""
-Set of workflow logic tasks.
-"""
+"""Set of workflow logic tasks."""
+
+from six import callable
+from functools import wraps
 
 
 def foreach(get_list_function=None, savename=None, cache_data=False, order="ASC"):
-    """
+    """Simple for each without memory of previous state.
 
-    :param get_list_function:
-    :param savename:
-    :param cache_data:
-    :param order:
-    :return:
+    :param get_list_function: function returning the list on which we should
+    iterate.
+    :param savename: name of variable to save the current loop state in the
+    extra_data in case you want to reuse the value somewhere in a task.
+    :param cache_data: can be True or False in case of True, the list will be
+    cached in memory instead of being recomputed everytime. In case of caching
+    the list is no more dynamic.
+    :param order: because we should iterate over a list you can choose in which
+    order you want to iterate over your list from start to end(ASC) or from end
+    to start (DSC).
     """
     if order not in ["ASC", "DSC"]:
         order = "ASC"
 
+    @wraps(foreach)
     def _foreach(obj, eng):
         my_list_to_process = []
         step = str(eng.getCurrTaskId())
@@ -88,18 +95,20 @@ def foreach(get_list_function=None, savename=None, cache_data=False, order="ASC"
             new_vector[coordonatex] = coordonatey + 2
             eng.setPosition(eng.getCurrObjId(), new_vector)
 
+    _foreach.hide = True
     return _foreach
 
 
 def simple_for(inita, enda, incrementa, variable_name=None):
-    """
+    """Simple for going from inita to enda by step of incrementa.
+
     :param inita: the starting value
     :param enda: the ending value
     :param incrementa: the increment of the value for each iteration
     :param variable_name: if needed the name in extra_data where we want to store
     the value
     """
-
+    @wraps(simple_for)
     def _simple_for(obj, eng):
 
         init = inita
@@ -139,15 +148,12 @@ def simple_for(inita, enda, incrementa, variable_name=None):
             new_vector[coordonatex] = coordonatey + 2
             eng.setPosition(eng.getCurrObjId(), new_vector)
 
+    _simple_for.hide = True
     return _simple_for
 
 
 def end_for(obj, eng):
-    """
-
-    :param obj:
-    :param eng:
-    """
+    """Workflow task indicating the end of a for(each) loop."""
     coordonatex = len(eng.getCurrTaskId()) - 1
     coordonatey = eng.getCurrTaskId()[coordonatex]
     new_vector = eng.getCurrTaskId()
@@ -155,32 +161,29 @@ def end_for(obj, eng):
     eng.setPosition(eng.getCurrObjId(), new_vector)
 
 
+end_for.hide = True
+
+
 def execute_if(fun, *args):
-    """
-
-    :param fun:
-    :param args:
-    :return:
-    """
-
+    """Simple conditional execution task."""
+    @wraps(execute_if)
     def _execute_if(obj, eng):
         for rule in args:
             res = rule(obj, eng)
             if not res:
                 eng.jumpCallForward(1)
         fun(obj, eng)
-
+    _execute_if.hide = True
     return _execute_if
 
 
 def workflow_if(cond, neg=False):
-    """
+    """Simple if statement.
 
-    :param cond:
-    :param neg:
-    :return:
+    The goal of this function is to allow the creation of if else statement
+    without the use of lambda and get a safer way.
     """
-
+    @wraps(workflow_if)
     def _workflow_if(obj, eng):
         conda = cond
         while callable(conda):
@@ -204,14 +207,16 @@ def workflow_if(cond, neg=False):
             new_vector[coordonatex] = coordonatey + 1
             eng.setPosition(eng.getCurrObjId(), new_vector)
 
+    _workflow_if.hide = True
+    _workflow_if.branch = True
     return _workflow_if
 
 
 def workflow_else(obj, eng):
-    """
+    """Simple else statement.
 
-    :param obj:
-    :param eng:
+    The goal of this function is to allow the creation of if else statement
+    without the use of lambda and get a safer way.
     """
     coordonatex = len(eng.getCurrTaskId()) - 1
     coordonatey = eng.getCurrTaskId()[coordonatex]
@@ -227,8 +232,12 @@ def workflow_else(obj, eng):
         eng.setPosition(eng.getCurrObjId(), new_vector)
 
 
+workflow_else.hide = True
+workflow_else.branch = True
+
+
 def compare_logic(a, b, op):
-    """
+    """Task that can be used in if or something else to compare two values.
 
     :param a: value A to compare
     :param b: value B to compare
@@ -240,8 +249,7 @@ def compare_logic(a, b, op):
     - lte A lesser than or equal B
     :return: Boolean: result of the test
     """
-
-
+    @wraps(compare_logic)
     def _compare_logic(obj, eng):
         my_a = a
         my_b = b
@@ -281,6 +289,5 @@ def compare_logic(a, b, op):
                     return False
         else:
             return False
-
-
+    _compare_logic.hide = True
     return _compare_logic

@@ -1,76 +1,66 @@
 {#
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
 {# Base template for preview
-##
-## Can overwrite previewer/top.html
-## and previewer/bottom.html.
-## Base has a bottom and Embed has
-## top and bottom.
-##
-## For preview templates you can replace block head
-## and body when extending this base.
+#
+# Can overwrite previewer/top.html
+# and previewer/bottom.html.
+# Base has a bottom and Embed has
+# top and bottom.
+#
+# For preview templates you can replace block head
+# and body when extending this base.
 #}
 
-{# Global CSS files #}
-{%- css url_for('static', filename='css/bootstrap.css'), '00-invenio' -%}
-{%- css url_for('static', filename='css/bootstrap-responsive.min.css'), '00-invenio' -%}
-{%- css url_for('static', filename='css/token-input.css'), '00-invenio' -%}
-{%- css url_for('static', filename='css/token-input-facebook.css'), '00-invenio' -%}
-
-{# Global Javascript files #}
-{%- js url_for('static', filename='js/jquery.js'), '00-invenio' -%}
-{%- js url_for('static', filename='js/jquery-migrate.js'), '00-invenio' -%}
-{%- js url_for('static', filename='js/bootstrap.js'), '00-invenio' -%}
-{%- js url_for('static', filename='js/jquery.tokeninput.js'), '00-invenio' -%}
-{%- js url_for('static', filename='js/invenio.js'), '00-invenio' -%}
-
+{%- block global_bundles %}
+  {%- include "base/bundles.html" %}
+{%- endblock %}
 
 <!DOCTYPE html>
 <html>
   <head>
     <title>Preview</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% for bundle in get_css_bundle(iterate=True) %}
-    {% assets bundle %}
-      <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}"></link>
-    {% endassets %}
-    {% endfor %}
-
-    {% for bundle in get_js_bundle(iterate=True) %}
-    {% assets bundle %}
-      <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {% endassets %}
-    {% endfor %}
-
+    {%- block _top_assets %}
+      {%- block global_stylesheets %}
+        {%- include "base/stylesheets.html" %}
+      {%- endblock %}
+    {%- endblock %}
+    {%- block css %}{% endblock %}
     {% block head %}
     {% endblock %}
   </head>
   <body>
       {# currently still has a wrapper div to use when pushing bottom to the bottom #}
-      <div id="wrap">
+
         {% if embed %}
           {% include 'previewer/top.html' %}
         {% endif %}
         {% block body %}
         {% endblock %}
-      </div>
+
       {% include 'previewer/bottom.html' %}
   </body>
+  {%- block _bottom_assets %}
+    {% block global_scripts %}
+      {%- include "base/scripts.html" %}
+    {% endblock %}
+  {%- endblock %}
+  {%- block javascript %}{% endblock %}
 </html>

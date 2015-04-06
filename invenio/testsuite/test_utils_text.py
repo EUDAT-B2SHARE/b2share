@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2008, 2009, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Unit tests for the textutils library."""
 
@@ -28,17 +28,15 @@ try:
 except ImportError:
     CHARDET_AVAILABLE = False
 
-try:
-    from unidecode import unidecode
-    UNIDECODE_AVAILABLE = True
-except ImportError:
-    UNIDECODE_AVAILABLE = False
+from unidecode import unidecode
 
 from invenio.base.wrappers import lazy_import
 from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
 
 decode_to_unicode = lazy_import('invenio.utils.text:decode_to_unicode')
+escape_latex = lazy_import('invenio.utils.text:escape_latex')
 guess_minimum_encoding = lazy_import('invenio.utils.text:guess_minimum_encoding')
+show_diff = lazy_import('invenio.utils.text:show_diff')
 strip_accents = lazy_import('invenio.utils.text:strip_accents')
 translate_latex2unicode = lazy_import('invenio.utils.text:translate_latex2unicode')
 translate_to_ascii = lazy_import('invenio.utils.text:translate_to_ascii')
@@ -439,19 +437,19 @@ class Latex2UnicodeTest(InvenioTestCase):
 
 class TestStripping(InvenioTestCase):
     """Test for stripping functions like accents and control characters."""
-    if UNIDECODE_AVAILABLE:
-        def test_text_to_ascii(self):
-            """textutils - transliterate to ascii using unidecode"""
-            self.assertEqual(translate_to_ascii(
-                ["á í Ú", "H\xc3\xb6hne", "Åge Øst Vær", "normal"]),
-                ["a i U", "Hohne", "Age Ost Vaer", "normal"]
-            )
-            self.assertEqual(translate_to_ascii("àèéìòù"), ["aeeiou"])
-            self.assertEqual(translate_to_ascii(None), None)
-            self.assertEqual(translate_to_ascii([]), [])
-            self.assertEqual(translate_to_ascii([None]), [None])
-    else:
-        pass
+    def test_text_to_ascii(self):
+        """textutils - transliterate to ascii using unidecode"""
+        self.assert_(translate_to_ascii(
+            ["á í Ú", "H\xc3\xb6hne", "Åge Øst Vær", "normal"]) in
+            (["a i U", "Hohne", "Age Ost Vaer", "normal"],  ## unidecode < 0.04.13
+                ['a i U', 'Hoehne', 'Age Ost Vaer', 'normal']) ## unidecode >= 0.04.13
+        )
+        self.assertEqual(translate_to_ascii("àèéìòù"), ["aeeiou"])
+        self.assertEqual(translate_to_ascii("ß"), ["ss"])
+        self.assertEqual(translate_to_ascii(None), None)
+        self.assertEqual(translate_to_ascii([]), [])
+        self.assertEqual(translate_to_ascii([None]), [None])
+        self.assertEqual(translate_to_ascii("√"), [""])
 
     def test_strip_accents(self):
         """textutils - transliterate to ascii (basic)"""
@@ -464,23 +462,118 @@ class TestStripping(InvenioTestCase):
         self.assertEqual("OE",
                          strip_accents('Œ'))
 
+class TestDiffering(InvenioTestCase):
+    """Test for differing two strings."""
+
+    string1 = """Lorem ipsum dolor sit amet, consectetur adipiscing
+elit. Donec fringilla tellus eget fringilla sagittis. Pellentesque
+posuere lacus id erat tristique pulvinar. Morbi volutpat, diam
+eget interdum lobortis, lacus mi cursus leo, sit amet porttitor
+neque est vitae lectus. Donec tempor metus vel tincidunt fringilla.
+Nam iaculis lacinia nisl, enim sollicitudin
+convallis. Morbi ut mauris velit. Proin suscipit dolor id risus
+placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet
+dui. Nunc commodo neque porttitor eros placerat, sed ultricies purus
+accumsan. In velit nisi, accumsan molestie gravida a, rutrum in augue.
+Nulla pharetra purus nec dolor ornare, ut aliquam odio placerat.
+Aenean ultrices condimentum quam vitae pharetra."""
+
+    string2 = """Lorem ipsum dolor sit amet, consectetur adipiscing
+elit. Donec fringilla tellus eget fringilla sagittis. Pellentesque
+posuere lacus id erat.
+eget interdum lobortis, lacus mi cursus leo, sit amet porttitor
+neque est vitae lectus. Donec tempor metus vel tincidunt fringilla.
+Nam iaculis lacinia nisl, consectetur viverra enim sollicitudin
+convallis. Morbi ut mauris velit. Proin suscipit dolor id risus
+placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet
+placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet
+dui. Nunc commodo neque porttitor eros placerat, sed ultricies purus
+accumsan. In velit nisi, lorem ipsum lorem gravida a, rutrum in augue.
+Nulla pharetra purus nec dolor ornare, ut aliquam odio placerat.
+Aenean ultrices condimentum quam vitae pharetra."""
+
+    def test_show_diff_plain_text(self):
+        """textutils - show_diff() with plain text"""
+
+        expected_result = """
+ Lorem ipsum dolor sit amet, consectetur adipiscing
+ elit. Donec fringilla tellus eget fringilla sagittis. Pellentesque
+-posuere lacus id erat.
++posuere lacus id erat tristique pulvinar. Morbi volutpat, diam
+ eget interdum lobortis, lacus mi cursus leo, sit amet porttitor
+ neque est vitae lectus. Donec tempor metus vel tincidunt fringilla.
+-Nam iaculis lacinia nisl, consectetur viverra enim sollicitudin
++Nam iaculis lacinia nisl, enim sollicitudin
+ convallis. Morbi ut mauris velit. Proin suscipit dolor id risus
+ placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet
+-placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet
+ dui. Nunc commodo neque porttitor eros placerat, sed ultricies purus
+-accumsan. In velit nisi, lorem ipsum lorem gravida a, rutrum in augue.
++accumsan. In velit nisi, accumsan molestie gravida a, rutrum in augue.
+ Nulla pharetra purus nec dolor ornare, ut aliquam odio placerat.
+ Aenean ultrices condimentum quam vitae pharetra.
+"""
+
+        self.assertEqual(show_diff(self.string1, self.string2), expected_result)
+
+    def test_show_diff_html(self):
+        """textutils - show_diff() with plain text"""
+
+        expected_result = """<pre>
+Lorem ipsum dolor sit amet, consectetur adipiscing
+elit. Donec fringilla tellus eget fringilla sagittis. Pellentesque
+<strong class="diff_field_deleted">posuere lacus id erat.</strong>
+<strong class="diff_field_added">posuere lacus id erat tristique pulvinar. Morbi volutpat, diam</strong>
+eget interdum lobortis, lacus mi cursus leo, sit amet porttitor
+neque est vitae lectus. Donec tempor metus vel tincidunt fringilla.
+<strong class="diff_field_deleted">Nam iaculis lacinia nisl, consectetur viverra enim sollicitudin</strong>
+<strong class="diff_field_added">Nam iaculis lacinia nisl, enim sollicitudin</strong>
+convallis. Morbi ut mauris velit. Proin suscipit dolor id risus
+placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet
+<strong class="diff_field_deleted">placerat sodales nec id elit. Morbi vel lacinia lectus, eget laoreet</strong>
+dui. Nunc commodo neque porttitor eros placerat, sed ultricies purus
+<strong class="diff_field_deleted">accumsan. In velit nisi, lorem ipsum lorem gravida a, rutrum in augue.</strong>
+<strong class="diff_field_added">accumsan. In velit nisi, accumsan molestie gravida a, rutrum in augue.</strong>
+Nulla pharetra purus nec dolor ornare, ut aliquam odio placerat.
+Aenean ultrices condimentum quam vitae pharetra.
+</pre>"""
+
+        self.assertEqual(show_diff(self.string1,
+                                   self.string2,
+                                   prefix="<pre>", suffix="</pre>",
+                                   prefix_unchanged='',
+                                   suffix_unchanged='',
+                                   prefix_removed='<strong class="diff_field_deleted">',
+                                   suffix_removed='</strong>',
+                                   prefix_added='<strong class="diff_field_added">',
+                                   suffix_added='</strong>'), expected_result)
+
 
 class TestALALC(InvenioTestCase):
     """Test for handling ALA-LC transliteration."""
 
-    if UNIDECODE_AVAILABLE:
-        def test_alalc(self):
-            msg = "眾鳥高飛盡"
-            encoded_text, encoding = guess_minimum_encoding(msg)
-            unicode_text = unicode(encoded_text.decode(encoding))
-            self.assertEqual("Zhong Niao Gao Fei Jin ",
-                             transliterate_ala_lc(unicode_text))
+    def test_alalc(self):
+        msg = "眾鳥高飛盡"
+        encoded_text, encoding = guess_minimum_encoding(msg)
+        unicode_text = unicode(encoded_text.decode(encoding))
+        self.assertEqual("Zhong Niao Gao Fei Jin ",
+                            transliterate_ala_lc(unicode_text))
+
+
+class LatexEscape(InvenioTestCase):
+    """Test for escape latex function"""
+
+    def test_escape_latex(self):
+        unescaped = "this is unescaped latex & % $ # _ { } ~  \ ^ and some multi-byte chars: żółw mémêmëmè"
+        escaped = escape_latex(unescaped)
+        self.assertEqual(escaped,
+                         "this is unescaped latex \\& \\% \\$ \\# \\_ \\{ \\} \\~{}  \\textbackslash{} \\^{} and some multi-byte chars: \xc5\xbc\xc3\xb3\xc5\x82w m\xc3\xa9m\xc3\xaam\xc3\xabm\xc3\xa8")
 
 
 TEST_SUITE = make_test_suite(WrapTextInABoxTest, GuessMinimumEncodingTest,
                              WashForXMLTest, WashForUTF8Test, DecodeToUnicodeTest,
                              Latex2UnicodeTest, TestStripping,
-                             TestALALC)
+                             TestALALC, TestDiffering)
 
 
 if __name__ == "__main__":

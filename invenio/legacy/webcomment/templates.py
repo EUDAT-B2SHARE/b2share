@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-## Comments and reviews for records.
+# Comments and reviews for records.
 
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """HTML Templates for commenting features """
 
@@ -31,6 +31,7 @@ from invenio.utils.date import convert_datetext_to_dategui
 from invenio.utils.mail import email_quoted_txt2html
 from invenio.config import CFG_SITE_URL, \
                            CFG_SITE_SECURE_URL, \
+                           CFG_BASE_URL, \
                            CFG_SITE_LANG, \
                            CFG_SITE_NAME, \
                            CFG_SITE_NAME_INTL,\
@@ -72,6 +73,8 @@ class Template:
         c_user_id = 1
         c_date_creation = 2
         c_body = 3
+        c_status = 4
+        c_nb_reports = 5
         c_id = 6
 
         warnings = self.tmpl_warnings(warnings, ln)
@@ -109,10 +112,20 @@ class Template:
                             <td>"""
                 report_link = '%s/%s/%s/comments/report?ln=%s&amp;comid=%s' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, ln, comment[c_id])
                 reply_link = '%s/%s/%s/comments/add?ln=%s&amp;comid=%s&amp;action=REPLY' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, ln, comment[c_id])
-                comment_rows += self.tmpl_get_comment_without_ranking(req=None, ln=ln, nickname=messaging_link, comment_uid=comment[c_user_id],
-                                                                      date_creation=comment[c_date_creation],
-                                                                      body=comment[c_body], status='', nb_reports=0,
-                                                                      report_link=report_link, reply_link=reply_link, recID=recID)
+                comment_rows += self.tmpl_get_comment_without_ranking(
+                    req=None,
+                    ln=ln,
+                    nickname=messaging_link,
+                    comment_uid=comment[c_user_id],
+                    date_creation=comment[c_date_creation],
+                    body=comment[c_body],
+                    status=comment[c_status],
+                    nb_reports=comment[c_nb_reports],
+                    reply_link=reply_link,
+                    report_link=report_link,
+                    recID=recID,
+                    com_id=comment[c_id]
+                )
                 comment_rows += """
                                 <br />
                                 <br />
@@ -174,6 +187,7 @@ class Template:
         Displays a page when bad or missing record ID was given.
         @param status:  'missing'   : no recID was given
                         'inexistant': recID doesn't have an entry in the database
+                        'deleted':  : recID has been deleted
                         'nan'       : recID is not a number
                         'invalid'   : recID is an error code, i.e. in the interval [-99,-1]
         @param return: body of the page
@@ -181,6 +195,8 @@ class Template:
         _ = gettext_set_language(ln)
         if status == 'inexistant':
             body = _("Sorry, the record %(x_rec)s does not seem to exist.", x_rec=(recID,))
+        elif status in ('deleted'):
+            body = _("The record has been deleted.")
         elif status in ('nan', 'invalid'):
             body = _("Sorry, %(x_rec)s is not a valid ID value.", x_rec=(recID,))
         else:
@@ -209,11 +225,13 @@ class Template:
         c_user_id = 1
         c_date_creation = 2
         c_body = 3
-        c_nb_votes_yes = 4
-        c_nb_votes_total = 5
-        c_star_score = 6
-        c_title = 7
-        c_id = 8
+        c_status = 4
+        c_nb_reports = 5
+        c_nb_votes_yes = 6
+        c_nb_votes_total = 7
+        c_star_score = 8
+        c_title = 9
+        c_id = 10
 
         warnings = self.tmpl_warnings(warnings, ln)
 
@@ -257,15 +275,22 @@ class Template:
                         <tr>
                             <td>'''
                 report_link = '%s/%s/%s/reviews/report?ln=%s&amp;comid=%s' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, ln, comment[c_id])
-                comment_rows += self.tmpl_get_comment_with_ranking(None, ln=ln, nickname=messaging_link,
-                                                                   comment_uid=comment[c_user_id],
-                                                                   date_creation=comment[c_date_creation],
-                                                                   body=comment[c_body],
-                                                                   status='', nb_reports=0,
-                                                                   nb_votes_total=comment[c_nb_votes_total],
-                                                                   nb_votes_yes=comment[c_nb_votes_yes],
-                                                                   star_score=comment[c_star_score],
-                                                                   title=comment[c_title], report_link=report_link, recID=recID)
+                comment_rows += self.tmpl_get_comment_with_ranking(
+                    req=None,
+                    ln=ln,
+                    nickname=messaging_link,
+                    comment_uid=comment[c_user_id],
+                    date_creation=comment[c_date_creation],
+                    body=comment[c_body],
+                    status=comment[c_status],
+                    nb_reports=comment[c_nb_reports],
+                    nb_votes_total=comment[c_nb_votes_total],
+                    nb_votes_yes=comment[c_nb_votes_yes],
+                    star_score=comment[c_star_score],
+                    title=comment[c_title],
+                    report_link=report_link,
+                    recID=recID
+                )
                 comment_rows += '''
                               %s %s / %s<br />''' % (_("Was this review helpful?"), useful_yes % {'comid':comment[c_id]}, useful_no % {'comid':comment[c_id]})
                 comment_rows +=  '''
@@ -336,7 +361,7 @@ class Template:
                            write_button_form)
         return out
 
-    def tmpl_get_comment_without_ranking(self, req, ln, nickname, comment_uid, date_creation, body, status, nb_reports, reply_link=None, report_link=None, undelete_link=None, delete_links=None, unreport_link=None, recID=-1, com_id='', attached_files=None, collapsed_p=False):
+    def tmpl_get_comment_without_ranking(self, req, ln, nickname, comment_uid, date_creation, body, status, nb_reports, reply_link=None, report_link=None, undelete_link=None, delete_links=None, unreport_link=None, recID=-1, com_id='', attached_files=None, collapsed_p=False, admin_p=False):
         """
         private function
         @param req: request object to fetch user info
@@ -387,7 +412,7 @@ class Template:
         # Check if user is a comment moderator
         record_primary_collection = guess_primary_collection_of_a_record(recID)
         (auth_code, auth_msg) = acc_authorize_action(user_info, 'moderatecomments', collection=record_primary_collection)
-        if status in ['dm', 'da'] and req:
+        if status in ['dm', 'da'] and not admin_p:
             if not auth_code:
                 if status == 'dm':
                     final_body = '<div class="webcomment_deleted_comment_message">(Comment deleted by the moderator) - not visible for users<br /><br />' +\
@@ -433,7 +458,7 @@ class Template:
 
         toggle_visibility_block = ''
         if not isGuestUser(user_info['uid']):
-            toggle_visibility_block = """<div class="webcomment_toggle_visibility"><a id="collapsible_ctr_%(comid)s" class="%(collapse_ctr_class)s" href="%(toggle_url)s" onclick="return toggle_visibility(this, %(comid)i);" title="%(collapse_label)s"><span style="display:none">%(collapse_label)s</span></a></div>""" % \
+            toggle_visibility_block = """<div class="webcomment_toggle_visibility"><a id="collapsible_ctr_%(comid)s" class="%(collapse_ctr_class)s" href="%(toggle_url)s" onclick="return toggle_visibility(this, %(comid)s);" title="%(collapse_label)s"><span style="display:none">%(collapse_label)s</span></a></div>""" % \
                                     {'comid': com_id,
                                      'toggle_url': create_url(CFG_SITE_URL + '/' + CFG_SITE_RECORD + '/' + str(recID) + '/comments/toggle', {'comid': com_id, 'ln': ln, 'collapse': collapsed_p and '0' or '1', 'referer': user_info['uri']}),
                                      'collapse_ctr_class': collapsed_p and 'webcomment_collapse_ctr_right' or 'webcomment_collapse_ctr_down',
@@ -447,9 +472,9 @@ class Template:
         <div class="webcomment_comment_title">
             %(title)s
             <div class="webcomment_comment_date">%(date)s</div>
-            <a class="webcomment_permalink" title="Permalink to this comment" href="#C%(comid)i">¶</a>
+            <a class="webcomment_permalink" title="Permalink to this comment" href="#C%(comid)s">¶</a>
         </div>
-        <div class="collapsible_content" id="collapsible_content_%(comid)i" style="%(collapsible_content_style)s">
+        <div class="collapsible_content" id="collapsible_content_%(comid)s" style="%(collapsible_content_style)s">
             <blockquote>
         %(body)s
             </blockquote>
@@ -473,7 +498,7 @@ class Template:
                  }
         return out
 
-    def tmpl_get_comment_with_ranking(self, req, ln, nickname, comment_uid, date_creation, body, status, nb_reports, nb_votes_total, nb_votes_yes, star_score, title, report_link=None, delete_links=None, undelete_link=None, unreport_link=None, recID=-1):
+    def tmpl_get_comment_with_ranking(self, req, ln, nickname, comment_uid, date_creation, body, status, nb_reports, nb_votes_total, nb_votes_yes, star_score, title, report_link=None, delete_links=None, undelete_link=None, unreport_link=None, recID=-1, admin_p=False):
         """
         private function
         @param req: request object to fetch user info
@@ -524,7 +549,7 @@ class Template:
         record_primary_collection = guess_primary_collection_of_a_record(recID)
         user_info = collect_user_info(req)
         (auth_code, auth_msg) = acc_authorize_action(user_info, 'moderatecomments', collection=record_primary_collection)
-        if status in ['dm', 'da'] and req:
+        if status in ['dm', 'da'] and not admin_p:
             if not auth_code:
                 if status == 'dm':
                     _body = '<div class="webcomment_deleted_review_message">(Review deleted by moderator) - not visible for users<br /><br />' +\
@@ -555,14 +580,14 @@ class Template:
         out += '''
 <div class="webcomment_review_box">
   <div class="webcomment_review_box_inner">
-    <img src="%(siteurl)s/img/%(star_score_img)s" alt="%(star_score)s/>
+    <img src="%(baseurl)s/img/%(star_score_img)s" alt="%(star_score)s/>
       <div class="webcomment_review_title">%(title)s</div>
       <div class="webcomment_review_label_reviewed">%(reviewed_label)s</div>
       <div class="webcomment_review_label_useful">%(useful_label)s</div>
   %(body)s
   </div>
 </div>
-%(abuse)s''' % {'siteurl'        : CFG_SITE_URL,
+%(abuse)s''' % {'baseurl'      : CFG_BASE_URL,
                'star_score_img': star_score_img,
                'star_score'    : star_score,
                'title'         : cgi.escape(title),
@@ -655,7 +680,7 @@ class Template:
             c_visibility = 14
             discussion = 'reviews'
             comments_link = '<a href="%s/%s/%s/comments/">%s</a> (%i)' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, _('Comments'), total_nb_comments)
-            reviews_link = '<b>%s (%i)</b>' % (_('Reviews'), total_nb_reviews)
+            reviews_link = '<strong>%s (%i)</strong>' % (_('Reviews'), total_nb_reviews)
             add_comment_or_review = self.tmpl_add_comment_form_with_ranking(recID, uid, current_user_fullname or nickname, ln, '', score, note, warnings, show_title_p=True, can_attach_files=can_attach_files)
         else:
             c_nickname = 0
@@ -670,7 +695,7 @@ class Template:
             reply_to = 9
             c_visibility = 10
             discussion = 'comments'
-            comments_link = '<b>%s (%i)</b>' % (_('Comments'), total_nb_comments)
+            comments_link = '<strong>%s (%i)</strong>' % (_('Comments'), total_nb_comments)
             reviews_link = '<a href="%s/%s/%s/reviews/">%s</a> (%i)' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, _('Reviews'), total_nb_reviews)
             add_comment_or_review = self.tmpl_add_comment_form(recID, uid, nickname, ln, note, warnings, can_attach_files=can_attach_files, user_is_subscribed_to_discussion=user_is_subscribed_to_discussion)
 
@@ -906,10 +931,12 @@ class Template:
 
         write_button_link = '''%s/%s/%s/%s/add''' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, discussion)
         write_button_form = '<input type="hidden" name="ln" value="%s"/>'
-        write_button_form = self.createhiddenform(action=write_button_link,
-                                                  method="get",
-                                                  text=write_button_form,
-                                                  button = reviews and _('Write a review') or _('Write a comment'))
+        write_button_form = self.createhiddenform(
+            action=write_button_link,
+            method="get",
+            text=write_button_form,
+            button=reviews and _('Write a review') or _('Write a comment')
+        )
 
         if reviews:
             total_label = _("There is a total of %(x_num)s reviews", x_num=total_nb_comments)
@@ -917,42 +944,101 @@ class Template:
             total_label = _("There is a total of %(x_num)s comments", x_num=total_nb_comments)
         #total_label %= total_nb_comments
 
-        review_or_comment_first = ''
-        if reviews == 0 and total_nb_comments == 0 and can_send_comments:
-            review_or_comment_first = _("Start a discussion about any aspect of this document.") + '<br />'
-        elif reviews == 1 and total_nb_reviews == 0 and can_send_comments:
-            review_or_comment_first = _("Be the first to review this document.") + '<br />'
+        review_or_comment_first = ""
+        if not reviews and total_nb_comments == 0 and can_send_comments:
+            review_or_comment_first = \
+                "<p>" + \
+                _("Start a discussion about any aspect of this document.") + \
+                "</p>"
+        elif reviews and total_nb_reviews == 0 and can_send_comments:
+            review_or_comment_first = \
+                "<p>" + \
+                _("Be the first to review this document.") + \
+                "</p>"
+
+        subscription_link = ""
+        if not reviews:
+            if not user_is_subscribed_to_discussion:
+                subscription_link = \
+                    '<p class="comment-subscribe">' + \
+                    '<img src="%s/img/mail-icon-12x8.gif" border="0" alt="" />' % CFG_SITE_URL + \
+                    '&nbsp;' + \
+                    '<strong>' + \
+                    create_html_link(
+                        urlbase=CFG_SITE_URL +
+                        '/' +
+                        CFG_SITE_RECORD +
+                        '/' +
+                        str(recID) +
+                        '/comments/subscribe',
+                        urlargd={},
+                        link_label=_('Subscribe')) + \
+                    '</strong>' + \
+                    ' to this discussion. You will then receive all new comments by email.' + \
+                    '</p>'
+            elif user_can_unsubscribe_from_discussion:
+                subscription_link = \
+                    '<p class="comment-subscribe">' + \
+                    '<img src="%s/img/mail-icon-12x8.gif" border="0" alt="" />' % CFG_SITE_URL + \
+                    '&nbsp;' + \
+                    '<strong>' + \
+                    create_html_link(
+                        urlbase=CFG_SITE_URL +
+                        '/' +
+                        CFG_SITE_RECORD +
+                        '/' +
+                        str(recID) +
+                        '/comments/unsubscribe',
+                        urlargd={},
+                        link_label=_('Unsubscribe')) + \
+                    '</strong>' + \
+                    ' from this discussion. You will no longer receive emails about new comments.' + \
+                    '</p>'
 
         # do NOT remove the HTML comments below. Used for parsing
         body = '''
 %(comments_and_review_tabs)s
+%(subscription_link_before)s
 <!-- start comments table -->
 <div class="webcomment_comment_table">
   %(comments_rows)s
 </div>
 <!-- end comments table -->
 %(review_or_comment_first)s
-<br />''' % \
-        {   'record_label': _("Record"),
+%(subscription_link_after)s
+''' % {
+            'record_label': _("Record"),
             'back_label': _("Back to search results"),
             'total_label': total_label,
-            'write_button_form' : write_button_form,
-            'write_button_form_again' : total_nb_comments>3 and write_button_form or "",
-            'comments_rows'             : comments_rows,
-            'total_nb_comments'         : total_nb_comments,
-            'comments_or_reviews'       : reviews and _('review') or _('comment'),
-            'comments_or_reviews_title' : reviews and _('Review') or _('Comment'),
-            'siteurl'                    : CFG_SITE_URL,
-            'module'                    : "comments",
-            'recid'                     : recID,
-            'ln'                        : ln,
-            #'border'                    : border,
-            'ranking_avg'               : ranking_average,
-            'comments_and_review_tabs'  : CFG_WEBCOMMENT_ALLOW_REVIEWS and \
-                                       CFG_WEBCOMMENT_ALLOW_COMMENTS and \
-                                       '%s | %s <br />' % \
-                                       (comments_link, reviews_link) or '',
-            'review_or_comment_first'   : review_or_comment_first
+            'write_button_form': write_button_form,
+            'write_button_form_again':
+                total_nb_comments > 3 and
+                write_button_form or
+                "",
+            'comments_rows': comments_rows,
+            'total_nb_comments': total_nb_comments,
+            'comments_or_reviews': reviews and _('review') or _('comment'),
+            'comments_or_reviews_title':
+                reviews and
+                _('Review') or
+                _('Comment'),
+            'siteurl': CFG_SITE_URL,
+            'module': "comments",
+            'recid': recID,
+            'ln': ln,
+            # 'border': border,
+            'ranking_avg': ranking_average,
+            'comments_and_review_tabs':
+                CFG_WEBCOMMENT_ALLOW_REVIEWS and
+                CFG_WEBCOMMENT_ALLOW_COMMENTS and
+                '<p>%s&nbsp;|&nbsp;%s</p>' % (comments_link, reviews_link) or
+                "",
+            'review_or_comment_first': review_or_comment_first,
+            'subscription_link_before':
+                not reviews and
+                total_nb_comments != 0 and
+                subscription_link or "",
+            'subscription_link_after': subscription_link
         }
 
         # form is not currently used. reserved for an eventual purpose
@@ -1008,24 +1094,6 @@ class Template:
             body = warnings + body + pages
         else:
             body = warnings + body
-
-        if reviews == 0:
-            if not user_is_subscribed_to_discussion:
-                body += '<div class="comment-subscribe">' + '<img src="%s/img/mail-icon-12x8.gif" border="0" alt="" />' % CFG_SITE_URL + \
-                        '&nbsp;' + '<b>' + create_html_link(urlbase=CFG_SITE_URL + '/'+ CFG_SITE_RECORD +'/' + \
-                                                            str(recID) + '/comments/subscribe',
-                                                            urlargd={},
-                                                            link_label=_('Subscribe')) + \
-                        '</b>' + ' to this discussion. You will then receive all new comments by email.' + '</div>'
-                body += '<br />'
-            elif user_can_unsubscribe_from_discussion:
-                body += '<div class="comment-subscribe">' + '<img src="%s/img/mail-icon-12x8.gif" border="0" alt="" />' % CFG_SITE_URL + \
-                        '&nbsp;' + '<b>' + create_html_link(urlbase=CFG_SITE_URL + '/'+ CFG_SITE_RECORD +'/' + \
-                                                            str(recID) + '/comments/unsubscribe',
-                                                            urlargd={},
-                                                            link_label=_('Unsubscribe')) + \
-                        '</b>' + ' from this discussion. You will no longer receive emails about new comments.' + '</div>'
-                body += '<br />'
 
         if can_send_comments:
             body += add_comment_or_review
@@ -1346,10 +1414,10 @@ class Template:
         elif score == 5:
             selected5 = ' selected="selected"'
 
-##         file_upload_url = None
-##         if can_attach_files:
-##             file_upload_url = '%s/%s/%i/comments/attachments/put' % \
-##                               (CFG_SITE_URL, CFG_SITE_RECORD, recID)
+#         file_upload_url = None
+#         if can_attach_files:
+#             file_upload_url = '%s/%s/%i/comments/attachments/put' % \
+#                               (CFG_SITE_URL, CFG_SITE_RECORD, recID)
 
         editor = get_html_text_editor(name='msg',
                                       content=msg,
@@ -1911,7 +1979,8 @@ class Template:
                                                                    cmt_tuple[5],#nb_votes_total
                                                                    cmt_tuple[4],#nb_votes_yes
                                                                    cmt_tuple[6],#star_score
-                                                                   cmt_tuple[7]))#title
+                                                                   cmt_tuple[7],#title
+                                                                   admin_p=True))
             else:
                 comments.append(self.tmpl_get_comment_without_ranking(None,#request object
                                                                       ln,
@@ -1927,8 +1996,8 @@ class Template:
                                                                       None,        #delete_links
                                                                       None,        #unreport_link
                                                                       -1,          # recid
-                                                                      cmt_tuple[4] # com_id
-                                                                      ))
+                                                                      cmt_tuple[4],# com_id
+                                                                      admin_p=True))
             users.append(self.tmpl_admin_user_info(ln,
                                                    meta_data[0], #nickname
                                                    meta_data[1], #uid
@@ -2110,7 +2179,7 @@ class Template:
 
         _ = gettext_set_language(ln)
 
-        url = '%s/%s/%s/reviews/add?ln=%s&amp;action=%s' % (CFG_SITE_URL, CFG_SITE_RECORD, recID, ln, action)
+        url = '%s/%s/%s/reviews/add?ln=%s&amp;action=%s' % (CFG_BASE_URL, CFG_SITE_RECORD, recID, ln, action)
 
         if avg_score > 0:
             score = _("Average review score: %(x_nb_score)s based on %(x_nb_reviews)s reviews") % \
@@ -2335,6 +2404,8 @@ class Template:
         # load the right message language
         _ = gettext_set_language(ln)
 
+        from invenio.legacy.search_engine import record_exists
+
         your_comments_order_by_options = (('ocf', _("Oldest comment first")),
                                           ('lcf', _("Latest comment first")),
                                           ('grof', _("Group by record, oldest commented first")),
@@ -2436,14 +2507,17 @@ class Template:
                     # Close previous group
                     out += "</div></div>"
                     nb_record_groups += 1
-                #You might want to hide this information if user does
-                #not have access, though it would make sense that he
-                #can at least know on which page is comment appears..
+                # You might want to hide this information if user does
+                # not have access, though it would make sense that he
+                # can at least know on which page his comment appears..
+                if record_exists(id_bibrec) == -1:
+                    record_info_html = '<em>%s</em>' % _("The record has been deleted.")
+                else:
+                    record_info_html = format_record(id_bibrec, of="HS")
                 out += '''<div class="yourcommentsrecordgroup" id="yourcomments-record-group-%(recid)s">
                 <div class="yourcommentsrecordgroup%(recid)sheader">&#149; ''' % {'recid': id_bibrec} + \
-                       format_record(id_bibrec, of="HS") + '</div><div style="padding-left: 20px;">'
+                       record_info_html + '</div><div style="padding-left: 20px;">'
             if selected_display_format_option != 'ro':
-
                 final_body = email_quoted_txt2html(body)
                 title = '<a name="C%s" id="C%s"></a>' % (comid, comid)
                 if status == "dm":

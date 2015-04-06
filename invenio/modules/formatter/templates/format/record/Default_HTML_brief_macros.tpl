@@ -1,20 +1,20 @@
 {#
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
 {% macro render_record_footer(number_of_displayed_authors) %}
@@ -59,7 +59,7 @@
          |
         <a href="{{ url_for('comments.comments', recid=recid) }}">
           <i class="glyphicon glyphicon-comment"></i>
-          {{ _("%i comments") % num_comments if num_comments > 1 else _("1 comment") }}
+          {{ _("%(x_num_of_comments)i comments", x_num_of_comments=num_comments if num_comments > 1 else _("1 comment")) }}
         </a>
         {%- endif -%}
       {%- endif -%}
@@ -71,7 +71,7 @@
          |
         <a href="{{ url_for('comments.reviews', recid=recid) }}">
           <i class="glyphicon glyphicon-eye-open"></i>
-          {{ _("%i reviews") % num_reviews if num_reviews > 1 else _("1 review") }}
+          {{ _("%(x_num_of_reviews)i reviews", x_num_of_reviews=num_reviews if num_reviews > 1 else _("1 review")) }}
         </a>
         {%- endif -%}
       {%- endif -%}

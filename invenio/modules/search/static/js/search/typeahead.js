@@ -38,7 +38,8 @@
   }
 
   searchField - jQuery selector
-  value_hints_url - url for getting remote queries - other than keywords e.g. authors
+  value_hints_url - url for getting remote queries - other than keywords
+    e.g. authors
   options_sets - syntax schema, there can be many of them switched with custom keywords
   default_set - default options set, used when the typeahead field is empty
 
@@ -145,9 +146,13 @@
  *
  */
 
-!function( $ ){
-
-  "use strict"
+define([
+  'jquery',
+  'js/search/search_parser',
+  'typeahead', // $.fn.typeahead()
+  'jquery-caret',
+], function($, SearchParser, Bloodhound) {
+  "use strict";
 
   function SearchTypeahead(element, options) {
 
@@ -166,7 +171,7 @@
 
     this.parser = new SearchParser(this.options.options_sets, this.options.default_set);
 
-    this.init();
+    this.initTypeahead();
 
     this.ttTypeahead = this.$element.data("ttTypeahead");
 
@@ -178,7 +183,7 @@
 
     this.ttTypeahead.input.setInputValue = function(value, silent) {
       return that.setInputFieldValue.apply(that, [value, silent]);
-    }
+    };
 
     // update parser state on input event
     this.$element.on('input', function(event) {
@@ -188,18 +193,22 @@
 
     // disable grey hint in input field background - not compatible yet
     // with this kind of typeahead
-    this.ttTypeahead.input.setHintValue = function(value) {}
+    this.ttTypeahead.input.setHintValue = function(value) {};
+
+    // sets initial query_range
+    this.parser.reparseSource(this.$element.val());
+    this.query_range = this.parser.getQueryRangeIdx(this.$element.val().length);
   }
 
-  var plugin_object_class = SearchTypeahead;
-  var data_key = 'search_typeahead';
+  var PluginClass = SearchTypeahead;
+  var dataLabel = 'search_typeahead';
 
   SearchTypeahead.prototype = {
 
     /**
      * Setups the typeahead element
      */
-    init: function() {
+    initTypeahead: function() {
 
       var that = this;
 
@@ -223,7 +232,6 @@
         options.indices = this.createIndices(engine, options.keywords);
       }
 
-      var that = this;
       engine.get = function(field_value, cb) {
         return that.getHints(field_value, cb, this);
       };
@@ -232,7 +240,7 @@
 
       this.$element.typeahead({
         // min length is controlled in getHints function
-        // this setting is to pass by everything
+        // this setting is to pass everything
         minLength: 1
       },
       {
@@ -277,7 +285,7 @@
         var method = keywords[method_key];
         for (var word_type in method) {
           var conf = method[word_type];
-          if (conf.values == undefined)
+          if (conf.values === undefined)
             continue;
 
           var index = deepCopy(engine.index);
@@ -350,8 +358,6 @@
     getHints: function(field_value, cb, bloodhound) {
       var matches = [];
 
-      this.i = 1;
-
       var caretIdx = this.$element.caret();
 
       this.parser.updateSource(field_value, caretIdx);
@@ -359,7 +365,13 @@
       var query = this.parser.getAutocompleteQuery(
         this.query_range.start, caretIdx);
 
-      var options_set = this.options.options_sets[this.parser.getOptionsSetName()];
+      // saves the current query inside typeahead to prevent improper text
+      // merging on blur
+      this.ttTypeahead.input.setQuery(query.value);
+
+      var options_set = this.options.options_sets[
+        this.parser.getOptionsSetName()
+      ];
 
       if (!query.type) {
         cb && cb([]);
@@ -410,9 +422,10 @@
      * from typeahead
      *
      * @param {String} to_merge the value to be merged
+     * @param {*} query_range
      * @returns {string} merged string
      */
-    mergeWithCurrentValue: function(to_merge, query_range) {
+    mergeWithCurrentInputFieldValue: function(to_merge, query_range) {
       var input_field_value = this.$element.val();
 
       var precedingStr = input_field_value.slice(
@@ -420,19 +433,34 @@
       var followingStr = input_field_value.slice(
         query_range.end, input_field_value.length);
 
-      if (precedingStr[precedingStr.length - 1] == '"'
-        && to_merge[0] == '"')
-          precedingStr = precedingStr.slice(0, precedingStr.length - 1);
+      if (precedingStr[precedingStr.length - 1] == '"' &&
+          to_merge[0] == '"') {
+        precedingStr = precedingStr.slice(0, precedingStr.length - 1);
+      }
 
       return precedingStr + to_merge + followingStr;
     },
 
     /**
+     * Checks if the input field is focused.
+     *
+     * @returns {boolean}
+     * @private
+     */
+    _isFocused: function() {
+      return !!this.$element.filter($(document.activeElement)).length;
+    },
+
+    /**
      * Does all the tricks which need to be done at setting
-     * value of the input field
+     * a value of the input field.
+     *
+     * It is run also by resetInputValue from twitter's typeahead.js on blur
+     * event.
      *
      * @param {String} value typeahead suggestion
-     * @param silent corresponding Typeahead JS parameter
+     * @param silent corresponding twitter's typeahead parameter - see
+     *   twitter typeahead documentation
      * @returns {*}
      */
     setInputFieldValue: function(value, silent) {
@@ -442,11 +470,12 @@
         bracketedValue = bracketStr(value);
       }
 
-      var merged = this.mergeWithCurrentValue(bracketedValue, this.query_range);
-      if (this.ttTypeahead.input.getQuery() == value)
-        this.ttTypeahead.input.setQuery(merged);
+      var merged = this.mergeWithCurrentInputFieldValue(
+        bracketedValue, this.query_range);
 
       // run original setInputValue with merged value
+      // must be run before setting the caret position as the caret position
+      // should be updated after updating the value of the input field
       var result = this.orgTypeahead.setInputValue.call(
         this.ttTypeahead.input, merged, silent);
 
@@ -454,12 +483,21 @@
       this.query_range.end =
         this.query_range.start + bracketedValue.length;
 
-      // set caret position
-      var new_caret_pos = this.query_range.end;
-      this.$element.caret(new_caret_pos);
+      // update the parser until the end of the typed and autocompleted part of
+      // the query
+      this.parser.updateSource(merged, this.query_range.end);
 
-      // update parser
-      this.parser.updateSource(merged, new_caret_pos);
+      // To set the caret position the element must be focused, otherwise
+      // $.fn.caret focuses it which is not the desired result on blur event.
+      // When the element is not focused we don't care about the caret position
+      // update. In this situation a focus event by pressing Tab button selects
+      // the whole text, whereas focus by clicking moves the caret to the click
+      // position, so the caret position is not stored anyway.
+      if (this._isFocused())
+        // if a user types and just autocompleted, move the caret to the end of
+        // the autocompleted part
+        this.$element.caret(this.query_range.end);
+
       return result;
 
       function bracketStr(str) {
@@ -479,23 +517,28 @@
      * @param {String} new_value new value to set
      */
     setFieldValue: function(new_value) {
-      this.$element.val(new_value)
+      this.$element.val(new_value);
       this.ttTypeahead.input.setQuery(new_value);
     }
-  }
+  };
 
-  $.fn.searchTypeahead = function ( option ) {
-    return this.each(function () {
-      var $this = $(this)
-        , data = $this.data(data_key)
-        , options = typeof option == 'object' && option
-      if (!data) $this.data(data_key, (data = new plugin_object_class(this, options)))
-      if (typeof option == 'string') data[option]()
-    })
-  }
+  $.fn.searchTypeahead = function (option) {
 
-  $.fn.searchTypeahead.defaults = {}
+    var $elements = this;
 
-  $.fn.searchTypeahead.Constructor = plugin_object_class;
+    return $elements.map(function (idx, element) {
+      var $element = $(element);
+      var object = $element.data(dataLabel)
+      var options = typeof option == 'object' && option;
+      // attach jQuery plugin
+      if (!object) {
+        object = new PluginClass($element, options)
+        $element.data(dataLabel, object)
+      }
+      return object;
+    });
+  };
 
-}( window.jQuery )
+  $.fn.searchTypeahead.defaults = {};
+
+});

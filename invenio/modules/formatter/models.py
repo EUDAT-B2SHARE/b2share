@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 #
-## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
     invenio.modules.formatter.models
@@ -39,11 +39,13 @@ class Format(db.Model):
 
     name = db.Column(db.String(255), nullable=False)
 
-    code = db.Column(db.String(6), nullable=False, unique=True)
+    code = db.Column(db.String(20), nullable=False, unique=True)
 
     description = db.Column(db.String(255), server_default='')
 
     content_type = db.Column(db.String(255), server_default='')
+
+    mime_type = db.Column(db.String(255), unique=True, nullable=True)
 
     visibility = db.Column(
         db.TinyInteger(4),
@@ -126,9 +128,6 @@ class Formatname(db.Model):
 class Bibfmt(db.Model):
     """Represents a Bibfmt record."""
 
-    def __init__(self):
-        pass
-
     __tablename__ = 'bibfmt'
 
     id_bibrec = db.Column(
@@ -146,6 +145,13 @@ class Bibfmt(db.Model):
         primary_key=True,
         index=True)
 
+    kind = db.Column(
+        db.String(10),
+        nullable=False,
+        server_default='',
+        index=True
+        )
+
     last_updated = db.Column(
         db.DateTime,
         nullable=False,
@@ -153,6 +159,8 @@ class Bibfmt(db.Model):
         index=True)
 
     value = db.Column(db.iLargeBinary)
+
+    needs_2nd_pass = db.Column(db.TinyInteger(1), server_default='0')
 
     bibrec = db.relationship(Bibrec, backref='bibfmt')
 

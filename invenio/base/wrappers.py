@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of Invenio.
-## Copyright (C) 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-Implement the Flask application wrapper.
+Implements the Flask application wrapper.
 
 The function :func:`~flask.url_for` in standard :class:`~flask.Flask`
 application changes only protocol for secure sites from 'http' to 'https'.
@@ -32,16 +32,16 @@ Configuration:
 +-----------------------+-----------------------------------------------------+
 | `CFG_SITE_URL`        | specify URL under which your installation will be   |
 |                       | visible.  For example, use "http://your.site.com".  |
-|                       | Do not leave trailing slash.                        |
+|                       | Do not leave the trailing slash.                    |
 +-----------------------+-----------------------------------------------------+
-| `CFG_SITE_SECURE_URL` | specify secure URL under which your installation    |
+| `CFG_SITE_SECURE_URL` | specify secure URL under which your installation's  |
 |                       | secure pages such as login or registration will be  |
 |                       | visible.  For example, use "https://your.site.com". |
-|                       | Do not leave trailing slash. If you don't plan on   |
+|                       | Do not leave the trailing slash. If you don't plan  |
 |                       | using HTTPS, then you may leave this empty.         |
 +-----------------------+-----------------------------------------------------+
 
-Following example shows how to make http and https url scheme look the
+The following example shows how to make http and https url scheme look the
 same.
 
 .. doctest::

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Unit tests for dateutils library."""
 
@@ -24,24 +24,17 @@ __revision__ = "$Id$"
 
 import datetime
 import calendar
-from time import struct_time, strptime
+import time
+import os
+
+from time import mktime, strptime, tzset, struct_time
 
 import invenio.utils.date as dateutils
-#FIXME
-#from invenio.config import CFG_SITE_LANGS
-CFG_SITE_LANGS = ['en', 'sk']
 from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
 
-if 'en' in CFG_SITE_LANGS:
-    lang_english_configured = True
-else:
-    lang_english_configured = False
-
-if 'sk' in CFG_SITE_LANGS:
-    lang_slovak_configured = True
-else:
-    lang_slovak_configured = False
-
+# FIXME check if the languages are configured
+lang_english_configured = True
+lang_slovak_configured = True
 
 def format_timestamp(t):
     return t.strftime("%Y-%m-%d %H:%M:%S")
@@ -107,18 +100,21 @@ class ConvertIntoDateGUITest(InvenioTestCase):
         def test_convert_bad_to_dategui_en(self):
             """dateutils - conversion of bad text date into English GUI date"""
             datetext = "2006-02-AA 18:36:01"
-            dategui_sk_expected = "N/A"
-            dategui_sk = dateutils.convert_datetext_to_dategui(datetext,
+            dategui_en_expected = "N/A"
+            dategui_en = dateutils.convert_datetext_to_dategui(datetext,
                                                                ln='en')
-            self.assertEqual(dategui_sk, dategui_sk_expected)
+            self.assertEqual(dategui_en, dategui_en_expected)
 
     if lang_slovak_configured:
         def test_convert_bad_to_dategui_sk(self):
             """dateutils - conversion of bad text date into Slovak GUI date"""
+            from invenio.base.i18n import gettext_set_language
+            ln = 'sk'
+            _ = gettext_set_language(ln)
             datetext = "2006-02-AA 18:36:01"
-            dategui_sk_expected = "nepríst."
+            dategui_sk_expected = _('N/A')
             dategui_sk = dateutils.convert_datetext_to_dategui(datetext,
-                                                               ln='sk')
+                                                               ln=ln)
             self.assertEqual(dategui_sk, dategui_sk_expected)
 
 
@@ -155,21 +151,21 @@ class ConvertDateStructIntoGUI(InvenioTestCase):
     if lang_slovak_configured:
         def test_convert_datestruct_to_dategui_sk(self):
             expected = '16 júl 2005, 15:11'
-            struct = struct_time((2005, 7, 16, 15, 11, 44, 2, 320, 0))
+            struct = struct_time((2005, 7, 16, 15, 11, 44, 2, 320, 1))
             result = dateutils.convert_datestruct_to_dategui(struct, "sk")
             self.assertEqual(expected, result)
 
         def test_convert_incomplete_datestruct_to_dategui_sk(self):
-                expected = 'nepríst.'
-                struct = struct_time((0, 11, 16, 15, 11, 44, 2, 320, 0))
-                result = dateutils.convert_datestruct_to_dategui(struct, "sk")
-                self.assertEqual(expected, result)
+            expected = 'nepríst.'
+            struct = struct_time((0, 11, 16, 15, 11, 44, 2, 320, 0))
+            result = dateutils.convert_datestruct_to_dategui(struct, "sk")
+            self.assertEqual(expected, result)
 
         def test_convert_buggy_datestruct_to_dategui_sk(self):
-                expected = 'nepríst.'
-                struct = struct_time((-1, 11, 16, 15, 11, 44, 2, 320, 0))
-                result = dateutils.convert_datestruct_to_dategui(struct, "sk")
-                self.assertEqual(expected, result)
+            expected = 'nepríst.'
+            struct = struct_time((-1, 11, 16, 15, 11, 44, 2, 320, 0))
+            result = dateutils.convert_datestruct_to_dategui(struct, "sk")
+            self.assertEqual(expected, result)
 
 
 class ParseRuntimeLimitTest(InvenioTestCase):
@@ -261,6 +257,67 @@ class ParseRuntimeLimitTest(InvenioTestCase):
         result = dateutils.parse_runtime_limit(limit)
         self.assertEqual(expected, result)
 
+    def test_parse_runtime_limit_days_only(self):
+        """dateutils - parse runtime using just inside a week range"""
+        limit = 'Mon-Fri'
+        now = datetime.datetime(year=2000, month=1, day=3)
+        present_from = now
+        present_to = now + datetime.timedelta(days=1)
+        future_from = present_from + datetime.timedelta(days=1)
+        future_to = present_to + datetime.timedelta(days=1)
+        expected = (
+            (present_from, present_to),
+            (future_from, future_to),
+        )
+        result = dateutils.parse_runtime_limit(limit, now=now)
+        self.assertEqual(expected, result)
+
+    def test_parse_runtime_limit_days_only_2(self):
+        """dateutils - parse runtime using just outside week range"""
+        limit = 'Mon-Fri'
+        now = datetime.datetime(year=2000, month=1, day=1)
+        present_from = now + datetime.timedelta(days=2)
+        present_to = now + datetime.timedelta(days=3)
+        future_from = present_from + datetime.timedelta(days=1)
+        future_to = present_to + datetime.timedelta(days=1)
+        expected = (
+            (present_from, present_to),
+            (future_from, future_to),
+        )
+        result = dateutils.parse_runtime_limit(limit, now=now)
+        self.assertEqual(expected, result)
+
+    def test_parse_runtime_limit_days_only_3(self):
+        """dateutils - parse runtime using just at the end of a week range"""
+        limit = 'Mon-Fri'
+        now = datetime.datetime(year=2000, month=1, day=7)
+        present_from = now
+        present_to = now + datetime.timedelta(days=1)
+        future_from = now + datetime.timedelta(days=3)
+        future_to = now + datetime.timedelta(days=4)
+        expected = (
+            (present_from, present_to),
+            (future_from, future_to),
+        )
+        result = dateutils.parse_runtime_limit(limit, now=now)
+        self.assertEqual(expected, result)
+
+    def test_parse_runtime_limit_days_times(self):
+        """dateutils - parse runtime using just a week range"""
+        limit = 'Mon-Fri 06:00-18:00'
+        now = datetime.datetime(year=2000, month=1, day=3)
+        day = now.date()
+        t = now.time()
+        present_from = datetime.datetime.combine(day, t.replace(hour=6))
+        present_to = datetime.datetime.combine(day, t.replace(hour=18))
+        future_from = present_from + datetime.timedelta(days=1)
+        future_to = present_to + datetime.timedelta(days=1)
+        expected = (
+            (present_from, present_to),
+            (future_from, future_to),
+        )
+        result = dateutils.parse_runtime_limit(limit, now=now)
+        self.assertEqual(expected, result)
 
 class STRFTimeTest(InvenioTestCase):
     """Testing support of datest before 1900 for function strftime"""
@@ -274,20 +331,17 @@ class STRFTimeTest(InvenioTestCase):
     def test_strftime_date_under_1900(self):
         test_date = "3.1.1765"
         expected = "Thu, 03 Jan 1765 00:00:00 +0000"
-        result = dateutils.strftime("%a, %d %b %Y %H:%M:%S +0000",
-                                    strptime(test_date, "%d.%m.%Y"))
+        result = dateutils.strftime("%a, %d %b %Y %H:%M:%S +0000", strptime(test_date, "%d.%m.%Y"))
         self.assertEqual(expected, result)
 
     def test_strftime_date_over_1900_object(self):
-        test_date = datetime.date(1908, 3, 12)
         expected = "Thu, 12 Mar 1908 00:00:00 +0000"
-        result = dateutils.strftime("%a, %d %b %Y %H:%M:%S +0000", test_date)
+        result = dateutils.strftime("%a, %d %b %Y %H:%M:%S +0000", datetime.date(1908, 3, 12))
         self.assertEqual(expected, result)
 
     def test_strftime_date_under_1900_object(self):
-        test_date = datetime.date(1765, 1, 3)
         expected = "Thu, 03 Jan 1765 00:00:00 +0000"
-        result = dateutils.strftime("%a, %d %b %Y %H:%M:%S +0000", test_date)
+        result = dateutils.strftime("%a, %d %b %Y %H:%M:%S +0000", datetime.date(1765, 1, 3))
         self.assertEqual(expected, result)
 
 
@@ -336,14 +390,81 @@ class DateTimeTest(InvenioTestCase):
         self.assertEqual(expected, dt.date())
 
 
-TEST_SUITE = make_test_suite(ConvertDateStructIntoGUI,
-                             ConvertFromDateCVSTest,
+class LocaltimeToUTCTest(InvenioTestCase):
+    """
+    Testing transformation between localtime to utc time
+    """
+    def setUp(self):
+        if 'TZ' in os.environ:
+            self.old_timezone = os.environ['TZ']
+        else:
+            self.old_timezone = None
+
+    def tearDown(self):
+        if self.old_timezone is None:
+            del os.environ['TZ']
+        else:
+            os.environ['TZ'] = self.old_timezone
+        tzset()
+
+    def test_localtime_to_utc_cet(self):
+        os.environ['TZ'] = 'Europe/Oslo'
+        tzset()
+
+        expected = "2012-06-12T14:15:00Z"
+        result = dateutils.localtime_to_utc("2012-06-12 16:15:00")
+        self.assertEqual(expected, result)
+
+        expected = "2012-12-12T15:15:00Z"
+        result = dateutils.localtime_to_utc("2012-12-12 16:15:00")
+        self.assertEqual(expected, result)
+
+    def test_localtime_to_utc_uk(self):
+        os.environ['TZ'] = 'Europe/London'
+        tzset()
+
+        expected = "2012-06-12T15:15:00Z"
+        result = dateutils.localtime_to_utc("2012-06-12 16:15:00")
+        self.assertEqual(expected, result)
+
+        expected = "2012-12-12T16:15:00Z"
+        result = dateutils.localtime_to_utc("2012-12-12 16:15:00")
+        self.assertEqual(expected, result)
+
+    def test_utc_to_localtime_cet(self):
+        os.environ['TZ'] = 'Europe/Oslo'
+        tzset()
+
+        expected = "2012-06-12 16:15:00"
+        result = dateutils.utc_to_localtime("2012-06-12T14:15:00Z")
+        self.assertEqual(expected, result)
+
+        expected = "2012-12-12 16:15:00"
+        result = dateutils.utc_to_localtime("2012-12-12T15:15:00Z")
+        self.assertEqual(expected, result)
+
+    def test_utc_to_localtime_uk(self):
+        os.environ['TZ'] = 'Europe/London'
+        tzset()
+
+        expected = "2012-06-12 16:15:00"
+        result = dateutils.utc_to_localtime("2012-06-12T15:15:00Z")
+        self.assertEqual(expected, result)
+
+        expected = "2012-12-12 16:15:00"
+        result = dateutils.utc_to_localtime("2012-12-12T16:15:00Z")
+        self.assertEqual(expected, result)
+
+
+TEST_SUITE = make_test_suite(ConvertFromDateCVSTest,
                              ConvertIntoDateGUITest,
                              ConvertIntoDateStructTest,
                              ParseRuntimeLimitTest,
                              STRFTimeTest,
                              DateTest,
-                             DateTimeTest)
+                             DateTimeTest,
+                             LocaltimeToUTCTest,
+                             )
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
 #
-## This file is part of Invenio.
-## Copyright (C) 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-    invenio.ext.sqlalchemy
-    ----------------------
+    invenio.ext.sqlalchemy.
 
     This module provides initialization and configuration for
     `flask.ext.sqlalchemy` module.
 """
+
 import sqlalchemy
 
 from flask.ext.registry import RegistryProxy, ModuleAutoDiscoveryRegistry
@@ -37,10 +37,15 @@ from invenio.utils.hash import md5
 from .expressions import AsBINARY
 from .types import MarshalBinary, PickleBinary, GUID
 from .utils import get_model_type
+from invenio.ext.sqlalchemy.types import (LegacyInteger, LegacyMediumInteger,
+                                          LegacySmallInteger,
+                                          LegacyTinyInteger,
+                                          LegacyBigInteger)
 
 
 def _include_sqlalchemy(obj, engine=None):
-    #for module in sqlalchemy, sqlalchemy.orm:
+    """Init all required SQLAlchemy's types."""
+    # for module in sqlalchemy, sqlalchemy.orm:
     #    for key in module.__all__:
     #        if not hasattr(obj, key):
     #            setattr(obj, key,
@@ -54,7 +59,7 @@ def _include_sqlalchemy(obj, engine=None):
     # Length is provided to JSONType to ensure MySQL uses LONGTEXT instead
     # of TEXT which only provides for 64kb storage compared to 4gb for
     # LONGTEXT.
-    setattr(obj, 'JSON', JSONType(length=2**32-2))
+    setattr(obj, 'JSON', JSONType(length=2 ** 32 - 2))
     setattr(obj, 'Char', engine_types.CHAR)
     try:
         setattr(obj, 'TinyText', engine_types.TINYTEXT)
@@ -65,22 +70,16 @@ def _include_sqlalchemy(obj, engine=None):
         setattr(obj, 'Double', engine_types.DOUBLE)
     except:
         setattr(obj, 'Double', engine_types.FLOAT)
-    setattr(obj, 'Integer', engine_types.INTEGER)
-    setattr(obj, 'SmallInteger', engine_types.SMALLINT)
-    try:
-        setattr(obj, 'MediumInteger', engine_types.MEDIUMINT)
-    except:
-        setattr(obj, 'MediumInteger', engine_types.INT)
-    setattr(obj, 'BigInteger', engine_types.BIGINT)
-    try:
-        setattr(obj, 'TinyInteger', engine_types.TINYINT)
-    except:
-        setattr(obj, 'TinyInteger', engine_types.INT)
     setattr(obj, 'Binary', sqlalchemy.types.LargeBinary)
     setattr(obj, 'iBinary', sqlalchemy.types.LargeBinary)
     setattr(obj, 'iLargeBinary', sqlalchemy.types.LargeBinary)
     setattr(obj, 'iMediumBinary', sqlalchemy.types.LargeBinary)
     setattr(obj, 'UUID', GUID)
+    setattr(obj, 'Integer', LegacyInteger)
+    setattr(obj, 'MediumInteger', LegacyMediumInteger)
+    setattr(obj, 'SmallInteger', LegacySmallInteger)
+    setattr(obj, 'TinyInteger', LegacyTinyInteger)
+    setattr(obj, 'BigInteger', LegacyBigInteger)
 
     if engine == 'mysql':
         from .engines import mysql as dummy_mysql  # noqa
@@ -89,13 +88,6 @@ def _include_sqlalchemy(obj, engine=None):
     #        setattr(obj, key,
     #                getattr(module, key))
 
-    def default_enum(f):
-        def decorated(*args, **kwargs):
-            kwargs['native_enum'] = engine == 'mysql'  # False
-            return f(*args, **kwargs)
-        return decorated
-
-    obj.Enum.__init__ = default_enum(obj.Enum.__init__)
     obj.AsBINARY = AsBINARY
     obj.MarshalBinary = MarshalBinary
     obj.PickleBinary = PickleBinary
@@ -111,11 +103,34 @@ def _include_sqlalchemy(obj, engine=None):
     obj.MutableDict = MutableDict
 
 
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy import types
+import sqlalchemy.dialects.postgresql
+
+
+@compiles(types.Text, 'postgresql')
+@compiles(sqlalchemy.dialects.postgresql.TEXT, 'postgresql')
+def compile_text(element, compiler, **kw):
+    """Redefine Text filed type for PostgreSQL."""
+    return 'TEXT'
+
+
+@compiles(types.VARBINARY, 'postgresql')
+def compile_text(element, compiler, **kw):
+    """Redefine VARBINARY filed type for PostgreSQL."""
+    return 'BYTEA'
+
+
 class PasswordComparator(Comparator):
+
+    """Implement a password comparator."""
+
     def __eq__(self, other):
+        """Implement the equal operator."""
         return self.__clause_element__() == self.hash(other)
 
     def hash(self, password):
+        """Generate a hashed version of the password."""
         if db.engine.name != 'mysql':
             return md5(password).digest()
         email = self.__clause_element__().table.columns.email
@@ -123,61 +138,84 @@ class PasswordComparator(Comparator):
 
 
 def autocommit_on_checkin(dbapi_con, con_record):
-    """Calls autocommit on raw mysql connection for fixing bug in MySQL 5.5"""
+    """Call autocommit on raw mysql connection for fixing bug in MySQL 5.5."""
     try:
         dbapi_con.autocommit(True)
     except:
         pass
-        #FIXME
-        #from invenio.ext.logging import register_exception
-        #register_exception()
+        # FIXME
+        # from invenio.ext.logging import register_exception
+        # register_exception()
 
-## Possibly register globally.
-#event.listen(Pool, 'checkin', autocommit_on_checkin)
+# Possibly register globally.
+# event.listen(Pool, 'checkin', autocommit_on_checkin)
 
 
 class SQLAlchemy(FlaskSQLAlchemy):
+
     """Database object."""
 
     PasswordComparator = PasswordComparator
 
     def init_app(self, app):
+        """Init application."""
         super(self.__class__, self).init_app(app)
         engine = app.config.get('CFG_DATABASE_TYPE', 'mysql')
         self.Model = get_model_type(self.Model)
         if engine == 'mysql':
-            self.Model.__table_args__ = {'keep_existing':    True,
-                                         'extend_existing':  False,
-                                         'mysql_engine':     'MyISAM',
-                                         'mysql_charset':    'utf8'}
+            # Override MySQL parameters to force MyISAM engine
+            mysql_parameters = {'keep_existing': True,
+                                'extend_existing': False,
+                                'mysql_engine': 'MyISAM',
+                                'mysql_charset': 'utf8'}
+
+            original_table = self.Table
+
+            def table_with_myisam(*args, **kwargs):
+                """Use same MySQL parameters that are used for ORM models."""
+                new_kwargs = dict(mysql_parameters)
+                new_kwargs.update(kwargs)
+                return original_table(*args, **new_kwargs)
+
+            self.Table = table_with_myisam
+            self.Model.__table_args__ = mysql_parameters
 
         _include_sqlalchemy(self, engine=engine)
 
     def __getattr__(self, name):
-        # This is only called when the normal mechanism fails, so in practice
-        # should never be called.
-        # It is only provided to satisfy pylint that it is okay not to
-        # raise E1101 errors in the client code.
-        # :see http://stackoverflow.com/a/3515234/780928
+        """
+        Called when the normal mechanism fails.
+
+        This is only called when the normal mechanism fails,
+        so in practice should never be called.
+        It is only provided to satisfy pylint that it is okay not to
+        raise E1101 errors in the client code.
+
+        :see http://stackoverflow.com/a/3515234/780928
+        """
         raise AttributeError("%r instance has no attribute %r" % (self, name))
 
     def schemadiff(self, excludeTables=None):
+        """Generate a schema diff."""
         from migrate.versioning import schemadiff
-        return schemadiff.getDiffOfModelAgainstDatabase(self.metadata,
-                                                        self.engine,
-                                                        excludeTables=excludeTables)
+        return schemadiff \
+            .getDiffOfModelAgainstDatabase(self.metadata,
+                                           self.engine,
+                                           excludeTables=excludeTables)
 
     def apply_driver_hacks(self, app, info, options):
-        """
-        This method is called before engine creation.
-        """
+        """Called before engine creation."""
         # Don't forget to apply hacks defined on parent object.
         super(self.__class__, self).apply_driver_hacks(app, info, options)
         if info.drivername == 'mysql':
-            options.setdefault('execution_options', {'autocommit': True,
-                                                     'use_unicode': False,
-                                                     'charset': 'utf8mb4',
-                                                     })
+            options.setdefault('execution_options', {
+                # Autocommit cause Exception in SQLAlchemy >= 0.9.
+                # @see http://docs.sqlalchemy.org/en/rel_0_9/
+                #   core/connections.html#understanding-autocommit
+                # 'autocommit': True,
+                'use_unicode': False,
+                'charset': 'utf8mb4',
+            })
             event.listen(Pool, 'checkin', autocommit_on_checkin)
 
 
@@ -202,7 +240,7 @@ def setup_app(app):
             host=cfg.get('CFG_DATABASE_HOST'),
             database=cfg.get('CFG_DATABASE_NAME'),
             port=cfg.get('CFG_DATABASE_PORT'),
-            )
+        )
 
     ## Let's initialize database.
     db.init_app(app)

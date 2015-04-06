@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 invenio.modules.pid_store.models
@@ -25,6 +25,7 @@ PersistentIdentifier store and registration.
 
 Usage example for registering new identifiers::
 
+    from flask import url_for
     from invenio.modules.pidstore.models import PersistentIdentifier
 
     # Reserve a new DOI internally first
@@ -36,7 +37,7 @@ Usage example for registering new identifiers::
     # Assign it to a record.
     pid.assign('rec', 1234)
 
-    url = "http://www.zenodo.org/record/1234"
+    url = url_for("record.metadata", recid=1234, _external=True)
     doc = "<resource ...."
 
     # Pre-reserve the DOI in DataCite
@@ -138,7 +139,7 @@ class PersistentIdentifier(db.Model):
 
         try:
             obj = cls(pid_type=provider.pid_type,
-                      pid_value=pid_value,
+                      pid_value=provider.create_new_pid(pid_value),
                       pid_provider=pid_provider,
                       status=cfg['PIDSTORE_STATUS_NEW'])
             obj._provider = provider
@@ -149,7 +150,6 @@ class PersistentIdentifier(db.Model):
         except SQLAlchemyError:
             db.session.rollback()
             obj.log("CREATE", "Failed to created. Already exists.")
-            return None
             return None
 
     @classmethod

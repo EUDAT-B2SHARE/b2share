@@ -1,45 +1,50 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""WebAccount Forms"""
+"""WebAccount Forms."""
 
-from wtforms.validators import Required
 from flask.ext.login import current_user
 from flask.ext.wtf import Form, validators
-from wtforms.fields import SubmitField, BooleanField, TextField, \
-    TextAreaField, PasswordField, HiddenField
-from sqlalchemy.exc import SQLAlchemyError
-from flask.ext.login import current_user
 
-from invenio.base.i18n import _
 from invenio.base.globals import cfg
+from invenio.base.i18n import _
 from invenio.legacy.webuser import email_valid_p
 from invenio.utils.forms import InvenioBaseForm
+
+from sqlalchemy.exc import SQLAlchemyError
+
+from wtforms.fields import BooleanField, HiddenField, PasswordField, \
+    StringField, SubmitField
+from wtforms.validators import DataRequired
+
 from .models import User
-from .validators import wash_login_method, validate_nickname_or_email, \
-    validate_email, validate_nickname
+from .validators import validate_email, validate_nickname, \
+    validate_nickname_or_email, wash_login_method
 
 
 class LoginForm(Form):
-    nickname = TextField(
+
+    """Login Form."""
+
+    nickname = StringField(
         _("Nickname"),
-        validators=[Required(message=_("Nickname not provided")),
+        validators=[DataRequired(message=_("Nickname not provided")),
                     validate_nickname_or_email])
     password = PasswordField(_("Password"))
     remember = BooleanField(_("Remember Me"))
@@ -48,13 +53,18 @@ class LoginForm(Form):
     submit = SubmitField(_("Sign in"))
 
     def validate_login_method(self, field):
+        """Validate login_method."""
         field.data = wash_login_method(field.data)
 
 
 class ChangeUserEmailSettingsForm(InvenioBaseForm):
-    email = TextField(_("New email"))
+
+    """Form to change user email settings."""
+
+    email = StringField(_("New email"))
 
     def validate_email(self, field):
+        """Validate email."""
         field.data = field.data.lower()
         if validate_email(field.data.lower()) != 1:
             raise validators.ValidationError(
@@ -66,7 +76,8 @@ class ChangeUserEmailSettingsForm(InvenioBaseForm):
         try:
             User.query.filter(User.email == field.data).one()
             raise validators.ValidationError(
-                _("Supplied email address %(email)s already exists in the database.", email=field.data)
+                _("Supplied email address %(email)s already exists "
+                  "in the database.", email=field.data)
             )
         except SQLAlchemyError:
             pass
@@ -84,9 +95,13 @@ class ChangeUserEmailSettingsForm(InvenioBaseForm):
 
 
 class LostPasswordForm(InvenioBaseForm):
-    email = TextField(_("Email address"))
+
+    """Form to recover lost password."""
+
+    email = StringField(_("Email address"))
 
     def validate_email(self, field):
+        """Validate email."""
         field.data = field.data.lower()
         if email_valid_p(field.data) != 1:
             raise validators.ValidationError(
@@ -105,21 +120,26 @@ class LostPasswordForm(InvenioBaseForm):
 
 
 class ChangePasswordForm(InvenioBaseForm):
+
+    """Form to change password."""
+
     current_password = PasswordField(_("Current password"),
                                      description=_("Your current password"))
     password = PasswordField(
         _("New password"),
-        description=
-        _("The password phrase may contain punctuation, spaces, etc."))
+        description=_("The password phrase may contain punctuation, "
+                      "spaces, etc."))
     password2 = PasswordField(_("Confirm new password"),)
 
     def validate_current_password(self, field):
+        """Validate current password."""
         from invenio.ext.login import authenticate
         if not authenticate(current_user['nickname'], field.data):
             raise validators.ValidationError(
                 _("Password mismatch."))
 
     def validate_password(self, field):
+        """Validate password."""
         min_length = cfg['CFG_ACCOUNT_MIN_PASSWORD_LENGTH']
         if len(field.data) < min_length:
             raise validators.ValidationError(
@@ -127,21 +147,22 @@ class ChangePasswordForm(InvenioBaseForm):
                   x_pass=min_length))
 
     def validate_password2(self, field):
+        """Validate password2."""
         if field.data != self.password.data:
             raise validators.ValidationError(_("Both passwords must match."))
 
 
 class RegisterForm(Form):
-    """
-    User registration form
-    """
-    email = TextField(
+
+    """User registration form."""
+
+    email = StringField(
         _("Email address"),
-        validators=[Required(message=_("Email not provided"))],
+        validators=[DataRequired(message=_("Email not provided"))],
         description=_("Example") + ": john.doe@example.com")
-    nickname = TextField(
+    nickname = StringField(
         _("Nickname"),
-        validators=[Required(message=_("Nickname not provided"))],
+        validators=[DataRequired(message=_("Nickname not provided"))],
         description=_("Example") + ": johnd")
     password = PasswordField(
         _("Password"),
@@ -155,6 +176,7 @@ class RegisterForm(Form):
     submit = SubmitField(_("Register"))
 
     def validate_nickname(self, field):
+        """Validate nickname."""
         validate_nickname(field.data)
         # is nickname already taken?
         try:
@@ -167,6 +189,7 @@ class RegisterForm(Form):
             pass
 
     def validate_email(self, field):
+        """Validate email."""
         field.data = field.data.lower()
         validate_email(field.data.lower())
         # is email already taken?
@@ -180,6 +203,7 @@ class RegisterForm(Form):
             pass
 
     def validate_password(self, field):
+        """Validate password."""
         min_length = cfg['CFG_ACCOUNT_MIN_PASSWORD_LENGTH']
         if len(field.data) < min_length:
             raise validators.ValidationError(
@@ -187,5 +211,6 @@ class RegisterForm(Form):
                   x_pass=min_length))
 
     def validate_password2(self, field):
+        """Validate password2."""
         if field.data != self.password.data:
             raise validators.ValidationError(_("Both passwords must match."))

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""HTML Templates for BibKnowledge administration"""
+"""HTML Templates for BibKnowledge administration."""
 
 __revision__ = ""
 
@@ -29,7 +29,7 @@ import cgi
 from invenio.base.i18n import gettext_set_language
 from invenio.config import CFG_SITE_URL, CFG_WEBDIR
 
-MAX_MAPPINGS = 100 #show max this number of mappings on one page
+MAX_MAPPINGS = 100  # show max this number of mappings on one page
 
 
 class Template:
@@ -230,7 +230,7 @@ class Template:
 
         if 'expression' in dyn_config:
             expression = dyn_config['expression']
-        if 'collection' in dyn_config:
+        if 'collection' in dyn_config and dyn_config['collection']:
             collection = dyn_config['collection']
 
         pleaseconf = _("Please configure")+"<P>"
@@ -245,7 +245,7 @@ class Template:
                          will be created.")+"<br/>"
         pleaseconf += _("If the expression is empty, a list of all values \
                          in 270__a will be created.")+"<br/>"
-        pleaseconf += _("If the expression contains '%', like '270__a:*%*', \
+        pleaseconf += _("If the expression contains '%%', like '270__a:*%%*', \
                          it will be replaced by a search string when the \
                          knowledge base is used.")+"<br/><br/>"
         pleaseconf += _("You can enter a collection name if the expression \
@@ -257,7 +257,7 @@ class Template:
                          will be created.")+"<br/><br/>"
         pleaseconf += _("Example 2: Return the institute's name (100__a) when the \
                          user gives its postal code (270__a): \
-                         Set field to 100__a, expression to 270__a:*%*.")+"<br/><br/>"
+                         Set field to 100__a, expression to 270__a:*%%*.")+"<br/><br/>"
         #create a pretty select box
         selectbox = "<select name=\"collection\"><option value=\""+ _("Any collection") +"\">"+_("Any collection")+"</option>"
         for mycoll in collections:

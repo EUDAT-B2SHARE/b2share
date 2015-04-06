@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 urlutils.py -- helper functions for URL related problems such as
@@ -107,6 +107,27 @@ def wash_url_argument(var, new_type):
     return out
 
 
+from urlparse import urlparse, urljoin
+from flask import request, url_for
+
+def is_local_url(target):
+    """Determine if URL is a local."""
+    ref_url = urlparse(cfg.get('CFG_SITE_SECURE_URL'))
+    test_url = urlparse(urljoin(cfg.get('CFG_SITE_SECURE_URL'), target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+
+def get_safe_redirect_target(arg='next'):
+    """Get URL to redirect to and ensure that it is local."""
+    for target in request.args.get(arg), request.referrer:
+        if not target:
+            continue
+        if is_local_url(target):
+            return target
+    return None
+
+
 def redirect_to_url(req, url, redirection_type=None, norobot=False):
     """
     Redirect current page to url.
@@ -125,6 +146,7 @@ def redirect_to_url(req, url, redirection_type=None, norobot=False):
         not to index past this point.
     @see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3
     """
+    url = url.strip()
     if redirection_type is None:
         redirection_type = apache.HTTP_MOVED_TEMPORARILY
 
@@ -306,7 +328,7 @@ def create_html_mailto(email, subject=None, body=None, cc=None, bcc=None,
     NOTE: there is no ultimate solution to protect against email
     harvesting. All have drawbacks and can more or less be
     circumvented. There are other techniques to protect email
-    adresses. We implement the less annoying one for users.
+    addresses. We implement the less annoying one for users.
 
     @param email: the recipient of the email
     @param subject: a default subject for the email (must not contain
@@ -431,12 +453,15 @@ def string_to_numeric_char_reference(string):
         out += "&#" + str(ord(char)) + ";"
     return out
 
-def get_canonical_and_alternates_urls(url, drop_ln=True, washed_argd=None):
+def get_canonical_and_alternates_urls(url, drop_ln=True, washed_argd=None, quote_path=False):
     """
     Given an Invenio URL returns a tuple with two elements. The first is the
     canonical URL, that is the original URL with CFG_SITE_URL prefix, and
     where the ln= argument stripped. The second element element is mapping,
     language code -> alternate URL
+
+    @param quote_path: if True, the path section of the given C{url}
+                       is quoted according to RFC 2396
     """
     dummy_scheme, dummy_netloc, path, dummy_params, query, fragment = urlparse(url)
     canonical_scheme, canonical_netloc = urlparse(cfg.get('CFG_SITE_URL'))[0:2]
@@ -446,6 +471,8 @@ def get_canonical_and_alternates_urls(url, drop_ln=True, washed_argd=None):
         canonical_parsed_query = no_ln_parsed_query
     else:
         canonical_parsed_query = parsed_query
+    if quote_path:
+        path = urllib.quote(path)
     canonical_query = urlencode(canonical_parsed_query)
     canonical_url = urlunparse((canonical_scheme, canonical_netloc, path, dummy_params, canonical_query, fragment))
     alternate_urls = {}
@@ -563,8 +590,8 @@ class InvenioFancyURLopener(FancyURLopener):
         """Don't prompt"""
         return None, None
 
-## Let's override default useragent string
-## See: http://docs.python.org/release/2.4.4/lib/module-urllib.html
+# Let's override default useragent string
+# See: http://docs.python.org/release/2.4.4/lib/module-urllib.html
 urllib._urlopener = LocalProxy(lambda: InvenioFancyURLopener())
 
 def make_invenio_opener(component=None):
@@ -853,3 +880,29 @@ def auto_version_url(file_path):
     except IOError:
         pass
     return file_path + "?%s" % file_md5
+
+def get_relative_url(url):
+    """
+    Returns the relative URL from a URL. For example:
+
+    'http://web.net' -> ''
+    'http://web.net/' -> ''
+    'http://web.net/1222' -> '/1222'
+    'http://web.net/wsadas/asd' -> '/wsadas/asd'
+
+    It will never return a trailing "/".
+
+    @param url: A url to transform
+    @type url: str
+
+    @return: relative URL
+    """
+    # remove any protocol info before
+    stripped_site_url = url.replace("://", "")
+    baseurl = "/" + "/".join(stripped_site_url.split("/")[1:])
+
+    # remove any trailing slash ("/")
+    if baseurl[-1] == "/":
+        return baseurl[:-1]
+    else:
+        return baseurl

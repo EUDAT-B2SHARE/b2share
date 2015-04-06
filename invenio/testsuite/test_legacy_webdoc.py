@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2008, 2009, 2010, 2011, 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """WebDoc module unit tests."""
 
@@ -26,7 +26,7 @@ from invenio.base.globals import cfg
 from invenio.base.wrappers import lazy_import
 from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
 gettext_set_language = lazy_import('invenio.base.i18n:gettext_set_language')
-transform = lazy_import('invenio.legacy.webstyle.webdoc:transform')
+transform = lazy_import('invenio.legacy.webdoc.api:transform')
 
 
 class WebDocLanguageTest(InvenioTestCase):
@@ -136,7 +136,7 @@ class WebDocVariableReplacementTest(InvenioTestCase):
 
         # ?ln=.. is returned only if not cfg['CFG_SITE_LANG']
         result = transform('<lang:link />', languages=[cfg['CFG_SITE_LANG']])
-        self.assertEqual(result[0][1], '')
+        self.assertEqual(result[0][1], '?ln=%s' % cfg['CFG_SITE_LANG'])
 
         result = transform('<lang:link />', languages=['fr'])
         self.assertEqual(result[0][1], '?ln=fr')

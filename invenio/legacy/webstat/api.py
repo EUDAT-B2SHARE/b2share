@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2009, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -37,6 +37,7 @@ from invenio.config import \
      CFG_SITE_LANG, \
      CFG_WEBSTAT_BIBCIRCULATION_START_YEAR
 from invenio.legacy.webstat.config import CFG_WEBSTAT_CONFIG_PATH
+from invenio.legacy.bibindex.engine_utils import get_all_indexes
 from invenio.modules.indexer.tokenizers.BibIndexJournalTokenizer import CFG_JOURNAL_TAG
 from invenio.legacy.search_engine import get_coll_i18nname, \
     wash_index_term
@@ -1090,13 +1091,7 @@ def perform_display_current_system_health(ln=CFG_SITE_LANG):
     # Append records pending
     if conf.get("general", "waiting_box") == "True":
         last_index, last_rank, last_sort, last_coll=get_last_updates()
-        index_categories = ('global', 'collection', 'abstract',
-                            'author', 'keyword', 'reference',
-                            'reportnumber', 'title', 'fulltext',
-                            'year', 'journal', 'collaboration',
-                            'affiliation', 'exactauthor', 'caption',
-                            'firstauthor', 'exactfirstauthor',
-                            'authorcount')
+        index_categories = zip(*get_all_indexes(with_ids=True))[1]
         rank_categories = ('wrd', 'demo_jif', 'citation',
                             'citerank_citation_t',
                             'citerank_pagerank_c',
@@ -1142,11 +1137,7 @@ def perform_display_ingestion_status(req_ingestion, ln=CFG_SITE_LANG):
     @type req_ingestion: str
     """
     # preconfigured values
-    index_methods = ('global', 'collection', 'abstract', 'author', 'keyword',
-                    'reference', 'reportnumber', 'title', 'fulltext',
-                    'year', 'journal', 'collaboration', 'affiliation',
-                    'exactauthor', 'caption', 'firstauthor',
-                    'exactfirstauthor', 'authorcount')
+    index_methods = zip(*get_all_indexes(with_ids=True))[1]
     rank_methods = ('wrd', 'demo_jif', 'citation', 'citerank_citation_t',
                     'citerank_pagerank_c', 'citerank_pagerank_t')
     sort_methods = ('latest first', 'title', 'author', 'report number',
@@ -1618,7 +1609,8 @@ def perform_display_custom_summary(args, ln=CFG_SITE_LANG):
         tag_name = args['tag']
     path = WEBSTAT_GRAPH_DIRECTORY + os.path.basename("tmp_webstat_custom_summary_"
                                                 + args['query'] + args['tag'])
-    create_custom_summary_graph(data[:-1], path, args['title'])
+    if not create_custom_summary_graph(data[:-1], path, args['title']):
+        path = None
     return TEMPLATES.tmpl_display_custom_summary(tag_name, data, args['title'],
                                     args['query'], args['tag'], path, ln=ln)
 
