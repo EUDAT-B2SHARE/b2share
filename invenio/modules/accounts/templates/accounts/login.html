@@ -46,6 +46,14 @@
 
             <h3 class="login-message">Please sign in</h3>
 
+            <div>
+            <a href="{{url_for('oauthclient.login', remote_app='unity')}}">Sign in with Unity</a>
+            </div>
+
+            <div>
+            <a href="{{url_for('oauthclient.login', remote_app='github')}}">Sign in with GitHub</a>
+            </div>
+
             <form action="{{ url_for('webaccount.login') }}" method="POST">
                 {{ form.referer }}
                 {{ form.login_method }}
