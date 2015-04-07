@@ -10,5 +10,9 @@ Vagrant.configure("2") do |config|
     c.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "2048"]
     end
+
+    puts " *** Please run ./install.sh to install B2SHARE in your new VM ***"
+    puts "     If B2SHARE is already installed, go into the VM and you can start it with:"
+    puts "     # /vagrant/start_b2share.sh"
   end
 end
