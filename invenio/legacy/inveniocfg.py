@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -91,8 +91,10 @@ import shutil
 import socket
 import string
 import sys
+import zlib
 from six import iteritems
 from warnings import warn
+from sqlalchemy import exc
 
 
 def print_usage():
@@ -122,16 +124,15 @@ def convert_conf_option(option_name, option_value):
 
     ## 1a) adjust renamed variables:
     if option_name in ['CFG_WEBSUBMIT_DOCUMENT_FILE_MANAGER_DOCTYPES',
-                          'CFG_WEBSUBMIT_DOCUMENT_FILE_MANAGER_RESTRICTIONS',
-                          'CFG_WEBSUBMIT_DOCUMENT_FILE_MANAGER_MISC',
-                          'CFG_WEBSUBMIT_FILESYSTEM_BIBDOC_GROUP_LIMIT',
-                          'CFG_WEBSUBMIT_ADDITIONAL_KNOWN_FILE_EXTENSIONS',
-                          'CFG_WEBSUBMIT_DESIRED_CONVERSIONS']:
+                       'CFG_WEBSUBMIT_DOCUMENT_FILE_MANAGER_RESTRICTIONS',
+                       'CFG_WEBSUBMIT_DOCUMENT_FILE_MANAGER_MISC',
+                       'CFG_WEBSUBMIT_FILESYSTEM_BIBDOC_GROUP_LIMIT',
+                       'CFG_WEBSUBMIT_ADDITIONAL_KNOWN_FILE_EXTENSIONS',
+                       'CFG_WEBSUBMIT_DESIRED_CONVERSIONS']:
         new_option_name = option_name.replace('WEBSUBMIT', 'BIBDOCFILE')
         print(("""WARNING: %s has been renamed to %s.
 Please, update your invenio-local.conf file accordingly.""" % (option_name, new_option_name)), file=sys.stderr)
         option_name = new_option_name
-
 
     ## 2) convert option value to int or string:
     if option_name in ['CFG_BIBUPLOAD_REFERENCE_TAG',
@@ -139,7 +140,7 @@ Please, update your invenio-local.conf file accordingly.""" % (option_name, new_
                        'CFG_BIBUPLOAD_EXTERNAL_OAIID_TAG',
                        'CFG_BIBUPLOAD_EXTERNAL_OAIID_PROVENANCE_TAG',
                        'CFG_BIBUPLOAD_STRONG_TAGS',
-                       'CFG_BIBFORMAT_HIDDEN_TAGS',]:
+                       'CFG_BIBFORMAT_HIDDEN_TAGS']:
         # some options are supposed be string even when they look like
         # numeric
         option_value = '"' + option_value + '"'
@@ -156,7 +157,8 @@ Please, update your invenio-local.conf file accordingly.""" % (option_name, new_
 
     ## 3abis) special cases: real regexps
     if option_name in ['CFG_BIBINDEX_PERFORM_OCR_ON_DOCNAMES',
-                       'CFG_BATCHUPLOADER_WEB_ROBOT_AGENTS']:
+                       'CFG_BATCHUPLOADER_WEB_ROBOT_AGENTS',
+                       'CFG_BIBUPLOAD_INTERNAL_DOI_PATTERN']:
         option_value = 'r"' + option_value[1:-1] + '"'
 
     ## 3b) special cases: True, False, None
@@ -191,9 +193,20 @@ Please, update your invenio-local.conf file accordingly.""" % (option_name, new_
                        'CFG_OPENID_CONFIGURATIONS',
                        'CFG_OAUTH1_CONFIGURATIONS',
                        'CFG_OAUTH2_CONFIGURATIONS',
-                       'CFG_BIBDOCFILE_ADDITIONAL_KNOWN_MIMETYPES',]:
+                       'CFG_BIBDOCFILE_ADDITIONAL_KNOWN_MIMETYPES',
+                       'CFG_BIBDOCFILE_PREFERRED_MIMETYPES_MAPPING',
+                       'CFG_BIBSCHED_NON_CONCURRENT_TASKS',
+                       'CFG_REDIS_HOSTS',
+                       'CFG_BIBSCHED_INCOMPATIBLE_TASKS',
+                       'CFG_ICON_CREATION_FORMAT_MAPPINGS',
+                       'CFG_BIBEDIT_AUTOCOMPLETE']:
         try:
             option_value = option_value[1:-1]
+            if option_name == "CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE" and option_value.strip().startswith("{"):
+                print(("""ERROR: CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE
+now accepts only a list of tuples, not a dictionary. Check invenio.conf for an example.
+Please, update your invenio-local.conf file accordingly."""), file=sys.stderr)
+                sys.exit(1)
         except TypeError:
             if option_name in ('CFG_WEBSEARCH_FULLTEXT_SNIPPETS',):
                 print("""WARNING: CFG_WEBSEARCH_FULLTEXT_SNIPPETS
@@ -202,7 +215,7 @@ different document types.  See the corresponding documentation in invenio.conf.
 You may want to customise your invenio-local.conf configuration accordingly.""", file=sys.stderr)
                 option_value = """{'': %s}""" % option_value
             else:
-                print("ERROR: type error in %s value %s." % \
+                print("ERROR: type error in %s value %s." %
                       (option_name, option_value), file=sys.stderr)
                 sys.exit(1)
 
@@ -219,12 +232,12 @@ You may want to customise your invenio-local.conf configuration accordingly.""",
                        'CFG_WEBSEARCH_USE_MATHJAX_FOR_FORMATS',
                        'CFG_BIBUPLOAD_STRONG_TAGS',
                        'CFG_BIBFORMAT_HIDDEN_TAGS',
+                       'CFG_BIBFORMAT_HIDDEN_RECJSON_FIELDS',
                        'CFG_BIBSCHED_GC_TASKS_TO_REMOVE',
                        'CFG_BIBSCHED_GC_TASKS_TO_ARCHIVE',
                        'CFG_BIBUPLOAD_FFT_ALLOWED_LOCAL_PATHS',
                        'CFG_BIBUPLOAD_CONTROLLED_PROVENANCE_TAGS',
                        'CFG_BIBUPLOAD_DELETE_FORMATS',
-                       'CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES',
                        'CFG_WEBSTYLE_HTTP_STATUS_ALERT_LIST',
                        'CFG_WEBSEARCH_RSS_I18N_COLLECTIONS',
                        'CFG_BATCHUPLOADER_FILENAME_MATCHING_POLICY',
@@ -241,17 +254,16 @@ You may want to customise your invenio-local.conf configuration accordingly.""",
                        'CFG_BIBFIELD_MASTER_FORMATS',
                        'CFG_OPENID_PROVIDERS',
                        'CFG_OAUTH1_PROVIDERS',
-                       'CFG_OAUTH2_PROVIDERS',]:
+                       'CFG_OAUTH2_PROVIDERS',
+                       'CFG_BIBFORMAT_CACHED_FORMATS',
+                       'CFG_BIBEDIT_ADD_TICKET_RT_QUEUES',
+                       'CFG_BIBAUTHORID_ENABLED_REMOTE_LOGIN_SYSTEMS', ]:
         out = "["
         for elem in option_value[1:-1].split(","):
             if elem:
                 elem = elem.strip()
-                if option_name in ['CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES']:
-                    # 3d1) integer values
-                    out += "%i, " % int(elem)
-                else:
-                    # 3d2) string values
-                    out += "'%s', " % elem
+                # string values
+                out += "'%s', " % elem
         out += "]"
         option_value = out
 
@@ -308,68 +320,6 @@ def update_config_py(conf):
     print('>>> quiting ...')
     return
 
-    import sys
-    print(">>> Going to update config.py...")
-    ## location where config.py is:
-    configpyfile = conf.get("Invenio", "CFG_PYLIBDIR") + \
-        os.sep + 'invenio' + os.sep + 'config.py'
-    ## backup current config.py file:
-    if os.path.exists(configpyfile):
-        shutil.copy(configpyfile, configpyfile + '.OLD')
-    ## here we go:
-    fdesc = open(configpyfile, 'w')
-    ## generate preamble:
-    fdesc.write("# -*- coding: utf-8 -*-\n")
-    fdesc.write("# DO NOT EDIT THIS FILE!  IT WAS AUTOMATICALLY GENERATED\n")
-    fdesc.write("# FROM INVENIO.CONF BY EXECUTING:\n")
-    fdesc.write("# " + " ".join(sys.argv) + "\n")
-    ## special treatment for CFG_SITE_NAME_INTL options:
-    fdesc.write("CFG_SITE_NAME_INTL = {}\n")
-    for lang in conf.get("Invenio", "CFG_SITE_LANGS").split(","):
-        fdesc.write("CFG_SITE_NAME_INTL['%s'] = \"%s\"\n" % (lang, conf.get("Invenio",
-                                                                            "CFG_SITE_NAME_INTL_" + lang)))
-    ## special treatment for CFG_SITE_SECURE_URL that may be empty, in
-    ## which case it should be put equal to CFG_SITE_URL:
-    if not conf.get("Invenio", "CFG_SITE_SECURE_URL"):
-        conf.set("Invenio", "CFG_SITE_SECURE_URL",
-                 conf.get("Invenio", "CFG_SITE_URL"))
-
-    ## process all the options normally:
-    sections = conf.sections()
-    sections.sort()
-    for section in sections:
-        options = conf.options(section)
-        options.sort()
-        for option in options:
-            if not option.upper().startswith('CFG_DATABASE_'):
-                # put all options except for db credentials into config.py
-                line_out = convert_conf_option(option, conf.get(section, option))
-                if line_out:
-                    fdesc.write(line_out + "\n")
-
-    ## special treatment for CFG_SITE_SECRET_KEY that can not be empty
-    if not conf.get("Invenio", "CFG_SITE_SECRET_KEY"):
-        CFG_BINDIR = conf.get("Invenio", "CFG_BINDIR") + os.sep
-        print("""WARNING: CFG_SITE_SECRET_KEY can not be empty.
-You may want to customise your invenio-local.conf configuration accordingly.
-
-$ %sinveniomanage config create secret-key
-$ %sinveniomanage config update
-""" % (CFG_BINDIR, CFG_BINDIR), file=sys.stderr)
-
-    ## FIXME: special treatment for experimental variables
-    ## CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES and CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE
-    ## (not offering them in invenio.conf since they will be refactored)
-    fdesc.write("CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE = 0\n")
-    fdesc.write("CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES = [0, 1,]\n")
-    ## generate postamble:
-    fdesc.write("")
-    fdesc.write("# END OF GENERATED FILE")
-    ## we are done:
-    fdesc.close()
-    print("You may want to restart Apache now.")
-    print(">>> config.py updated successfully.")
-
 
 def cli_cmd_update_config_py(conf):
     """
@@ -412,6 +362,7 @@ def cli_cmd_update_dbquery_py(conf):
 
     print("You may want to restart Apache now.")
     print(">>> dbquery.py updated successfully.")
+
 
 def cli_cmd_update_dbexec(conf):
     """
@@ -497,6 +448,7 @@ def cli_cmd_update_web_tests(conf):
             fdesc.close()
     print(">>> web tests updated successfully.")
 
+
 def cli_cmd_reset_sitename(conf):
     """
     Reset collection-related tables with new CFG_SITE_NAME and
@@ -524,13 +476,14 @@ def cli_cmd_reset_sitename(conf):
     print("You may want to restart Apache now.")
     print(">>> CFG_SITE_NAME and CFG_SITE_NAME_INTL* reset successfully.")
 
+
 def cli_cmd_reset_recstruct_cache(conf):
     """If CFG_BIBUPLOAD_SERIALIZE_RECORD_STRUCTURE is changed, this function
     will adapt the database to either store or not store the recstruct
     format."""
     from intbitset import intbitset
     from invenio.legacy.dbquery import run_sql, serialize_via_marshal
-    from invenio.legacy.search_engine import get_record
+    from invenio.legacy.search_engine import get_record, print_record
     from invenio.legacy.bibsched.cli import server_pid, pidfile
     enable_recstruct_cache = conf.get("Invenio", "CFG_BIBUPLOAD_SERIALIZE_RECORD_STRUCTURE")
     enable_recstruct_cache = enable_recstruct_cache in ('True', '1')
@@ -548,7 +501,15 @@ def cli_cmd_reset_recstruct_cache(conf):
         tot = len(recids)
         count = 0
         for recid in recids:
-            value = serialize_via_marshal(get_record(recid))
+            try:
+                value = serialize_via_marshal(get_record(recid))
+            except zlib.error, err:
+                print >> sys.stderr, "Looks like XM is corrupted for record %s. Let's recover it from bibxxx" % recid
+                run_sql("DELETE FROM bibfmt WHERE id_bibrec=%s AND format='xm'", (recid, ))
+                xm_value = zlib.compress(print_record(recid, 'xm'))
+                run_sql("INSERT INTO bibfmt(id_bibrec, format, last_updated, value) VALUES(%s, 'xm', NOW(), %s)", (recid, xm_value))
+                value = serialize_via_marshal(get_record(recid))
+
             run_sql("DELETE FROM bibfmt WHERE id_bibrec=%s AND format='recstruct'", (recid, ))
             run_sql("INSERT INTO bibfmt(id_bibrec, format, last_updated, value) VALUES(%s, 'recstruct', NOW(), %s)", (recid, value))
             count += 1
@@ -576,7 +537,6 @@ def cli_cmd_reset_recjson_cache(conf):
     sys.argv = sys_argv
 
 
-
 def cli_cmd_reset_siteadminemail(conf):
     """
     Reset user-related tables with new CFG_SITE_ADMIN_EMAIL read from conf files.
@@ -590,6 +550,7 @@ def cli_cmd_reset_siteadminemail(conf):
             (siteadminemail,))
     print("You may want to restart Apache now.")
     print(">>> CFG_SITE_ADMIN_EMAIL reset successfully.")
+
 
 def cli_cmd_reset_fieldnames(conf):
     """
@@ -656,6 +617,7 @@ def cli_cmd_reset_fieldnames(conf):
 
     print(">>> I18N field names reset successfully.")
 
+
 def cli_check_openoffice(conf):
     """
     If OpenOffice.org integration is enabled, checks whether the system is
@@ -673,88 +635,6 @@ def cli_check_openoffice(conf):
         print("ok")
     else:
         sys.exit(1)
-
-def test_db_connection():
-    """
-    Test DB connection, and if fails, advise user how to set it up.
-    Useful to be called during table creation.
-    """
-    print("Testing DB connection...", end=' ')
-    from invenio.utils.text import wrap_text_in_a_box
-    from invenio.legacy.dbquery import run_sql, Error
-
-    ## first, test connection to the DB server:
-    try:
-        run_sql("SHOW TABLES")
-    except Error as err:
-        from invenio.dbquery_config import CFG_DATABASE_HOST, \
-            CFG_DATABASE_PORT, CFG_DATABASE_NAME, CFG_DATABASE_USER, \
-            CFG_DATABASE_PASS
-        print(wrap_text_in_a_box("""\
-DATABASE CONNECTIVITY ERROR %(errno)d: %(errmsg)s.\n
-
-Perhaps you need to set up database and connection rights?
-If yes, then please login as MySQL admin user and run the
-following commands now:
-
-
-$ mysql -h %(dbhost)s -P %(dbport)s -u root -p mysql
-
-mysql> CREATE DATABASE %(dbname)s DEFAULT CHARACTER SET utf8;
-
-mysql> GRANT ALL PRIVILEGES ON %(dbname)s.*
-
-       TO %(dbuser)s@%(webhost)s IDENTIFIED BY '%(dbpass)s';
-
-mysql> QUIT
-
-
-The values printed above were detected from your
-configuration. If they are not right, then please edit your
-invenio-local.conf file and rerun 'inveniocfg --update-all' first.
-
-
-If the problem is of different nature, then please inspect
-the above error message and fix the problem before continuing.""" % \
-                                 {'errno': err.args[0],
-                                  'errmsg': err.args[1],
-                                  'dbname': CFG_DATABASE_NAME,
-                                  'dbhost': CFG_DATABASE_HOST,
-                                  'dbport': CFG_DATABASE_PORT,
-                                  'dbuser': CFG_DATABASE_USER,
-                                  'dbpass': CFG_DATABASE_PASS,
-                                  'webhost': CFG_DATABASE_HOST == 'localhost' and 'localhost' or os.popen('hostname -f', 'r').read().strip(),
-                                  }))
-        sys.exit(1)
-    print("ok")
-
-    ## second, test insert/select of a Unicode string to detect
-    ## possible Python/MySQL/MySQLdb mis-setup:
-    print("Testing Python/MySQL/MySQLdb UTF-8 chain...", end=' ')
-    try:
-        try:
-            beta_in_utf8 = "β" # Greek beta in UTF-8 is 0xCEB2
-            run_sql("CREATE TABLE test__invenio__utf8 (x char(1), y varbinary(2)) DEFAULT CHARACTER SET utf8 ENGINE=MyISAM;")
-            run_sql("INSERT INTO test__invenio__utf8 (x, y) VALUES (%s, %s)", (beta_in_utf8, beta_in_utf8))
-            res = run_sql("SELECT x,y,HEX(x),HEX(y),LENGTH(x),LENGTH(y),CHAR_LENGTH(x),CHAR_LENGTH(y) FROM test__invenio__utf8")
-            assert res[0] == ('\xce\xb2', '\xce\xb2', 'CEB2', 'CEB2', 2L, 2L, 1L, 2L)
-            run_sql("DROP TABLE test__invenio__utf8")
-        except Exception as err:
-            print(wrap_text_in_a_box("""\
-DATABASE RELATED ERROR %s\n
-
-A problem was detected with the UTF-8 treatment in the chain
-between the Python application, the MySQLdb connector, and
-the MySQL database. You may perhaps have installed older
-versions of some prerequisite packages?\n
-
-Please check the INSTALL file and please fix this problem
-before continuing.""" % err))
-
-            sys.exit(1)
-    finally:
-        run_sql("DROP TABLE IF EXISTS test__invenio__utf8")
-    print("ok")
 
 
 def cli_cmd_create_secret_key(conf):
@@ -843,6 +723,7 @@ def cli_cmd_create_demo_site(conf):
             sys.exit(1)
     print(">>> Demo site created successfully.")
 
+
 def cli_cmd_load_demo_records(conf):
     """Load demo records.  Useful for testing purposes."""
     from invenio.config import CFG_PREFIX
@@ -856,21 +737,24 @@ def cli_cmd_load_demo_records(conf):
                 "%s/bin/bibdocfile --textify --all" % CFG_PREFIX,
                 "%s/bin/bibindex -u admin" % CFG_PREFIX,
                 "%s/bin/bibindex 2" % CFG_PREFIX,
+                "%s/bin/bibindex -u admin -w global" % CFG_PREFIX,
+                "%s/bin/bibindex 3" % CFG_PREFIX,
                 "%s/bin/bibreformat -u admin -o HB" % CFG_PREFIX,
-                "%s/bin/bibreformat 3" % CFG_PREFIX,
+                "%s/bin/bibreformat 4" % CFG_PREFIX,
                 "%s/bin/webcoll -u admin" % CFG_PREFIX,
-                "%s/bin/webcoll 4" % CFG_PREFIX,
+                "%s/bin/webcoll 5" % CFG_PREFIX,
                 "%s/bin/bibrank -u admin" % CFG_PREFIX,
-                "%s/bin/bibrank 5" % CFG_PREFIX,
+                "%s/bin/bibrank 6" % CFG_PREFIX,
                 "%s/bin/bibsort -u admin -R" % CFG_PREFIX,
-                "%s/bin/bibsort 6" % CFG_PREFIX,
+                "%s/bin/bibsort 7" % CFG_PREFIX,
                 "%s/bin/oairepositoryupdater -u admin" % CFG_PREFIX,
-                "%s/bin/oairepositoryupdater 7" % CFG_PREFIX,
-                "%s/bin/bibupload 8" % CFG_PREFIX,]:
+                "%s/bin/oairepositoryupdater 8" % CFG_PREFIX,
+                "%s/bin/bibupload 9" % CFG_PREFIX,]:
         if os.system(cmd):
             print("ERROR: failed execution of", cmd)
             sys.exit(1)
     print(">>> Demo records loaded successfully.")
+
 
 def cli_cmd_remove_demo_records(conf):
     """Remove demo records.  Useful when you are finished testing."""
@@ -891,6 +775,7 @@ your records and documents!"""))
             sys.exit(1)
     print(">>> Demo records removed successfully.")
 
+
 def cli_cmd_drop_demo_site(conf):
     """Drop demo site completely.  Useful when you are finished testing."""
     print(">>> Going to drop demo site...")
@@ -902,11 +787,13 @@ your site and documents!"""))
     cli_cmd_remove_demo_records(conf)
     print(">>> Demo site dropped successfully.")
 
+
 def cli_cmd_run_unit_tests(conf):
     """Run unit tests, usually on the working demo site."""
     from invenio.testsuite import build_and_run_unit_test_suite
     if not build_and_run_unit_test_suite():
         sys.exit(1)
+
 
 def cli_cmd_run_js_unit_tests(conf):
     """Run JavaScript unit tests, usually on the working demo site."""
@@ -914,11 +801,13 @@ def cli_cmd_run_js_unit_tests(conf):
     if not build_and_run_js_unit_test_suite():
         sys.exit(1)
 
+
 def cli_cmd_run_regression_tests(conf):
     """Run regression tests, usually on the working demo site."""
     from invenio.testsuite import build_and_run_regression_test_suite
     if not build_and_run_regression_test_suite():
         sys.exit(1)
+
 
 def cli_cmd_run_web_tests(conf):
     """Run web tests in a browser. Requires Firefox with Selenium."""
@@ -926,33 +815,41 @@ def cli_cmd_run_web_tests(conf):
     if not build_and_run_web_test_suite():
         sys.exit(1)
 
+
 def cli_cmd_run_flask_tests(conf):
     """Run flask tests."""
     from invenio.testsuite import build_and_run_flask_test_suite
     build_and_run_flask_test_suite()
 
+
 def _detect_ip_address():
     """Detect IP address of this computer.  Useful for creating Apache
-    vhost conf snippet on RHEL like machines.
+    vhost conf snippet on RHEL like machines.  However, if wanted site
+    is 0.0.0.0, then use that, since we are running inside Docker.
 
     @return: IP address, or '*' if cannot detect
     @rtype: string
     @note: creates socket for real in order to detect real IP address,
         not the loopback one.
+
     """
+    from invenio.base.globals import cfg
+    if '0.0.0.0' in cfg.get('CFG_SITE_URL'):
+        return '0.0.0.0'
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('invenio-software.org', 0))
         return s.getsockname()[0]
-    except:
+    except Exception:
         return '*'
+
 
 def cli_cmd_create_apache_conf(conf):
     """
     Create Apache conf files for this site, keeping previous
     files in a backup copy.
     """
-    from invenio.apache_manager import main
+    from invenio.base.scripts.apache import main
 
     warn('inveniocfg --create-apache-conf is deprecated. Using instead: inveniomanage apache create-config')
 
@@ -1204,6 +1101,7 @@ def prepare_option_parser():
     parser.add_option_group(helper_options)
 
     parser.add_option('--yes-i-know', action='store_true', dest='yes-i-know', help='use with care!')
+    parser.add_option('-x', '--stop', action='store_true', dest='stop_on_error', help='When running tests, stop at first error')
 
     return parser
 
@@ -1227,6 +1125,10 @@ def main(*cmd_args):
     # Parse arguments
     parser = prepare_option_parser()
     (options, dummy_args) = parser.parse_args(list(cmd_args))
+
+    if getattr(options, 'stop_on_error', False):
+        from invenio.testsuite import wrap_failfast
+        wrap_failfast()
 
     if getattr(options, 'version', False):
         from invenio.base import manage

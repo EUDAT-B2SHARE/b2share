@@ -1,28 +1,29 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """BibFormat element - Prints a links to fulltext
 """
 __revision__ = "$Id$"
 
-from invenio.modules.formatter.format_elements.bfe_fulltext import get_files, sort_alphanumerically
+from invenio.modules.formatter.format_elements.bfe_fulltext import get_files, sort_alphanumerically, _CFG_BIBFORMAT_HIDDEN_DOCTYPES
 from invenio.base.i18n import gettext_set_language
-from invenio.config import CFG_SITE_URL, CFG_CERN_SITE, CFG_SITE_RECORD
+from invenio.config import CFG_SITE_URL, CFG_BASE_URL, CFG_CERN_SITE, CFG_SITE_RECORD
+from invenio.utils.url import get_relative_url
 from cgi import escape
 
 def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_file='yes', show_subformat_icons='no'):
@@ -42,7 +43,8 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
     # Retrieve files
     (parsed_urls, old_versions, additionals) = \
                   get_files(bfo, distinguish_main_and_additional_files=focus_on_main_file.lower() == 'yes',
-                            include_subformat_icons=show_subformat_icons == 'yes')
+                            include_subformat_icons=show_subformat_icons == 'yes',
+                            hide_doctypes=_CFG_BIBFORMAT_HIDDEN_DOCTYPES)
 
     main_urls = parsed_urls['main_urls']
     others_urls = parsed_urls['others_urls']
@@ -58,7 +60,7 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
 
     additional_str = ''
     if additionals:
-        additional_str = separator + '<small>(<a '+style+' href="'+CFG_SITE_URL+'/'+ CFG_SITE_RECORD +'/'+str(bfo.recID)+'/files/">%s</a>)</small>' % _("additional files")
+        additional_str = separator + '<small>(<a '+style+' href="'+CFG_BASE_URL+'/'+ CFG_SITE_RECORD +'/'+str(bfo.recID)+'/files/">%s</a>)</small>' % _("additional files")
 
     versions_str = ''
     #if old_versions:
@@ -69,10 +71,10 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         if len(main_urls.keys()) == 1 and len(main_urls.items()[0][1]) == 1 and \
                (not CFG_CERN_SITE or len(cern_urls) == 0) and len(others_urls) == 0 and \
                show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="/img/file-icon-text-34x48.gif" alt="%s" /><br />' % _("Download fulltext")
+            file_icon = '<img style="border:none" src="%s/img/file-icon-text-34x48.gif" alt="%s" /><br />' % (CFG_BASE_URL, _("Download fulltext"))
 
         elif show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
+            file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
         else:
             file_icon = ''
 
@@ -98,7 +100,7 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
                         continue
                     url_list.append('<a %(style)s href="%(url)s">%(file_icon)s%(url_format)s</a>' % {
                         'style': style,
-                        'url': escape(url, True),
+                        'url': get_relative_url(escape(url, True)),
                         'file_icon': file_icon,
                         'url_format': escape(url_format.upper())
                     })
@@ -110,10 +112,10 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         if len(main_urls.keys()) == 0 and \
                len(cern_urls) == 1 and len(others_urls) == 0 and \
                show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="/img/file-icon-text-34x48.gif" alt="%s" /><br />' % _("Download fulltext")
+            file_icon = '<img style="border:none" src="%s/img/file-icon-text-34x48.gif" alt="%s" /><br />' % (CFG_BASE_URL, _("Download fulltext"))
 
         elif show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
+            file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
         else:
             file_icon = ''
 
@@ -130,18 +132,15 @@ def format_element(bfo, style, separator='; ', show_icons='no', focus_on_main_fi
         if len(main_urls.keys()) == 0 and \
                (not CFG_CERN_SITE or len(cern_urls) == 0) and len(others_urls) == 1 and \
                show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="/img/file-icon-text-34x48.gif" alt="%s" /><br />' % _("Download fulltext")
+            file_icon = '<img style="border:none" src="%s/img/file-icon-text-34x48.gif" alt="%s" /><br />' % (CFG_BASE_URL, _("Download fulltext"))
         elif show_icons.lower() == 'yes':
-            file_icon = '<img style="border:none" src="/img/file-icon-text-12x16.gif" alt="%s"/>' % _("Download fulltext")
+            file_icon = '<img style="border:none" src="%s/img/file-icon-text-12x16.gif" alt="%s"/>' % (CFG_BASE_URL, _("Download fulltext"))
         else:
             file_icon = ''
         external_link = len(others_urls) == 1 and _('external link') or _('external links')
         out += '<small class="detailedRecordActions">%s:</small>%s' % (external_link.capitalize(), separator)
         url_list = []
         for url, descr in others_urls:
-            # we don't need to show the plot links here, and all are pngs.
-            if url.find('.png') > -1:
-                continue
             url_list.append('<a '+style+' href="'+escape(url)+'">'+file_icon+escape(str(descr))+'</a>')
         out += '<small>' + separator.join(url_list) + '</small>'
     if out.endswith('<br />'):

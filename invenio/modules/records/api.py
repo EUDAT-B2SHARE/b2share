@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Record API."""
 
 import six
 
-from sqlalchemy.orm.exc import NoResultFound
+from flask import current_app
+from sqlalchemy import or_
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from werkzeug.utils import cached_property
 
 from invenio.modules.jsonalchemy.reader import Reader
@@ -38,6 +40,7 @@ class Record(SmartJson):
     __storagename__ = "records"
 
     def __init__(self, json=None, **kwargs):
+        """Create a Record instance."""
         if not json or '__meta_metadata__' not in json:
             kwargs['namespace'] = kwargs.get('namespace', 'recordext')
             kwargs['master_format'] = kwargs.get('master_format', 'json')
@@ -63,6 +66,8 @@ class Record(SmartJson):
         if not reset_cache:
             try:
                 json = cls.storage_engine.get_one(recid)
+                if json is None:
+                    raise NoResultFound
                 return Record(json)
             except (NoResultFound, AttributeError):
                 pass
@@ -70,17 +75,19 @@ class Record(SmartJson):
         # this might be deprecated in the near future as soon as json will
         # become the master format, until then ...
         blob = cls.get_blob(recid)
-        record_sql_model = RecordModel.query.get(recid)
-        if record_sql_model is None or blob is None:
+        record_sql = RecordModel.query.get(recid)
+        if record_sql is None or blob is None:
             return None
-        additional_info = record_sql_model.additional_info \
-            if record_sql_model.additional_info \
+        additional_info = record_sql.additional_info \
+            if record_sql.additional_info \
             else {'master_format': 'marc'}
         record = cls.create(blob, **additional_info)
+        record['modification_date'] = record_sql.modification_date
+        record['creation_date'] = record_sql.creation_date
         record._save()
-        record_sql_model.additional_info = record.additional_info
+        record_sql.additional_info = record.additional_info
         from invenio.ext.sqlalchemy import db
-        db.session.merge(record_sql_model)
+        db.session.merge(record_sql)
         db.session.commit()
         return record
 
@@ -90,23 +97,19 @@ class Record(SmartJson):
         #FIXME: start using bibarchive or bibingest for this
         from invenio.modules.formatter.models import Bibfmt
         from zlib import decompress
-
-        record_blob = Bibfmt.query.get((recid, 'xm'))
-        if record_blob is None:
-            return None
-        return decompress(record_blob.value)
+        try:
+            blob = Bibfmt.query.filter(
+                Bibfmt.id_bibrec == recid,
+                or_(Bibfmt.kind == 'master', Bibfmt.format == 'xm')).one()
+            return decompress(blob.value)
+        except (NoResultFound, MultipleResultsFound):
+            current_app.logger.exception(
+                'Error retrieving the blob for recid {0}'.format(recid))
 
     @property
     def blob(self):
-        """Get the blob from where the record was created."""
-        #FIXME: start using bibarchive or bibingest for this
-        from invenio.modules.formatter.models import Bibfmt
-        from zlib import decompress
-
-        record_blob = Bibfmt.query.get((self['recid'], 'xm'))
-        if record_blob is None:
-            return None
-        return decompress(record_blob.value)
+        """Return data blob."""
+        return self.__class__.get_blob(self['recid'])
 
     @cached_property
     def persistent_identifiers(self):
@@ -140,7 +143,9 @@ class Record(SmartJson):
                         tmp.extend(self._massage_pid_value((tuple_[0], item)))
                     return tmp
                 else:
-                    return [{tuple_[0]:tuple_[1], 'type':'', 'provider':''}]
+                    return [{'value': tuple_[1],
+                             'type': tuple_[0],
+                             'provider':'invenio'}]
 
         pids = PIDList()
         for key, value in self.items(without_meta_metadata=True):
@@ -150,10 +155,18 @@ class Record(SmartJson):
 
     def _save(self):
         self.__class__.storage_engine.update_one(self.dumps())
+        record_sql = RecordModel.query.get(self['recid'])
+        record_sql.modification_date = self['modification_date']
+        record_sql.creation_date = self['creation_date']
+        record_sql.master_format = self.additional_info.master_format
+        record_sql.additional_info = self.additional_info
+        from invenio.ext.sqlalchemy import db
+        db.session.merge(record_sql)
+        db.session.commit()
 
     # Legacy methods, try not to use them as they are already deprecated
 
-    def legacy_export_as_marc(self):
+    def legacy_export_as_marc(self, tabsize=4):
         """Create the MARCXML representation using the producer rules."""
         from collections import Iterable
 
@@ -163,7 +176,7 @@ class Record(SmartJson):
                 value = value.encode('utf8')
             return encode_for_xml(str(value))
 
-        export = '<record>'
+        export = '<record>\n'
         marc_dicts = self.produce('json_for_marc')
         for marc_dict in marc_dicts:
             content = ''
@@ -179,7 +192,8 @@ class Record(SmartJson):
                         continue
                     if key.startswith('00') and len(key) == 3:
                         # Control Field (No indicators no subfields)
-                        export += '<controlfield tag="%s">%s</controlfield>\n'\
+                        export += '\t<controlfield tag="%s">%s' \
+                            '</controlfield>\n'.expandtabs(tabsize) \
                             % (key, encode_for_marcxml(v))
                     elif len(key) == 6:
                         if not (tag == key[:3]
@@ -189,21 +203,24 @@ class Record(SmartJson):
                             ind1 = key[3].replace('_', '')
                             ind2 = key[4].replace('_', '')
                             if content:
-                                export += '<datafield tag="%s" ind1="%s"'\
-                                    'ind2="%s">%s</datafield>\n' \
+                                export += '\t<datafield tag="%s" ind1="%s"' \
+                                    'ind2="%s">\n%s\n\t' \
+                                    '</datafield>\n'.expandtabs(tabsize) \
                                     % (tag, ind1, ind2, content)
                                 content = ''
-                        content += '<subfield code="%s">%s</subfield>'\
+                        content += '\t\t<subfield code="%s">%s' \
+                            '</subfield>'.expandtabs(tabsize) \
                             % (key[5], encode_for_marcxml(v))
                     else:
                         pass
 
             if content:
                 export += \
-                    '<datafield tag="%s" ind1="%s" ind2="%s">%s</datafield>\n'\
+                    '\t<datafield tag="%s" ind1="%s" ind2="%s">\n%s\n\t' \
+                    '</datafield>\n'.expandtabs(tabsize) \
                     % (tag, ind1, ind2, content)
 
-        export += '</record>'
+        export += '</record>\n'
         return export
 
     def legacy_create_recstruct(self):

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """HTML utilities."""
 
 from __future__ import absolute_import
@@ -51,7 +51,7 @@ CFG_HTML_BUFFER_ALLOWED_TAG_WHITELIST = ('a',
 # <p style="background: url(myxss_suite.js)">
 CFG_HTML_BUFFER_ALLOWED_ATTRIBUTE_WHITELIST = ('href', 'name', 'class')
 
-## precompile some often-used regexp for speed reasons:
+# precompile some often-used regexp for speed reasons:
 RE_HTML = re.compile("(?s)<[^>]*>|&#?\w+;")
 RE_HTML_WITHOUT_ESCAPED_CHARS = re.compile("(?s)<[^>]*>")
 
@@ -424,7 +424,13 @@ def get_mathjax_header(https=False):
         else:
             mathjax_path = "http://cdn.mathjax.org/mathjax/2.1-latest"
     else:
-        mathjax_path = "/MathJax"
+        mathjax_path = "/vendors/MathJax"
+
+    if cfg['CFG_MATHJAX_RENDERS_MATHML']:
+        mathjax_config = "TeX-AMS-MML_HTMLorMML"
+    else:
+        mathjax_config = "TeX-AMS_HTML"
+
     return """<script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   tex2jax: {inlineMath: [['$','$']],
@@ -433,9 +439,10 @@ MathJax.Hub.Config({
   messageStyle: "none"
 });
 </script>
-<script src="%(mathjax_path)s/MathJax.js?config=TeX-AMS_HTML" type="text/javascript">
+<script src="%(mathjax_path)s/MathJax.js?config=%(mathjax_config)s" type="text/javascript">
 </script>""" % {
-    'mathjax_path': mathjax_path
+    'mathjax_path': mathjax_path,
+    'mathjax_config': mathjax_config,
 }
 
 def is_html_text_editor_installed():
@@ -531,7 +538,7 @@ def get_html_text_editor(name, id=None, content='', textual_content=None, width=
         /* Load the script only once, or else multiple instance of the editor on the same page will not work */
         var INVENIO_CKEDITOR_ALREADY_LOADED
             if (INVENIO_CKEDITOR_ALREADY_LOADED != 1) {
-                document.write('<script type="text/javascript" src="%(CFG_SITE_URL)s/ckeditor/ckeditor.js"><\/script>');
+                document.write('<script type="text/javascript" src="%(CFG_SITE_URL)s/vendors/ckeditor/ckeditor.js"><\/script>');
                 INVENIO_CKEDITOR_ALREADY_LOADED = 1;
             }
         //]]></script>

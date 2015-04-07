@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""Default configuration values."""
 
 from __future__ import unicode_literals
 
@@ -37,6 +39,7 @@ EXTENSIONS = [
     'invenio.ext.login',
     'invenio.ext.principal',
     'invenio.ext.email',
+    'invenio.ext.fixtures',  # before legacy
     'invenio.ext.legacy',
     'invenio.ext.assets',
     'invenio.ext.template',
@@ -48,40 +51,68 @@ EXTENSIONS = [
     'invenio.ext.gravatar',
     'invenio.ext.collect',
     'invenio.ext.restful',
-    'flask.ext.menu:Menu',
+    'invenio.ext.menu',
+    'invenio.ext.jasmine',  # after assets
     'flask.ext.breadcrumbs:Breadcrumbs',
     'invenio.modules.deposit.url_converters',
 ]
 
 PACKAGES = [
     'invenio.b2share.modules.*',
-    'invenio.modules.*'
+    'invenio.modules.*',
+    'invenio.base',
 ]
 
 PACKAGES_EXCLUDE = [
     'invenio.modules.annotations',
+    'invenio.modules.archiver',
     'invenio.modules.communities',
+    'invenio.modules.linkbacks',
+    'invenio.modules.multimedia',
     'invenio.modules.pages',
     'invenio.modules.deposit',
 ]
 
+LEGACY_WEBINTERFACE_EXCLUDE = [
+    'invenio.legacy.websubmit',
+]
+
+# from invenio.modules.oauthclient.contrib import github
+from invenio.modules.oauthclient.contrib import unity
+
+OAUTHCLIENT_REMOTE_APPS = dict(
+    # github=github.REMOTE_APP,
+    unity=unity.REMOTE_APP,
+)
+
+UNITY_APP_CREDENTIALS = dict(
+    consumer_key= "d9b4b207-1e4c-491c-a06e-448eb8f4d958",
+    consumer_secret= "f562e168-8b1b-4004-a074-29ba8852a4d5",
+)
+
+# GITHUB_APP_CREDENTIALS = dict(
+#     consumer_key="3f2a2a514db4a9cbeca7",
+#     consumer_secret="d56092786135595a778104d471ba4ab0b5dd61a6",
+# )
+
 CFG_PREFIX = distutils.sysconfig.get_config_var("prefix")
 
-CFG_BATCHUPLOADER_DAEMON_DIR = join(CFG_PREFIX, "var/batchupload")
-CFG_BIBDOCFILE_FILEDIR = join(CFG_PREFIX, "var/data/files")
+CFG_BATCHUPLOADER_DAEMON_DIR = join(CFG_PREFIX, "var", "batchupload")
+CFG_BIBDOCFILE_FILEDIR = join(CFG_PREFIX, "var", "data", "files")
 CFG_BINDIR = join(CFG_PREFIX, "bin")
-CFG_CACHEDIR = join(CFG_PREFIX, "var/cache")
+CFG_CACHEDIR = join(CFG_PREFIX, "var", "cache")
 CFG_ETCDIR = join(CFG_PREFIX, "etc")
-CFG_LOCALEDIR = join(CFG_PREFIX, "share/locale")
-CFG_LOGDIR = join(CFG_PREFIX, "var/log")
-CFG_PYLIBDIR = join(CFG_PREFIX, "lib/python")
-CFG_TMPDIR = join(CFG_PREFIX, "var/tmp")
-CFG_TMPSHAREDDIR = join(CFG_PREFIX, "var/tmp-shared")
-CFG_WEBDIR = join(CFG_PREFIX, "var/www")
-CFG_WEBSUBMIT_BIBCONVERTCONFIGDIR = join(CFG_PREFIX, "etc/bibconvert/config")
-CFG_WEBSUBMIT_COUNTERSDIR = join(CFG_PREFIX, "var/data/submit/counters")
-CFG_WEBSUBMIT_STORAGEDIR = join(CFG_PREFIX, "var/data/submit/storage")
-
+CFG_LOCALEDIR = join(CFG_PREFIX, "share", "locale")
+CFG_LOGDIR = join(CFG_PREFIX, "var", "log")
+CFG_RUNDIR = join(CFG_PREFIX, "var", "run")
+CFG_PYLIBDIR = join(CFG_PREFIX, "lib", "python")
+CFG_TMPDIR = join(CFG_PREFIX, "var", "tmp")
+CFG_TMPSHAREDDIR = join(CFG_PREFIX, "var", "tmp-shared")
+CFG_WEBDIR = join(CFG_PREFIX, "var", "www")
+CFG_WEBSUBMIT_BIBCONVERTCONFIGDIR = join(CFG_PREFIX, "etc", "bibconvert", "config")
+CFG_WEBSUBMIT_COUNTERSDIR = join(CFG_PREFIX, "var", "data", "submit", "counters")
+CFG_WEBSUBMIT_STORAGEDIR = join(CFG_PREFIX, "var", "data", "submit", "storage")
+CFG_BIBEDIT_CACHEDIR = join(CFG_PREFIX, "var", "tmp-shared", "bibedit-cache")
 
 #FIXME check the usage and replace by SQLALCHEMY_URL
 CFG_DATABASE_HOST = "localhost"
@@ -94,6 +125,8 @@ CFG_DATABASE_USER = "invenio"
 
 # CFG_FLASK_CACHE_TYPE has been deprecated.
 CACHE_TYPE = "redis"
+
+REQUIREJS_CONFIG = "js/build.js"
 
 # DO NOT EDIT THIS FILE!  IT WAS AUTOMATICALLY GENERATED
 # FROM INVENIO.CONF BY EXECUTING:
@@ -138,6 +171,7 @@ CFG_ACCESS_CONTROL_NOTIFY_USER_ABOUT_NEW_ACCOUNT = 1
 CFG_ADS_SITE = 0
 CFG_APACHE_GROUP_FILE = "demo-site-apache-user-groups"
 CFG_APACHE_PASSWORD_FILE = "demo-site-apache-user-passwords"
+CFG_ARXIV_URL_PATTERN = "http://export.arxiv.org/pdf/%sv%s.pdf"
 CFG_BATCHUPLOADER_FILENAME_MATCHING_POLICY = ['reportnumber', 'recid', ]
 CFG_BATCHUPLOADER_WEB_ROBOT_AGENTS = r"invenio_webupload|Invenio-.*"
 CFG_BATCHUPLOADER_WEB_ROBOT_RIGHTS = {
@@ -153,6 +187,7 @@ CFG_BIBAUTHORID_MAX_PROCESSES = 12
 CFG_BIBAUTHORID_ON_AUTHORPAGES = True
 CFG_BIBAUTHORID_PERSONID_SQL_MAX_THREADS = 12
 CFG_BIBAUTHORID_UI_SKIP_ARXIV_STUB_PAGE = False
+CFG_BIBAUTHORID_SEARCH_ENGINE_MAX_DATACHUNK_PER_INSERT_DB_QUERY = 10000000
 CFG_BIBCATALOG_SYSTEM = "EMAIL"
 CFG_BIBCATALOG_SYSTEM_EMAIL_ADDRESS = "info@invenio-software.org"
 CFG_BIBCATALOG_SYSTEM_RT_CLI = "/usr/bin/rt"
@@ -256,15 +291,34 @@ CFG_BIBDOCFILE_ENABLE_BIBDOCFSINFO_CACHE = 0
 CFG_BIBDOCFILE_FILESYSTEM_BIBDOC_GROUP_LIMIT = 5000
 CFG_BIBDOCFILE_MD5_CHECK_PROBABILITY = 0.1
 CFG_BIBDOCFILE_USE_XSENDFILE = 0
-CFG_BIBEDIT_AUTOCOMPLETE_INSTITUTIONS_FIELDS = [
-    '100__u', '700__u', '701__u', '502__c', ]
+CFG_BIBDOCFILE_AFS_VOLUME_PATTERN = "p.invenio.%s"
+CFG_BIBDOCFILE_AFS_VOLUME_QUOTA = 10000000
+CFG_BIBDOCFILE_PREFERRED_MIMETYPES_MAPPING = {
+    'application/msword': '.doc',
+    'application/octet-stream': '.bin',
+    'application/postscript': '.ps',
+    'application/vnd.ms-excel': '.xls',
+    'application/vnd.ms-powerpoint': '.ppt',
+    'application/x-gtar-compressed': '.tgz',
+    'application/xhtml+xml': '.xhtml',
+    'application/xml': '.xml',
+    'audio/mpeg': '.mp3',
+    'audio/ogg': '.ogg',
+    'image/jpeg': '.jpeg',
+    'image/svg+xml': '.svg',
+    'image/tiff': '.tiff',
+    'message/rfc822': '.eml',
+    'text/calendar': '.ics',
+    'text/plain': '.txt',
+    'video/mpeg': '.mpeg',
+}
 CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE = {'POETRY': 'record_poem'}
-CFG_BIBEDIT_KB_INSTITUTIONS = "InstitutionsCollection"
 CFG_BIBEDIT_KB_SUBJECTS = "Subjects"
 CFG_BIBEDIT_LOCKLEVEL = 3
 CFG_BIBEDIT_PROTECTED_FIELDS = ""
 CFG_BIBEDIT_QUEUE_CHECK_METHOD = "bibrecord"
 CFG_BIBEDIT_TIMEOUT = 3600
+CFG_BIBEDIT_ADD_TICKET_RT_QUEUES = []
 CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING = 20000
 CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING_TIME = "22:00-05:00"
 CFG_BIBEDITMULTI_LIMIT_INSTANT_PROCESSING = 2000
@@ -288,8 +342,8 @@ CFG_BIBINDEX_SPLASH_PAGES = {
     "http://documents\.cern\.ch/setlink\?.*": ".*",
     "http://ilcagenda\.linearcollider\.org/subContributionDisplay\.py\?.*|"
     "http://ilcagenda\.linearcollider\.org/contributionDisplay\.py\?.*":
-        "http://ilcagenda\.linearcollider\.org/getFile\.py/access\?.*|"
-        "http://ilcagenda\.linearcollider\.org/materialDisplay\.py\?.*",
+    "http://ilcagenda\.linearcollider\.org/getFile\.py/access\?.*|"
+    "http://ilcagenda\.linearcollider\.org/materialDisplay\.py\?.*",
 }
 CFG_BIBINDEX_SYNONYM_KBRS = {
     'global': ['INDEX-SYNONYM-TITLE', 'exact'],
@@ -363,6 +417,7 @@ CFG_BIBMATCH_QUERY_TEMPLATES = {
 }
 CFG_BIBMATCH_REMOTE_SLEEPTIME = 2.0
 CFG_BIBMATCH_SEARCH_RESULT_MATCH_LIMIT = 15
+CFG_BIBMATCH_MIN_VALIDATION_COMPARISONS = 2
 CFG_BIBRANK_SELFCITES_PRECOMPUTE = 0
 CFG_BIBRANK_SELFCITES_USE_BIBAUTHORID = 0
 CFG_BIBRANK_SHOW_CITATION_GRAPHS = 1
@@ -378,6 +433,7 @@ CFG_BIBSCHED_GC_TASKS_TO_ARCHIVE = ['bibupload', 'oairepositoryupdater', ]
 CFG_BIBSCHED_GC_TASKS_TO_REMOVE = [
     'bibindex', 'bibreformat', 'webcoll', 'bibrank', 'inveniogc', ]
 CFG_BIBSCHED_LOG_PAGER = which("less")
+CFG_BIBSCHED_LOGDIR = join(CFG_PREFIX, "var", "log", "bibsched")
 CFG_BIBSCHED_MAX_ARCHIVED_ROWS_DISPLAY = 500
 CFG_BIBSCHED_MAX_NUMBER_CONCURRENT_TASKS = 1
 CFG_BIBSCHED_NODE_TASKS = {}
@@ -386,10 +442,17 @@ CFG_BIBSCHED_REFRESHTIME = 5
 CFG_BIBSCHED_TASKLET_PACKAGES = [
     'invenio.legacy.bibsched.tasklets',
 ]
+CFG_BIBSCHED_NON_CONCURRENT_TASKS = []
+CFG_BIBSCHED_FLUSH_LOGS = 0
+CFG_BIBSCHED_INCOMPATIBLE_TASKS = ()
+CFG_BIBSCHED_NEVER_STOPS = 0
 CFG_BIBSORT_BUCKETS = 1
+CFG_BIBSORT_ENABLED = 1
+CFG_BIBSORT_DEFAULT_FIELD = 'latest first'
+CFG_BIBSORT_DEFAULT_FIELD_ORDER = 'd'
 CFG_BIBUPLOAD_CONFLICTING_REVISION_TICKET_QUEUE = ""
 CFG_BIBUPLOAD_CONTROLLED_PROVENANCE_TAGS = ['6531_9', ]
-CFG_BIBUPLOAD_DELETE_FORMATS = ['hb', ]
+CFG_BIBUPLOAD_DELETE_FORMATS = ['hb', 'recjson']
 CFG_BIBUPLOAD_DISABLE_RECORD_REVISIONS = 0
 CFG_BIBUPLOAD_EXTERNAL_OAIID_PROVENANCE_TAG = "035__9"
 CFG_BIBUPLOAD_EXTERNAL_OAIID_TAG = "035__a"
@@ -401,11 +464,14 @@ CFG_BIBUPLOAD_FFT_ALLOWED_LOCAL_PATHS = ['/tmp', '/home', '/Users']
 CFG_BIBUPLOAD_REFERENCE_TAG = "999"
 CFG_BIBUPLOAD_SERIALIZE_RECORD_STRUCTURE = 1
 CFG_BIBUPLOAD_STRONG_TAGS = ['964', ]
+CFG_BIBUPLOAD_INTERNAL_DOI_PATTERN = "[^\w\W]"
+CFG_BIBUPLOAD_MATCH_DELETED_RECORDS = 1
 CFG_BIBWORKFLOW_WORKER = "worker_celery"
 CFG_BROKER_URL = "amqp://guest@localhost:5672//"
 CFG_CELERY_RESULT_BACKEND = "amqp"
 CFG_CERN_SITE = 0
 CFG_ORGANIZATION_IDENTIFIER = ""
+CFG_CROSSREF_EMAIL = ""
 CFG_CROSSREF_PASSWORD = ""
 CFG_CROSSREF_USERNAME = ""
 CFG_DEVEL_SITE = 0
@@ -414,11 +480,17 @@ CFG_DEVEL_TOOLS = []
 CFG_EMAIL_BACKEND = "flask.ext.email.backends.smtp.Mail"
 CFG_ERRORLIB_RESET_EXCEPTION_NOTIFICATION_COUNTER_AFTER = 14400
 CFG_FLASK_DISABLED_BLUEPRINTS = []
-CFG_FLASK_SERVE_STATIC_FILES = 1
+CFG_HEPDATA_FIELD = "hepdataparent"
+CFG_HEPDATA_INDEX = "hepdataparent"
+CFG_HEPDATA_PLOTSIZE = 200
+CFG_HEPDATA_THREADS_NUM = 1
+CFG_HEPDATA_URL = "http://hepdata.cedar.ac.uk"
+CFG_ICON_CREATION_FORMAT_MAPPINGS = {'*': ['jpg']}
 CFG_INSPIRE_SITE = 0
 CFG_INTBITSET_ENABLE_SANITY_CHECKS = False
 CFG_JSTESTDRIVER_PORT = 9876
 CFG_MATHJAX_HOSTING = "local"
+CFG_MATHJAX_RENDERS_MATHML = True
 CFG_MISCUTIL_DEFAULT_PROCESS_TIMEOUT = 300
 CFG_MISCUTIL_SMTP_HOST = "localhost"
 CFG_MISCUTIL_SMTP_PASS = ""
@@ -540,8 +612,10 @@ CFG_PLOTEXTRACTOR_DOWNLOAD_TIMEOUT = 2.0
 CFG_PLOTEXTRACTOR_SOURCE_BASE_URL = "http://arxiv.org/"
 CFG_PLOTEXTRACTOR_SOURCE_PDF_FOLDER = "pdf/"
 CFG_PLOTEXTRACTOR_SOURCE_TARBALL_FOLDER = "e-print/"
+CFG_REDIS_HOSTS = {'default': [{'db': 0, 'host': '127.0.0.1', 'port': 6379}]}
 CFG_REFEXTRACT_KBS_OVERRIDE = {}
 CFG_REFEXTRACT_TICKET_QUEUE = None
+CFG_SCOAP3_SITE = 0
 CFG_SITE_ADMIN_EMAIL = "info@invenio-software.org"
 CFG_SITE_ADMIN_EMAIL_EXCEPTIONS = 1
 CFG_SITE_EMERGENCY_EMAIL_ADDRESSES = {}
@@ -571,6 +645,17 @@ CFG_WEBAUTHORPROFILE_MAX_COLLAB_LIST = 100
 CFG_WEBAUTHORPROFILE_MAX_HEP_CHOICES = 10
 CFG_WEBAUTHORPROFILE_MAX_KEYWORD_LIST = 100
 CFG_WEBAUTHORPROFILE_USE_BIBAUTHORID = False
+CFG_WEBAUTHORPROFILE_ALLOWED_FIELDCODES = [
+    'Astrophysics', 'Accelerators', 'Computing', 'Experiment-HEP',
+    'Gravitation and Cosmology', 'Instrumentation', 'Lattice',
+    'Math and Math Physics', 'Theory-Nucl', 'Other', 'Phenomenology-HEP',
+    'General Physics', 'Theory-HEP', 'Experiment-Nucl'
+]
+CFG_WEBAUTHORPROFILE_CFG_HEPNAMES_EMAIL = "authors@inspirehep.net"
+CFG_WEBAUTHORPROFILE_MAX_FIELDCODE_LIST = 100
+CFG_WEBAUTHORPROFILE_ORCID_ENDPOINT_PUBLIC = "http://pub.orcid.org/"
+CFG_WEBAUTHORPROFILE_ORCID_ENDPOINT_MEMBER = "http://api.orcid.org/"
+CFG_WEBAUTHORPROFILE_USE_ALLOWED_FIELDCODES = True
 CFG_WEBBASKET_MAX_NUMBER_OF_DISPLAYED_BASKETS = 20
 CFG_WEBBASKET_USE_RICH_TEXT_EDITOR = False
 CFG_WEBCOMMENT_ADMIN_NOTIFICATION_LEVEL = 1
@@ -611,6 +696,7 @@ CFG_WEBSEARCH_ADVANCEDSEARCH_PATTERN_BOX_WIDTH = 30
 CFG_WEBSEARCH_AUTHOR_ET_AL_THRESHOLD = 3
 CFG_WEBSEARCH_CALL_BIBFORMAT = 0
 CFG_WEBSEARCH_CITESUMMARY_SELFCITES_THRESHOLD = 2000
+CFG_WEBSEARCH_CITESUMMARY_SCAN_THRESHOLD = 20000
 CFG_WEBSEARCH_CREATE_SIMILARLY_NAMED_AUTHORS_LINK_BOX = 1
 CFG_WEBSEARCH_DEF_RECORDS_IN_GROUPS = 10
 CFG_WEBSEARCH_DETAILED_META_FORMAT = "hdm"
@@ -654,12 +740,12 @@ CFG_WEBSEARCH_USE_MATHJAX_FOR_FORMATS = []
 CFG_WEBSEARCH_VIEWRESTRCOLL_POLICY = "ANY"
 CFG_WEBSEARCH_WILDCARD_LIMIT = 50000
 CFG_WEBSESSION_ADDRESS_ACTIVATION_EXPIRE_IN_DAYS = 3
-CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS = 0
 CFG_WEBSESSION_EXPIRY_LIMIT_DEFAULT = 2
 CFG_WEBSESSION_EXPIRY_LIMIT_REMEMBER = 365
 CFG_WEBSESSION_IPADDR_CHECK_SKIP_BITS = 0
 CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS = 10
 CFG_WEBSESSION_RESET_PASSWORD_EXPIRE_IN_DAYS = 3
+CFG_WEBSESSION_STORAGE = "redis"
 CFG_WEBSTAT_BIBCIRCULATION_START_YEAR = ""
 CFG_WEBSTYLE_CDSPAGEBOXLEFTBOTTOM = ""
 CFG_WEBSTYLE_CDSPAGEBOXLEFTTOP = ""
@@ -673,5 +759,5 @@ CFG_WEBSTYLE_TEMPLATE_SKIN = "default"
 CFG_WEBSUBMIT_USE_MATHJAX = 0
 CFG_XAPIAN_ENABLED = ""
 CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE = 0
-CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES = [0, 1, ]
+CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES = [0, 1, 2]
 # END OF GENERATED FILE

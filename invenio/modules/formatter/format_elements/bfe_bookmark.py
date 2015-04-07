@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """BibFormat element - bookmark toolbar using:
 
     <http://keith-wood.name/bookmark.html>
@@ -24,7 +24,7 @@
 
 import cgi
 
-from invenio.config import CFG_SITE_URL, CFG_SITE_RECORD, CFG_CERN_SITE
+from invenio.config import CFG_SITE_URL, CFG_BASE_URL, CFG_SITE_RECORD, CFG_CERN_SITE
 from invenio.legacy.search_engine import record_public_p
 from invenio.utils.html import escape_javascript_string
 from invenio.modules.formatter.format_elements.bfe_sciencewise import create_sciencewise_url, \
@@ -86,7 +86,7 @@ $('#bookmark_sciencewise').bookmark({sites: ['sciencewise']});
     url = '%(siteurl)s/%(record)s/%(recid)s' % \
           {'recid': bfo.recID,
            'record': CFG_SITE_RECORD,
-           'siteurl': CFG_SITE_URL}
+           'siteurl': CFG_BASE_URL}
 
     args = parse_url_string(bfo.user_info['uri'])
     journal_name = args["journal_name"]
@@ -103,13 +103,13 @@ $('#bookmark_sciencewise').bookmark({sites: ['sciencewise']});
     #bookmark_sciencewise li { padding: 2px; width: 25px}
     #bookmark_sciencewise ul, #bookmark ul { list-style-image: none; }
 </style>
-<script type="text/javascript" src="%(siteurl)s/js/jquery.bookmark.min.js"></script>
-<style type="text/css">@import "%(siteurl)s/css/jquery.bookmark.css";</style>
+<script type="text/javascript" src="%(siteurl)s/vendors/jquery.bookmark/jquery.bookmark.min.js"></script>
+<style type="text/css">@import "%(siteurl)s/vendors/jquery.bookmark/jquery.bookmark.css";</style>
 <script type="text/javascript">// <![CDATA[
     %(sciencewise)s
     $('#bookmark').bookmark({
         sites: [%(sites_js)s],
-        icons: '%(siteurl)s/img/bookmarks.png',
+        icons: '%(siteurl)s/vendors/jquery.bookmark/bookmarks.png',
         url: '%(url)s',
         addEmail: true,
         title: "%(title)s",
@@ -119,7 +119,7 @@ $('#bookmark_sciencewise').bookmark({sites: ['sciencewise']});
 </script>
 <!-- JQuery Bookmark Button END -->
 """ % {
-        'siteurl': CFG_SITE_URL,
+        'siteurl': CFG_BASE_URL,
         'sciencewise': sciencewise_script,
         'title': escape_javascript_string(title,
                                           escape_for_html=False,

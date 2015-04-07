@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 Provide a "ticket" interface with a request tracker.
@@ -25,10 +25,10 @@ This is a base class that cannot be instantiated.
 
 from invenio.legacy.webuser import get_user_preferences
 
-class BibCatalogSystem:
+class BibCatalogSystem(object):
     """ A template class for ticket support."""
 
-    TICKET_ATTRIBUTES = ['ticketid', 'priority', 'recordid', 'subject', 'text', 'creator', 'owner', 'date', 'status', 'queue', 'url_display', 'url_modify', 'url_close']
+    TICKET_ATTRIBUTES = ['ticketid', 'priority', 'recordid', 'subject', 'text', 'creator', 'owner', 'date', 'status', 'queue', 'url_display', 'url_modify', 'url_close', 'created']
 
     def check_system(self, uid=None):
         """Check connectivity. Return a string describing the error or an empty str
@@ -68,7 +68,7 @@ class BibCatalogSystem:
         raise NotImplementedError("This class cannot be instantiated")
 
     def ticket_submit(self, uid=None, subject="", recordid=-1, text="", queue="", priority="", owner="",requestor=""):
-        """submit a ticket. Return ticket number on success, otherwise None
+        """submit a ticket. Return ticket_id on success, otherwise None
            @param uid: invenio user id. optional
            @type uid: number
            @param subject: set this as the ticket's subject.
@@ -85,7 +85,7 @@ class BibCatalogSystem:
            @type owner: number
            @param requestor: set ticket requestor to this email.
            @type requestor: string
-           @return: new ticket id or None
+           @return: new ticket_id or None
         """
         raise NotImplementedError("This class cannot be instantiated")
 
@@ -97,6 +97,17 @@ class BibCatalogSystem:
            @type ticketid: number
            @param to_user: assign ticket to this user
            @type to_user: number
+           @return: 1 on success, 0 otherwise
+           @rtype: number
+        """
+        raise NotImplementedError("This class cannot be instantiated")
+
+    def ticket_steal(self, uid, ticketid):
+        """Steal a ticket from a user.
+           @param uid: invenio user id
+           @type uid: number
+           @param ticketid: ticket id
+           @type ticketid: number
            @return: 1 on success, 0 otherwise
            @rtype: number
         """
@@ -140,6 +151,16 @@ class BibCatalogSystem:
            @type attributes: list
            @return: dictionary whose fields are TICKET_ATTRIBUTES
            @rtype: dictionary
+        """
+        raise NotImplementedError("This class cannot be instantiated")
+
+    def get_queues(self, uid):
+        """Return a list of all available queues
+           @param uid: user id
+           @type uid: number
+           @return: list whose every element is a dictionary representing a queue
+           e.g {'id': '35', 'name': 'Admins'}
+           @rtype: list
         """
         raise NotImplementedError("This class cannot be instantiated")
 

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Helper functions for building and running test suites."""
 
@@ -25,6 +25,7 @@ from __future__ import print_function, with_statement
 
 CFG_TESTUTILS_VERBOSE = 1
 
+import difflib
 import os
 import sys
 import time
@@ -45,6 +46,7 @@ from six import iteritems
 from six.moves.urllib.parse import urlsplit, urlunsplit
 from urllib import urlencode
 from itertools import chain, repeat
+from xml.dom.minidom import parseString
 
 try:
     from selenium import webdriver
@@ -210,6 +212,20 @@ class InvenioTestCase(TestCase):
         return
 
 
+class InvenioXmlTestCase(InvenioTestCase):
+    def assertXmlEqual(self, got, want):
+        xml_lines = parseString(got).toprettyxml(encoding='utf-8').split('\n')
+        xml = '\n'.join(line for line in xml_lines if line.strip())
+        xml2_lines = parseString(want).toprettyxml(encoding='utf-8').split('\n')
+        xml2 = '\n'.join(line for line in xml2_lines if line.strip())
+        try:
+            self.assertEqual(xml, xml2)
+        except AssertionError:
+            for line in difflib.unified_diff(xml.split('\n'), xml2.split('\n')):
+                print(line.strip('\n'))
+            raise
+
+
 class FlaskSQLAlchemyTest(InvenioTestCase):
 
     """Setting up and tearing down the database during tests."""
@@ -303,7 +319,7 @@ def make_file_fixture(filename, base64_file):
         file_to_base64() to get the base64 encoding of a file. If not provided
         a PDF file be generated instead, including
     """
-    fp = StringIO.StringIO(binascii.a2b_base64(base64_file)),
+    fp = StringIO.StringIO(binascii.a2b_base64(base64_file))
     return fp, filename
 
 
@@ -1232,21 +1248,38 @@ def build_and_run_flask_test_suite():
     run_test_suite(complete_suite)
 
 
-from invenio.base.utils import import_submodules_from_packages
-
-
-def iter_suites():
+def iter_suites(packages=None):
     """Yield all testsuites."""
-    app = create_app()
-    packages = ['invenio', 'invenio.base', 'invenio.celery']
-    packages += app.config.get('PACKAGES', [])
+    from werkzeug.utils import import_string, find_modules
+    from flask.ext.registry import ModuleAutoDiscoveryRegistry, \
+        ImportPathRegistry
 
-    for module in import_submodules_from_packages('testsuite',
-                                                  packages=packages):
-        if not module.__name__.split('.')[-1].startswith('test_'):
-            continue
-        if hasattr(module, 'TEST_SUITE'):
-            yield module.TEST_SUITE
+    app = create_app()
+
+    if packages is None:
+        testsuite = ModuleAutoDiscoveryRegistry('testsuite', app=app)
+        from invenio import testsuite as testsuite_invenio
+        from invenio.base import testsuite as testsuite_base
+        from invenio.celery import testsuite as testsuite_celery
+        testsuite.register(testsuite_invenio)
+        testsuite.register(testsuite_base)
+        testsuite.register(testsuite_celery)
+    else:
+        exclude = map(lambda x: x + '.testsuite',
+                      app.config.get('PACKAGES_EXCLUDE', []))
+        testsuite = ImportPathRegistry(initial=packages, exclude=exclude,
+                                       load_modules=True)
+
+    for package in testsuite:
+        for name in find_modules(package.__name__):
+            module = import_string(name)
+            if not module.__name__.split('.')[-1].startswith('test_'):
+                continue
+            if hasattr(module, 'TEST_SUITE'):
+                yield module.TEST_SUITE
+            else:
+                app.logger.warning(
+                    "%s: No test suite defined." % module.__name__)
 
 
 def suite():

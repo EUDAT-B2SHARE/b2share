@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 Tool for caching important infos, which are slow to rebuild, but that
@@ -29,7 +29,7 @@ class InvenioDataCacherError(Exception):
     """Error raised by data cacher."""
     pass
 
-class DataCacher:
+class DataCacher(object):
     """
     DataCacher is an abstract cacher system, for caching informations
     that are slow to retrieve but that don't change too much during
@@ -65,10 +65,6 @@ class DataCacher:
         Create and populate cache by calling cache filler.  Called on
         startup and used later during runtime as needed by clients.
         """
-        # We empty the cache first to force freeing of the variable
-        # this is useful when it is really big like our citations dictionary
-        self.cache = None
-
         self.cache = self.cache_filler()
         self.timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 

@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 # pylint: disable=C0301
 
@@ -44,6 +44,7 @@ from invenio.config import \
      CFG_WEBSEARCH_SHOW_COMMENT_COUNT, \
      CFG_WEBCOMMENT_ALLOW_REVIEWS, \
      CFG_WEBSEARCH_SHOW_REVIEW_COUNT, \
+     CFG_WEBLINKBACK_TRACKBACK_ENABLED, \
      CFG_BIBRANK_SHOW_CITATION_LINKS, \
      CFG_INSPIRE_SITE, \
      CFG_CERN_SITE
@@ -77,7 +78,7 @@ from invenio.modules.access.control import acc_get_action_id
 from invenio.modules.access.local_config import VIEWRESTRCOLL
 from invenio.ext.logging import register_exception
 from intbitset import intbitset
-from invenio.legacy.bibrank.citation_searcher import get_cited_by_count
+from invenio.legacy.bibrank.citation_searcher import get_cited_by, get_cited_by_count
 from invenio.legacy.bibrecord import record_get_field_instances
 
 def getnavtrail(previous = ''):
@@ -92,21 +93,26 @@ def fix_collection_scores():
     Re-calculate and re-normalize de scores of the collection relationship.
     """
     for id_dad in intbitset(run_sql("SELECT id_dad FROM collection_collection")):
-        for index, id_son in enumerate(run_sql("SELECT id_son FROM collection_collection WHERE id_dad=%s ORDER BY score DESC", (id_dad, ))):
-            run_sql("UPDATE collection_collection SET score=%s WHERE id_dad=%s AND id_son=%s", (index * 10 + 10, id_dad, id_son[0]))
+        for index, id_son in enumerate(run_sql("SELECT id_son FROM collection_collection WHERE id_dad=%s ORDER BY score ASC", (id_dad, ))):
+            run_sql("UPDATE collection_collection SET score=%s WHERE id_dad=%s AND id_son=%s", (index, id_dad, id_son[0]))
 
 def perform_modifytranslations(colID, ln, sel_type='', trans=[], confirm=-1, callback='yes'):
     """Modify the translations of a collection
     sel_type - the nametype to modify
     trans - the translations in the same order as the languages from get_languages()"""
-
     output = ''
     subtitle = ''
     sitelangs = get_languages()
+    if sel_type in ('r', 'v', 'l'):
+        table = 'collectionbox'
+        identifier_column = "id_collection"
+    else:
+        table = 'collection'
+        identifier_column = None
     if type(trans) is str:
         trans = [trans]
     if confirm in ["2", 2] and colID:
-        finresult = modify_translations(colID, sitelangs, sel_type, trans, "collection")
+        finresult = modify_translations(colID, sitelangs, sel_type, trans, table, identifier_column)
     col_dict = dict(get_def_name('', "collection"))
 
     if colID and int(colID) in col_dict:
@@ -120,6 +126,7 @@ def perform_modifytranslations(colID, ln, sel_type='', trans=[], confirm=-1, cal
         actions = []
 
         types = get_col_nametypes()
+        types.extend([('v', '"Focus on" box'), ('r', '"Narrow by" box'), ('l', '"Latest additions" box')])
         if len(types) > 1:
             text  = """
             <span class="adminlabel">Name type</span>
@@ -144,7 +151,7 @@ def perform_modifytranslations(colID, ln, sel_type='', trans=[], confirm=-1, cal
             trans = []
             for (key, value) in sitelangs:
                 try:
-                    trans_names = get_name(colID, key, sel_type, "collection")
+                    trans_names = get_name(colID, key, sel_type, table, identifier_column)
                     trans.append(trans_names[0][0])
                 except StandardError as e:
                     trans.append('')
@@ -1804,18 +1811,18 @@ def perform_update_detailed_record_options(colID, ln, tabs, recurse):
         run_sql("REPLACE INTO collectiondetailedrecordpagetabs" + \
                 " SET id_collection=%s, tabs=%s", (colID, ';'.join(tabs)))
  ##        for enabled_tab in tabs:
-##             run_sql("REPLACE INTO collectiondetailedrecordpagetabs" + \
-##                 " SET id_collection='%s', tabs='%s'" % (colID, ';'.join(tabs)))
+#             run_sql("REPLACE INTO collectiondetailedrecordpagetabs" + \
+#                 " SET id_collection='%s', tabs='%s'" % (colID, ';'.join(tabs)))
         if recurse:
             for descendant_id in get_collection_descendants(colID):
                 update_settings(descendant_id, tabs, recurse)
 
     update_settings(colID, tabs, recurse)
-##     for colID in colIDs:
-##         run_sql("DELETE FROM collectiondetailedrecordpagetabs WHERE id_collection='%s'" % colID)
-##         for enabled_tab in tabs:
-##             run_sql("REPLACE INTO collectiondetailedrecordpagetabs" + \
-##                 " SET id_collection='%s', tabs='%s'" % (colID, ';'.join(tabs)))
+#     for colID in colIDs:
+#         run_sql("DELETE FROM collectiondetailedrecordpagetabs WHERE id_collection='%s'" % colID)
+#         for enabled_tab in tabs:
+#             run_sql("REPLACE INTO collectiondetailedrecordpagetabs" + \
+#                 " SET id_collection='%s', tabs='%s'" % (colID, ';'.join(tabs)))
 
     #if callback:
     return perform_editcollection(colID, ln, "perform_modifytranslations",
@@ -1998,18 +2005,18 @@ def perform_index(colID=1, ln=CFG_SITE_LANG, mtype='', content='', confirm=0):
     fin_output += """
     <table>
     <tr>
-    <td>0.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_showall">Show all</a></small></td>
-    <td>1.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_addcollection">Create new collection</a></small></td>
-    <td>2.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_addcollectiontotree">Attach collection to tree</a></small></td>
-    <td>3.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_modifycollectiontree">Modify collection tree</a></small></td>
-    <td>4.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_checkwebcollstatus">Webcoll Status</a></small></td>
+    <td>0.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_showall">Show all</a></small></td>
+    <td>1.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_addcollection">Create new collection</a></small></td>
+    <td>2.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_addcollectiontotree">Attach collection to tree</a></small></td>
+    <td>3.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_modifycollectiontree">Modify collection tree</a></small></td>
+    <td>4.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_checkwebcollstatus">Webcoll Status</a></small></td>
     </tr><tr>
-    <td>5.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_checkcollectionstatus">Collection Status</a></small></td>
-    <td>6.&nbsp;<small><a href="%s/admin/websearch/websearchadmin.py?colID=%s&amp;ln=%s&amp;mtype=perform_checkexternalcollections">Check external collections</a></small></td>
-    <td>7.&nbsp;<small><a href="%s/help/admin/websearch-admin-guide?ln=%s">Guide</a></small></td>
+    <td>5.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_checkcollectionstatus">Collection Status</a></small></td>
+    <td>6.&nbsp;<small><a href="{cfg_site_url}/admin/websearch/websearchadmin.py?colID={col_id}&amp;ln={ln}&amp;mtype=perform_checkexternalcollections">Check external collections</a></small></td>
+    <td>7.&nbsp;<small><a href="{cfg_site_url}/help/admin/websearch-admin-guide?ln={col_id}">Guide</a></small></td>
     </tr>
     </table>
-    """ % (CFG_SITE_URL, colID, ln, CFG_SITE_URL, colID, ln, CFG_SITE_URL, colID, ln, CFG_SITE_URL, colID, ln, CFG_SITE_URL, colID, ln, CFG_SITE_URL, colID, ln, CFG_SITE_URL, colID, ln, CFG_SITE_URL, ln)
+    """.format(cfg_site_url=CFG_SITE_URL, col_id=colID, ln=ln)
 
     if mtype == "":
         fin_output += """<br /><br /><b><span class="info">To manage the collections, select an item from the menu.</span><b><br />"""
@@ -2047,7 +2054,6 @@ def perform_index(colID=1, ln=CFG_SITE_LANG, mtype='', content='', confirm=0):
     elif mtype == "perform_checkexternalcollections" or mtype == "perform_showall":
         fin_output += perform_checkexternalcollections(colID, ln, callback='')
 
-    body = [fin_output]
     body = [fin_output]
 
     return addadminbox('<b>Menu</b>', body)
@@ -2702,9 +2708,9 @@ def get_col_tree(colID, rtype=''):
         while len(stack) > 0:
             ccolID = stack.pop()
             if ccolID == colID and rtype:
-                res = run_sql("SELECT id_son, score, type FROM collection_collection WHERE id_dad=%s AND type=%s ORDER BY score ASC,id_son", (ccolID, rtype))
+                res = run_sql("SELECT id_son, score, type FROM collection_collection WHERE id_dad=%s AND type=%s ORDER BY score DESC,id_son", (ccolID, rtype))
             else:
-                res = run_sql("SELECT id_son, score, type FROM collection_collection WHERE id_dad=%s ORDER BY score ASC,id_son", (ccolID, ))
+                res = run_sql("SELECT id_son, score, type FROM collection_collection WHERE id_dad=%s ORDER BY score DESC,id_son", (ccolID, ))
             ssize += 1
             ntree = []
             for i in range(0, len(res)):
@@ -2872,7 +2878,7 @@ def get_col_nametypes():
     """Return a list of the various translationnames for the collections"""
 
     type = []
-    type.append(('ln', 'Long name'))
+    type.append(('ln', 'Collection name'))
     return type
 
 def find_last(tree, start_son):
@@ -3404,6 +3410,7 @@ def get_detailed_page_tabs(colID=None, recID=None, ln=CFG_SITE_LANG):
             'plots'     : {'label': _('Plots'),            'visible': False, 'enabled': True, 'order': 9},
             'holdings'  : {'label': _('Holdings'),         'visible': False, 'enabled': True, 'order': 10},
             'linkbacks' : {'label': _('Linkbacks'),        'visible': False, 'enabled': True, 'order': 11},
+            'hepdata'   : {'label': _('HepData'),          'visible': False, 'enabled': True, 'order': 12},
             }
 
     res = run_sql("SELECT tabs FROM collectiondetailedrecordpagetabs " + \
@@ -3421,6 +3428,8 @@ def get_detailed_page_tabs(colID=None, recID=None, ln=CFG_SITE_LANG):
         for key in tabs.keys():
             tabs[key]['visible'] = True
 
+    if not CFG_WEBLINKBACK_TRACKBACK_ENABLED:
+        tabs['linkbacks']['visible'] = False
 
     if not CFG_WEBCOMMENT_ALLOW_COMMENTS:
         tabs['comments']['visible'] = False
@@ -3469,11 +3478,6 @@ def get_detailed_page_tabs(colID=None, recID=None, ln=CFG_SITE_LANG):
         if disable_files_tab_p:
             tabs['files']['enabled'] = False
 
-        #Disable holdings tab if collection != Books
-        collection = run_sql("""select name from collection where id=%s""", (colID, ))
-        if collection[0][0] != 'Books':
-            tabs['holdings']['enabled'] = False
-
         # Disable Plots tab if no docfile of doctype Plot found
         brd =  BibRecDocs(recID)
         if len(brd.list_bibdocs('Plot')) == 0:
@@ -3484,11 +3488,24 @@ def get_detailed_page_tabs(colID=None, recID=None, ln=CFG_SITE_LANG):
             if recID in get_collection_reclist("Books & Proceedings"):
                 tabs['holdings']['visible'] = True
                 tabs['holdings']['enabled'] = True
+        # now treating the HEP data -> we have to check if there is HepData
+        # associated with the record and if so, make the tab visible and enabled
+
+        has_hepdata = record_has_hepdata_attached(recID)
+        tabs['hepdata']['visible'] = has_hepdata
+        tabs['hepdata']['enabled'] = has_hepdata
 
     tabs[''] = tabs['metadata']
     del tabs['metadata']
 
     return tabs
+
+
+
+def record_has_hepdata_attached(recID):
+    """returns True or False depending if there is HepData attached or not"""
+    from invenio.legacy.search_engine import search_pattern
+    return len(search_pattern(p="786__w:%s" % (str(recID)))) > 0
 
 def get_detailed_page_tabs_counts(recID):
     """
@@ -3513,7 +3530,13 @@ def get_detailed_page_tabs_counts(recID):
                    }
     from invenio.legacy.search_engine import get_field_tags, get_record
     if CFG_BIBRANK_SHOW_CITATION_LINKS:
-        tabs_counts['Citations'] = get_cited_by_count(recID)
+        if CFG_INSPIRE_SITE:
+            from invenio.legacy.search_engine import search_unit
+            citers_recids = intbitset(get_cited_by(recID))
+            citeable_recids = search_unit(p='citeable', f='collection')
+            tabs_counts['Citations'] = len(citers_recids & citeable_recids)
+        else:
+            tabs_counts['Citations'] = get_cited_by_count(recID)
     if not CFG_CERN_SITE:#FIXME:should be replaced by something like CFG_SHOW_REFERENCES
         reftag = ""
         reftags = get_field_tags("reference")

@@ -1,35 +1,37 @@
-@import "bootstrap/bootstrap.less";
-@import "font-awesome/font-awesome.less";
-@icon-font-path: "/fonts/";
+/**
+ * -*- mode: text; coding: utf-8; -*-
+ *
+ * This file is part of Invenio.
+ * Copyright (C) 2014 CERN.
 
-body {
-	padding-top: 70px;
-}
+ * Invenio is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * Invenio is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Invenio; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ */
+@charset "utf-8";
 
-#footer a, #footer a:hover {
-  color: #666;
-}
-#footer, #footer p {
-  font-size: 11px;
-  color: #333;
-}
+@import "../vendors/bootstrap/less/bootstrap.less";
+@import "../vendors/font-awesome/less/font-awesome.less";
 
-#footer .langs {
-  text-align: right;
-}
+// Setting the path to fonts files.
+@icon-font-path: "/vendors/bootstrap/fonts/";
+@fa-font-path: "/vendors/font-awesome/fonts";
+//@fa-font-path: "//netdna.bootstrapcdn.com/font-awesome/4.1.0/fonts";
+
+@footer-height: 150px;
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	font-weight: bold;
-}
-
-/* Lastly, apply responsive CSS fixes as necessary */
-@media (max-width: 767px) {
-  #footer {
-    margin-left: -20px;
-    margin-right: -20px;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
 }
 
 .navbar-brand img {
@@ -47,10 +49,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	display: inline !important; /* to overwrite bootstrap's important */
 }
 
-@media (max-width: 992px) {
+@media (max-width: @screen-md-min) {
 	.btn-inline-icon-hide-sm span {
 		display: none !important; /* to overwrite important above*/
-	}	
+	}
 }
 
 /* to make inline sub-forms fields stick together */
@@ -89,26 +91,3 @@ a.label, a.label:hover, .label a, .label a:hover { color: white;}
     margin-bottom: 10px;
 }
 
-/*
------------------------ Stick footer ----------------------- */
-/* Reference: http://getbootstrap.com/examples/sticky-footer/sticky-footer.css */
-html,
-body {
-  height: 100%;
-  /* The html and body elements cannot have any padding or margin. */
-}
-
-/* Wrapper for page content to push down footer */
-#wrap {
-  min-height: 100%;
-  height: auto;
-  /* Negative indent footer by its height */
-  margin: 0 auto -150px;
-  /* Pad bottom by footer height */
-  padding: 0 0 150px;
-}
-
-/* Set the fixed height of the footer here */
-#footer {
-  height: 150px;
-}

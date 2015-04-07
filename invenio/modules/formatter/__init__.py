@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-"""
-Format records using chosen format.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""Format records using chosen format.
 
 The main APIs are:
-  - format_record
-  - format_records
-  - create_excel
-  - get_output_format_content_type
+- format_record
+- format_records
+- create_excel
+- get_output_format_content_type
 
 This module wraps the BibFormat engine and its associated
 functions. This is also where special formatting functions of multiple
@@ -40,18 +40,16 @@ from __future__ import print_function
 import getopt
 import sys
 import zlib
-import six
 
-from flask import current_app
 from invenio.base.globals import cfg
 
 
 # Functions to format a single record
-##
+#
 def format_record(recID, of, ln=None, verbose=0, search_pattern=None,
-                  xml_record=None, user_info=None, on_the_fly=False):
-    """
-    Format a record in given output format.
+                  xml_record=None, user_info=None, on_the_fly=False,
+                  save_missing=True, force_2nd_pass=False, **kwargs):
+    """Format a record in given output format.
 
     Return a formatted version of the record in the specified
     language, search pattern, and with the specified output format.
@@ -96,119 +94,36 @@ def format_record(recID, of, ln=None, verbose=0, search_pattern=None,
     :rtype: string
     """
     ln = ln or cfg['CFG_SITE_LANG']
-    from invenio.legacy.search_engine import record_exists
-    if search_pattern is None:
-        search_pattern = []
+    from . import engine as bibformat_engine
 
-    out = ""
+    out, needs_2nd_pass = bibformat_engine.format_record_1st_pass(
+        recID=recID,
+        of=of,
+        ln=ln,
+        verbose=verbose,
+        search_pattern=search_pattern,
+        xml_record=xml_record,
+        user_info=user_info,
+        on_the_fly=on_the_fly,
+        save_missing=save_missing,
+        **kwargs)
+    if needs_2nd_pass or force_2nd_pass:
+        out = bibformat_engine.format_record_2nd_pass(
+            recID=recID,
+            of=of,
+            template=out,
+            ln=ln,
+            verbose=verbose,
+            search_pattern=search_pattern,
+            xml_record=xml_record,
+            user_info=user_info,
+            **kwargs)
 
-    if verbose == 9:
-        out += """\n<span class="quicknote">
-        Formatting record %i with output format %s.
-        </span>""" % (recID, of)
-    ############### FIXME: REMOVE WHEN MIGRATION IS DONE ###############
-    if cfg['CFG_BIBFORMAT_USE_OLD_BIBFORMAT'] and cfg['CFG_PATH_PHP']:
-        from . import engine as bibformat_engine
-        return bibformat_engine.call_old_bibformat(recID, of=of,
-                                                   on_the_fly=on_the_fly)
-    ############################# END ##################################
-    if not on_the_fly and \
-       (ln == cfg['CFG_SITE_LANG'] or
-        of.lower() == 'xm' or
-        cfg['CFG_BIBFORMAT_USE_OLD_BIBFORMAT'] or
-        (of.lower() in cfg['CFG_BIBFORMAT_DISABLE_I18N_FOR_CACHED_FORMATS'])) \
-       and record_exists(recID) != -1:
-        # Try to fetch preformatted record. Only possible for records
-        # formatted in CFG_SITE_LANG language (other are never
-        # stored), or of='xm' which does not depend on language.
-        # Exceptions are made for output formats defined in
-        # CFG_BIBFORMAT_DISABLE_I18N_FOR_CACHED_FORMATS, which are
-        # always served from the same cache for any language.  Also,
-        # do not fetch from DB when record has been deleted: we want
-        # to return an "empty" record in that case
-        from . import api
-        res = api.get_preformatted_record(recID, of)
-        if res is not None:
-            # record 'recID' is formatted in 'of', so return it
-            if verbose == 9:
-                last_updated = api.get_preformatted_record_date(recID, of)
-                out += """\n<br/><span class="quicknote">
-                Found preformatted output for record %i (cache updated on %s).
-                </span><br/>""" % (recID, last_updated)
-            if of.lower() == 'xm':
-                res = filter_hidden_fields(res, user_info)
-            # try to replace language links in pre-cached res, if applicable:
-            if ln != cfg['CFG_SITE_LANG'] and of.lower() in \
-                    cfg['CFG_BIBFORMAT_DISABLE_I18N_FOR_CACHED_FORMATS']:
-                # The following statements try to quickly replace any
-                # language arguments in URL links.  Not an exact
-                # science, but should work most of the time for most
-                # of the formats, with not too many false positives.
-                # We don't have time to parse output much here.
-                res = res.replace('?ln=' + cfg['CFG_SITE_LANG'], '?ln=' + ln)
-                res = res.replace('&ln=' + cfg['CFG_SITE_LANG'], '&ln=' + ln)
-                res = res.replace('&amp;ln=' + cfg['CFG_SITE_LANG'],
-                                  '&amp;ln=' + ln)
-            out += res
-            return out
-        else:
-            if verbose == 9:
-                out += """\n<br/><span class="quicknote">""" \
-                       """No preformatted output found for record %s.""" \
-                       """</span>""" % recID
-
-    # Live formatting of records in all other cases
-    if verbose == 9:
-        out += """\n<br/><span class="quicknote">
-        Formatting record %i on-the-fly.
-        </span>""" % recID
-
-    try:
-        from . import engine as bibformat_engine
-        out += bibformat_engine.format_record(recID=recID,
-                                              of=of,
-                                              ln=ln,
-                                              verbose=verbose,
-                                              search_pattern=search_pattern,
-                                              xml_record=xml_record,
-                                              user_info=user_info)
-        if of.lower() == 'xm':
-            out = filter_hidden_fields(out, user_info)
-        return out
-    except Exception as e:
-        if current_app.debug:
-            six.reraise(*sys.exc_info())
-        from invenio.ext.logging import register_exception
-        register_exception(prefix="An error occured while formatting record "
-                                  "%i in %s" % (recID, of),
-                           alert_admin=True)
-        #Failsafe execution mode
-        import invenio.legacy.template
-        websearch_templates = invenio.legacy.template.load('websearch')
-        if verbose == 9:
-            out += """\n<br/><span class="quicknote">
-            An error occured while formatting record %i. (%s)
-            </span>""" % (recID, str(e))
-        if of.lower() == 'hd':
-            if verbose == 9:
-                out += """\n<br/><span class="quicknote">Formatting record""" \
-                       """ %i with """ \
-                       """websearch_templates.tmpl_print_record_detailed.""" \
-                       """</span><br/>""" % recID
-                return out + websearch_templates.tmpl_print_record_detailed(
-                    ln=ln,
-                    recID=recID)
-        if verbose == 9:
-            out += """\n<br/><span class="quicknote">Formatting record %i """ \
-                   """with websearch_templates.tmpl_print_record_brief.""" \
-                   """</span><br/>""" % recID
-        return out + websearch_templates.tmpl_print_record_brief(ln=ln,
-                                                                 recID=recID)
+    return out
 
 
 def record_get_xml(recID, format='xm', decompress=zlib.decompress):
-    """
-    Return an XML string of the record given by recID.
+    """Return an XML string of the record given by recID.
 
     The function builds the XML directly from the database,
     without using the standard formatting process.
@@ -236,13 +151,13 @@ def record_get_xml(recID, format='xm', decompress=zlib.decompress):
 # You should not modify format_records when adding a complex
 # formatting of multiple records, but add a create_* method
 # that relies on format_records to do the formatting.
-##
+#
 def format_records(recIDs, of, ln=None, verbose=0, search_pattern=None,
                    xml_records=None, user_info=None, record_prefix=None,
                    record_separator=None, record_suffix=None, prologue="",
-                   epilogue="", req=None, on_the_fly=False):
-    """
-    Format records given by a list of record IDs or a list of records as xml.
+                   epilogue="", req=None, on_the_fly=False,
+                   extra_context=None):
+    """Format records given by a list of record IDs or a list of records as xml.
 
     Add a prefix before each record, a suffix after each record, plus a
     separator between records.
@@ -343,7 +258,7 @@ def format_records(recIDs, of, ln=None, verbose=0, search_pattern=None,
         ln = ln or cfg['CFG_SITE_LANG']
         formatted_record = format_record(recIDs[i], of, ln, verbose,
                                          search_pattern, xml_records[i],
-                                         user_info, on_the_fly)
+                                         user_info, on_the_fly, extra_context)
         formatted_records += formatted_record
         if req is not None:
             req.write(formatted_record)
@@ -378,10 +293,21 @@ def format_records(recIDs, of, ln=None, verbose=0, search_pattern=None,
     return prologue + formatted_records + epilogue
 
 
+def format_with_format_template(format_template_filename, bfo,
+                                verbose=0, format_template_code=None):
+    """Wrapper around format template."""
+    from . import engine as bibformat_engine
+    evaluated_format, dummy = bibformat_engine.format_with_format_template(
+        format_template_filename=format_template_filename,
+        bfo=bfo,
+        verbose=verbose,
+        format_template_code=format_template_code)
+    return evaluated_format
+
+
 def create_excel(recIDs, req=None, ln=None, ot=None, ot_sep="; ",
                  user_info=None):
-    """
-    Return an Excel readable format containing the given recIDs.
+    """Return an Excel readable format containing the given recIDs.
 
     If 'req' is given, also prints the output in 'req' while individual
     records are being formatted.
@@ -476,71 +402,6 @@ def create_excel(recIDs, req=None, ln=None, ot=None, ot_sep="; ",
     return excel_formatted_records
 
 
-# Utility functions
-##
-def make_filter_line(hide_tag):
-    """Generate a line used for filtering MARCXML."""
-    hide_tag = str(hide_tag)
-    tag = hide_tag[:3]
-    ind1 = hide_tag[3:4]
-    ind2 = hide_tag[4:5]
-
-    if ind1 == "_":
-        ind1 = " "
-    if ind2 == "_":
-        ind2 = " "
-
-    if not ind1 and not ind2:
-        return 'datafield tag="%s"' % tag
-    if not ind2 and ind1:
-        return 'datafield tag="%s" ind1="%s"' % (tag, ind1)
-    return 'datafield tag="%s" ind1="%s"  ind2="%s"' % (tag, ind1, ind2)
-
-
-def filter_hidden_fields(recxml, user_info=None, filter_tags=None,
-                         force_filtering=False):
-    """
-    Filter out tags specified by filter_tags from MARCXML.
-
-    If the user is allowed to run bibedit, then filter nothing, unless
-    force_filtering is set to True.
-
-    :param recxml: marcxml presentation of the record
-    :param user_info: user information; if None, then assume invoked via CLI
-                      with all rights :param filter_tags: list of MARC tags to
-                      be filtered :param force_filtering: do we force filtering
-                      regardless of user rights?
-    :return: recxml without the hidden fields
-    """
-    filter_tags = filter_tags or cfg['CFG_BIBFORMAT_HIDDEN_TAGS']
-    if force_filtering:
-        pass
-    else:
-        if user_info is None:
-            #by default
-            return recxml
-        else:
-            from invenio.modules.access.engine import acc_authorize_action
-            if (acc_authorize_action(user_info, 'runbibedit')[0] == 0):
-                #no need to filter
-                return recxml
-    #filter..
-    out = ""
-    omit = False
-    filter_lines = map(make_filter_line, filter_tags)
-    for line in recxml.splitlines(True):
-        #check if this block needs to be omitted
-        for hide_line in filter_lines:
-            if line.count(hide_line):
-                omit = True
-        if not omit:
-            out += line
-        if omit and line.count('</datafield>'):
-            omit = False
-
-    return out
-
-
 def get_output_format_content_type(of, default_content_type="text/html"):
     """
     Return the content type of the given output format.
@@ -570,7 +431,6 @@ def print_records(recIDs, of='hb', ln=None, verbose=0,
     from flask import request
     from invenio.base.i18n import wash_language
     from invenio.ext.template import render_template_to_string
-    from invenio.modules.formatter.engine import format_record
     from invenio.modules.search.models import Format
     from invenio.utils.pagination import Pagination
     from invenio.modules.formatter.engine import \
@@ -580,14 +440,20 @@ def print_records(recIDs, of='hb', ln=None, verbose=0,
     jrec = request.values.get('jrec', ctx.get('jrec', 1), type=int)
     rg = request.values.get('rg', ctx.get('rg', 10), type=int)
     ln = ln or wash_language(request.values.get('ln', cfg['CFG_SITE_LANG']))
+    ot = (request.values.get('ot', ctx.get('ot')) or '').split(',')
+    records = ctx.get('records', len(recIDs))
+
+    if jrec > records:
+        jrec = rg * (records // rg) + 1
+
     pages = int(ceil(jrec / float(rg))) if rg > 0 else 1
 
     context = dict(
-        of=of, jrec=jrec, rg=rg, ln=ln,
+        of=of, jrec=jrec, rg=rg, ln=ln, ot=ot,
         facets={},
         time=time,
         recids=recIDs,
-        pagination=Pagination(pages, rg, ctx.get('records', len(recIDs))),
+        pagination=Pagination(pages, rg, records),
         verbose=verbose,
         export_formats=Format.get_export_formats(),
         format_record=format_record,

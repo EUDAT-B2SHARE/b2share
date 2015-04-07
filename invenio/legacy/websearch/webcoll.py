@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -41,10 +41,11 @@ from invenio.config import \
      CFG_SITE_LANG, \
      CFG_SITE_NAME, \
      CFG_SITE_LANGS, \
-     CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES, \
      CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE, \
-     CFG_WEBSEARCH_DEF_RECORDS_IN_GROUPS
-from invenio.base.i18n import gettext_set_language, language_list_long
+     CFG_WEBSEARCH_DEF_RECORDS_IN_GROUPS, \
+     CFG_SCOAP3_SITE, \
+     CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES
+from invenio.base.i18n import gettext_set_language
 from invenio.legacy.search_engine import search_pattern_parenthesised, get_creation_date, get_field_i18nname, collection_restricted_p, sort_records, EM_REPOSITORY
 from invenio.legacy.dbquery import run_sql, Error, get_table_update_time
 from invenio.legacy.bibrank.record_sorter import get_bibrank_methods
@@ -57,7 +58,7 @@ from invenio.legacy.websearch_external_collections import \
      dico_collection_external_searches, \
      external_collection_sort_engine_by_name
 from invenio.legacy.bibsched.bibtask import task_init, task_get_option, task_set_option, \
-    write_message, task_has_option, task_update_progress, \
+    write_message, task_has_option, task_update_progress, task_set_task_param, \
     task_sleep_now_if_required
 import invenio.legacy.template
 websearch_templates = invenio.legacy.template.load('websearch')
@@ -69,7 +70,7 @@ from invenio.legacy.websearch_external_collections.config import CFG_HOSTED_COLL
 from invenio.base.signals import webcoll_after_webpage_cache_update, \
     webcoll_after_reclist_cache_update
 
-## global vars
+# global vars
 COLLECTION_HOUSE = {} # will hold collections we treat in this run of the program; a dict of {collname2, collobject1}, ...
 
 # CFG_CACHE_LAST_UPDATED_TIMESTAMP_TOLERANCE -- cache timestamp
@@ -97,7 +98,7 @@ def get_collection(colname):
         COLLECTION_HOUSE[colname] = colobject
     return COLLECTION_HOUSE[colname]
 
-## auxiliary functions:
+# auxiliary functions:
 def is_selected(var, fld):
     "Checks if the two are equal, and if yes, returns ' selected'.  Useful for select boxes."
     if var == fld:
@@ -139,8 +140,10 @@ class Collection:
         self.update_reclist_run_already = 0 # to speed things up without much refactoring
         self.reclist_updated_since_start = 0 # to check if webpage cache need rebuilding
         self.reclist_with_nonpublic_subcolls = intbitset()
-        # used to store the temporary result of the calculation of nbrecs of an external collection
-        self.nbrecs_tmp = None
+        # temporary counters for the number of records in hosted collections
+        self.nbrecs_tmp = None # number of records in a hosted collection
+        self.nbrecs_from_hosted_collections = 0 # total number of records from
+                                                # descendant hosted collections
         if not name:
             self.name = CFG_SITE_NAME # by default we are working on the home page
             self.id = 1
@@ -200,6 +203,45 @@ class Collection:
         out += epilog
         return out
 
+    def get_collectionbox_name(self, ln=CFG_SITE_LANG, box_type="r"):
+        """
+        Return collection-specific labelling of 'Focus on' (regular
+        collection), 'Narrow by' (virtual collection) and 'Latest
+        addition' boxes.
+
+        If translation for given language does not exist, use label
+        for CFG_SITE_LANG. If no custom label is defined for
+        CFG_SITE_LANG, return default label for the box.
+
+        @param ln: the language of the label
+        @param box_type: can be 'r' (=Narrow by), 'v' (=Focus on), 'l' (=Latest additions)
+        """
+        i18name = ""
+        res = run_sql("SELECT value FROM collectionboxname WHERE id_collection=%s AND ln=%s AND type=%s", (self.id, ln, box_type))
+        try:
+            i18name = res[0][0]
+        except IndexError:
+            res = run_sql("SELECT value FROM collectionboxname WHERE id_collection=%s AND ln=%s AND type=%s", (self.id, CFG_SITE_LANG, box_type))
+            try:
+                i18name = res[0][0]
+            except IndexError:
+                pass
+
+        if not i18name:
+            # load the right message language
+            _ = gettext_set_language(ln)
+            if box_type == "v":
+                i18name = _('Focus on:')
+            elif box_type == "r":
+                if CFG_SCOAP3_SITE:
+                    i18name = _('Narrow by publisher/journal:')
+                else:
+                    i18name = _('Narrow by collection:')
+            elif box_type == "l":
+                i18name = _('Latest additions:')
+
+        return i18name
+
     def get_ancestors(self):
         "Returns list of ancestors of the current collection."
         ancestors = []
@@ -238,7 +280,7 @@ class Collection:
         sons = []
         id_dad = self.id
         query = "SELECT cc.id_son,c.name FROM collection_collection AS cc, collection AS c "\
-                "WHERE cc.id_dad=%d AND cc.type='%s' AND c.id=cc.id_son ORDER BY score DESC, c.name ASC" % (int(id_dad), type)
+                "WHERE cc.id_dad=%d AND cc.type='%s' AND c.id=cc.id_son ORDER BY score ASC, c.name ASC" % (int(id_dad), type)
         res = run_sql(query)
         for row in res:
             sons.append(get_collection(row[1]))
@@ -250,7 +292,7 @@ class Collection:
         descendant_ids = intbitset()
         id_dad = self.id
         query = "SELECT cc.id_son,c.name FROM collection_collection AS cc, collection AS c "\
-                "WHERE cc.id_dad=%d AND cc.type='%s' AND c.id=cc.id_son ORDER BY score DESC" % (int(id_dad), type)
+                "WHERE cc.id_dad=%d AND cc.type='%s' AND c.id=cc.id_son ORDER BY score ASC" % (int(id_dad), type)
         res = run_sql(query)
         for row in res:
             col_desc = get_collection(row[1])
@@ -286,7 +328,6 @@ class Collection:
             sys.exit(1)
         # print user info:
         write_message("... creating %s" % fullfilename, verbose=6)
-        sys.stdout.flush()
         # print page body:
         cPickle.dump(filebody, f, cPickle.HIGHEST_PROTOCOL)
         # close file:
@@ -425,21 +466,15 @@ class Collection:
                     recIDs = list(self.reclist & \
                                   search_pattern_parenthesised(p='year:%s or year:%s' % \
                                                  (this_year, last_year)))
-                elif self.name in ['VideosXXX']:
-                    # detect recIDs only from this year:
-                    recIDs = list(self.reclist & \
-                                  search_pattern_parenthesised(p='year:%s' % this_year))
-                elif self.name == 'CMS Physics Analysis Summaries' and \
-                         1281585 in self.reclist:
-                    # REALLY, REALLY temporary hack
-                    recIDs = list(self.reclist)
-                    recIDs.remove(1281585)
                 # apply special filters:
                 if self.name in ['Videos']:
                     # select only videos with movies:
                     recIDs = list(intbitset(recIDs) & \
-                                  search_pattern_parenthesised(p='collection:"PUBLVIDEOMOVIE"'))
+                                  search_pattern_parenthesised(p='collection:"PUBLVIDEOMOVIE" -"Virtual Visit"'))
                     of = 'hvp'
+                if self.name in ['General Talks', 'Academic Training Lectures', 'Summer Student Lectures']:
+                    #select only the lectures with material
+                    recIDs = list(self.reclist & search_pattern_parenthesised(p='856:MediaArchive'))
                 # sort some CERN collections specially:
                 if self.name in ['Videos',
                                  'Video Clips',
@@ -452,9 +487,16 @@ class Collection:
                                  'Restricted Video Rushes',
                                  'LHC First Beam Videos',
                                  'CERN openlab Videos']:
-                    recIDs = sort_records(None, recIDs, '269__c')
+                    recIDs = sort_records(None, recIDs, '269__c', 'a')
                 elif self.name in ['LHCb Talks']:
-                    recIDs = sort_records(None, recIDs, 'reportnumber')
+                    recIDs = sort_records(None, recIDs, 'reportnumber', 'a')
+                elif self.name in ['CERN Yellow Reports']:
+                    recIDs = sort_records(None, recIDs, '084__a', 'a')
+                elif self.name in ['CERN Courier Issues',
+                                   'CERN Courier Articles',
+                                   'CERN Bulletin Issues',
+                                   'CERN Bulletin Articles']:
+                    recIDs = sort_records(None, recIDs, '773__y', 'a')
             # CERN hack ends.
 
             total = len(recIDs)
@@ -516,10 +558,10 @@ class Collection:
             # CERN hack: display the records in a grid layout
             if CFG_CERN_SITE and self.name in ['Videos']:
                 return websearch_templates.tmpl_instant_browse(
-                    aas=aas, ln=ln, recids=passIDs, more_link=url, grid_layout=True)
+                    aas=aas, ln=ln, recids=passIDs, more_link=url, grid_layout=True, father=self)
 
             return websearch_templates.tmpl_instant_browse(
-                aas=aas, ln=ln, recids=passIDs, more_link=url)
+                aas=aas, ln=ln, recids=passIDs, more_link=url, father=self)
 
         return websearch_templates.tmpl_box_no_records(ln=ln)
 
@@ -623,7 +665,7 @@ class Collection:
                         fieldname = 'sc',
                         css_class = 'address',
                         values = [
-                                  {'value' : '1' , 'text' : _("split by collection")},
+                                  {'value' : '1' , 'text' : CFG_SCOAP3_SITE and _("split by publisher/journal") or _("split by collection")},
                                   {'value' : '0' , 'text' : _("single list")}
                                  ]
                        )
@@ -687,12 +729,24 @@ class Collection:
 
     def create_searchfor(self, aas=CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE, ln=CFG_SITE_LANG):
         "Produces either Simple or Advanced 'Search for' box for the current collection."
-        if aas == 1:
+        if aas == 2:
+            return self.create_searchfor_addtosearch(ln)
+        elif aas == 1:
             return self.create_searchfor_advanced(ln)
         elif aas == 0:
             return self.create_searchfor_simple(ln)
         else:
             return self.create_searchfor_light(ln)
+
+    def create_searchfor_addtosearch(self, ln=CFG_SITE_LANG):
+        "Produces add-to-search 'Search for' box for the current collection."
+
+        return websearch_templates.tmpl_searchfor_addtosearch(
+          ln=ln,
+          collection_id=self.name,
+          record_count=self.nbrecs,
+          searchwithin= self.create_searchwithin_selection_box(fieldname='f1', ln=ln),
+        )
 
     def create_searchfor_light(self, ln=CFG_SITE_LANG):
         "Produces light 'Search for' box for the current collection."
@@ -737,24 +791,51 @@ class Collection:
         )
 
     def calculate_reclist(self):
-        """Calculate, set and return the (reclist, reclist_with_nonpublic_subcolls) tuple for given collection."""
-        if self.calculate_reclist_run_already or str(self.dbquery).startswith("hostedcollection:"):
-            # do we have to recalculate?
-            return (self.reclist, self.reclist_with_nonpublic_subcolls)
+        """
+        Calculate, set and return the (reclist,
+                                       reclist_with_nonpublic_subcolls,
+                                       nbrecs_from_hosted_collections)
+        tuple for the given collection."""
+
+        if str(self.dbquery).startswith("hostedcollection:"):
+            # we don't normally use this function to calculate the reclist
+            # for hosted collections. In case we do, recursively for a regular
+            # ancestor collection, then quickly return the object attributes.
+            return (self.reclist,
+                    self.reclist_with_nonpublic_subcolls,
+                    self.nbrecs)
+
+        if self.calculate_reclist_run_already:
+            # do we really have to recalculate? If not,
+            # then return the object attributes
+            return (self.reclist,
+                    self.reclist_with_nonpublic_subcolls,
+                    self.nbrecs_from_hosted_collections)
+
         write_message("... calculating reclist of %s" % self.name, verbose=6)
+
         reclist = intbitset() # will hold results for public sons only; good for storing into DB
         reclist_with_nonpublic_subcolls = intbitset() # will hold results for both public and nonpublic sons; good for deducing total
-                                                   # number of documents
+                                                      # number of documents
+        nbrecs_from_hosted_collections = 0 # will hold the total number of records from descendant hosted collections
+
         if not self.dbquery:
             # A - collection does not have dbquery, so query recursively all its sons
             #     that are either non-restricted or that have the same restriction rules
             for coll in self.get_sons():
-                coll_reclist, coll_reclist_with_nonpublic_subcolls = coll.calculate_reclist()
+                coll_reclist,\
+                coll_reclist_with_nonpublic_subcolls,\
+                coll_nbrecs_from_hosted_collection = coll.calculate_reclist()
+
                 if ((coll.restricted_p() is None) or
                     (coll.restricted_p() == self.restricted_p())):
                     # add this reclist ``for real'' only if it is public
                     reclist.union_update(coll_reclist)
                 reclist_with_nonpublic_subcolls.union_update(coll_reclist_with_nonpublic_subcolls)
+
+                # increment the total number of records from descendant hosted collections
+                nbrecs_from_hosted_collections += coll_nbrecs_from_hosted_collection
+
         else:
             # B - collection does have dbquery, so compute it:
             #     (note: explicitly remove DELETED records)
@@ -764,14 +845,20 @@ class Collection:
             else:
                 reclist = search_pattern_parenthesised(None, self.dbquery + ' -980__:"DELETED"', ap=-9) #ap=-9 allow queries containing hidden tags
             reclist_with_nonpublic_subcolls = copy.deepcopy(reclist)
+
         # store the results:
-        self.nbrecs = len(reclist_with_nonpublic_subcolls)
+        self.nbrecs_from_hosted_collections = nbrecs_from_hosted_collections
+        self.nbrecs = len(reclist_with_nonpublic_subcolls) + \
+                      nbrecs_from_hosted_collections
         self.reclist = reclist
         self.reclist_with_nonpublic_subcolls = reclist_with_nonpublic_subcolls
         # last but not least, update the speed-up flag:
         self.calculate_reclist_run_already = 1
-        # return the two sets:
-        return (self.reclist, self.reclist_with_nonpublic_subcolls)
+        # return the two sets, as well as
+        # the total number of records from descendant hosted collections:
+        return (self.reclist,
+                self.reclist_with_nonpublic_subcolls,
+                self.nbrecs_from_hosted_collections)
 
     def calculate_nbrecs_for_external_collection(self, timeout=CFG_EXTERNAL_COLLECTION_TIMEOUT):
         """Calculate the total number of records, aka nbrecs, for given external collection."""
@@ -816,6 +903,10 @@ class Collection:
         # last but not least, update the speed-up flag:
         self.calculate_reclist_run_already = 1
 
+    def get_added_records(self):
+        """Return new records added since last run."""
+        return self.reclist - self.old_reclist
+
     def update_reclist(self):
         "Update the record universe for given collection; nbrecs, reclist of the collection table."
         if self.update_reclist_run_already:
@@ -849,13 +940,13 @@ def perform_display_collection(colID, colname, aas, ln, em, show_help_boxes):
     em - code to display just part of the page
     show_help_boxes - whether to show the help boxes or not"""
     # check and update cache if necessary
+    cachedfile = open("%s/collections/%s-ln=%s.html" %
+                      (CFG_CACHEDIR, colname, ln), "rb")
     try:
-        cachedfile = open("%s/collections/%s-ln=%s.html" % \
-                        (CFG_CACHEDIR, colname, ln), "rb")
         data = cPickle.load(cachedfile)
-        cachedfile.close()
-    except:
+    except ValueError:
         data = get_collection(colname).update_webpage_cache(ln)
+    cachedfile.close()
     # check em value to return just part of the page
     if em != "":
         if EM_REPOSITORY["search_box"] not in em:
@@ -936,7 +1027,10 @@ def get_database_last_updated_timestamp():
     """
     database_tables_timestamps = []
     database_tables_timestamps.append(get_table_update_time('bibrec'))
-    database_tables_timestamps.append(get_table_update_time('bibfmt'))
+    ## In INSPIRE bibfmt is on innodb and there is not such configuration
+    bibfmt_last_update = run_sql("SELECT max(last_updated) FROM bibfmt")
+    if bibfmt_last_update and bibfmt_last_update[0][0]:
+        database_tables_timestamps.append(str(bibfmt_last_update[0][0]))
     try:
         database_tables_timestamps.append(get_table_update_time('idxWORD%'))
     except ValueError:
@@ -958,7 +1052,10 @@ def get_cache_last_updated_timestamp():
         return "1970-01-01 00:00:00"
     timestamp = f.read()
     f.close()
-    return timestamp
+
+    # Remove trailing newlines and whitespace.
+    timestamp = timestamp.strip()
+    return timestamp or "1970-01-01 00:00:00"
 
 def set_cache_last_updated_timestamp(timestamp):
     """Set last updated cache timestamp to TIMESTAMP."""
@@ -1013,30 +1110,32 @@ def task_submit_check_options():
 
 def task_run_core():
     """ Reimplement to add the body of the task."""
-##
-## ------->--->time--->------>
-##  (-1)  |   ( 0)    |  ( 1)
-##        |     |     |
-## [T.db] |  [T.fc]   | [T.db]
-##        |     |     |
-##        |<-tol|tol->|
-##
-## the above is the compare_timestamps_with_tolerance result "diagram"
-## [T.db] stands fore the database timestamp and [T.fc] for the file cache timestamp
-## ( -1, 0, 1) stand for the returned value
-## tol stands for the tolerance in seconds
-##
-## When a record has been added or deleted from one of the collections the T.db becomes greater that the T.fc
-## and when webcoll runs it is fully ran. It recalculates the reclists and nbrecs, and since it updates the
-## collections db table it also updates the T.db. The T.fc is set as the moment the task started running thus
-## slightly before the T.db (practically the time distance between the start of the task and the last call of
-## update_reclist). Therefore when webcoll runs again, and even if no database changes have taken place in the
-## meanwhile, it fully runs (because compare_timestamps_with_tolerance returns 0). This time though, and if
-## no databases changes have taken place, the T.db remains the same while T.fc is updated and as a result if
-## webcoll runs again it will not be fully ran
-##
+#
+# ------->--->time--->------>
+#  (-1)  |   ( 0)    |  ( 1)
+#        |     |     |
+# [T.db] |  [T.fc]   | [T.db]
+#        |     |     |
+#        |<-tol|tol->|
+#
+# the above is the compare_timestamps_with_tolerance result "diagram"
+# [T.db] stands fore the database timestamp and [T.fc] for the file cache timestamp
+# ( -1, 0, 1) stand for the returned value
+# tol stands for the tolerance in seconds
+#
+# When a record has been added or deleted from one of the collections the T.db becomes greater that the T.fc
+# and when webcoll runs it is fully ran. It recalculates the reclists and nbrecs, and since it updates the
+# collections db table it also updates the T.db. The T.fc is set as the moment the task started running thus
+# slightly before the T.db (practically the time distance between the start of the task and the last call of
+# update_reclist). Therefore when webcoll runs again, and even if no database changes have taken place in the
+# meanwhile, it fully runs (because compare_timestamps_with_tolerance returns 0). This time though, and if
+# no databases changes have taken place, the T.db remains the same while T.fc is updated and as a result if
+# webcoll runs again it will not be fully ran
+#
     task_run_start_timestamp = get_current_time_timestamp()
     colls = []
+    params = {}
+    task_set_task_param("post_process_params", params)
     # decide whether we need to run or not, by comparing last updated timestamps:
     write_message("Database timestamp is %s." % get_database_last_updated_timestamp(), verbose=3)
     write_message("Collection cache timestamp is %s." % get_cache_last_updated_timestamp(), verbose=3)
@@ -1062,6 +1161,7 @@ def task_run_core():
                 colls.append(get_collection(row[0]))
         # secondly, update collection reclist cache:
         if task_get_option('part', 1) == 1:
+            all_recids_added = intbitset()
             i = 0
             for coll in colls:
                 i += 1
@@ -1071,17 +1171,22 @@ def task_run_core():
                 else:
                     coll.calculate_reclist()
                 coll.update_reclist()
+                all_recids_added.update(coll.get_added_records())
                 task_update_progress("Part 1/2: done %d/%d" % (i, len(colls)))
                 task_sleep_now_if_required(can_stop_too=True)
             webcoll_after_reclist_cache_update.send('webcoll', collections=colls)
+            params.update({'recids': list(all_recids_added)})
         # thirdly, update collection webpage cache:
         if task_get_option("part", 2) == 2:
+            # Updates cache only for chosen languages or for all available ones if none was chosen
+            languages = task_get_option("language", CFG_SITE_LANGS)
+            write_message("Cache update for the following languages: %s" % str(languages), verbose=3)
             i = 0
             for coll in colls:
                 i += 1
                 if coll.reclist_updated_since_start or task_has_option("collection") or task_get_option("force") or not task_get_option("quick"):
                     write_message("%s / webpage cache update" % coll.name)
-                    for lang in CFG_SITE_LANGS:
+                    for lang in languages:
                         coll.update_webpage_cache(lang)
                         webcoll_after_webpage_cache_update.send(coll.name, collection=coll, lang=lang)
                 else:
@@ -1095,6 +1200,7 @@ def task_run_core():
         if not task_has_option("collection"):
             set_cache_last_updated_timestamp(task_run_start_timestamp)
             write_message("Collection cache timestamp is set to %s." % get_cache_last_updated_timestamp(), verbose=3)
+        task_set_task_param("post_process_params", params)
     else:
         ## cache up to date, we don't have to run
         write_message("Collection cache is up to date, no need to run.")

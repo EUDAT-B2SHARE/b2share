@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
+
+
+"""Default configuration for Celery."""
 
 
 def default_config(config):
-    """
-    Provide default configuration for Celery
-    """
+    """Default configuration."""
     ## Broker settings
     ## ---------------
     config.setdefault("BROKER_URL", "redis://localhost:6379/1")
@@ -43,6 +44,11 @@ def default_config(config):
     ## -------
     # ...
 
+    ## Logging
+    config.setdefault("CELERY_REDIRECT_STDOUTS", True)
+    config.setdefault("CELERY_REDIRECT_STDOUTS_LEVEL", "INFO")
+    config.setdefault("CELERYD_HIJACK_ROOT_LOGGER", True)
+
     ## Task execution
     ## --------------
     config.setdefault("CELERY_ALWAYS_EAGER", False)
@@ -57,15 +63,12 @@ def default_config(config):
     ## ------------
     config.setdefault("CELERY_SEND_TASK_ERROR_EMAILS", False)
 
-    if "CFG_SITE_EMERGENCY_EMAIL_ADDRESSES" in config:
-        try:
-            ADMINS = [
-                ('', x.strip()) for x in
-                config["CFG_SITE_EMERGENCY_EMAIL_ADDRESSES"]['*'].split(",")
-            ]
-            config.setdefault("ADMINS", ADMINS)
-        except Exception:
-            pass
+    # Note ADMINS is also set by invenio.ext.email
+    if config.get('CFG_SITE_ADMIN_EMAIL'):
+        config.setdefault(
+            'ADMINS',
+            [('', config.get('CFG_SITE_ADMIN_EMAIL')), ]
+        )
 
     config.setdefault(
         "SERVER_EMAIL", config.get("CFG_SITE_ADMIN_EMAIL", "celery@localhost")

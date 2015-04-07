@@ -22,17 +22,8 @@
 {% from "deposits.html" import render_deposits with context %}
 {% from "breadcrumbs.html" import render_breadcrumbs with context %}
 
-{# {% import flask with context %}
- #}
+{# {% import flask with context %} #}
 {% extends "page.html" %}
-
-{% block header1 %}
-    {{ super() }}
-    {#% css 'css/websearch_index.css' %#}
-    {% css 'css/simplestore-style.css' %}
-    {#% js "js/websearch_typeahead.js" %#}
-    {% js "js/bootstrap-select.js" %}
-{% endblock %}
 
 {% block searchbar %}
     <div class="searchbar">

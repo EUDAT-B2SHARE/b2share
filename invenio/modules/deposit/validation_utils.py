@@ -1,38 +1,37 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""
-Validation functions
-"""
+"""Validation functions."""
 
 import six
 import re
-from wtforms.validators import ValidationError, StopValidation, Regexp
+from wtforms.validators import ValidationError, StopValidation
 from invenio.utils import persistentid as pidutils
 from flask import current_app
+
 
 #
 # General purpose validators
 #
 class ListLength(object):
-    """
-    Require number of elements
+
+    """Require number of elements.
 
     :param min_num: Minimum number of elements.
     :param max_num: Maximum number of elements.
@@ -68,11 +67,10 @@ class ListLength(object):
                 )
 
 
-
 class RequiredIf(object):
-    """
-    Require field if value of another field is set to a certain value.
-    """
+
+    """Require field if value of another field is set to a certain value."""
+
     def __init__(self, other_field_name, values, message=None):
         self.other_field_name = other_field_name
         self.values = values
@@ -86,8 +84,9 @@ class RequiredIf(object):
                 # Check if field value is required
                 if (callable(v) and v(other_val)) or (other_val == v):
                     # Field value is required - check the value
-                    if not field.data or isinstance(field.data, six.string_types) \
-                       and not field.data.strip():
+                    if not field.data or \
+                            isinstance(field.data, six.string_types) \
+                            and not field.data.strip():
                         if self.message is None:
                             self.message = 'This field is required.'
                         field.errors[:] = []
@@ -100,6 +99,9 @@ class RequiredIf(object):
 
 
 class NotRequiredIf(RequiredIf):
+
+    """Do not require field if another field contains a certain value."""
+
     def __call__(self, form, field):
         try:
             other_field = getattr(form, self.other_field_name)
@@ -136,16 +138,45 @@ def number_validate(form, field, submit=False,
 #
 # DOI-related validators
 #
-doi_syntax_validator = Regexp(
-    "(^$|(doi:)?10\.\d+(.\d+)*/.*)",
-    flags=re.I,
-    message="The provided DOI is invalid - it should look similar to "
-            "'10.1234/foo.bar'."
-)
 
-"""
-DOI syntax validator
-"""
+
+def doi_syntax_validator(form, field):
+    """DOI syntax validator. Deprecated.
+
+    :param field: validated field.
+    :param form: validated form.
+    """
+    import warnings
+    warnings.warn("Please use DOISyntaxValidator instead.", DeprecationWarning)
+    return DOISyntaxValidator()(form, field)
+
+
+class DOISyntaxValidator(object):
+
+    """DOI syntax validator."""
+
+    pattern = "(^$|(doi:)?10\.\d+(.\d+)*/.*)"
+
+    def __init__(self, message=None):
+        """Constructor.
+
+        :param message: message to override the default one.
+        """
+        self.regexp = re.compile(self.pattern, re.I)
+        self.message = message if message else (
+            "The provided DOI is invalid - it should look similar to "
+            "'10.1234/foo.bar'.")
+
+    def __call__(self, form, field):
+        """Validate.
+
+        :param field: validated field.
+        :param form: validated form.
+        """
+        doi = field.data
+        if doi and not self.regexp.match(doi):
+            # no point to further validate DOI which is invalid
+            raise StopValidation(self.message)
 
 
 class InvalidDOIPrefix(object):

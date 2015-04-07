@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """JSONAlchemy wrappers."""
 
@@ -36,6 +36,14 @@ from .registry import contexts, producers
 class StorageEngine(type):
 
     """Storage metaclass for parsing application config."""
+
+    __storage_engine_registry__ = []
+
+    def __init__(cls, name, bases, dct):
+        """Register cls to type registry."""
+        if hasattr(cls, '__storagename__'):
+            cls.__storage_engine_registry__.append(cls)
+        super(StorageEngine, cls).__init__(name, bases, dct)
 
     @property
     def storage_engine(cls):
@@ -319,7 +327,7 @@ class SmartJson(SmartDict):
         raise NotImplementedError()
 
     def dumps(self, without_meta_metadata=False, with_calculated_fields=False,
-              clean=False):
+              clean=False, keywords=None, filter_hidden=False):
         """Create the JSON friendly representation of the current object.
 
         :param without_meta_metadata: by default ``False``, if set to ``True``
@@ -328,21 +336,34 @@ class SmartJson(SmartDict):
             dump, if they are needed in the output set it to ``True``
         :param clean: if set to ``True`` all the keys stating with ``_`` will
             be removed from the ouput
+        :param keywords: list of keywords to dump. if None, return all
 
         :return: JSON friendly object
         """
         dict_ = copy.copy(self._dict)
-        if with_calculated_fields:
-            for key, value in six.iteritems(self._dict):
+        filter_keywords = keywords is not None and any(keywords)
+
+        if without_meta_metadata:
+            del dict_['__meta_metadata__']
+
+        # skip the dict iteration
+        if not any([clean, filter_keywords, filter_hidden,
+                    with_calculated_fields]):
+            return dict_
+
+        for key, value in six.iteritems(self._dict):
+            if (clean and key.startswith('_')) or (
+                    filter_keywords and key not in keywords) or (
+                    filter_hidden and self.meta_metadata.get(key, {}).get(
+                        'hidden', False)):
+                del dict_[key]
+                continue
+
+            if with_calculated_fields:
                 if value is None and \
                         self.meta_metadata[key]['type'] == 'calculated':
                     dict_[key] = self[key]
-        if without_meta_metadata:
-            del dict_['__meta_metadata__']
-        if clean:
-            for key in list(dict_.keys()):
-                if key.startswith('_'):
-                    del dict_[key]
+
         return dict_
 
     def loads(self, without_meta_metadata=False, with_calculated_fields=True,
@@ -403,7 +424,7 @@ class SmartJson(SmartDict):
         See: (Cerberus)[http://cerberus.readthedocs.org/en/latest].
 
         :param validator: Validator to be used, if `None`
-            :class:`~.validator:Validator`
+            :class:`~.validator.Validator`
         """
         if validator is None:
             from .validator import Validator as validator
@@ -420,7 +441,7 @@ class SmartJson(SmartDict):
             try:
                 schema.update(FieldParser.field_definitions(
                     self.additional_info.namespace)[json_id].get('schema', {}))
-            except TypeError:
+            except (TypeError, KeyError):
                 pass
         _validator = validator(schema=schema)
         _validator.validate(self)

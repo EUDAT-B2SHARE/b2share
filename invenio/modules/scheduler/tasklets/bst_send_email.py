@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 Invenio Bibliographic Tasklet send_email wrapper.
@@ -23,17 +23,19 @@ Invenio Bibliographic Tasklet send_email wrapper.
 
 from invenio.ext.email import send_email
 
+
 def bst_send_email(fromaddr,
-               toaddr,
-               subject="",
-               content="",
-               header=None,
-               footer=None,
-               copy_to_admin=0,
-               attempt_times=1,
-               attempt_sleeptime=10,
-               replytoaddr="",
-               ):
+                   toaddr,
+                   subject="",
+                   content="",
+                   header=None,
+                   footer=None,
+                   copy_to_admin=0,
+                   attempt_times=1,
+                   attempt_sleeptime=10,
+                   replytoaddr="",
+                   bccaddr="",
+                  ):
     """
     Send a forged email to TOADDR from FROMADDR with message created from subjet, content and possibly
     header and footer.
@@ -57,6 +59,8 @@ def bst_send_email(fromaddr,
     @type attempt_sleeptime: int
     @param replytoaddr: comma-separated list of emails to add as reply-to header
     @type replytoaddr: string
+    @param bccaddr: comma-separated list of emails to add as bcc header
+    @type bccaddr: string
 
     If sending fails, try to send it ATTEMPT_TIMES, and wait for
     ATTEMPT_SLEEPTIME seconds in between tries.
@@ -64,5 +68,15 @@ def bst_send_email(fromaddr,
     copy_to_admin = int(copy_to_admin)
     attempt_times = int(attempt_times)
     attempt_sleeptime = int(attempt_sleeptime)
-    return send_email(fromaddr=fromaddr, toaddr=toaddr, subject=subject, content=content, header=header, footer=footer, copy_to_admin=copy_to_admin, attempt_times=attempt_times, attempt_sleeptime=attempt_sleeptime, replytoaddr=replytoaddr)
-
+    return send_email(fromaddr=fromaddr,
+                      toaddr=toaddr,
+                      subject=subject,
+                      content=content,
+                      header=header,
+                      footer=footer,
+                      copy_to_admin=copy_to_admin,
+                      attempt_times=attempt_times,
+                      attempt_sleeptime=attempt_sleeptime,
+                      replytoaddr=replytoaddr,
+                      bccaddr=bccaddr,
+                     )

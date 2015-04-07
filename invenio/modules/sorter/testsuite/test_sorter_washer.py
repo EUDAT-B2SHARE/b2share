@@ -1,21 +1,21 @@
-## -*- mode: python; coding: utf-8; -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# -*- mode: python; coding: utf-8; -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2010, 2011, 2012, 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Testing module for BibSort Method Treatment"""
 
@@ -53,6 +53,14 @@ class TestBibSortWasherWashers(InvenioTestCase):
         self.assertEqual('2010-11-01', bsm.get_transformed_value('nov 2010'))
         self.assertEqual('2010-01-01', bsm.get_transformed_value('2010'))
         self.assertEqual('2010-11-08', bsm.get_transformed_value('8 nov 2010'))
+
+    def test_sort_nosymbols_case_insensitive_strip_accents(self):
+        """Test the sort_nosymbols_case_insensitive_strip_accents method"""
+        method = "sort_nosymbols_case_insensitive_strip_accents"
+        bsm = BibSortWasher(method)
+        self.assertEqual("thooftgerardus", bsm.get_transformed_value("'t Hooft, Gerardus"))
+        self.assertEqual("ahearnmichaelf", bsm.get_transformed_value("A'Hearn, Michael F."))
+        self.assertEqual("zvolskymilan", bsm.get_transformed_value("Zvolský, Milan"))
 
 
 TEST_SUITE = make_test_suite(TestBibSortWasherWashers,

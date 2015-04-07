@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import urllib
 import cgi
@@ -59,7 +59,7 @@ class Template:
         'subformat': (str, ""), # the subformat
         'download': (int, 0), # download as attachment
         }
-    def tmpl_display_bibrecdocs(self, bibrecdocs, docname="", version="", doctype="", ln=CFG_SITE_LANG, verbose=0, display_hidden=True):
+    def tmpl_display_bibrecdocs(self, bibrecdocs, docname="", version="", doctype=None, ln=CFG_SITE_LANG, verbose=0, display_hidden=True):
         """
         Returns an HTML representation of the the attached documents.
 
@@ -90,6 +90,7 @@ class Template:
         if bibdocs:
             types = list_types_from_array(bibdocs)
             fulltypes = []
+
             for mytype in types:
                 if mytype in ('Plot', 'PlotMisc'):
                     # FIXME: quick hack to ignore plot-like doctypes
@@ -102,9 +103,9 @@ class Template:
                 for bibdoc in bibdocs:
                     if mytype == bibdoc.get_type():
                         bibdoc_display = self.tmpl_display_bibdoc(bibdoc, version,
-                                                     ln=ln, display_hidden=display_hidden,
-                                                     recid=bibrecdocs.id, docname=bibrecdocs.get_docname(bibdoc.id),
-                                                     status=bibdoc.status)
+                                                    ln=ln, display_hidden=display_hidden,
+                                                    recid=bibrecdocs.id, docname=bibrecdocs.get_docname(bibdoc.id),
+                                                    status=bibdoc.status)
                         if bibdoc_display:
                             fulltype['content'].append(bibdoc_display)
                 if fulltype['content']:
@@ -201,7 +202,8 @@ class Template:
                  superformat = bibdocfile.get_superformat(),
                  subformat = bibdocfile.subformat,
                  nice_size_f = nice_size(bibdocfile.get_size()),
-                 description = bibdocfile.description or ''
+                 description = bibdocfile.description or '',
+                 comment = bibdocfile.comment or '',
                )
 
     def tmpl_display_bibdoc(self, bibdoc, version="", ln=CFG_SITE_LANG,
@@ -332,7 +334,7 @@ class Template:
         out += "</table>"
         return out
 
-    def tmpl_bibdocfile_filelist(self, ln, recid, name, version, md, superformat, subformat, nice_size_f, description):
+    def tmpl_bibdocfile_filelist(self, ln, recid, name, version, md, superformat, subformat, nice_size_f, description, comment):
         """
         Displays a file in the file list.
 
@@ -356,6 +358,9 @@ class Template:
 
           - 'description' *string* - The description that might have been associated
           to the particular file
+
+          - 'comment' *string* - The comment that might have been associated
+          to the particular file
         """
 
         # load the right message language
@@ -365,7 +370,7 @@ class Template:
             CFG_SITE_URL,
             CFG_SITE_RECORD,
             recid,
-            '%s%s' % (cgi.escape(name, True), superformat))
+            '%s%s' % (cgi.escape(urllib.quote(name), True), superformat))
 
         urlargd = {'version' : version}
         if subformat:
@@ -384,6 +389,7 @@ class Template:
                     <td valign="top">
                       <font size="-2" color="green">[%(nice_size)s]</font>
                       <font size="-2"><em>%(md)s</em>
+                      %(comment)s
                     </td>
                     <td valign="top"><em>%(description)s</em></td>
                     </tr>""" % {
@@ -391,4 +397,5 @@ class Template:
                       'nice_size' : nice_size_f,
                       'md' : convert_datestruct_to_dategui(md.timetuple(), ln),
                       'description' : cgi.escape(description),
+                      'comment' : comment and """<br /><font size="-2"><em>%s</em></font>""" % cgi.escape(comment) or '',
                     }

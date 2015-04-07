@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-## Comments and reviews for records.
+# Comments and reviews for records.
 
-## This file is part of Invenio.
-## Copyright (C) 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """WebLinkback - Web Templates"""
 
@@ -181,8 +181,8 @@ class Template:
         if CFG_WEBCOMMENT_USE_MATHJAX_IN_COMMENTS:
             mathjaxheader = get_mathjax_header()
         jqueryheader = '''
-        <script src="%(CFG_SITE_URL)s/js/jquery.min.js" type="text/javascript" language="javascript"></script>
-        <script src="%(CFG_SITE_URL)s/js/jquery.MultiFile.pack.js" type="text/javascript" language="javascript"></script>
+        <script src="%(CFG_SITE_URL)s/vendors/jquery/dist/jquery.min.js" type="text/javascript"></script>
+        <script src="%(CFG_SITE_URL)s/vendors/jquery-multifile/jquery.MultiFile.pack.js" type="text/javascript"></script>
         ''' % {'CFG_SITE_URL': CFG_SITE_URL}
         return (mathjaxheader, jqueryheader)
 

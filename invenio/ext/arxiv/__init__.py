@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation,
-## Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Arxiv extension.
 
@@ -28,12 +28,12 @@ Arxiv extension is initialized like this:
 
 Configuration Settings
 ----------------------
-The details of the ArXiv URL and enpoint can be customized in the application
+The details of the ArXiv URL and endpoint can be customized in the application
 settings.
 
 ================= ============================================================
 `ARXIV_API_URL`   The URL of ArXiV query API.
-                  **Default:** `https://export.arxiv.org/api/query`
+                  **Default:** `http://export.arxiv.org/oai2`
 `ARXIV_ENDPOINT`  The name of Flask endpoint for new application route.
                   If the value is `False` (or `None`) the url rule is not
                   registered.  **Default:** `_arxiv.search`
@@ -54,6 +54,12 @@ from flask.ext.login import login_required
 from lxml.etree import fromstring
 
 from invenio.utils.xmlhelpers import etree_to_dict
+
+response_code = {'success': 200,
+                 'notfound': 404,
+                 'unsupported_versioning': 415,
+                 'malformed': 422,
+                 'multiplefound': 300}
 
 
 class Arxiv(object):
@@ -83,7 +89,7 @@ class Arxiv(object):
     def init_app(self, app):
         """Initialize a Flask application."""
         app.config.setdefault("ARXIV_API_URL",
-                              "https://export.arxiv.org/api/query")
+                              "http://export.arxiv.org/oai2")
         app.config.setdefault("ARXIV_ENDPOINT", "_arxiv.search")
         app.config.setdefault("ARXIV_URL_RULE", "/arxiv/search")
 
@@ -99,13 +105,14 @@ class Arxiv(object):
                              app.config["ARXIV_ENDPOINT"],
                              login_required(self.search))
 
-    def get_response(self, arxiv_id, max_results=1):
+    def get_response(self, arxiv_id):
         """Get ArXiv response from the ``ARXIV_API_URL`` page."""
         response = requests.get(
             current_app.config["ARXIV_API_URL"],
             params=dict(
-                search_query="all:{term}".format(term=arxiv_id.strip()),
-                max_results=max_results
+                verb="GetRecord",
+                metadataPrefix="arXiv",
+                identifier="oai:arXiv.org:{term}".format(term=arxiv_id.strip()),
             ),
         )
         return response
@@ -116,19 +123,28 @@ class Arxiv(object):
         data = etree_to_dict(fromstring(response.content))
         query = {}
 
-        for d in data["feed"]:
+        for d in data["OAI-PMH"]:
             query.update(dict(d.items()))
-        del data["feed"]
+        del data["OAI-PMH"]
 
-        # Check if totalResults == 0 - this means the ArXiv ID was not found
-        if query["totalResults"] == "0":
-            query = {}
-            query["status"] = "notfound"
+        if "error" in query:
+            # Check if the ArXiv ID is malformed:
+            if query["error"].startswith("Malformed"):
+                query = {}
+                data["status"] = "malformed"
+            # Check if the ArXiv ID has version specified:
+            elif 'versions' in query["error"]:
+                query = {}
+                data["status"] = "unsupported_versioning"
+            # Otherwise, ArXiv ID was not found:
+            else:
+                query = {}
+                data["status"] = "notfound"
         else:
-            for d in query["entry"]:
+            for d in query['GetRecord'][0]['record'][1]['metadata'][0]['arXiv']:
                 query.update(dict(d.items()))
-            del query["entry"]
-            query["status"] = "success"
+            del query['GetRecord']
+            data["status"] = "success"
 
         data["source"] = "arxiv"
         data["query"] = query
@@ -140,15 +156,17 @@ class Arxiv(object):
         arxiv = arxiv or request.args.get("arxiv")
 
         from invenio.modules.records.utils import get_unique_record_json
-        from invenio.utils.washers import remove_underscore_keys
 
         # query the database
-        result = get_unique_record_json(arxiv)
-        result["query"] = remove_underscore_keys(result["query"])
-        if result["query"]["status"] == "notfound":
+        result = get_unique_record_json(
+            self.app.config.get("ARXIV_SEARCH_PREFIX", "") + arxiv)
+        if result["status"] == "notfound":
             # query arxiv
             result = self.get_json(arxiv)
 
-        return jsonify(result)
+        resp = jsonify(result)
+        resp.status_code = response_code.get(result['status'],
+                                             result['status'])
+        return resp
 
 __all__ = ("Arxiv", )

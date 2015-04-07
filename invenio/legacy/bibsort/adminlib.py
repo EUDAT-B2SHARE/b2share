@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio BibSort Administrator Interface."""
 
@@ -38,7 +38,7 @@ def perform_index(ln, action, bsrcode, sm_name, sm_def_type, sm_def_value, sm_wa
                                %get_admin_guide_link(ln), '#66CCFF')
 
     if not CFG_BIBSORT_BUCKETS:
-        return create_important_box('<p>BibSort is not enabled. In order to enable it, \
+        return create_important_box('<p>BibSort is not configured. In order to enable it, \
                                     CFG_BIBSORT_BUCKETS needs to have a positive value.<br\>\
                                     Please see the %s for more details.</p>' %get_admin_guide_link(ln))
 
@@ -125,7 +125,7 @@ def create_action_add_link():
       });
     </script>'''
 
-    button_style = '''color: #FFFFFF; background: #3366CC; 
+    button_style = '''color: #FFFFFF; background: #3366CC;
                    text-decoration:none; font-weight:bold;
                    font-size:small; padding:5px;'''
 
@@ -268,7 +268,7 @@ def create_action_add_link():
          <tr>
            <td colspan=2 align='right'><input type='submit' value='Add' style="%(button_style)s"/></td>
          </tr>
-       </table> 
+       </table>
     </form>
     </div>
     '''% {'button_style': button_style,

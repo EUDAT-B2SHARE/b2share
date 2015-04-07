@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
 """Invenio Bibcirculation User (URLs) Interface.
@@ -34,7 +34,6 @@ from invenio.config import CFG_SITE_LANG, \
                            CFG_SITE_URL, \
                            CFG_SITE_SECURE_URL, \
                            CFG_ACCESS_CONTROL_LEVEL_SITE, \
-                           CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS, \
                            CFG_SITE_RECORD, \
                            CFG_CERN_SITE
 from invenio.legacy.webuser import getUid, page_not_authorized, isGuestUser, \
@@ -811,7 +810,7 @@ class WebInterfaceILLPages(WebInterfaceDirectory):
                     body=body,
                     language=ln,
                     metaheaderadd='<link rel="stylesheet" ' \
-                                        'href="%s/img/jquery-ui.css" ' \
+                                        'href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css" ' \
                                         'type="text/css" />' % CFG_SITE_URL,
                     lastupdated=__lastupdated__)
 
@@ -925,7 +924,7 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                               uid=uid,
                               verbose=1,
                               req=req,
-                              metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                              metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                               language=argd['ln'],
                               navmenuid='search',
                               navtrail_append_title_p=0) + \
@@ -952,16 +951,15 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                                        navmenuid = 'yourbaskets')
 
         if isGuestUser(uid):
-            if not CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS:
-                return redirect_to_url(req, "%s/youraccount/login%s" % (
+            return redirect_to_url(req, "%s/youraccount/login%s" % (
+                CFG_SITE_SECURE_URL,
+                    make_canonical_urlargd({
+                'referer' : "%s/%s/%s/holdings/request%s" % (
                     CFG_SITE_SECURE_URL,
-                        make_canonical_urlargd({
-                    'referer' : "%s/%s/%s/holdings/request%s" % (
-                        CFG_SITE_SECURE_URL,
-                        CFG_SITE_RECORD,
-                        self.recid,
-                        make_canonical_urlargd(argd, {})),
-                    "ln" : argd['ln']}, {})), norobot=True)
+                    CFG_SITE_RECORD,
+                    self.recid,
+                    make_canonical_urlargd(argd, {})),
+                "ln" : argd['ln']}, {})), norobot=True)
 
         user_info = collect_user_info(req)
         (auth_code, auth_msg) = check_user_can_view_record(user_info, self.recid)
@@ -1016,7 +1014,7 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                               uid=uid,
                               verbose=1,
                               req=req,
-                              metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                              metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                               language=argd['ln'],
                               navmenuid='search',
                               navtrail_append_title_p=0) + \
@@ -1046,16 +1044,15 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                                        navmenuid = 'yourbaskets')
 
         if isGuestUser(uid):
-            if not CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS:
-                return redirect_to_url(req, "%s/youraccount/login%s" % (
+            return redirect_to_url(req, "%s/youraccount/login%s" % (
+                CFG_SITE_SECURE_URL,
+                    make_canonical_urlargd({
+                'referer' : "%s/%s/%s/holdings/request%s" % (
                     CFG_SITE_SECURE_URL,
-                        make_canonical_urlargd({
-                    'referer' : "%s/%s/%s/holdings/request%s" % (
-                        CFG_SITE_SECURE_URL,
-                        CFG_SITE_RECORD,
-                        self.recid,
-                        make_canonical_urlargd(argd, {})),
-                    "ln" : argd['ln']}, {})), norobot=True)
+                    CFG_SITE_RECORD,
+                    self.recid,
+                    make_canonical_urlargd(argd, {})),
+                "ln" : argd['ln']}, {})), norobot=True)
 
         user_info = collect_user_info(req)
         (auth_code, auth_msg) = check_user_can_view_record(user_info, self.recid)
@@ -1146,16 +1143,15 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                                        navmenuid = 'yourbaskets')
 
         if isGuestUser(uid):
-            if not CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS:
-                return redirect_to_url(req, "%s/youraccount/login%s" % (
+            return redirect_to_url(req, "%s/youraccount/login%s" % (
+                CFG_SITE_SECURE_URL,
+                    make_canonical_urlargd({
+                'referer' : "%s/%s/%s/holdings/ill_request_with_recid%s" % (
                     CFG_SITE_SECURE_URL,
-                        make_canonical_urlargd({
-                    'referer' : "%s/%s/%s/holdings/ill_request_with_recid%s" % (
-                        CFG_SITE_SECURE_URL,
-                        CFG_SITE_RECORD,
-                        self.recid,
-                        make_canonical_urlargd(argd, {})),
-                    "ln" : argd['ln']}, {})))
+                    CFG_SITE_RECORD,
+                    self.recid,
+                    make_canonical_urlargd(argd, {})),
+                "ln" : argd['ln']}, {})))
 
 
         user_info = collect_user_info(req)
@@ -1204,7 +1200,7 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                               uid=uid,
                               verbose=1,
                               req=req,
-                              metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                              metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                               language=argd['ln'],
                               navmenuid='search',
                               navtrail_append_title_p=0) + \
@@ -1244,16 +1240,15 @@ class WebInterfaceHoldingsPages(WebInterfaceDirectory):
                                        navmenuid = 'yourbaskets')
 
         if isGuestUser(uid):
-            if not CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS:
-                return redirect_to_url(req, "%s/youraccount/login%s" % (
+            return redirect_to_url(req, "%s/youraccount/login%s" % (
+                CFG_SITE_SECURE_URL,
+                    make_canonical_urlargd({
+                'referer' : "%s/%s/%s/holdings/ill_request_with_recid%s" % (
                     CFG_SITE_SECURE_URL,
-                        make_canonical_urlargd({
-                    'referer' : "%s/%s/%s/holdings/ill_request_with_recid%s" % (
-                        CFG_SITE_SECURE_URL,
-                        CFG_SITE_RECORD,
-                        self.recid,
-                        make_canonical_urlargd(argd, {})),
-                    "ln" : argd['ln']}, {})))
+                    CFG_SITE_RECORD,
+                    self.recid,
+                    make_canonical_urlargd(argd, {})),
+                "ln" : argd['ln']}, {})))
 
 
         user_info = collect_user_info(req)

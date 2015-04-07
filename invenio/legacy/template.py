@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -61,7 +61,7 @@ CFG_WEBSTYLE_DEPRECATED_FUNCTIONS = {'webstyle': \
 # Eg. {'webstyle': {'get_page':{'header': "replaced by 'title'"}}}
 CFG_WEBSTYLE_DEPRECATED_PARAMETERS = {}
 
-## Thanks to Python CookBook for this!
+# Thanks to Python CookBook for this!
 def enhance_method(module, klass, method_name, replacement):
     old_method = getattr(klass, method_name)
     try:
@@ -105,18 +105,18 @@ def load(module='', prefix=''):
     if CFG_WEBSTYLE_TEMPLATE_SKIN == "default":
         try:
             mymodule = __import__("invenio.%s_%stemplates" % (module, prefix), local,
-                                  local, ["invenio.templates.%s" % (module)])
+                                  local, ["invenio.legacy.%s.templates" % (module)])
         except ImportError:
             mymodule = __import__("invenio.legacy.%s.%stemplates" % (module, prefix),
                                   local, local,
-                                  ["invenio.templates.%s" % (module)])
+                                  ["invenio.legacy.%s.templates" % (module)])
     else:
         try:
-            mymodule = __import__("invenio.%s_templates_%s" % (module, CFG_WEBSTYLE_TEMPLATE_SKIN), local, local,
-                                  ["invenio.templates.%s_%s" % (module, CFG_WEBSTYLE_TEMPLATE_SKIN)])
+            mymodule = __import__("invenio.legacy.%s.templates_%s" % (module, CFG_WEBSTYLE_TEMPLATE_SKIN), local, local,
+                                  ["invenio.legacy.%s.templates" % (module, CFG_WEBSTYLE_TEMPLATE_SKIN)])
         except ImportError:
-            mymodule = __import__("invenio.%s_templates" % (module), local, local,
-                                  ["invenio.templates.%s" % (module)])
+            mymodule = __import__("invenio.legacy.%s.templates" % (module), local, local,
+                                  ["invenio.legacy.%s.templates" % (module)])
     if 'inspect-templates' in cfg.get('CFG_DEVEL_TOOLS', []):
         for method_name in dir(mymodule.Template):
             if method_name.startswith('tmpl_'):
@@ -126,7 +126,7 @@ def load(module='', prefix=''):
 
 # Functions to check that customized templates functions conform to
 # the default templates functions
-##
+#
 
 def check(default_base_dir=None, custom_base_dir=None):
     """
@@ -285,7 +285,7 @@ def check(default_base_dir=None, custom_base_dir=None):
     return messages
 
 # Utility functions
-##
+#
 
 def get_default_templates(base_dir=None):
     """
@@ -312,7 +312,7 @@ def get_default_templates(base_dir=None):
     templates_path = []
     for (dirpath, dirnames, filenames) in os.walk(base_dir):
         for filename in filenames:
-            if filename.endswith("_templates.py"):
+            if filename.endswith("templates.py"):
                 templates_path.append(os.path.join(dirpath, filename))
 
     return templates_path

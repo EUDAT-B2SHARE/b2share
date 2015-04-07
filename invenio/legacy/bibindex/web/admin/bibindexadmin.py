@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Invenio BibIndex Administrator Interface."""
 
@@ -50,7 +50,7 @@ def deletetag(req, fldID, ln=CFG_SITE_LANG, tagID=-1, callback='yes', confirm=-1
     else:
         return page_not_authorized(req=req, text=auth[1], navtrail=navtrail_previous_links)
 
-def addtag(req, fldID, ln=CFG_SITE_LANG, value=['',-1], name='', callback='yes', confirm=-1):
+def addtag(req, fldID, ln=CFG_SITE_LANG, name='', value='', recjson_value='', existing_tag=-1, callback='yes', confirm=-1):
     navtrail_previous_links = bic.getnavtrail() + """&gt; <a class="navtrail" href="%s/admin/bibindex/bibindexadmin.py/field">Manage logical fields</a> """ % (CFG_SITE_URL)
 
     try:
@@ -63,7 +63,9 @@ def addtag(req, fldID, ln=CFG_SITE_LANG, value=['',-1], name='', callback='yes',
         return page(title="Edit Logical Field",
                     body=bic.perform_addtag(fldID=fldID,
                                             ln=ln,
+                                            existing_tag=existing_tag,
                                             value=value,
+                                            recjson_value=recjson_value,
                                             name=name,
                                             callback=callback,
                                             confirm=confirm),
@@ -451,7 +453,7 @@ def modifytokenizer(req, idxID, ln=CFG_SITE_LANG, idxTOK='', callback='yes', con
         return page_not_authorized(req=req, text=auth[1], navtrail=navtrail_previous_links)
 
 
-def modifytag(req, fldID, tagID, ln=CFG_SITE_LANG, name='', value='', callback='yes', confirm=-1):
+def modifytag(req, fldID, tagID, ln=CFG_SITE_LANG, name='', value='', recjson_value='', callback='yes', confirm=-1):
     navtrail_previous_links = bic.getnavtrail() + """&gt; <a class="navtrail" href="%s/admin/bibindex/bibindexadmin.py/field">Manage logical fields</a> """ % (CFG_SITE_URL)
 
     try:
@@ -467,6 +469,7 @@ def modifytag(req, fldID, tagID, ln=CFG_SITE_LANG, name='', value='', callback='
                                                ln=ln,
                                                name=name,
                                                value=value,
+                                               recjson_value=recjson_value,
                                                callback=callback,
                                                confirm=confirm),
                     uid=uid,

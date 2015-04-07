@@ -1,6 +1,6 @@
 /*
  * This file is part of Invenio.
- * Copyright (C) 2009, 2010, 2011 CERN.
+ * Copyright (C) 2009, 2010, 2011, 2014 CERN.
  *
  * Invenio is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -84,8 +84,6 @@ function getRecid2Mode(recid) {
     return 'revision';
   else if (recid=='tmp')
     return 'tmpfile';
-  else if (recid=='none')
-    return 'none';
   else
     return false;
 }
@@ -96,6 +94,8 @@ function initStateFromHash() {
   gHash = window.location.hash;
   if (gHash == '') {
     $('#bibMergeContent').html('Select two records to be compared from the side panel.');
+    // Disable "Submit" button
+    $('#bibMergeBtnSubmit').attr('disabled','disabled');
     return;
   }
   var parsedHash = deserializeHash(gHash);
@@ -106,6 +106,7 @@ function initStateFromHash() {
   }
   // if wrong parameters where given in the url:
   $('#bibMergeContent').html('INVALID URL PARAMETERS');
+  $('#bibMergeBtnSubmit').attr('disabled','disabled');
 }
 
 function deserializeHash(aHash) {
@@ -523,6 +524,7 @@ function initPanel() {
     if (event.keyCode == 13) //on press 'enter'
       compareRecords();
   });
+  $('#bibMergeCompare').on('click', compareRecords);
   $('#bibMergeSearchInput').keypress( function(event) {
     if (event.keyCode == 13) //on press 'enter'
       $('#bibMergeBtnSearch').click();
@@ -847,6 +849,7 @@ function ajaxGetRecordCompare(_recid1, _recid2) {
     changeAndSerializeHash({recid1: _recid1, recid2: _recid2});
     gRecID1 = _recid1;
     gRecID2 = _recid2;
+    gRecord2Mode = _mode;
     initFieldGroupHeaders('.bibMergeHeaderFieldnum'); //initialize all of them
     panelDisabled(false);
   });
@@ -859,17 +862,32 @@ function isRevisionID(str) {
   }
   return false;
 }
-function onclickSubmitButton() {
+function onclickSubmitButton(confirm_p, additional_data) {
+  /*
+   confirm_p: if false, do not ask user confirmation before submitting
+   additional_data: additional data sent to server
+   */
+  if (typeof(confirm) == 'undefined') {
+      confirm_p = true
+  }
   var checkbox = $('#bibMergeDupeCheckbox').is(':checked');
+  var submit_p = false;
 
-  if (displayAlert('confirmSubmit')){
+  if (!confirm_p) {
+      submit_p = true;
+  } else {
+      submit_p = displayAlert('confirmSubmit');
+  }
+  if (submit_p){
       var _data = {
         requestType: 'submit',
-        recID1: gRecID1
+        record2Mode: gRecord2Mode,
+        recID1: gRecID1,
+        recID2: gRecID2
       };
       if (checkbox == true)
         _data['duplicate'] = gRecID2;
-
+      _data['additional_data'] = additional_data;
       showMessage('LoadingMsg', 'Submitting...');
       ajaxRequest(_data, function(html){
         window.location.hash = '';
@@ -969,9 +987,10 @@ function onclickLinkToBibEdit2() {
 
 function panelDisabled(disabled) {
   if (disabled == true)
-    $('#bibMergePanel').find('button, input, optgroup, option, select, textarea').attr('disabled', true);
+    // Disable all elements except "Compare" button
+    $('#bibMergePanel').find('button, optgroup, option, select, textarea').not('#bibMergeCompare').attr('disabled', true);
   else
-    $('#bibMergePanel').find('button, input, optgroup, option, select, textarea').removeAttr('disabled');
+    $('#bibMergePanel').find('button, optgroup, option, select, textarea').not('#bibMergeCompare').removeAttr('disabled');
 }
 
 function displayAlert(msgType) {

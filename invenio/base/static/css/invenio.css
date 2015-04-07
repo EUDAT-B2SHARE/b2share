@@ -2,7 +2,7 @@
 * -*- mode: text; coding: utf-8; -*-
 
    This file is part of Invenio.
-   Copyright (C) 2009, 2010, 2011, 2012, 2013 CERN.
+   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2015 CERN.
 
    Invenio is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -579,7 +579,7 @@ a.footer:hover {
    color: #000;
    background: #fff;
    padding: 1px;
-   margin: 5px 0px 5px 0px;
+   /*margin: 5px 0px 5px 0px;*/
    border-collapse: collapse;
    /*border-top: 1px solid #36c;*/
 }
@@ -652,6 +652,19 @@ a.footer:hover {
    margin: 20px 20px 5px 0px;
    border-collapse: collapse;
    /*border-top: 1px solid #36c;*/
+}
+span.collection-father-has-grandchildren a{
+    font-weight:800;
+}
+ul.collection-second-level{
+    padding-left: 0;
+    margin: 0;
+}
+ul.collection-second-level li{
+    font-size:small;
+    list-style: none;
+    display: inline;
+    white-space: nowrap;
 }
 .searchalsosearchboxheader {
    color: #000;
@@ -939,6 +952,21 @@ th.youraccountheader a:hover {
    color: #603;
    background: #fff;
    padding: 0px;
+}
+.searchservicebox {
+    margin-top: 15px;
+    margin-bottom: 4px;
+    font-size: small;
+}
+.searchservicebox a.searchserviceitem {
+    color: #333;
+}
+.searchservicebox a.searchserviceitem:hover {
+    color: #36c;
+}
+.searchservicebox a.lessserviceitemslink, .searchservicebox a.moreserviceitemslink {
+    font-size: smaller;
+    color: #060;
 }
 a.nearestterms:link {
    color: #603;
@@ -2017,12 +2045,7 @@ form input.hyperlinkformSubmitButton {
    margin: 0px 10px 5px 0px;
    width: 70%;
 }
-.bibEditHistCompare{
-   float: left;
-   margin: 0px 10px 5px 0px;
-   font-size: small;
-   width: 70%;
-}
+
 .bibEditHistForms{
    margin: 5px 0px 5px 10px;
 }
@@ -3272,6 +3295,29 @@ div.bibcircbottom {
 }
 
 
+/* add-to-search */
+
+#advbox{
+    padding-bottom: 20px;
+    white-space: nowrap;
+}
+
+a#advbox-toggle{
+    text-decoration: none;
+    color: #3366CC;
+}
+
+#advbox-toggle-button{
+    background-color: #DDDDDD;
+    border-radius: 3px 3px 3px 3px;
+    color: #3366CC;
+    font-weight: 400;
+    padding: 1px 6px;
+    text-decoration: none;
+}
+
+/*End - add-to-search*/
+
 /* Rollover menus */
 
 .menu ul {
@@ -3879,16 +3925,6 @@ div.bibcircbottom {
 }
 #mathpreviewareabar span{float:left; clear:none}
 
-/* Classes used for diff between two records */
-
-.diff_field_deleted {
-   color: #ff0000;
-}
-
-.diff_field_added {
-   color: #00aa00;
-}
-
 /* end of Classes used for diff between two records */
 
 /* BibHarvest Holding Pen style*/
@@ -4035,6 +4071,22 @@ img.login_button_small {
 
 .panel-bot-margin {
     margin-bottom: 10px;
+}
+
+/* Author ORCID display */
+a.author_orcid_image_link {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    background-image:url(orcid_icon_24.png);
+    background-size: 16px 16px;
+    text-decoration:none;
+}
+
+.author_usefull_link {
+width:auto;
+height:20px;
+margin-right:10px;
 }
 
 /* end of invenio.css */

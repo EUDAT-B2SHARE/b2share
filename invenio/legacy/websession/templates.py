@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 __revision__ = "$Id$"
 
@@ -31,7 +31,6 @@ from invenio.config import \
      CFG_SITE_URL, \
      CFG_WEBSESSION_RESET_PASSWORD_EXPIRE_IN_DAYS, \
      CFG_WEBSESSION_ADDRESS_ACTIVATION_EXPIRE_IN_DAYS, \
-     CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS, \
      CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS, \
      CFG_ACCESS_CONTROL_LEVEL_ACCOUNTS, \
      CFG_SITE_RECORD
@@ -112,7 +111,8 @@ class Template:
         }
         return out
 
-    def tmpl_user_api_key(self, ln=CFG_SITE_LANG, keys_info=None):
+
+    def tmpl_user_api_key(self, ln=CFG_SITE_LANG, keys_info=None, csrf_token=''):
         """
         Displays all the API key that the user owns the user
 
@@ -120,6 +120,7 @@ class Template:
 
           - 'ln' *string* - The language to display the interface in
           - 'key_info' *tuples* - Contains the tuples with the key data (id, desciption, status)
+          - 'csrf_token' *string* - The CSRF token to verify the form origin.
 
         """
 
@@ -145,6 +146,7 @@ class Template:
             out += """
                     <table>
                     """
+
             for key_info in keys_info:
                 out += """
                         <tr><td>%(key_description)s</td>
@@ -160,6 +162,7 @@ class Template:
                             <form method="post" action="%(sitesecureurl)s/youraccount/apikey" name="api_key_remove">
                                  <input type="hidden" name="key_id" value="%(key_id)s" />
                                 <code class="blocknote"><input class="formbutton" type="%(input_type)s" value="%(remove_key)s" /></code>
+                                <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
                             </form>
                         </td>
                         </tr>
@@ -170,6 +173,7 @@ class Template:
                               'index':  keys_info.index(key_info),
                               'key_label': _("API key"),
                               'remove_key' : _("Delete key"),
+                              'csrf_token': cgi.escape(csrf_token, True),
                               'sitesecureurl': CFG_SITE_SECURE_URL,
                               'input_type': ("submit", "hidden")[key_info[2] == WebAPIKey.CFG_WEB_API_KEY_STATUS['REVOKED']]
                               }
@@ -193,6 +197,7 @@ class Template:
                     <code class="blocknote"><input class="formbutton" type="submit" value="%(create_new_key_button)s" /></code>
                   </td></tr>
                 </table>
+                <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
                 </form>
         """ % {
                'create_new_key' : _("If you want to create a new API key, please enter a description for it"),
@@ -201,12 +206,13 @@ class Template:
                'note' : _("Note"),
                'new_key_description_note': _("The description should be something meaningful for you to recognize the API key"),
                'create_new_key_button' : _("Create new key"),
+               'csrf_token': cgi.escape(csrf_token, True),
                'sitesecureurl': CFG_SITE_SECURE_URL
                }
 
         return out
 
-    def tmpl_user_preferences(self, ln, email, email_disabled, password_disabled, nickname):
+    def tmpl_user_preferences(self, ln, email, email_disabled, password_disabled, nickname, csrf_token=''):
         """
         Displays a form for the user to change his email/password.
 
@@ -222,6 +228,7 @@ class Template:
 
           - 'nickname' *string* - The nickname of the user (empty string if user does not have it)
 
+          - 'csrf_token' *string* - The CSRF token to verify the form origin.
         """
 
         # load the right message language
@@ -257,12 +264,14 @@ class Template:
                   </td></tr>
                 </table>
                 <input type="hidden" name="action" value="edit" />
+                <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
                 </form>
             """ % {
                 'change_user' : _("If you want to change your email or set for the first time your nickname, please set new values in the form below."),
                 'edit_params' : _("Edit login credentials"),
                 'nickname_label' : _("Nickname"),
                 'nickname' : nickname,
+                'csrf_token': cgi.escape(csrf_token, True),
                 'nickname_prefix' : nickname=='' and '<input type="text" size="25" name="nickname" id="nickname" value=""' or '',
                 'nickname_suffix' : nickname=='' and '" /><br /><small><span class="quicknote">'+_("Example")+':</span><span class="example">johnd</span></small>' or '',
                 'new_email' : _("New email address"),
@@ -310,12 +319,14 @@ class Template:
                   </td></tr>
                 </table>
                 <input type="hidden" name="action" value="edit" />
+                <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
                 </form>
                 """ % {
                     'change_pass' : _("If you want to change your password, please enter the old one and set the new value in the form below."),
                     'mandatory' : _("mandatory"),
                     'old_password' : _("Old password"),
                     'new_password' : _("New password"),
+                    'csrf_token': cgi.escape(csrf_token, True),
                     'optional' : _("optional"),
                     'note' : _("Note"),
                     'password_note' : _("The password phrase may contain punctuation, spaces, etc."),
@@ -337,7 +348,7 @@ class Template:
         return out
 
 
-    def tmpl_user_bibcatalog_auth(self, bibcatalog_username="", bibcatalog_password="", ln=CFG_SITE_LANG):
+    def tmpl_user_bibcatalog_auth(self, bibcatalog_username="", bibcatalog_password="", ln=CFG_SITE_LANG, csrf_token=''):
         """template for setting username and pw for bibcatalog backend"""
         _ = gettext_set_language(ln)
         out = """
@@ -352,6 +363,8 @@ class Template:
                   <td><input class="formbutton" type="submit" value="%(update_settings)s" /></td>
                 </tr>
               </table>
+              <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
+            </form>
         """ % {
           'sitesecureurl' : CFG_SITE_SECURE_URL,
           'bibcatalog_username' : bibcatalog_username,
@@ -359,12 +372,13 @@ class Template:
           'edit_bibcatalog_settings' : _("Edit cataloging interface settings"),
           'username' :  _("Username"),
           'password' :  _("Password"),
-          'update_settings' : _('Update settings')
+          'update_settings' : _('Update settings'),
+          'csrf_token': cgi.escape(csrf_token, True),
         }
         return out
 
 
-    def tmpl_user_lang_edit(self, ln, preferred_lang):
+    def tmpl_user_lang_edit(self, ln, preferred_lang, csrf_token=''):
         _ = gettext_set_language(ln)
         out = """
             <form method="post" action="%(sitesecureurl)s/youraccount/change" name="edit_lang_settings">
@@ -383,13 +397,43 @@ class Template:
             }
         out += """</select></td><td valign="top"><strong><label for="lang">%(select_lang)s</label></strong></td></tr>
             <tr><td></td><td><input class="formbutton" type="submit" value="%(update_settings)s" /></td></tr>
-        </table></form>""" % {
+        </table><input type="hidden" name="csrf_token" value="%(csrf_token)s" /></form>""" % {
             'select_lang' : _('Select desired language of the web interface.'),
-            'update_settings' : _('Update settings')
+            'update_settings' : _('Update settings'),
+            'csrf_token': cgi.escape(csrf_token, True),
         }
         return out
 
-    def tmpl_user_websearch_edit(self, ln, current = 10, show_latestbox = True, show_helpbox = True):
+
+    def tmpl_user_profiling_settings(self, ln, enable_profiling, csrf_token=''):
+        _ = gettext_set_language(ln)
+        out = """
+            <form method="post" action="%(sitesecureurl)s/youraccount/change" name="edit_profiling_settings">
+              <p><big><strong class="headline">%(edit_settings)s</strong></big></p>
+              <table>
+                <tr><td align="right"><select name="profiling">
+        """ % {
+          'sitesecureurl' : CFG_SITE_SECURE_URL,
+          'edit_settings' : _("Edit profiling settings"),
+        }
+        out += """<option %(selected)s value="0">%(desc)s</option>""" % {
+            'selected' : 'selected="selected"' if enable_profiling is False else '',
+            'desc' : _("Disabled")
+        }
+        out += """<option %(selected)s value="1">%(desc)s</option>""" % {
+            'selected' : 'selected="selected"' if enable_profiling is True else '',
+            'desc' : _("Enabled")
+        }
+        out += """</select></td><td valign="top"></td></tr>
+            <tr><td></td><td><input class="formbutton" type="submit" value="%(update_settings)s" /></td></tr>
+        </table><input type="hidden" name="csrf_token" value="%(csrf_token)s" /></form>""" % {
+            'update_settings' : _('Update settings'),
+            'csrf_token': cgi.escape(csrf_token, True),
+        }
+        return out
+
+
+    def tmpl_user_websearch_edit(self, ln, current = 10, show_latestbox = True, show_helpbox = True, csrf_token=''):
         _ = gettext_set_language(ln)
         out = """
             <form method="post" action="%(sitesecureurl)s/youraccount/change" name="edit_websearch_settings">
@@ -418,14 +462,16 @@ class Template:
         out += """</select></td><td valign="top"><strong><label for="group_records">%(select_group_records)s</label></strong></td></tr>
               <tr><td></td><td><input class="formbutton" type="submit" value="%(update_settings)s" /></td></tr>
               </table>
+              <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
             </form>""" % {
                 'update_settings' : _("Update settings"),
                 'select_group_records' : _("Number of search results per page"),
+                'csrf_token': cgi.escape(csrf_token, True),
             }
         return out
 
 
-    def tmpl_user_external_auth(self, ln, methods, current, method_disabled):
+    def tmpl_user_external_auth(self, ln, methods, current, method_disabled, csrf_token=''):
         """
         Displays a form for the user to change his authentication method.
 
@@ -438,6 +484,8 @@ class Template:
           - 'method_disabled' *boolean* - If the user has the right to change this
 
           - 'current' *string* - The currently selected method
+
+          - 'csrf_token' *string* - The CSRF token to verify the form origin.
         """
 
         # load the right message language
@@ -465,8 +513,10 @@ class Template:
         out += """  </td></tr>
                    <tr><td>&nbsp;</td>
                      <td><input class="formbutton" type="submit" value="%(select_method)s" /></td></tr></table>
+                    <input type="hidden" name="csrf_token" value="%(csrf_token)s" />
                     </form>""" % {
                      'select_method' : _("Select method"),
+                     'csrf_token': cgi.escape(csrf_token, True),
                    }
 
         return out
@@ -585,8 +635,6 @@ class Template:
             'your_comments' : _("Your Comments"),
             'comments_explain' : _("Display all the comments you have submitted so far."),
             }
-        if guest and CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS:
-            out += self.tmpl_warning_guest_user(ln = ln, type = "baskets")
         out += """</dd>
         <dt><a href="../youralerts/list?ln=%(ln)s">%(your_alerts)s</a></dt>
         <dd>%(explain_alerts)s""" % {
@@ -594,8 +642,6 @@ class Template:
           'your_alerts' : _("Your Alerts"),
           'explain_alerts' : _("Subscribe to a search which will be run periodically by our service. The result can be sent to you via Email or stored in one of your baskets."),
         }
-        if guest and CFG_WEBSESSION_DIFFERENTIATE_BETWEEN_GUESTS:
-            out += self.tmpl_warning_guest_user(type="alerts", ln = ln)
         out += "</dd>"
         if CFG_CERN_SITE:
             out += """</dd>
@@ -1233,6 +1279,8 @@ class Template:
                     tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/%s/edit/">%s</a>""" % (CFG_SITE_URL, CFG_SITE_RECORD, _("Run Record Editor"))
                 if action == "runbibeditmulti":
                     tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/%s/multiedit/">%s</a>""" % (CFG_SITE_URL, CFG_SITE_RECORD, _("Run Multi-Record Editor"))
+                if action == "runauthorlist":
+                    tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/authorlist/">%s</a>""" % (CFG_SITE_URL, _("Run Author List Manager"))
                 if action == "runbibcirculation":
                     tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/admin/bibcirculation/bibcirculationadmin.py?ln=%s">%s</a>""" % (CFG_SITE_URL, ln, _("Run BibCirculation"))
                 if action == "runbibmerge":
@@ -1269,6 +1317,8 @@ class Template:
                     tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/%s/managedocfiles?ln=%s">%s</a>""" % (CFG_SITE_URL, CFG_SITE_RECORD, ln, _("Run Document File Manager"))
                 if action == "cfgbibsort":
                     tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/admin/bibsort/bibsortadmin.py?ln=%s">%s</a>""" % (CFG_SITE_URL, ln, _("Configure BibSort"))
+                if action == "runinfomanager":
+                    tmp_out += """<br />&nbsp;&nbsp;&nbsp; <a href="%s/info/manage?ln=%s">%s</a>""" % (CFG_SITE_URL, ln, _("Run Info Space Manager"))
             if tmp_out:
                 out += _("Here are some interesting web admin links for you:") + tmp_out
 
@@ -1341,189 +1391,6 @@ class Template:
                     'ln' : ln,
                     'logout' : _("logout"),
                 }
-        return out
-
-    def tmpl_create_useractivities_menu(self, ln, selected, url_referer, guest, username, submitter, referee, admin, usebaskets, usemessages, usealerts, usegroups, useloans, usestats, usecomments):
-        """
-        Returns the main navigation menu with actions based on user's
-        priviledges
-
-        @param ln:          The language to display the interface in
-        @type ln:           string
-        @param selected:    If the menu is currently selected
-        @type selected:     boolean
-        @param url_referer: URL of the page being displayed
-        @type url_referer:  string
-        @param guest:       If the user is guest
-        @type guest:        string
-        @param username:    The username (nickname or email)
-        @type username:     string
-        @param submitter:   If the user is submitter
-        @type submitter:    boolean
-        @param referee:     If the user is referee
-        @type referee:      boolean
-        @param admin:       If the user is admin
-        @type admin:        boolean
-        @param usebaskets:  If baskets are enabled for the user
-        @type usebaskets:   boolean
-        @param usemessages: If messages are enabled for the user
-        @type usemessages:  boolean
-        @param usealerts:   If alerts are enabled for the user
-        @type usealerts:    boolean
-        @param usegroups:   If groups are enabled for the user
-        @type usegroups:    boolean
-        @param useloans:    If loans are enabled for the user
-        @type useloans:     boolean
-        @param usestats:    If stats are enabled for the user
-        @type usestats:     boolean
-        @param usecomments: If comments are enabled for the user
-        @type usecomments:  boolean
-        @return: html menu of the user activities
-        @rtype: string
-        """
-        # load the right message language
-        _ = gettext_set_language(ln)
-
-        out = '''<div class="hassubmenu%(on)s">
-        <a hreflang="en" class="header%(selected)s" href="%(CFG_SITE_SECURE_URL)s/youraccount/display?ln=%(ln)s">%(personalize)s</a>
-        <ul class="subsubmenu">''' % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'personalize': _("Personalize"),
-                'on': selected and " on" or '',
-                'selected': selected and "selected" or ''
-                }
-        if not guest:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/youraccount/display?ln=%(ln)s">%(account)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'account' : _('Your account')
-                }
-        if usealerts or guest:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/youralerts/list?ln=%(ln)s">%(alerts)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'alerts' : _('Your alerts')
-                }
-        if referee:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yourapprovals.py?ln=%(ln)s">%(approvals)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'approvals' : _('Your approvals')
-                }
-        if usebaskets or guest:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yourbaskets/display?ln=%(ln)s">%(baskets)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'baskets' : _('Your baskets')
-                }
-        if usecomments:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yourcomments?ln=%(ln)s">%(comments)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'comments' : _('Your comments')
-                }
-        if usegroups:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yourgroups/display?ln=%(ln)s">%(groups)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'groups' : _('Your groups')
-                }
-        if useloans:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yourloans/display?ln=%(ln)s">%(loans)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'loans' : _('Your loans')
-                }
-        if usemessages:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yourmessages/display?ln=%(ln)s">%(messages)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'messages' : _('Your messages')
-                }
-        if submitter:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/yoursubmissions.py?ln=%(ln)s">%(submissions)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'submissions' : _('Your submissions')
-                }
-        if usealerts or guest:
-            out += '<li><a href="%(CFG_SITE_SECURE_URL)s/youralerts/display?ln=%(ln)s">%(searches)s</a></li>'  % {
-                'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-                'ln' : ln,
-                'searches' : _('Your searches')
-                }
-        out += '</ul></div>'
-        return out
-
-    def tmpl_create_adminactivities_menu(self, ln, selected, url_referer, guest, username, submitter, referee, admin, usebaskets, usemessages, usealerts, usegroups, useloans, usestats, activities):
-        """
-        Returns the main navigation menu with actions based on user's
-        priviledges
-
-        @param ln:          The language to display the interface in
-        @type ln:           string
-        @param selected:    If the menu is currently selected
-        @type selected:     boolean
-        @param url_referer: URL of the page being displayed
-        @type url_referer:  string
-        @param guest:       If the user is guest
-        @type guest:        string
-        @param username:    The username (nickname or email)
-        @type username:     string
-        @param submitter:   If the user is submitter
-        @type submitter:    boolean
-        @param referee:     If the user is referee
-        @type referee:      boolean
-        @param admin:       If the user is admin
-        @type admin:        boolean
-        @param usebaskets:  If baskets are enabled for the user
-        @type usebaskets:   boolean
-        @param usemessages: If messages are enabled for the user
-        @type usemessages:  boolean
-        @param usealerts:   If alerts are enabled for the user
-        @type usealerts:    boolean
-        @param usegroups:   If groups are enabled for the user
-        @type usegroups:    boolean
-        @param useloans:    If loans are enabled for the user
-        @type useloans:     boolean
-        @param usestats:    If stats are enabled for the user
-        @type usestats:     boolean
-        @param activities: dictionary of admin activities
-        @rtype activities: dict
-        @return: html menu of the user activities
-        @rtype: string
-        """
-        # load the right message language
-        _ = gettext_set_language(ln)
-
-        out = ''
-        if activities:
-            out += '''<div class="hassubmenu%(on)s">
-            <a hreflang="en" class="header%(selected)s" href="%(CFG_SITE_SECURE_URL)s/youraccount/youradminactivities?ln=%(ln)s">%(admin)s</a>
-            <ul class="subsubmenu">''' % {
-            'CFG_SITE_SECURE_URL' : CFG_SITE_SECURE_URL,
-            'ln' : ln,
-            'admin': _("Administration"),
-            'on': selected and " on" or '',
-            'selected': selected and "selected" or ''
-            }
-
-            for name in sorted(activities.iterkeys()):
-                url = activities[name]
-                out += '<li><a href="%(url)s">%(name)s</a></li>'  % {
-                    'url': url,
-                    'name': name
-                    }
-
-        if usestats:
-            out += """<li><a href="%(CFG_SITE_URL)s/stats/?ln=%(ln)s">%(stats)s</a></li>""" % {
-                'CFG_SITE_URL' : CFG_SITE_URL,
-                'ln' : ln,
-                'stats' : _("Statistics"),
-                }
-
-            out += '</ul></div>'
         return out
 
     def tmpl_warning(self, warnings, ln=CFG_SITE_LANG):

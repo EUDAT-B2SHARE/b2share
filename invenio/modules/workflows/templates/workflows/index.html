@@ -1,125 +1,47 @@
 {#
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
-{% extends "workflows/admin_base.html" %}
+{% extends "workflows/base.html" %}
+{% set title = _("Your Pending Actions") %}
 
-{% block workflowbody %}
-    <div class="alert alert-warning">
-      <button type="button" class="close" data-dismiss="alert">&times;</button>
-      <h4>Warning!</h4>
-      Much of the functionality of the BibWorkflow admin pages are placeholder
-      only and are not working as expected.
+{% block hpbody %}
+  <div class="row">
+    <div class="col-md-12">
+      <p>{{ _('Here is a list of actions remaining to be resolved grouped by type of action') }} ({{ _('work in progress') }}).</p>
     </div>
+  </div>
 
-    <h1>Workflows list</h1>
-    
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Workflow name</th>
-                <th>Started</th>
-                <th>Modified</th>
-                <th>Last task</th>
-                <th>Progress</th>
-                <th>Error msg.</th>
-                <th>View</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for workflow in workflows %}
-                <tr class="workflow" name="{{ workflow.uuid }}">
-                    <td>{{ workflow.name }}</td>
-                    <td>{{ workflow.created }}</td>
-                    <td>{{ workflow.modified }}</td>
-                    <td title="{{ workflow.last_task_description }}">{{ workflow.last_task_name }}</td>
-                    <td title="Elements: {{ workflow.counter_initial }}
-Halted: {{ workflow.counter_halted }}
-Error: {{ workflow.counter_error }}
-Finished: {{ workflow.counter_finished }}">
-                        {% if workflow.counter_initial %}
-                            {%- set progress = (workflow.counter_error + workflow.counter_finished + workflow.counter_halted) / workflow.counter_initial * 100 -%}
-                        {% else %}
-                            {%- set progress = 0 -%}
-                        {% endif %}
-                        Progress: <span class="pull-right strong">{{ progress|int }}%</span>
-                            {% if workflow.status == 0 %}
-                                <div class="progress progress active">
-                                    <div class="bar" style="width: {{ progress }}%;"></div>
-                            {% elif workflow.status == 1 %}
-                                <div class="progress progress-striped active">
-                                    <div class="bar" style="width: {{ progress }}%;"></div>
-                            {% elif workflow.status == 2 %}
-                                <div class="progress progress-warning active">
-                                    <div class="bar" style="width: {{ progress }}%;"></div>
-                            {% elif workflow.status == 3 %}
-                                <div class="progress progress-danger active">
-                                    <div class="bar" style="width: {{ progress }}%;"></div>
-                            {% elif workflow.status == 4 %}
-                                <div class="progress progress-success active">
-                                    <div class="bar" style="width: {{ progress }}%;"></div>
-                            {% endif %}
-                                <!-- closing progress bar -->
-                                </div>
-                    </td>
-                    <td>{{ workflow.error_msg }}</td>
-                    <td><a href="{{ url_for('workflows.workflow_details', id_workflow=workflow.uuid) }}/">View</a></td>
-                </tr>
-                {%- if workflow.objects -%}
-                <tr>
-                    <td colspan="8">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Created</th>
-                                <th>Modified</th>
-                                <th>Task</th>
-                                <th>Status</th>
-                                <th>View</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for object in workflow.objects %}
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <ul class="list-group">
+        {% for task, object_count in tasks.items() %}
+          <a href="{{ url_for('holdingpen.maintable')|safe }}" class="list-group-item">
+            <span class="badge">{{ object_count }}</span>
+            {{task}}
+          </a>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
-                                <tr class="object" name="{{ object.id }}">
-                                    <td>{{ object.id }}</td>
-                                    <td>{{ object.created }}</td>
-                                    <td>{{ object.modified }}</td>
-                                    <td title="{{ workflow.last_task_description }}">{{ workflow.last_task_name }}</td>
-                                    <td>
-                                        {% if object.version == 0 %}
-                                            <span class="badge alert-info">Initial</span>
-                                        {% elif object.version == 1 %}
-                                            <span class="badge alert-success">Final</span>
-                                        {% elif object.version == 2 %}
-                                            <span class="badge alert-danger">Error</span>
-                                        {% endif %}
-                                    </td>
-                                    <td><a href="{{ url_for('workflows.details', objectid=object.id) }}/">View</a></tr>
-                                </tr>
-
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                    </td>
-                </tr>
-                {%- endif -%}
-            {% endfor %}
-        </tbody>
-        </table>
-        {% endblock %}
+  <div class="row">
+    <div class="col-md-12">
+      <a href="{{ url_for('holdingpen.maintable')|safe }}" class="btn btn-primary btn-lg pull-right" role="button">{{ _('Go to Holding Pen') }}</a>
+    </div>
+  </div>
+{% endblock %}

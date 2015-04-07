@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """WebSearch URL handler."""
 
@@ -32,33 +32,6 @@ import threading
 MAX_COLLAB_LIST = 10
 MAX_KEYWORD_LIST = 10
 MAX_VENUE_LIST = 10
-#tag constants
-AUTHOR_TAG = "100__a"
-AUTHOR_INST_TAG = "100__u"
-COAUTHOR_TAG = "700__a"
-COAUTHOR_INST_TAG = "700__u"
-VENUE_TAG = "909C4p"
-KEYWORD_TAG = "695__a"
-FKEYWORD_TAG = "6531_a"
-CFG_INSPIRE_UNWANTED_KEYWORDS_START = ['talk',
-                                      'conference',
-                                      'conference proceedings',
-                                      'numerical calculations',
-                                      'experimental results',
-                                      'review',
-                                      'bibliography',
-                                      'upper limit',
-                                      'lower limit',
-                                      'tables',
-                                      'search for',
-                                      'on-shell',
-                                      'off-shell',
-                                      'formula',
-                                      'lectures',
-                                      'book',
-                                      'thesis']
-CFG_INSPIRE_UNWANTED_KEYWORDS_MIDDLE = ['GeV',
-                                        '((']
 
 if sys.hexversion < 0x2040000:
     # pylint: disable=W0622
@@ -66,25 +39,25 @@ if sys.hexversion < 0x2040000:
     # pylint: enable=W0622
 
 from invenio.config import \
-     CFG_SITE_URL, \
-     CFG_SITE_NAME, \
-     CFG_CACHEDIR, \
-     CFG_SITE_LANG, \
-     CFG_SITE_SECURE_URL, \
-     CFG_BIBRANK_SHOW_DOWNLOAD_STATS, \
-     CFG_WEBSEARCH_INSTANT_BROWSE_RSS, \
-     CFG_WEBSEARCH_RSS_TTL, \
-     CFG_WEBSEARCH_RSS_MAX_CACHED_REQUESTS, \
-     CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE, \
-     CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES, \
-     CFG_WEBDIR, \
-     CFG_WEBSEARCH_USE_MATHJAX_FOR_FORMATS, \
-     CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS, \
-     CFG_WEBSEARCH_USE_ALEPH_SYSNOS, \
-     CFG_WEBSEARCH_RSS_I18N_COLLECTIONS, \
-     CFG_INSPIRE_SITE, \
-     CFG_WEBSEARCH_WILDCARD_LIMIT, \
-     CFG_SITE_RECORD
+    CFG_SITE_URL, \
+    CFG_SITE_NAME, \
+    CFG_CACHEDIR, \
+    CFG_SITE_LANG, \
+    CFG_SITE_SECURE_URL, \
+    CFG_BIBRANK_SHOW_DOWNLOAD_STATS, \
+    CFG_WEBSEARCH_INSTANT_BROWSE_RSS, \
+    CFG_WEBSEARCH_RSS_TTL, \
+    CFG_WEBSEARCH_RSS_MAX_CACHED_REQUESTS, \
+    CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE, \
+    CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES, \
+    CFG_WEBDIR, \
+    CFG_WEBSEARCH_USE_MATHJAX_FOR_FORMATS, \
+    CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS, \
+    CFG_WEBSEARCH_USE_ALEPH_SYSNOS, \
+    CFG_WEBSEARCH_RSS_I18N_COLLECTIONS, \
+    CFG_INSPIRE_SITE, \
+    CFG_WEBSEARCH_WILDCARD_LIMIT, \
+    CFG_SITE_RECORD
 from invenio.legacy.dbquery import Error
 from invenio.ext.legacy.handler import wash_urlargd, WebInterfaceDirectory
 from invenio.utils.url import redirect_to_url, make_canonical_urlargd, drop_default_urlargd
@@ -98,22 +71,22 @@ from invenio.legacy.bibcirculation.webinterface import WebInterfaceHoldingsPages
 from invenio.legacy.webpage import page, pageheaderonly, create_error_box
 from invenio.base.i18n import gettext_set_language
 from invenio.legacy.search_engine import check_user_can_view_record, \
-     collection_reclist_cache, \
-     collection_restricted_p, \
-     create_similarly_named_authors_link_box, \
-     get_colID, \
-     get_coll_i18nname, \
-     get_most_popular_field_values, \
-     get_mysql_recid_from_aleph_sysno, \
-     guess_primary_collection_of_a_record, \
-     page_end, \
-     page_start, \
-     perform_request_cache, \
-     perform_request_log, \
-     perform_request_search, \
-     restricted_collection_cache, \
-     get_coll_normalised_name, \
-     EM_REPOSITORY
+    collection_reclist_cache, \
+    collection_restricted_p, \
+    create_similarly_named_authors_link_box, \
+    get_colID, \
+    get_coll_i18nname, \
+    get_most_popular_field_values, \
+    get_mysql_recid_from_aleph_sysno, \
+    guess_primary_collection_of_a_record, \
+    page_end, \
+    page_start, \
+    perform_request_cache, \
+    perform_request_log, \
+    perform_request_search, \
+    restricted_collection_cache, \
+    get_coll_normalised_name, \
+    EM_REPOSITORY
 from invenio.legacy.websearch.webcoll import perform_display_collection
 from invenio.legacy.bibrecord import get_fieldvalues, \
      get_fieldvalues_alephseq_like
@@ -129,7 +102,6 @@ from invenio.legacy.bibrank.citation_searcher import get_cited_by_list
 from invenio.legacy.bibrank.downloads_indexer import get_download_weight_total
 from invenio.legacy.search_engine.summarizer import summarize_records
 from invenio.ext.logging import register_exception
-from invenio.legacy.bibedit.webinterface import WebInterfaceEditPages
 from invenio.legacy.bibeditmulti.webinterface import WebInterfaceMultiEditPages
 from invenio.legacy.bibmerge.webinterface import WebInterfaceMergePages
 from invenio.legacy.bibdocfile.webinterface import WebInterfaceManageDocFilesPages, WebInterfaceFilesPages
@@ -147,6 +119,7 @@ try:
 except KeyError:
     output_formats = ['xd', 'xm', 'hd', 'hb', 'hs', 'hx']
 output_formats.extend(['hm', 't', 'h'])
+
 
 def wash_search_urlargd(form):
     """
@@ -186,6 +159,7 @@ def wash_search_urlargd(form):
 
     return argd
 
+
 class WebInterfaceUnAPIPages(WebInterfaceDirectory):
     """ Handle /unapi set of pages."""
     _exports = ['']
@@ -197,22 +171,22 @@ class WebInterfaceUnAPIPages(WebInterfaceDirectory):
 
         formats_dict = get_output_formats(True)
         formats = {}
-        for format in formats_dict.values():
-            if format['attrs']['visibility']:
-                formats[format['attrs']['code'].lower()] = format['attrs']['content_type']
+        for f in formats_dict.values():
+            if f['attrs']['visibility']:
+                formats[f['attrs']['code'].lower()] = f['attrs']['content_type']
         del formats_dict
 
         if argd['id'] and argd['format']:
             ## Translate back common format names
-            format = {
+            f = {
                 'nlm' : 'xn',
                 'marcxml' : 'xm',
                 'dc' : 'xd',
                 'endnote' : 'xe',
                 'mods' : 'xo'
             }.get(argd['format'], argd['format'])
-            if format in formats:
-                redirect_to_url(req, '%s/%s/%s/export/%s' % (CFG_SITE_URL, CFG_SITE_RECORD, argd['id'], format))
+            if f in formats:
+                redirect_to_url(req, '%s/%s/%s/export/%s' % (CFG_SITE_URL, CFG_SITE_RECORD, argd['id'], f))
             else:
                 raise apache.SERVER_RETURN, apache.HTTP_NOT_ACCEPTABLE
         elif argd['id']:
@@ -222,19 +196,20 @@ class WebInterfaceUnAPIPages(WebInterfaceDirectory):
 
     index = __call__
 
+
 class WebInterfaceRecordPages(WebInterfaceDirectory):
     """ Handling of a /CFG_SITE_RECORD/<recid> URL fragment """
 
-    _exports = ['', 'files', 'reviews', 'comments', 'usage',
-                'references', 'export', 'citations', 'holdings', 'edit',
-                'keywords', 'multiedit', 'merge', 'plots', 'linkbacks']
+    _exports = ['', 'files', 'reviews', 'comments', 'usage', 'references',
+                'export', 'citations', 'holdings', 'keywords',
+                'multiedit', 'merge', 'plots', 'linkbacks', 'hepdata']
 
     #_exports.extend(output_formats)
 
-    def __init__(self, recid, tab, format=None):
+    def __init__(self, recid, tab, form=None):
         self.recid = recid
         self.tab = tab
-        self.format = format
+        self.format = form
 
         self.files = WebInterfaceFilesPages(self.recid)
         self.reviews = WebInterfaceCommentsPages(self.recid, reviews=1)
@@ -245,8 +220,8 @@ class WebInterfaceRecordPages(WebInterfaceDirectory):
         self.holdings = WebInterfaceHoldingsPages(self.recid)
         self.citations = self
         self.plots = self
+        self.hepdata = self
         self.export = WebInterfaceRecordExport(self.recid, self.format)
-        self.edit = WebInterfaceEditPages(self.recid)
         self.merge = WebInterfaceMergePages(self.recid)
         self.linkbacks = WebInterfaceRecordLinkbacksPages(self.recid)
 
@@ -258,6 +233,8 @@ class WebInterfaceRecordPages(WebInterfaceDirectory):
         argd['recid'] = self.recid
 
         argd['tab'] = self.tab
+
+        # do we really enter here ?
 
         if self.format is not None:
             argd['of'] = self.format
@@ -327,12 +304,13 @@ class WebInterfaceRecordPages(WebInterfaceDirectory):
     # Return the same page wether we ask for /CFG_SITE_RECORD/123 or /CFG_SITE_RECORD/123/
     index = __call__
 
+
 class WebInterfaceRecordRestrictedPages(WebInterfaceDirectory):
     """ Handling of a /record-restricted/<recid> URL fragment """
 
-    _exports = ['', 'files', 'reviews', 'comments', 'usage',
-                'references', 'export', 'citations', 'holdings', 'edit',
-                'keywords', 'multiedit', 'merge', 'plots', 'linkbacks']
+    _exports = ['', 'files', 'reviews', 'comments', 'usage', 'references',
+                'export', 'citations', 'holdings', 'keywords',
+                'multiedit', 'merge', 'plots', 'linkbacks', 'hepdata']
 
     #_exports.extend(output_formats)
 
@@ -351,11 +329,9 @@ class WebInterfaceRecordRestrictedPages(WebInterfaceDirectory):
         self.citations = self
         self.plots = self
         self.export = WebInterfaceRecordExport(self.recid, self.format)
-        self.edit = WebInterfaceEditPages(self.recid)
         self.merge = WebInterfaceMergePages(self.recid)
         self.linkbacks = WebInterfaceRecordLinkbacksPages(self.recid)
-
-        return
+        self.hepdata = self
 
     def __call__(self, req, form):
         argd = wash_search_urlargd(form)
@@ -417,6 +393,7 @@ class WebInterfaceRecordRestrictedPages(WebInterfaceDirectory):
 
     # Return the same page wether we ask for /CFG_SITE_RECORD/123 or /CFG_SITE_RECORD/123/
     index = __call__
+
 
 class WebInterfaceSearchResultsPages(WebInterfaceDirectory):
     """ Handling of the /search URL and its sub-pages. """
@@ -596,6 +573,7 @@ class WebInterfaceSearchResultsPages(WebInterfaceDirectory):
 
     index = __call__
 
+
 class WebInterfaceLegacySearchPages(WebInterfaceDirectory):
     """ Handling of the /search.py URL and its sub-pages. """
 
@@ -687,12 +665,8 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
 
             return answer, []
 
-
         elif component == CFG_SITE_RECORD and path and path[0] == 'merge':
             return WebInterfaceMergePages(), path[1:]
-
-        elif component == CFG_SITE_RECORD and path and path[0] == 'edit':
-            return WebInterfaceEditPages(), path[1:]
 
         elif component == CFG_SITE_RECORD and path and path[0] == 'multiedit':
             return WebInterfaceMultiEditPages(), path[1:]
@@ -729,8 +703,9 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
             tab = ''
             try:
                 if path[1] in ['', 'files', 'reviews', 'comments', 'usage',
-                               'references', 'citations', 'holdings', 'edit',
-                               'keywords', 'multiedit', 'merge', 'plots', 'linkbacks']:
+                               'references', 'citations', 'holdings',
+                               'keywords', 'multiedit', 'merge', 'plots',
+                               'linkbacks', 'hepdata']:
                     tab = path[1]
                 elif path[1] == 'export':
                     tab = ''
@@ -759,6 +734,15 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
                 real_url = "http://" + '/'.join(path)
                 redirect_to_url(req, real_url)
             return redirecter, []
+        elif component == 'doi':
+            doi = '/'.join(path)
+
+            def doi_answer(req, form):
+                """Resolve DOI"""
+                argd = wash_urlargd(form, {'verbose': (int, 0),})
+                return resolve_doi(req, doi, verbose=argd['verbose'], ln=argd['ln'])
+
+            return doi_answer, []
 
         return None, []
 
@@ -788,7 +772,7 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
         if 'as' in argd:
             argd['aas'] = argd['as']
             del argd['as']
-        if argd.get('aas', CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE) not in (0, 1):
+        if argd.get('aas', CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE) not in CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES:
             argd['aas'] = CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE
 
         # If we specify no collection, then we don't need to redirect
@@ -816,6 +800,7 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
 
         target += make_canonical_urlargd(argd, legacy_collection_default_urlargd)
         return redirect_to_url(req, target)
+
 
 def display_collection(req, c, aas, verbose, ln, em=""):
     """Display search interface page for collection c by looking
@@ -846,11 +831,10 @@ def display_collection(req, c, aas, verbose, ln, em=""):
                     language=ln,
                     req=req,
                     navmenuid='search')
-    # start display:
-    req.content_type = "text/html"
-    req.send_http_header()
+
     # deduce collection id:
-    colID = get_colID(get_coll_normalised_name(c))
+    normalised_name = get_coll_normalised_name(c)
+    colID = get_colID(normalised_name)
     if type(colID) is not int:
         page_body = '<p>' + (_("Sorry, collection %(x_colname)s does not seem to exist.", x_colname='<strong>' + str(c) + '</strong>',)) + '</p>'
         page_body = '<p>' + (_("You may want to start browsing from %(x_sitehref)s.", x_sitehref='<a href="' + CFG_SITE_URL + '?ln=' + ln + '">' + get_coll_i18nname(CFG_SITE_NAME, ln) + '</a>')) + '</p>'
@@ -864,6 +848,13 @@ def display_collection(req, c, aas, verbose, ln, em=""):
                     language=ln,
                     req=req,
                     navmenuid='search')
+
+    if normalised_name != c:
+        redirect_to_url(req, normalised_name, apache.HTTP_MOVED_PERMANENTLY)
+
+    # start display:
+    req.content_type = "text/html"
+    req.send_http_header()
 
     c_body, c_navtrail, c_portalbox_lt, c_portalbox_rt, c_portalbox_tp, c_portalbox_te, \
         c_last_updated = perform_display_collection(colID, c, aas, ln, em,
@@ -934,6 +925,65 @@ def display_collection(req, c, aas, verbose, ln, em=""):
                 show_title_p=show_title_p,
                 show_header=em == "" or EM_REPOSITORY["header"] in em,
                 show_footer=em == "" or EM_REPOSITORY["footer"] in em)
+
+
+def resolve_doi(req, doi, ln=CFG_SITE_LANG, verbose=0):
+    """
+    Redirect to given DOI, or display error page when DOI cannot be
+    resolved.
+    """
+    _ = gettext_set_language(ln)
+    # Fetch user ID:
+    try:
+        uid = getUid(req)
+    except Error:
+        register_exception(req=req, alert_admin=True)
+        return page(title=_("Internal Error"),
+                    body=create_error_box(req, verbose=verbose, ln=ln),
+                    description="%s - Internal Error" % CFG_SITE_NAME,
+                    keywords="%s, Internal Error" % CFG_SITE_NAME,
+                    language=ln,
+                    req=req,
+                    navmenuid='search')
+    # Resolve DOI
+    recids = perform_request_search(p='doi:"%s"' % doi, of="id", verbose=verbose)
+    recids = [recid for recid in recids if doi.lower() in \
+              [doi.lower() for doi in get_record(recid).get('doi', '') if doi]]
+
+    # Answer
+    if len(recids) == 1:
+        # Found unique matching record
+        return redirect_to_url(req, CFG_SITE_URL + '/' + CFG_SITE_RECORD + '/' + str(recids[0]))
+    elif len(recids) == 0:
+        # No corresponding record found
+        page_body = '<p>' + (_("Sorry, DOI %(x_doi)s could not be resolved.", x_doi=('<strong>' + str(doi) + '</strong>'))) + '</p>'
+        if req.header_only:
+            raise apache.SERVER_RETURN, apache.HTTP_NOT_FOUND
+        return page(title=_('DOI "%(x_doi)s" Not Found', x_doi=cgi.escape(doi)),
+                    body=page_body,
+                    description=(CFG_SITE_NAME + ' - ' + _("Not found") + ': ' + cgi.escape(str(doi))),
+                    keywords="%s" % CFG_SITE_NAME,
+                    uid=uid,
+                    language=ln,
+                    req=req,
+                    navmenuid='search')
+    else:
+        # Found multiple matching records
+        try:
+            raise Exception('DOI "%s" matched multiple records (%s) -- Please check' % (doi, ', '.join([str(recid) for recid in recids])))
+        except Exception, e:
+            register_exception(req=req, alert_admin=True)
+        page_body = websearch_templates.tmpl_multiple_dois_found_page(doi, recids, ln)
+        return page(title=_('Found multiple records matching DOI %(x_doi)s', x_doi=cgi.escape(doi)),
+                    body=page_body,
+                    description=(CFG_SITE_NAME + ' - ' + _("Found multiple records matching DOI") + ': ' + cgi.escape(str(doi))),
+                    keywords="%s" % CFG_SITE_NAME,
+                    uid=uid,
+                    language=ln,
+                    req=req,
+                    navmenuid='search')
+    return
+
 
 class WebInterfaceRSSFeedServicePages(WebInterfaceDirectory):
     """RSS 2.0 feed service pages."""
@@ -1054,16 +1104,15 @@ class WebInterfaceRSSFeedServicePages(WebInterfaceDirectory):
             # Check if there's enough space to cache the request.
             if len(os.listdir(dirname)) < CFG_WEBSEARCH_RSS_MAX_CACHED_REQUESTS:
                 try:
-                    os.umask(0o022)
-                    f = open(fullfilename, "w")
-                    f.write(rss_prologue + rss_body + rss_epilogue)
-                    f.close()
+                    os.umask(022)
+                    with open(fullfilename, "w") as fd:
+                        fd.write(rss_prologue + rss_body + rss_epilogue)
                 except IOError as v:
                     if v[0] == 36:
                         # URL was too long. Never mind, don't cache
                         pass
                     else:
-                        raise repr(v)
+                        raise
 
     index = __call__
 

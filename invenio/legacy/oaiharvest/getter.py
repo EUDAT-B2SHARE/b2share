@@ -1,21 +1,21 @@
-## -*- mode: python; coding: utf-8; -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011, 2012 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# -*- mode: python; coding: utf-8; -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2012 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -104,8 +104,10 @@ def OAI_Session(server, script, http_param_dict , method="POST", output="",
                                      http_request_parameters(http_param_dict, method), method,
                                      secure, user, password, cert_file, key_file)
         if output:
-            # Write results to a file specified by 'output'
-            if harvested_data.lower().find('<'+http_param_dict['verb'].lower()) > -1:
+            # Write results to a file specified by 'output', once we have any
+            # records retrieved. Thus we check for an "noRecordsMatch" error
+            # before continuation.
+            if harvested_data.lower().find('<error code="noRecordsMatch">'.lower()) == -1:
                 output_fd, output_filename = tempfile.mkstemp(suffix="_%07d.harvested" % (i,), \
                                                               prefix=output_name, dir=output_path)
                 os.write(output_fd, harvested_data)
@@ -118,7 +120,9 @@ def OAI_Session(server, script, http_param_dict , method="POST", output="",
         else:
             sys.stdout.write(harvested_data)
 
-        rt_obj = re.search('<resumptionToken.*>(.+)</resumptionToken>',
+        # FIXME We should NOT use regular expressions to parse XML. This works
+        # for the time being to escape namespaces.
+        rt_obj = re.search('<.*resumptionToken.*>(.+)</.*resumptionToken.*>',
             harvested_data, re.DOTALL)
         if rt_obj is not None and rt_obj != "":
             http_param_dict = http_param_resume(http_param_dict, rt_obj.group(1))

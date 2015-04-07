@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Unit tests for the parser engine."""
 
@@ -173,6 +173,18 @@ class TestParser(InvenioTestCase):
         Field_parser.reparse('testsuite')
         self.assertEquals(
             len(Field_parser.field_definitions('testsuite')), len(tmp))
+
+    def test_field_hidden_decorator(self):
+        """JsonAlchemy - field hidden decorator."""
+        # Check that all files are parsed
+        self.assertTrue(
+            'hidden_basic' in Field_parser.field_definitions('testsuite'))
+        # Check default hidden value
+        self.assertFalse(
+            Field_parser.field_definitions('testsuite')['_id']['hidden'])
+        # Check hidden field
+        self.assertTrue(Field_parser.field_definitions(
+            'testsuite')['hidden_basic']['hidden'])
 
     def test_wrong_field_name_inside_model(self):
         """JSONAlchmey - wrong field name inside model"""

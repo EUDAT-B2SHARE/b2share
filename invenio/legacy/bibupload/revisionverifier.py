@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 RevisionVerifier : Compares the Revision of Record to be uploaded
@@ -28,12 +28,14 @@ __revision__ = "$Id$"
 
 import zlib
 import copy
+from pprint import pformat
 
 from invenio.legacy.bibrecord import record_get_field_value, \
                                 record_get_field_instances, \
                                 record_add_field, \
                                 record_delete_field, \
-                                create_record
+                                create_record, \
+                                records_identical
 
 from invenio.legacy.bibupload.config import CFG_BIBUPLOAD_CONTROLFIELD_TAGS, \
                                      CFG_BIBUPLOAD_DELETE_CODE, \
@@ -244,7 +246,7 @@ class RevisionVerifier:
 
         return result
 
-    def detect_conflict(self, up_patch, up_date, orig_patch, orig_date):
+    def detect_conflict(self, up_record, up_patch, up_date, orig_record, orig_patch, orig_date):
         """
         Compares the generated patches for Upload and Original Records for any common tags.
         Raises Conflict Error in case of any common tags.
@@ -274,10 +276,33 @@ class RevisionVerifier:
                     conflict_tags.append(tag)
 
         if conflict_tags:
-            raise InvenioBibUploadConflictingRevisionsError(self.rec_id, \
-                                                            conflict_tags, \
-                                                            up_date, \
-                                                            orig_date)
+            ## It looks like there are conflicting tags. However these might
+            ## be false positive: we need to filter out those tags which
+            ## have been modified in both situation but ends up having
+            ## the same change.
+            real_conflict_tags = []
+            for tag in conflict_tags:
+                if tag == '856':
+                    ## HACK: FIXME: we are not yet able to preserve the sorting
+                    ## of 8564 tags WRT FFT in BibUpload.
+                    ## Therefore we implement here a workaround to ignore
+                    ## the order of fields in case of 856.
+                    ## See ticket #1606.
+                    if tag in up_record and tag in orig_record and records_identical({tag: up_record[tag]}, {tag: orig_record[tag]}, ignore_duplicate_subfields=True, ignore_duplicate_controlfields=True, ignore_field_order=False, ignore_subfield_order=False):
+                        continue
+                elif tag in up_record and tag in orig_record and records_identical({tag: up_record[tag]}, {tag: orig_record[tag]}, ignore_duplicate_subfields=True, ignore_duplicate_controlfields=True):
+                    continue
+                elif tag not in up_record and tag not in orig_record:
+                    continue
+                else:
+                    real_conflict_tags.append(tag)
+            if real_conflict_tags:
+                raise InvenioBibUploadConflictingRevisionsError(self.rec_id,
+                                                            real_conflict_tags,
+                                                            up_date,
+                                                            orig_date,
+                                                            up_record,
+                                                            orig_record)
 
         return up_patch
 
@@ -393,8 +418,8 @@ class RevisionVerifier:
         # Checking for conflicts
         # If no original patch - Original Record same as Archived Record
         if orig_patch:
-            curr_patch = self.detect_conflict(curr_patch, upload_rev, \
-                                                orig_patch, original_rev)
+            curr_patch = self.detect_conflict(verify_record, curr_patch, upload_rev, \
+                                                original_record, orig_patch, original_rev)
 
         record_patch = self.generate_final_patch(curr_patch, self.rec_id)
         affected_tags = self.retrieve_affected_tags_with_ind(curr_patch)
@@ -414,7 +439,7 @@ class InvenioBibUploadUnchangedRecordError(Exception):
 
     def __str__(self):
         msg = 'UNCHANGED RECORD : Upload Record %s same as Rev-%s'
-        return repr(msg%(self.recid, self.cur_rev))
+        return msg % (self.recid, self.cur_rev)
 
 
 class InvenioBibUploadConflictingRevisionsError(Exception):
@@ -422,15 +447,21 @@ class InvenioBibUploadConflictingRevisionsError(Exception):
     Exception for conflicting records.
     """
 
-    def __init__(self, recid, tag_list, upload_rev, current_rev):
+    def __init__(self, recid, tag_list, upload_rev, current_rev, up_record, orig_record):
         self.up_rev = upload_rev
         self.cur_rev = current_rev
         self.tags = tag_list
         self.recid = recid
+        self.up_record = up_record
+        self.orig_record = orig_record
 
     def __str__(self):
-        msg = 'CONFLICT : In Record %s between Rev-%s and Rev-%s for Tags : %s'
-        return repr(msg%(self.recid, self.up_rev, self.cur_rev, str(self.tags)))
+        msg = 'CONFLICT : In Record %s between Rev-%s and Rev-%s for Tags:\n' % (self.recid, self.up_rev, self.cur_rev)
+        for tag in self.tags:
+            msg += "  %s ->\n" % tag
+            msg += "     original record: %s\n" % pformat(self.orig_record.get(tag))
+            msg += "     uploaded record: %s\n" % pformat(self.up_record.get(tag))
+        return msg
 
 
 class InvenioBibUploadInvalidRevisionError(Exception):
@@ -444,7 +475,7 @@ class InvenioBibUploadInvalidRevisionError(Exception):
 
     def __str__(self):
         msg = 'INVALID REVISION : %s for Record %s not in Archive.'
-        return repr(msg%(self.upload_rev, self.recid))
+        return msg % (self.upload_rev, self.recid)
 
 
 class InvenioBibUploadMissing005Error(Exception):

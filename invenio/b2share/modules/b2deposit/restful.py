@@ -30,8 +30,6 @@ from werkzeug.datastructures import ImmutableMultiDict
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.ext.restful import require_api_auth
-from invenio.modules.editor.models import Bib98x, BibrecBib98x
-from invenio.modules.formatter import engine as bibformat_engine
 
 from invenio.b2share.modules.b2deposit.b2share_model import metadata_classes
 from invenio.b2share.modules.b2deposit.b2share_model.HTML5ModelConverter \
@@ -122,6 +120,7 @@ def get_record_details(recid, curr_user_email):
         return []
 
     # bibformat uses get_record, usually is one db hit per object; should be fastest
+    from invenio.modules.formatter import engine as bibformat_engine
     bfo = bibformat_engine.BibFormatObject(recid)
 
     # first put the recordID and list of files
@@ -204,6 +203,7 @@ class ListRecordsByDomain(B2Resource):
             page_size = MAX_PAGE_SIZE
 
         # get domain id from domain name
+        from invenio.modules.editor.models import Bib98x, BibrecBib98x
         domain = Bib98x.query.filter_by(value=domain_name).first()
         if domain is None:
             if domain_name not in metadata_classes().keys():

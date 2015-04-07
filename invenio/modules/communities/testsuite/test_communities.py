@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Tests for communities model."""
 
@@ -45,22 +45,30 @@ class CommunityModelTest(InvenioTestCase):
 
     test_name = 'test_comm'
 
+    def setUp(self):
+        Community.query.delete()
+        self.login('admin', '')
+        uid = current_user.get_id()
+        data = {'id': self.test_name,
+                'title': self.test_name}
+        self.c = Community(id_user=uid, **data)
+        db.session.add(self.c)
+        db.session.commit()
+        self.c.save_collections()
+
+    def tearDown(self):
+        self.c.delete_collections()
+        self.logout()
+        db.session.delete(self.c)
+        db.session.commit()
+
     def _find_community_info(self):
         c = Community.query.filter_by(id=self.test_name).first()
         return c
 
     def test_1_new_community(self):
         """communities - create new community"""
-        self.login('admin', '')
-        uid = current_user.get_id()
-        data = {'id': self.test_name,
-                'title': self.test_name}
-        c = Community(id_user=uid, **data)
-        db.session.add(c)
-        db.session.commit()
-        c.save_collections()
         self.assertEqual(self._find_community_info().title, self.test_name)
-        self.logout()
 
     def test_2_community_collections(self):
         """communities - checks collections for community"""
@@ -97,6 +105,8 @@ class CommunityModelTest(InvenioTestCase):
         if not exists:
             shutil.rmtree(CFG_TMPSHAREDDIR)
         self.assertEqual(self._find_community_info(), None)
+        # Re-create the community collection.
+        self.setUp()
 
 
 class CommunityRankerTest(InvenioTestCase):

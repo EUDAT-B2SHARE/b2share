@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """
 When a document is converted to plain-text from PDF,
 certain characters may result in the plain-text, that are
@@ -58,7 +58,7 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u'\uFFFB' : u"",
         u'\uFFFC' : u"",
         u'\uFEFF' : u"",
-        # Remove the result of an bad UTF-8 character
+        # Remove the result of a bad UTF-8 character
         u'\uFFFF' : u"",
         # Language Tag Code Points:
         u"\U000E0000" : u"",
@@ -379,6 +379,11 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u'\u0060I' : u'\u00CC',
         u'\u0060O' : u'\u00D2',
         u'\u0060U' : u'\u00D9',
+        u'a´': u'á',
+        u'i´': u'í',
+        u'e´': u'é',
+        u'u´': u'ú',
+        u'o´': u'ó',
         # \02C7 : caron
         u'\u02C7C' : u'\u010C',
         u'\u02C7c' : u'\u010D',
@@ -392,6 +397,7 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         # \030 : cedilla
         u'\u0327c' : u'\u00E7',
         u'\u0327C' : u'\u00C7',
+        u'¸c': u'ç',
         # \02DC : tilde
         u'\u02DCn' : u'\u00F1',
         u'\u02DCN' : u'\u00D1',
@@ -400,7 +406,18 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u'\u02DCa' : u'\u00E3',
         u'\u02DCA' : u'\u00C3',
         u'\u02DCs' : u'\u0303s',  # Combining tilde with 's'
-    }
+        # Circumflex accent (caret accent)
+        u'aˆ': u'â',
+        u'iˆ': u'î',
+        u'eˆ': u'ê',
+        u'uˆ': u'û',
+        u'oˆ': u'ô',
+        u'ˆa': u'â',
+        u'ˆi': u'î',
+        u'ˆe': u'ê',
+        u'ˆu': u'û',
+        u'ˆo': u'ô',
+}
 
 UNDESIRABLE_STRING_REPLACEMENTS = [
     (u'\u201c ', '"'),
@@ -415,6 +432,7 @@ def replace_undesirable_characters(line):
     @return: (string) the text line after the bad characters have been
                       replaced.
     """
+    # These are separate because we want a particular order
     for bad_string, replacement in UNDESIRABLE_STRING_REPLACEMENTS:
         line = line.replace(bad_string, replacement)
 

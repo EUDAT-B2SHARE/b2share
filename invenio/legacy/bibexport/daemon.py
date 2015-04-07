@@ -1,21 +1,21 @@
-## -*- mode: python; coding: utf-8; -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2008, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# -*- mode: python; coding: utf-8; -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2008, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 BibExport daemon.
@@ -131,15 +131,34 @@ def task_submit_elaborate_specific_parameter(key, value, opts, args):
         return False
     return True
 
+def force_recrawling():
+    """
+    This function touches a simple file whose modification is going to be
+    used by the sitemap generator in order to know what minimum modification
+    date to export to crawlers. (useful e.g. in case of major update of
+    the interface).
+    """
+    from invenio.legacy.bibexport.sitemap import _CFG_FORCE_RECRAWLING_TIMESTAMP_PATH
+    open(_CFG_FORCE_RECRAWLING_TIMESTAMP_PATH, "w").write("DUMMY")
+
 def main():
     """Main function that constructs full bibtask."""
+    if '--force-recrawling' in sys.argv:
+        force_recrawling()
+        print "Recrawling forced"
+        sys.exit(1)
     task_init(authorization_action='runbibexport',
               authorization_msg="BibExport Task Submission",
               help_specific_usage="""Export options:
   -w,  --wjob=j1[,j2]\tRun specific exporting jobs j1, j2, etc (e.g. 'sitemap').
+  --force-recrawling\tWhen using the sitemap export will force all the timestamp
+                    \tthere included to refer to correspond at least to now. In
+                    \tthis way crawlers are going to crawl all the content again.
+                    \tThis is useful in case of a major update in the detailed
+                    \tview of records.
 """,
               version=__revision__,
-              specific_params=("w:", ["wjob=",]),
+              specific_params=("w:", ["wjob="]),
               task_submit_elaborate_specific_parameter_fnc=task_submit_elaborate_specific_parameter,
               task_submit_check_options_fnc=task_submit_check_options,
               task_run_fnc=task_run_core)

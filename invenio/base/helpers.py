@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """
     invenio.base.helpers
     --------------------
@@ -28,7 +28,7 @@ from six import iteritems, text_type, string_types
 
 
 def with_app_context(app=None, new_context=False, **kwargs_config):
-    """Run function within application context"""
+    """Run function within the application context"""
 
     def get_application():
         """Returns an application instance."""
@@ -41,7 +41,7 @@ def with_app_context(app=None, new_context=False, **kwargs_config):
     def decorator(f):
         @wraps(f)
         def decorated_func(*args, **kwargs):
-            """This function has to run within application context."""
+            """This function has to run within the application context."""
 
             if not has_app_context() or new_context:
                 with get_application().test_request_context('/'):
@@ -57,7 +57,7 @@ def with_app_context(app=None, new_context=False, **kwargs_config):
 
 def unicodifier(obj):
     """
-    Tries to (recursively) convert the given object into unicode, assuming
+    Tries to (recursively) convert the given object into Unicode, assuming
     a UTF-8 encoding)
 
     :param obj: the object to convert

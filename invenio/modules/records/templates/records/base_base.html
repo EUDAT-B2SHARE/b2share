@@ -1,20 +1,20 @@
 {#
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #}
 
 {% extends "page.html" %}
@@ -31,9 +31,19 @@
   {% endif %}
 {% endblock metaheader %}
 
-{% block global_css %}
+{%- block header %}
+  {%- include "base/scripts.html" %}
+  {{- super() }}
+{%- endblock header %}
+{%- block _bottom_assets %}
+  {# The legacy page requires that the scripts are loaded from the <head>
+   # rather than at the bottom of the page.
+   #}
+{%- endblock %}
+
+{% block global_bundles %}
   {{ super() }}
-  {%- css url_for('static', filename='css/formatter/templates_detailed.css'), '00-records' -%}
+  {% bundles "records.js", "formatter.css", "record.css" %}
 {% endblock %}
 
 {% block body %}
@@ -49,13 +59,16 @@
 
   {% block record_tabs %}
   <ul id="record-links" class="nav nav-tabs">
-  {%- for tab in tabs|sort(attribute='order') -%}
+  {%- for tab in current_menu.submenu('record').children -%}
   {%- if tab.visible -%}
-    <li class="{{ 'active' if tab.key == request.endpoint }} {{ 'disabled' if not tab.enabled }}">
-      <a href="{{ url_for(tab.key, recid=recid) if tab.enabled else '#' }}">
-        {{ tab.label }}
-        {% if tab.count and tab.count > -1 %}
-          &nbsp;<small class="text-muted">({{ tab.count }})</small>
+    <li class="{{ 'active' if tab.active else '' }}">
+      <a href="{{ tab.url }}">
+        {{ tab.text }}
+        {% if tab.count %}
+          {% set tab_count = tab.count() %}
+          {% if tab_count > -1 %}
+            &nbsp;<small class="text-muted">({{ tab_count }})</small>
+          {% endif %}
         {% endif %}
       </a>
     </li>
@@ -71,17 +84,3 @@
   </div>
 <div style="clear: both;"></div>
 {% endblock %}
-
-{% block javascript %}
-  {{ super() }}
-  {%- js url_for('record.static', filename='js/records/records.js'), '20-record' -%}
-{% endblock javascript %}
-
-{% block _top_assets %}
-{% assets get_js_bundle() %}
-  <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-{% endassets %}
-{% endblock _top_assets %}
-
-{% block _bottom_assets %}
-{% endblock _bottom_assets %}

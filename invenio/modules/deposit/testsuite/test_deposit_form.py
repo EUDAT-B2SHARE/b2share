@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Unit tests for the WebDeposit Form """
 
 import copy
-from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
+
+from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
 
 
 class WebDepositFormTest(InvenioTestCase):
@@ -46,26 +47,26 @@ class WebDepositFormTest(InvenioTestCase):
             return []
 
         class IdentifierTestForm(WebDepositForm):
-            scheme = fields.TextField(
+            scheme = fields.StringField(
                 processors=[reset_processor],
-                autocomplete=dummy_autocomplete,
+                autocomplete_fn=dummy_autocomplete,
             )
-            identifier = fields.TextField()
+            identifier = fields.StringField()
 
             def post_process_identifier(self, form, field, submit=False,
                                         fields=None):
                 form.scheme.data = field.data
 
         class TestForm(WebDepositForm):
-            title = fields.TextField(
+            title = fields.StringField(
                 processors=[reset_processor],
-                autocomplete=dummy_autocomplete,
+                autocomplete_fn=dummy_autocomplete,
             )
-            subtitle = fields.TextField()
+            subtitle = fields.StringField()
             related_identifier = fields.DynamicFieldList(
                 fields.FormField(IdentifierTestForm)
             )
-            keywords = fields.DynamicFieldList(fields.TextField())
+            keywords = fields.DynamicFieldList(fields.StringField())
 
         self.form_class = TestForm
 
@@ -104,6 +105,7 @@ class WebDepositFormTest(InvenioTestCase):
 
     def test_autocomplete_routing(self):
         form = self.form_class()
+
         self.assertEqual(
             form.autocomplete('title', 'Nothing', limit=3),
             []
@@ -126,7 +128,8 @@ class WebDepositFormTest(InvenioTestCase):
         )
         self.assertEqual(
             form.autocomplete('related_identifier-0-scheme', 'test', limit=2),
-            ['related_identifier-0-scheme-0', 'related_identifier-0-scheme-1', ]
+            ['related_identifier-0-scheme-0',
+             'related_identifier-0-scheme-1', ]
         )
 
     def test_loading_objectdata(self):
@@ -225,8 +228,10 @@ class WebDepositFormTest(InvenioTestCase):
 
         expected_data = self.object_data
         expected_data['title'] = new_title
-        expected_data['related_identifier'].append({'scheme': None, 'identifier': None})
-        expected_data['related_identifier'].append({'scheme': new_scheme, 'identifier': None})
+        expected_data['related_identifier'].append({'scheme': None,
+                                                    'identifier': None})
+        expected_data['related_identifier'].append({'scheme': new_scheme,
+                                                    'identifier': None})
 
         formdata = self.multidict({
             'title': new_title,
@@ -351,8 +356,10 @@ class WebDepositFormTest(InvenioTestCase):
                 'title': {'state': 'warning', 'messages': ['t1', 't2']},
                 'subtitle': {},
                 'related_identifier': {'state': 'warning', 'messages': ['t3']},
-                'related_identifier-0': {'state': 'warning', 'messages': ['t4']},
-                'related_identifier-0-scheme': {'state': 'warning', 'messages': ['t5']},
+                'related_identifier-0': {'state': 'warning',
+                                         'messages': ['t4']},
+                'related_identifier-0-scheme': {'state': 'warning',
+                                                'messages': ['t5']},
                 'related_identifier-0-identifier': {},
                 'related_identifier-1': {},
                 'related_identifier-1-scheme': {},
@@ -368,10 +375,10 @@ class WebDepositFormTest(InvenioTestCase):
         from invenio.modules.deposit.form import WebDepositForm
 
         class NestedNestedForm(WebDepositForm):
-            id = fields.TextField()
+            id = fields.StringField()
 
         class NestedForm(WebDepositForm):
-            id = fields.TextField()
+            id = fields.StringField()
             fieldlist = fields.DynamicFieldList(
                 fields.FormField(NestedNestedForm, separator=':')
             )
@@ -380,7 +387,7 @@ class WebDepositFormTest(InvenioTestCase):
             formfield = fields.FormField(NestedForm, separator=';')
             fieldlist = fields.DynamicFieldList(
                 fields.DynamicFieldList(
-                    fields.TextField()
+                    fields.StringField()
                 )
             )
 

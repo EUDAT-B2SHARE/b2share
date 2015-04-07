@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """External user authentication for CERN NICE/CRA Invenio."""
 
@@ -28,7 +28,7 @@ from invenio.legacy.external_authentication import ExternalAuth
 
 
 # Tunable list of settings to be hidden
-## e.g.: CFG_EXTERNAL_AUTH_HIDDEN_SETTINGS = ('auth', 'respccid', 'personid')
+# e.g.: CFG_EXTERNAL_AUTH_HIDDEN_SETTINGS = ('auth', 'respccid', 'personid')
 CFG_EXTERNAL_AUTH_HIDDEN_SETTINGS = ()
 # Tunable list of groups to be hidden
 CFG_EXTERNAL_AUTH_HIDDEN_GROUPS = (
@@ -69,6 +69,12 @@ CFG_EXTERNAL_AUTH_SSO_LOGIN_VARIABLE = CFG_EXTERNAL_AUTH_SSO_PREFIX_NAMES[0] + '
 CFG_EXTERNAL_AUTH_SSO_EMAIL_VARIABLE = CFG_EXTERNAL_AUTH_SSO_PREFIX_NAMES[0] + 'EMAIL'
 # Name of the variable containing groups
 CFG_EXTERNAL_AUTH_SSO_GROUP_VARIABLE = CFG_EXTERNAL_AUTH_SSO_PREFIX_NAMES[0] + 'GROUP'
+# Name of the variable containing federation
+CFG_EXTERNAL_AUTH_SSO_FEDERATION_VARIABLE = CFG_EXTERNAL_AUTH_SSO_PREFIX_NAMES[0] + 'FEDERATION'
+# Name of the variable containing fullname
+CFG_EXTERNAL_AUTH_SSO_FULLNAME_VARIABLE = CFG_EXTERNAL_AUTH_SSO_PREFIX_NAMES[0] + 'FULLNAME'
+# Name of the variable containing role
+CFG_EXTERNAL_AUTH_SSO_ROLE_VARIABLE = CFG_EXTERNAL_AUTH_SSO_PREFIX_NAMES[0] + 'ROLE'
 # Separator character for group variable
 CFG_EXTERNAL_AUTH_SSO_GROUPS_SEPARATOR = ';'
 
@@ -131,15 +137,34 @@ class ExternalAuthSSO(ExternalAuth):
         return self._fetch_egroups(req)
 
     def fetch_user_nickname(self, username, password=None, req=None):
-        """Given a username and a password, returns the right nickname belonging
-        to that user (username could be an email).
+        """Given a username and a password, returns the right nickname
+        belonging to that user (username could be an email).
         Note: for SSO the parameter are discarded and overloaded by Shibboleth
         variables
         """
         if req:
             req.add_common_vars()
-            if CFG_EXTERNAL_AUTH_SSO_LOGIN_VARIABLE in req.subprocess_env:
-                return req.subprocess_env[CFG_EXTERNAL_AUTH_SSO_LOGIN_VARIABLE]
+            # Extract all necessary adfs variables
+            federation = req.subprocess_env.get(
+                CFG_EXTERNAL_AUTH_SSO_FEDERATION_VARIABLE)
+            fullname = req.subprocess_env.get(
+                CFG_EXTERNAL_AUTH_SSO_FULLNAME_VARIABLE)
+            email = req.subprocess_env.get(
+                CFG_EXTERNAL_AUTH_SSO_EMAIL_VARIABLE)
+            role = req.subprocess_env.get(
+                CFG_EXTERNAL_AUTH_SSO_ROLE_VARIABLE)
+            if federation == "CERN" and role == "CERN Users":
+                nickname = fullname
+            else:
+                if fullname != email:
+                    nickname = fullname
+                else:
+                    local_part, domain_part = email.split("@", 1)
+                    joined_name = " ".join(domain_part.split(".")[:-1]).upper()
+                    nickname = "{0} [{1}]".format(
+                        local_part, joined_name
+                    )
+            return nickname
         else:
             return None
 

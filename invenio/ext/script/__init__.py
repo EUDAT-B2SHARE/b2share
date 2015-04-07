@@ -1,37 +1,42 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Initialize and configure *Flask-Script* extension."""
+"""Initialize and configure Flask-Script extension."""
 
 from __future__ import print_function
 
-import re
 import functools
 
-from flask import flash
-from flask.ext.registry import RegistryProxy, ModuleAutoDiscoveryRegistry
-from flask.ext.script import Manager as FlaskExtManager
-from functools import wraps
-from six.moves import urllib
-from werkzeug.utils import import_string, find_modules
+import re
 
-from invenio.base.signals import pre_command, post_command
+from types import FunctionType
+
+from flask import current_app, flash
+from flask.ext.registry import ModuleAutoDiscoveryRegistry, RegistryProxy
+from flask.ext.script import Manager as FlaskExtManager
+from flask.ext.script.commands import Clean, Server, Shell, ShowUrls
+
+from invenio.base.signals import post_command, pre_command
+
+from six.moves import urllib
+
+from werkzeug.utils import find_modules, import_string
 
 
 def change_command_name(method=None, new_name=None):
@@ -75,8 +80,10 @@ def check_for_software_updates(flash_message=False):
         find = re.compile('Invenio v[0-9]+.[0-9]+.[0-9]+(\-rc[0-9])?'
                           ' is released')
 
-        webFile = urllib.urlopen("http://invenio-software.org/repo"
-                                 "/invenio/tree/RELEASE-NOTES")
+        release_notes = 'https://raw.githubusercontent.com/' \
+            'inveniosoftware/invenio/master/RELEASE-NOTES'
+
+        webFile = urllib.request.urlopen(release_notes)
 
         temp = ""
         version = ""
@@ -87,7 +94,7 @@ def check_for_software_updates(flash_message=False):
             try:
                 version = match1.group()
                 break
-            except:
+            except Exception:
                 pass
             if not temp:
                 break
@@ -107,17 +114,17 @@ def check_for_software_updates(flash_message=False):
                 web_version[2] > local_version[2]):
             if flash_message:
                 flash(_('A newer version of Invenio is available for '
-                        'download. You may want to visit %s') %
-                      ('<a href=\"http://invenio-software.org/wiki'
-                       '/Installation/Download\">http://invenio-software.org'
-                       '/wiki/Installation/Download</a>'), 'warning')
+                        'download. You may want to visit '
+                        '<a href="%(wiki)s">%()s</a>',
+                        wiki='<a href=\"http://invenio-software.org/wiki/'
+                             '/Installation/Download'), 'warning')
 
             return False
     except Exception as e:
         print(e)
         if flash_message:
-            flash(_('Cannot download or parse release notes from http://'
-                    'invenio-software.org/repo/invenio/tree/RELEASE-NOTES'),
+            flash(_('Cannot download or parse release notes '
+                    'from %(release_notes)s', release_notes=release_notes),
                   'error')
         return None
     return True
@@ -129,22 +136,38 @@ class Manager(FlaskExtManager):
 
     def add_command(self, name, command):
         """Wrap default ``add_command`` method."""
-        f = command.run
+        sender = command.run if type(command.run) is FunctionType \
+            else command.__class__
 
-        @wraps(f)
-        def wrapper(*args, **kwds):
-            pre_command.send(f, *args, **kwds)
-            result = f(*args, **kwds)
-            post_command.send(f, *args, **kwds)
-            return result
-        command.run = wrapper
+        class SignalingCommand(command.__class__):
+            def __call__(self, *args, **kwargs):
+                app = self.app if not len(args) else args[0]
+                with app.test_request_context():
+                    pre_command.send(sender, args=args, **kwargs)
+                res = super(SignalingCommand, self).__call__(*args, **kwargs)
+                with app.test_request_context():
+                    post_command.send(sender, args=args, **kwargs)
+                return res
+
+        command.__class__ = SignalingCommand
         return super(Manager, self).add_command(name, command)
+
+
+def set_serve_static_files(sender, *args, **kwargs):
+    """Enable serving of static files for `runserver` command.
+
+    Normally Apache serves static files, but during development and if you are
+    using the Werkzeug standalone development server, you can set this flag to
+    `True`, to enable static file serving.
+    """
+    current_app.config.setdefault('CFG_FLASK_SERVE_STATIC_FILES', True)
+
+pre_command.connect(set_serve_static_files, sender=Server)
 
 
 def register_manager(manager):
     """Register all manager plugins and default commands with the manager."""
     from six.moves.urllib.parse import urlparse
-    from flask.ext.script.commands import Shell, Server, ShowUrls, Clean
     managers = RegistryProxy('managers', ModuleAutoDiscoveryRegistry, 'manage')
 
     with manager.app.app_context():
@@ -163,7 +186,13 @@ def register_manager(manager):
     parsed_url = urlparse(manager.app.config.get('CFG_SITE_URL'))
     port = parsed_url.port or 80
     host = parsed_url.hostname or '127.0.0.1'
-    manager.add_command("runserver", Server(host=host, port=port))
+    runserver = Server(host=host, port=port)
+    manager.add_command("runserver", runserver)
 
+    # FIXME separation of concerns is violated here.
     from invenio.ext.collect import collect
     collect.init_script(manager)
+
+    from invenio.ext.assets import command, bower
+    manager.add_command("assets", command)
+    manager.add_command("bower", bower)

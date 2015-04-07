@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-"""
-Community Model - a layer around Invenio's collections
-and portalboxes for easier allowing end-users to create their own collections.
+"""Community models.
+
+A layer around Invenio's collections and portalboxes for easier allowing
+end-users to create their own collections.
 
     from invenio.modules.communities.models import Community
     from invenio.ext.sqlalchemy import db
@@ -41,11 +42,10 @@ and portalboxes for easier allowing end-users to create their own collections.
 After call to save_collection() you must do the following:
 - Clear redis cache key for collection
 - Run webcoll immediately for only this collection
-
-
 """
 
 from datetime import datetime
+
 from flask import url_for
 
 from invenio.base.globals import cfg
@@ -54,33 +54,29 @@ from invenio.ext.sqlalchemy import db
 from invenio.ext.template import render_template_to_string
 from invenio.legacy.bibrecord import record_add_field
 from invenio.modules.access.models import \
-    AccACTION, \
-    AccROLE, \
-    AccARGUMENT, \
-    AccAuthorization, \
-    UserAccROLE
+    AccACTION, AccARGUMENT, \
+    AccAuthorization, AccROLE, UserAccROLE
 from invenio.modules.accounts.models import User
-from invenio.modules.communities.signals import before_save_collection, \
-    after_save_collection, before_save_collections, after_save_collections, \
-    before_delete_collection, after_delete_collection, \
-    before_delete_collections, after_delete_collections, \
-    pre_curation, post_curation
-from invenio.modules.search.models import \
-    Collection, \
-    Collectionname, \
-    Collectiondetailedrecordpagetabs, \
-    CollectionCollection, \
-    Portalbox, \
-    CollectionPortalbox, \
-    Format, \
-    CollectionFormat
+from invenio.modules.communities.signals import \
+    after_delete_collection, after_delete_collections, \
+    after_save_collection, after_save_collections, \
+    before_delete_collection, before_delete_collections, \
+    before_save_collection, before_save_collections, post_curation, \
+    pre_curation
 from invenio.modules.oaiharvester.models import OaiREPOSITORY
+from invenio.modules.search.models import \
+    Collection, CollectionCollection, \
+    CollectionFormat, CollectionPortalbox, \
+    Collectiondetailedrecordpagetabs, Collectionname, Format, Portalbox
 
 
 class Community(db.Model):
-    """ Represents a Community - a layer around
-    Invenio's collections and portalboxes, that allow end-users to create
+
+    """Represents a Community.
+
+    A layer around Invenio's collections and portalboxes.
     """
+
     __tablename__ = 'community'
 
     #
@@ -163,22 +159,20 @@ class Community(db.Model):
         Collection, uselist=False, backref='community_provisional',
         foreign_keys=[id_collection_provisional]
     )
-    """ Relationship to restricted collection containing uncurated records. """
+    """Relationship to restricted collection containing uncurated records."""
 
     oai_set = db.relationship(
         OaiREPOSITORY, uselist=False, backref='community',
         foreign_keys=[id_oairepository]
     )
-    """ Relation to the owner (User) of the community"""
+    """Relation to the owner (User) of the community."""
 
     #
     # Properties
     #
     @property
     def logo_url(self):
-        """
-        Get URL to collection logo
-        """
+        """Get URL to collection logo."""
         # FIXME
         if self.has_logo:
             raise NotImplementedError
@@ -187,28 +181,28 @@ class Community(db.Model):
 
     @property
     def oai_url(self):
-        """ Get link to OAI-PMH API for this community collection """
+        """Get link to OAI-PMH API for this community collection."""
         return "/oai2d?verb=ListRecords&metadataPrefix=oai_dc&set=%s" % (
             self.get_collection_name(), )
 
     @property
     def community_url(self):
-        """ Get URL to this community collection """
+        """Get URL to this community collection."""
         return "/collection/%s" % self.get_collection_name()
 
     @property
     def community_provisional_url(self):
-        """ Get URL to this provisional community collection """
+        """Get URL to this provisional community collection."""
         return "/search?cc=%s" % self.get_collection_name(provisional=True)
 
     @property
     def upload_url(self):
-        """ Get direct upload URL """
+        """Get direct upload URL."""
         return url_for('webdeposit.index', c=self.id)
 
     @classmethod
     def from_recid(cls, recid, provisional=False):
-        """ Get user communities specified in recid """
+        """Get user communities specified in recid."""
         from invenio.legacy.search_engine import get_record
         rec = get_record(recid)
         prefix = "%s-" % (
@@ -223,7 +217,7 @@ class Community(db.Model):
                 code, val = c[0][0]
                 if code == 'a' and val.startswith(prefix):
                     val = val[len(prefix):]
-                    u = Community.query.filter_by(id=val).first()
+                    u = cls.query.filter_by(id=val).first()
                     if u:
                         usercomm.append(u)
             except IndexError:
@@ -232,32 +226,35 @@ class Community(db.Model):
 
     @classmethod
     def filter_communities(cls, p, so):
-        """
-            Helper function which takes from database
-            only those communities which match search
-            criteria. Uses parameter 'so' to set
-            communities in the correct order.
+        """Search for communities.
 
-            Parameter 'page' is introduced to restrict results
-            and return only slice of them for the current page.
-            If page == 0 function will return all communities
-            that match the pattern.
+        Helper function which takes from database only those communities which
+        match search criteria. Uses parameter 'so' to set communities in the
+        correct order.
+
+        Parameter 'page' is introduced to restrict results and return only
+        slice of them for the current page. If page == 0 function will return
+        all communities that match the pattern.
         """
-        query = Community.query
+        query = cls.query
         if p:
-            query = query.filter(Community.title.like(p + "%"))
+            query = query.filter(db.or_(
+                cls.id.like("%" + p + "%"),
+                cls.title.like("%" + p + "%"),
+                cls.description.like("%" + p + "%"),
+            ))
         if so in cfg['COMMUNITIES_SORTING_OPTIONS']:
             order = so == 'title' and db.asc or db.desc
-            query = query.order_by(order(getattr(Community, so)))
+            query = query.order_by(order(getattr(cls, so)))
         else:
-            query = query.order_by(db.desc(Community.ranking))
+            query = query.order_by(db.desc(cls.ranking))
         return query
 
     #
     # Utility methods
     #
     def get_collection_name(self, provisional=False):
-        """ Get a unique collection name identifier """
+        """Get a unique collection name identifier."""
         if provisional:
             return "%s-%s" % (
                 cfg['COMMUNITIES_ID_PREFIX_PROVISIONAL'],
@@ -267,23 +264,22 @@ class Community(db.Model):
                 cfg['COMMUNITIES_ID_PREFIX'], self.id)
 
     def get_title(self, provisional=False):
+        """Get collection title."""
         if provisional:
             return "Provisional: %s" % self.title
         else:
             return self.title
 
     def get_collection_dbquery(self, provisional=False):
-        """ Get collection query """
+        """Get collection query."""
         return "%s:%s" % self.get_query(provisional=provisional)
 
     def get_query(self, provisional=False):
-        """ Get tuple (field,value) for search engine query """
+        """Get tuple (field,value) for search engine query."""
         return ("980__a", self.get_collection_name(provisional=provisional))
 
     def render_portalbox_bodies(self, templates):
-        """
-        Get a list of rendered portal boxes for this user collection
-        """
+        """Get a list of rendered portal boxes for this user collection."""
         ctx = {
             'community': self,
         }
@@ -298,8 +294,7 @@ class Community(db.Model):
     #
     def _modify_record(self, recid, test_func, replace_func, include_func,
                        append_colls=[], replace_colls=[]):
-        """
-        Generate record a MARCXML file
+        """Generate record a MARCXML file.
 
         @param test_func: Function to test if a collection id should be changed
         @param replace_func: Function to replace the collection id.
@@ -348,33 +343,28 @@ class Community(db.Model):
         return rec
 
     def _upload_record(self, rec, pretend=False):
-        """
-        Bibupload one record
-        """
+        """Bibupload one record."""
         from invenio.legacy.bibupload.utils import bibupload_record
         if rec is False:
             return None
         if not pretend:
             bibupload_record(
                 record=rec, file_prefix='community', mode='-c',
-                opts=['-n', '-P5'], alias="community",
+                opts=[], alias="community",
             )
         return rec
 
     def _upload_collection(self, coll):
-        """
-        Bibupload many records
-        """
+        """Bibupload many records."""
         from invenio.legacy.bibupload.utils import bibupload_record
         bibupload_record(
             collection=coll, file_prefix='community', mode='-c',
-            opts=['-n', '-P5'], alias="community",
+            opts=[], alias="community",
         )
         return True
 
     def accept_record(self, recid, pretend=False):
-        """
-        Accept a record for inclusion in a community
+        """Accept a record for inclusion in a community.
 
         @param recid: Record ID
         """
@@ -408,8 +398,7 @@ class Community(db.Model):
         return rec
 
     def reject_record(self, recid, pretend=False):
-        """
-        Reject a record for inclusion in a community
+        """Reject a record for inclusion in a community.
 
         @param recid: Record ID
         """
@@ -444,9 +433,7 @@ class Community(db.Model):
     # Data persistence methods
     #
     def save_collectionname(self, collection, title):
-        """
-        Create or update Collectionname object
-        """
+        """Create or update Collectionname object."""
         if collection.id:
             c_name = Collectionname.query.filter_by(
                 id_collection=collection.id, ln=CFG_SITE_LANG, type='ln'
@@ -465,9 +452,7 @@ class Community(db.Model):
         return c_name
 
     def save_collectiondetailedrecordpagetabs(self, collection):
-        """
-        Create or update Collectiondetailedrecordpagetabs object
-        """
+        """Create or update Collectiondetailedrecordpagetabs object."""
         if collection.id:
             c_tabs = Collectiondetailedrecordpagetabs.query.filter_by(
                 id_collection=collection.id
@@ -485,9 +470,7 @@ class Community(db.Model):
         return c_tabs
 
     def save_collectioncollection(self, collection, parent_name):
-        """
-        Create or update CollectionCollection object
-        """
+        """Create or update CollectionCollection object."""
         dad = Collection.query.filter_by(name=parent_name).first()
 
         if collection.id:
@@ -511,9 +494,7 @@ class Community(db.Model):
         return c_tree
 
     def save_collectionformat(self, collection, fmt_str):
-        """
-        Create or update CollectionFormat object
-        """
+        """Create or update CollectionFormat object."""
         fmt = Format.query.filter_by(code=fmt_str).first()
 
         if collection.id:
@@ -526,15 +507,13 @@ class Community(db.Model):
 
         c_fmt = CollectionFormat(
             collection=collection,
-            format=fmt,
+            id_format=fmt.id,
         )
         db.session.add(c_fmt)
         return c_fmt
 
     def save_collectionportalboxes(self, collection, templates):
-        """
-        Create or update Portalbox and CollectionPortalbox objects
-        """
+        """Create or update Portalbox and CollectionPortalbox objects."""
         # Setup portal boxes
         bodies = self.render_portalbox_bodies(templates)
         bodies.reverse()  # Highest score is on the top, so we reverse the list
@@ -579,9 +558,7 @@ class Community(db.Model):
         return objects
 
     def save_oairepository_set(self, provisional=False):
-        """
-        Create or update OAI Repository set.
-        """
+        """Create or update OAI Repository set."""
         collection_name = self.get_collection_name(provisional=provisional)
         (f1, p1) = self.get_query(provisional=provisional)
         fields = dict(
@@ -601,9 +578,9 @@ class Community(db.Model):
             db.session.add(self.oai_set)
 
     def save_acl(self, collection_id, collection_name):
-        """
-        Create or update authorization for user to view the provisional
-        collection.
+        """Create or update authorization.
+
+        Needed for user to view provisional collection.
         """
         # Role - use Community id, because role name is limited to 32 chars.
         role_name = 'coll_%s' % collection_id
@@ -637,7 +614,7 @@ class Community(db.Model):
                     userrole = ur
 
         if not userrole:
-            userrole = UserAccROLE(user=self.owner, role=role)
+            userrole = UserAccROLE(id_user=self.id_user, role=role)
             db.session.add(userrole)
 
         # Authorization
@@ -648,9 +625,10 @@ class Community(db.Model):
                                     argumentlistid=1)
 
     def save_collection(self, provisional=False):
-        """
-        Create or update a new collection with name, tabs, collection tree,
-        collection output formats, portalboxes and OAI repository set
+        """Create or update a new collection.
+
+        Including name, tabs, collection tree, collection output formats,
+        portalboxes and OAI repository set.
         """
         # Setup collection
         collection_name = self.get_collection_name(provisional=provisional)
@@ -707,18 +685,14 @@ class Community(db.Model):
         after_save_collection.send(self, collection=c, provisional=provisional)
 
     def save_collections(self):
-        """
-        Create restricted and unrestricted collections
-        """
+        """Create restricted and unrestricted collections."""
         before_save_collections.send(self)
         self.save_collection(provisional=False)
         self.save_collection(provisional=True)
         after_save_collections.send(self)
 
     def delete_record_collection_identifiers(self):
-        """
-        Remove collection identifiers for this collection from all records.
-        """
+        """Remove collection identifiers from all records."""
         from invenio.legacy.search_engine import search_pattern
         provisional_id = self.get_collection_name(provisional=True)
         normal_id = self.get_collection_name(provisional=False)
@@ -743,9 +717,7 @@ class Community(db.Model):
         self._upload_collection(coll)
 
     def delete_collection(self, provisional=False):
-        """
-        Delete all objects related to a single collection
-        """
+        """Delete all objects related to a single collection."""
         # Most of the logic in this method ought to be moved to a
         # Collection.delete() method.
         c = getattr(self, "collection_provisional"
@@ -792,20 +764,22 @@ class Community(db.Model):
         after_delete_collection.send(self, provisional=provisional)
 
     def delete_collections(self):
-        """
-        Delete collection and all associated objects.
-        """
+        """Delete collection and all associated objects."""
         before_delete_collections.send(self)
         self.delete_record_collection_identifiers()
         self.delete_collection(provisional=False)
         self.delete_collection(provisional=True)
         after_delete_collections.send(self)
 
+    def __str__(self):
+        """Return a string representation of an object."""
+        return self.id
+
 
 def update_changed_fields(obj, fields):
-    """
-    Utility method to update fields on an object if they have changed, and
-    report back if any changes where made.
+    """Utility method to update fields on an object if they have changed.
+
+    Will also report back if any changes where made.
     """
     dirty = False
     for attr, newval in fields.items():
@@ -817,6 +791,7 @@ def update_changed_fields(obj, fields):
 
 
 def signalresult2list(extra_colls):
+    """Convert signal's result to the list."""
     replace = list(set(reduce(sum, map(
         lambda x: x[1].get('replace', []) if x[1] else [],
         extra_colls or [(None, None)]))))
@@ -825,3 +800,39 @@ def signalresult2list(extra_colls):
         extra_colls or [(None, None)]))))
 
     return (append, replace)
+
+
+class FeaturedCommunity(db.Model):
+
+    """Featured community representation."""
+
+    __tablename__ = 'communityFEATURED'
+
+    id = db.Column(db.Integer(15, unsigned=True), primary_key=True,
+                   autoincrement=True)
+    """Featured community identifier."""
+
+    id_community = db.Column(
+        db.String(100), db.ForeignKey(Community.id),
+        nullable=False
+    )
+    """Specific community."""
+
+    start_date = db.Column(
+        db.DateTime(), nullable=False, default=datetime.now
+    )
+    """The date from which it should start to take effect."""
+
+    community = db.relationship(Community,
+                                backref="featuredcommunity")
+    """Relation to the community."""
+
+    @classmethod
+    def get_current(cls, start_date=None):
+        """Get the latest featured community."""
+        start_date = start_date or datetime.now()
+
+        return cls.query.options(db.joinedload_all(
+            'community.collection')).filter(
+            cls.start_date <= start_date).order_by(
+            cls.start_date.desc()).first()

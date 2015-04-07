@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of Invenio.
-## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """ Comments and reviews for records """
 
@@ -25,6 +25,7 @@ __revision__ = "$Id$"
 import time
 import math
 import os
+import shutil
 import cgi
 import re
 from datetime import datetime, timedelta
@@ -34,45 +35,45 @@ from six import iteritems
 
 from invenio.legacy.dbquery import run_sql
 from invenio.config import CFG_PREFIX, \
-     CFG_SITE_LANG, \
-     CFG_WEBALERT_ALERT_ENGINE_EMAIL,\
-     CFG_SITE_SUPPORT_EMAIL,\
-     CFG_WEBCOMMENT_ALERT_ENGINE_EMAIL,\
-     CFG_SITE_URL,\
-     CFG_SITE_NAME,\
-     CFG_WEBCOMMENT_ALLOW_REVIEWS,\
-     CFG_WEBCOMMENT_ALLOW_SHORT_REVIEWS,\
-     CFG_WEBCOMMENT_ALLOW_COMMENTS,\
-     CFG_WEBCOMMENT_ADMIN_NOTIFICATION_LEVEL,\
-     CFG_WEBCOMMENT_NB_REPORTS_BEFORE_SEND_EMAIL_TO_ADMIN,\
-     CFG_WEBCOMMENT_TIMELIMIT_PROCESSING_COMMENTS_IN_SECONDS,\
-     CFG_WEBCOMMENT_DEFAULT_MODERATOR, \
-     CFG_SITE_RECORD, \
-     CFG_WEBCOMMENT_EMAIL_REPLIES_TO, \
-     CFG_WEBCOMMENT_ROUND_DATAFIELD, \
-     CFG_WEBCOMMENT_RESTRICTION_DATAFIELD, \
-     CFG_WEBCOMMENT_MAX_COMMENT_THREAD_DEPTH
+    CFG_SITE_LANG, \
+    CFG_WEBALERT_ALERT_ENGINE_EMAIL,\
+    CFG_SITE_SUPPORT_EMAIL,\
+    CFG_WEBCOMMENT_ALERT_ENGINE_EMAIL,\
+    CFG_SITE_URL,\
+    CFG_SITE_NAME,\
+    CFG_WEBCOMMENT_ALLOW_REVIEWS,\
+    CFG_WEBCOMMENT_ALLOW_SHORT_REVIEWS,\
+    CFG_WEBCOMMENT_ALLOW_COMMENTS,\
+    CFG_WEBCOMMENT_ADMIN_NOTIFICATION_LEVEL,\
+    CFG_WEBCOMMENT_NB_REPORTS_BEFORE_SEND_EMAIL_TO_ADMIN,\
+    CFG_WEBCOMMENT_TIMELIMIT_PROCESSING_COMMENTS_IN_SECONDS,\
+    CFG_WEBCOMMENT_DEFAULT_MODERATOR, \
+    CFG_SITE_RECORD, \
+    CFG_WEBCOMMENT_EMAIL_REPLIES_TO, \
+    CFG_WEBCOMMENT_ROUND_DATAFIELD, \
+    CFG_WEBCOMMENT_RESTRICTION_DATAFIELD, \
+    CFG_WEBCOMMENT_MAX_COMMENT_THREAD_DEPTH
 from invenio.utils.mail import \
-     email_quote_txt, \
-     email_quoted_txt2html
+    email_quote_txt, \
+    email_quoted_txt2html
 from invenio.utils.html import tidy_html
 from invenio.legacy.webuser import get_user_info, get_email, collect_user_info
 from invenio.utils.date import convert_datetext_to_dategui, \
-                              datetext_default, \
-                              convert_datestruct_to_datetext
+                            datetext_default, \
+                            convert_datestruct_to_datetext
 from invenio.ext.email import send_email
 from invenio.ext.logging import register_exception
 from invenio.base.i18n import wash_language, gettext_set_language
 from invenio.utils.url import wash_url_argument
 from .config import CFG_WEBCOMMENT_ACTION_CODE, \
-     InvenioWebCommentError, \
-     InvenioWebCommentWarning
+    InvenioWebCommentError, \
+    InvenioWebCommentWarning
 from invenio.modules.access.engine import acc_authorize_action
 from invenio.legacy.search_engine import \
-     guess_primary_collection_of_a_record, \
-     check_user_can_view_record, \
-     get_collection_reclist, \
-     get_colID
+    guess_primary_collection_of_a_record, \
+    check_user_can_view_record, \
+    get_collection_reclist, \
+    get_colID
 from invenio.legacy.bibrecord import get_fieldvalues
 from invenio.utils.htmlwasher import EmailWasher
 try:
@@ -770,44 +771,44 @@ def query_retrieve_comments_or_remarks(recID, display_order='od', display_since=
             return comments_list
     return ()
 
-## def get_comment_children(comID):
-##     """
-##     Returns the list of children (i.e. direct descendants) ordered by time of addition.
+# def get_comment_children(comID):
+#     """
+#     Returns the list of children (i.e. direct descendants) ordered by time of addition.
 
-##     @param comID: the ID of the comment for which we want to retrieve children
-##     @type comID: int
-##     @return the list of children
-##     @rtype: list
-##     """
-##     res = run_sql("SELECT id FROM cmtRECORDCOMMENT WHERE in_reply_to_id_cmtRECORDCOMMENT=%s", (comID,))
-##     return [row[0] for row in res]
+#     @param comID: the ID of the comment for which we want to retrieve children
+#     @type comID: int
+#     @return the list of children
+#     @rtype: list
+#     """
+#     res = run_sql("SELECT id FROM cmtRECORDCOMMENT WHERE in_reply_to_id_cmtRECORDCOMMENT=%s", (comID,))
+#     return [row[0] for row in res]
 
-## def get_comment_descendants(comID, depth=None):
-##     """
-##     Returns the list of descendants of the given comment, orderd from
-##     oldest to newest ("top-down"), down to depth specified as parameter.
+# def get_comment_descendants(comID, depth=None):
+#     """
+#     Returns the list of descendants of the given comment, orderd from
+#     oldest to newest ("top-down"), down to depth specified as parameter.
 
-##     @param comID: the ID of the comment for which we want to retrieve descendant
-##     @type comID: int
-##     @param depth: the max depth down to which we want to retrieve
-##                   descendants. Specify None for no limit, 1 for direct
-##                   children only, etc.
-##     @return the list of ancestors
-##     @rtype: list(tuple(comment ID, descendants comments IDs))
-##     """
-##     if depth == 0:
-##         return (comID, [])
+#     @param comID: the ID of the comment for which we want to retrieve descendant
+#     @type comID: int
+#     @param depth: the max depth down to which we want to retrieve
+#                   descendants. Specify None for no limit, 1 for direct
+#                   children only, etc.
+#     @return the list of ancestors
+#     @rtype: list(tuple(comment ID, descendants comments IDs))
+#     """
+#     if depth == 0:
+#         return (comID, [])
 
-##     res = run_sql("SELECT id FROM cmtRECORDCOMMENT WHERE in_reply_to_id_cmtRECORDCOMMENT=%s", (comID,))
-##     if res:
-##         children_comID = [row[0] for row in res]
-##         children_descendants = []
-##         if depth:
-##             depth -= 1
-##         children_descendants = [get_comment_descendants(child_comID, depth) for child_comID in children_comID]
-##         return (comID, children_descendants)
-##     else:
-##         return (comID, [])
+#     res = run_sql("SELECT id FROM cmtRECORDCOMMENT WHERE in_reply_to_id_cmtRECORDCOMMENT=%s", (comID,))
+#     if res:
+#         children_comID = [row[0] for row in res]
+#         children_descendants = []
+#         if depth:
+#             depth -= 1
+#         children_descendants = [get_comment_descendants(child_comID, depth) for child_comID in children_comID]
+#         return (comID, children_descendants)
+#     else:
+#         return (comID, [])
 
 def get_comment_ancestors(comID, depth=None):
     """
@@ -1001,9 +1002,15 @@ def move_attached_files_to_storage(attached_files, recID, comid):
     @param comid: the comment ID to which we attach the files
     """
     for filename, filepath in iteritems(attached_files):
-        os.renames(filepath,
-                   os.path.join(CFG_PREFIX, 'var', 'data', 'comments',
-                                str(recID), str(comid), filename))
+        dest_dir = os.path.join(CFG_PREFIX, 'var', 'data', 'comments',
+                                str(recID), str(comid))
+        try:
+            os.makedirs(dest_dir)
+        except:
+            # Dir most probably already existed
+            pass
+        shutil.move(filepath,
+                    os.path.join(dest_dir, filename))
 
 def get_attached_files(recid, comid):
     """
@@ -1850,12 +1857,17 @@ def check_recID_is_in_range(recID, warnings=[], ln=CFG_SITE_LANG):
                 return (1,"")
             else:
                 try:
-                    raise InvenioWebCommentWarning(_('Record ID %(recid)s does not exist in the database.', recid=recID))
+                    if success == -1:
+                        status = 'deleted'
+                        raise InvenioWebCommentWarning(_('The record has been deleted.'))
+                    else:
+                        status = 'inexistant'
+                        raise InvenioWebCommentWarning(_('Record ID %(x_rec)s does not exist in the database.', x_rec=recID))
                 except InvenioWebCommentWarning as exc:
                     register_exception(stream='warning')
                     warnings.append((exc.message, ''))
                 #warnings.append(('ERR_WEBCOMMENT_RECID_INEXISTANT', recID))
-                return (0, webcomment_templates.tmpl_record_not_found(status='inexistant', recID=recID, ln=ln))
+                return (0, webcomment_templates.tmpl_record_not_found(status=status, recID=recID, ln=ln))
         elif recID == 0:
             try:
                 raise InvenioWebCommentWarning(_('No record ID was given.'))
@@ -2051,7 +2063,7 @@ def toggle_comment_visibility(uid, comid, collapse, recid):
         params = (comid,)
         res = run_sql(query, params)
         if res:
-            query = """INSERT DELAYED IGNORE INTO cmtCOLLAPSED (id_bibrec, id_cmtRECORDCOMMENT, id_user)
+            query = """INSERT IGNORE INTO cmtCOLLAPSED (id_bibrec, id_cmtRECORDCOMMENT, id_user)
                               VALUES (%s, %s, %s)"""
             params = (res[0][0], comid, uid)
             run_sql(query, params)

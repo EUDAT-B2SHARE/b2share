@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2008, 2009, 2010, 2011, 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 # pylint: disable=C0103
 """BibEdit Utilities.
@@ -26,7 +26,6 @@ by both the web and CLI interfaces.
 
 __revision__ = "$Id$"
 
-from six.moves import cPickle
 import difflib
 import fnmatch
 import marshal
@@ -36,19 +35,19 @@ import time
 import zlib
 import tempfile
 import sys
+import traceback
 from datetime import datetime
+from MySQLdb import ProgrammingError
 
 try:
     from six import StringIO
 except ImportError:
     from StringIO import StringIO
 
-from invenio.legacy.bibedit.config import CFG_BIBEDIT_FILENAME, \
-    CFG_BIBEDIT_TO_MERGE_SUFFIX, \
-    CFG_BIBEDIT_AJAX_RESULT_CODES_REV, \
-    CFG_BIBEDIT_CACHEDIR
-from invenio.legacy.bibedit.db_layer import get_record_last_modification_date, \
-    delete_hp_change
+from invenio.legacy.bibedit.db_layer import (get_record_last_modification_date,
+    delete_hp_change, cache_exists, update_cache_post_date, get_cache,
+    update_cache, get_cache_post_date, uids_with_active_caches,
+    get_record_revision_author, delete_cache as _delete_cache)
 from invenio.legacy.bibrecord import create_record, create_records, \
     record_get_field_value, record_has_field, record_xml_output, \
     record_strip_empty_fields, record_strip_empty_volatile_subfields, \
@@ -56,40 +55,54 @@ from invenio.legacy.bibrecord import create_record, create_records, \
     record_add_field, field_get_subfield_codes, field_add_subfield, \
     field_get_subfield_values, record_delete_fields, record_add_fields, \
     record_get_field_values, print_rec, record_modify_subfield, \
-    record_modify_controlfield
+    record_modify_controlfield, record_make_all_subfields_volatile
 from invenio.legacy.bibsched.bibtask import task_low_level_submission
 from invenio.config import CFG_BIBEDIT_LOCKLEVEL, \
     CFG_BIBEDIT_TIMEOUT, CFG_BIBUPLOAD_EXTERNAL_OAIID_TAG as OAIID_TAG, \
     CFG_BIBUPLOAD_EXTERNAL_SYSNO_TAG as SYSNO_TAG, \
     CFG_BIBEDIT_QUEUE_CHECK_METHOD, \
-    CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE, CFG_INSPIRE_SITE
+    CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE, \
+    CFG_PYLIBDIR
 from invenio.utils.date import convert_datetext_to_dategui
 from invenio.utils.text import wash_for_xml
 from invenio.legacy.bibedit.db_layer import get_bibupload_task_opts, \
     get_marcxml_of_record_revision, get_record_revisions, \
     get_info_of_record_revision
-from invenio.legacy.search_engine import print_record, record_exists, get_colID, \
+from invenio.legacy.search_engine import record_exists, get_colID, \
      guess_primary_collection_of_a_record, get_record, \
      get_all_collections_of_a_record
 from invenio.legacy.bibrecord import get_fieldvalues
-from invenio.legacy.webuser import get_user_info, getUid, get_email
+from invenio.legacy.webuser import get_user_info, get_email, \
+     collect_user_info, get_user_preferences, list_registered_users
 from invenio.legacy.dbquery import run_sql
 from invenio.legacy.websearch.adminlib import get_detailed_page_tabs
 from invenio.modules.access.engine import acc_authorize_action
 from invenio.legacy.refextract.api import extract_references_from_record_xml, \
                                    extract_references_from_string_xml, \
                                    extract_references_from_url_xml
-from invenio.legacy.bibrecord.scripts.textmarc2xmlmarc import transform_file, ParseError
-from invenio.legacy.bibauthorid.name_utils import split_name_parts, \
-                                        create_normalized_name
+from invenio.legacy.bibrecord.textmarc2xmlmarc import transform_file, ParseError
 from invenio.modules.knowledge.api import get_kbr_values
-from invenio.modules.editor.registry import field_templates, record_templates
+from invenio.modules.editor.registry import field_templates, record_templates, \
+    ticket_templates
+
+from invenio.base.globals import cfg
+from invenio.legacy.bibcatalog.api import BIBCATALOG_SYSTEM
+
+try:
+    from cPickle import loads
+except ImportError:
+    from pickle import loads
+from msgpack import packb, unpackb
+
+serialize = packb
+deserialize = unpackb
+
 # Precompile regexp:
-re_file_option = re.compile(r'^%s' % CFG_BIBEDIT_CACHEDIR)
-re_xmlfilename_suffix = re.compile('_(\d+)_\d+\.xml$')
-re_revid_split = re.compile('^(\d+)\.(\d{14})$')
-re_revdate_split = re.compile('^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)')
-re_taskid = re.compile('ID="(\d+)"')
+re_file_option = re.compile(r'^%s' % cfg['CFG_BIBEDIT_CACHEDIR'])
+re_xmlfilename_suffix = re.compile(r'_(\d+)_\d+\.xml$')
+re_revid_split = re.compile(r'^(\d+)\.(\d{14})$')
+re_revdate_split = re.compile(r'^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)')
+re_taskid = re.compile(r'ID="(\d+)"')
 re_tmpl_name = re.compile('<!-- BibEdit-Template-Name: (.*) -->')
 re_tmpl_description = re.compile('<!-- BibEdit-Template-Description: (.*) -->')
 re_ftmpl_name = re.compile('<!-- BibEdit-Field-Template-Name: (.*) -->')
@@ -97,6 +110,14 @@ re_ftmpl_description = re.compile('<!-- BibEdit-Field-Template-Description: (.*)
 
 
 VOLATILE_PREFIX = "VOLATILE:"
+
+
+class InvalidCache(Exception):
+    pass
+
+class BibEditPluginException(Exception):
+    """Raised when something is wrong with ticket plugins"""
+    pass
 
 # Authorization
 
@@ -113,10 +134,11 @@ def user_can_edit_record_collection(req, recid):
     # Get the collections the record belongs to
     record_collections = get_all_collections_of_a_record(recid)
 
-    uid = getUid(req)
+    user_info = collect_user_info(req)
+    uid = user_info["uid"]
     # In case we are creating a new record
     if cache_exists(recid, uid):
-        dummy1, dummy2, record, dummy3, dummy4, dummy5, dummy6 = get_cache_file_contents(recid, uid)
+        record = get_cache_contents(recid, uid)[2]
         values = record_get_field_values(record, '980', code="a")
         record_collections.extend([remove_volatile(v) for v in values])
 
@@ -130,14 +152,16 @@ def user_can_edit_record_collection(req, recid):
             normalized_collections.append(res[0][0])
     if not normalized_collections:
         # Check if user has access to all collections
-        auth_code, auth_message = acc_authorize_action(req, 'runbibedit',
-                                                       collection='')
+        auth_code, dummy_message = acc_authorize_action(req,
+                                                        'runbibedit',
+                                                        collection='')
         if auth_code == 0:
             return True
     else:
         for collection in normalized_collections:
-            auth_code, auth_message = acc_authorize_action(req, 'runbibedit',
-                                                           collection=collection)
+            auth_code, dummy_message = acc_authorize_action(req,
+                                                            'runbibedit',
+                                                            collection=collection)
             if auth_code == 0:
                 return True
     return False
@@ -146,11 +170,11 @@ def user_can_edit_record_collection(req, recid):
 
 def assert_undo_redo_lists_correctness(undo_list, redo_list):
     for undoItem in undo_list:
-        assert undoItem != None;
+        assert undoItem is not None
     for redoItem in redo_list:
-        assert redoItem != None;
+        assert redoItem is not None
 
-def record_find_matching_fields(key, rec, tag="", ind1=" ", ind2=" ", \
+def record_find_matching_fields(key, rec, tag="", ind1=" ", ind2=" ",
                                 exact_match=False):
     """
     This utility function will look for any fieldvalues containing or equal
@@ -188,7 +212,7 @@ def record_find_matching_fields(key, rec, tag="", ind1=" ", ind2=" ", \
         for field_instance in field_instances:
             # Get values to match: controlfield_value + subfield values
             values_to_match = [field_instance[3]] + \
-                              [val for code, val in field_instance[0]]
+                              [val for dummy_code, val in field_instance[0]]
             if exact_match and key in values_to_match:
                 found_fields.append(field_instance)
             else:
@@ -201,19 +225,20 @@ def record_find_matching_fields(key, rec, tag="", ind1=" ", ind2=" ", \
     return matching_field_instances
 
 # Operations on the BibEdit cache file
-def cache_exists(recid, uid):
-    """Check if the BibEdit cache file exists."""
-    return os.path.isfile('%s.tmp' % _get_file_path(recid, uid))
-
 def get_cache_mtime(recid, uid):
     """Get the last modified time of the BibEdit cache file. Check that the
     cache exists before calling this function.
 
     """
-    try:
-        return int(os.path.getmtime('%s.tmp' % _get_file_path(recid, uid)))
-    except OSError:
-        pass
+    post_date = get_cache_post_date(recid, uid)
+    if not post_date:
+        return
+    # In python 3.3 we can call .timestamp() on datetimes
+    # In python 2.7 we can call .total_seconds() on timedeltas
+    # In python 2.4 we have this
+    # It think it is beautiful
+    td = (post_date - datetime(1970, 1, 1))
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
 
 def cache_expired(recid, uid):
     """Has it been longer than the number of seconds given by
@@ -223,7 +248,8 @@ def cache_expired(recid, uid):
     """
     return get_cache_mtime(recid, uid) < int(time.time()) - CFG_BIBEDIT_TIMEOUT
 
-def create_cache_file(recid, uid, record='', cache_dirty=False, pending_changes=[], disabled_hp_changes = {}, undo_list = [], redo_list=[]):
+def create_cache(recid, uid, record='', cache_dirty=False, pending_changes=[],
+                 disabled_hp_changes={}, undo_list=[], redo_list=[]):
     """Create a BibEdit cache file, and return revision and record. This will
     overwrite any existing cache the user has for this record.
     datetime.
@@ -232,72 +258,81 @@ def create_cache_file(recid, uid, record='', cache_dirty=False, pending_changes=
     if not record:
         record = get_bibrecord(recid)
         if not record:
-            return
+            return (None, None)
 
-    file_path = '%s.tmp' % _get_file_path(recid, uid)
     record_revision = get_record_last_modification_date(recid)
-    if record_revision == None:
+    if record_revision is None:
         record_revision = datetime.now().timetuple()
 
-    cache_file = open(file_path, 'w')
     assert_undo_redo_lists_correctness(undo_list, redo_list)
 
     # Order subfields alphabetically after loading the record
     record_order_subfields(record)
 
-    cPickle.dump([cache_dirty, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list], cache_file)
-    cache_file.close()
+    data = [cache_dirty, record_revision, record, pending_changes,
+            disabled_hp_changes, undo_list, redo_list]
+    update_cache(recid, uid, data)
     return record_revision, record
 
-def touch_cache_file(recid, uid):
+def touch_cache(recid, uid):
     """Touch a BibEdit cache file. This should be used to indicate that the
     user has again accessed the record, so that locking will work correctly.
 
     """
-    if cache_exists(recid, uid):
-        os.system('touch %s.tmp' % _get_file_path(recid, uid))
+    update_cache_post_date(recid, uid)
 
 def get_bibrecord(recid):
     """Return record in BibRecord wrapping."""
     if record_exists(recid):
-        return create_record(print_record(recid, 'xm'))[0]
+        record_revision_ids = get_record_revision_ids(recid)
+        if record_revision_ids:
+            return create_record(get_marcxml_of_revision_id(max(record_revision_ids)))[0]
+        else:
+            return get_record(recid)
 
-def get_cache_file_contents(recid, uid):
-    """Return the contents of a BibEdit cache file."""
-    cache_file = _get_cache_file(recid, uid, 'r')
-    if cache_file:
-        cache_dirty, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list = cPickle.load(cache_file)
-        cache_file.close()
+def get_cache_contents(recid, uid):
+    """Return the contents of a BibEdit cache into the database."""
+    cache = get_cache(recid, uid)
+    if cache:
+        cache_dirty, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list = cache
         assert_undo_redo_lists_correctness(undo_list, redo_list)
 
         return cache_dirty, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list
+    else:
+        raise InvalidCache()
 
-def update_cache_file_contents(recid, uid, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list):
+def update_cache_contents(recid, uid, record_revision, record, pending_changes,
+                          disabled_hp_changes, undo_list, redo_list):
     """Save updates to the record in BibEdit cache. Return file modificaton
     time.
 
     """
-    cache_file = _get_cache_file(recid, uid, 'w')
-    if cache_file:
-        assert_undo_redo_lists_correctness(undo_list, redo_list)
-        cPickle.dump([True, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list], cache_file)
-        cache_file.close()
-        return get_cache_mtime(recid, uid)
+    data = [True, record_revision, record, pending_changes,
+            disabled_hp_changes, undo_list, redo_list]
+    update_cache(recid, uid, data)
+    return get_cache_mtime(recid, uid)
 
-def delete_cache_file(recid, uid):
-    """Delete a BibEdit cache file."""
-    try:
-        os.remove('%s.tmp' % _get_file_path(recid, uid))
-    except OSError:
-        # File was probably already removed
-        pass
+def delete_cache(recid, uid):
+    """Delete a BibEdit cache entry in the database."""
+    _delete_cache(recid, uid)
 
+def _get_file_path(recid, uid, filename=''):
+    """Return the file path to a BibEdit file (excluding suffix).
+    If filename is specified this replaces the config default.
+
+    """
+    if not filename:
+        return '%s%s%s_%s_%s' % (cfg['CFG_BIBEDIT_CACHEDIR'], os.sep, cfg['CFG_BIBEDIT_FILENAME'],
+                                 recid, uid)
+    else:
+        return '%s%s%s_%s_%s' % (cfg['CFG_BIBEDIT_CACHEDIR'], os.sep, filename, recid, uid)
 
 def delete_disabled_changes(used_changes):
     for change_id in used_changes:
         delete_hp_change(change_id)
 
-def save_xml_record(recid, uid, xml_record='', to_upload=True, to_merge=False):
+def save_xml_record(recid, uid, xml_record='', to_upload=True, to_merge=False,
+                    task_name="bibedit", sequence_id=None):
     """Write XML record to file. Default behaviour is to read the record from
     a BibEdit cache file, filter out the unchanged volatile subfields,
     write it back to an XML file and then pass this file to BibUpload.
@@ -309,12 +344,12 @@ def save_xml_record(recid, uid, xml_record='', to_upload=True, to_merge=False):
     """
     if not xml_record:
         # Read record from cache file.
-        cache = get_cache_file_contents(recid, uid)
+        cache = get_cache_contents(recid, uid)
         if cache:
             record = cache[2]
             used_changes = cache[4]
             xml_record = record_xml_output(record)
-            delete_cache_file(recid, uid)
+            delete_cache(recid, uid)
             delete_disabled_changes(used_changes)
     else:
         record = create_record(xml_record)[0]
@@ -330,19 +365,29 @@ def save_xml_record(recid, uid, xml_record='', to_upload=True, to_merge=False):
 
     # Write XML file.
     if not to_merge:
-        file_path = '%s.xml' % _get_file_path(recid, uid)
+        fd, file_path = tempfile.mkstemp(dir=cfg['CFG_BIBEDIT_CACHEDIR'],
+                                         prefix="%s_" % cfg['CFG_BIBEDIT_FILENAME'],
+                                         suffix="_%s_%s.xml" % (recid, uid))
+        f = os.fdopen(fd, 'w')
+        f.write(xml_to_write)
+        f.close()
     else:
         file_path = '%s_%s.xml' % (_get_file_path(recid, uid),
-                                   CFG_BIBEDIT_TO_MERGE_SUFFIX)
-    xml_file = open(file_path, 'w')
-    xml_file.write(xml_to_write)
-    xml_file.close()
+                                   cfg['CFG_BIBEDIT_TO_MERGE_SUFFIX'])
+        xml_file = open(file_path, 'w')
+        xml_file.write(xml_to_write)
+        xml_file.close()
 
     user_name = get_user_info(uid)[1]
     if to_upload:
-        # Pass XML file to BibUpload.
-        task_low_level_submission('bibupload', 'bibedit', '-P', '5', '-r',
-                                  file_path, '-u', user_name)
+        args = ['bibupload', user_name, '-P', '5', '-r',
+                file_path, '-u', user_name]
+        if task_name == "bibedit":
+            args.extend(['--name', 'bibedit'])
+        if sequence_id:
+            args.extend(["-I", sequence_id])
+        args.extend(['--email-logs-on-error'])
+        task_low_level_submission(*args)
     return True
 
 
@@ -351,14 +396,15 @@ def latest_record_revision(recid, revision_time):
     """Check if timetuple REVISION_TIME matches latest modification date."""
     latest = get_record_last_modification_date(recid)
     # this can be none if the record is new
-    return (latest == None) or (revision_time == latest)
+    return latest is None or revision_time == latest
+
 
 def record_locked_by_other_user(recid, uid):
     """Return true if any other user than UID has active caches for record
     RECID.
 
     """
-    active_uids = _uids_with_active_caches(recid)
+    active_uids = uids_with_active_caches(recid)
     try:
         active_uids.remove(uid)
     except ValueError:
@@ -369,15 +415,12 @@ def record_locked_by_other_user(recid, uid):
 def get_record_locked_since(recid, uid):
     """ Get modification time for the given recid and uid
     """
-    filename = "%s_%s_%s.tmp" % (CFG_BIBEDIT_FILENAME,
-                                recid,
-                                uid)
-    locked_since  = ""
-    try:
-        locked_since = time.ctime(os.path.getmtime('%s%s%s' % (
-                        CFG_BIBEDIT_CACHEDIR, os.sep, filename)))
-    except OSError:
-        pass
+    mtime = get_cache_post_date(recid, uid)
+    if mtime:
+        locked_since = mtime.strftime('%b %d, %H:%M')
+    else:
+        locked_since = ""
+
     return locked_since
 
 
@@ -387,7 +430,7 @@ def record_locked_by_user_details(recid, uid):
     @return: user details and time when record was locked
     @rtype: tuple
     """
-    active_uids = _uids_with_active_caches(recid)
+    active_uids = uids_with_active_caches(recid)
     try:
         active_uids.remove(uid)
     except ValueError:
@@ -414,10 +457,10 @@ def record_locked_by_queue(recid):
     if CFG_BIBEDIT_LOCKLEVEL == 2:
         return _get_bibupload_task_ids()
 
-    filenames = _get_bibupload_filenames()
     # Check for match between name of XML-files and record.
     # Assumes that filename ends with _<recid>.xml.
-    if CFG_BIBEDIT_LOCKLEVEL == 1:
+    elif CFG_BIBEDIT_LOCKLEVEL == 1:
+        filenames = _get_bibupload_filenames()
         recids = []
         for filename in filenames:
             filename_suffix = re_xmlfilename_suffix.search(filename)
@@ -426,7 +469,8 @@ def record_locked_by_queue(recid):
         return recid in recids
 
     # Check for match between content of files and record.
-    if CFG_BIBEDIT_LOCKLEVEL == 3:
+    elif CFG_BIBEDIT_LOCKLEVEL == 3:
+        filenames = _get_bibupload_filenames()
         while True:
             lock = _record_in_files_p(recid, filenames)
             # Check if any new files were added while we were searching
@@ -446,7 +490,7 @@ def revision_to_timestamp(td):
     """
     Converts the revision date to the timestamp
     """
-    return "%04i%02i%02i%02i%02i%02i" % (td.tm_year, td.tm_mon, td.tm_mday, \
+    return "%04i%02i%02i%02i%02i%02i" % (td.tm_year, td.tm_mon, td.tm_mday,
                                          td.tm_hour, td.tm_min, td.tm_sec)
 
 def timestamp_to_revision(timestamp):
@@ -469,12 +513,25 @@ def get_record_revision_timestamps(recid):
         result.append(rev_id.split(".")[1])
     return result
 
+def get_record_revision_authors(recid):
+    """return dictionary of < timestamp : author > of all revisions
+     of a given record """
+    rev_ids = get_record_revision_ids(recid)
+    result = {}
+    for rev_id in rev_ids:
+        try:
+            revision = rev_id.split(".")[1]
+            result[revision] = get_record_revision_author(recid, timestamp_to_revision(revision))
+        except IndexError:
+            continue
+    return result
+
 def get_record_revision_ids(recid):
     """Return list of all record revision IDs.
     Return revision IDs in chronologically decreasing order (latest first).
     """
     res = []
-    tmp_res =  get_record_revisions(recid)
+    tmp_res = get_record_revisions(recid)
     for row in tmp_res:
         res.append('%s.%s' % (row[0], row[1]))
     return res
@@ -488,14 +545,14 @@ def get_marcxml_of_revision(recid, revid):
     if tmp_res:
         for row in tmp_res:
             res += zlib.decompress(row[0]) + '\n'
-    return res;
+    return res
 
 def get_marcxml_of_revision_id(revid):
     """Return MARCXML string of revision.
     Return empty string if revision does not exist. REVID should be a string.
     """
     recid, job_date = split_revid(revid, 'datetext')
-    return get_marcxml_of_revision(recid, job_date);
+    return get_marcxml_of_revision(recid, job_date)
 
 def get_info_of_revision_id(revid):
     """Return info string regarding revision.
@@ -511,9 +568,10 @@ def get_info_of_revision_id(revid):
             author = 'N/A'
         res += '%s %s %s' % (revid.ljust(22), task_id.ljust(15), author.ljust(15))
         job_details = tmp_res[0][2].split()
-        upload_mode = job_details[0] + job_details[1][:-1]
-        upload_file = job_details[2] + job_details[3][:-1]
-        res += '%s %s' % (upload_mode, upload_file)
+        if job_details:
+            upload_mode = job_details[0] + job_details[1][:-1]
+            upload_file = job_details[2] + job_details[3][:-1]
+            res += '%s %s' % (upload_mode, upload_file)
     return res
 
 def revision_format_valid_p(revid):
@@ -555,8 +613,11 @@ def modify_record_timestamp(revision_xml, last_revision_ts):
     @return: marcxml with 005 tag modified
     """
     recstruct = create_record(revision_xml)[0]
-    record_modify_controlfield(recstruct, "005", last_revision_ts,
-                                field_position_local=0)
+    if "005" in recstruct:
+        record_modify_controlfield(recstruct, "005", last_revision_ts,
+                                   field_position_local=0)
+    else:
+        record_add_field(recstruct, '005', controlfield_value=last_revision_ts)
     return record_xml_output(recstruct)
 
 
@@ -566,15 +627,16 @@ def get_xml_comparison(header1, header2, xml1, xml2):
         xml2.splitlines(1), header1, header2))
 
 #Templates
-def get_templates(templatesDir, tmpl_name, tmpl_description, extractContent = False):
+def get_templates(templatesDir, tmpl_name, tmpl_description, extractContent=False):
     """Return list of templates [filename, name, description, content*]
        the extractContent variable indicated if the parsed content should
        be included"""
     template_fnames = fnmatch.filter(templatesDir, '*.xml')
 
     templates = []
-    for filepath in template_fnames:
-        template_file = open(filepath,'r')
+    for fname in template_fnames:
+        filepath = fname
+        template_file = open(filepath, 'r')
         template = template_file.read()
         template_file.close()
         fname = os.path.basename(filepath)
@@ -592,11 +654,11 @@ def get_templates(templatesDir, tmpl_name, tmpl_description, extractContent = Fa
             description = ''
         if (extractContent):
             parsedTemplate = create_record(template)[0]
-            if parsedTemplate != None:
+            if parsedTemplate is not None:
                 # If the template was correct
                 templates.append([fname_stripped, name, description, parsedTemplate])
             else:
-                raise "Problem when parsing the template %s" % (fname, )
+                raise Exception("Problem when parsing the template %s" % (fname, ))
         else:
             templates.append([fname_stripped, name, description, date_modified])
 
@@ -626,40 +688,6 @@ def get_record_template(name):
 
 
 # Private functions
-def _get_cache_file(recid, uid, mode):
-    """Return a BibEdit cache file object."""
-    if cache_exists(recid, uid):
-        return open('%s.tmp' % _get_file_path(recid, uid), mode)
-
-def _get_file_path(recid, uid, filename=''):
-    """Return the file path to a BibEdit file (excluding suffix).
-    If filename is specified this replaces the config default.
-
-    """
-    if not filename:
-        return '%s%s%s_%s_%s' % (CFG_BIBEDIT_CACHEDIR, os.sep, CFG_BIBEDIT_FILENAME,
-                                 recid, uid)
-    else:
-        return '%s%s%s_%s_%s' % (CFG_BIBEDIT_CACHEDIR, os.sep, filename, recid, uid)
-
-def _uids_with_active_caches(recid):
-    """Return list of uids with active caches for record RECID. Active caches
-    are caches that have been modified a number of seconds ago that is less than
-    the one given by CFG_BIBEDIT_TIMEOUT.
-
-    """
-    re_tmpfilename = re.compile('%s_%s_(\d+)\.tmp' % (CFG_BIBEDIT_FILENAME,
-                                                      recid))
-    tmpfiles = fnmatch.filter(os.listdir(CFG_BIBEDIT_CACHEDIR), '%s*.tmp' %
-                              CFG_BIBEDIT_FILENAME)
-    expire_time = int(time.time()) - CFG_BIBEDIT_TIMEOUT
-    active_uids = []
-    for tmpfile in tmpfiles:
-        mo = re_tmpfilename.match(tmpfile)
-        if mo and int(os.path.getmtime('%s%s%s' % (
-                    CFG_BIBEDIT_CACHEDIR, os.sep, tmpfile))) > expire_time:
-            active_uids.append(int(mo.group(1)))
-    return active_uids
 
 def _get_bibupload_task_ids():
     """Return list of all BibUpload task IDs.
@@ -687,8 +715,6 @@ def _record_in_files_p(recid, filenames):
     # Get id tags of record in question
     rec_oaiid = rec_sysno = -1
     rec_oaiid_tag = get_fieldvalues(recid, OAIID_TAG)
-    if rec_oaiid_tag:
-        rec_oaiid = rec_oaiid_tag[0]
     rec_sysno_tag = get_fieldvalues(recid, SYSNO_TAG)
     if rec_sysno_tag:
         rec_sysno = rec_sysno_tag[0]
@@ -698,15 +724,15 @@ def _record_in_files_p(recid, filenames):
         try:
             if CFG_BIBEDIT_QUEUE_CHECK_METHOD == 'regexp':
                 # check via regexp: this is fast, but may not be precise
-                re_match_001 = re.compile('<controlfield tag="001">%s</controlfield>' % (recid))
-                re_match_oaiid = re.compile('<datafield tag="%s" ind1=" " ind2=" ">(\s*<subfield code="a">\s*|\s*<subfield code="9">\s*.*\s*</subfield>\s*<subfield code="a">\s*)%s' % (OAIID_TAG[0:3],rec_oaiid))
-                re_match_sysno = re.compile('<datafield tag="%s" ind1=" " ind2=" ">(\s*<subfield code="a">\s*|\s*<subfield code="9">\s*.*\s*</subfield>\s*<subfield code="a">\s*)%s' % (SYSNO_TAG[0:3],rec_sysno))
                 file_content = open(filename).read()
+                re_match_001 = re.compile('<controlfield tag="001">%s</controlfield>' % (recid))
                 if re_match_001.search(file_content):
                     return True
-                if rec_oaiid_tag:
+                for rec_oaiid in rec_oaiid_tag:
+                    re_match_oaiid = re.compile(r'<datafield tag="%s" ind1=" " ind2=" ">(\s*<subfield code="a">\s*|\s*<subfield code="9">\s*.*\s*</subfield>\s*<subfield code="a">\s*)%s' % (OAIID_TAG[0:3], re.escape(rec_oaiid)))
                     if re_match_oaiid.search(file_content):
                         return True
+                re_match_sysno = re.compile(r'<datafield tag="%s" ind1=" " ind2=" ">(\s*<subfield code="a">\s*|\s*<subfield code="9">\s*.*\s*</subfield>\s*<subfield code="a">\s*)%s' % (SYSNO_TAG[0:3], re.escape(str(rec_sysno))))
                 if rec_sysno_tag:
                     if re_match_sysno.search(file_content):
                         return True
@@ -727,8 +753,7 @@ def _record_in_files_p(recid, filenames):
 def _record_has_id_p(record, recid, rec_oaiid, rec_sysno):
     """Check if record matches any of the given IDs."""
     if record_has_field(record, '001'):
-        if (record_get_field_value(record, '001', '%', '%')
-            == str(recid)):
+        if record_get_field_value(record, '001', '%', '%') == str(recid):
             return True
     if record_has_field(record, OAIID_TAG[0:3]):
         if (record_get_field_value(
@@ -750,20 +775,20 @@ def can_record_have_physical_copies(recid):
     Only records already saved within the collection may have the physical copies
     @return: True or False
     """
-    if get_record(recid) == None:
+    if get_record(recid) is None:
         return False
 
     col_id = get_colID(guess_primary_collection_of_a_record(recid))
     collections = get_detailed_page_tabs(col_id, recid)
 
-    if ("holdings" not in collections) or \
-        ("visible" not in collections["holdings"]):
+    if ("holdings" not in collections or
+            "visible" not in collections["holdings"]):
         return False
 
-    return collections["holdings"]["visible"] == True
+    return collections["holdings"]["visible"] is True
 
 
-def get_record_collections(recid):
+def get_record_collections(recid=0, recstruct=None):
     """ Returns all collections of a record, field 980
     @param recid: record id to get collections from
     @type: string
@@ -771,7 +796,8 @@ def get_record_collections(recid):
     @return: list of collections
     @rtype: list
     """
-    recstruct = get_record(recid)
+    if not recstruct:
+        recstruct = get_record(recid)
     return [collection for collection in record_get_field_values(recstruct,
                                                             tag="980",
                                                             ind1=" ",
@@ -779,27 +805,30 @@ def get_record_collections(recid):
                                                             code="a")]
 
 
-def extend_record_with_template(recid):
+def extend_record_with_template(recid=0, recstruct=None):
     """ Determine if the record has to be extended with the content
     of a template as defined in CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE
     @return: template name to be applied to record or False if no template
     has to be applied
     """
-    rec_collections = get_record_collections(recid)
+    rec_collections = get_record_collections(recid, recstruct)
 
-    for collection in rec_collections:
-        if collection in CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE:
-            return CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE[collection]
+    for collection in CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE:
+        if collection[0] in rec_collections:
+            return collection[1]
+
     return False
 
 
-def merge_record_with_template(rec, template_name):
+def merge_record_with_template(rec, template_name, is_hp_record=False):
     """ Extend the record rec with the contents of the template and return it"""
     template = get_record_template(template_name)
     if not template:
         return
     template_bibrec = create_record(template)[0]
-
+    # if the record is a holding pen record make all subfields volatile
+    if is_hp_record:
+        record_make_all_subfields_volatile(template_bibrec)
     for field_tag in template_bibrec:
         if not record_has_field(rec, field_tag):
             for field_instance in template_bibrec[field_tag]:
@@ -815,6 +844,7 @@ def merge_record_with_template(rec, template_name):
                             field_add_subfield(field_instance, code,
                                                field_get_subfield_values(template_field_instance,
                                                code)[0])
+    record_order_subfields(rec)
     return rec
 
 #################### Reference extraction ####################
@@ -837,9 +867,9 @@ def replace_references(recid, uid=None, txt=None, url=None):
         references_xml = extract_references_from_url_xml(url)
     else:
         references_xml = extract_references_from_record_xml(recid)
-    references = create_record(references_xml.encode('utf-8'))
+    references = create_record(references_xml)
 
-    dummy1, dummy2, record, dummy3, dummy4, dummy5, dummy6 = get_cache_file_contents(recid, uid)
+    dummy1, dummy2, record, dummy3, dummy4, dummy5, dummy6 = get_cache_contents(recid, uid)
     out_xml = None
 
     references_to_add = record_get_field_instances(references[0],
@@ -899,7 +929,7 @@ def add_record_cnum(recid, uid):
     from invenio.modules.sequencegenerator.cnum import CnumSeq, ConferenceNoStartDateError
 
     record_revision, record, pending_changes, deactivated_hp_changes, \
-    undo_list, redo_list = get_cache_file_contents(recid, uid)[1:]
+    undo_list, redo_list = get_cache_contents(recid, uid)[1:]
 
     record_strip_empty_volatile_subfields(record)
 
@@ -914,15 +944,15 @@ def add_record_cnum(recid, uid):
         except ConferenceNoStartDateError:
             return None
         field_add_subfield(record['111'][0], 'g', new_cnum)
-        update_cache_file_contents(recid, uid, record_revision,
-                                   record, \
-                                   pending_changes, \
-                                   deactivated_hp_changes, \
+        update_cache_contents(recid, uid, record_revision,
+                                   record,
+                                   pending_changes,
+                                   deactivated_hp_changes,
                                    undo_list, redo_list)
         return new_cnum
 
 
-def get_xml_from_textmarc(recid, textmarc_record):
+def get_xml_from_textmarc(recid, textmarc_record, uid=None):
     """
     Convert textmarc to marcxml and return the result of the conversion
 
@@ -946,9 +976,16 @@ def get_xml_from_textmarc(recid, textmarc_record):
     (file_descriptor, file_name) = tempfile.mkstemp()
     f = os.fdopen(file_descriptor, "w")
 
+    # If there is a cache file, add the controlfields
+    if cache_exists(recid, uid):
+        record = get_cache_contents(recid, uid)[2]
+        for tag in record:
+            if tag.startswith("00") and tag != "001":  # It is a controlfield
+                f.write("%09d %s %s\n" % (recid, tag + "__", record_get_field_value(record, tag)))
+
     # Write content appending sysno at beginning
     for line in textmarc_record.splitlines():
-        f.write("%09d %s\n" % (recid, re.sub("\s+", " ", line.strip())))
+        f.write("%09d %s\n" % (recid, re.sub(r"\s+", " ", line.strip())))
     f.close()
 
     old_stdout = sys.stdout
@@ -967,7 +1004,8 @@ def get_xml_from_textmarc(recid, textmarc_record):
             response['parse_error'] = [e.lineno, " ".join(e.linecontent.split()[1:]), e.message]
     finally:
         sys.stdout = old_stdout
-        return response
+
+    return response
 
 
 #################### crossref utils ####################
@@ -1002,8 +1040,9 @@ def crossref_translate_title(record):
             # returned value is a list, and we need only the first value
             new_title = new_title[0][0]
             position = field[4]
-            record_modify_subfield(rec=record, tag='773', subfield_code='p', \
-            value=new_title, subfield_position=0, field_position_global=position)
+            record_modify_subfield(rec=record, tag='773', subfield_code='p',
+                                   value=new_title, subfield_position=0,
+                                   field_position_global=position)
 
 
 def crossref_normalize_name(record):
@@ -1021,9 +1060,9 @@ def crossref_normalize_name(record):
         # remove spaces between initials
         # two iterations are required
         for _ in range(2):
-            new_author = re.sub(pattern_initials, '\g<1>\g<2>', new_author)
+            new_author = re.sub(pattern_initials, r'\g<1>\g<2>', new_author)
         position = field[4]
-        record_modify_subfield(rec=record, tag='100', subfield_code='a', \
+        record_modify_subfield(rec=record, tag='100', subfield_code='a',
         value=new_author, subfield_position=0, field_position_global=position)
 
     # then, change additional authors
@@ -1031,7 +1070,257 @@ def crossref_normalize_name(record):
         author = field[0][0][1]
         new_author = create_normalized_name(split_name_parts(author))
         for _ in range(2):
-            new_author = re.sub(pattern_initials, '\g<1>\g<2>',new_author)
+            new_author = re.sub(pattern_initials, r'\g<1>\g<2>', new_author)
         position = field[4]
-        record_modify_subfield(rec=record, tag='700', subfield_code='a', \
+        record_modify_subfield(rec=record, tag='700', subfield_code='a',
             value=new_author, subfield_position=0, field_position_global=position)
+
+
+def get_affiliation_for_paper(rec, name):
+    """ Returns guessed affiliations for a given record id and name
+
+    @param rec: record id to guess affiliations from
+    @type: string
+
+    @param name: string with the name of the author
+    @type: string
+    """
+    try:
+        affs = run_sql("""SELECT affiliations
+                          FROM bibEDITAFFILIATIONS
+                          WHERE bibrec=%s
+                          AND name=%s""", (rec, name))
+    except ProgrammingError:
+        # Table bibEDITAFFILIATIONS does not exist. As it is not mandatory,
+        # return None
+        return None
+
+    if not affs:
+        return None
+
+    return list(deserialize(affs[0][0]))
+
+
+####################### rt system utils ################################
+
+
+def get_new_ticket_RT_info(uid, recId):
+    response = {}
+    response['resultCode'] = 0
+    if BIBCATALOG_SYSTEM is None:
+        response['description'] = "<!--No ticket system configured-->"
+    elif BIBCATALOG_SYSTEM and uid:
+        bibcat_resp = BIBCATALOG_SYSTEM.check_system(uid)
+        if bibcat_resp == "":
+            # add available owners
+            users = []
+            users_list = list_registered_users()
+            for user_tuple in users_list:
+                try:
+                    user = {'username': get_user_preferences(user_tuple[0])['bibcatalog_username'],
+                        'id': user_tuple[0]}
+                except KeyError:
+                    continue
+                users.append(user)
+            response['users'] = users
+            # add available queues
+            response['queues'] = BIBCATALOG_SYSTEM.get_queues(uid)
+            # add user email
+            response['email'] = get_email(uid)
+            # TODO try catch
+            response['ticketTemplates'] = load_ticket_templates(recId)
+            response['resultCode'] = 1
+        else:
+            # put something in the tickets container, for debug
+            response['description'] = "Error connecting to RT<!--" + bibcat_resp + "-->"
+    return response
+
+
+def _bibedit_plugin_builder(plugin_code):  # pylint: disable-msg=W0613
+    """
+    Custom builder for pluginutils.
+
+    @param plugin_name: the name of the plugin.
+    @type plugin_name: string
+    @param plugin_code: the code of the module as just read from
+        filesystem.
+    @type plugin_code: module
+    @return: the plugin
+    """
+    final_plugin = {}
+    final_plugin["get_template_data"] = getattr(plugin_code, "get_template_data", None)
+    return plugin_code.__name__.split('.')[-1], final_plugin
+
+
+def load_ticket_plugins():
+    """Load all the ticket plugins."""
+    return dict(map(_bibedit_plugin_builder, ticket_templates))
+
+
+def load_ticket_templates(recId):
+    """
+    Loads all enabled ticket plugins and calls them.
+    @return dictionary with the following structure:
+        key: string: name of queue
+        value: dict: a dictionary with 2 keys,
+        the template subject and content of the queue
+    @rtype dict
+    """
+    ticket_templates = {}
+    plugins = load_ticket_plugins()
+    record = get_record(recId)
+    for name, plugin in plugins.items():
+        if plugin:
+            queue_data = plugin['get_template_data'](record)
+            if queue_data:
+                ticket_templates[queue_data[0]] = { 'subject' : queue_data[1], 'content' : queue_data[2] }
+        else:
+            raise BibEditPluginException("Plugin not valid in %s" % (name,))
+    return ticket_templates
+
+
+# ###################### Name utils ####################################
+
+surname_cleaning = re.compile("-([a-z])")
+name_separators = ',;.=\-\(\)'
+substitution_regexp = re.compile('[%s]' % (name_separators))
+
+
+def split_name_parts(name_string, return_all_lower=False):
+    '''
+    Splits name_string in three arrays of strings :
+        surname, initials (without trailing dot), names
+    RETURNS an array containing a string and two arrays of strings.
+    delete_name_additions defines if extensions
+        e.g. Jr., (Ed.) or (spokesperson)
+        will be ignored
+
+    @param name_string: the name to be spli
+    @type name: string
+    @param delete_name_additions: determines whether to delete name additions
+    @type delete_name_additions: boolean
+    @param reverse_name_surname: if true names come first
+
+    @return: list of [surname string, initials list, names list]
+        e.g. split_name_parts("Ellis, John R.")
+        --> ['Ellis', ['J', 'R'], ['John'], [0]]
+        --> ['Ellis', ['K', 'J', 'R'], ['John', 'Rob'], [1,2]]
+    @rtype: list of lists
+    '''
+    surname_separators = ','
+
+    surname = ""
+    rest_of_name = ""
+    found_sep = ''
+    name_string = name_string.strip()
+
+    for sep in surname_separators:
+        if name_string.count(sep) >= 1:
+            found_sep = sep
+            surname, rest_of_name = name_string.partition(sep)[0::2]
+            surname = surname.strip()
+            # Fix for dashes
+            surname = surname_cleaning.sub(lambda n: '-' + n.group(1), surname)
+            break
+
+    if not found_sep:
+        if name_string.count(" ") > 0:
+            rest_of_name, surname = name_string.rpartition(' ')[0::2]
+            surname = surname.strip()
+            # Fix for dashes
+            surname = surname_cleaning.sub(lambda n: '-' + n.group(1), surname)
+        else:
+            surname = name_string
+            surname = surname.strip()
+            # Fix for dashes
+            surname = surname_cleaning.sub(lambda n: '-' + n.group(1), surname)
+            if not return_all_lower:
+                return [surname, [], [], []]
+            else:
+                return [surname.lower(), [], [], []]
+
+    if rest_of_name.count(","):
+        rest_of_name = rest_of_name.rpartition(",")[0]
+
+    initials_names_list = substitution_regexp.sub(' ', rest_of_name).split()
+    names = []
+    initials = []
+    positions = []
+    pos_counter = 0
+    for i in initials_names_list:
+        if len(i) == 1:
+            initials.append(i)
+            pos_counter += 1
+        else:
+            names.append(i.strip())
+            initials.append(i[0])
+            positions.append(pos_counter)
+            pos_counter += 1
+
+    retval = [surname, initials, names, positions]
+
+    if return_all_lower:
+
+        retval = [surname.lower(), [i.lower() for i in initials], [n.lower() for n in names], positions]
+
+    return retval
+
+
+def create_normalized_name(splitted_name, fix_capitalization=False):
+    '''
+    Creates a normalized name from a given name array. A normalized name
+    looks like "Lastname, Firstnames and Initials"
+
+    @param splitted_name: name array from split_name_parts
+    @type splitted_name: list in form [string, list, list]
+
+    @param fix_capitalization: ensures first letter of each word is capital
+    @type fix_capitalization: bool
+
+    @return: normalized name
+    @rtype: string
+    '''
+    name = splitted_name[0]
+
+    if not splitted_name[1] and not splitted_name[2]:
+        if fix_capitalization:
+            return name.title()
+        else:
+            return name
+
+    name = name + ','
+
+    for i in range(len(splitted_name[1])):
+        try:
+            fname = splitted_name[2][splitted_name[3].index(i)]
+            name = ' '.join([name, fname])
+        except (IndexError, ValueError):
+            name = ' '.join([name, splitted_name[1][i] + '.'])
+        if fix_capitalization:
+            name = ' '.join(map(lambda x: x.title(), name.split()))
+    return name
+
+
+def string_partition(s, sep, direc='l'):
+    '''
+    Partition a string by the first occurrence of the separator.
+    Mimics the string.partition function, which is not available in Python2.4
+
+    @param s: string to be partitioned
+    @type s: string
+    @param sep: separator to partition by
+    @type sep: string
+    @param dir: direction (left 'l' or right 'r') to search the separator from
+    @type dir: string
+    @return: tuple of (left or sep, sep, right of sep)
+    @rtype: tuple
+
+    '''
+    if direc == 'r':
+        i = s.rfind(sep)
+    else:
+        i = s.find(sep)
+    if i < 0:
+        return (s, '', '')
+    else:
+        return (s[0:i], s[i:i + 1], s[i + 1:])

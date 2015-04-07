@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """mod_python->WSGI Framework"""
 
@@ -24,6 +24,7 @@ import re
 import cgi
 import gc
 import inspect
+import socket
 from fnmatch import fnmatch
 from six.moves.urllib.parse import urlparse, urlunparse
 from six import iteritems
@@ -38,18 +39,18 @@ from invenio.config import CFG_WEBDIR, CFG_SITE_LANG, \
     CFG_SITE_SECURE_URL, CFG_WEBSTYLE_REVERSE_PROXY_IPS
 from invenio.ext.logging import register_exception
 from invenio.utils.datastructures import flatten_multidict
-## TODO for future reimplementation of stream_file
+# TODO for future reimplementation of stream_file
 #from invenio.legacy.bibdocfile.api import StreamFileException
 from flask import request, after_this_request
 
 
-## Magic regexp to search for usage of CFG_SITE_URL within src/href or
-## any src usage of an external website
+# Magic regexp to search for usage of CFG_SITE_URL within src/href or
+# any src usage of an external website
 _RE_HTTPS_REPLACES = re.compile(r"\b((?:src\s*=|url\s*\()\s*[\"']?)http\://", re.I)
 
-## Regexp to verify that the IP starts with a number (filter cases where 'unknown')
-## It is faster to verify only the start (585 ns) compared with verifying
-## the whole ip address - re.compile('^\d+\.\d+\.\d+\.\d+$') (1.01 µs)
+# Regexp to verify that the IP starts with a number (filter cases where 'unknown')
+# It is faster to verify only the start (585 ns) compared with verifying
+# the whole ip address - re.compile('^\d+\.\d+\.\d+\.\d+$') (1.01 µs)
 _RE_IPADDRESS_START = re.compile("^\d+\.")
 
 
@@ -140,7 +141,9 @@ class SimulatedModPythonRequest(object):
         form = flatten_multidict(request.values)
 
         if request.files:
-            form.update(request.files.to_dict())
+            for name, file_ in iteritems(request.files):
+                setattr(file_, 'file', file_.stream)
+                form[name] = file_
         return form
 
     def get_response_sent_p(self):
@@ -210,6 +213,12 @@ class SimulatedModPythonRequest(object):
 
     def get_uri(self):
         return request.environ['PATH_INFO']
+
+    def get_full_uri(self):
+        if self.is_https():
+            return CFG_SITE_SECURE_URL + self.get_unparsed_uri()
+        else:
+            return CFG_SITE_URL + self.get_unparsed_uri()
 
     def get_headers_in(self):
         return request.headers
@@ -290,6 +299,12 @@ class SimulatedModPythonRequest(object):
                         self.__bytes_sent += the_len
                         self.__write(chunk[:the_len])
                         break
+        except socket.error as e:
+            if e.errno == 54:
+                # Client disconnected, ignore
+                pass
+            else:
+                raise
         except IOError as err:
             if "failed to write data" in str(err) or "client connection closed" in str(err):
                 ## Let's just log this exception without alerting the admin:
@@ -396,9 +411,14 @@ class SimulatedModPythonRequest(object):
         assert not self.__tainted, "The original WSGI environment is tainted since at least req.write or req.form has been used."
         return self.__environ, self.__start_response
 
+    def get_environ(self):
+        return self.__environ
+
+    environ = property(get_environ)
     content_type = property(get_content_type, set_content_type)
     unparsed_uri = property(get_unparsed_uri)
     uri = property(get_uri)
+    full_uri = property(get_full_uri)
     headers_in = property(get_headers_in)
     subprocess_env = property(get_subprocess_env)
     args = property(get_args)

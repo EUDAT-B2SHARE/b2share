@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-## Comments and reviews for records.
+# Comments and reviews for records.
 
-## This file is part of Invenio.
-## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """ Comments and reviews for records: web interface """
 
@@ -47,7 +47,7 @@ from invenio.modules.comments.api import check_recID_is_in_range, \
                                perform_display_your_comments
 
 from invenio.config import \
-     CFG_TMPDIR, \
+     CFG_TMPSHAREDDIR, \
      CFG_SITE_LANG, \
      CFG_SITE_URL, \
      CFG_SITE_SECURE_URL, \
@@ -251,7 +251,7 @@ class WebInterfaceCommentsPages(WebInterfaceDirectory):
             if CFG_WEBCOMMENT_USE_MATHJAX_IN_COMMENTS:
                 mathjaxheader = get_mathjax_header(req.is_https())
             jqueryheader = '''
-            <script src="%(CFG_SITE_URL)s/js/jquery.MultiFile.pack.js" type="text/javascript" language="javascript"></script>
+            <script src="%(CFG_SITE_URL)s/vendors/jquery-multifile/jquery.MultiFile.pack.js" type="text/javascript"></script>
             ''' % {'CFG_SITE_URL': CFG_SITE_URL}
 
 
@@ -384,9 +384,9 @@ class WebInterfaceCommentsPages(WebInterfaceDirectory):
             for formfield in formfields[:CFG_WEBCOMMENT_MAX_ATTACHED_FILES]:
                 if hasattr(formfield, "filename") and formfield.filename:
                     filename = formfield.filename
-                    dir_to_open = os.path.join(CFG_TMPDIR, 'webcomment', str(uid))
+                    dir_to_open = os.path.join(CFG_TMPSHAREDDIR, 'webcomment', str(uid))
                     try:
-                        assert(dir_to_open.startswith(CFG_TMPDIR))
+                        assert(dir_to_open.startswith(CFG_TMPSHAREDDIR))
                     except AssertionError:
                         register_exception(req=req,
                                            prefix='User #%s tried to upload file to forbidden location: %s' \
@@ -413,8 +413,8 @@ class WebInterfaceCommentsPages(WebInterfaceDirectory):
                         fp = open(os.path.join(dir_to_open, filename), "w")
                         # FIXME: temporary, waiting for wsgi handler to be
                         # fixed. Once done, read chunk by chunk
-##                         while formfield.file:
-##                             fp.write(formfield.file.read(10240))
+#                         while formfield.file:
+#                             fp.write(formfield.file.read(10240))
                         fp.write(formfield.file.read())
                         fp.close()
                         # Isn't this file too big?
@@ -513,7 +513,7 @@ class WebInterfaceCommentsPages(WebInterfaceDirectory):
                 title = _("Add Comment")
 
             jqueryheader = '''
-            <script src="%(CFG_SITE_URL)s/js/jquery.MultiFile.pack.js" type="text/javascript" language="javascript"></script>
+            <script src="%(CFG_SITE_URL)s/vendors/jquery-multifile/jquery.MultiFile.pack.js" type="text/javascript"></script>
             ''' % {'CFG_SITE_URL': CFG_SITE_URL}
 
             return page(title=title,

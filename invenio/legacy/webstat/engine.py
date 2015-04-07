@@ -1,19 +1,19 @@
-## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2010, 2011, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2007, 2008, 2010, 2011, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 from __future__ import print_function
 
@@ -53,6 +53,7 @@ from invenio.legacy.bibcirculation.db_layer import get_id_bibrec, \
     get_borrower_data
 from invenio.legacy.websearch.webcoll import CFG_CACHE_LAST_UPDATED_TIMESTAMP_FILE
 from invenio.utils.date import convert_datetext_to_datestruct, convert_datestruct_to_dategui
+from invenio.legacy.bibsched.bibtask import get_modified_records_since
 
 
 WEBSTAT_SESSION_LENGTH = 48 * 60 * 60 # seconds
@@ -1430,11 +1431,10 @@ def get_list_link(process, category=None):
         file_coll_last_update = open(CFG_CACHE_LAST_UPDATED_TIMESTAMP_FILE, 'r')
         coll_last_update = file_coll_last_update.read()
         file_coll_last_update.close()
-        list_registers = run_sql('SELECT id FROM bibrec WHERE \
-                                modification_date > %s', (coll_last_update,))
+        list_registers = zip(get_modified_records_since(coll_last_update).tolist())
 
     # build the link
-    if list_registers == ():
+    if len(list_registers) == 0:
         return "Up to date"
     link = '<a href="' + CFG_SITE_URL + '/search?p='
     for register in list_registers:
@@ -1888,15 +1888,18 @@ def create_custom_summary_graph(data, path, title):
     """
     # If no input, we don't bother about anything
     if len(data) == 0:
-        return
+        return False
     os.environ['HOME'] = CFG_TMPDIR
 
     try:
         import matplotlib
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt
-    except ImportError:
-        return
+    except:
+        from invenio.errorlib import register_exception
+        register_exception()
+        return False
+
     # make a square figure and axes
     matplotlib.rcParams['font.size'] = 8
     labels = [x[0] for x in data]
@@ -1942,7 +1945,7 @@ def create_custom_summary_graph(data, path, title):
     plt.figlegend(patches, labels, 'lower right', **legend_keywords)
     plt.savefig(path)
     plt.close(gfile)
-
+    return True
 # GRAPHER
 
 def create_graph_trend(trend, path, settings):
@@ -2117,9 +2120,9 @@ def create_graph_trend_flot(trend, path, settings):
     size = settings.get("size", "500,400").split(",")
     title = cgi.escape(settings["title"].replace(" ", "")[:10])
     out = """<!--[if IE]><script language="javascript" type="text/javascript"
-                    src="%(site)s/js/excanvas.min.js"></script><![endif]-->
-              <script language="javascript" type="text/javascript" src="%(site)s/js/jquery.flot.min.js"></script>
-              <script language="javascript" type="text/javascript" src="%(site)s/js/jquery.flot.selection.min.js"></script>
+                    src="%(site)s/vendors/flot/excanvas.min.js"></script><![endif]-->
+              <script language="javascript" type="text/javascript" src="%(site)s/vendors/flot/jquery.flot.js"></script>
+              <script language="javascript" type="text/javascript" src="%(site)s/vendors/flot/jquery.flot.selection.js"></script>
               <script id="source" language="javascript" type="text/javascript">
                      document.write('<div style="float:left"><div id="placeholder%(title)s" style="width:%(width)spx;height:%(height)spx"></div></div>'+
               '<div id="miniature%(title)s" style="float:left;margin-left:20px;margin-top:50px">' +

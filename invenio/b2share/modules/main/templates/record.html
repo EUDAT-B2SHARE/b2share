@@ -20,9 +20,13 @@
 
 {% block title %}{% endblock title %}
 
+{%- block global_bundles %}
+  {{ super() }}
+  {% bundles "b2s_record.css" %}
+{%- endblock %}
+
 {% block header %}
 {{ super() }}
-{% css 'css/record.css', '50-b2share' %}
 {{ format_record(recid, of='hdm', ln=g.ln)|safe }}
 {% endblock header -%}
 

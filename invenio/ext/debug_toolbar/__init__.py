@@ -1,29 +1,28 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-Debug Toolbar Extension
-=======================
+Debug Toolbar Extension.
 
 Configuration
 -------------
-The toolbar support several configuration options:
+The toolbar supports several configuration options:
 
 ====================================  =====================================   ==========================
 Name                                  Description                             Default
@@ -39,17 +38,16 @@ Name                                  Description                             De
 For more information see http://flask-debugtoolbar.readthedocs.org/en/latest/
 """
 
-from flask.ext.debugtoolbar import DebugToolbarExtension
-
 
 def setup_app(app):
-    """
-    Setup Flask application
-    """
+    """Setup Flask with the DebugToolbar application."""
     # Enable Flask Debug Toolbar early to also catch HTTPS redirects
-    if app.debug:
-        from flask.ext.debugtoolbar import module
-        module.static_folder = 'static'
-        DebugToolbarExtension(app)
+    if app.debug and app.config.get('DEBUG_TB_ENABLED', app.debug):
+        try:
+            from flask.ext.debugtoolbar import module, DebugToolbarExtension
+            module.static_folder = 'static'
+            DebugToolbarExtension(app)
+        except ImportError:
+            app.logger.exception("Flask-DebugToolbar is missing")
 
     return app

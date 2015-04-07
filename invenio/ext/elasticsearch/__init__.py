@@ -1,20 +1,20 @@
-##
-## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """ Elasticsearch extension for Invenio.
 
@@ -45,7 +45,7 @@ bin/ directory in your path.
 Go to the invenio src directory and run ``honcho start`` or equivalent.
 
 
-Deployement
+Deployment
 ^^^^^^^^^^^
 
 ...
@@ -178,7 +178,7 @@ class ElasticSearch(object):
         See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-health.html
         for more.
 
-        TODO: is it usefull?
+        TODO: is it useful?
 
         :return: [string] possible values: green, yellow, red. green means all
           ok including replication, yellow means replication not active, red
@@ -818,7 +818,7 @@ def index_collections(sender, collections):
     return index_collections.delay(sender, [])
 
 
-def drop_index(sender, yes_i_know, default_data=None):
+def drop_index(sender, *args, **kwargs):
     """
     Remove the elasticsearch index.
 
@@ -829,7 +829,7 @@ def drop_index(sender, yes_i_know, default_data=None):
     es.delete_index()
 
 
-def create_index(sender, yes_i_know=False, default_data=None):
+def create_index(sender, *args, **kwargs):
     """
     Create the elasticsearch index.
 

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 # pylint: disable=C0301
 
@@ -56,7 +56,6 @@ from invenio.config import \
      CFG_CERN_SITE, \
      CFG_INSPIRE_SITE, \
      CFG_WEBSEARCH_DEFAULT_SEARCH_INTERFACE, \
-     CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES, \
      CFG_WEBSEARCH_MAX_RECORDS_IN_GROUPS, \
      CFG_BIBINDEX_CHARS_PUNCTUATION, \
      CFG_WEBCOMMENT_ALLOW_COMMENTS, \
@@ -65,8 +64,15 @@ from invenio.config import \
      CFG_WEBSEARCH_SHOW_COMMENT_COUNT, \
      CFG_WEBSEARCH_SHOW_REVIEW_COUNT, \
      CFG_SITE_RECORD, \
-     CFG_WEBSEARCH_PREV_NEXT_HIT_LIMIT
-
+     CFG_WEBSEARCH_PREV_NEXT_HIT_LIMIT, \
+     CFG_HEPDATA_URL, \
+     CFG_HEPDATA_PLOTSIZE, \
+     CFG_BASE_URL, \
+     CFG_SITE_URL, \
+     CFG_WEBSEARCH_PREV_NEXT_HIT_FOR_GUESTS, \
+     CFG_WEBSEARCH_RESULTS_OVERVIEW_MAX_COLLS_TO_PRINT
+from invenio.modules.search.services import \
+     CFG_WEBSEARCH_MAX_SEARCH_COLL_RESULTS_TO_PRINT
 from invenio.legacy.dbquery import run_sql
 from invenio.base.i18n import gettext_set_language
 from invenio.base.globals import cfg
@@ -75,6 +81,9 @@ from invenio.utils.html import nmtoken_from_string
 from invenio.ext.legacy.handler import wash_urlargd
 from invenio.legacy.bibrank.citation_searcher import get_cited_by_count
 from invenio.legacy.webuser import session_param_get
+from invenio.modules.search.services import \
+     CFG_WEBSEARCH_MAX_SEARCH_COLL_RESULTS_TO_PRINT
+from invenio.modules.formatter import format_record
 
 from intbitset import intbitset
 
@@ -224,8 +233,8 @@ class Template:
             'rft.series' : (str, ''),
     }
 
-    tmpl_opensearch_rss_url_syntax = "%(CFG_SITE_URL)s/rss?p={searchTerms}&amp;jrec={startIndex}&amp;rg={count}&amp;ln={language}" % {'CFG_SITE_URL': CFG_SITE_URL}
-    tmpl_opensearch_html_url_syntax = "%(CFG_SITE_URL)s/search?p={searchTerms}&amp;jrec={startIndex}&amp;rg={count}&amp;ln={language}" % {'CFG_SITE_URL': CFG_SITE_URL}
+    tmpl_opensearch_rss_url_syntax = "%(CFG_BASE_URL)s/rss?p={searchTerms}&amp;jrec={startIndex}&amp;rg={count}&amp;ln={language}" % {'CFG_BASE_URL': CFG_BASE_URL}
+    tmpl_opensearch_html_url_syntax = "%(CFG_BASE_URL)s/search?p={searchTerms}&amp;jrec={startIndex}&amp;rg={count}&amp;ln={language}" % {'CFG_BASE_URL': CFG_BASE_URL}
 
     def tmpl_openurl2invenio(self, openurl_data):
         """ Return an Invenio url corresponding to a search with the data
@@ -357,55 +366,55 @@ class Template:
         ## Trying possible searches
         if doi_query:
             if perform_request_search(p=doi_query):
-                return '%s/search?%s' % (CFG_SITE_URL, urlencode({
+                return '%s/search?%s' % (CFG_BASE_URL, urlencode({
                     'p' : doi_query,
                     'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                     'of' : 'hd'}))
         if isbn_query:
             if perform_request_search(p=isbn_query):
-                return '%s/search?%s' % (CFG_SITE_URL, urlencode({
+                return '%s/search?%s' % (CFG_BASE_URL, urlencode({
                     'p' : isbn_query,
                     'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                     'of' : 'hd'}))
         if coden_query:
             if perform_request_search(p=coden_query):
-                return '%s/search?%s' % (CFG_SITE_URL, urlencode({
+                return '%s/search?%s' % (CFG_BASE_URL, urlencode({
                     'p' : coden_query,
                     'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                     'of' : 'hd'}))
         if author_query and title_query:
             if perform_request_search(p='%s and %s' % (title_query, author_query)):
-                return '%s/search?%s' % (CFG_SITE_URL, urlencode({
+                return '%s/search?%s' % (CFG_BASE_URL, urlencode({
                     'p' : '%s and %s' % (title_query, author_query),
                     'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                     'of' : 'hd'}))
         if title_query:
             result = len(perform_request_search(p=title_query))
             if result == 1:
-                return '%s/search?%s' % (CFG_SITE_URL, urlencode({
+                return '%s/search?%s' % (CFG_BASE_URL, urlencode({
                     'p' : title_query,
                     'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                     'of' : 'hd'}))
             elif result > 1:
-                return '%s/search?%s' % (CFG_SITE_URL, urlencode({
+                return '%s/search?%s' % (CFG_BASE_URL, urlencode({
                     'p' : title_query,
                     'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                     'of' : 'hb'}))
 
         ## Nothing worked, let's return a search that the user can improve
         if author_query and title_query:
-            return '%s/search%s' % (CFG_SITE_URL, make_canonical_urlargd({
+            return '%s/search%s' % (CFG_BASE_URL, make_canonical_urlargd({
                 'p' : '%s and %s' % (title_query_cleaned, author_query),
                 'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                 'of' : 'hb'}, {}))
         elif title_query:
-            return '%s/search%s' % (CFG_SITE_URL, make_canonical_urlargd({
+            return '%s/search%s' % (CFG_BASE_URL, make_canonical_urlargd({
                 'p' : title_query_cleaned,
                 'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                 'of' : 'hb'}, {}))
         else:
             ## Mmh. Too few information provided.
-            return '%s/search%s' % (CFG_SITE_URL, make_canonical_urlargd({
+            return '%s/search%s' % (CFG_BASE_URL, make_canonical_urlargd({
                         'p' : 'recid:-1',
                         'sc' : CFG_WEBSEARCH_SPLIT_BY_COLLECTION,
                         'of' : 'hb'}, {}))
@@ -427,10 +436,10 @@ class Template:
 <Developer>Powered by Invenio</Developer>
 <Url type="text/html" indexOffset="1" rel="results" template="%(html_search_syntax)s" />
 <Url type="application/rss+xml" indexOffset="1" rel="results" template="%(rss_search_syntax)s" />
-<Url type="application/opensearchdescription+xml" rel="self" template="%(CFG_SITE_URL)s/opensearchdescription" />
-<moz:SearchForm>%(CFG_SITE_URL)s</moz:SearchForm>
+<Url type="application/opensearchdescription+xml" rel="self" template="%(CFG_BASE_URL)s/opensearchdescription" />
+<moz:SearchForm>%(CFG_BASE_URL)s</moz:SearchForm>
 </OpenSearchDescription>""" % \
-  {'CFG_SITE_URL': CFG_SITE_URL,
+  {'CFG_BASE_URL': CFG_BASE_URL,
    'short_name': CFG_SITE_NAME_INTL.get(ln, CFG_SITE_NAME)[:16],
    'long_name': CFG_SITE_NAME_INTL.get(ln, CFG_SITE_NAME),
    'description': _("Search on %(x_CFG_SITE_NAME_INTL)s",
@@ -465,12 +474,12 @@ class Template:
 
         # Asking for a recid? Return a /CFG_SITE_RECORD/<recid> URL
         if 'recid' in parameters:
-            target = "%s/%s/%s" % (CFG_SITE_URL, CFG_SITE_RECORD, parameters['recid'])
+            target = "%s/%s/%s" % (CFG_BASE_URL, CFG_SITE_RECORD, parameters['recid'])
             del parameters['recid']
             target += make_canonical_urlargd(parameters, self.search_results_default_urlargd)
             return target
 
-        return "%s/search%s" % (CFG_SITE_URL, make_canonical_urlargd(parameters, self.search_results_default_urlargd))
+        return "%s/search%s" % (CFG_BASE_URL, make_canonical_urlargd(parameters, self.search_results_default_urlargd))
 
     def build_search_interface_url(self, known_parameters={}, **kargs):
         """ Helper for generating a canonical search interface URL."""
@@ -521,7 +530,7 @@ class Template:
                     args += '&amp;'
                 args += 'c=' + '&amp;c='.join(c)
 
-        return CFG_SITE_URL + '/rss' + args
+        return CFG_BASE_URL + '/rss' + args
 
     def tmpl_record_page_header_content(self, req, recid, ln):
         """
@@ -623,13 +632,14 @@ class Template:
             narrowsearch = instantbrowse
 
         body = '''
-                <form name="search" action="%(siteurl)s/search" method="get">
-                %(searchfor)s
-                %(np_portalbox)s''' % {
-                 'siteurl' : CFG_SITE_URL,
-                 'searchfor' : searchfor,
-                 'np_portalbox' : np_portalbox
-                 }
+               <form name="search" action="%(siteurl)s/search" method="get">
+               %(searchfor)s
+               %(np_portalbox)s
+               ''' % {
+                   'siteurl': CFG_BASE_URL,
+                   'searchfor': searchfor,
+                   'np_portalbox': np_portalbox
+               }
         if show_body:
             body += '''
                     <table cellspacing="0" cellpadding="0" border="0" class="narrowandfocusonsearchbox">
@@ -694,7 +704,7 @@ class Template:
         header = _("Search %(x_name)s records for:",
                     x_name=self.tmpl_nbrecs_info(record_count, "", ""))
         asearchurl = self.build_search_interface_url(c=collection_id,
-                                                     aas=max(CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES),
+                                                     aas=cfg['CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES'][1],
                                                      ln=ln)
 
         # Build example of queries for this collection
@@ -797,8 +807,8 @@ class Template:
         <!--/create_searchfor_light()-->
         ''' % {'ln' : ln,
                'sizepattern' : CFG_WEBSEARCH_LIGHTSEARCH_PATTERN_BOX_WIDTH,
-               'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
-               'siteurl' : CFG_SITE_URL,
+               'langlink': '?ln=' + ln,
+               'siteurl' : CFG_BASE_URL,
                'asearch' : create_html_link(asearchurl, {}, _('Advanced Search')),
                'header' : header,
                'msg_search' : _('Search'),
@@ -843,7 +853,7 @@ class Template:
         header = _("Search %(x_name)s records for:",
                     x_name=self.tmpl_nbrecs_info(record_count, "", ""))
         asearchurl = self.build_search_interface_url(c=collection_id,
-                                                     aas=max(CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES),
+                                                     aas=cfg['CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES'][1],
                                                      ln=ln)
         # print commentary start:
         out += '''
@@ -874,8 +884,8 @@ class Template:
         <!--/create_searchfor_simple()-->
         ''' % {'ln' : ln,
                'sizepattern' : CFG_WEBSEARCH_SIMPLESEARCH_PATTERN_BOX_WIDTH,
-               'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
-               'siteurl' : CFG_SITE_URL,
+               'langlink': '?ln=' + ln,
+               'siteurl' : CFG_BASE_URL,
                'asearch' : create_html_link(asearchurl, {}, _('Advanced Search')),
                'header' : header,
                'middle_option' : middle_option,
@@ -940,7 +950,7 @@ class Template:
         header = _("Search %(x_rec)s records for",
                  x_rec=self.tmpl_nbrecs_info(record_count, "", ""))
         header += ':'
-        ssearchurl = self.build_search_interface_url(c=collection_id, aas=min(CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES), ln=ln)
+        ssearchurl = self.build_search_interface_url(c=collection_id, ln=ln)
 
         out += '''
         <table class="searchbox advancedsearch">
@@ -986,8 +996,8 @@ class Template:
         <!-- @todo - more imports -->
         ''' % {'ln' : ln,
                'sizepattern' : CFG_WEBSEARCH_ADVANCEDSEARCH_PATTERN_BOX_WIDTH,
-               'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
-               'siteurl' : CFG_SITE_URL,
+               'langlink': '?ln=' + ln,
+               'siteurl' : CFG_BASE_URL,
                'ssearch' : create_html_link(ssearchurl, {}, _("Simple Search")),
                'header' : header,
 
@@ -1083,6 +1093,150 @@ class Template:
                     'formatoptions' : formatoptions
                   }
         return out
+
+
+    def tmpl_searchfor_addtosearch(self, ln, collection_id, record_count, searchwithin):
+        """
+        Add-To-Search Interface
+        Creates the Search box and the Add-to-Search advance search
+        """
+
+        # load the right message language
+        _ = gettext_set_language(ln)
+
+        out = '''
+        <!--create_searchfor_addtosearch()-->
+        '''
+
+        argd = drop_default_urlargd({'ln': ln, 'cc': collection_id, 'sc': CFG_WEBSEARCH_SPLIT_BY_COLLECTION},
+                                    self.search_results_default_urlargd)
+
+        # Only add non-default hidden values
+        for field, value in argd.items():
+            out += self.tmpl_input_hidden(field, value)
+
+        header = _("Search %s records for:") % \
+                 self.tmpl_nbrecs_info(record_count, "", "")
+
+        adv_search_link = create_html_link(self.build_search_interface_url(c=collection_id, aas=1, ln=ln),
+                                           {}, _("Advanced Search"))
+
+        out += self.create_addtosearch_box(ln,
+                                    p='', # no pattern in the collection page
+                                    p1='', # no advanced search pattern in the collection page
+                                    searchwithin=searchwithin,
+                                    header=header,
+                                    adv_search_link=adv_search_link)
+        return out
+
+
+    def create_addtosearch_box(self, ln, p, p1, searchwithin, header, adv_search_link):
+        """
+        Creates the Search  and the Add-to-Search box.
+
+        Parameters:
+
+        ln - language
+        p - search pattern (for prefilling the search box)
+        p1 - search pattern in advanced search box
+        searchwithin - HTML code for the first row of options (any field, specific fields ...)
+        header - what to appear on top of the search box
+
+        """
+
+        # load the right message language
+        _ = gettext_set_language(ln)
+
+        out = '''<script>
+        $(document).ready(function() {
+        '''
+        out += '''
+            $('a#advbox-toggle').click(function() {
+                $('#advbox').slideToggle();
+                var sign = $('a#advbox-toggle-button').text();
+                $('a#advbox-toggle-button').text(sign == "+" ? "−" : "+");
+                return false;
+            });
+            $('a#advbox-toggle-button').click(function() {
+                 $('#advbox').slideToggle();
+                 var sign = $(this).text();
+                 $(this).text(sign == "+" ? "−" : "+");
+                 return false;
+             });
+             $('select[name=f1]').change(function(){
+                 if ($(this).val() == 'author' && $('select[name=m1]').val() == 'a'){
+                     $('select[name=m1]').val('e');
+                 }
+             });
+
+
+        });
+        </script>'''
+        out += '''
+        <table class="searchbox simplesearch">
+        '''
+        if header:
+            out += '''
+            <thead>
+                <tr align="left">
+                    <th colspan="3" class="searchboxheader">%(header)s</th>
+                </tr>
+            </thead>
+            ''' %{'header' : header}
+        out += '''
+        <tbody>
+        <tr valign="center">
+            <td class="searchboxbody"><input type="text" name="p" size="%(sizepattern)d" value="%(p)s" class="simplesearchfield"/></td>
+            <td class="searchboxbody"><input class="formbutton" type="submit" name="action_search" value="%(search)s" /></td>
+            <td class="searchboxbody" align="left" style="font-size:80%%; line-height:1.5em;">
+                <a href="%(siteurl)s/help/search-tips%(langlink)s">%(search_tips)s</a><br/>
+                %(adv_search_link)s
+            </td>
+        </tr>
+        <tr valign="baseline">
+            <td class="searchboxbody" align="right">
+                <small><a href="#" id="advbox-toggle">%(add_to_search)s</a>
+                       <a href="#" id="advbox-toggle-button"/>%(toggle_button)s</a></small>
+            </td>
+        </tr>
+         </tbody></table>
+        ''' % {
+            'sizepattern' : CFG_WEBSEARCH_LIGHTSEARCH_PATTERN_BOX_WIDTH,
+            'p' : cgi.escape(p, 1),
+            'search' : _("Search"),
+            'siteurl' : CFG_SITE_URL,
+            'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
+            'search_tips': _("Search Tips"),
+            'adv_search_link': adv_search_link,
+            'add_to_search': _("Add to Search"),
+            'toggle_button': p1 and "-" or "+"
+        }
+        out += '''
+        <table class="searchbox simplesearch">
+        <tr><td>
+        <div id="advbox" class="searchboxbody" %(display)s>
+            %(andornot1)s
+            %(matchbox1)s
+            <input type="text" name="p1" size="%(sizepattern)d" class="advancedsearchfield"/>
+            %(searchwithin1)s
+            <input class="formbutton" type="submit" name="action_asearch" value="%(add_to_search)s"/>
+        </div>
+        </td></tr>
+        </table>
+        ''' %{
+            'display': not p1 and 'style="display:none"' or '',
+            'andornot1' : self.tmpl_andornot_box(
+                              name = 'op1',
+                              value = '',
+                              ln = ln
+                            ),
+            'matchbox1' : self.tmpl_matchtype_box('m1', '', ln=ln),
+            'sizepattern' : CFG_WEBSEARCH_ADVANCEDSEARCH_PATTERN_BOX_WIDTH,
+            'searchwithin1' : searchwithin,
+            'add_to_search' : _("Add to Search")
+            }
+        return out
+
 
     def tmpl_matchtype_box(self, name='m', value='', ln='en'):
         """Returns HTML code for the 'match type' selection box.
@@ -1274,16 +1428,12 @@ class Template:
         # load the right message language
         _ = gettext_set_language(ln)
 
-        title = {'r': _("Narrow by collection:"),
-                 'v': _("Focus on:")}[type]
-
+        title = father.get_collectionbox_name(ln, type)
 
         if has_grandchildren:
-            style_prolog = "<strong>"
-            style_epilog = "</strong>"
+            style_class = 'collection-first-level collection-father-has-grandchildren'
         else:
-            style_prolog = ""
-            style_epilog = ""
+            style_class = 'collection-first-level'
 
         out = """<table class="%(narrowsearchbox)s">
                    <thead>
@@ -1321,10 +1471,11 @@ class Template:
                     out += """<input type="checkbox" name="c" value="%(name)s" checked="checked" /></td>""" % {'name' : cgi.escape(son.name) }
             else:
                 out += '</td>'
-            out += """<td valign="top">%(link)s%(recs)s """ % {
+            out += """<td valign="top"><span class="%(style_class)s">%(link)s%(recs)s</span> """ % {
                 'link': create_html_link(self.build_search_interface_url(c=son.name, ln=ln, aas=aas),
-                                         {}, style_prolog + cgi.escape(son.get_name(ln)) + style_epilog),
-                'recs' : self.tmpl_nbrecs_info(son.nbrecs, ln=ln)}
+                                         {}, cgi.escape(son.get_name(ln))),
+                'recs' : self.tmpl_nbrecs_info(son.nbrecs, ln=ln),
+                'style_class': style_class}
 
             # the following prints the "external collection" arrow just after the name and
             # number of records of the hosted collection
@@ -1335,15 +1486,15 @@ class Template:
             if type == 'r':
                 if str(son.dbquery).startswith("hostedcollection:"):
                     out += """<img src="%(siteurl)s/img/external-icon-light-8x8.gif" border="0" alt="%(name)s"/>""" % \
-                           { 'siteurl' : CFG_SITE_URL, 'name' : cgi.escape(son.name), }
+                           { 'siteurl' : CFG_BASE_URL, 'name' : cgi.escape(son.name), }
 
             if son.restricted_p():
                 out += """ <small class="warning">[%(msg)s]</small> """ % { 'msg' : _("restricted") }
             if display_grandsons and len(grandsons[i]):
                 # iterate trough grandsons:
-                out += """<br />"""
+                out += """<ul class="collection-second-level">"""
                 for grandson in grandsons[i]:
-                    out += """ <small>%(link)s%(nbrec)s</small> """ % {
+                    out += """ <li>%(link)s%(nbrec)s</li> """ % {
                         'link': create_html_link(self.build_search_interface_url(c=grandson.name, ln=ln, aas=aas),
                                                  {},
                                                  cgi.escape(grandson.get_name(ln))),
@@ -1354,7 +1505,8 @@ class Template:
                     if type == 'r':
                         if str(grandson.dbquery).startswith("hostedcollection:"):
                             out += """<img src="%(siteurl)s/img/external-icon-light-8x8.gif" border="0" alt="%(name)s"/>""" % \
-                                    { 'siteurl' : CFG_SITE_URL, 'name' : cgi.escape(grandson.name), }
+                                    { 'siteurl' : CFG_BASE_URL, 'name' : cgi.escape(grandson.name), }
+                out += """</ul>"""
 
             out += """</td></tr>"""
             i += 1
@@ -1394,7 +1546,7 @@ class Template:
                                    'internal_name': internal_name,
                                    'name': cgi.escape(name),
                                    'id': "extSearch" + nmtoken_from_string(name),
-                                   'siteurl': CFG_SITE_URL, }
+                                   'siteurl': CFG_BASE_URL, }
 
         html += """</tbody></table></td></tr></table>"""
         return html
@@ -1469,7 +1621,7 @@ class Template:
         return _("This collection does not contain any document yet.")
 
 
-    def tmpl_instant_browse(self, aas, ln, recids, more_link=None, grid_layout=False):
+    def tmpl_instant_browse(self, aas, ln, recids, more_link=None, grid_layout=False, father=None):
         """
           Formats a list of records (given in the recids list) from the database.
 
@@ -1483,6 +1635,7 @@ class Template:
 
           - 'more_link' *string* - the "More..." link for the record. If not given, will not be displayed
 
+          - 'father' *collection* - The current collection
         """
 
         # load the right message language
@@ -1533,7 +1686,7 @@ class Template:
             <td class="narrowsearchboxbody">%(body)s</td>
             </tr>
           </tbody>
-        </table>''' % {'header' : _("Latest additions:"),
+        </table>''' % {'header' : father.get_collectionbox_name(ln, 'l') ,
                        'body' : body,
                        }
 
@@ -1887,7 +2040,7 @@ class Template:
                       </tr>""" % {'link_previous': create_html_link(self.build_search_url(query_previous, action='browse'), {}, _("Previous")),
                       'link_next': create_html_link(self.build_search_url(query_next, action='browse'),
                                                            {}, _("next")),
-                                  'siteurl' : CFG_SITE_URL}
+                                  'siteurl' : CFG_BASE_URL}
         out += """</tbody>
             </table>"""
         return out
@@ -1976,7 +2129,7 @@ class Template:
 
         out += '''
         <form name="search" action="%(siteurl)s/search" method="get">
-        ''' % {'siteurl' : CFG_SITE_URL}
+        ''' % {'siteurl' : CFG_BASE_URL}
 
         # Only add non-default hidden values
         for field, value in argd.items():
@@ -1987,7 +2140,20 @@ class Template:
         if action == 'browse':
             leadingtext = _("Browse")
 
-        if aas == 1:
+        if aas == 2:
+            # Add-to-Search interface
+            searchwithin = self.tmpl_searchwithin_select(
+                                  ln = ln,
+                                  fieldname = 'f1',
+                                  selected = '',
+                                  values = self._add_mark_to_field(value=f1, fields=fieldslist, ln=ln)
+                                )
+            adv_search_link = create_html_link(self.build_search_url(rm=rm, aas=1, cc=cc, jrec=jrec, ln=ln, rg=rg),
+                                               {}, _("Advanced Search"))
+
+            out += self.create_addtosearch_box(ln, p, p1, searchwithin, '', adv_search_link)
+
+        elif aas == 1:
             # print Advanced Search form:
 
             # define search box elements:
@@ -2077,9 +2243,9 @@ class Template:
                                 ),
               'search' : _("Search"),
               'browse' : _("Browse"),
-              'siteurl' : CFG_SITE_URL,
+              'siteurl' : CFG_BASE_URL,
               'ln' : ln,
-              'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
+              'langlink': '?ln=' + ln,
               'search_tips': _("Search Tips")
             }
         elif aas == 0:
@@ -2116,7 +2282,7 @@ class Template:
               'advanced_search': create_html_link(self.build_search_url(p1=p,
                                                                         f1=f,
                                                                         rm=rm,
-                                                                        aas=max(CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES),
+                                                                        aas=cfg['CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES'][1],
                                                                         cc=cc,
                                                                         jrec=jrec,
                                                                         ln=ln,
@@ -2134,9 +2300,9 @@ class Template:
                                 ),
               'search' : _("Search"),
               'browse' : _("Browse"),
-              'siteurl' : CFG_SITE_URL,
+              'siteurl' : CFG_BASE_URL,
               'ln' : ln,
-              'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
+              'langlink': '?ln=' + ln,
               'search_tips': _("Search Tips")
             }
         else:
@@ -2174,7 +2340,7 @@ class Template:
               'advanced_search': create_html_link(self.build_search_url(p1=p,
                                                                         f1=f,
                                                                         rm=rm,
-                                                                        aas=max(CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES),
+                                                                        aas=cfg['CFG_WEBSEARCH_ENABLED_SEARCH_INTERFACES'][1],
                                                                         cc=cc,
                                                                         jrec=jrec,
                                                                         ln=ln,
@@ -2191,9 +2357,9 @@ class Template:
                                 ),
               'search' : _("Search"),
               'browse' : _("Browse"),
-              'siteurl' : CFG_SITE_URL,
+              'siteurl' : CFG_BASE_URL,
               'ln' : ln,
-              'langlink': ln != CFG_SITE_LANG and '?ln=' + ln or '',
+              'langlink': '?ln=' + ln,
               'search_tips': _("Search Tips"),
               'search_in': search_in
             }
@@ -2456,7 +2622,7 @@ class Template:
                   <strong><big>%(collection_link)s</big></strong></td>
                   ''' % {
                     'collection_id': collection_id,
-                    'siteurl' : CFG_SITE_URL,
+                    'siteurl' : CFG_BASE_URL,
                     'collection_link': create_html_link(self.build_search_interface_url(c=collection, aas=aas, ln=ln),
                                                         {}, cgi.escape(collection_name))
                   }
@@ -2464,7 +2630,7 @@ class Template:
             out += """
                   <div style="clear:both"></div>
                   <form action="%(siteurl)s/search" method="get"><div align="center">
-                  """ % { 'siteurl' : CFG_SITE_URL }
+                  """ % { 'siteurl' : CFG_BASE_URL }
 
         # middle table cell: print beg/next/prev/end arrows:
         if not middle_only:
@@ -2498,7 +2664,7 @@ class Template:
             # @todo here
             def img(gif, txt):
                 return '<img src="%(siteurl)s/img/%(gif)s.gif" alt="%(txt)s" border="0" />' % {
-                    'txt': txt, 'gif': gif, 'siteurl': CFG_SITE_URL}
+                    'txt': txt, 'gif': gif, 'siteurl': CFG_BASE_URL}
 
             if jrec - rg > 1:
                 out += create_html_link(self.build_search_url(query, jrec=1, rg=rg),
@@ -2637,7 +2803,7 @@ class Template:
                   <strong><big>%(collection_link)s</big></strong></td>
                   ''' % {
                     'collection_id': collection_id,
-                    'siteurl' : CFG_SITE_URL,
+                    'siteurl' : CFG_BASE_URL,
                     'collection_link': create_html_link(self.build_search_interface_url(c=collection, aas=aas, ln=ln),
                                                         {}, cgi.escape(collection_name))
                   }
@@ -2645,7 +2811,7 @@ class Template:
         else:
             out += """
                   <form action="%(siteurl)s/search" method="get"><div align="center">
-                  """ % { 'siteurl' : CFG_SITE_URL }
+                  """ % { 'siteurl' : CFG_BASE_URL }
 
         # middle table cell: print beg/next/prev/end arrows:
         if not middle_only:
@@ -2658,7 +2824,7 @@ class Template:
             #elif nb_found = -963:
             #    out += """<td class="searchresultsboxheader" align="center">
             #              %(recs_found)s &nbsp;""" % {
-            #             'recs_found' : _("%s records found") % ('<strong>' + self.tmpl_nice_number(nb_found, ln) + '</strong>')
+            #             'recs_found' : _("%(x_num)s records found", x_num=('<strong>' + self.tmpl_nice_number(nb_found, ln) + '</strong>'))
             #           }
         else:
             out += "<small>"
@@ -2688,7 +2854,7 @@ class Template:
             # @todo here
             def img(gif, txt):
                 return '<img src="%(siteurl)s/img/%(gif)s.gif" alt="%(txt)s" border="0" />' % {
-                    'txt': txt, 'gif': gif, 'siteurl': CFG_SITE_URL}
+                    'txt': txt, 'gif': gif, 'siteurl': CFG_BASE_URL}
 
             if jrec - rg > 1:
                 out += create_html_link(self.build_search_url(query, jrec=1, rg=rg),
@@ -2826,7 +2992,7 @@ class Template:
               <form action="%(siteurl)s/yourbaskets/add" method="post">
               <table>
               """ % {
-                'siteurl' : CFG_SITE_URL,
+                'siteurl' : CFG_BASE_URL,
               }
 
         return out
@@ -3046,7 +3212,7 @@ class Template:
                           <input type="hidden" name="colid" value="%(col_db_id)s" />
                           <table>
                           """ % {
-                            'siteurl' : CFG_SITE_URL,
+                            'siteurl' : CFG_BASE_URL,
                             'col_db_id' : db_id,
                           }
             else:
@@ -3080,6 +3246,54 @@ class Template:
             return out
         else:
             return ""
+
+    def tmpl_print_service_list_links(self, label, labels_and_urls, ln=CFG_SITE_URL):
+        """
+        Prints service results as list
+
+        @param label: the label to display before the list of links
+        @type label: string
+        @param labels_and_urls: list of tuples (label, url), already translated, not escaped
+        @type labels_and_urls: list(string, string)
+        @param ln: language
+        """
+        # load the right message language
+        _ = gettext_set_language(ln)
+
+
+        out = '''
+        <span class="searchservicelabel">%s</span> ''' % cgi.escape(label)
+
+        out += """<script type="text/javascript">
+            $(document).ready(function() {
+                $('a.moreserviceitemslink').click(function() {
+                    $('.moreserviceitemslist', $(this).parent()).show();
+                    $(this).hide();
+                    $('.lessserviceitemslink', $(this).parent()).show();
+                    return false;
+                });
+                $('a.lessserviceitemslink').click(function() {
+                    $('.moreserviceitemslist', $(this).parent()).hide();
+                    $(this).hide();
+                    $('.moreserviceitemslink', $(this).parent()).show();
+                    return false;
+                });
+            });
+            </script>"""
+        count = 0
+        for link_label, link_url in labels_and_urls:
+            count += 1
+            out += """<span %(itemclass)s>%(separator)s <a class="searchserviceitem" href="%(url)s">%(link_label)s</a></span>""" % \
+                   {'itemclass' : count > CFG_WEBSEARCH_MAX_SEARCH_COLL_RESULTS_TO_PRINT and 'class="moreserviceitemslist" style="display:none"' or '',
+                    'separator': count > 1 and ', ' or '',
+                    'url' : link_url,
+                    'link_label' : cgi.escape(link_label)}
+
+        if count > CFG_WEBSEARCH_MAX_SEARCH_COLL_RESULTS_TO_PRINT:
+            out += """ <a class="lessserviceitemslink" style="display:none;" href="#">%s</a>""" % _("Less suggestions")
+            out += """ <a class="moreserviceitemslink" style="" href="#">%s</a>""" % _("More suggestions")
+
+        return out
 
     def tmpl_print_searchresultbox(self, header, body):
         """print a nicely formatted box for search results """
@@ -3338,7 +3552,7 @@ class Template:
 
         return out
 
-    def tmpl_print_record_brief_links(self, ln, recID, sf='', so='d', sp='', rm='', display_claim_link=False):
+    def tmpl_print_record_brief_links(self, ln, recID, sf='', so='d', sp='', rm='', display_claim_link=False, display_edit_link=False):
         """Displays links for brief record on-the-fly
 
         Parameters:
@@ -3359,9 +3573,11 @@ class Template:
         """Creates XML RSS 2.0 prologue."""
         title = CFG_SITE_NAME
         description = '%s latest documents' % CFG_SITE_NAME
+        link = CFG_SITE_URL
         if cc and cc != CFG_SITE_NAME:
             title += ': ' + cgi.escape(cc)
             description += ' in ' + cgi.escape(cc)
+            link += '/collection/' + quote(cc)
 
         out = """<rss version="2.0"
         xmlns:media="http://search.yahoo.com/mrss/"
@@ -3371,7 +3587,7 @@ class Template:
         xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
       <channel>
         <title>%(rss_title)s</title>
-        <link>%(siteurl)s</link>
+        <link>%(rss_link)s</link>
         <description>%(rss_description)s</description>
         <language>%(sitelang)s</language>
         <pubDate>%(timestamp)s</pubDate>
@@ -3417,7 +3633,8 @@ class Template:
                'items_per_page': (rg and \
                              '\n<opensearch:itemsPerPage>%i</opensearch:itemsPerPage>' % rg) or '',
                'rss_title': title,
-               'rss_description': description
+               'rss_description': description,
+               'rss_link': link,
         }
         return out
 
@@ -3604,18 +3821,18 @@ class Template:
             argd = cgi.parse_qs(res[0][0])
 
         rssurl = self.build_rss_url(argd)
-        alerturl = CFG_SITE_URL + '/youralerts/input?ln=%s&amp;idq=%s' % (ln, id_query)
+        alerturl = CFG_BASE_URL + '/youralerts/input?ln=%s&amp;idq=%s' % (ln, id_query)
 
         if display_email_alert_part:
             msg_alert = _("""Set up a personal %(x_url1_open)semail alert%(x_url1_close)s
                                   or subscribe to the %(x_url2_open)sRSS feed%(x_url2_close)s.""") % \
-                        {'x_url1_open': '<a href="%s"><img src="%s/img/mail-icon-12x8.gif" border="0" alt="" /></a> ' % (alerturl, CFG_SITE_URL) + ' <a class="google" href="%s">' % (alerturl),
+                        {'x_url1_open': '<a href="%s"><img src="%s/img/mail-icon-12x8.gif" border="0" alt="" /></a> ' % (alerturl, CFG_BASE_URL) + ' <a class="google" href="%s">' % (alerturl),
                          'x_url1_close': '</a>',
-                         'x_url2_open': '<a href="%s"><img src="%s/img/feed-icon-12x12.gif" border="0" alt="" /></a> ' % (rssurl, CFG_SITE_URL) + ' <a class="google" href="%s">' % rssurl,
+                         'x_url2_open': '<a href="%s"><img src="%s/img/feed-icon-12x12.gif" border="0" alt="" /></a> ' % (rssurl, CFG_BASE_URL) + ' <a class="google" href="%s">' % rssurl,
                          'x_url2_close': '</a>', }
         else:
             msg_alert = _("""Subscribe to the %(x_url2_open)sRSS feed%(x_url2_close)s.""") % \
-                        {'x_url2_open': '<a href="%s"><img src="%s/img/feed-icon-12x12.gif" border="0" alt="" /></a> ' % (rssurl, CFG_SITE_URL) + ' <a class="google" href="%s">' % rssurl,
+                        {'x_url2_open': '<a href="%s"><img src="%s/img/feed-icon-12x12.gif" border="0" alt="" /></a> ' % (rssurl, CFG_BASE_URL) + ' <a class="google" href="%s">' % rssurl,
                          'x_url2_close': '</a>', }
 
         out = '''<a name="googlebox"></a>
@@ -3673,6 +3890,10 @@ class Template:
 
         # this variable is set to zero and then, nothing is displayed
         if not CFG_WEBSEARCH_PREV_NEXT_HIT_LIMIT:
+            return ''
+
+        # this variable is set to zero and then nothing is saved in the previous session
+        if not CFG_WEBSEARCH_PREV_NEXT_HIT_FOR_GUESTS:
             return ''
 
         # search for a specific record having not done any search before
@@ -3763,6 +3984,83 @@ class Template:
                     'back': create_html_link(wlq, {}, _("Back to search"), {'class': "moreinfo"})}
         return out
 
+    def tmpl_record_hepdata(self, data, recid, isLong=True):
+        """ Generate a page for HepData records
+        """
+        from invenio.utils.hepdata import api as hepdatautils
+        from invenio.legacy.search_engine import get_fieldvalues
+
+        c = []
+        c.append("<div style=\"background-color: #ececec;\">")
+
+        flag_hepdata = 0
+        flag_dataverse = 0
+        for dataset in data.datasets:
+            try:
+                publisher = get_fieldvalues(dataset.recid, '520__9')[0]
+            except IndexError:
+                from invenio.utils.hepdata.api import create_hepdata_ticket
+                create_hepdata_ticket(dataset.recid, 'Data missing in 520__9')
+                continue
+            if publisher == "HEPDATA" and flag_hepdata == 0:
+                flag_hepdata = 1
+            elif publisher == "Dataverse":
+                flag_dataverse = 1
+
+        if flag_hepdata == 1 or flag_dataverse == 1:
+            c.append("<h3> This data comes from ")
+            if flag_hepdata == 1:
+                c.append('<a href="http://hepdata.cedar.ac.uk/view/ins%s" target="_blank"> Durham HepData project </a>' % (recid))
+            if flag_hepdata == 1 and flag_dataverse == 1:
+                c.append(' and ')
+            if flag_dataverse == 1:
+                c.append('<a href="http://thedata.harvard.edu/"> Dataverse </a>')
+            c.append('</h3>')
+
+        c.append("<div style=\"background-color: #ececec;\">")
+        if data.comment:
+            c.append("<h3> Summary:</h3>")
+            c.append("""<div class="hepdataSummary">%s</div>""" % (data.comment, ))
+
+        if data.systematics and data.systematics.strip() != "":
+            c.append("<h3>Systematic data: </h3>")
+            c.append(data.systematics)
+            c.append("</div>")
+
+        if data.additional_data_links:
+            c.append("<h3>Additional data:</h3>")
+            for link in data.additional_data_links:
+                if "href" in link and "description" in link:
+                    c.append("<a href=\"%s/%s\">%s</a><br>" % (CFG_HEPDATA_URL, link["href"], link["description"]))
+
+        c.append("<h3> Datasets:</h3>")
+
+        seq = 0
+
+        for dataset in data.datasets:
+            seq += 1
+            try:
+                publisher = get_fieldvalues(dataset.recid, '520__9')[0]
+            except IndexError:
+                from invenio.utils.hepdata.api import create_hepdata_ticket
+                create_hepdata_ticket(dataset.recid, 'Data missing in 520__9')
+                continue
+            if publisher == "HEPDATA":
+                c.append(hepdatadisplayutils.render_hepdata_dataset_html(dataset, recid, seq))
+            elif publisher == "Dataverse":
+                c.append(hepdatadisplayutils.render_dataverse_dataset_html(dataset.recid))
+            elif publisher == "INSPIRE":
+                c.append(hepdatadisplayutils.render_inspire_dataset_html(dataset.recid))
+            else:
+                c.append(hepdatadisplayutils.render_other_dataset_html(dataset.recid))
+
+        c.append("</div>")
+
+        return "\n".join(c)
+
+    def tmpl_record_no_hepdata(self):
+        return "This record does not have HEP data associated"
+
     def tmpl_record_plots(self, recID, ln):
         """
           Displays little tables containing the images and captions contained in the specified document.
@@ -3788,6 +4086,13 @@ class Template:
         for fld in flds:
             image = field_get_subfield_values(fld, 'u')
             caption = field_get_subfield_values(fld, 'y')
+            data_urls = field_get_subfield_values(fld, 'z')
+            if type(data_urls) == list and len(data_urls) > 0:
+                data_urls = str(data_urls[0])
+                if data_urls.startswith("HEPDATA:"):
+                    data_urls = data_urls[8:].split(";")
+                else:
+                    data_urls = []
 
             if type(image) == list and len(image) > 0:
                 image = image[0]
@@ -3803,21 +4108,32 @@ class Template:
                 continue
 
             if len(caption) >= 5:
-                images.append((int(caption[:5]), image, caption[5:]))
+                images.append((int(caption[:5]), image, caption[5:], data_urls))
             else:
                 # we don't have any idea of the order... just put it on
-                images.append(99999, image, caption)
+                images.append(99999, image, caption, data_urls)
 
         images = sorted(images, key=lambda x: x[0])
 
-        for (index, image, caption) in images:
+        for (index, image, caption, data_urls) in images:
             # let's put everything in nice little subtables with the image
             # next to the caption
+            data_string_list = []
+            seq_num = 1
+
+            for data_url in data_urls:
+                val = ""
+                if len(data_urls) > 1:
+                    val = " %i" % seq_num
+                data_string_list.append("<br><a href=\"%s\">Data%s</a>" % (str(data_url), val))
+                seq_num += 1
+
+            data_string = "".join(data_string_list)
             out = out + '<table width="95%" style="display: inline;">' + \
                  '<tr><td width="66%"><a name="' + str(index) + '" ' + \
                  'href="' + image + '">' + \
                  '<img src="' + image + '" width="95%"/></a></td>' + \
-                 '<td width="33%">' + caption + '</td></tr>' + \
+                 '<td width="33%">' + caption +  data_string + '</td></tr>' + \
                  '</table>'
 
         out = out + '<br /><br />'
@@ -3856,7 +4172,7 @@ class Template:
             out += '''
                     <tr><td>%(graph)s</td></tr>
                     <tr><td>%(similar)s</td></tr>
-                    ''' % { 'siteurl': CFG_SITE_URL, 'recid': recID, 'ln': ln,
+                    ''' % { 'siteurl': CFG_BASE_URL, 'recid': recID, 'ln': ln,
                              'similar': similar, 'more': _("more"),
                              'graph': downloadsimilarity
                              }
@@ -3938,8 +4254,8 @@ class Template:
                 'similar': similar}
         return out
 
-    def tmpl_detailed_record_citations_citation_history(self, recID, ln,
-                                                        citationhistory):
+    def tmpl_detailed_record_citations_citation_history(self, ln,
+                                                              citationhistory):
         """Returns the citations history graph of this record
 
         Parameters:
@@ -3966,6 +4282,41 @@ class Template:
             else:
                 out += "no citationhistory -->"
         return out
+
+    def tmpl_detailed_record_citations_citation_log(self, ln, log_entries):
+        """Returns the citations history graph of this record
+
+        Parameters:
+
+          - 'recID' *int* - The ID of the printed record
+
+          - 'ln' *string* - The language to display
+
+          - citationhistory *string* - citationhistory box
+
+        """
+        from invenio.legacy.search_engine.utils import record_exists
+        # load the right message language
+        _ = gettext_set_language(ln)
+
+        out = []
+        if log_entries:
+            out.append('<style>td.citationlogdate { width: 5.4em; }</style>')
+            out.append('<table><tr><td class="blocknote">Citation Log: </td></tr><tr><td><a id="citationlogshow" class="moreinfo" style="text-decoration: underline; " onclick="$(\'#citationlog\').show(); $(\'#citationlogshow\').hide();">show</a></td></tr></table>')
+            out.append('<table id="citationlog" style="display: none;">')
+            for recid, action_type, action_date in log_entries:
+                if record_exists(recid) == 1:
+                    record_str = format_record(recid, 'HS2')
+                else:
+                    record_str = 'The record with id %s was deleted' % recid
+                out.append("""<tr>
+  <td>%s</td>
+  <td class="citationlogdate">%s</td>
+  <td>%s</td>
+</tr>""" % (action_type, action_date.strftime('%Y-%m-%d'), record_str))
+            out.append('</table>')
+
+        return '\n'.join(out)
 
     def tmpl_detailed_record_citations_co_citing(self, recID, ln,
                                                  cociting):
@@ -4033,311 +4384,6 @@ class Template:
             out = '<tr><td>' + scite + '</td></tr>'
         return out
 
-    def tmpl_author_information(self, req, pubs, authorname, num_downloads,
-                                aff_pubdict, citedbylist, kwtuples, authors,
-                                vtuples, names_dict, person_link,
-                                bibauthorid_data, ln, return_html=False):
-        """Prints stuff about the author given as authorname.
-           1. Author name + his/her institutes. Each institute I has a link
-              to papers where the auhtor has I as institute.
-           2. Publications, number: link to search by author.
-           3. Keywords
-           4. Author collabs
-           5. Publication venues like journals
-           The parameters are data structures needed to produce 1-6, as follows:
-           req - request
-           pubs - list of recids, probably the records that have the author as an author
-           authorname - evident
-           num_downloads - evident
-           aff_pubdict - a dictionary where keys are inst names and values lists of recordids
-           citedbylist - list of recs that cite pubs
-           kwtuples - keyword tuples like ('HIGGS BOSON',[3,4]) where 3 and 4 are recids
-           authors - a list of authors that have collaborated with authorname
-           names_dict - a dict of {name: frequency}
-        """
-        from invenio.legacy.search_engine import perform_request_search
-        from operator import itemgetter
-        _ = gettext_set_language(ln)
-        ib_pubs = intbitset(pubs)
-        html = []
-
-        # construct an extended search as an interim solution for author id
-        # searches. Will build "(exactauthor:v1 OR exactauthor:v2)" strings
-#        extended_author_search_str = ""
-
-#        if bibauthorid_data["is_baid"]:
-#            if len(names_dict.keys()) > 1:
-#                extended_author_search_str = '('
-#
-#            for name_index, name_query in enumerate(names_dict.keys()):
-#                if name_index > 0:
-#                    extended_author_search_str += " OR "
-#
-#                extended_author_search_str += 'exactauthor:"' + name_query + '"'
-#
-#            if len(names_dict.keys()) > 1:
-#                extended_author_search_str += ')'
-#     rec_query = 'exactauthor:"' + authorname + '"'
-#
-#        if bibauthorid_data["is_baid"] and extended_author_search_str:
-#            rec_query = extended_author_search_str
-
-
-        baid_query = ""
-        extended_author_search_str = ""
-
-        if 'is_baid' in bibauthorid_data and bibauthorid_data['is_baid']:
-            if bibauthorid_data["cid"]:
-                baid_query = 'author:%s' % bibauthorid_data["cid"]
-            elif bibauthorid_data["pid"] > -1:
-                baid_query = 'author:%s' % bibauthorid_data["pid"]
-            ## todo: figure out if the author index is filled with pids/cids.
-            ## if not: fall back to exactauthor search.
-            # if not index:
-            #    baid_query = ""
-
-        if not baid_query:
-            baid_query = 'exactauthor:"' + authorname + '"'
-
-            if bibauthorid_data['is_baid']:
-                if len(names_dict.keys()) > 1:
-                    extended_author_search_str = '('
-
-                for name_index, name_query in enumerate(names_dict.keys()):
-                    if name_index > 0:
-                        extended_author_search_str += " OR "
-
-                    extended_author_search_str += 'exactauthor:"' + name_query + '"'
-
-                if len(names_dict.keys()) > 1:
-                    extended_author_search_str += ')'
-
-            if bibauthorid_data['is_baid'] and extended_author_search_str:
-                baid_query = extended_author_search_str
-
-        baid_query = baid_query + " "
-        sorted_names_list = sorted(iteritems(names_dict), key=itemgetter(1),
-                                   reverse=True)
-
-        # Prepare data for display
-        # construct names box
-        header = "<strong>" + _("Name variants") + "</strong>"
-        content = []
-
-        for name, frequency in sorted_names_list:
-            prquery = baid_query + ' exactauthor:"' + name + '"'
-            name_lnk = create_html_link(self.build_search_url(p=prquery),
-                                                              {},
-                                                              str(frequency),)
-            content.append("%s (%s)" % (name, name_lnk))
-
-        if not content:
-            content = [_("No Name Variants")]
-
-        names_box = self.tmpl_print_searchresultbox(header, "<br />\n".join(content))
-
-        # construct papers box
-        rec_query = baid_query
-        searchstr = create_html_link(self.build_search_url(p=rec_query),
-                                     {}, "<strong>" + "All papers (" + str(len(pubs)) + ")" + "</strong>",)
-        line1 = "<strong>" + _("Papers") + "</strong>"
-        line2 = searchstr
-
-        if CFG_BIBRANK_SHOW_DOWNLOAD_STATS and num_downloads:
-            line2 += " (" + _("downloaded") + " "
-            line2 += str(num_downloads) + " " + _("times") + ")"
-
-        if CFG_INSPIRE_SITE:
-            CFG_COLLS = ['Book',
-                         'Conference',
-                         'Introductory',
-                         'Lectures',
-                         'Preprint',
-                         'Published',
-                         'Review',
-                         'Thesis']
-        else:
-            CFG_COLLS = ['Article',
-                         'Book',
-                         'Preprint', ]
-        collsd = {}
-        for coll in CFG_COLLS:
-            coll_papers = list(ib_pubs & intbitset(perform_request_search(f="collection", p=coll)))
-            if coll_papers:
-                collsd[coll] = coll_papers
-        colls = collsd.keys()
-        colls.sort(lambda x, y: cmp(len(collsd[y]), len(collsd[x]))) # sort by number of papers
-        for coll in colls:
-            rec_query = baid_query + 'collection:' + coll
-            line2 += "<br />" + create_html_link(self.build_search_url(p=rec_query),
-                                                                       {}, coll + " (" + str(len(collsd[coll])) + ")",)
-
-        if not pubs:
-            line2 = _("No Papers")
-
-        papers_box = self.tmpl_print_searchresultbox(line1, line2)
-
-        #make a authoraff string that looks like CERN (1), Caltech (2) etc
-        authoraff = ""
-        aff_pubdict_keys = aff_pubdict.keys()
-        aff_pubdict_keys.sort(lambda x, y: cmp(len(aff_pubdict[y]), len(aff_pubdict[x])))
-
-        if aff_pubdict_keys:
-            for a in aff_pubdict_keys:
-                print_a = a
-                if (print_a == ' '):
-                    print_a = _("unknown affiliation")
-                if authoraff:
-                    authoraff += '<br>'
-                authoraff += create_html_link(self.build_search_url(p=' or '.join(["%s" % x for x in aff_pubdict[a]]),
-                                                                       f='recid'),
-                                                                       {}, print_a + ' (' + str(len(aff_pubdict[a])) + ')',)
-        else:
-            authoraff = _("No Affiliations")
-
-        line1 = "<strong>" + _("Affiliations") + "</strong>"
-        line2 = authoraff
-        affiliations_box = self.tmpl_print_searchresultbox(line1, line2)
-
-        # print frequent keywords:
-        keywstr = ""
-        if (kwtuples):
-            for (kw, freq) in kwtuples:
-                if keywstr:
-                    keywstr += '<br>'
-                rec_query = baid_query + 'keyword:"' + kw + '"'
-                searchstr = create_html_link(self.build_search_url(p=rec_query),
-                                                                   {}, kw + " (" + str(freq) + ")",)
-                keywstr = keywstr + " " + searchstr
-
-        else:
-            keywstr += _('No Keywords')
-
-
-        line1 = "<strong>" + _("Frequent keywords") + "</strong>"
-        line2 = keywstr
-        keyword_box = self.tmpl_print_searchresultbox(line1, line2)
-
-
-        header = "<strong>" + _("Frequent co-authors") + "</strong>"
-        content = []
-        sorted_coauthors = sorted(sorted(iteritems(authors), key=itemgetter(0)),
-                                  key=itemgetter(1), reverse=True)
-
-        for name, frequency in sorted_coauthors:
-            rec_query = baid_query + 'exactauthor:"' + name + '"'
-            lnk = create_html_link(self.build_search_url(p=rec_query), {}, "%s (%s)" % (name, frequency),)
-            content.append("%s" % lnk)
-
-        if not content:
-            content = [_("No Frequent Co-authors")]
-
-        coauthor_box = self.tmpl_print_searchresultbox(header, "<br />\n".join(content))
-
-        pubs_to_papers_link = create_html_link(self.build_search_url(p=baid_query), {}, str(len(pubs)))
-        display_name = ""
-
-        try:
-            display_name = sorted_names_list[0][0]
-        except IndexError:
-            display_name = "&nbsp;"
-
-        headertext = ('<h1>%s <span style="font-size:50%%;">(%s papers)</span></h1>'
-                      % (display_name, pubs_to_papers_link))
-
-        if return_html:
-            html.append(headertext)
-        else:
-            req.write(headertext)
-            #req.write("<h1>%s</h1>" % (authorname))
-
-        if person_link:
-            cmp_link = ('<div><a href="%s/person/claimstub?person=%s">%s</a></div>'
-                      % (CFG_SITE_URL, person_link,
-                         _("This is me.  Verify my publication list.")))
-            if return_html:
-                html.append(cmp_link)
-            else:
-                req.write(cmp_link)
-
-        if return_html:
-            html.append("<table width=80%><tr valign=top><td>")
-            html.append(names_box)
-            html.append("<br />")
-            html.append(papers_box)
-            html.append("<br />")
-            html.append(keyword_box)
-            html.append("</td>")
-            html.append("<td>&nbsp;</td>")
-            html.append("<td>")
-            html.append(affiliations_box)
-            html.append("<br />")
-            html.append(coauthor_box)
-            html.append("</td></tr></table>")
-        else:
-            req.write("<table width=80%><tr valign=top><td>")
-            req.write(names_box)
-            req.write("<br />")
-            req.write(papers_box)
-            req.write("<br />")
-            req.write(keyword_box)
-            req.write("</td>")
-            req.write("<td>&nbsp;</td>")
-            req.write("<td>")
-            req.write(affiliations_box)
-            req.write("<br />")
-            req.write(coauthor_box)
-            req.write("</td></tr></table>")
-
-        # print citations:
-        rec_query = baid_query
-
-        if len(citedbylist):
-            line1 = "<strong>" + _("Citations:") + "</strong>"
-            line2 = ""
-
-            if not pubs:
-                line2 = _("No Citation Information available")
-
-            sr_box = self.tmpl_print_searchresultbox(line1, line2)
-
-            if return_html:
-                html.append(sr_box)
-            else:
-                req.write(sr_box)
-
-        if return_html:
-            return "\n".join(html)
-
-        # print frequent co-authors:
-#        collabstr = ""
-#        if (authors):
-#            for c in authors:
-#                c = c.strip()
-#                if collabstr:
-#                    collabstr += '<br>'
-#                #do not add this person him/herself in the list
-#                cUP = c.upper()
-#                authornameUP = authorname.upper()
-#                if not cUP == authornameUP:
-#                    commpubs = intbitset(pubs) & intbitset(perform_request_search(p="exactauthor:\"%s\" exactauthor:\"%s\"" % (authorname, c)))
-#                    collabstr = collabstr + create_html_link(self.build_search_url(p='exactauthor:"' + authorname + '" exactauthor:"' + c + '"'),
-#                                                              {}, c + " (" + str(len(commpubs)) + ")",)
-#        else: collabstr += 'None'
-#        banner = self.tmpl_print_searchresultbox("<strong>" + _("Frequent co-authors:") + "</strong>", collabstr)
-
-
-        # print frequently publishes in journals:
-        #if (vtuples):
-        #    pubinfo = ""
-        #    for t in vtuples:
-        #        (journal, num) = t
-        #        pubinfo += create_html_link(self.build_search_url(p='exactauthor:"' + authorname + '" ' + \
-        #                                                          'journal:"' + journal + '"'),
-        #                                           {}, journal + " ("+str(num)+")<br/>")
-        #    banner = self.tmpl_print_searchresultbox("<strong>" + _("Frequently publishes in:") + "<strong>", pubinfo)
-        #    req.write(banner)
-
 
     def tmpl_detailed_record_references(self, recID, ln, content):
         """Returns the discussion page of a record
@@ -4400,7 +4446,7 @@ class Template:
 
         return out
 
-    def tmpl_citesummary_prologue(self, d_recids, collections, search_patterns,
+    def tmpl_citesummary_prologue(self, coll_recids, collections, search_patterns,
                                   searchfield, citable_recids, total_count,
                                   ln=CFG_SITE_LANG):
         """HTML citesummary format, prologue. A part of HCS format suite."""
@@ -4417,7 +4463,7 @@ class Template:
         out += """<tr><td><strong>%(msg_recs)s</strong></td>""" % \
                {'msg_recs': _("Total number of papers analyzed:"), }
         for coll, colldef in collections:
-            link_url = CFG_SITE_URL + '/search?p='
+            link_url = CFG_BASE_URL + '/search?p='
             if search_patterns[coll]:
                 p = search_patterns[coll]
                 if searchfield:
@@ -4428,7 +4474,7 @@ class Template:
                 link_url += quote(p)
             if colldef:
                 link_url += '%20AND%20' + quote(colldef)
-            link_text = self.tmpl_nice_number(len(d_recids[coll]), ln)
+            link_text = self.tmpl_nice_number(len(coll_recids[coll]), ln)
             out += '<td align="right"><a href="%s">%s</a></td>' % (link_url,
                                                                    link_text)
         out += '</tr>'
@@ -4463,7 +4509,7 @@ class Template:
 
         # use ? help linking in the style of oai_repository_admin.py
         msg = ' <small><small>[<a href="%s%s">?</a>]</small></small></td>'
-        out += msg % (CFG_SITE_URL,
+        out += msg % (CFG_BASE_URL,
                       '/help/citation-metrics#citesummary_self-cites')
 
         for total_cites in d_total_cites.values():
@@ -4475,7 +4521,7 @@ class Template:
                                                         {'msg_avgcit': msg, }
         # use ? help linking in the style of oai_repository_admin.py
         msg = ' <small><small>[<a href="%s%s">?</a>]</small></small></td>'
-        out += msg % (CFG_SITE_URL,
+        out += msg % (CFG_BASE_URL,
                       '/help/citation-metrics#citesummary_self-cites')
 
         for avg_cites in d_avg_cites.itervalues():
@@ -4501,7 +4547,11 @@ class Template:
         out = """<tr><td>%(fame)s</td>""" % \
               {'fame': _(fame), }
         for coll, colldef in l_colls:
-            link_url = CFG_SITE_URL + '/search?p='
+            if 'excluding self cites' in coll:
+                keyword = 'citedexcludingselfcites'
+            else:
+                keyword = 'cited'
+            link_url = CFG_BASE_URL + '/search?p='
             if searchpatterns.get(coll, None):
                 p = searchpatterns.get(coll, None)
                 if searchfield:
@@ -4513,9 +4563,9 @@ class Template:
             if colldef:
                 link_url += quote(colldef) + '%20AND%20'
             if low == 0 and high == 0:
-                link_url += quote('cited:0')
+                link_url += quote('%s:0' % keyword)
             else:
-                link_url += quote('cited:%i->%i' % (low, high))
+                link_url += quote('%s:%i->%i' % (keyword, low, high))
             link_text = self.tmpl_nice_number(d_cites[coll], ln)
             out += '<td align="right"><a href="%s">%s</a></td>' % (link_url,
                                                                    link_text)
@@ -4532,7 +4582,7 @@ class Template:
         out += '<tr><td>h-index'
         # use ? help linking in the style of oai_repository_admin.py
         msg = ' <small><small>[<a href="%s%s">?</a>]</small></small></td>'
-        out += msg % (CFG_SITE_URL,
+        out += msg % (CFG_BASE_URL,
                       '/help/citation-metrics#citesummary_h-index')
         for coll, dummy in collections:
             h_factors = d_h_factors[coll]
@@ -4541,7 +4591,7 @@ class Template:
         out += '</tr>'
         return out
 
-    def tmpl_citesummary_epilogue(self, ln=CFG_SITE_LANG):
+    def tmpl_citesummary_epilogue(self):
         """HTML citesummary format, epilogue. A part of HCS format suite."""
         out = "</table>"
         return out
@@ -4593,3 +4643,33 @@ class Template:
                 out += '<format name="%s" type="%s" />\n' % (xml_escape(format_name), xml_escape(format_type))
         out += "</formats>"
         return out
+
+    def tmpl_multiple_dois_found_page(self, doi, recids, ln=CFG_SITE_LANG, verbose=0):
+        """
+        Page displayed when multiple records would match a DOIs
+
+        @param doi: DOI that has multiple matching records
+        @param recids: record IDs matched by given C{DOI}
+        @param ln: language
+        """
+        _ = gettext_set_language(ln)
+        out = ""
+        out += _('For some unknown reason multiple records matching the specified DOI "%(x_doi)s" have been found.', x_doi=cgi.escape(doi))
+        out += '<br/>' + _('The system administrators have been alerted.')
+        out += '<br/>' + _('In the meantime you can pick one of the retrieved candidates:')
+        out += '<br/><ul>' + '\n'.join(['<li>' + format_record(recid, of='hb', verbose=verbose) + '<br/>' + \
+                                        create_html_link(CFG_SITE_URL + '/' + CFG_SITE_RECORD + '/' + str(recid), \
+                                                         {}, _("Detailed record"), {'class': 'moreinfo'}) + \
+                                     '</li>' \
+                                     for recid in recids]) + \
+                     '</ul>'
+        return out
+
+    def restore_search_args_to_default(self, arg_list):
+        """Returns a dictionary with the default values for a list of arguments"""
+        default_args = {}
+        for item in arg_list:
+            default_values = self.search_results_default_urlargd.get(item, ())
+            if default_values:
+                default_args[item] = default_values[1]
+        return default_args

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Various utilities to manipulate or clean text"""
 
@@ -30,8 +30,6 @@ re_space_closing_square_bracket = re.compile(ur'\s\]', re.UNICODE)
 re_opening_square_bracket_space = re.compile(ur'\[\s', re.UNICODE)
 re_hyphens = re.compile(
     ur'(\\255|\u02D7|\u0335|\u0336|\u2212|\u002D|\uFE63|\uFF0D)', re.UNICODE)
-re_colon_not_followed_by_numeration_tag = \
-                               re.compile(ur':(?!\s*<cds)', re.UNICODE|re.I)
 re_multiple_space = re.compile(ur'\s{2,}', re.UNICODE)
 
 re_group_captured_multiple_space = re.compile(ur'(\s{2,})', re.UNICODE)
@@ -89,7 +87,7 @@ def get_url_repair_patterns():
 
     return pattern_list
 
-## a list of patterns used to try to repair broken URLs within reference lines:
+# a list of patterns used to try to repair broken URLs within reference lines:
 re_list_url_repair_patterns = get_url_repair_patterns()
 
 
@@ -173,7 +171,6 @@ def wash_line(line):
     line = re_space_closing_square_bracket.sub(']', line)
     line = re_opening_square_bracket_space.sub('[', line)
     line = re_hyphens.sub('-', line)
-    line = re_colon_not_followed_by_numeration_tag.sub(' ', line)
     line = re_multiple_space.sub(' ', line)
     return line
 

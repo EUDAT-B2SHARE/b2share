@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """
-    invenio.ext.template.bccache
-    --------------------------------------
+Configuration class for `jinja2.bccache`.
 
-    This module provides configuration class for `jinja2.bccache`.
+.. code-block:: python
 
     JINJA2_BCCACHE = False
     JINJA2_BCCACHE_SIZE = -1
@@ -28,6 +28,7 @@
     JINJA2_BCCACHE_PREFIX = 'jinja2::bccache::'
     JINJA2_BCCACHE_TIMEOUT = None
     JINJA2_BCCACHE_IGNORE_CACHE_ERRORS = True
+
 """
 
 from werkzeug.utils import import_string
@@ -35,8 +36,8 @@ from jinja2.bccache import MemcachedBytecodeCache
 
 
 class BytecodeCacheWithConfig(MemcachedBytecodeCache):
-    """This class implements a bytecode cache that uses application config
-    for initialization."""
+
+    """A bytecode cache that uses application config for initialization."""
 
     def __init__(self, app):
         """Initialize `BytecodeCache` from application config."""

@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""Implement Celery tasks for generating previews."""
 
 import os
 
@@ -23,7 +25,6 @@ from flask import current_app, safe_join
 
 from invenio.base.globals import cfg
 
-from invenio.base.helpers import with_app_context
 from invenio.celery import celery
 from invenio.utils.shell import run_shell_command  # FIXME: subprocess.Popen
 
@@ -31,15 +32,15 @@ from .utils import get_pdf_path
 
 
 @celery.task
-@with_app_context()
 def generate_preview(f):
-    directory = current_app.instance_path + "/previews/"
+    """Generate PNG previews of PDF pages."""
+    directory = os.path.join(current_app.instance_path, "previews")
     try:
         os.mkdir(directory)
     except OSError:  # directory already exists as per docs
         pass
 
-    directory += str(f.get_recid())
+    directory = os.path.join(directory, str(f.get_recid()))
     try:
         os.mkdir(directory)
     except OSError:  # directory already exists as per docs, preview exists
@@ -56,5 +57,3 @@ def generate_preview(f):
                 run_shell_command(cmd_pdftk, args=(
                     str(cfg["CFG_PATH_CONVERT"]), fn, directory,
                     fn))
-
-    return directory

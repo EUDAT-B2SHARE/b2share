@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 OAI Harvest utility functions.
@@ -41,14 +41,14 @@ from invenio.legacy.bibrecord import (record_get_field_instances,
 from invenio.utils.shell import run_shell_command
 from invenio.utils.text import translate_latex2unicode
 from invenio.legacy.oaiharvest.dblayer import create_oaiharvest_log_str
-from invenio.legacy.bibcatalog.api import bibcatalog_system
+from invenio.legacy.bibcatalog.api import BIBCATALOG_SYSTEM
 
 from invenio.legacy.bibsched.bibtask import (write_message,
                                              task_low_level_submission)
 from invenio.modules.workflows.models import BibWorkflowEngineLog
 
 
-## precompile some often-used regexp for speed reasons:
+# precompile some often-used regexp for speed reasons:
 REGEXP_OAI_ID = re.compile("<identifier.*?>(.*?)<\/identifier>", re.DOTALL)
 
 
@@ -285,55 +285,6 @@ Logs :
 """ % {'logs': logs}
 
     return subject, text
-
-
-def record_extraction_from_file(path):
-    """
-    Get an harvested file, and transform each record as if
-    it was another independent harvested document.
-
-    :param path: is the path of the file harvested
-    :return : return a table of records encapsulated with markup of the
-              document designated by path
-
-    *This function much FASTER (3-5 TIMES) than using regex.*
-    """
-
-    #Will contains all the records
-    list_of_records = []
-    temporary_record = ""
-    footer = ""
-    #will contains the header of the file ie: all lines before the first record
-    header = ""
-    step = 0
-    for line in open(path, 'r+'):
-        # Extraction of the header
-        if step == 0:
-            if not line.startswith("<record>"):
-                header += line
-            else:
-                step = 1
-                temporary_record = line
-        elif step == 1:
-            if line.startswith("</ListRecords>") or line.startswith("</GetRecord>"):
-                step = 2
-                footer = line
-            elif line.startswith("<record>"):
-                temporary_record = line
-            elif line.startswith("</record>"):
-                temporary_record += line
-                list_of_records.append(temporary_record)
-            else:
-                temporary_record += line
-        elif step == 2:
-            footer += line
-
-    #Reassembling of the records and the footer and header
-
-    for i in range(0, len(list_of_records)):
-        list_of_records[i] = header + list_of_records[i] + footer
-
-    return list_of_records
 
 
 def harvest_step(obj, harvestpath):

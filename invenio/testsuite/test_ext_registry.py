@@ -1,33 +1,29 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 Test unit for the miscutil/mailutils module.
 """
 
 from invenio.ext.registry import DictModuleAutoDiscoverySubRegistry
-from invenio.testsuite import InvenioTestCase
+from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
 from flask.ext.registry import ImportPathRegistry, RegistryError
-
-
-class TestModuleAutoDiscoverySubRegistry(InvenioTestCase):
-    pass
 
 
 class TestDictModuleAutoDiscoverySubRegistry(InvenioTestCase):
@@ -42,7 +38,7 @@ class TestDictModuleAutoDiscoverySubRegistry(InvenioTestCase):
         r['myns'] = \
             DictModuleAutoDiscoverySubRegistry(
                 'last',
-                keygetter=lambda k, v: k if k else v.__name__,
+                keygetter=lambda k, v, new_v: k if k else v.__name__,
                 app=self.app,
                 registry_namespace='testpkgs'
             )
@@ -80,3 +76,9 @@ class TestDictModuleAutoDiscoverySubRegistry(InvenioTestCase):
         assert TestObject == r['myns']['mykey']
 
         assert len(r['myns'].items()) == 2
+
+
+TEST_SUITE = make_test_suite(TestDictModuleAutoDiscoverySubRegistry)
+
+if __name__ == "__main__":
+    run_test_suite(TEST_SUITE)

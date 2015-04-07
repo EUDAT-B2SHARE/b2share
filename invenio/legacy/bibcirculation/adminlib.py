@@ -1,23 +1,23 @@
-## Administrator interface for Bibcirculation
-##
-## This file is part of Invenio.
-## Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# Administrator interface for Bibcirculation
+#
+# This file is part of Invenio.
+# Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-## """Invenio Bibcirculation Administrator Interface."""
+# """Invenio Bibcirculation Administrator Interface."""
 
 from __future__ import division
 
@@ -427,7 +427,7 @@ def loan_on_desk_step3(req, user_id, list_of_barcodes, ln=CFG_SITE_LANG):
                 uid=id_user,
                 req=req,
                 body=body,
-                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
 
@@ -546,7 +546,7 @@ def loan_on_desk_step4(req, list_of_barcodes, user_id,
         uid=id_user,
         req=req,
         body=body,
-        metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+        metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
         navtrail=navtrail_previous_links,
         lastupdated=__lastupdated__)
 
@@ -1009,7 +1009,7 @@ def change_due_date_step1(req, barcode, borrower_id, ln=CFG_SITE_LANG):
                 #metaheaderadd = '<link rel="stylesheet" '\
                 #                'href="%s/img/jquery-ui/themes/redmond/ui.theme.css" '\
                 #                'type="text/css" />' % CFG_SITE_SECURE_URL,
-                metaheaderadd = '<link rel="stylesheet" href="%s/img/jquery-ui.css" '\
+                metaheaderadd = '<link rel="stylesheet" href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.css" '\
                                 'type="text/css" />' % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
@@ -1076,6 +1076,18 @@ def place_new_request_step1(req, barcode, recid, key, string, ln=CFG_SITE_LANG):
     recid = db.get_id_bibrec(barcode)
     infos = []
 
+
+    navtrail_previous_links = '<a class="navtrail" ' \
+                          'href="%s/help/admin">Admin Area' \
+                          '</a>' % (CFG_SITE_SECURE_URL,)
+    if not barcode:
+        return page(title=_("Item search"),
+                    req=req,
+                    body=bc_templates.tmpl_item_search(infos=[], ln=ln),
+                    language=ln,
+                    navtrail=navtrail_previous_links,
+                    lastupdated=__lastupdated__)
+
     if key and not string:
         infos.append(_('Empty string.') + ' ' + _('Please, try again.'))
         body = bc_templates.tmpl_place_new_request_step1(result=None,
@@ -1085,10 +1097,6 @@ def place_new_request_step1(req, barcode, recid, key, string, ln=CFG_SITE_LANG):
                                                          recid=recid,
                                                          infos=infos,
                                                          ln=ln)
-
-        navtrail_previous_links = '<a class="navtrail" ' \
-                              'href="%s/help/admin">Admin Area' \
-                              '</a>' % (CFG_SITE_SECURE_URL,)
 
         return page(title=_("New request"),
                     uid=id_user,
@@ -1138,6 +1146,7 @@ def place_new_request_step1(req, barcode, recid, key, string, ln=CFG_SITE_LANG):
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
 
+
 def place_new_request_step2(req, barcode, recid, user_info, ln=CFG_SITE_LANG):
     """
     Place a new request from the item's page, step2.
@@ -1161,25 +1170,49 @@ def place_new_request_step2(req, barcode, recid, user_info, ln=CFG_SITE_LANG):
 
     _ = gettext_set_language(ln)
 
-    infos = []
+    navtrail_previous_links = '<a class="navtrail" ' \
+                              'href="%s/help/admin">Admin Area' \
+                              '</a>' % (CFG_SITE_SECURE_URL,)
+
+    if not user_info:
+        # Case someone try directly to access to step2 without passing by previous step
+        if barcode:
+            return page(title=_("New request"),
+                        uid=id_user,
+                        req=req,
+                        body=bc_templates.tmpl_place_new_request_step1(result=None,
+                                                                       key=None,
+                                                                       string=None,
+                                                                       barcode=barcode,
+                                                                       recid=recid,
+                                                                       infos=[],
+                                                                       ln=ln),
+                        language=ln,
+                        navtrail=navtrail_previous_links,
+                        lastupdated=__lastupdated__)
+        else:
+            return page(title=_("Item search"),
+                        req=req,
+                        body=bc_templates.tmpl_item_search(infos=[], ln=ln),
+                        language=ln,
+                        navtrail=navtrail_previous_links,
+                        lastupdated=__lastupdated__)
+
 
     body = bc_templates.tmpl_place_new_request_step2(barcode=barcode,
                                                      recid=recid,
                                                      user_info=user_info,
-                                                     infos=infos,
+                                                     infos=[],
                                                      ln=ln)
-
-    navtrail_previous_links = '<a class="navtrail" ' \
-                              'href="%s/help/admin">Admin Area' \
-                              '</a>' % (CFG_SITE_SECURE_URL,)
 
     return page(title=_("New request"),
                 uid=id_user,
                 req=req,
                 body=body,
-                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                metaheaderadd="<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
+
 
 def place_new_request_step3(req, barcode, recid, user_info,
                             period_from, period_to, ln=CFG_SITE_LANG):
@@ -1207,11 +1240,35 @@ def place_new_request_step3(req, barcode, recid, user_info,
         return mustloginpage(req, auth_message)
 
     _ = gettext_set_language(ln)
+    if user_info:
+        (_id, ccid, name, email, phone, address, mailbox) = user_info
+    else:
+        # Case someone try directly to access to step3 without passing by previous step
+        if barcode:
+            return page(title=_("New request"),
+                        uid=id_user,
+                        req=req,
+                        body=bc_templates.tmpl_place_new_request_step1(result=None,
+                                                                       key="",
+                                                                       string="",
+                                                                       barcode=barcode,
+                                                                       recid=recid,
+                                                                       infos=[],
+                                                                       ln=ln),
+                        language=ln,
+                        navtrail=navtrail_previous_links,
+                        lastupdated=__lastupdated__)
+        else:
 
-    (_id, ccid, name, email, phone, address, mailbox) = user_info
+            return page(title=_("Item search"),
+                        req=req,
+                        body=bc_templates.tmpl_item_search(infos=[], ln=ln),
+                        language=ln,
+                        navtrail=navtrail_previous_links,
+                        lastupdated=__lastupdated__)
 
     # validate the period of interest given by the admin
-    if validate_date_format(period_from) is False:
+    if not period_from or validate_date_format(period_from) is False:
         infos = []
         infos.append(_("The period of interest %(x_strong_tag_open)sFrom: %(x_date)s%(x_strong_tag_close)s is not a valid date or date format") % {'x_date': period_from, 'x_strong_tag_open': '<strong>', 'x_strong_tag_close': '</strong>'})
 
@@ -1229,7 +1286,7 @@ def place_new_request_step3(req, barcode, recid, user_info,
                     navtrail=navtrail_previous_links,
                     lastupdated=__lastupdated__)
 
-    elif validate_date_format(period_to) is False:
+    elif not period_to or validate_date_format(period_to) is False:
         infos = []
         infos.append(_("The period of interest %(x_strong_tag_open)sTo: %(x_date)s%(x_strong_tag_close)s is not a valid date or date format") % {'x_date': period_to, 'x_strong_tag_open': '<strong>', 'x_strong_tag_close': '</strong>'})
 
@@ -1242,7 +1299,7 @@ def place_new_request_step3(req, barcode, recid, user_info,
     # Register request
     borrower_id = db.get_borrower_id_by_email(email)
 
-    if borrower_id == None:
+    if borrower_id is None:
         db.new_borrower(ccid, name, email, phone, address, mailbox, '')
         borrower_id = db.get_borrower_id_by_email(email)
 
@@ -1700,7 +1757,7 @@ def create_new_request_step3(req, borrower_id, barcode, recid,
                 uid=id_user,
                 req=req,
                 body=body,
-                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
 
@@ -2640,7 +2697,7 @@ def add_new_copy_step4(req, barcode, library, location, collection, description,
                 uid=id_user,
                 req=req,
                 body=body,
-                metaheaderadd='<link rel="stylesheet" href="%s/img/jquery-ui.css" '\
+                metaheaderadd='<link rel="stylesheet" href="%s/vendors/jquery-ui/themes/themes/jquery-ui.min.css" '\
                                 'type="text/css" />' % CFG_SITE_SECURE_URL,
                 language=ln,
                 navtrail=navtrail_previous_links,
@@ -4045,7 +4102,7 @@ def register_ill_request_with_no_recid_step1(req, borrower_id,
     return page(title=_("Register ILL request"),
                 uid=id_user,
                 req=req,
-                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                 body=body,
                 language=ln,
                 navtrail=navtrail_previous_links,
@@ -4117,13 +4174,15 @@ def register_ill_request_with_no_recid_step2(req, title, authors, place,
 
     else:
         user_info = db.get_borrower_data_by_id(borrower_id)
+
+
         return register_ill_request_with_no_recid_step3(req, title, authors,
-                                            place, publisher,year, edition,
-                                            isbn, user_info, budget_code,
-                                            period_of_interest_from,
-                                            period_of_interest_to,
-                                            additional_comments, only_edition,
-                                            ln)
+                                                        place, publisher,year, edition,
+                                                        isbn, user_info, budget_code,
+                                                        period_of_interest_from,
+                                                        period_of_interest_to,
+                                                        additional_comments, only_edition,
+                                                        ln)
 
 
     navtrail_previous_links = '<a class="navtrail" ' \
@@ -4373,7 +4432,7 @@ def register_ill_article_request_step1(req, ln=CFG_SITE_LANG):
                 uid=id_user,
                 req=req,
                 body=body,
-                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />"%(CFG_SITE_SECURE_URL),
+                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.css\" type=\"text/css\" />"%(CFG_SITE_SECURE_URL),
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
 
@@ -4574,7 +4633,7 @@ def register_purchase_request_step1(req, request_type, recid, title, authors,
                 body=body,
                 language=ln,
                 metaheaderadd='<link rel="stylesheet" ' \
-                                    'href="%s/img/jquery-ui.css" ' \
+                                    'href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.css" ' \
                                     'type="text/css" />' % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
@@ -4676,7 +4735,7 @@ def register_purchase_request_step2(req, request_type, recid, title, authors,
                 body=body,
                 language=ln,
                 metaheaderadd='<link rel="stylesheet" ' \
-                                    'href="%s/img/jquery-ui.css" ' \
+                                    'href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.css" ' \
                                     'type="text/css" />' % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
@@ -4771,7 +4830,7 @@ def register_purchase_request_step3(req, request_type, recid, title, authors,
                 body=body,
                 language=ln,
                 metaheaderadd='<link rel="stylesheet" ' \
-                                    'href="%s/img/jquery-ui.css" ' \
+                                    'href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.css" ' \
                                     'type="text/css" />' % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)
@@ -4832,7 +4891,7 @@ def ill_request_details_step1(req, delete_key, ill_request_id, new_status,
                 uid=id_user,
                 req=req,
                 metaheaderadd='<link rel="stylesheet" ' \
-                                    'href="%s/img/jquery-ui.css" ' \
+                                    'href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.css" ' \
                                     'type="text/css" />' % CFG_SITE_SECURE_URL,
                 body=body,
                 language=ln,
@@ -4968,7 +5027,7 @@ def purchase_details_step1(req, delete_key, ill_request_id, new_status,
     return page(title=title,
                 uid=id_user,
                 req=req,
-                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/img/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
+                metaheaderadd = "<link rel=\"stylesheet\" href=\"%s/vendors/jquery-ui/themes/redmond/jquery-ui.css\" type=\"text/css\" />" % CFG_SITE_SECURE_URL,
                 body=body,
                 language=ln,
                 navtrail=navtrail_previous_links,
@@ -5261,7 +5320,7 @@ def ill_search(req, ln=CFG_SITE_LANG):
                 req=req,
                 body=body,
                 language=ln,
-            metaheaderadd='<link rel="stylesheet" href="%s/img/jquery-ui.css" '\
+            metaheaderadd='<link rel="stylesheet" href="%s/vendors/jquery-ui/themes/redmond/jquery-ui.min.css" '\
                                 'type="text/css" />' % CFG_SITE_SECURE_URL,
                 navtrail=navtrail_previous_links,
                 lastupdated=__lastupdated__)

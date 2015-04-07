@@ -1,33 +1,38 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""Test Record API."""
 
 import os
 import pkg_resources
 
-from mock import patch
-from flask.ext.registry import PkgResourcesDirDiscoveryRegistry, \
-    ImportPathRegistry, RegistryProxy
+from flask.ext.registry import (
+    ImportPathRegistry, PkgResourcesDirDiscoveryRegistry, RegistryProxy
+)
 
 from invenio.base.wrappers import lazy_import
 from invenio.ext.registry import ModuleAutoDiscoverySubRegistry
-from invenio.testsuite import make_test_suite, run_test_suite, \
-    InvenioTestCase, nottest
+from invenio.testsuite import (
+    InvenioTestCase, make_test_suite, nottest, run_test_suite
+)
+
+from mock import patch
 
 Record = lazy_import('invenio.modules.records.api:Record')
 Document = lazy_import('invenio.modules.documents.api:Document')
@@ -40,12 +45,23 @@ TEST_PACKAGE = 'invenio.modules.records.testsuite'
 test_registry = RegistryProxy('testsuite', ImportPathRegistry,
                               initial=[TEST_PACKAGE])
 
-field_definitions = lambda: PkgResourcesDirDiscoveryRegistry(
-    'fields', registry_namespace=test_registry)
-model_definitions = lambda: PkgResourcesDirDiscoveryRegistry(
-    'models', registry_namespace=test_registry)
-function_proxy = lambda: ModuleAutoDiscoverySubRegistry(
-    'functions', registry_namespace=test_registry)
+
+def field_definitions():
+    """Load field definitions."""
+    return PkgResourcesDirDiscoveryRegistry(
+        'fields', registry_namespace=test_registry)
+
+
+def model_definitions():
+    """Load model definitions."""
+    return PkgResourcesDirDiscoveryRegistry(
+        'models', registry_namespace=test_registry)
+
+
+def function_proxy():
+    """Load functions."""
+    return ModuleAutoDiscoverySubRegistry(
+        'functions', registry_namespace=test_registry)
 
 
 class TestRecord(InvenioTestCase):
@@ -119,6 +135,13 @@ class TestRecord(InvenioTestCase):
 
 class TestLegacyExport(InvenioTestCase):
     """Record - Legacy methods test."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Invalidate any previous field definition"""
+        Field_parser._field_definitions = {}
+        Field_parser._legacy_field_matchings = {}
+        Model_parser._model_definitions = {}
 
     def setUp(self):
         """Initialize stuff"""
@@ -550,27 +573,23 @@ class TestMarcRecordCreation(InvenioTestCase):
     def test_error_catching(self):
         """ Record - catch any record conversion issues """
         from invenio.modules.jsonalchemy.errors import ReaderException
+        from invenio.legacy.bibrecord import _select_parser
         blob = """<?xml version="1.0" encoding="UTF-8"?>
         <collection>
         <record>
           <datafield tag="FFT" ind1=" " ind2=" ">
             <subfield code="a">/path/to</subfield>
             <subfield code="t">Test</subfield>
-            </datafield></record>
+            </record>
         </collection>
         """
-        blob = unicode(blob)
 
-        # Should raise an error that Unicode strings with
-        # encoding declaration are not supported
-        self.assertRaises(
-            ReaderException,
-            Record.create,
-            blob,
-            master_format='marc',
-            namespace='testsuite',
-            schema='xml'
-        )
+        # lxml is super resilient to a tag soup, it won't fail on such a simple
+        # mistake.
+        if _select_parser() != 'lxml':
+            with self.assertRaises(ReaderException):
+                Record.create(blob, master_format='marc',
+                              namespace='testsuite', schema='xml')
 
 
 class TestRecordDocuments(InvenioTestCase):
@@ -588,7 +607,7 @@ class TestRecordDocuments(InvenioTestCase):
         d = Document.create({'title': 'Document 1',
                              'description': 'Testing 1',
                              'restriction': {'email': 'user@invenio.org'},
-                             'recids': [1,2,3],
+                             'recids': [1, 2, 3],
                              },
                             model='record_document_base')
         user_info = {'email': 'user@invenio.org',
@@ -601,7 +620,7 @@ class TestRecordDocuments(InvenioTestCase):
         self.assertEquals(d.is_authorized(user_info)[0], 1)
 
         check_user_can_view_record_patch.side_effect = \
-                lambda user_info, recid: (recid%2, '')
+            lambda user_info, recid: (recid % 2, '')
 
         # At least one record must be authorized
         self.assertEquals(d.is_authorized(user_info)[0], 0)
@@ -616,12 +635,12 @@ class TestRecordDocuments(InvenioTestCase):
         self.assertEquals(d.is_authorized(user_info)[0], 0)
 
 
-
-
-
-TEST_SUITE = make_test_suite(TestRecord,
-                             TestMarcRecordCreation,
-                             TestRecordDocuments)
+TEST_SUITE = make_test_suite(
+    TestLegacyExport,
+    TestMarcRecordCreation,
+    TestRecord,
+    TestRecordDocuments,
+)
 
 if __name__ == '__main__':
     run_test_suite(TEST_SUITE)

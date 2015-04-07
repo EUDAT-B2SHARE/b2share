@@ -1,47 +1,54 @@
 # -*- coding: utf-8 -*-
-##
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""WebSearch Flask Blueprint"""
+"""WebSearch Flask Blueprint."""
 
 from datetime import datetime
 import socket
 
 from flask import g, render_template, request, flash, redirect, url_for, \
     current_app, abort, Blueprint
-from invenio.ext.sqlalchemy import db
-from invenio.utils.mail import email_quote_txt
-from .models import CmtRECORDCOMMENT, CmtSUBSCRIPTION, CmtACTIONHISTORY
-from .forms import AddCmtRECORDCOMMENTForm, AddCmtRECORDCOMMENTFormReview
-from invenio.base.i18n import _
-from invenio.base.decorators import templated
+
+from flask.ext.breadcrumbs import register_breadcrumb
 from flask.ext.login import current_user, login_required
 from flask.ext.menu import register_menu
-from flask.ext.breadcrumbs import register_breadcrumb
-from invenio.ext.principal import permission_required
-#from invenio.config import CFG_SITE_RECORD
-CFG_SITE_RECORD = 'record'
+
+from invenio.base.i18n import _
+from invenio.base.decorators import templated
 from invenio.base.globals import cfg
+
+from invenio.ext.principal import permission_required
+from invenio.ext.sqlalchemy import db
+
+from invenio.modules.records.utils import visible_collection_tabs
+from invenio.modules.records.views import request_record
+
+from invenio.utils.mail import email_quote_txt
+
+from .forms import AddCmtRECORDCOMMENTForm, AddCmtRECORDCOMMENTFormReview
+from .models import CmtRECORDCOMMENT, CmtSUBSCRIPTION, CmtACTIONHISTORY
+from .utils import comments_nb_counts, reviews_nb_counts
+
+CFG_SITE_RECORD = 'record'
 
 blueprint = Blueprint('comments', __name__, url_prefix="/" + CFG_SITE_RECORD,
                       template_folder='templates', static_folder='static')
-
-from invenio.modules.records.views import request_record
 
 
 def log_comment_action(action_code, id, recid, uid=None):
@@ -178,7 +185,13 @@ def add_review(recid):
 
 @blueprint.route('/<int:recid>/comments', methods=['GET', 'POST'])
 @request_record
+@register_menu(blueprint, 'record.comments', _('Comments'), order=5,
+               visible_when=visible_collection_tabs('comments'),
+               endpoint_arguments_constructor=lambda:
+               dict(recid=request.view_args.get('recid')),
+               count=comments_nb_counts)
 def comments(recid):
+    """Display comments."""
     from invenio.modules.access.local_config import VIEWRESTRCOLL
     from invenio.modules.access.mailcookie import \
         mail_cookie_create_authorize_action
@@ -206,7 +219,13 @@ def comments(recid):
 
 @blueprint.route('/<int:recid>/reviews', methods=['GET', 'POST'])
 @request_record
+@register_menu(blueprint, 'record.reviews', _('Reviews'), order=6,
+               visible_when=visible_collection_tabs('reviews'),
+               endpoint_arguments_constructor=lambda:
+               dict(recid=request.view_args.get('recid')),
+               count=reviews_nb_counts)
 def reviews(recid):
+    """Display reviews."""
     from invenio.modules.access.local_config import VIEWRESTRCOLL
     from invenio.modules.access.mailcookie import \
         mail_cookie_create_authorize_action
@@ -260,7 +279,8 @@ def vote(recid, id, value):
             nb_votes_yes=CmtRECORDCOMMENT.nb_votes_yes + value),
             synchronize_session='fetch')
 
-        log_comment_action(cfg['CFG_WEBCOMMENT_ACTION_CODE']['VOTE'], id, recid)
+        log_comment_action(cfg['CFG_WEBCOMMENT_ACTION_CODE']['VOTE'], id,
+                           recid)
         flash(_('Thank you for your vote.'), 'success')
     else:
         flash(_('You can not vote for this comment.'), 'error')

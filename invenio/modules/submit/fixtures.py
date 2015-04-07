@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 #
-## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2013 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import datetime
 from fixture import DataSet
@@ -277,6 +277,10 @@ class SbmALLFUNCDESCRData(DataSet):
     class SbmALLFUNCDESCR_Withdraw_Approval_Request:
         function = u'Withdraw_Approval_Request'
         description = None
+
+    class SbmALLFUNCDESCR_Run_PlotExtractor:
+        function = u'Run_PlotExtractor'
+        description = u'Run PlotExtractor on the current record'
 
 
 class SbmCHECKSData(DataSet):
@@ -962,6 +966,22 @@ class SbmFUNDESCData(DataSet):
     class SbmFUNDESC_WithdrawApprovalRequest_categrnseekwithd:
         function = u'Withdraw_Approval_Request'
         param = u'categ_rnseek_withd'
+
+    class SbmFUNDESC_Run_PlotExtractor_with_docname:
+        function = u'Run_PlotExtractor'
+        param = u'with_docname'
+
+    class SbmFUNDESC_Run_PlotExtractor_with_doctype:
+        function = u'Run_PlotExtractor'
+        param = u'with_doctype'
+
+    class SbmFUNDESC_Run_PlotExtractor_with_docformat:
+        function = u'Run_PlotExtractor'
+        param = u'with_docformat'
+
+    class SbmFUNDESC_Run_PlotExtractor_extract_plots_switch_file:
+        function = u'Run_PlotExtractor'
+        param = u'extract_plots_switch_file'
 
 
 class SbmGFILERESULTData(DataSet):

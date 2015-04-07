@@ -1,25 +1,26 @@
 # -*- coding: utf-8 -*-
 #
-## This file is part of Invenio.
-## Copyright (C) 2011, 2012, 2013, 2014 CERN.
-##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
-##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# This file is part of Invenio.
+# Copyright (C) 2011, 2012, 2013, 2014, 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Account database models."""
 
 # General imports.
+from datetime import datetime
 from flask.ext.login import current_user
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils.types.choice import ChoiceType
@@ -54,6 +55,7 @@ class User(db.Model):
         return "%s <%s>" % (self.nickname, self.email)
 
     __tablename__ = 'user'
+    __mapper_args__ = {'confirm_deleted_rows': False}
     id = db.Column(db.Integer(15, unsigned=True), primary_key=True,
                    autoincrement=True)
     email = db.Column(db.String(255), nullable=False, server_default='',
@@ -61,6 +63,8 @@ class User(db.Model):
     _password = db.Column(db.LargeBinary, name="password",
                           nullable=False)
     note = db.Column(db.String(255), nullable=True)
+    given_names = db.Column(db.String(255), nullable=True)
+    family_name = db.Column(db.String(255), nullable=True)
     settings = db.Column(db.MutableDict.as_mutable(db.MarshalBinary(
         default_value=get_default_user_preferences, force_type=dict)),
         nullable=True)
@@ -296,7 +300,8 @@ class UserUsergroup(db.Model):
                              primary_key=True)
     user_status = db.Column(db.CHAR(1), nullable=False, server_default='')
     user_status_date = db.Column(db.DateTime, nullable=False,
-                                 server_default='1900-01-01 00:00:00')
+                                 default=datetime.now,
+                                 onupdate=datetime.now)
     user = db.relationship(
         User,
         backref=db.backref('usergroups'))
@@ -327,6 +332,8 @@ class UserEXT(db.Model):
     method = db.Column(db.String(50), primary_key=True, nullable=False)
     id_user = db.Column(db.Integer(15, unsigned=True),
                         db.ForeignKey(User.id), nullable=False)
+
+    user = db.relationship(User, backref="external_identifiers")
 
     __table_args__ = (db.Index('id_user', id_user, method, unique=True),
                       db.Model.__table_args__)
