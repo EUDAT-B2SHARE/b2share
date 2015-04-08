@@ -15,8 +15,8 @@ echo; echo "### Stop iptables"
 /etc/init.d/iptables stop
 chkconfig iptables off
 
-echo; echo "### System update"
-yum -y update
+#echo; echo "### System update"
+#yum -y update
 
 echo; echo "### Install wget vim epel"
 yum install -y wget vim epel-release
@@ -56,9 +56,15 @@ mysqladmin -u root password $MYSQL_ROOT
 
 echo; echo "### Make virtualenv b2share"
 su $USER -c '
+  sudo chown -R vagrant: /home/vagrant &&
   source /usr/bin/virtualenvwrapper.sh &&
   mkvirtualenv b2share && 
   workon b2share &&
   cdvirtualenv && 
   mkdir -p src/b2share;
   '
+
+echo
+echo " *** Please run ./install.sh to install B2SHARE in your new VM                  ***"
+echo " *** If B2SHARE is already installed, go into the VM and you can start it with: ***"
+echo " *** $ /vagrant/start_b2share.sh                                               #***"

@@ -5,5 +5,5 @@
 
 vagrant up default
 vagrant ssh-config > .sshconfig
-./sync.sh
+vagrant rsync
 ssh -F .sshconfig vagrant@default '/vagrant/install_b2share.sh development'
