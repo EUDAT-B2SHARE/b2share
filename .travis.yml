@@ -50,6 +50,7 @@ install:
   - "sudo /usr/sbin/make-ssl-cert /usr/share/ssl-cert/ssleay.cnf /etc/apache2/ssl/apache.pem"
   # - "sudo /usr/sbin/make-ssl-cert generate-default-snakeoil /etc/apache2/ssl/apache.pem"
   - "travis_retry pip install -q Babel"
+  - "travis_retry pip install -q unittest2"  
   - "travis_retry pip install . --process-dependency-links --allow-all-external --quiet"
   - "travis_retry pip install -r .travis-$REQUIREMENTS-requirements.txt --allow-all-external --quiet"
   - "travis_retry pip install -e .[docs] --quiet --process-dependency-links"
