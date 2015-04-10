@@ -49,36 +49,30 @@ install:
   - "sudo mkdir /etc/apache2/ssl"
   - "sudo /usr/sbin/make-ssl-cert /usr/share/ssl-cert/ssleay.cnf /etc/apache2/ssl/apache.pem"
   # - "sudo /usr/sbin/make-ssl-cert generate-default-snakeoil /etc/apache2/ssl/apache.pem"
+  - "travis_retry pip install -q Babel"
   - "travis_retry pip install . --process-dependency-links --allow-all-external --quiet"
   - "travis_retry pip install -r .travis-$REQUIREMENTS-requirements.txt --allow-all-external --quiet"
   - "travis_retry pip install -e .[docs] --quiet --process-dependency-links"
   - "travis_retry pip install -r requirements-b2share.txt --allow-all-external --quiet"
   - "travis_retry pip install -r requirements.txt --quiet --allow-all-external"
   - "python setup.py compile_catalog"
-
   - "inveniomanage config create secret-key"
   - "inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail"
   - "inveniomanage config set CFG_BIBSCHED_PROCESS_USER `whoami`"
   - "inveniomanage config set PACKAGES_EXCLUDE []"  # test all packages
-
-  - "inveniomanage config set CFG_TMPDIR /tmp"  # test all packages
+  - "inveniomanage config set CFG_TMPDIR /tmp"
   - "sudo su -c \"npm update\""
   - "sudo su -c \"npm install --silent -g bower less grunt-cli clean-css uglify-js requirejs\""
-  - "npm update"
-  - "npm install"
-  - "inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname \"cleancss\" | grep \"\\.bin\" | head -1`"
-  - "inveniomanage config set LESS_BIN `find $PWD/node_modules -iname \"lessc\" | grep \"\\.bin\" | head -1`"
   - "inveniomanage bower -i bower-base.json > bower.json"
   - "travis_retry bower install --silent"
   - "inveniomanage config set COLLECT_STORAGE flask.ext.collect.storage.link"
-  - "travis_retry grunt"
-  - "inveniomanage config get PACKAGES"
   - "inveniomanage collect > /dev/null"
   - "inveniomanage assets build"
+  - "inveniomanage config set CLEANCSS_BIN false"  # deactivate all the things
+  - "inveniomanage config set LESS_BIN false"      # false is /usr/bin/false
   - "inveniomanage config set REQUIREJS_BIN false"
   - "inveniomanage config set UGLIFYJS_BIN false"
   - "inveniomanage config set ASSETS_AUTO_BUILD False"
-
 
 before_script:
   - "inveniomanage apache create-config"
