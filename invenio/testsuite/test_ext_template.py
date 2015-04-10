@@ -96,7 +96,7 @@ class TemplateArgsTest(InvenioTestCase):
             'invenio.testsuite.test_ext_template.TemplateArgsTest']
         return cfg
 
-    @notest
+    @nottest
     def test_template_args_loading(self):
         self.client.get(url_for('search.index'))
         self.assertEqual(self.get_context_variable('foo'), 'foo')
