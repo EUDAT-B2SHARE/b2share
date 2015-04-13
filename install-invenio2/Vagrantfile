@@ -1,3 +1,5 @@
+REPO = File.absolute_path(File.dirname(__FILE__) + "/../")
+
 Vagrant.configure("2") do |config|
   config.vm.define "default" do |c|
     c.vm.box = "chef/centos-7.0"
@@ -7,12 +9,12 @@ Vagrant.configure("2") do |config|
     c.vm.network :forwarded_port, guest:4443, host: 4443
     c.vm.network :forwarded_port, guest:3306, host: 9306
 
+    if File.exists? REPO
+      c.vm.synced_folder REPO, "/home/vagrant/.virtualenvs/b2share/src/b2share", type: "rsync"
+    end
+
     c.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "2048"]
     end
-
-    puts " *** Please run ./install.sh to install B2SHARE in your new VM ***"
-    puts "     If B2SHARE is already installed, go into the VM and you can start it with:"
-    puts "     # /vagrant/start_b2share.sh"
   end
 end
