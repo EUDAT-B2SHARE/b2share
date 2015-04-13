@@ -341,8 +341,23 @@ li.deposit-title {
 }
 
 
-/* Hack for correctly displaying the search bar on Firefox */
+/* Hack for correctly displaying the search bar */
 /* see https://github.com/EUDAT-B2SHARE/b2share/issues/415 */
-div.navbar div.navbar-collapse div.navbar-form {
-   width: 100%;
+div.navbar div.navbar-collapse div.navbar-form, #searchform-input-group {
+    width: 100%;
+}
+@media (min-width: 768px) {/* sd size */
+    .navbar-form #searchform-input-group.input-group > input.form-control {
+        width: 479px;
+    }
+}
+@media (min-width: 992px) {/* md size */
+    .navbar-form #searchform-input-group.input-group > input.form-control {
+        width: 657px;
+    }
+}
+@media (min-width: 1200px) {/* ld size */
+    .navbar-form #searchform-input-group.input-group > input.form-control {
+        width: 857px;
+    }
 }
