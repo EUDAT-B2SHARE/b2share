@@ -39,7 +39,7 @@ from invenio.modules.formatter.format_elements import bfe_authors, bfe_title, bf
 def get_latest_deposits():
 	NUMBER_OF_RECORDS = 4;
 
-	ids = perform_request_search(of="id", rg=NUMBER_OF_RECORDS, sf="005", so="a")
+	ids = perform_request_search(of="id", rg=NUMBER_OF_RECORDS, sf="005", so="d")
 	limit_ids = ids[:NUMBER_OF_RECORDS]
 	bfo_list = [bibformat_engine.BibFormatObject(id) for id in limit_ids]
 	recs = [{
