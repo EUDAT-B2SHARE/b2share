@@ -172,19 +172,19 @@ pager.add_argument('page_offset', type=int, help='Index of the first returned it
 
 class B2Resource(Resource):
     method_decorators = [require_api_auth()]
-    def get(self, oauth, **kwargs): abort(405)
-    def post(self, oauth, **kwargs): abort(405)
-    def put(self, oauth, **kwargs): abort(405)
-    def delete(self, oauth, **kwargs): abort(405)
-    def head(self, oauth, **kwargs): abort(405)
-    def options(self, oauth, **kwargs): abort(405)
-    def patch(self, oauth, **kwargs): abort(405)
+    def get(self, **kwargs): abort(405)
+    def post(self, **kwargs): abort(405)
+    def put(self, **kwargs): abort(405)
+    def delete(self, **kwargs): abort(405)
+    def head(self, **kwargs): abort(405)
+    def options(self, **kwargs): abort(405)
+    def patch(self, **kwargs): abort(405)
 
 class ApiRoot(B2Resource):
     """
     The root for all the REST API
     """
-    def get(self, oauth, **kwargs):
+    def get(self, **kwargs):
         return {"error": "Please go to /api/records or /api/depositions"}, 404
 
 
@@ -195,7 +195,7 @@ class ListRecordsByDomain(B2Resource):
     Can only list the available resources,
     use POST to /depositions to create a new one
     """
-    def get(self, oauth, domain_name, **kwargs):
+    def get(self, domain_name, **kwargs):
         pag = pager.parse_args()
         page_size = pag.get('page_size') or PAGE_SIZE
         page_offset = pag.get('page_offset') or 0
@@ -236,7 +236,7 @@ class ListRecords(B2Resource):
     Can only list the available records,
     use POST to /depositions to create a new one
     """
-    def get(self, oauth, **kwargs):
+    def get(self, **kwargs):
         from invenio.legacy.search_engine import perform_request_search
         # from invenio.modules.accounts.models import User
 
@@ -265,7 +265,7 @@ class RecordRes(B2Resource):
     """
     A record resource is (for now) immutable, can be read with GET
     """
-    def get(self, oauth, record_id, **kwargs):
+    def get(self, record_id, **kwargs):
         curr_user_email = current_user['email']
         record_details = get_record_details(record_id, curr_user_email)
         if not record_details:
@@ -278,12 +278,12 @@ class ListDepositions(B2Resource):
     The resource representing the active deposits.
     A deposit is mutable and private, while a record is immutable and public
     """
-    def get(self, oauth, **kwargs):
+    def get(self, **kwargs):
         # TODO: ideally we'd be able to list all depositIDs of the current user
         #       but right now we don't know which ones belong to this user
         abort(405)
 
-    def post(self, oauth, **kwargs):
+    def post(self, **kwargs):
         """
         Creates a new deposition
 
@@ -308,7 +308,7 @@ class Deposition(B2Resource):
     """
     The resource representing a deposition.
     """
-    def get(self, oauth, deposit_id, **kwargs):
+    def get(self, deposit_id, **kwargs):
         """
         Test this with:
         $ curl -v http://0.0.0.0:4000/api/deposition/DEPOSITION_ID?access_token=xxx
@@ -325,7 +325,7 @@ class DepositionFiles(B2Resource):
         # TODO: make sure the deposition folder is only readable by its owner
         pass
 
-    def get(self, oauth, deposit_id, **kwargs):
+    def get(self, deposit_id, **kwargs):
         """
         Get the list of files already uploaded
 
@@ -344,7 +344,7 @@ class DepositionFiles(B2Resource):
                  for f in get_depositing_files_metadata(deposit_id)]
         return files
 
-    def post(self, oauth, deposit_id, **kwargs):
+    def post(self, deposit_id, **kwargs):
         """
         Adds a new deposition file
 
@@ -377,7 +377,7 @@ class DepositionCommit(B2Resource):
     The resource representing a deposition commit action.
     By POSTing valid metadata here the deposition is transformed into a record
     """
-    def post(self, oauth, deposit_id, **kwargs):
+    def post(self, deposit_id, **kwargs):
         """
         Creates a new deposition
 
