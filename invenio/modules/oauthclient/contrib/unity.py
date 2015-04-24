@@ -20,10 +20,31 @@
 """ Pre-configured remote application for enabling sign in/up with EUDAT Unity.
 """
 
+
+def decorate_http_request(remote):
+    """ Decorate the OAuth call to access token endpoint to inject the Authorization header"""
+    old_http_request = remote.http_request
+    def new_http_request(uri, headers=None, data=None, method=None):
+        if not headers:
+            headers = {}
+        if not headers.get("Authorization"):
+            from urlparse import parse_qs
+            from base64 import b64encode
+            args = parse_qs(data)
+            client_id_list = args.get('client_id')
+            client_id = None if len(client_id_list) == 0 else client_id_list[0]
+            client_secret_list = args.get('client_secret')
+            client_secret = None if len(client_secret_list) == 0 else client_secret_list[0]
+            userpass = b64encode("%s:%s" % (client_id, client_secret)).decode("ascii")
+            headers.update({ 'Authorization' : 'Basic %s' %  (userpass,) })
+        return old_http_request(uri, headers=headers, data=data, method=method)
+    remote.http_request = new_http_request
+
 REMOTE_APP = dict(
     title='Unity',
     description='EUDAT Unity authentication.',
     icon='fa fa-github',
+    setup=decorate_http_request,
     authorized_handler="invenio.modules.oauthclient.handlers:authorized_signup_handler",
     disconnect_handler="invenio.modules.oauthclient.handlers:disconnect_handler",
     signup_handler=dict(
@@ -33,23 +54,42 @@ REMOTE_APP = dict(
     ),
     params=dict(
             request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
-            base_url='https://eudat-aai.fz-juelich.de:8445/oauth-as',
+            base_url='https://unity.eudat-aai.fz-juelich.de:8443/',
             request_token_url=None,
-            access_token_url= "https://eudat-aai.fz-juelich.de:8445/oauth-as/r/access_token/request",
+            access_token_url= "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/token",
             access_token_method='POST',
-            authorize_url="https://eudat-aai.fz-juelich.de:8445/oauth-as/authorize",
+            authorize_url="https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz",
             app_key="UNITY_APP_CREDENTIALS",
-    )
+    ),
+    tokeninfo_url = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/tokeninfo",
+    userinfo_url = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/userinfo",
 )
 
 
 def account_info(remote, resp):
     """ Retrieve remote account information used to find local user. """
-    print ("resp")
-    from pprint import pprint
-    pprint(resp)
-    # gh = github3.login(token=resp['access_token'])
-    # ghuser = gh.user()
+    from flask import current_app
+    import json
+    try:
+        import urllib2 as http
+    except ImportError:
+        from urllib import request as http
+
+    url = REMOTE_APP.get('userinfo_url')
+    headers = { 'Authorization' : 'Bearer %s' %  (resp.get('access_token'),) }
+    req = http.Request(url, headers=headers)
+    response, content = None, None
+    try:
+        response = http.urlopen(req)
+        content = response.read()
+        response.close()
+        dict_content = json.loads(content)
+        return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
+    except http.HTTPError as response:
+        content = response.read()
+        response.close()
+        current_app.logger.warning("Failed to get user info from Unity", exc_info=True)
+
     return dict(email=None, nickname=None)
 
 
