@@ -244,11 +244,8 @@ def create_checksum(rec, sub_id, buffersize=64 * 1024):
     Returns: checksum as a hex string
     """
     sha = hashlib.sha256()
-    CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get("CFG_B2SHARE_UPLOAD_FOLDER")
-    upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
-    files = sorted(os.listdir(upload_dir))
-    for f in files:
-        filepath = os.path.join(upload_dir, f)
+    for metadata in get_depositing_files_metadata(sub_id):
+        filepath = metadata['file']
         with open(filepath, 'rb', buffering=0) as fp:
             while True:
                 block = fp.read(buffersize)
