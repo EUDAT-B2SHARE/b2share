@@ -86,14 +86,10 @@ OAUTHCLIENT_REMOTE_APPS = dict(
 )
 
 UNITY_APP_CREDENTIALS = dict(
-    consumer_key= "d9b4b207-1e4c-491c-a06e-448eb8f4d958",
-    consumer_secret= "f562e168-8b1b-4004-a074-29ba8852a4d5",
+    # will only work on development configurations
+    consumer_key= "b2share",
+    consumer_secret= "b2share8juelich",
 )
-
-# GITHUB_APP_CREDENTIALS = dict(
-#     consumer_key="3f2a2a514db4a9cbeca7",
-#     consumer_secret="d56092786135595a778104d471ba4ab0b5dd61a6",
-# )
 
 CFG_PREFIX = distutils.sysconfig.get_config_var("prefix")
 

@@ -121,6 +121,8 @@ def setup_app():
                 view=account_view_handler,
             )
         )
+        if conf.get('setup'):
+                conf.get('setup')(remote)
 
 
 @blueprint.route('/login/<remote_app>/')
