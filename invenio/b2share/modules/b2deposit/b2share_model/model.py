@@ -221,7 +221,7 @@ def _create_metadata_class(cfg):
     args = {'__init__': __init__,
             '__tablename__': cfg.table_name,
             '__mapper_args__': {'polymorphic_identity': cfg.table_name},
-            'id': db.Column(db.Integer, 
+            'id': db.Column(db.Integer,
                             db.ForeignKey('submission_metadata.id'),
                             primary_key=True),
             'field_args': {}}
@@ -236,7 +236,7 @@ def _create_metadata_class(cfg):
         args[f['name']] = db.Column(f['col_type'], nullable=nullable)
         field_dict = {}
         for k in f:
-            if k in ['description', 'data_provide', 'data_source', 'default', 
+            if k in ['description', 'data_provide', 'data_source', 'default',
                      'placeholder', 'value', 'other', 'cardinality']:
                 field_dict[k] = f.get(k)
             elif k == 'display_text':
@@ -255,3 +255,36 @@ def generate_disciplines():
         next(reader)  # Skip header
         for line in reader:
             yield [l.strip() for l in line]  # Clean values
+
+class Bib98x(db.Model):
+    """Represents a Bib98x record."""
+    def __init__(self):
+        pass
+    __tablename__ = 'bib98x'
+    id = db.Column(db.MediumInteger(8, unsigned=True),
+                primary_key=True,
+                autoincrement=True)
+    tag = db.Column(db.String(6), nullable=False, index=True,
+                server_default='')
+    value = db.Column(db.Text(35), nullable=False,
+                index=True)
+
+
+class BibrecBib98x(db.Model):
+    """Represents a BibrecBib98x record."""
+    def __init__(self):
+        pass
+    from invenio.modules.records.models import Record as Bibrec
+    __tablename__ = 'bibrec_bib98x'
+    id_bibrec = db.Column(db.MediumInteger(8, unsigned=True),
+                db.ForeignKey(Bibrec.id),
+        nullable=False, primary_key=True, index=True,
+                server_default='0')
+    id_bibxxx = db.Column(db.MediumInteger(8, unsigned=True),
+                db.ForeignKey(Bib98x.id),
+        nullable=False, primary_key=True, index=True,
+                server_default='0')
+    field_number = db.Column(db.SmallInteger(5, unsigned=True),
+                primary_key=True)
+    bibrec = db.relationship(Bibrec, backref='bib98xs')
+    bibxxx = db.relationship(Bib98x, backref='bibrecs')

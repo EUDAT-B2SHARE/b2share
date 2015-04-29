@@ -41,7 +41,6 @@ from invenio.b2share.modules.b2deposit.b2share_marc_handler \
 from invenio.b2share.modules.b2deposit.b2share_deposit_handler \
     import write_marc_to_temp_file, FormWithKey
 
-
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 
@@ -78,13 +77,16 @@ def read_basic_metadata_field_from_marc(bfo, fieldname):
         marctag = basic_fields_meta[fieldname][0]
         multiple = basic_fields_meta[fieldname][1]
 
-        # we need to do additional filtering due to the clash between domain and resource_type
+        # we need to do additional filtering due to the
+        # clash between domain and resource_type
         # they are both encoded as the same marc field
         if fieldname == 'domain':
-            ret = [r.lower() for r in bfo.fields(marctag) if r.lower() in metadata_classes()]
+            ret = [r.lower() for r in bfo.fields(marctag)
+                   if r.lower() in metadata_classes()]
             return ret if multiple else ", ".join(ret)
         elif fieldname == 'resource_type':
-            ret = [r for r in bfo.fields(marctag) if r.lower() not in metadata_classes()]
+            ret = [r for r in bfo.fields(marctag)
+                   if r.lower() not in metadata_classes()]
             return ret if multiple else ", ".join(ret)
         elif marctag:
             if multiple:
@@ -93,18 +95,23 @@ def read_basic_metadata_field_from_marc(bfo, fieldname):
                 return bfo.field(marctag)
     return None
 
+
 def read_domain_specific_metadata_field_from_marc(bfo, fieldname, multiple):
     ret = [fx.get('b') for fx in bfo.fields('690__')
-                           if fx.get('a') == fieldname and fx.get('b')]
+           if fx.get('a') == fieldname and fx.get('b')]
     return ret if multiple else ", ".join(ret)
+
 
 def get_domain_metadata(domain_class, fieldset, bfo):
     ret = {}
     for fieldname in fieldset.optional_fields + fieldset.basic_fields:
         field = domain_class.field_args[fieldname]
         multiple = 'cardinality' in field and field['cardinality'] == 'n'
-        ret[fieldname] = read_domain_specific_metadata_field_from_marc(bfo, fieldname, multiple)
+        ret[fieldname] = read_domain_specific_metadata_field_from_marc(bfo,
+                                                                       fieldname,
+                                                                       multiple)
     return ret
+
 
 def get_record_details(recid, curr_user_email):
     from invenio.legacy.bibdocfile.api import BibRecDocs
@@ -119,7 +126,8 @@ def get_record_details(recid, curr_user_email):
         current_app.logger.error("REST API: BibRecDocs reports 0 files for record %d" % (recid,))
         return []
 
-    # bibformat uses get_record, usually is one db hit per object; should be fastest
+    # bibformat uses get_record, usually is one db
+    # hit per object; should be fastest
     from invenio.modules.formatter import engine as bibformat_engine
     bfo = bibformat_engine.BibFormatObject(recid)
 
@@ -158,7 +166,9 @@ def get_record_details(recid, curr_user_email):
         domain_class = metadata_classes()[domain]()
         for fieldset in domain_class.fieldsets:
             if fieldset.name != 'Generic':
-                ret['domain_metadata'] = get_domain_metadata(domain_class, fieldset, bfo)
+                ret['domain_metadata'] = get_domain_metadata(domain_class,
+                                                             fieldset,
+                                                             bfo)
 
     return ret
 
@@ -203,7 +213,7 @@ class ListRecordsByDomain(B2Resource):
             page_size = MAX_PAGE_SIZE
 
         # get domain id from domain name
-        from invenio.modules.editor.models import Bib98x, BibrecBib98x
+        from .b2share_model.model import Bib98x, BibrecBib98x
         domain = Bib98x.query.filter_by(value=domain_name).first()
         if domain is None:
             if domain_name not in metadata_classes().keys():
