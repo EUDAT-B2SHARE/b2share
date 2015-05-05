@@ -37,6 +37,7 @@ pip install -q -e .[img]
 if [ "$ENVIRONMENT" == "development" ]; then
   pip install -q -e .[development]
 fi
+cp -r ./invenio.egg-info ..
 
 for f in requirements*.txt; do
    echo; echo "### pip install -r $f"
@@ -46,6 +47,7 @@ done
 echo; echo "### Run npm install"
 npm update
 npm install
+cp -r ./node_modules ..
 
 echo; echo "### Make bower config"
 inveniomanage bower -i bower-base.json > bower.json
