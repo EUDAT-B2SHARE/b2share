@@ -13,13 +13,13 @@
 <tr title="{{f.description}}" rel='tooltip'>
   <div class="compact-form {% if f.errors %}error{% endif %}">
 
-    <td> {{f.label(class="control-label meta-label")}} </td>
+    <td class="meta-label-td"> {{f.label(class="meta-label")}} </td>
 
-    <td>
+    <td class="meta-warning-td">
       {%- if f.flags.required -%}
       <span style="color: red;">*</span>
       {%else%}
-      <span>&nbsp;&nbsp;</span>
+      <span>&nbsp;</span>
       {%- endif %}
     </td>
 

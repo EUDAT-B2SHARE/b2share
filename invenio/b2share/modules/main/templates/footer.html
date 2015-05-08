@@ -24,37 +24,31 @@
 ## {% include 'footer.html' %}
 #}
 
-<div class="container footer">
+<div class="container">
     <div class="row">
-        <div class="col-sm-9">
-            <div class="footer_links">
-                <span>
-                <a href="{{ request.url_root }}">Home</a>
-                <a href="{{ request.url_root+'docs/b2share-about' }}">About</a>
-                <a href="{{ request.url_root+'docs/b2share-tou' }}">Terms of Use</a>
-                <a href="{{ request.url_root+'docs/b2share-faq' }}">FAQ</a>
-                <a href="{{ request.url_root+'docs/b2share-guide' }}">User&nbsp;Guide</a>
-                <a href="{{ request.url_root+'docs/b2share-rest-api' }}">REST&nbsp;API</a>
-                <a href="http://www.eudat.eu/support-request?Service=B2SHARE">Contact</a>
-                </span>
+        <div class="col-xs-12 col-sm-6 col-md-6">
+            <div style="position:relative">
+                <div style="position:absolute; bottom:20px; left:0; color:red;font-size:28px">
+                    {{ site_function }}
+                </div>
             </div>
+            <p><img width="45" height="31" src="/img/flag-ce.jpg" style="float:left; margin-right:10px;"/> EUDAT receives funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No. 654065. <a href="#">Legal Notice</a>.</p>
         </div>
-        <div class="col-sm-3 poweredby" style="text-align:right">
-            <div style="float:right; margin:0 20px 0 10px">
-                <a href="http://invenio-software.org/">
-                    <div style="font-size:10px; margin: 2px 18px 0;">Powered by</div>
-                    <img src="/img/invenio.png" alt="Invenio"></img> <!-- v{{ config.CFG_VERSION }} -->
-                </a>
+        <div class="col-xs-12 col-sm-6 col-md-6 text-right">
+            <div style="position:relative">
+                <div style="position:absolute; bottom:20px; right:0">
+                    <div>
+                        <p>Powered by <img src="/img/logo_invenio.png" alt="" width="84" height="21"/></p>
+                    </div>
+                </div>
             </div>
-
-            <div style="float:right">
-                <a href="http://ec.europa.eu/research/fp7/index_en.cfm">
-                    <img src="/img/fp7.png" alt="The Seventh Framework Programme"></img>
-                </a>
-            </div>
+            <nav class="navbar navbar-footer">
+                <ul id="menu" class="nav navbar-nav navbar-right pull-right">
+                    <li><a href="{{ request.url_root+'docs/b2share-tou' }}">Terms of Use</a></li>
+                    <li><a href="{{ request.url_root+'docs/b2share-rest-api' }}">REST API</a></li>
+                    <li><a target="_blank" href="http://eudat.eu/what-eudat">About EUDAT</a></li>
+                </ul>
+            </nav>
         </div>
     </div>
-    {% if lastupdated %}
-        {{ _("Last updated") }}: {{ lastupdated|invenio_format_date }}
-    {% endif %}
 </div>

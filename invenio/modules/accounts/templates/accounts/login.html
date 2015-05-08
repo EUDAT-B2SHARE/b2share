@@ -21,28 +21,12 @@
 
 {%- extends "accounts/login_base.html" -%}
 
-{% block breadcrumbs %}
-    {{ render_breadcrumbs(False) }}
-{% endblock breadcrumbs %}
-
-{% block searchbar %}
-    <div class="searchbar">
-        <div class="container" style="background-color: rgb(34, 69, 138)">
-            {%- include "search/form/index.html" -%}
-        </div>
-    </div>
-{% endblock %}
-
 {%- block body -%}
     <div class="row login">
-        {{ render_deposits('hidden') }}
-        <div class="col-md-7">
-            <h2 class="title">               
-                <div style="position:absolute; left:400px"><font color="red">{{ site_function }}</font></div>
-                <div style="display:inline-block; float: left"></div>
-                <div style="display:inline-block; width:110px; float: left"></div>
-                <img style="float: right" src="/img/bee-shadow.png" alt="Bee"></img>
-            </h2>
+        <div class="centered">
+            <div style="position:relative">
+                <img style="position:absolute;right:-150px;width:150px; height:150px" src="/img/bee-shadow.png" alt="Bee"></img>
+            </div>
 
             <h3 class="login-message">Please sign in</h3>
 
@@ -75,8 +59,8 @@
 
             <p><a href="{{ url_for('youraccount.lost') }}"><strong>Lost password?</strong></a></p>
 
-            <p><a style="color: #e46c0a; background-color: #fff; font-size: 20px"
-                    href="{{url_for('oauthclient.login', remote_app='unity')}}">Sign in with Unity</a></p>
+            <!-- <p><a style="color: #e46c0a; background-color: #fff; font-size: 20px"
+                    href="{{url_for('oauthclient.login', remote_app='unity')}}">Sign in with Unity</a></p> -->
         </div>
     </div>
 {%- endblock -%}

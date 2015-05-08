@@ -1,4 +1,3 @@
-
 {#
 ## This file is part of Invenio.
 ## Copyright (C) 2012 CERN.
@@ -30,35 +29,60 @@
 {%- endfor -%}
 
 {% block searchbar %}
-    <div class="searchbar">
-        <div class="container" style="background-color: rgb(34, 69, 138)">
-            {%- include "search/form/index.html" -%}
-        </div>
-    </div>
 {% endblock %}
 
 {% block body %}
-    <div class="row websearch">
-        {{ render_deposits('visible') }}
-        <div class="col-sm-7">
-            <h2 class="title">               
-                <div style="position:absolute; left:400px"><font color="red">{{ site_function }}</font></div>
-                <div style="display:inline-block; float: left">
-                    STORE AND SHARE<br/> YOUR RESEARCH DATA
-                </div>
-                <div style="display:inline-block; width:110px; float: left"></div>
-                <img style="float: right" src="/img/bee-shadow.png" alt="Bee"></img>
-            </h2>
-
-            <p>A user-friendly, secure, robust, reliable and trusted service to share and store your research data <em>adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference.</em></p>
-
-            <p><strong>Deposit <span class="hl">and release</span> your data</strong> via the generic interface or select a community extension including specific metadata fields. <span class="hl">Releasing your data implies that your deposited data can be referred to, therefore any changes should be reflected in new data uploads.</span></p>
-
-            <p><strong>Share your data</strong> with others in a safe and trusted environment.</p>
-
-            <p><strong>Do you belong to a scientific community?</strong> Brand and create your own community collection with specific metadata fields customized for your  field.</p>
+<div id="mainpage" class="row">
+    <!-- BEGIN CONTENT LEFT -->
+    <div class="col-xs-12 col-sm-5 col-md-5">
+        <div class="description-home">
+            <h1>STORE AND SHARE YOUR RESEARCH DATA</h1>
+            <p>A user-friendly, secure, robust, reliable and trusted service to share and store your research data adding
+                value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference.
+                Deposit and release your data via the generic interface or select a community extension including specific
+                metadata fields. Releasing your data implies that your deposited data can be referred to, therefore any changes
+                should be reflected in new data uploads.
+                Share your data with others in a safe and trusted environment.
+                Do you belong to a scientific community? Brand and create your own community collection with specific metadata
+                fields customized for your field.</p>
+                <a class="btn btn-default" href="{{ request.url_root+'docs/b2share-about' }}">Read more</a>
         </div>
     </div>
+    <!-- END CONTENT LEFT -->
+
+    <div class="col-xs-12 col-sm-1 col-md-1 description-home">
+    </div>
+
+    <!-- BEGIN CONTENT RIGHT -->
+    <div class="col-xs-12 col-sm-6 col-md-6 description-home">
+        <p>Search in public datasets or register as a user to upload and share your data!
+            <a href="{{ url_for('youraccount.register') }}">REGISTER NOW</a>
+            (Already registered? <a href="{{ url_for('webaccount.login', referer=request.url) }}">LOGIN</a>)
+        </p>
+
+        <h1>SEARCH</h1>
+        <div class="searchbar-home">
+            {%- include "search/form/index.html" -%}
+        </div>
+
+        <hr/>
+        <div id="deposit-area" class="clearfix">
+            <div class="row">
+
+                <div class="col-xs-12 col-sm-6 col-md-6">
+                    <h1>DEPOSIT</h1>
+                </div>
+                <div class="col-xs-12 col-sm-6 col-md-6 text-right text-center-responsive">
+                    <a class="btn btn-primary" href="/b2deposit">DEPOSIT</a>
+                </div>
+            </div>
+        </div>
+
+
+        {{ render_deposits('visible') }}
+    </div>
+    <!-- END CONTENT RIGHT -->
+</div>
 {% endblock %}
 
 {% block javascript %}

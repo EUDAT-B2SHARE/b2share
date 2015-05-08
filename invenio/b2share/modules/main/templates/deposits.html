@@ -19,30 +19,24 @@
 #}
 
 {% macro render_deposits(deposit_btn_visibility) %}
-<div class="col-md-5">
-	<div class="deposits">
-        <div style="visibility:{{deposit_btn_visibility}}">
-            <a class="deposit-btn btn" href="/b2deposit">Deposit >>></a>
-        </div>
-		{% if latest_deposits %}
-    	<h3 class="deposits-title">Latest Deposits</h3>
-		<ol class="deposit-list list-unstyled">
-		{% for dep in latest_deposits %}
-		<li class="deposit">
-			<ul class="list-unstyled">
-				<li class="deposit-date">{{dep.date}}</li>
-				<li class="deposit-title">
-					<a href="{{ url_for('record.metadata', recid=dep.id) }}">{{dep.title|safe}}</a>
-				</li>
-				{% if dep.author %}
-				<li class="deposit-meta">by {{dep.author|safe}}</li>
-				{% endif %}
-				<li class="deposit-meta">{{dep.description|safe}}</li>
-			</ul>
-		</li>
-		{% endfor %}
-		</ol>
-		{% endif %}
-	</div>
-</div>
+	{% if latest_deposits %}
+	<h2 class="deposits-title">Latest Deposits</h2>
+
+	<ol class="deposit-list list-unstyled">
+	{% for dep in latest_deposits %}
+	<li class="deposit">
+		<ul class="list-unstyled">
+			<li class="deposit-date">{{dep.date}}</li>
+			<li class="deposit-title">
+				<a href="{{ url_for('record.metadata', recid=dep.id) }}">{{dep.title|safe}}</a>
+			</li>
+			{% if dep.author %}
+			<li class="deposit-meta">by {{dep.author|safe}}</li>
+			{% endif %}
+			<li class="deposit-meta">{{dep.description|safe}}</li>
+		</ul>
+	</li>
+	{% endfor %}
+	</ol>
+	{% endif %}
 {% endmacro %}

@@ -36,26 +36,6 @@
 }
 
 
-/* -- commented out by edima; grepping shows these styles are not used in the new UI
-
-.maintext {
-    font-size: 16px;
-    line-height: 25px;
-}
-
-.attribution {
-    font-size: 10px;
-    font-style: italic;
-    padding-left: 20px;
-}
-
-.dep-submit {
-    margin-left: 0;
-    padding-left: 0;
-    margin-top: 40px;
-}
-*/
-
 #fileupload, #projects, #metaform  {
     border-bottom: 2px solid rgb(37, 95, 134);
 }
@@ -187,18 +167,6 @@
                     border-radius: 6px
 }
 
-
-.meta-label {
-    font-size: 14px;
-    font-weight: bold;
-    text-align: right;
-    width: 40px;
-    float: left;
-    padding-right: 6px;
-    padding-top: 5px;
-    margin-right: 35px; /* don't understand why margin right is needed :( */
-}
-
 #submitbutton {
 	margin-top: 20px;
 	border-top: 2px solid rgb(37, 95, 134);
@@ -209,8 +177,25 @@
 }
 
 #meta-fields {
-    overflow: visible;
+    overflow: auto;
     text-align: left;
+}
+
+#meta-fields .meta-label-td {
+    text-align: right;
+    margin-right: 10px;
+}
+
+#meta-fields .meta-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    width: 120px;
+    margin-bottom:0;
+}
+
+#meta-fields .meta-warning-td {
+    padding:10px 5px;
 }
 
 .meta-container h1 {

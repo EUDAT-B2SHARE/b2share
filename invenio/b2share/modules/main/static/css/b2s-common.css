@@ -1,72 +1,10 @@
-html, body, input, button, select, textarea {
-    font-family: Calibri, Candara, Segoe, "Segoe UI", Arial, sans-serif !important;
-}
-
-html {
-  overflow-y: scroll;
-}
-
-html, body {
-    background-color: rgb(212, 221, 226);
-}
-
-body {
-    padding-top: 0px !important;
-}
-
-#wrap {
-    background-color: white;
-    padding-bottom: 54px;
-    margin-bottom: -54px; /* for dynamic footer */
-}
-
-
-
-a {
-    color: #224A7B;
-}
-
-a:hover {
-    color: #224A7B;
-}
-
-/* --- header css --- */
-
-.navbar .navbar-inner {
-    background: rgb(212, 221, 226) none;
-    border: none;
-    border-radius: 0;
-    -webkit-box-shadow: 0 0;
-    -moz-box-shadow:    0 0;
-    box-shadow:         0 0;
-}
-
-.navbar-border {
-    height: 3px;
-    background: none;
-}
-
-div.navbar {
-    border: none; /* undo bootstrap css */
-    margin-bottom:0;
-}
-
-.navbar > .navbar-inner > .container {
-	margin: 0 auto;
-    background: rgb(212, 221, 226) url('/img/B2SHARE-header.png') repeat-x left top;
-    width: 1024px;
-    height: 98px;
-}
-
-.brand-b2share img {
-    margin-top: 7px;
-}
-
 /* --- search row css --- */
 
 .searchbar {
-    background-color: rgb(34, 69, 138);
-    padding: 24px 0;
+    border-top: 1px solid #DDD;
+    border-bottom: 1px solid #DDD;
+    background-color: #F6F6F6;
+    margin-bottom: 20px;
 }
 
 #search-label {
@@ -104,26 +42,6 @@ legend [class*="icon-"] {
 /* --- home page --- */
 
 
-.websearch .title {
-    font-size: 30px;
-    display: inline-block;
-}
-
-.websearch p {
-    font-size: 20px;
-    line-height: 25px;
-    padding-top: 10px;
-}
-
-.websearch .hl {
-    color: rgb(31, 67, 141);
-}
-
-.websearch .title img {
-    height: 150px;
-    margin: -24px 0 -60px;
-}
-
 .collection ul.nav-list {
     padding-left: 0;
 }
@@ -149,6 +67,14 @@ legend [class*="icon-"] {
 }
 
 /* --- login --- */
+
+.login {
+    text-align:center;
+}
+.login .centered {
+    display:inline-block;
+    text-align:left;
+}
 
 .login h3 {
     line-height: 40px;
@@ -248,7 +174,7 @@ legend [class*="icon-"] {
     padding: 10px 20px;
 }
 
-.deposits {
+/*.deposits {
     margin: 10px 20px 20px 10px;
 }
 
@@ -303,61 +229,105 @@ li.deposit-title {
     font-size: 16px;
     font-weight: 600;
 }
+*/
 
-
-/* --- footer css --- */
-#footer {
-    height: 54px !important;
-}
-
-.footer {
-    margin-top: 4px;
-}
-
-.footer .row {
-    background: rgb(212, 221, 226) url('/img/footer-gradient.png') no-repeat right top;
-}
-
-.footer .poweredby {
-    height: 54px;
-    padding-top: 4px;
-}
-
-.footer_links {
-    margin: 16px 0 0 0;
-}
-
-.footer_links span {
-    font-size: 18px;
-}
-
-.footer_links a {
-    padding-right: 20px;
-    color: #224A7B;
-}
-
-.footer_links a:hover {
-    color: #224A7B;
+footer#footer {
+    margin-top:30px;
+    height: 94px;
 }
 
 
 /* Hack for correctly displaying the search bar */
 /* see https://github.com/EUDAT-B2SHARE/b2share/issues/415 */
-div.navbar div.navbar-collapse div.navbar-form, #searchform-input-group {
-    width: 100%;
-}
-@media (min-width: 768px) {/* sd size */
-    .navbar-form #searchform-input-group.input-group > input.form-control {
-        width: 479px;
+
+@media (min-width: 768px) {
+    .searchbar #searchform-input-group.input-group > input.form-control {
+        width: 480px;
     }
 }
-@media (min-width: 992px) {/* md size */
-    .navbar-form #searchform-input-group.input-group > input.form-control {
+@media (min-width: 992px) {
+    .searchbar #searchform-input-group.input-group > input.form-control {
         width: 657px;
     }
 }
-@media (min-width: 1200px) {/* ld size */
-    .navbar-form #searchform-input-group.input-group > input.form-control {
+@media (min-width: 1200px) {
+    .searchbar #searchform-input-group.input-group > input.form-control {
         width: 857px;
     }
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// BEGINNING OF B2SHARE DESIGN STYLE
+///////////////////////////////////////////////////////////////////////////////
+
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Raleway'), url(/fonts/Raleway.woff2) format('woff2'), url(/fonts/Raleway.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Raleway Medium'), local('Raleway-Medium'), url(/fonts/Raleway_medium.woff2) format('woff2'), url(/fonts/Raleway_medium.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(/fonts/Raleway_semibold.woff2) format('woff2'), url(/fonts/Raleway_semibold.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Raleway Bold'), local('Raleway-Bold'), url(/fonts/Raleway_bold.woff2) format('woff2'), url(/fonts/Raleway_bold.woff) format('woff');
+}
+
+/*** STRUCTURE LAYOUT ***/
+html,body{height:100%;margin:0; color: #333;font-family: 'Raleway', sans-serif;}
+#header-top {background: #F45D00;padding: 5px 0;}
+#header-top a {color: #FFFFFF;}
+#header {padding: 1% 0;background: #FFFFFF url("/img/img_header.png") no-repeat top right;}
+#mainpage {height: auto;min-height: 600px;background: url("/img/bg_page.png") no-repeat left center; position: relative; padding-bottom: 94px;}
+body.internalpage {background: #FFFFFF; padding: 0;}
+body.internalpage>#page { background-image: none !important; padding: 20px 0;}
+.description-home {margin-top: 70px;}
+footer {background: #F7F3E9 url("/img/color-line.jpg") repeat-x top left;padding: 20px 10px 10px 10px;font-size: 12px;}
+
+/*** GENERAL STYLE ELEMENTS ***/
+h1 {font-weight: 600;}
+a {color: #F45D00;text-decoration: none;}
+
+/**** NAVBAR ***/
+.navbar-default {background-color: transparent !important;border: 0 !important; /*margin-top: 30px;*/}
+.navbar-default .navbar-nav > li > a {color: #333333;font-weight: 500;font-size: 16px;}
+.navbar-default .navbar-nav > li > a:hover {color: #F45D00;font-weight: 500;font-size: 16px;}
+.navbar-default .navbar-collapse, .navbar-default .navbar-form {border:0;}
+.navbar-form {float: none !important;}
+.navbar-footer {background-color: transparent !important;border: 0 !important;}
+.navbar-footer ul li a {background-color: transparent !important;color: #666; }
+.navbar-footer ul li a:hover {color: #333;}
+
+#searchform-input-group {padding: 8px 0;}
+#search-box-main .navbar {margin: 20px 0;}
+
+/**** DEPOSIT AREA - HOME PAGE ****/
+#deposit-area {background: #EEE; padding: 10px 20px; line-height: 65px;}
+#deposit-area h1 {margin-top: 10px !important;}
+.deposit {border-bottom: 0;list-style-type: none;padding: 5px 0;}
+ol.deposit-list {-moz-column-count: 2;-moz-column-gap: 20px;-webkit-column-count: 2;-webkit-column-gap: 20px;column-count: 2;column-gap: 20px;}
+.deposit li {font-size: 12px;line-height: 18px;list-style-type: none;}
+li.deposit-date {font-weight: 600;color: #337AB7;}
+li.deposit-title {font-size: 16px;font-weight: 600;}
+li.deposit-title a {color: #000;}
+
+/*** OLD CSS STYLE ***/
+.right-not-rounded {border-bottom-right-radius: 0;border-top-right-radius: 0;}
+.left-not-rounded {border-bottom-left-radius: 0;border-top-left-radius: 0;}
+.no-padding {padding: 0;}
