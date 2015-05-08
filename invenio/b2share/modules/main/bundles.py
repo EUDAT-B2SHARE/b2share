@@ -42,7 +42,6 @@ b2s_common_css = Bundle(
 ############### deposit
 
 b2s_deposit_js = Bundle(
-    "vendors/bootstrap/dist/js/bootstrap.js",
     "vendors/bootstrap-switch/dist/js/bootstrap-switch.js",
     "vendors/bootstrap-multiselect/dist/js/bootstrap-multiselect.js",
     "vendors/plupload/js/plupload.full.min.js",
@@ -62,11 +61,10 @@ b2s_deposit_js = Bundle(
 )
 
 b2s_deposit_css = Bundle(
-    "vendors/bootstrap/dist/css/bootstrap.min.css",
-    "vendors/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css", 
+    "vendors/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css",
     "vendors/bootstrap-multiselect/dist/css/bootstrap-multiselect.css",
     "vendors/typeahead.js-bootstrap3.less/typeahead.css",
-    "vendors/lindat-license-selector/license-selector.min.css", 
+    "vendors/lindat-license-selector/license-selector.min.css",
     "css/b2s-deposit.css",
     output="b2s_deposit.css",
     filters="cleancss",

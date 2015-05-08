@@ -24,16 +24,48 @@
 ## {% include 'header.html' %}
 #}
 
-<div class="navbar">
-    <div class="navbar-inner">
-        <div class="container">
-           <a href="{{ request.url_root }}">
-                <div style="width: 40%; height: 99px"></div>
-            </a>
-           <a href="{{ request.url_root }}">
-                <div style="width: 60%; height: 99px"></div>
-           </a>
+    <div id="header-top">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <a href="http://www.eudat.eu">GO TO EUDAT WEBSITE</a>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-<div class="navbar-border"></div>
+    <div id="header">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 col-sm-3 col-md-3">
+            <a href="/"><img width="232" height="128" src="/img/logo.png" alt=""/></a>
+          </div>
+          <div class="col-xs-12 col-sm-9 col-md-9">
+
+            <nav class="navbar navbar-default">
+              <div class="container-fluid">
+
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#gb_menu">
+                      <span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                    </button>
+                  </div>
+
+                <div class="collapse navbar-collapse" id="gb_menu">
+                  <ul id="menu" class="nav navbar-nav">
+                    <li><a href="{{ request.url_root+'docs/b2share-about' }}">WHAT IS B2SHARE</a></li>
+                    <li><a href="{{ request.url_root+'docs/b2share-guide' }}">USER GUIDE</a></li>
+                    <li><a href="{{ request.url_root+'docs/b2share-faq' }}">FAQs</a></li>
+                    <li><a href="{{ request.url_root }}">COMMUNITIES</a></li>
+                    <li><a href="http://www.eudat.eu/support-request?Service=B2SHARE">CONTACT</a></li>
+                  </ul>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
