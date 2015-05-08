@@ -46,6 +46,7 @@ b2s_deposit_js = Bundle(
     "vendors/bootstrap-multiselect/dist/js/bootstrap-multiselect.js",
     "vendors/plupload/js/plupload.full.min.js",
     "vendors/typeahead.js/dist/typeahead.jquery.js",
+    "js/lodash-fix.js",
     "vendors/lindat-license-selector/license-selector.min.js",
     "js/b2s-deposit.js",
     output="b2s_deposit.js",
