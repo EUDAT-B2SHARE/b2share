@@ -56,8 +56,13 @@
     <!-- BEGIN CONTENT RIGHT -->
     <div class="col-xs-12 col-sm-6 col-md-6 description-home">
         <p>Search in public datasets or register as a user to upload and share your data!
+            {% if current_user.is_guest %}
             <a href="{{ url_for('youraccount.register') }}">REGISTER NOW</a>
             (Already registered? <a href="{{ url_for('webaccount.login', referer=request.url) }}">LOGIN</a>)
+            {% else %}
+            You are logged in as
+            <a href="{{ url_for('webaccount.index') }}">{{ current_user.nickname|default(current_user.email) }}</a>
+            {% endif %}
         </p>
 
         <h1>SEARCH</h1>
