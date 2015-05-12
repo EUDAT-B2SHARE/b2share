@@ -36,7 +36,7 @@ b2s_common_css = Bundle(
     "css/b2s-common.css",
     output="b2s_common.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 ############### deposit
@@ -58,7 +58,7 @@ b2s_deposit_js = Bundle(
         "plupload": "latest",
         "lindat-license-selector": "0.0.3",
     },
-    weight=50,
+    weight=60,
 )
 
 b2s_deposit_css = Bundle(
@@ -69,7 +69,7 @@ b2s_deposit_css = Bundle(
     "css/b2s-deposit.css",
     output="b2s_deposit.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 ############### record
@@ -78,7 +78,7 @@ b2s_record_css = Bundle(
     "css/b2s-record.css",
     output="b2s_record.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 ############### abuse and data requests
@@ -87,12 +87,12 @@ b2s_abuse_css = Bundle(
     "css/b2s-abuse.css",
     output="b2s_abuse.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 b2s_abuse_js = Bundle(
     "js/b2s-abuse.js",
     output="b2s_abuse.js",
     filters="uglifyjs",
-    weight=50,
+    weight=60,
 )
