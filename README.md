@@ -39,13 +39,13 @@ git clone -b master git@github.com:EUDAT-B2SHARE/b2share.git
 cd b2share/install
 ```
 
-**2. ON THE HOST: Run `vagrant up` in the folder created above, and then (after the provisioning is completed) login into the newly created machine.**
+**2. ON THE HOST: Run `./install.sh` in the folder created above, and then (after the provisioning is completed) login into the newly created machine.**
 
 ```bash
 # create the VM and provision B2SHARE automatically (this will take time)
-vagrant up dev
+./install.sh
 # access the VM via SSH (logging into the guest)
-vagrant ssh dev
+vagrant ssh default
 ```
 
 **3. ON THE GUEST VM: Run `start_b2share.sh`, which will start the b2share server in development mode. You can now go on the host machine to `http://localhost:4000` and the b2share/invenio site should show up.**
