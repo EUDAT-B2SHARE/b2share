@@ -142,9 +142,9 @@ def get_record_details(recid, curr_user_email):
         else:
             ret[fieldname] = read_basic_metadata_field_from_marc(bfo, fieldname)
 
-    # add 'PID'
+    # add 'PID' and 'checksum'
     for fx in bfo.fields('0247_'):
-        if fx.get('2') == "PID":
+        if fx.get('2') in ["PID", "checksum"]:
             ret[fx.get('2')] = fx.get('a')
 
     # add 'domain'
