@@ -123,6 +123,8 @@ mysql -u root --database=invenio --password=$MYSQL_ROOT -e "$GRANT"
 
 echo; echo "### Setup bibtasks: bibindex"
 bibindex -f50000 -s5m -uadmin
+# another bibindex scheduling for global index because it is a virtual index
+bibindex -w global -f50000 -s5m -uadmin
 
 echo; echo "### Setup bibtasks: bibreformat"
 bibreformat -oHB -s5m -uadmin
