@@ -1264,6 +1264,8 @@ def iter_suites(packages=None):
         testsuite.register(testsuite_invenio)
         testsuite.register(testsuite_base)
         testsuite.register(testsuite_celery)
+        from invenio.b2share import testsuite as testsuite_b2share
+        testsuite.register(testsuite_b2share)
     else:
         exclude = map(lambda x: x + '.testsuite',
                       app.config.get('PACKAGES_EXCLUDE', []))
@@ -1273,6 +1275,8 @@ def iter_suites(packages=None):
     for package in testsuite:
         for name in find_modules(package.__name__):
             module = import_string(name)
+            if not module.__name__.startswith('invenio.b2share'):
+                continue
             if not module.__name__.split('.')[-1].startswith('test_'):
                 continue
             if hasattr(module, 'TEST_SUITE'):
