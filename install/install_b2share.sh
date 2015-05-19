@@ -5,7 +5,6 @@
 
 MYSQL_ROOT=invenio
 USER=vagrant
-PYPATH=/opt/python-2.7.6
 BRANCH=master
 
 if [[ $EUID -eq 0 ]]; then
@@ -19,78 +18,67 @@ if [ "$ENVIRONMENT" != "production" ]  && [ "$ENVIRONMENT" != "development" ]; t
    exit 1
 fi
 
-if [[ -e $PYPATH ]]; then
-    export PATH="$PYPATH/bin:$PATH"
-    source $PYPATH/bin/virtualenvwrapper.sh
-    if [[ `which pip` != "$PYPATH/bin/pip" ]]; then
-       echo "!!! pip not installed or wrong path"
-       exit 1
-    fi
-else
-    # assume python 2.7 as system default:
-    PYPATH=/usr
-    source /usr/bin/virtualenvwrapper.sh
+echo; echo "### Go to b2share"
+source /usr/bin/virtualenvwrapper.sh
+workon b2share
+cdvirtualenv src/b2share
+
+if [ ! -d "./invenio/b2share" ]; then
+   echo "Error: b2share not present in the virtual environment"
+   exit 1
 fi
-
-
-echo; echo "### Make and switch to virtualenv b2share"
-mkvirtualenv b2share
-cdvirtualenv
-mkdir src; cd src
-
-echo; echo "### Clone b2share/b2share"
-if [ "$ENVIRONMENT" == "production" ]; then
-   git clone -b $BRANCH https://github.com/b2share/b2share.git
-else
-   echo "*** Expecting b2share to be already cloned and mapped via Vagrantfile: synced_folder"
-fi
-cd b2share
 
 echo; echo "### Install pip dependencies"
-pip install -q Babel
-pip install -q flower # flower is for monitoring celery tasks
+pip install -q Babel honcho flower # flower is for monitoring celery tasks
+
+echo; echo "### Install invenio egg"
+pip install -q -e . --allow-all-external
+pip install -q -e .[img]
+if [ "$ENVIRONMENT" == "development" ]; then
+  pip install -q -e .[development]
+fi
+cp -r ./invenio.egg-info ..
+
 for f in requirements*.txt; do
    echo; echo "### pip install -r $f"
    pip install -q -r $f;
 done
 
-echo; echo "### Install invenio egg"
-pip install -q -e . --process-dependency-links --allow-all-external
-if [[ $? -ne 0 ]]; then
-  pip install -q -e . --allow-all-external
-fi
-
-echo; echo "### Run pybabel"
-pybabel compile -fd invenio/base/translations/
-
 echo; echo "### Run npm install"
-sudo npm install -g bower grunt-cli
 npm update
 npm install
+cp -r ./node_modules ..
+
+echo; echo "### Make bower config"
+inveniomanage bower -i bower-base.json > bower.json
 
 echo; echo "### Run bower install"
 bower install
-echo; echo "### Run grunt"
-grunt
 
-echo; echo "### Run inveniomanage collect"
+echo; echo "### Collecting and building assets"
+if [ "$ENVIRONMENT" == "development" ]; then
+  inveniomanage config set COLLECT_STORAGE flask.ext.collect.storage.link
+fi
 inveniomanage collect
+inveniomanage assets build
 
-echo; echo "### Run inveniomanage config secret"
+echo; echo "### Config secret"
 # CFG_SITE_SECRET_KEY deprecated in favor of SECRET_KEY, create it here
 inveniomanage config create secret-key
 
-echo; echo "### Run inveniomanage config lessc and cleancss"
+echo; echo "### Config lessc, cleancss, ..."
 inveniomanage config set LESS_BIN `find $PWD/node_modules -iname lessc | head -1`
 inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname cleancss | head -1`
+inveniomanage config set REQUIREJS_BIN `find $PWD/node_modules -iname r.js | head -1`
+inveniomanage config set UGLIFYJS_BIN `find $PWD/node_modules -iname uglifyjs | head -1`
 
 echo; echo "### Config site name"
 inveniomanage config set CFG_SITE_NAME B2Share
 inveniomanage config set CFG_SITE_NAME_INTL "{u'en' : u'B2Share'}"
 inveniomanage config set CFG_SITE_LANGS "[u'en']"
-for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do
-	inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2Share'}"
-done
+# for lang in af ar bg ca cs de el es fr hr gl ka it rw lt hu ja no pl pt ro ru sk sv uk zh_CN zh_TW; do
+# 	inveniomanage config set CFG_SITE_NAME_INTL "{u'$lang' : u'B2Share'}"
+# done
 
 echo; echo "### Config bibsched user"
 inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
@@ -123,10 +111,6 @@ echo; echo "### Config captcha keys"
 inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY ""
 inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY ""
 
-echo; echo "### Config OAI interface"
-inveniomanage config set CFG_OAI_ID_PREFIX "b2share.eudat.eu"
-inveniomanage config set CFG_OAI_SAMPLE_IDENTIFIER "oai:b2share.eudat.eu:123"
-
 echo; echo "### Run inveniomanage database"
 # needs to be run after the site name is set (root collection is CFG_SITE_NAME)
 inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
@@ -152,28 +136,20 @@ bibrank -f50000 -s5m -uadmin
 echo; echo "### Setup bibtasks: bibsort"
 bibsort -s5m -uadmin
 
-echo; echo "### Setup bibtasks: oairepositoryupdater"
-oairepositoryupdater -s1d -uadmin
-
-echo; echo "### Config for development"
 if [ "$ENVIRONMENT" == "production" ]; then
+  echo; echo "### Config for production"
    inveniomanage config set CFG_SITE_URL https://0.0.0.0
    inveniomanage config set CFG_SITE_SECURE_URL https://0.0.0.0
    inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.smtp.Mail
    inveniomanage config set CFG_SITE_FUNCTION ""
 else
+  echo; echo "### Config for development"
    inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
    inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4443
    inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.dummy.Mail
    inveniomanage config set CFG_SITE_FUNCTION "Development Environment"
-   inveniomanage config set COLLECT_STORAGE invenio.ext.collect.storage.link
    inveniomanage config set DEBUG True
-   inveniomanage config set ASSETS_DEBUG True
+   inveniomanage config set DEBUG_TB_ENABLED False
    inveniomanage config set DEBUG_TB_INTERCEPT_REDIRECTS False
+   # inveniomanage config set ASSETS_DEBUG True
 fi
-
-echo "##########################################################"
-echo "  Don't forget to run \`vagrant rsync\` to sync your files"
-echo "##########################################################"
-
-
