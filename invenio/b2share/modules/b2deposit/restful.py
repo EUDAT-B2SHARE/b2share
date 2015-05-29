@@ -482,13 +482,23 @@ class DepositionCommit(B2Resource):
 
 
 def setup_app(app, api):
-    api.add_resource(ApiRoot, '/api/')
+    api.add_resource(ApiRoot, '/api/',
+                     endpoint='b2deposit.apiroot')
 
-    api.add_resource(ListRecords, '/api/records/')
-    api.add_resource(ListRecordsByDomain, '/api/records/<string:domain_name>')
-    api.add_resource(RecordRes, '/api/record/<int:record_id>')
+    api.add_resource(ListRecords, '/api/records/',
+                     endpoint='b2deposit.listrecords')
+    api.add_resource(ListRecordsByDomain, '/api/records/<string:domain_name>',
+                     endpoint='b2deposit.listrecordsbydomain')
+    api.add_resource(RecordRes, '/api/record/<int:record_id>',
+                     endpoint='b2deposit.recordres')
 
-    api.add_resource(ListDepositions, '/api/depositions/')
-    api.add_resource(Deposition, '/api/deposition/<string:deposit_id>')
-    api.add_resource(DepositionFiles, '/api/deposition/<string:deposit_id>/files')
-    api.add_resource(DepositionCommit, '/api/deposition/<string:deposit_id>/commit')
+    api.add_resource(ListDepositions, '/api/depositions/',
+                     endpoint='b2deposit.listdepositions')
+    api.add_resource(Deposition, '/api/deposition/<string:deposit_id>',
+                     endpoint='b2deposit.deposition')
+    api.add_resource(DepositionFiles,
+                     '/api/deposition/<string:deposit_id>/files',
+                     endpoint='b2deposit.depositionfiles')
+    api.add_resource(DepositionCommit,
+                     '/api/deposition/<string:deposit_id>/commit',
+                     endpoint='b2deposit.depositioncommit')
