@@ -1,104 +1,115 @@
 # -*- coding: utf-8 -*-
 """Tests for checksumming b2share deposits"""
 
+from invenio.ext.restful.utils import APITestCase
 from invenio.ext.sqlalchemy import db
-
-from invenio.modules.oauth2server.models import Token, Client
-from invenio.modules.accounts.models import User
 
 from werkzeug.security import gen_salt
 from flask import current_app
+from flask.ext import restful
 
-import requests, logging, os, json
-# only log warnings (building requests)
-logging.getLogger("requests").setLevel(logging.WARNING)
-# logging.getLogger("requests").setLevel(logging.DEBUG)
+import logging, os, json
 
+from StringIO import StringIO
 
-class RestApi(object):
-    """rest api wrapper class"""
+# only log warnings (building current_app)
+logging.getLogger("current_app").setLevel(logging.WARNING)
+# logging.getLogger("current_app").setLevel(logging.DEBUG)
 
-    def __init__(self, url=None, access_token=None):
-        self.host = url
-        self.url = self.host + "/api"
-        self.at = access_token
+class B2ShareAPITestCase(APITestCase):
+    """Unit test case helping test B2Share REST API."""
 
-    def get_params(self):
-        params = ""
-        if self.at != None:
-            params = "?access_token=" + self.at
-        return params
-
+    # Record
     def get_records(self):
-        params = self.get_params()
-        r = requests.get(self.url + "/records/" + params)
-        return r
+        """call GET /api/records"""
+        return self.get(endpoint='b2deposit.listrecords')
 
-    def create_deposition(self):
-        params = self.get_params()
-        r = requests.post(self.url + "/depositions/" + params)
-        return r
-
-    def get_by_uri(self, uri):
-        if not uri.startswith("/api"):
-            uri = "/api%s" % uri
-        params = self.get_params()
-        r = requests.get(self.host + uri + params)
-        return r
+    def get_record(self, record_id):
+        """call GET /api/record/<record_id>"""
+        return self.get(endpoint='b2deposit.recordres',
+                        urlargs={'record_id': int(record_id)})
 
     # Deposition
-    def upload_deposition_file(self, uri, file):
-        params = self.get_params()
-        r = requests.post(self.host + uri + "/files" + params,
-                          files={'file':file})
-        return r
+    def create_deposition(self):
+        """call POST /api/depositions"""
+        from invenio.b2share.modules.b2deposit.restful import ListDepositions
+        return self.post(endpoint='b2deposit.listdepositions')
 
-    def get_deposition_files(self, uri):
-        params = self.get_params()
-        r = requests.get(self.host + uri + "/files" + params)
-        return r
+    def upload_deposition_file(self, deposit_id, file_stream, file_name):
+        """call POST /api/deposition/<deposit_id>/files"""
+        return self.post(endpoint='b2deposit.depositionfiles',
+                         urlargs={'deposit_id': deposit_id},
+                         is_json=False, data={'file':(file_stream, file_name)})
 
-    def commit_deposition(self, uri, metadata_json):
-        params = self.get_params()
-        data = json.dumps(metadata_json)
-        headers = {'content-type': 'application/json'}
-        r = requests.post(self.host + uri + "/commit" + params, data=data,
-                          headers=headers)
-        return r
+    def get_deposition_files(self, deposit_id):
+        """call GET /api/deposition/<deposit_id>/files"""
+        return self.get(endpoint='b2deposit.depositionfiles',
+                          urlargs={'deposit_id': deposit_id})
 
-class InitHelper(object):
-    @staticmethod
-    def init_user_token(test_case):
-        # get user
-        admin_user = User.query.filter_by(email='b2share@localhost').first()
-        if admin_user == None:
-            # TODO: create user here!
-            admin_user = User(email="b2share@localhost", note="1", nickname="b2share", password="b2share")
-            db.session.add(admin_user)
+
+    def commit_deposition(self, deposit_id, metadata_json):
+        """call POST /api/deposition/<deposit_id>/commit"""
+        result = self.post(endpoint='b2deposit.depositioncommit',
+                           urlargs={ 'deposit_id': deposit_id },
+                           is_json=True, data=metadata_json)
+
+        # run all 'webdeposit' pending tasks
+        # FIXME it would be cleaner if we could just execute the added task, but
+        # we can't because we don't save the task ID => TODO
+        self.run_tasks('webdeposit')
+        return result
+
+    # helpers
+    def create_and_login_user(self):
+        """Create test user and log him in."""
+        from invenio.modules.accounts.models import User
+        self.user = User(
+            email='info@invenio-software.org', nickname='tester'
+        )
+        self.user.password = "tester"
+        db.session.add(self.user)
+        db.session.commit()
+        self.create_oauth_token(self.user.id, scopes=[])
+
+    def remove_user(self):
+        """Remove test user."""
+        self.remove_oauth_token()
+        if self.user:
+            db.session.delete(self.user)
             db.session.commit()
-        test_case.assertIsNotNone(admin_user)
-        admin_user_id = admin_user.get_id()
-        # get token
-        token = Token.query.filter_by(user_id=admin_user_id).first()
-        if token == None:
-            # create client object
-            client = Client(name="test_client", user_id=admin_user_id, is_internal=True,
-                is_confidential=False)
-            test_case.assertIsNotNone(client)
-            client.gen_salt()
-            db.session.add(client)
-            # create login token
-            access_token = gen_salt(current_app.config.get('OAUTH2_TOKEN_PERSONAL_SALT_LEN'))
-            token = Token(client_id=client.client_id, user_id=admin_user_id,
-                access_token=access_token, expires=None, is_personal=True,
-                is_internal=True)
-            db.session.add(token)
-            db.session.commit()
-        # verify info
-        test_case.assertIsNotNone(token)
-        test_case.assertTrue(len(token.access_token) == 60)
-        test_case.access_token = token.access_token
-        test_case.current_app_url = current_app.config.get('CFG_SITE_URL')
+
+
+    # NOTE: this is comming from
+    # zenodo/modules/deposit/testsuite/test_zenodo_api.py
+    def run_task_id(self, task_id):
+        """ Run a bibsched task."""
+        import os
+        from invenio.modules.scheduler.models import SchTASK
+        CFG_BINDIR = self.app.config['CFG_BINDIR']
+
+        bibtask = SchTASK.query.filter(SchTASK.id == task_id).first()
+        assert bibtask is not None
+        assert bibtask.status == 'WAITING'
+
+        cmd = "%s/%s %s" % (CFG_BINDIR, bibtask.proc, task_id)
+        assert not os.system(cmd)
+
+
+    # NOTE: this is comming from
+    # zenodo/modules/deposit/testsuite/test_zenodo_api.py
+    def run_tasks(self, alias=None):
+        """
+        Run all background tasks matching parameters.
+        """
+        from invenio.modules.scheduler.models import SchTASK
+
+        q = SchTASK.query
+        if alias:
+            q = q.filter(SchTASK.user == alias, SchTASK.status == 'WAITING')
+
+        for r in q.all():
+            self.run_task_id(r.id)
+
 
 class TmpHelper(object):
     @staticmethod
