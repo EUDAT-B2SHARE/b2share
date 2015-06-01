@@ -5,7 +5,7 @@ from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
 
 import os, os.path, time, hashlib
 
-from .helpers import B2ShareAPITestCase, TmpHelper
+from .helpers import B2ShareAPITestCase, TemporaryDirectory
 
 from flask import current_app
 
@@ -17,7 +17,6 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
 
     def tearDown(self):
         self.remove_user()
-        TmpHelper.delete_all_tmp_files()
 
     def create_record(self, metadata, files):
         """create a deposition, add some files and commit the record."""
@@ -71,6 +70,18 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
                     sha.update(block)
         return sha.hexdigest()
 
+    def create_file(self, path, content):
+        """
+        Create a new file or truncate the existing one and print the given
+        content in it.
+
+        :param str path: path of the file to create.
+        :param str content: content which will be written in the file.
+        """
+        with open(path, 'w') as file_desc:
+            file_desc.write(content)
+        return path
+
     def test_deposit_checksums(self):
         metadata1 = {
             'domain': "generic",
@@ -79,45 +90,53 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
             'open_access': "true"
         }
 
-        files1 = []
-        files1.append(TmpHelper.create_tmp_file("testfile1.txt", "test file 1"))
-        files1.append(TmpHelper.create_tmp_file("testfile2.txt", "test ünicödé-ø-å file"))
+        # create a temporary directory
+        with TemporaryDirectory() as tmp_dir:
+            files1 = []
+            files1.append(self.create_file(os.path.join(tmp_dir,
+                                                        "testfile1.txt"),
+                                           "test file 1"))
+            files1.append(self.create_file(os.path.join(tmp_dir,
+                                                        "testfile2.txt"),
+                                           "test ünicödé-ø-å file"))
 
-        # precomputed sha256 sum:
-        # $ ls -1 testfile*.txt | sort | xargs cat | shasum -a 256
-        checksum = 'e6e06a09a8fdc6672563e177e7d2df4ae9ebd33df18f8d9cce564aae9d285c00'
+            # precomputed sha256 sum:
+            # $ ls -1 testfile*.txt | sort | xargs cat | shasum -a 256
+            checksum = 'e6e06a09a8fdc6672563e177e7d2df4ae9ebd33df18f8d9cce564aae9d285c00'
 
-        computed_checksum = self.compute_checksum(files1)
-        self.assertEquals(checksum, computed_checksum)
+            computed_checksum = self.compute_checksum(files1)
+            self.assertEquals(checksum, computed_checksum)
 
-        rec = self.create_record(metadata1, files1)
-        self.assertEquals(checksum, rec['checksum'])
+            rec = self.create_record(metadata1, files1)
+            self.assertEquals(checksum, rec['checksum'])
 
-        rec_identical = self.create_record(metadata1, files1)
-        self.assertEquals(checksum, rec_identical['checksum'])
+            rec_identical = self.create_record(metadata1, files1)
+            self.assertEquals(checksum, rec_identical['checksum'])
 
-        reversed_files = list(reversed(files1))
-        rec_reversed = self.create_record(metadata1, reversed_files)
-        self.assertEquals(checksum, rec_reversed['checksum'])
+            reversed_files = list(reversed(files1))
+            rec_reversed = self.create_record(metadata1, reversed_files)
+            self.assertEquals(checksum, rec_reversed['checksum'])
 
-        metadata2 = {
-            'domain': "Linguistics",
-            'title': 'Checksum test 2',
-            'description': "B2SHARE depositing checksum test via RestAPI",
-            'open_access': "true",
-            'language_code': 'eng',
-            'ling_resource_type': ['Text']
-        }
+            metadata2 = {
+                'domain': "Linguistics",
+                'title': 'Checksum test 2',
+                'description': "B2SHARE depositing checksum test via RestAPI",
+                'open_access': "true",
+                'language_code': 'eng',
+                'ling_resource_type': ['Text']
+            }
 
-        rec_diffmeta = self.create_record(metadata2, files1)
-        self.assertEquals(checksum, rec_diffmeta['checksum'])
+            rec_diffmeta = self.create_record(metadata2, files1)
+            self.assertEquals(checksum, rec_diffmeta['checksum'])
 
-        files2 = []
-        files2.extend(files1)
-        files2.append(TmpHelper.create_tmp_file("testfile3.txt", "yet another test file"))
+            files2 = []
+            files2.extend(files1)
+            files2.append(self.create_file(os.path.join(tmp_dir,
+                                                        "testfile3.txt"),
+                                           "yet another test file"))
 
-        rec_diff = self.create_record(metadata1, files2)
-        self.assertNotEquals(checksum, rec_diff['checksum'])
+            rec_diff = self.create_record(metadata1, files2)
+            self.assertNotEquals(checksum, rec_diff['checksum'])
 
 
 TEST_SUITE = make_test_suite(TestB2ShareChecksums)

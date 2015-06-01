@@ -10,7 +10,8 @@ from flask.ext import restful
 
 import logging, os, json
 
-from StringIO import StringIO
+import shutil
+import tempfile
 
 # only log warnings (building current_app)
 logging.getLogger("current_app").setLevel(logging.WARNING)
@@ -111,32 +112,24 @@ class B2ShareAPITestCase(APITestCase):
             self.run_task_id(r.id)
 
 
-class TmpHelper(object):
-    @staticmethod
-    def tmp_folder():
-        return os.path.join(os.path.dirname(__file__), "tmp_files")
+# TODO: this class does not have the parameters of the original
+# tempfile.TemporaryDirectory
+class TemporaryDirectory(object):
+    """
+    Context manager which creates a temporary directory using tempfile.mkdtemp()
+    and deletes it when exiting.
 
-    @staticmethod
-    def create_tmp_file(filename, content):
-        folder = TmpHelper.tmp_folder()
-        try:
-            os.mkdir(folder)
-        except Exception:
-            pass
-        path = os.path.join(folder, filename)
-        fo = open(path, "wb")
-        fo.write(content)
-        fo.close()
-        assert os.path.isfile(path)
-        return path
+    This class is available in python +v3.2 as tempfile.TemporaryDirectory.
+    """
+    def __enter__(self):
+        self.dir_name = tempfile.mkdtemp()
+        return self.dir_name
 
-    @staticmethod
-    def delete_tmp_files(filename):
-        path = os.path.join(TmpHelper.tmp_folder(), filename)
-        os.remove(path)
-        assert not os.path.isfile(path)
+    def __exit__(self, exc_type, exc_value, traceback):
+        shutil.rmtree(self.dir_name)
 
-    @staticmethod
-    def delete_all_tmp_files():
-        import shutil
-        shutil.rmtree(TmpHelper.tmp_folder())
+# use either the existing class from tempfile or, if it does not exist, the one
+# we just created.
+TemporaryDirectory = getattr(tempfile, 'TemporaryDirectory',
+                             TemporaryDirectory)
+
