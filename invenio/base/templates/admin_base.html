@@ -22,7 +22,6 @@
 {%- block css -%}{% block head_css %}<link href="{{ url_for('admin.static', filename='css/admin.css') }}" rel="stylesheet">{% endblock %}{%- endblock css -%}
 
 {% block header %}
-    {%- include "base/scripts.html" %}
     {{ super() }}
     {% block head_meta %}{% endblock -%}
     {% block head_tail %}{% endblock -%}
