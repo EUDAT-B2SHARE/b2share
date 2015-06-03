@@ -15,4 +15,5 @@ By registering as a EUDAT B2SHARE service user (hereafter “B2SHARE”) you acc
 * Any violation being identified will be subject to corrective action, including possible termination of access, legal action, and criminal liability.
 * To protect your data, B2SHARE relies on the best security practices. The Data Center where you data is stored, Datacenter CSC Kajaani, is certified by the ISO/IEC 27001:2005 standard for its information security management system.
 
-You will find further information related to B2SHARE service in the FAQ [http://www.eudat.eu/b2share-faq-generic](http://www.eudat.eu/b2share-faq-generic)
+
+You will find further information related to B2SHARE service in the [FAQ](/docs/b2share-faq)

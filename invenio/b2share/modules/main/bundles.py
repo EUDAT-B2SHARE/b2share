@@ -36,17 +36,17 @@ b2s_common_css = Bundle(
     "css/b2s-common.css",
     output="b2s_common.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 ############### deposit
 
 b2s_deposit_js = Bundle(
-    "vendors/bootstrap/dist/js/bootstrap.js",
     "vendors/bootstrap-switch/dist/js/bootstrap-switch.js",
     "vendors/bootstrap-multiselect/dist/js/bootstrap-multiselect.js",
     "vendors/plupload/js/plupload.full.min.js",
     "vendors/typeahead.js/dist/typeahead.jquery.js",
+    "js/lodash-fix.js",
     "vendors/lindat-license-selector/license-selector.min.js",
     "js/b2s-deposit.js",
     output="b2s_deposit.js",
@@ -58,19 +58,18 @@ b2s_deposit_js = Bundle(
         "plupload": "latest",
         "lindat-license-selector": "0.0.3",
     },
-    weight=50,
+    weight=60,
 )
 
 b2s_deposit_css = Bundle(
-    "vendors/bootstrap/dist/css/bootstrap.min.css",
-    "vendors/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css", 
+    "vendors/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css",
     "vendors/bootstrap-multiselect/dist/css/bootstrap-multiselect.css",
     "vendors/typeahead.js-bootstrap3.less/typeahead.css",
-    "vendors/lindat-license-selector/license-selector.min.css", 
+    "vendors/lindat-license-selector/license-selector.min.css",
     "css/b2s-deposit.css",
     output="b2s_deposit.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 ############### record
@@ -79,7 +78,7 @@ b2s_record_css = Bundle(
     "css/b2s-record.css",
     output="b2s_record.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 ############### abuse and data requests
@@ -88,12 +87,12 @@ b2s_abuse_css = Bundle(
     "css/b2s-abuse.css",
     output="b2s_abuse.css",
     filters="cleancss",
-    weight=50,
+    weight=60,
 )
 
 b2s_abuse_js = Bundle(
     "js/b2s-abuse.js",
     output="b2s_abuse.js",
     filters="uglifyjs",
-    weight=50,
+    weight=60,
 )

@@ -1,4 +1,5 @@
 from invenio.ext.sqlalchemy import db
+from datetime import date
 
 domain = 'RDA'
 # display_name = 'Research Data Alliance'
@@ -11,10 +12,11 @@ domaindesc = 'Research Data Alliance.'
 fields = [
     {
         'name': 'date',
-        'col_type': db.String(256),
+        'col_type': db.Date(),
         'display_text': 'Date',
         'description': 'Date',
         'required': False,
+        'default': date.today()
     },
     {
         'name': 'coverage',
