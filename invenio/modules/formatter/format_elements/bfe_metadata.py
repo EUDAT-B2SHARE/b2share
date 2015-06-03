@@ -70,6 +70,10 @@ def format_element(bfo):
     if contact_email:
         ret += html.format('Contact email', contact_email)
 
+    alternate_identifier = bfo.field("024__a")
+    if alternate_identifier:
+        ret += html.format('Alternate Identifier', alternate_identifier)
+
     domain = bfo.field("980__a")
     if domain:
         ret += html.format('Domain', domain)

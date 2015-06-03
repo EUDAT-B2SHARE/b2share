@@ -21,12 +21,12 @@
 // but also by invenio to implement internationalization (see translate.js)
 // We need to save the lodash implementation in order to use it before calling the license selector
 
+(function() {
 if (window.lodash) {
 	// restore _ to lodash
-	console.log("restore _ to lodash");
 	window._ = window.lodash;
 } else if (window._) {
 	// save _ to lodash
-	console.log("save _ to lodash");
     window.lodash = window._;
 }
+})();
