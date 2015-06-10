@@ -1,6 +1,3 @@
-{# would have been easier if wtf bs let me pass in css classes to horizontal_field #}
-{{ form.csrf_token }}
-
 {% macro meta_field(f) %}
 {% if f.type == 'HiddenField' %}
     <tr class="compact-form hidden">
@@ -39,6 +36,7 @@
 {% endmacro %}
 
 
+{% macro deposit_fieldsets() %}
 {% for s in metadata.fieldsets %}
   <fieldset>
 
@@ -63,10 +61,12 @@
 
   </fieldset>
 {% endfor %}
+{% endmacro %}
 
+{% macro deposit_js_fixes() %}
 <script type="text/javascript">
+'use strict';
 require(['jquery', 'bootstrap'], function ($) {
-"use strict";
 $(document).ready(function() {
 
     $('.switcher').bootstrapSwitch();
@@ -185,9 +185,16 @@ $(document).ready(function() {
 {# if Linguistics domain, remove the duplicated resource_type input #}
 {% if metadata.domain.lower() == 'linguistics' -%}
 <script type="text/javascript">
+'use strict';
+require(['jquery'], function ($) {
   $(document).ready(function() {
-    'use strict';
     $('#resource_type').closest('tr').remove();
   });
+});
 </script>
 {%- endif %}
+{% endmacro %}
+
+{{ form.csrf_token }}
+{{ deposit_fieldsets() }}
+{{ deposit_js_fixes() }}
