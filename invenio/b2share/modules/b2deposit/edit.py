@@ -33,6 +33,7 @@ def get_page(recid):
     if not is_record_editable(recid):
         abort(401)
     record = get_record_details(int(recid), current_user['email'])
+    record.update(record.get('domain_metadata', {}))
     form = ImmutableMultiDict(record)
     metaclass, meta, meta_form = get_meta_form_data(form.get('domain'), form)
     return render_template('b2share-edit.html', recid=recid,
