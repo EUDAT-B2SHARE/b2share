@@ -70,9 +70,10 @@ def add_basic_fields(rec, form, meta):
             record_add_field(rec, '270', subfields=[('m', remove_html_markup(form['contact_email']))])
 
         if form.get('keywords'):
-            for kw in form['keywords'].split(','):
-                if kw and not kw.isspace():
-                    record_add_field(rec, '653', ind1='1', subfields=[('a', remove_html_markup(kw.strip()))])
+            for f in form.getlist('keywords'):
+                for kw in f.split(','):
+                    if kw and not kw.isspace():
+                        record_add_field(rec, '653', ind1='1', subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form.get('contributors'):
             fields = form.getlist('contributors')
