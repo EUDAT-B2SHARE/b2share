@@ -47,6 +47,13 @@ div.star:hover {
 
   <div class="page-header">
     {{ format_record(recid, 'hd', ln=g.ln)|safe }}
+
+    {%- if editable -%}
+    <div style="display:inline; margin-left:10px">
+      <span class="glyphicon glyphicon-edit"> </span>
+      <a href="{{ url_for('b2deposit.edit', recid=recid) }}"> Edit this record</a>
+    </div>
+    {%- endif -%}
   </div>
 
 <div class="row">

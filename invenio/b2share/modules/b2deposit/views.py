@@ -22,6 +22,7 @@ from flask import request, Blueprint
 from flask.ext.login import login_required
 from flask.ext.breadcrumbs import default_breadcrumb_root, register_breadcrumb
 from invenio.base.i18n import _
+import invenio.b2share.modules.b2deposit.edit as edt
 import invenio.b2share.modules.b2deposit.b2share_upload_handler as uph
 import invenio.b2share.modules.b2deposit.b2share_deposit_handler as dep
 
@@ -80,3 +81,14 @@ def check_status(sub_id):
 @login_required
 def check_status_noarg():
     return uph.check_status_noarg()
+
+
+@blueprint.route('/<recid>/edit', methods=['GET'])
+@login_required
+def edit(recid):
+    return edt.get_page(int(recid))
+
+@blueprint.route('/<recid>/update', methods=['POST'])
+@login_required
+def updatemeta(recid):
+    return edt.update(int(recid), request.form)

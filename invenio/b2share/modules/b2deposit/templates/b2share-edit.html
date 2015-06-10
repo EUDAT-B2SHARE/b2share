@@ -1,0 +1,93 @@
+{% extends "page.html" %}
+
+{% from "b2share-addmeta-table.html" import deposit_fieldsets, deposit_js_fixes with context %}
+
+{%- block global_bundles %}
+    {% bundles "b2s_pre_almond_init.js" %}
+    {{ super() }}
+    {% bundles "b2s_deposit.css", "b2s_deposit_editor.js" %}
+{%- endblock %}
+
+
+{% block body%}
+
+<div class="container">
+<div class="row">
+    <div class="description col-sm-4">
+        <div style="margin: 10px 50px 0 50px">
+
+            <p>You are logged in. Username: <strong><a href="/youraccount/display">{{ current_user.nickname }}</a></strong></p>
+
+            <div class="row" style="margin: 0; border-bottom: 2px solid rgb(37, 95, 134);"></div>
+
+            <div class="row">
+            <div class="col-sm-12" style>
+                <div class="domain highlight-icon"
+                        style="float:right"
+                        title="{{ domain.domaindesc if domain.domaindesc != None }}" rel='tooltip'>
+                    <label for="{{ domain.domain }}">
+                        {% if domain.display_name %}
+                        <h5 style="margin:0; height:40px">{{ domain.display_name }}</h5>
+                        {% else %}
+                        <h5 style="margin:0; height:40px">{{ domain.domain }}</h5>
+                        {% endif %}
+                        {% if domain.image %}
+                        <img src="/img/{{ domain.image }}" class="desaturate domain-img"/>
+                        {% else %}
+                        &nbsp;<i class="{{ domain.icon }} icon-large icon-2x"></i>
+                        {% endif %}
+                    </label>
+                </div>
+            </div>
+            </div>
+
+            <div class="row" style="margin: 10px 0; border-bottom: 2px solid rgb(37, 95, 134);"></div>
+
+            <div><img src="/img/bee-shadow.png"></img></div>
+
+        </div>
+    </div>
+
+    <div class="newdeposit col-sm-8">
+
+        <div>
+            <input type="hidden" id="url_for_updatemeta" name="url_for_updatemeta" value="{{ url_for('.updatemeta', recid=recid) }}"></input>
+
+            <form class="form form-horizontal meta-form" method="post" id="metaform_form">
+
+                <div id="metaform">
+                    <h2 style="margin-top:30px">
+                        <p>Edit metadata</p>
+                    </h2>
+                    <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
+
+                    <div id="meta">
+                        <div id="meta-fields">
+                            {{ form.csrf_token }}
+                            {{ deposit_fieldsets() }}
+                        </div>
+
+                        <div id="reqfootnote" class="footnote hide">* indicates required field</div>
+
+                        <div id="submitbutton">
+                            <h2 style="margin-top:30px">
+                                <button id="update_deposit" name="action_save" class="btn btn-large btn-primary btn-block">Update</button>
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+</div>
+
+{% endblock body %}
+
+{% block javascript %}
+    {{ super() }}
+    {#{ deposit_js_fixes() }#}
+{% endblock %}
