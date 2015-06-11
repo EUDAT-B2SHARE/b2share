@@ -4,11 +4,7 @@
 from invenio.ext.restful.utils import APITestCase
 from invenio.ext.sqlalchemy import db
 
-from werkzeug.security import gen_salt
-from flask import current_app
-from flask.ext import restful
-
-import logging, os, json
+import logging, os, os.path
 
 import shutil
 import tempfile
@@ -25,28 +21,63 @@ class B2ShareAPITestCase(APITestCase):
         """call GET /api/records"""
         return self.get(endpoint='b2deposit.listrecords')
 
+    def safe_get_records(self):
+        """call GET /api/records, test result and return json"""
+        request = self.get_records()
+        self.assertTrue(request.status_code == 200)
+        return request.json
+
     def get_record(self, record_id):
         """call GET /api/record/<record_id>"""
         return self.get(endpoint='b2deposit.recordres',
                         urlargs={'record_id': int(record_id)})
 
+    def safe_get_record(self, record_id):
+        """call GET /api/record/<record_id>, test result and return json"""
+        request = self.get_record(record_id)
+        self.assertTrue(request.status_code == 200)
+        return request.json
+
     # Deposition
     def create_deposition(self):
         """call POST /api/depositions"""
-        from invenio.b2share.modules.b2deposit.restful import ListDepositions
         return self.post(endpoint='b2deposit.listdepositions')
 
-    def upload_deposition_file(self, deposit_id, file_stream, file_name):
-        """call POST /api/deposition/<deposit_id>/files"""
+    def safe_create_deposition(self):
+        """calls POST /api/depositions, tests result and return json"""
+        request = self.create_deposition()
+        self.assertTrue(request.status_code == 201)
+        return request.json
+
+    def upload_deposition_file_stream(self, deposit_id, file_stream, file_name):
+        """call POST /api/deposition/<deposit_id>/files on a file stream"""
         return self.post(endpoint='b2deposit.depositionfiles',
                          urlargs={'deposit_id': deposit_id},
                          is_json=False, data={'file':(file_stream, file_name)})
+
+    def upload_deposition_file(self, deposit_id, file_path):
+        """call POST /api/deposition/<deposit_id>/files with a filepath"""
+        file_name = os.path.basename(file_path)
+        with open(file_path, 'rb') as file_stream:
+            return self.upload_deposition_file_stream(
+                deposit_id, file_stream, file_name)
+
+    def safe_upload_deposition_file(self, deposit_id, file_path):
+        """call POST /api/deposition/<deposit_id>/files with a filepath, test result and return json"""
+        request = self.upload_deposition_file(deposit_id, file_path)
+        self.assertTrue(request.status_code == 200)
+        return request.json
 
     def get_deposition_files(self, deposit_id):
         """call GET /api/deposition/<deposit_id>/files"""
         return self.get(endpoint='b2deposit.depositionfiles',
                           urlargs={'deposit_id': deposit_id})
 
+    def safe_get_deposition_files(self, deposit_id):
+        """call GET /api/deposition/<deposit_id>/files, test result and return json"""
+        request = self.get_deposition_files(deposit_id)
+        self.assertTrue(request.status_code == 200)
+        return request.json
 
     def commit_deposition(self, deposit_id, metadata_json):
         """call POST /api/deposition/<deposit_id>/commit"""
@@ -59,6 +90,12 @@ class B2ShareAPITestCase(APITestCase):
         # we can't because we don't save the task ID => TODO
         self.run_tasks('webdeposit')
         return result
+
+    def safe_commit_deposition(self, deposit_id, metadata_json):
+        """calls POST /api/deposition/<deposit_id>/commit, test result and return json"""
+        request = self.commit_deposition(deposit_id, metadata_json)
+        self.assertTrue(request.status_code == 201)
+        return request.json
 
     # helpers
     def create_and_login_user(self):
@@ -127,6 +164,12 @@ class TemporaryDirectory(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         shutil.rmtree(self.dir_name)
+
+def create_file(folder_path, file_name, content):
+    path = os.path.join(folder_path, file_name)
+    with open(path, 'w') as file_desc:
+        file_desc.write(content)
+    return path
 
 # use either the existing class from tempfile or, if it does not exist, the one
 # we just created.
