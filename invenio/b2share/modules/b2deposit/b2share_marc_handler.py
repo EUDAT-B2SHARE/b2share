@@ -28,7 +28,7 @@ from b2share_epic import createHandle
 from invenio.utils.html import remove_html_markup
 
 
-def add_basic_fields(rec, form, email, meta):
+def add_basic_fields(rec, form, meta):
     """
     Adds the basic fields from the form. Note that these fields are mapped
     to specific MARC fields. For information on the fields see the www.loc.gov
@@ -57,8 +57,6 @@ def add_basic_fields(rec, form, email, meta):
         if pubfields:
             record_add_field(rec, '260', subfields=pubfields)
 
-        record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
-
         if 'open_access' in form:
             record_add_field(rec, '542', subfields=[('l', 'open')])
         else:
@@ -72,9 +70,10 @@ def add_basic_fields(rec, form, email, meta):
             record_add_field(rec, '270', subfields=[('m', remove_html_markup(form['contact_email']))])
 
         if form.get('keywords'):
-            for kw in form['keywords'].split(','):
-                if kw and not kw.isspace():
-                    record_add_field(rec, '653', ind1='1', subfields=[('a', remove_html_markup(kw.strip()))])
+            for f in form.getlist('keywords'):
+                for kw in f.split(','):
+                    if kw and not kw.isspace():
+                        record_add_field(rec, '653', ind1='1', subfields=[('a', remove_html_markup(kw.strip()))])
 
         if form.get('contributors'):
             fields = form.getlist('contributors')
@@ -226,8 +225,11 @@ def create_marc(form, sub_id, email, meta):
     """
     rec = {}
     recid = create_recid()
+
     record_add_field(rec, '001', controlfield_value=str(recid))
-    add_basic_fields(rec, form, email, meta)
+    add_basic_fields(rec, form, meta)
+    record_add_field(rec, '856', ind1='0', subfields=[('f', email)])
+
     add_domain_fields(rec, form, meta)
     add_file_info(rec, form, email, sub_id, recid)
     checksum = create_checksum(rec, sub_id)
@@ -235,7 +237,6 @@ def create_marc(form, sub_id, email, meta):
     marc = record_xml_output(rec)
 
     return recid, marc
-
 
 def create_checksum(rec, sub_id, buffersize=64 * 1024):
     """

@@ -253,15 +253,19 @@ class AddFieldInput(Input):
 
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
-        html = ['<div id="'+field.name+'_div">']
-        html.append('<div id="rowNum0">')
-        html.append('<input class="add_field" type="text" id="inputRowNum0" placeholder="{0}" {1}>'
-                    .format(field.placeholder, self.html_params(name=field.name, **kwargs)))
-        html.append(
-            '<a class="plus btn btn-sm btn-default" id="{2}_add" data-placeholder="{0}" data-cardinality="{1}" name="{2}">'
-            '<span class="glyphicon glyphicon-plus-sign"></span></a>'
-            .format(field.placeholder, field.cardinality, field.name))
-        html.append('</div>')
+        if 'value' in kwargs:
+            del kwargs['value']
+
+        html = ['<div class="multi-fieldset" data-cardinality="{}">'.format(field.cardinality)]
+        for i, v in enumerate(field.raw_data or [""]):
+            row = '<div>';
+            row += '<input class="add_field" type="text" placeholder="{}" {}>'.format(
+                        field.placeholder, self.html_params(name=field.name, value=v, **kwargs))
+            row += '<a class="{0} btn btn-sm btn-default">'\
+                   '<span class="glyphicon glyphicon-{0}-sign"></span></a>'.format(
+                        'plus' if i == 0 else 'minus');
+            row += '</div>';
+            html.append(row)
         html.append('</div>')
         return HTMLString(''.join(html))
 

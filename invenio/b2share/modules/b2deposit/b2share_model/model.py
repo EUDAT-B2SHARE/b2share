@@ -123,6 +123,7 @@ class SubmissionMetadata(db.Model):
         }
         self.field_args['keywords'] = {
             'placeholder': "keyword1, keyword2, ...",
+            'cardinality': 'n',
             'description': 'A comma separated list of keywords that '
                            'characterize the content.'
         }

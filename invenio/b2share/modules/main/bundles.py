@@ -61,6 +61,24 @@ b2s_deposit_js = Bundle(
     weight=60,
 )
 
+b2s_deposit_editor_js = Bundle(
+    "vendors/bootstrap-switch/dist/js/bootstrap-switch.js",
+    "vendors/bootstrap-multiselect/dist/js/bootstrap-multiselect.js",
+    "vendors/typeahead.js/dist/typeahead.jquery.js",
+    "js/lodash-fix.js",
+    "vendors/lindat-license-selector/license-selector.min.js",
+    "js/b2s-deposit-editor.js",
+    output="b2s_deposit_editor.js",
+    filters="requirejs",
+    bower={
+        "bootstrap-switch": "3.0.2",
+        "bootstrap-multiselect": "0.9.10",
+        "typeahead.js": "0.10.4",
+        "lindat-license-selector": "0.0.3",
+    },
+    weight=60,
+)
+
 b2s_deposit_css = Bundle(
     "vendors/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css",
     "vendors/bootstrap-multiselect/dist/css/bootstrap-multiselect.css",
