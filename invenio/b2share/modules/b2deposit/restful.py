@@ -373,14 +373,27 @@ class DepositionFiles(B2Resource):
         self.check_user(deposit_id)
 
         file_names = []
+        errors = []
         for f in request.files.values():
             safename, md5 = encode_filename(f.filename)
             file_unique_name = safename + "_" + md5 + get_extension(safename)
             file_path = os.path.join(upload_dir, file_unique_name)
             f.save(file_path)
+            if os.path.getsize(file_path) == 0:
+                # error on empty files (because bibupload crashes on empty files)
+                errors.append('file {} is empty'.format(f.filename))
+                os.remove(file_path)
+                continue
             create_file_metadata(upload_dir, f.filename, file_unique_name, file_path)
             file_names.append({'name':f.filename})
-        return {'message':'File(s) saved', 'files':file_names}
+
+        ret_json = {
+                'message':'File(s) saved' if file_names else 'No files',
+                'files': file_names
+            }
+        if errors:
+            ret_json.update({'errors':errors})
+        return ret_json, 200 if file_names else 400 # error if no files were uploaded
 
 class DepositionCommit(B2Resource):
     """
