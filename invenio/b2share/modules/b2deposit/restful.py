@@ -113,7 +113,7 @@ def get_domain_metadata(domain_class, fieldset, bfo):
     return ret
 
 
-def get_record_details(recid, curr_user_email):
+def get_record_details(recid, curr_user_email=None):
     from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
         recdocs = BibRecDocs(recid)
@@ -131,15 +131,18 @@ def get_record_details(recid, curr_user_email):
     from invenio.modules.formatter import engine as bibformat_engine
     bfo = bibformat_engine.BibFormatObject(recid)
 
-    # first put the recordID and list of files
+    # first put the record_id and list of files
     ret = {
-        'recordID': recid,
+        'record_id': recid,
         'files': [{
                         'name': afile.get_full_name().decode('utf-8'),
                         'size': afile.get_size(),
                         'url': afile.get_full_url(),
                   } for afile in latest_files ],
     }
+
+    if not curr_user_email:
+        curr_user_email = current_user['email']
 
     # add basic metadata fields
     for fieldname in basic_fields_meta:
@@ -212,31 +215,26 @@ class ListRecordsByDomain(B2Resource):
         if page_size > MAX_PAGE_SIZE:
             page_size = MAX_PAGE_SIZE
 
+        if domain_name not in metadata_classes().keys():
+            abort(404, status=404, message="Please try a valid domain name: " +\
+                                         ", ".join(metadata_classes().keys()))
+
         # get domain id from domain name
         from .b2share_model.model import Bib98x, BibrecBib98x
         domain = Bib98x.query.filter_by(value=domain_name).first()
-        if domain is None:
-            if domain_name not in metadata_classes().keys():
-                abort(404, status=404, message="Please try a valid domain name: " + ", ".join(metadata_classes().keys()))
-            else:
-                return jsonify({})
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
         record_ids = [record.id_bibrec for record in domain_records]
-        curr_user_email = current_user['email']
 
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
 
         for record_id in record_ids[start : stop]:
-            record_details = get_record_details(record_id, curr_user_email)
+            record_details = get_record_details(record_id)
             record_list.append(record_details)
 
-        if len(record_list) == 0:
-            return jsonify({})
-        else:
-            return jsonify(Deposits = record_list)
+        return jsonify({'records': record_list})
 
 
 class ListRecords(B2Resource):
@@ -258,17 +256,16 @@ class ListRecords(B2Resource):
 
         # enumerate all valid ids
         record_ids = perform_request_search(of="id", sf="005")
-        curr_user_email = current_user['email']
+
         record_list = []
         start = page_offset * page_size
         stop = start + page_size
+
         for record_id in record_ids[start : stop]:
-            record_details = get_record_details(record_id, curr_user_email)
+            record_details = get_record_details(record_id)
             record_list.append(record_details)
-        if len(record_list) == 0:
-            return jsonify({})
-        else:
-            return jsonify(Deposits = record_list)
+
+        return jsonify({'records': record_list})
 
 
 class RecordRes(B2Resource):
@@ -276,11 +273,10 @@ class RecordRes(B2Resource):
     A record resource is (for now) immutable, can be read with GET
     """
     def get(self, record_id, **kwargs):
-        curr_user_email = current_user['email']
-        record_details = get_record_details(record_id, curr_user_email)
+        record_details = get_record_details(record_id)
         if not record_details:
-            abort(404, message="Deposition not found", status=404)
-        return jsonify(Deposit = record_details)
+            abort(404, message="Record not found", status=404)
+        return record_details
 
 
 class ListDepositions(B2Resource):
@@ -289,7 +285,7 @@ class ListDepositions(B2Resource):
     A deposit is mutable and private, while a record is immutable and public
     """
     def get(self, **kwargs):
-        # TODO: ideally we'd be able to list all depositIDs of the current user
+        # TODO: ideally we'd be able to list all deposit_id~s of the current user
         #       but right now we don't know which ones belong to this user
         abort(405)
 
@@ -310,6 +306,7 @@ class ListDepositions(B2Resource):
         json_data = {
             'message': "New deposition created",
             'location': "/api/deposition/" + deposit_id,
+            'deposit_id': deposit_id,
         }
         return json_data, 201, {'Location' : location} # return location header
 
@@ -352,7 +349,7 @@ class DepositionFiles(B2Resource):
         self.check_user(deposit_id)
         files = [{'name': f['name'], 'size': f['size'] }
                  for f in get_depositing_files_metadata(deposit_id)]
-        return files
+        return {'files':files}
 
     def post(self, deposit_id, **kwargs):
         """
@@ -467,7 +464,8 @@ class DepositionCommit(B2Resource):
             location = "/api/record/%d" % (recid,)
             json_data = {
                 'message': "New record submitted for processing",
-                'location': "/api/record/%d" % (recid,)
+                'location': "/api/record/%d" % (recid,),
+                'record_id': recid,
             }
             return json_data, 201, {'Location':location} # return location header
         else:
