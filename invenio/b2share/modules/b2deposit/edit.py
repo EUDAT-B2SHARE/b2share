@@ -38,6 +38,7 @@ def get_page(recid):
     metaclass, meta, meta_form = get_meta_form_data(form.get('domain'), form)
     return render_template('b2share-edit.html', recid=recid,
                             metadata=meta, form=meta_form,
+                            files=bibdoc_file_list(recid),
                             domain=metaclass, getattr=getattr)
 
 def update(recid, form):
@@ -51,8 +52,12 @@ def update(recid, form):
     bfo = bibformat_engine.BibFormatObject(recid)
     domain = read_basic_metadata_field_from_marc(bfo, 'domain')
     metaclass, meta, meta_form = get_meta_form_data(domain, form)
+
     if meta_form.validate_on_submit():
         current_app.logger.info("Updating record {}".format(recid))
+
+        bibdoc_modify_files(recid, form)
+
         rec_changes = {}
         add_basic_fields(rec_changes, form, meta)
         updated = False
@@ -114,3 +119,57 @@ def is_record_editable(recid):
     #     return True
 
     return False
+
+def bibdoc_file_list(recid):
+    import os, os.path
+    from invenio.legacy.bibdocfile.api import BibRecDocs
+    try:
+        recdocs = BibRecDocs(recid)
+    except:
+        current_app.logger.error("REST API: Error while building BibRecDocs for record %d" % (recid,))
+        return []
+    files = []
+    for d in recdocs.list_bibdocs():
+        df = d.list_latest_files()
+        if not df:
+            continue
+        filename = df[0].get_full_name().decode('utf-8')
+        docname, doctype = os.path.splitext(filename)
+        if doctype.startswith('.'):
+            doctype = doctype[1:]
+        files.append({
+                'id': d.get_id(),
+                'name': docname,
+                'type': doctype,
+                'size': df[0].get_size(),
+            })
+    return files
+
+def bibdoc_modify_files(recid, form):
+    from invenio.legacy.bibdocfile.api import BibRecDocs
+    try:
+        recdocs = BibRecDocs(recid)
+    except:
+        current_app.logger.error("REST API: Error while building BibRecDocs for record %d" % (recid,))
+        return []
+
+    actions = {}
+
+    for (k,v) in form.items():
+        if k.startswith('__file__name__'):
+            docid = int(k[len('__file__name__'):])
+            docname = recdocs.get_docname(docid)
+            if docname != v:
+                actions[docid] = ('rename', docname, v)
+        if k.startswith('__file__delete__') and v == 'Delete':
+            docid = int(k[len('__file__delete__'):])
+            docname = recdocs.get_docname(docid)
+            actions[docid] = ('delete', docname, None) # overwrite rename
+
+    for (_,(act, docname, newname)) in actions.items():
+        if act == 'delete':
+            current_app.logger.info("deleting bibdoc/file: {}/'{}'".format(recid, docname))
+            recdocs.delete_bibdoc(docname)
+        elif act == 'rename':
+            current_app.logger.info("renaming bibdoc/file: {}/'{}' -> '{}'".format(recid, docname, newname))
+            recdocs.change_name(newname=newname, oldname=docname)

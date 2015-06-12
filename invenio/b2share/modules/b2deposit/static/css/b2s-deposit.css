@@ -51,6 +51,21 @@
     background-color: rgb(225, 225, 225);
 }
 
+#file-table tbody tr .file-name input {
+    color: black;
+    border: 1px solid rgb(225, 225, 225);
+    background-color: rgb(225, 225, 225);
+}
+
+#file-table tbody tr.to-delete {
+    color: #fff;
+    background-color: #c73118;
+    border-color: #d43f3a;
+}
+
+#file-table tbody tr.to-delete input {
+    color: red;
+}
 
 #domains {
     margin-top: 0px;
