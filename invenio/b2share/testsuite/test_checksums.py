@@ -5,7 +5,7 @@ from invenio.testsuite import make_test_suite, run_test_suite, InvenioTestCase
 
 import os, os.path, time, hashlib
 
-from .helpers import B2ShareAPITestCase, TemporaryDirectory
+from .helpers import B2ShareAPITestCase, TemporaryDirectory, create_file
 
 from flask import current_app
 
@@ -20,43 +20,34 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
 
     def create_record(self, metadata, files):
         """create a deposition, add some files and commit the record."""
-        current_app.config.update(PRESERVE_CONTEXT_ON_EXCEPTION= False)
+        current_app.config.update(PRESERVE_CONTEXT_ON_EXCEPTION = False)
+
         # create deposition object
-        request_create = self.create_deposition()
-        print repr(request_create)
-        self.assertTrue(request_create.status_code == 201)
-        location = request_create.json['location']
-        # FIXME: the api should return the deposition id. We should not have to
-        # parse the uri
-        deposit_id = location.split('/')[3]
+        create_json = self.safe_create_deposition()
+        deposit_id = create_json['deposit_id']
 
         # upload files
         for f in files:
-            request_upload = self.upload_deposition_file(
-                deposit_id=deposit_id,
-                file_stream=open(f,'rb'),
-                file_name=os.path.basename(f)
-            )
-            self.assertTrue(request_upload.status_code == 200)
+            self.safe_upload_deposition_file(deposit_id, f)
 
         # commit deposition
-        request_commit = self.commit_deposition(deposit_id, metadata)
-        self.assertTrue(request_commit.status_code == 201)
-        location = request_commit.json['location']
-        # FIXME: the api should return the record id. We should not have to
-        # parse the uri
-        record_id = location.split('/')[3]
+        commit_json = self.safe_commit_deposition(deposit_id, metadata)
+        record_id = commit_json['record_id']
 
         # get record
         request_get = self.get_record(record_id)
         if request_get.status_code != 200:
-            self.fail('timeout while in the rest deposition')
+            time.sleep(10)
+            request_get = self.get_record(record_id)
+            if request_get.status_code != 200:
+                self.fail('timeout while in the rest deposition')
 
-        deposit_json = request_get.json['Deposit']
+        record_json = self.safe_get_record(record_id)
+
         posted_files = set([os.path.basename(f) for f in files])
-        deposited_files = set([f['name'] for f in deposit_json['files']])
+        deposited_files = set([f['name'] for f in record_json['files']])
         self.assertEquals(posted_files, deposited_files)
-        return deposit_json
+        return record_json
 
     def compute_checksum(self, files):
         sha = hashlib.sha256()
@@ -93,12 +84,8 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
         # create a temporary directory
         with TemporaryDirectory() as tmp_dir:
             files1 = []
-            files1.append(self.create_file(os.path.join(tmp_dir,
-                                                        "testfile1.txt"),
-                                           "test file 1"))
-            files1.append(self.create_file(os.path.join(tmp_dir,
-                                                        "testfile2.txt"),
-                                           "test ünicödé-ø-å file"))
+            files1.append(create_file(tmp_dir, "testfile1.txt", "test file 1"))
+            files1.append(create_file(tmp_dir, "testfile2.txt", "test ünicödé-ø-å file"))
 
             # precomputed sha256 sum:
             # $ ls -1 testfile*.txt | sort | xargs cat | shasum -a 256
@@ -131,9 +118,7 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
 
             files2 = []
             files2.extend(files1)
-            files2.append(self.create_file(os.path.join(tmp_dir,
-                                                        "testfile3.txt"),
-                                           "yet another test file"))
+            files2.append(create_file(tmp_dir, "testfile3.txt", "yet another test file"))
 
             rec_diff = self.create_record(metadata1, files2)
             self.assertNotEquals(checksum, rec_diff['checksum'])
