@@ -76,6 +76,23 @@ install:
   - "inveniomanage config set UGLIFYJS_BIN false"
   - "inveniomanage config set ASSETS_AUTO_BUILD False"
 
+  - "inveniomanage config set CFG_SITE_NAME B2Share"
+  - "inveniomanage config set CFG_SITE_NAME_INTL \"{u'en' : u'B2Share'}\""
+  - "inveniomanage config set CFG_SITE_LANGS \"[u'en']\""
+
+  - "inveniomanage config set CFG_SITE_URL https://0.0.0.0"
+  - "inveniomanage config set CFG_SITE_SECURE_URL https://0.0.0.0"
+  - "inveniomanage config set CFG_SITE_FUNCTION \"\""
+
+  - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
+  - "inveniomanage config set CFG_B2SHARE_DOMAINS \"generic, drihm, linguistics, euon, bbmri, nrm, gbif, rda\""
+  - "inveniomanage config set CFG_EPIC_USERNAME \"\""
+  - "inveniomanage config set CFG_EPIC_PASSWORD \"\""
+  - "inveniomanage config set CFG_EPIC_BASEURL \"\""
+  - "inveniomanage config set CFG_EPIC_PREFIX \"\""
+  - "inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY \"\""
+  - "inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY \"\""
+
 before_script:
   - "inveniomanage apache create-config"
   - "sudo ln -s $VIRTUAL_ENV/var/invenio.base-instance/apache/invenio-apache-vhost.conf /etc/apache2/sites-enabled/invenio.conf"
@@ -89,6 +106,6 @@ before_script:
 
 script:
   - "sphinx-build -qnNW docs docs/_build/html"
-#  - "python setup.py test"
+  - "python setup.py test --test-suite invenio.b2share.testsuite"
 #  - "wget -O /dev/null http://localhost"
 
