@@ -119,12 +119,11 @@ def get_record_details(recid, curr_user_email=None):
         recdocs = BibRecDocs(recid)
     except:
         current_app.logger.error("REST API: Error while building BibRecDocs for record %d" % (recid,))
-        return []
+        return {}
 
     latest_files = recdocs.list_latest_files()
     if len(latest_files) == 0:
         current_app.logger.error("REST API: BibRecDocs reports 0 files for record %d" % (recid,))
-        return []
 
     # bibformat uses get_record, usually is one db
     # hit per object; should be fastest

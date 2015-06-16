@@ -20,6 +20,12 @@
 $(document).ready(function() {
     "use strict";
 
+    $('#filelist .file-delete').click(function(){
+        var $label = $(this);
+        var state = $label.find('input').is(':checked');
+        $label.closest('tr').toggleClass('to-delete', state);
+    });
+
     function update_deposit_click_handler(e) {
         e.preventDefault();
         var updatemeta_url = $("#url_for_updatemeta").attr("value");

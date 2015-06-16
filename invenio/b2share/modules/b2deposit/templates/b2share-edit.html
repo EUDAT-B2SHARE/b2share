@@ -49,17 +49,51 @@
     </div>
 
     <div class="newdeposit col-sm-8">
-
         <div>
-            <input type="hidden" id="url_for_updatemeta" name="url_for_updatemeta" value="{{ url_for('.updatemeta', recid=recid) }}"></input>
+            <input type="hidden" id="url_for_updatemeta" name="url_for_updatemeta"
+                value="{{ url_for('.updatemeta', recid=recid) }}"></input>
 
             <form class="form form-horizontal meta-form" method="post" id="metaform_form">
+
+                {% if files %}
+                <h2 style="margin-top:30px">
+                    <p>Edit files</p>
+                </h2>
+                <table id="file-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filelist">
+                        {% for file in files %}
+                        <tr>
+                            <td>
+                                <input type="text" name="{{'__file__name__{}'.format(file.id)}}"
+                                    value="{{file.name}}">
+                            </td>
+                            <td>{{file.type}}</td>
+                            <td>{{file.size}}B</td>
+                            <td>
+                                <label class="btn btn-sm btn-default file-delete">
+                                    <input type="checkbox" name="{{'__file__delete__{}'.format(file.id)}}"
+                                        value="Delete"> Delete this file
+                                </label>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div style="border-top: 2px solid #255f86;"></div>
+                {% endif %}
 
                 <div id="metaform">
                     <h2 style="margin-top:30px">
                         <p>Edit metadata</p>
                     </h2>
-                    <input type="hidden" id="sub_id" name="sub_id" value="{{ sub_id }}"/>
 
                     <div id="meta">
                         <div id="meta-fields">
@@ -68,19 +102,27 @@
                         </div>
 
                         <div id="reqfootnote" class="footnote hide">* indicates required field</div>
-
-                        <div id="submitbutton">
-                            <h2 style="margin-top:30px">
-                                <button id="update_deposit" name="action_save" class="btn btn-large btn-primary btn-block">Update</button>
-                            </h2>
-                        </div>
                     </div>
+
+                    <div id="submitbutton">
+                        <h2 style="margin-top:30px">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <button id="update_deposit" name="action_save"
+                                        class="btn btn-large btn-primary btn-block">Update</button>
+                                </div>
+                                <div class="col-sm-6">
+                                    <a href="{{ url_for('record.metadata', recid=recid)}}" name="action_cancel"
+                                        class="btn btn-large btn-default btn-block">Cancel</a>
+                                </div>
+                            </div>
+                        </h2>
+                    </div>
+
                 </div>
 
             </form>
-
         </div>
-
     </div>
 </div>
 </div>
