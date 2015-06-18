@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# This file is part of B2SHARE.
+# Copyright (C) 2015 CERN.
+#
+# B2SHARE is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# B2SHARE is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with B2SHARE; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """Tests for checksumming b2share deposits"""
 
 from invenio.ext.restful.utils import APITestCase
@@ -8,13 +24,12 @@ from invenio.ext.sqlalchemy import db
 from flask import url_for
 
 import logging
-import os
 import os.path
 import shutil
 import subprocess
 import tempfile
-from urlparse import urlparse
 
+from urlparse import urlparse
 
 # only log warnings (building current_app)
 logging.getLogger("current_app").setLevel(logging.WARNING)
@@ -88,8 +103,9 @@ class B2ShareAPITestCase(APITestCase):
         """
         def send_stream(stream):
             return self.post(endpoint='b2deposit.depositionfiles',
-                      urlargs={'deposit_id': deposit_id},
-                      is_json=False, data={'file': (file_stream, file_name)})
+                             urlargs={'deposit_id': deposit_id},
+                             is_json=False,
+                             data={'file': (file_stream, file_name)})
 
         if file_path is not None:
             file_name = os.path.basename(file_path)
@@ -256,7 +272,6 @@ class B2ShareAPITestCase(APITestCase):
     # zenodo/modules/deposit/testsuite/test_zenodo_api.py
     def run_task_id(self, task_id):
         """ Run a bibsched task."""
-        import os
         from invenio.modules.scheduler.models import SchTASK
         CFG_BINDIR = self.app.config['CFG_BINDIR']
 
@@ -285,8 +300,8 @@ class B2ShareAPITestCase(APITestCase):
 # tempfile.TemporaryDirectory
 class TemporaryDirectory(object):
     """
-    Context manager which creates a temporary directory using tempfile.mkdtemp()
-    and deletes it when exiting.
+    Context manager which creates a temporary directory using
+    tempfile.mkdtemp() and deletes it when exiting.
 
     This class is available in python +v3.2 as tempfile.TemporaryDirectory.
     """
@@ -296,6 +311,7 @@ class TemporaryDirectory(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         shutil.rmtree(self.dir_name)
+
 
 def create_file(folder_path, file_name, content):
     path = os.path.join(folder_path, file_name)
@@ -307,4 +323,3 @@ def create_file(folder_path, file_name, content):
 # we just created.
 TemporaryDirectory = getattr(tempfile, 'TemporaryDirectory',
                              TemporaryDirectory)
-
