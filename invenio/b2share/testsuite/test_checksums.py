@@ -23,15 +23,16 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
         current_app.config.update(PRESERVE_CONTEXT_ON_EXCEPTION = False)
 
         # create deposition object
-        create_json = self.safe_create_deposition()
+        create_json = self.create_deposition(safe=True).json
         deposit_id = create_json['deposit_id']
 
         # upload files
         for f in files:
-            self.safe_upload_deposition_file(deposit_id, f)
+            self.upload_deposition_file(deposit_id, f, safe=True)
 
         # commit deposition
-        commit_json = self.safe_commit_deposition(deposit_id, metadata)
+        commit_json = self.commit_deposition(deposit_id, metadata,
+                                             safe=True).json
         record_id = commit_json['record_id']
 
         # get record
@@ -42,7 +43,7 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
             if request_get.status_code != 200:
                 self.fail('timeout while in the rest deposition')
 
-        record_json = self.safe_get_record(record_id)
+        record_json = self.get_record(record_id, safe=True).json
 
         posted_files = set([os.path.basename(f) for f in files])
         deposited_files = set([f['name'] for f in record_json['files']])

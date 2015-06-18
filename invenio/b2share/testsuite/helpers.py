@@ -2,120 +2,255 @@
 """Tests for checksumming b2share deposits"""
 
 from invenio.ext.restful.utils import APITestCase
+from invenio.base.globals import cfg
 from invenio.ext.sqlalchemy import db
 
-import logging, os, os.path
+from flask import url_for
 
+import logging
+import os
+import os.path
 import shutil
+import subprocess
 import tempfile
+from urlparse import urlparse
+
 
 # only log warnings (building current_app)
 logging.getLogger("current_app").setLevel(logging.WARNING)
 # logging.getLogger("current_app").setLevel(logging.DEBUG)
 
+
 class B2ShareAPITestCase(APITestCase):
     """Unit test case helping test B2Share REST API."""
 
     # Record
-    def get_records(self):
+    def get_records(self, page_offset=None, page_size=None, safe=False):
         """call GET /api/records"""
-        return self.get(endpoint='b2deposit.listrecords')
+        req = self.get(endpoint='b2deposit.listrecords',
+                       urlargs={
+                           'page_offset': page_offset,
+                           'page_size': page_size,
+                       })
+        if safe:
+            self.assertEqual(req.status_code, 200,
+                             "GET /api/records returned code \
+                             {0}".format(req.status_code))
+        return req
 
-    def safe_get_records(self):
-        """call GET /api/records, test result and return json"""
-        request = self.get_records()
-        self.assertTrue(request.status_code == 200)
-        return request.json
+    def get_records_by_domain(self, domain, page_offset=None, page_size=None,
+                              safe=False):
+        """call GET /api/records/<domain_name>"""
+        req = self.get(endpoint='b2deposit.listrecordsbydomain',
+                       urlargs={
+                           'domain_name': domain,
+                           'page_offset': page_offset,
+                           'page_size': page_size,
+                       })
+        if safe:
+            self.assertEqual(req.status_code, 200,
+                             "GET /api/records/<domain_name> returned code \
+                             {0}".format(req.status_code))
+        return req
 
-    def get_record(self, record_id):
+    def get_record(self, record_id, safe=False):
         """call GET /api/record/<record_id>"""
-        return self.get(endpoint='b2deposit.recordres',
-                        urlargs={'record_id': int(record_id)})
-
-    def safe_get_record(self, record_id):
-        """call GET /api/record/<record_id>, test result and return json"""
-        request = self.get_record(record_id)
-        self.assertTrue(request.status_code == 200)
-        return request.json
+        req = self.get(endpoint='b2deposit.recordres',
+                       urlargs={'record_id': int(record_id)})
+        if safe:
+            self.assertEqual(req.status_code, 200,
+                             "GET /api/records/<record_id> returned code \
+                             {0}".format(req.status_code))
+        return req
 
     # Deposition
-    def create_deposition(self):
+    def create_deposition(self, safe=False):
         """call POST /api/depositions"""
-        return self.post(endpoint='b2deposit.listdepositions')
+        req = self.post(endpoint='b2deposit.listdepositions')
+        if safe:
+            self.assertEqual(req.status_code, 201,
+                             "POST /api/depositions returned code \
+                             {0}".format(req.status_code))
+        return req
 
-    def safe_create_deposition(self):
-        """calls POST /api/depositions, tests result and return json"""
-        request = self.create_deposition()
-        self.assertTrue(request.status_code == 201)
-        return request.json
+    def upload_deposition_file(self, deposit_id, file_path=None,
+                               file_stream=None, file_name=None, safe=False):
+        """call POST /api/deposition/<deposit_id>/files
 
-    def upload_deposition_file_stream(self, deposit_id, file_stream, file_name):
-        """call POST /api/deposition/<deposit_id>/files on a file stream"""
-        return self.post(endpoint='b2deposit.depositionfiles',
-                         urlargs={'deposit_id': deposit_id},
-                         is_json=False, data={'file':(file_stream, file_name)})
+        :Parameters:
+            - `deposit_id` (str) - deposition id.
+            - `file_path` (str) - file whose content and name will be sent.
+            - `file_stream` (stream) - if set, it will be sent as file's
+            content.
+            - `file_name` (string) - file name, mandatory if file_stream is
+            used.
+            - `safe` (bool) - enable validation of request success.
+        """
+        def send_stream(stream):
+            return self.post(endpoint='b2deposit.depositionfiles',
+                      urlargs={'deposit_id': deposit_id},
+                      is_json=False, data={'file': (file_stream, file_name)})
 
-    def upload_deposition_file(self, deposit_id, file_path):
-        """call POST /api/deposition/<deposit_id>/files with a filepath"""
-        file_name = os.path.basename(file_path)
-        with open(file_path, 'rb') as file_stream:
-            return self.upload_deposition_file_stream(
-                deposit_id, file_stream, file_name)
+        if file_path is not None:
+            file_name = os.path.basename(file_path)
+            with open(file_path, 'rb') as file_stream:
+                req = send_stream(file_stream)
+        elif file_stream is not None:
+            if file_name is None:
+                raise ValueError('file_name is mandatory when file_stream is\
+                                 used')
+            req = send_stream(file_stream)
+        else:
+            raise ValueError('file_stream or file_path must be set')
+        # check if the request succeeded
+        if safe:
+            self.assertEqual(req.status_code, 200,
+                             "POST /api/deposition/<deposit_id>/files \
+                             returned code {0}".format(req.status_code))
+        return req
 
-    def safe_upload_deposition_file(self, deposit_id, file_path):
-        """call POST /api/deposition/<deposit_id>/files with a filepath, test result and return json"""
-        request = self.upload_deposition_file(deposit_id, file_path)
-        self.assertTrue(request.status_code == 200)
-        return request.json
-
-    def get_deposition_files(self, deposit_id):
+    def get_deposition_files(self, deposit_id, safe=False):
         """call GET /api/deposition/<deposit_id>/files"""
-        return self.get(endpoint='b2deposit.depositionfiles',
-                          urlargs={'deposit_id': deposit_id})
+        req = self.get(endpoint='b2deposit.depositionfiles',
+                       urlargs={'deposit_id': deposit_id})
+        if safe:
+            self.assertEqual(req.status_code, 200,
+                             "GET /api/deposition/<deposit_id>/files returned code \
+                             {0}".format(req.status_code))
+        return req
 
-    def safe_get_deposition_files(self, deposit_id):
-        """call GET /api/deposition/<deposit_id>/files, test result and return json"""
-        request = self.get_deposition_files(deposit_id)
-        self.assertTrue(request.status_code == 200)
-        return request.json
-
-    def commit_deposition(self, deposit_id, metadata_json):
+    def commit_deposition(self, deposit_id, metadata_json, safe=False):
         """call POST /api/deposition/<deposit_id>/commit"""
-        result = self.post(endpoint='b2deposit.depositioncommit',
-                           urlargs={ 'deposit_id': deposit_id },
-                           is_json=True, data=metadata_json)
+        req = self.post(endpoint='b2deposit.depositioncommit',
+                        urlargs={'deposit_id': deposit_id},
+                        is_json=True, data=metadata_json)
 
-        # run all 'webdeposit' pending tasks
-        # FIXME it would be cleaner if we could just execute the added task, but
-        # we can't because we don't save the task ID => TODO
-        self.run_tasks('webdeposit')
-        return result
+        if req.status_code == 201:
+            record_id = req.json["record_id"]
+            self.process_record(record_id)
 
-    def safe_commit_deposition(self, deposit_id, metadata_json):
-        """calls POST /api/deposition/<deposit_id>/commit, test result and return json"""
-        request = self.commit_deposition(deposit_id, metadata_json)
-        self.assertTrue(request.status_code == 201)
-        return request.json
+        if safe:
+            self.assertEqual(req.status_code, 201,
+                             "POST /api/deposition/<deposit_id>/commit returned \
+                             code {0}".format(req.status_code))
+        return req
 
-    # helpers
+    #
+    # Helpers
+    #
     def create_and_login_user(self):
         """Create test user and log him in."""
         from invenio.modules.accounts.models import User
-        self.user = User(
-            email='info@invenio-software.org', nickname='tester'
-        )
-        self.user.password = "tester"
-        db.session.add(self.user)
-        db.session.commit()
-        self.create_oauth_token(self.user.id, scopes=[])
-
-    def remove_user(self):
-        """Remove test user."""
-        self.remove_oauth_token()
+        self.user_nickname = "tester"
+        self.user_password = "tester"
+        # remove the user if he exists
+        self.user = User.query.filter(
+            User.nickname == self.user_nickname).first()
         if self.user:
             db.session.delete(self.user)
             db.session.commit()
+        # create the user
+        self.user = User(
+            email='info@invenio-software.org', nickname=self.user_nickname
+        )
+        self.user.password = self.user_password
+        db.session.add(self.user)
+        db.session.commit()
+        self.safe_login_web_user(self.user_nickname, self.user_password)
+        return self.user.id
 
+    def safe_login_web_user(self, username, password):
+        """Log in as a given user using the web frontend, not the REST API and
+        check that the login succeeded."""
+        self.create_oauth_token(self.user.id, scopes=[])
+        response = self.client.post(url_for('webaccount.login'),
+                                    base_url=cfg["CFG_SITE_SECURE_URL"],
+                                    data=dict(nickname=username,
+                                              password=password),
+                                    follow_redirects=False)
+        # check that the login succeeded. i.e we are redirected on another page
+        # and it is not the login page FIXME: improve this
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(urlparse(response.location).path,
+                            url_for('webaccount.login'))
+
+    def remove_user(self):
+        """Logout and remove test user."""
+        try:
+            try:
+                self.remove_oauth_token()
+            finally:
+                self.logout()
+        finally:
+            if self.user:
+                db.session.delete(self.user)
+                db.session.commit()
+
+    def get_record_file_content(self, record_id, file_name):
+        """Retrieve a given file's content
+
+        The user must be authenticated through the web frontend as the
+        access_token cannot be used.
+        :Parameters:
+            - `recid` (str) - record id
+            - `file_name` (str) - name of the file to retrieve
+        """
+        file_request = self.client.get(
+            url_for('record.file', recid=record_id, filename=file_name),
+            base_url=cfg["CFG_SITE_SECURE_URL"]
+        )
+        self.assertEqual(file_request.status_code, 200)
+        return file_request.get_data()
+
+    def get_internal_record(self, recid):
+        """Retrieve a given record without using B2Deposit."""
+        from invenio.modules.records.api import get_record
+        return get_record(recid)
+
+    def process_record(self, recid):
+        """Runs all bib* tasks needed to be able to access the record"""
+        # run all 'webdeposit' pending tasks
+        # FIXME it would be cleaner if we could just execute the added task,
+        # but we can't because we don't save the task ID => TODO
+        self.run_tasks('webdeposit')  # first run for bibupload
+        self.run_command(["bibindex", "-v0", "-u", "webdeposit",
+                          "-i", str(recid)])
+        self.run_command(["webcoll", "-v0", "-q", "-u", "webdeposit"])
+        self.run_tasks('webdeposit')  # second run for the new tasks
+
+    def run_command(self, command):
+        """Run a command in a subprocess.
+
+        It prints the subprocess's stdout and stderr at debug level if the
+        return code is 0. This method waits for the subprocess to end before
+        returning.
+
+        :Parameters:
+            - `command` (list): the command as given to popen
+        """
+        proc = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=False
+        )
+        # extract subprocess's standard output and error
+        proc_stdout, proc_stderr = proc.communicate()
+        logger = logging.getLogger("current_app")
+        # check if the command failed
+        if proc.returncode:
+            # print stdout
+            logger.info(proc_stdout)
+            # print stderr
+            logger.error(proc_stderr)
+            raise Exception("command {0} failed with code {1}"
+                            .format(str(command), proc.returncode))
+        else:
+            # print subprocess's stdout and stderr at debug level
+            # print stdout
+            logger.debug(proc_stdout)
+            # print stderr
+            logger.debug(proc_stderr)
 
     # NOTE: this is comming from
     # zenodo/modules/deposit/testsuite/test_zenodo_api.py
@@ -128,10 +263,7 @@ class B2ShareAPITestCase(APITestCase):
         bibtask = SchTASK.query.filter(SchTASK.id == task_id).first()
         assert bibtask is not None
         assert bibtask.status == 'WAITING'
-
-        cmd = "%s/%s %s" % (CFG_BINDIR, bibtask.proc, task_id)
-        assert not os.system(cmd)
-
+        self.run_command([CFG_BINDIR + "/" + bibtask.proc, str(task_id)])
 
     # NOTE: this is comming from
     # zenodo/modules/deposit/testsuite/test_zenodo_api.py
