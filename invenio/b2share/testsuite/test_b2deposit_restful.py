@@ -43,6 +43,8 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
     }
 
     def setUp(self):
+        super(TestB2DepositRESTAPI, self).setUp()
+        # init user context
         self.create_and_login_user()
 
     def tearDown(self):

@@ -31,13 +31,16 @@ import tempfile
 
 from urlparse import urlparse
 
-# only log warnings (building current_app)
-logging.getLogger("current_app").setLevel(logging.WARNING)
-# logging.getLogger("current_app").setLevel(logging.DEBUG)
-
 
 class B2ShareAPITestCase(APITestCase):
     """Unit test case helping test B2Share REST API."""
+
+    def setUp(self):
+        """Generic tests initalization"""
+        # only log warnings
+        self.app.logger.setLevel(logging.WARNING)
+        # display log messages on the console
+        self.app.logger.addHandler(logging.StreamHandler())
 
     # Record
     def get_records(self, page_offset=None, page_size=None, safe=False):
@@ -193,14 +196,18 @@ class B2ShareAPITestCase(APITestCase):
     def remove_user(self):
         """Logout and remove test user."""
         try:
-            try:
-                self.remove_oauth_token()
-            finally:
-                self.logout()
-        finally:
-            if self.user:
-                db.session.delete(self.user)
-                db.session.commit()
+            self.remove_oauth_token()
+        except Exception:
+            self.app.logger.exception("Caught an error while removing oauth token")
+
+        try:
+            self.logout()
+        except Exception:
+            self.app.logger.exception("Caught an error while logging out")
+
+        if self.user:
+            db.session.delete(self.user)
+            db.session.commit()
 
     def get_record_file_content(self, record_id, file_name):
         """Retrieve a given file's content
@@ -252,21 +259,20 @@ class B2ShareAPITestCase(APITestCase):
         )
         # extract subprocess's standard output and error
         proc_stdout, proc_stderr = proc.communicate()
-        logger = logging.getLogger("current_app")
         # check if the command failed
         if proc.returncode:
             # print stdout
-            logger.info(proc_stdout)
+            self.app.logger.info(proc_stdout)
             # print stderr
-            logger.error(proc_stderr)
+            self.app.logger.error(proc_stderr)
             raise Exception("command {0} failed with code {1}"
                             .format(str(command), proc.returncode))
         else:
             # print subprocess's stdout and stderr at debug level
             # print stdout
-            logger.debug(proc_stdout)
+            self.app.logger.debug(proc_stdout)
             # print stderr
-            logger.debug(proc_stderr)
+            self.app.logger.debug(proc_stderr)
 
     # NOTE: this is comming from
     # zenodo/modules/deposit/testsuite/test_zenodo_api.py

@@ -11,6 +11,7 @@ class TestB2ShareEmptyFiles(B2ShareAPITestCase):
     """Unit tests for the REST API: empty files should be rejected"""
 
     def setUp(self):
+        super(TestB2ShareEmptyFiles, self).setUp()
         self.create_and_login_user()
 
     def tearDown(self):

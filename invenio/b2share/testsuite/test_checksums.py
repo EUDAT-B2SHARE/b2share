@@ -13,6 +13,7 @@ class TestB2ShareChecksums(B2ShareAPITestCase):
     """Unit tests for stability of checksums, using the REST API"""
 
     def setUp(self):
+        super(TestB2ShareChecksums, self).setUp()
         self.create_and_login_user()
 
     def tearDown(self):
