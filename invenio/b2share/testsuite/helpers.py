@@ -166,15 +166,23 @@ class B2ShareAPITestCase(APITestCase):
         self.user = User.query.filter(
             User.nickname == self.user_nickname).first()
         if self.user:
-            db.session.delete(self.user)
-            db.session.commit()
+            try:
+                db.session.delete(self.user)
+                db.session.commit()
+            except:
+                db.session.rollback()
+                raise
         # create the user
         self.user = User(
             email='info@invenio-software.org', nickname=self.user_nickname
         )
         self.user.password = self.user_password
-        db.session.add(self.user)
-        db.session.commit()
+        try:
+            db.session.add(self.user)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            raise
         self.safe_login_web_user(self.user_nickname, self.user_password)
         return self.user.id
 
@@ -197,17 +205,21 @@ class B2ShareAPITestCase(APITestCase):
         """Logout and remove test user."""
         try:
             self.remove_oauth_token()
-        except Exception:
+        except:
             self.app.logger.exception("Caught an error while removing oauth token")
 
         try:
             self.logout()
-        except Exception:
+        except:
             self.app.logger.exception("Caught an error while logging out")
 
         if self.user:
-            db.session.delete(self.user)
-            db.session.commit()
+            try:
+                db.session.delete(self.user)
+                db.session.commit()
+            except:
+                db.session.rollback()
+                raise
 
     def get_record_file_content(self, record_id, file_name):
         """Retrieve a given file's content
