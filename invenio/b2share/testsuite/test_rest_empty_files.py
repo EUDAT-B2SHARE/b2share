@@ -11,6 +11,7 @@ class TestB2ShareEmptyFiles(B2ShareAPITestCase):
     """Unit tests for the REST API: empty files should be rejected"""
 
     def setUp(self):
+        super(TestB2ShareEmptyFiles, self).setUp()
         self.create_and_login_user()
 
     def tearDown(self):
@@ -19,18 +20,18 @@ class TestB2ShareEmptyFiles(B2ShareAPITestCase):
     def test_rest_api_error_on_empty_file(self):
         current_app.config.update(PRESERVE_CONTEXT_ON_EXCEPTION = False)
 
-        create_json = self.safe_create_deposition()
+        create_json = self.create_deposition(safe=True).json
         deposit_id = create_json['deposit_id']
 
         valid_file_name = "valid.txt"
         with TemporaryDirectory() as tmp_dir:
             # valid file
             file1 = create_file(tmp_dir, valid_file_name, "test file 1")
-            self.safe_upload_deposition_file(deposit_id, file1)
+            self.upload_deposition_file(deposit_id, file_path=file1, safe=True)
 
             # empty file
             file2 = create_file(tmp_dir, "empty.txt", "")
-            request = self.upload_deposition_file(deposit_id, file2)
+            request = self.upload_deposition_file(deposit_id, file_path=file2)
             self.assertTrue(request.status_code == 400)
             self.assertTrue(request.json['errors'])
 
@@ -42,11 +43,12 @@ class TestB2ShareEmptyFiles(B2ShareAPITestCase):
         }
 
         # commit deposition
-        commit_json = self.safe_commit_deposition(deposit_id, metadata)
+        commit_json = self.commit_deposition(deposit_id, metadata,
+                                             safe=True).json
         record_id = commit_json['record_id']
 
         # get record and test files
-        record_json = self.safe_get_record(record_id)
+        record_json = self.get_record(record_id, safe=True).json
         record_files = [f.get('name') for f in record_json['files']]
         self.assertEquals(record_files, [valid_file_name])
 

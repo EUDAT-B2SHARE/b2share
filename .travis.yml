@@ -94,6 +94,10 @@ install:
   - "inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY \"\""
 
 before_script:
+  # configure mysql 
+  # we need to keep connections open for a long time as we run bibsched tasks in the tests
+  - echo -e "[server]\nwait_timeout=300" | sudo tee -a /etc/mysql/my.cnf
+  - sudo service mysql restart
   - "inveniomanage apache create-config"
   - "sudo ln -s $VIRTUAL_ENV/var/invenio.base-instance/apache/invenio-apache-vhost.conf /etc/apache2/sites-enabled/invenio.conf"
   - "sudo ln -s $VIRTUAL_ENV/var/invenio.base-instance/apache/invenio-apache-vhost-ssl.conf /etc/apache2/sites-enabled/invenio-ssl.conf"
