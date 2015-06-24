@@ -246,9 +246,6 @@ class ListRecords(B2Resource):
     use POST to /depositions to create a new one
     """
     def get(self, **kwargs):
-        from invenio.legacy.search_engine import perform_request_search
-        # from invenio.modules.accounts.models import User
-
         pag = pager.parse_args()
         page_size = pag.get('page_size') or PAGE_SIZE
         page_offset = pag.get('page_offset') or 0
@@ -256,7 +253,9 @@ class ListRecords(B2Resource):
             page_size = MAX_PAGE_SIZE
 
         # enumerate all valid ids
-        record_ids = perform_request_search(of="id", sf="005")
+        from invenio.modules.records.models import Record
+        records = Record.query.all()
+        record_ids = [record.id for record in records]
 
         record_list = []
         start = page_offset * page_size

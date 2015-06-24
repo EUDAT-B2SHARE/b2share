@@ -151,7 +151,6 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
             self.assertEqual(found["size"], len(file[1]),
                              "file {0} length is different".format(file[0]))
 
-    # FIXME: this test is only disabled because it does not pass. see #695
     def test_get_records(self):
         """Check that listing records works"""
         # list records before adding new records
@@ -240,8 +239,7 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         :Returns: a list of records
         :Returns Type: list
         """
-        # FIXME there is no way currenlty to have the number of records
-        # available
+        # FIXME there is no way currently to have the number of available records
         scan_end = False
         results = []
         current_page = 0
