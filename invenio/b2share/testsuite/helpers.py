@@ -157,11 +157,11 @@ class B2ShareAPITestCase(APITestCase):
     #
     # Helpers
     #
-    def create_and_login_user(self):
+    def create_and_login_user(self, user_nickname=None, user_password=None):
         """Create test user and log him in."""
         from invenio.modules.accounts.models import User
-        self.user_nickname = "tester"
-        self.user_password = "tester"
+        self.user_nickname = user_nickname or "tester"
+        self.user_password = user_password or "tester"
         # remove the user if he exists
         self.user = User.query.filter(
             User.nickname == self.user_nickname).first()
@@ -173,8 +173,9 @@ class B2ShareAPITestCase(APITestCase):
                 db.session.rollback()
                 raise
         # create the user
+        email = "{}@b2share.com".format(self.user_nickname)
         self.user = User(
-            email='info@invenio-software.org', nickname=self.user_nickname
+            email=email, nickname=self.user_nickname
         )
         self.user.password = self.user_password
         try:
@@ -183,6 +184,11 @@ class B2ShareAPITestCase(APITestCase):
         except:
             db.session.rollback()
             raise
+        from invenio.ext.login import login_user
+        from flask.ext.login import current_user
+        login_user(self.user.id)
+        current_user.reload()
+        self.assertEqual(current_user.get_id(), self.user.id)
         self.safe_login_web_user(self.user_nickname, self.user_password)
         return self.user.id
 
@@ -200,6 +206,22 @@ class B2ShareAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotEqual(urlparse(response.location).path,
                             url_for('webaccount.login'))
+
+    def add_current_user_to_group(self, usergroup_name):
+        from invenio.modules.accounts.models import User, Usergroup, UserUsergroup
+        from flask.ext.login import current_user
+        user = User.query.get(current_user.get_id())
+        ug = Usergroup.query.filter(Usergroup.name == usergroup_name).one()
+        ug.join(user, status=UserUsergroup.USER_STATUS['MEMBER'])
+        current_user.reload()
+
+    def remove_current_user_from_group(self, usergroup_name):
+        from invenio.modules.accounts.models import User, Usergroup
+        from flask.ext.login import current_user
+        user = User.query.get(current_user.get_id())
+        ug = Usergroup.query.filter(Usergroup.name == usergroup_name).one()
+        ug.leave(user)
+        current_user.reload()
 
     def remove_user(self):
         """Logout and remove test user."""
