@@ -145,10 +145,12 @@ def get_record_details(recid, curr_user_email=None):
 
     # add basic metadata fields
     for fieldname in basic_fields_meta:
-        if fieldname == "open_access" and read_basic_metadata_field_from_marc(bfo, fieldname) == "restricted":
-            if read_basic_metadata_field_from_marc(bfo, "uploaded_by") != curr_user_email:
-                ret['files'] = "RESTRICTED"
-                ret[fieldname] = read_basic_metadata_field_from_marc(bfo, fieldname)
+        if fieldname == "open_access":
+            open_access = (read_basic_metadata_field_from_marc(bfo, fieldname) == "open")
+            ret[fieldname] = open_access
+            if not open_access:
+                if read_basic_metadata_field_from_marc(bfo, "uploaded_by") != curr_user_email:
+                    ret['files'] = "RESTRICTED"
         else:
             ret[fieldname] = read_basic_metadata_field_from_marc(bfo, fieldname)
 
