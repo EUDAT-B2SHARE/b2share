@@ -155,3 +155,6 @@ else
    inveniomanage config set DEBUG_TB_INTERCEPT_REDIRECTS False
    # inveniomanage config set ASSETS_DEBUG True
 fi
+
+inveniomanage upgrader run
+python invenio/b2share/upgrades/b2share_2015_06_23_create_domain_admin_groups.py
