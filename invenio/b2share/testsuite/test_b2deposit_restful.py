@@ -33,13 +33,13 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         "domain": "generic",
         "title": "Test title",
         "description": "Test description",
-        "open_access": "true"
+        "open_access": True,
     }
     rda_metadata = {
         "domain": "RDA",
         "title": "Test title",
         "description": "Test description",
-        "open_access": "true"
+        "open_access": True,
     }
 
     def setUp(self):
@@ -129,10 +129,6 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         # check that every metadata field is here
         for key in self.generic_metadata:
             expected_value = self.generic_metadata[key]
-            # FIXME: this is here because open_access has some inconsistencies.
-            if key == "open_access":
-                expected_value = ("open" if self.generic_metadata[key]
-                                  else "restricted")
             self.assertEquals(record_content[key], expected_value)
 
         # check the number of files
@@ -156,31 +152,31 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
                              "file {0} length is different".format(file[0]))
 
     # FIXME: this test is only disabled because it does not pass. see #695
-    # def test_get_records(self):
-    #     """Check that listing records works"""
-    #     # list records before adding new records
-    #     records_before = self.scan_records()
+    def test_get_records(self):
+        """Check that listing records works"""
+        # list records before adding new records
+        records_before = self.scan_records()
 
-    #     # create two records with different domains
-    #     files = [("test_file.txt", "test content")]
-    #     gen_record_id = self.create_valid_record(files, self.generic_metadata)
-    #     rda_record_id = self.create_valid_record(files, self.rda_metadata)
+        # create two records with different domains
+        files = [("test_file.txt", "test content")]
+        gen_record_id = self.create_valid_record(files, self.generic_metadata)
+        rda_record_id = self.create_valid_record(files, self.rda_metadata)
 
-    #     gen_record_request = self.get_record(gen_record_id, safe=True)
-    #     rda_record_request = self.get_record(rda_record_id, safe=True)
+        gen_record_request = self.get_record(gen_record_id, safe=True)
+        rda_record_request = self.get_record(rda_record_id, safe=True)
 
-    #     # list records after adding new records
-    #     records_after = self.scan_records()
+        # list records after adding new records
+        records_after = self.scan_records()
 
-    #     # both records should appear in the list
-    #     records_before.append(gen_record_request.json)
-    #     records_before.append(rda_record_request.json)
+        # both records should appear in the list
+        records_before.append(gen_record_request.json)
+        records_before.append(rda_record_request.json)
 
-    #     # sort the records on record_id
-    #     records_after.sort(key=lambda rec: rec["record_id"])
-    #     records_before.sort(key=lambda rec: rec["record_id"])
-    #     self.assertEquals(records_after, records_before,
-    #                       "records list did not update properly")
+        # sort the records on record_id
+        records_after.sort(key=lambda rec: rec["record_id"])
+        records_before.sort(key=lambda rec: rec["record_id"])
+        self.assertEquals(records_after, records_before,
+                          "records list did not update properly")
 
     def test_get_records_by_domain(self):
         """Check that listing records by domain works"""
@@ -251,7 +247,8 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         current_page = 0
         while not scan_end:
             if domain is None:
-                req = self.get_records(page_offset=current_page)
+                req = self.get_records(page_offset=current_page,
+                                       safe=True)
             else:
                 req = self.get_records_by_domain(domain,
                                                  page_offset=current_page,
