@@ -35,10 +35,10 @@ def get_page(recid):
     record = get_record_details(int(recid), current_user['email'])
     record.update(record.get('domain_metadata', {}))
     form = ImmutableMultiDict(record)
-    metaclass, meta, meta_form = get_meta_form_data(form.get('domain'), form)
+    metaclass, meta, meta_form = _get_meta_form_data(form.get('domain'), form)
     return render_template('b2share-edit.html', recid=recid,
                             metadata=meta, form=meta_form,
-                            files=bibdoc_file_list(recid),
+                            files=_bibdoc_file_list(recid),
                             domain=metaclass, getattr=getattr)
 
 def update(recid, form):
@@ -51,12 +51,12 @@ def update(recid, form):
 
     bfo = bibformat_engine.BibFormatObject(recid)
     domain = read_basic_metadata_field_from_marc(bfo, 'domain')
-    metaclass, meta, meta_form = get_meta_form_data(domain, form)
+    metaclass, meta, meta_form = _get_meta_form_data(domain, form)
 
     if meta_form.validate_on_submit():
         current_app.logger.info("Updating record {}".format(recid))
 
-        bibdoc_modify_files(recid, form)
+        _bibdoc_modify_files(recid, form)
 
         rec_changes = {}
         add_basic_fields(rec_changes, form, meta)
@@ -82,7 +82,7 @@ def update(recid, form):
                                 domain=metaclass, getattr=getattr)
         return jsonify(valid=False, html=html)
 
-def get_meta_form_data(domain, form):
+def _get_meta_form_data(domain, form):
     if domain not in metadata_classes():
         raise Exception("%s is not a domain" %(domain,))
 
@@ -96,31 +96,39 @@ def get_meta_form_data(domain, form):
     return (metaclass, meta, meta_form)
 
 
+def get_domain_admin_group(domain):
+    return '{}_domain_administrators'.format(domain)
+
 def is_record_editable(recid):
     if current_user.is_super_admin:
         return True
     if current_user.is_guest:
         return False
 
-    # allow owner of the record, only if private access
-    # --- disabled for the moment
-    # from invenio.modules.formatter import engine as bibformat_engine
-    # bfo = bibformat_engine.BibFormatObject(recid)
-    # owner_email = read_basic_metadata_field_from_marc(bfo, 'uploaded_by')
-    # is_private = (read_basic_metadata_field_from_marc(bfo, 'open_access') == "restricted")
-    # if current_user['email'] == owner_email and is_private:
-    #     return True
+    (domain, owner_email, is_private) = _get_record_info(recid)
 
-    # allow community administrators, no matter what the access level is
-    # --- disabled for the moment
-    # domain = read_basic_metadata_field_from_marc(bfo, 'domain')
-    # domain_admin_group = domain + '_admin'
-    # if domain_admin_group in current_user.get('group', []):
-    #     return True
+    # if private record, allow owner of the record
+    if is_private and current_user['email'] == owner_email:
+        return True
+
+    # if private record, allow community admin
+    if is_private and get_domain_admin_group(domain) in current_user.get('group', []):
+        return True
 
     return False
 
-def bibdoc_file_list(recid):
+def _get_record_info(recid):
+    from invenio.modules.formatter import engine as bibformat_engine
+    bfo = bibformat_engine.BibFormatObject(recid)
+    open_access = read_basic_metadata_field_from_marc(bfo, 'open_access')
+
+    is_private = open_access == "restricted" or open_access == False
+    domain = read_basic_metadata_field_from_marc(bfo, 'domain')
+    owner_email = read_basic_metadata_field_from_marc(bfo, 'uploaded_by')
+    return (domain, owner_email, is_private)
+
+
+def _bibdoc_file_list(recid):
     import os, os.path
     from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
@@ -145,7 +153,7 @@ def bibdoc_file_list(recid):
             })
     return files
 
-def bibdoc_modify_files(recid, form):
+def _bibdoc_modify_files(recid, form):
     from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
         recdocs = BibRecDocs(recid)
