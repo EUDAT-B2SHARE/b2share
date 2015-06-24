@@ -94,7 +94,7 @@ install:
   - "inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY \"\""
 
 before_script:
-  # configure mysql 
+  # configure mysql
   # we need to keep connections open for a long time as we run bibsched tasks in the tests
   - echo -e "[server]\nwait_timeout=300" | sudo tee -a /etc/mysql/my.cnf
   - sudo service mysql restart
@@ -107,6 +107,8 @@ before_script:
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create --quiet || echo ':('"
 #  - "inveniomanage demosite populate --yes-i-know"
+  - "inveniomanage upgrader run"
+  - "python invenio/b2share/upgrades/b2share_2015_06_23_create_domain_admin_groups.py"
 
 script:
   - "sphinx-build -qnNW docs docs/_build/html"
