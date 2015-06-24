@@ -34,6 +34,8 @@ def get_page(recid):
         abort(401)
     record = get_record_details(int(recid), current_user['email'])
     record.update(record.get('domain_metadata', {}))
+    if record.get('open_access') == False or record.get('open_access') == 'restricted':
+        del record['open_access']
     form = ImmutableMultiDict(record)
     metaclass, meta, meta_form = _get_meta_form_data(form.get('domain'), form)
     return render_template('b2share-edit.html', recid=recid,
@@ -112,6 +114,8 @@ def is_record_editable(recid):
         return True
 
     # if private record, allow community admin
+    # the user's groups are not updated unless we call reload()
+    current_user.reload()
     if is_private and get_domain_admin_group(domain) in current_user.get('group', []):
         return True
 
