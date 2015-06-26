@@ -79,6 +79,7 @@ class B2ShareAPITestCase(APITestCase):
             self.assertEqual(req.status_code, 200,
                              "GET /api/records/<record_id> returned code \
                              {0}".format(req.status_code))
+            self.assertEqual(req.json.get('record_id'), record_id)
         return req
 
     # Deposition
