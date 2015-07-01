@@ -302,6 +302,10 @@ class ListDepositions(B2Resource):
         deposit_id = uuid.uuid1().hex
         upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
         os.makedirs(upload_dir)
+        status_file = os.path.join(upload_dir, 'uncommitted')
+        status = open(status_file, 'w+')
+        status.write('This is a flag for uncommitted deposition.')
+        status.close()
         location = "/api/deposition/" + deposit_id,
         json_data = {
             'message': "New deposition created",
@@ -320,7 +324,13 @@ class Deposition(B2Resource):
         Test this with:
         $ curl -v http://0.0.0.0:4000/api/deposition/DEPOSITION_ID?access_token=xxx
         """
+        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                  "CFG_B2SHARE_UPLOAD_FOLDER")
+        deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
+                                        deposit_id, 'uncommitted')
         prefix = '/api/deposition/'+deposit_id
+        if not os.path.exists(deposition_status):
+            return {'message':'Invalid deposition resource'}
         return {'message':'valid deposition resource',
                 'locations': [ prefix + '/files', prefix + '/commit']}
 
@@ -342,10 +352,13 @@ class DepositionFiles(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
-        if not os.path.exists(upload_dir):
-            # don't use abort(404), it adds its own bad error message
-            return {'message':'bad deposit_id parameter', 'status':404}, 404
+
+        deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
+                                         deposit_id, 'uncommitted')
+        if not os.path.exists(deposition_status):
+            return {'message': 'Bad deposit_id parameter or already closed deposition.',
+                    'status': 404}, 404
+
         self.check_user(deposit_id)
         files = [{'name': f['name'], 'size': f['size'] }
                  for f in get_depositing_files_metadata(deposit_id)]
@@ -363,9 +376,12 @@ class DepositionFiles(B2Resource):
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
         upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
-        if not os.path.exists(upload_dir):
-            # don't use abort(404), it adds its own bad error message
-            return {'message':'bad deposit_id parameter', 'status':404}, 404
+
+        deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
+                                         deposit_id, 'uncommitted')
+        if not os.path.exists(deposition_status):
+            return {'message': 'Bad deposit_id parameter or already closed deposition.',
+                    'status': 404}, 404
 
         self.check_user(deposit_id)
 
@@ -408,18 +424,22 @@ class DepositionCommit(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
-        if not os.path.exists(upload_dir):
-            # don't use abort(404), it adds its own bad error message
-            return {'message':'bad deposit_id parameter', 'status':404}, 404
-        if not os.listdir(upload_dir):
-            return {'message':'no files: add files to this deposition first', 'status':400}, 400
+
+        deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
+                                        deposit_id, 'uncommitted')
+        if not os.path.exists(deposition_status):
+            return {'message': 'Bad deposit_id parameter or already closed deposition.',
+                    'status': 404}, 404
+
+        if not get_depositing_files_metadata(deposit_id):
+            return {'message':'No files: add files to this deposition first', 'status':400}, 400
 
         try:
             form = request.get_json()
         except:
             return {'message':'Invalid POST data', 'status':400}, 400
 
+        os.remove(deposition_status)
         domain = form.get('domain', '').lower()
         if domain in metadata_classes():
             metaclass = metadata_classes()[domain]

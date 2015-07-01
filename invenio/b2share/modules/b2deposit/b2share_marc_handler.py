@@ -129,6 +129,8 @@ def get_depositing_files_metadata(deposit_id):
     files = os.listdir(upload_dir)
     ret = []
     for f in files:
+        if f == 'uncommitted':
+            continue
         path = os.path.join(upload_dir, f)
         if f.startswith('metadata_'):
             # we do not want to do load file metadata into Invenio as files, will extract into MARC fields
