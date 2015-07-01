@@ -352,15 +352,12 @@ class DepositionFiles(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
-        if not os.path.exists(upload_dir):
-            # don't use abort(404), it adds its own bad error message
-            return {'message':'bad deposit_id parameter', 'status':404}, 404
 
         deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
                                          deposit_id, 'uncommitted')
         if not os.path.exists(deposition_status):
-            return {'message': 'This deposition was closed.', 'status': 404}, 404
+            return {'message': 'Bad deposit_id parameter or already closed deposition.',
+                    'status': 404}, 404
 
         self.check_user(deposit_id)
         files = [{'name': f['name'], 'size': f['size'] }
@@ -379,14 +376,12 @@ class DepositionFiles(B2Resource):
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
         upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
-        if not os.path.exists(upload_dir):
-            # don't use abort(404), it adds its own bad error message
-            return {'message':'bad deposit_id parameter', 'status':404}, 404
 
         deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
                                          deposit_id, 'uncommitted')
         if not os.path.exists(deposition_status):
-            return {'message': 'This deposition was closed. It is not possible to add more files to it.', 'status': 404}, 404
+            return {'message': 'Bad deposit_id parameter or already closed deposition.',
+                    'status': 404}, 404
 
         self.check_user(deposit_id)
 
@@ -429,18 +424,15 @@ class DepositionCommit(B2Resource):
         """
         CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
                                 "CFG_B2SHARE_UPLOAD_FOLDER")
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, deposit_id)
-        if not os.path.exists(upload_dir):
-            # don't use abort(404), it adds its own bad error message
-            return {'message':'bad deposit_id parameter', 'status':404}, 404
 
         deposition_status = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER,
                                         deposit_id, 'uncommitted')
         if not os.path.exists(deposition_status):
-            return {'message': 'This deposition was closed.', 'status': 404}, 404
+            return {'message': 'Bad deposit_id parameter or already closed deposition.',
+                    'status': 404}, 404
 
         if not get_depositing_files_metadata(deposit_id):
-            return {'message':'no files: add files to this deposition first', 'status':400}, 400
+            return {'message':'No files: add files to this deposition first', 'status':400}, 400
 
         try:
             form = request.get_json()
