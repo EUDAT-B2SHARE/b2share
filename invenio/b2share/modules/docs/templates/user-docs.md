@@ -26,8 +26,7 @@ Search and download
 -------------------
 
 Registered and unregistered users can use the search field on the B2SHARE home page. Enter text in the search field and click the "Search" button. The text entered can be part of a title, keyword, abstract or any other metadata. Unregistered users can only search for data sets that are publicly accessible.
-By clicking the down-pointing arrow to the right of the search field, a more specific search form will open as shown in the screenshot below. This form is for specifying search queries and has two search modes, simple and advanced. The default search mode is simple search, which provides an input box where your queries can be typed, followed by a possibility to choose one of the common indexes to search within. Usually it is sufficient to just type some keywords one is interested in and hit return.
-For advanced search, it is possible to specify search fields, use boolean methods in various indices and use regular expressions and other search operators (spans, refersto, citedby). An extensive search guide is available by clicking the question mark to the left of the search field in the top bar.
+By clicking the down-pointing arrow to the right of the search field, a more specific search form will open as shown in the screenshot below. This form is for specifying search queries and has two search modes, simple and advanced. The default search mode is simple search, which provides an input box where your queries can be typed, followed by a possibility to choose one of the common indexes to search within. Usually it is sufficient to just type some keywords one is interested in and hit return. For advanced search, it is possible to specify search fields, use boolean methods in various indices and use regular expressions and other search operators (spans, refersto, citedby). An extensive search guide is available by clicking the question mark to the left of the search field in the top bar.
 
 ![](img/guide/b2share_search.png)
 
@@ -67,6 +66,18 @@ Only registered users can upload data. To upload data, first click "Deposit>>>" 
     ![](img/guide/b2share_metadata_upload.png)
 
 Uploaded files are normally downloadable by anyone. Clicking the button marked "On" in the field "Open Access" will restrict file access so files can not be downloaded by unregistered users. Metadata will always be publicly available.
+
+Choosing a license
+------------------
+To choose a suitable license for the uploaded data, either type the license name in the field "License" or use B2SHARE's built-in license wizard, by clicking on the button "Select Licence".
+
+Licenses are listed at the bottom of the menu. To select a license, click on the license name in the list. A button marked "Confirm" will show, click the button to choose that particular license.
+
+If the name of an apropriate license is at least partly known, the license can be searched for by using the field "Search for a license".
+
+    ![](img/guide/license-wizard.png)
+
+The wizard can also help you pick a suitable license by asking leading questions. To get the wizard's advise, start by answering the question "What do you want to deposit?" by clicking the apropriate button "Software" or "Data". Then click either "Yes" or "No" for the new questions that will follow. For each answer, the wizard will filter the list of licenses to only show appropriate ones.
 
 Log out
 -------
