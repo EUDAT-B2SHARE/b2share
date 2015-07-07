@@ -75,8 +75,6 @@ Licenses are listed at the bottom of the menu. To select a license, click on the
 
 If the name of an apropriate license is at least partly known, the license can be searched for by using the field "Search for a license".
 
-    ![](img/guide/license-wizard.png)
-
 The wizard can also help you pick a suitable license by asking leading questions. To get the wizard's advise, start by answering the question "What do you want to deposit?" by clicking the apropriate button "Software" or "Data". Then click either "Yes" or "No" for the new questions that will follow. For each answer, the wizard will filter the list of licenses to only show appropriate ones.
 
 Log out
