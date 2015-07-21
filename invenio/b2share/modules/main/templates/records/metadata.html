@@ -46,7 +46,7 @@ div.star:hover {
 </style>
 
   <div class="page-header">
-    {{ format_record(recid, 'hd', ln=g.ln)|safe }}
+    {{ format_record(recid, of=of, ln=g.ln)|safe }}
 
     {%- if editable -%}
     <div style="display:inline; margin-left:10px">
