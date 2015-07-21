@@ -57,6 +57,12 @@ exclude-result-prefixes="marc fn">
         </xsl:if>
     </xsl:template>
     <xsl:template match="record">
+      <!-- PID as Identifier -->
+      <xsl:if test="datafield[@tag=024 and @ind1=7 and subfield[@code='2']='PID']">
+        <xsl:for-each select="datafield[@tag=024 and @ind1=7 and subfield[@code='2']='PID']">
+          <dc:identifier><xsl:value-of select="subfield[@code='a']"/></dc:identifier>
+        </xsl:for-each>
+      </xsl:if>
       <!-- DOI -->
       <xsl:if test="datafield[@tag=024 and @ind1=7 and (subfield[@code='2']='doi' or subfield[@code='2']='DOI')]">
 	<xsl:for-each select="datafield[@tag=024 and @ind1=7 and (subfield[@code='2']='doi' or subfield[@code='2']='DOI')]">
@@ -81,9 +87,9 @@ exclude-result-prefixes="marc fn">
             </dc:creator>
         </xsl:for-each>
         <xsl:for-each select="datafield[@tag=700]">
-            <dc:contributor>
+            <dc:creator>
                 <xsl:value-of select="subfield[@code='a']"/>
-            </dc:contributor>
+            </dc:creator>
         </xsl:for-each>
 	<!-- Corporate Author/Creator, if no main author/creator -->
 	<xsl:if test="not (datafield[@tag=100 and subfield[@code='a']] or datafield[@tag=700 and subfield[@code='a']])">
@@ -134,7 +140,6 @@ exclude-result-prefixes="marc fn">
                 <xsl:value-of select="subfield[@code='l']"/>
             </dc:rights>
         </xsl:for-each>
-        <xsl:for-each select="datafield[@tag=856 and @ind1=4]">
 	<!-- Main report number-->
 	<xsl:for-each select="datafield[@tag=037]">
           <dc:identifier><xsl:value-of select="subfield[@code='a']"/></dc:identifier>
@@ -148,16 +153,6 @@ exclude-result-prefixes="marc fn">
             <dc:identifier>
                 <xsl:value-of select="subfield[@code='u']"/>
             </dc:identifier>
-        </xsl:for-each>
-        <xsl:for-each select="datafield[@tag=024]">
-            <dc:identifier>
-                <xsl:value-of select="subfield[@code='a']"/>
-            </dc:identifier>
-        </xsl:for-each>
-        <xsl:for-each select="datafield[@tag=337]">
-            <dc:type>
-                <xsl:value-of select="subfield[@code='a']"/>
-            </dc:type>
         </xsl:for-each>
 -->
 	<!-- Abstract -->
@@ -186,7 +181,7 @@ exclude-result-prefixes="marc fn">
                 <xsl:value-of select="fn:eval_bibformat(controlfield[@tag=001],'&lt;BFE_SERVER_INFO var=&quot;absoluterecurl&quot; >')" />
             </dc:source>
         <xsl:for-each select="datafield[@tag=024 and @ind1=7]">
-            <xsl:if test="subfield[@code='2']">
+            <xsl:if test="subfield[@code='2']='doi' or subfield[@code='2']='DOI'">
                 <dc:doi>
                     <xsl:value-of select="subfield[@code='a']"/>
                 </dc:doi>
