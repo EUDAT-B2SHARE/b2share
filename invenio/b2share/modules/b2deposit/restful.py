@@ -77,16 +77,9 @@ def read_basic_metadata_field_from_marc(bfo, fieldname):
         marctag = basic_fields_meta[fieldname][0]
         multiple = basic_fields_meta[fieldname][1]
 
-        # we need to do additional filtering due to the
-        # clash between domain and resource_type
-        # they are both encoded as the same marc field
         if fieldname == 'domain':
             ret = [r.lower() for r in bfo.fields(marctag)
                    if r.lower() in metadata_classes()]
-            return ret if multiple else ", ".join(ret)
-        elif fieldname == 'resource_type':
-            ret = [r for r in bfo.fields(marctag)
-                   if r.lower() not in metadata_classes()]
             return ret if multiple else ", ".join(ret)
         elif marctag:
             if multiple:
