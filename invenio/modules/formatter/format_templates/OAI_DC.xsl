@@ -44,6 +44,12 @@
     </xsl:if>
   </xsl:template>
   <xsl:template match="record">
+    <!-- PID as Identifier -->
+    <xsl:if test="datafield[@tag=024 and @ind1=7 and subfield[@code='2']='PID']">
+      <xsl:for-each select="datafield[@tag=024 and @ind1=7 and subfield[@code='2']='PID']">
+        <dc:identifier><xsl:value-of select="subfield[@code='a']"/></dc:identifier>
+      </xsl:for-each>
+    </xsl:if>
     <!-- DOI -->
     <xsl:if test="datafield[@tag=024 and @ind1=7 and (subfield[@code='2']='doi' or subfield[@code='2']='DOI')]">
       <xsl:for-each select="datafield[@tag=024 and @ind1=7 and (subfield[@code='2']='doi' or subfield[@code='2']='DOI')]">
