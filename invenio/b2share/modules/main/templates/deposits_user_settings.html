@@ -19,6 +19,6 @@
 
 {% block deposits_user_settings %}
   <p>
-    {{ _('You have') }} <a href="{{ url_for('search.search', f=email_field, p=email) }}">{{ deposit_count }}</a> {{ _('deposits') }}.
+    {{ _('You have') }} <a href="{{ url_for('search.search', f=email_field, p=email) }}">{{ deposit_count }} {{ _('deposits')}}</a>
   </p>
 {% endblock deposits_user_settings %}

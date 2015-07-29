@@ -21,14 +21,16 @@
 
 # Flask
 from flask import url_for
-from invenio.jinja2utils import render_template_to_string
-from invenio.webinterface_handler_flask_utils import _
-from invenio.webuser_flask import current_user
-from invenio.settings import Settings, UserSettingsStorage
+from invenio.base.i18n import _
+from invenio.ext.template import render_template_to_string
+from invenio.modules.dashboard.settings import Settings, UserSettingsStorage
 
 # Related models
-from invenio.websession_model import User
-from invenio.search_engine import perform_request_search
+from invenio.ext.login import current_user
+from invenio.modules.accounts.models import User
+
+# from invenio.websession_model import User
+from invenio.legacy.search_engine import perform_request_search
 
 class DepositsSettings(Settings):
 
