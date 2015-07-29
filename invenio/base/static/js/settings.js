@@ -55,6 +55,7 @@ require.config({
     "lindat-license-selector": "vendors/lindat-license-selector/license-selector",
     "bootstrap-switch": "vendors/bootstrap-switch/dist/js/bootstrap-switch",
     "bootstrap-multiselect": "vendors/bootstrap-multiselect/dist/js/bootstrap-multiselect",
+    "select2": "vendor/select2/select2.min",
   },
   shim: {
     jquery: {
@@ -162,6 +163,9 @@ require.config({
     "bootstrap-switch": {
       deps: ["jquery"],
       exports: "$.fn.bootstrapSwitch",
+    select2: {
+      deps: ["jquery"],
+      exports: "select2"
     },
   }
 });

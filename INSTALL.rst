@@ -87,8 +87,22 @@ Setting up MySQL Server requires you to give some credentials for the root
 user. You will need the root password later on and we will refer to it as
 ``$MYSQL_ROOT``.
 
+If you are on CentOS 7, the mysql-server package is not available in the
+default repository. First we need to add the official YUM repository provided
+by Oracle. The YUM repository configuration can be downloaded from the `MySQL
+website <http://dev.mysql.com/downloads/repo/yum/>`_. Choose the desired
+distribution (Red Hat Enterprise Linux 7 / Oracle Linux 7 for CentOS 7) and
+click Download.
+The download link can be retrieved without registering for an Oracle account.
+Locate the "No thanks, just start my download" link and pass the link URL as a
+parameter to rpm.
+
 .. code-block:: console
 
+    # only needed with CentOS version >= 7
+    $ sudo rpm -Uvh http://dev.mysql.com/get/mysql-community-release...
+
+    # for every CentOS version
     $ sudo yum install mysql-server
     $ sudo service mysqld status
     mysqld is stopped
@@ -155,9 +169,9 @@ Now, it is time to start installing the prerequisites.
 
 .. code-block:: console
 
-    $ brew install python --framework -- universal
-    $ sudo pip install virtualenv
-    $ sudo pip install virtualenvwrapper
+    $ brew install python --framework --universal
+    $ pip install virtualenv
+    $ pip install virtualenvwrapper
     # edit the Bash profile
     $ $EDITOR ~/.bash_profile
 
@@ -197,7 +211,7 @@ The following might not be necessary but is good to have for completeness.
 
 .. code-block:: console
 
-    $ brew install libjpeg libtiff freetype
+    $ brew install libjpeg libtiff freetype libffi
     $ pip install -I pillow
 
 Install ``node`` by following `Node on OS X`_
@@ -229,7 +243,6 @@ The commands for ``OS X`` are the same as in ``Linux``.
 
     For developers, honcho is recommended and will make your life
     easier because it launches all the servers together as it finds the ``Procfile``.
-
 
 .. _MySQL on OS X:
 
@@ -320,14 +333,14 @@ setup.
 ~~~~~~~~~~~~~~~~~
 
 The first step of the installation is to download the development version of
-Invenio and the Invenio Demosite. This development is done in the ``pu``
+Invenio and the Invenio Demosite. This development is done in the ``master``
 branch.
 
 .. code-block:: console
 
     $ mkdir -p $HOME/src
     $ cd $HOME/src/
-    $ export BRANCH=pu
+    $ export BRANCH=master
     $ git clone --branch $BRANCH git://github.com/inveniosoftware/invenio.git
     $ git clone --branch $BRANCH git://github.com/inveniosoftware/invenio-demosite.git
 
@@ -338,7 +351,9 @@ locally and it will make your life easier. ``(invenio)$`` tells your that the
 
 .. code-block:: console
 
-    $ mkvirtualenv invenio
+    $ # choose an unique name for your virtual environment
+    $ export VENAME=invenio
+    $ mkvirtualenv $VENAME
     (invenio)$ # we are in the invenio environment now and
     (invenio)$ # can leave it using the deactivate command.
     (invenio)$ deactivate
@@ -367,7 +382,7 @@ Installing Invenio.
 .. code-block:: console
 
     (invenio)$ cdvirtualenv src/invenio
-    (invenio)$ pip install --process-dependency-links -e .[development]
+    (invenio)$ pip install -e .[development]
 
 Some modules may require specific dependencies listed as ``extras``. Pick the
 ones you need. E.g. to add `images` support, we can do as follow:
@@ -445,12 +460,14 @@ the following commands.
 
 .. code-block:: console
 
-    (invenio)$ inveniomanage config set CFG_EMAIL_BACKEND flask.ext.email.backends.console.Mail
+    (invenio)$ # sanitaze for usage as database name and user
+    (invenio)$ export SAFE_NAME=`echo $VENAME$BRANCH | sed -e 's/[^A-Za-z0-9]//g'`
+    (invenio)$ inveniomanage config set CFG_EMAIL_BACKEND flask_email.backends.console.Mail
     (invenio)$ inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
-    (invenio)$ inveniomanage config set CFG_DATABASE_NAME $BRANCH
-    (invenio)$ inveniomanage config set CFG_DATABASE_USER $BRANCH
-    (invenio)$ inveniomanage config set CFG_SITE_URL http://0.0.0.0:4000
-    (invenio)$ inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0:4000
+    (invenio)$ inveniomanage config set CFG_DATABASE_NAME $SAFE_NAME
+    (invenio)$ inveniomanage config set CFG_DATABASE_USER $SAFE_NAME
+    (invenio)$ inveniomanage config set CFG_SITE_URL http://localhost:4000
+    (invenio)$ inveniomanage config set CFG_SITE_SECURE_URL http://localhost:4000
 
 Assets in non-development mode may be combined and minified using various
 filters (see :ref:`ext_assets`). We need to set the path to the binaries if
@@ -473,7 +490,7 @@ the original files. As a developer you may want to have symbolic links instead.
 .. code-block:: console
 
     # Developer only
-    (invenio)$ inveniomanage config set COLLECT_STORAGE flask.ext.collect.storage.link
+    (invenio)$ inveniomanage config set COLLECT_STORAGE flask_collect.storage.link
 
 
     (invenio)$ inveniomanage collect
@@ -522,6 +539,14 @@ which must be running alongside with the web server.
      * Running on http://0.0.0.0:4000/
      * Restarting with reloader
 
+.. note::
+
+    On OS X, the command ``service`` might not be found when starting the redis
+    server. To run redis, just type:
+
+    .. code-block:: console
+
+        $ redis-server
 
 **Troubleshooting:** As a developer, you may want to use the provided
 ``Procfile`` with `honcho <https://pypi.python.org/pypi/honcho>`_. It
@@ -556,7 +581,7 @@ register python argcomplete for inveniomanage.
 4. Final words
 --------------
 
-Good luck, and thanks for choosing Invenio.
+Happy hacking and thanks for flying Invenio.
 
        - Invenio Development Team
          <info@invenio-software.org>

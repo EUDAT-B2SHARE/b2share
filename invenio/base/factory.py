@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+#
 # This file is part of Invenio.
-# Copyright (C) 2011, 2012, 2013, 2014 CERN.
+# Copyright (C) 2011, 2012, 2013, 2014, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,18 +21,27 @@
 
 from __future__ import absolute_import
 
+import ast
 import os
 import sys
 import urllib
 import warnings
 
-from flask.ext.registry import Registry, ExtensionRegistry, \
-    PackageRegistry, ConfigurationRegistry, BlueprintAutoDiscoveryRegistry
+from flask_registry import (
+    BlueprintAutoDiscoveryRegistry,
+    ConfigurationRegistry,
+    ExtensionRegistry,
+    PackageRegistry,
+    Registry
+)
+
 from pkg_resources import iter_entry_points
+
 from six.moves.urllib.parse import urlparse
+
 from werkzeug.local import LocalProxy
 
-from .helpers import with_app_context, unicodifier
+from .helpers import unicodifier, with_app_context
 from .utils import captureWarnings
 from .wrappers import Flask
 
@@ -211,6 +221,21 @@ def create_app(instance_path=None, **kwargs_config):
     # Ensure SECRET_KEY has a value in the application configuration
     register_secret_key(app)
 
+    # Update config with specified environment variables.
+    for cfg_name in app.config.get('INVENIO_APP_CONFIG_ENVS',
+                                   os.getenv('INVENIO_APP_CONFIG_ENVS',
+                                             '').split(',')):
+        cfg_name = cfg_name.strip().upper()
+        if cfg_name:
+            cfg_value = app.config.get(cfg_name)
+            cfg_value = os.getenv(cfg_name, cfg_value)
+            try:
+                cfg_value = ast.literal_eval(cfg_value)
+            except (SyntaxError, ValueError):
+                pass
+            app.config[cfg_name] = cfg_value
+            app.logger.debug("{0} = {1}".format(cfg_name, cfg_value))
+
     # ====================
     # Application assembly
     # ====================
@@ -270,7 +295,7 @@ def create_wsgi_app(*args, **kwargs):
                 get_refersto_hitset
             get_citedby_hitset(None)
             get_refersto_hitset(None)
-        except:
+        except Exception:
             pass
 
     if app.debug:

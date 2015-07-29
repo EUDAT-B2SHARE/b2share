@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio
-# Copyright (C) 2014 CERN.
+# Copyright (C) 2014, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -50,7 +50,7 @@ from __future__ import absolute_import
 import requests
 
 from flask import current_app, request, jsonify
-from flask.ext.login import login_required
+from flask_login import login_required
 from lxml.etree import fromstring
 
 from invenio.utils.xmlhelpers import etree_to_dict
@@ -159,7 +159,7 @@ class Arxiv(object):
 
         # query the database
         result = get_unique_record_json(
-            self.app.config.get("ARXIV_SEARCH_PREFIX", "") + arxiv)
+            "\"{0}{1}\"".format(self.app.config.get("ARXIV_SEARCH_PREFIX", ""), arxiv))
         if result["status"] == "notfound":
             # query arxiv
             result = self.get_json(arxiv)

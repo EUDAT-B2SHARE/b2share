@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2012, 2013, 2014 CERN.
+# Copyright (C) 2012, 2013, 2014, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,9 +20,11 @@
 """Implementation of Blueprint for previewers."""
 
 import itertools
+import os
 
-from flask import Blueprint, request, current_app
-from flask.ext.breadcrumbs import default_breadcrumb_root
+from flask import Blueprint, current_app, request
+
+from flask_breadcrumbs import default_breadcrumb_root
 
 from invenio.base.globals import cfg
 from invenio.config import CFG_SITE_RECORD
@@ -47,12 +49,13 @@ def preview(recid):
     for f in itertools.chain(get_record_documents(recid, filename),
                              get_record_files(recid, filename)):
         if f.name + f.superformat == filename or filename is None:
+            extension = os.path.splitext(f.name + f.superformat)[1]
             ordered = previewers.keys()
             if "CFG_PREVIEW_PREFERENCE" in cfg and \
-               f.superformat in cfg["CFG_PREVIEW_PREFERENCE"]:
+               extension in cfg["CFG_PREVIEW_PREFERENCE"]:
                 from collections import OrderedDict
                 ordered = OrderedDict.fromkeys(
-                    cfg["CFG_PREVIEW_PREFERENCE"][f.superformat] +
+                    cfg["CFG_PREVIEW_PREFERENCE"][extension] +
                     ordered).keys()
 
             try:

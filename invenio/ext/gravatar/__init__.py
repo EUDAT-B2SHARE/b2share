@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2012, 2013 CERN.
+# Copyright (C) 2012, 2013, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,13 +22,13 @@
     --------------------
 
     This module provides initialization and configuration for
-    `flask.ext.gravatar` module.
+    `flask_gravatar` module.
 """
 
 
 def setup_app(app):
     """Initialize Gravatar extension."""
-    from flask.ext.gravatar import Gravatar
+    from flask_gravatar import Gravatar
     gravatar = Gravatar(app,
                         size=app.config.get('GRAVATAR_SIZE', 100),
                         rating=app.config.get('GRAVATAR_RATING', 'g'),

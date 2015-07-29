@@ -2472,7 +2472,7 @@ def search_unit(p, f=None, m=None, wl=0, ignore_synonyms=None):
     elif f == 'citedbyexcludingselfcites':
         # we are doing search by the citation count
         hitset = search_unit_citedby_excluding_selfcites(p)
-    elif m == 'a' or m == 'r' or f == 'subject':
+    elif m == 'a' or m == 'r':
         # we are doing either phrase search or regexp search
         if f == 'fulltext':
             # FIXME: workaround for not having phrase index yet
@@ -3108,7 +3108,13 @@ def get_records_that_can_be_displayed(user_info,
 
     # let's get the restricted collections the user has rights to view
     if permitted_restricted_collections is None:
-        permitted_restricted_collections = user_info.get('precached_permitted_restricted_collections', [])
+        if user_info['guest'] == '1':
+            ## For guest users that are actually authorized to some restricted
+            ## collection (by virtue of the IP address in a FireRole rule)
+            ## we explicitly build the list of permitted_restricted_collections
+            permitted_restricted_collections = get_permitted_restricted_collections(user_info)
+        else:
+            permitted_restricted_collections = user_info.get('precached_permitted_restricted_collections', [])
 
     policy = CFG_WEBSEARCH_VIEWRESTRCOLL_POLICY.strip().upper()
 
@@ -6696,7 +6702,7 @@ def prs_log_query(kwargs=None, req=None, uid=None, of=None, ln=None, p=None, f=N
     # FIXME move query logging to signal receiver
     # log query:
     try:
-        from flask.ext.login import current_user
+        from flask_login import current_user
         if req:
             from flask import request
             req = request
