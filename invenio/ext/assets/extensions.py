@@ -21,11 +21,19 @@
 
 import copy
 import os
-import six
-from flask import current_app, _request_ctx_stack
-from flask.ext.assets import Environment, FlaskResolver
+import warnings
+
+from flask import _request_ctx_stack, current_app
+
+from flask_assets import Environment, FlaskResolver
+
+from invenio.utils.deprecation import RemovedInInvenio21Warning
+
 from jinja2 import nodes
 from jinja2.ext import Extension
+
+import six
+
 from webassets.bundle import is_url
 
 from . import registry
@@ -116,6 +124,11 @@ class BundleExtension(Extension):
             # disable the compilation in debug mode iff asked.
             less_debug = env.debug and \
                 not current_app.config.get("LESS_RUN_IN_DEBUG")
+
+            if less_debug:
+                warnings.warn("LESS_RUN_IN_DEBUG has been deprecated",
+                              RemovedInInvenio21Warning)
+
             requirejs_debug = env.debug and \
                 not current_app.config.get("REQUIREJS_RUN_IN_DEBUG")
 
@@ -127,6 +140,16 @@ class BundleExtension(Extension):
                     if suffix == "css":
                         bundle.extra.update(rel="stylesheet")
                     bundles.append((bundle.weight, bundle))
+
+            from webassets.filter import option
+
+            def option__deepcopy__(value, memo):
+                """Custom deepcopy implementation for ``option`` class."""
+                return option(copy.deepcopy(value[0]),
+                              copy.deepcopy(value[1]),
+                              copy.deepcopy(value[2]))
+
+            option.__deepcopy__ = option__deepcopy__
 
             for _, bundle in sorted(bundles):
                 # A little bit of madness to read the "/" at the
@@ -232,7 +255,7 @@ class InvenioResolver(FlaskResolver):
             else:
                 abspath = super(InvenioResolver, self) \
                     .search_env_directory(ctx, item)
-        except:  # FIXME do not catch all!
+        except Exception:  # FIXME do not catch all!
             # If a file is missing in production (non-debug mode), we want
             # to not break and will use /dev/null instead. The exception
             # is caught and logged.

@@ -1,6 +1,6 @@
 {#
 # This file is part of Invenio.
-# Copyright (C) 2013 CERN.
+# Copyright (C) 2013, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -68,7 +68,7 @@ WSGIPythonHome {{pythonhome}}
         DocumentRoot {{ config.COLLECT_STATIC_ROOT }}
         <Directory {{ config.COLLECT_STATIC_ROOT }}>
            DirectorySlash Off
-           Options FollowSymLinks MultiViews
+           Options +FollowSymLinks +MultiViews -Indexes
            AllowOverride None
            <IfVersion >= 2.4>
            Require all granted
@@ -99,7 +99,6 @@ WSGIPythonHome {{pythonhome}}
 
         RewriteEngine on
         RewriteCond {{ config.COLLECT_STATIC_ROOT }}%{REQUEST_FILENAME} !-f
-        RewriteCond {{ config.COLLECT_STATIC_ROOT }}%{REQUEST_FILENAME} !-d
         RewriteRule ^(.*)$ {{ script_alias }}$1 [PT,L]
     {% endblock wsgi -%}
     {%- block xsendfile_directive %}
@@ -120,7 +119,7 @@ WSGIPythonHome {{pythonhome}}
         <Directory {{ config.CFG_WSGIDIR }}>
            WSGIProcessGroup invenio
            WSGIApplicationGroup %{GLOBAL}
-           Options FollowSymLinks MultiViews
+           Options +FollowSymLinks +MultiViews
            AllowOverride None
            <IfVersion >= 2.4>
            Require all granted

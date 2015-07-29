@@ -1,7 +1,7 @@
 # -*- mode: python; coding: utf-8; -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2007, 2008, 2010, 2011, 2012, 2014 CERN.
+# Copyright (C) 2007, 2008, 2010, 2011, 2012, 2014, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -29,24 +29,23 @@ import sys
 import datetime
 import time
 import os
-try:
-    from invenio.legacy.dbquery import run_sql, wash_table_column_name
-    from invenio.config import CFG_LOGDIR, CFG_TMPDIR, CFG_CACHEDIR, \
-         CFG_TMPSHAREDDIR, CFG_WEBSEARCH_RSS_TTL, CFG_PREFIX, \
-         CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS, \
-         CFG_INSPIRE_SITE, CFG_SIMPLESTORE_UPLOAD_FOLDER
-    from invenio.legacy.bibsched.bibtask import task_init, task_set_option, task_get_option, \
+
+
+from invenio.legacy.dbquery import run_sql, wash_table_column_name
+from invenio.config import CFG_LOGDIR, CFG_TMPDIR, CFG_CACHEDIR, \
+        CFG_TMPSHAREDDIR, CFG_WEBSEARCH_RSS_TTL, CFG_PREFIX, \
+        CFG_WEBSESSION_NOT_CONFIRMED_EMAIL_ADDRESS_EXPIRE_IN_DAYS, \
+        CFG_INSPIRE_SITE
+from invenio.legacy.bibsched.bibtask import task_init, task_set_option, task_get_option, \
          write_message, write_messages
-    from invenio.legacy.bibsched.bibtask_config import CFG_BIBSCHED_LOGDIR
-    from invenio.modules.access.mailcookie import mail_cookie_gc
-    from invenio.legacy.bibdocfile.api import BibDoc
-    from invenio.legacy.bibsched.cli import gc_tasks
-    from invenio.legacy.websubmit.config import CFG_WEBSUBMIT_TMP_VIDEO_PREFIX
-    from invenio.utils.date import convert_datestruct_to_datetext
-    from intbitset import intbitset
-except ImportError as e:
-    print("Error: %s" % (e,))
-    sys.exit(1)
+from invenio.legacy.bibsched.bibtask_config import CFG_BIBSCHED_LOGDIR
+from invenio.modules.access.mailcookie import mail_cookie_gc
+from invenio.legacy.bibdocfile.api import BibDoc
+from invenio.legacy.bibsched.cli import gc_tasks
+from invenio.legacy.websubmit.config import CFG_WEBSUBMIT_TMP_VIDEO_PREFIX
+from invenio.modules.upgrader.api import op
+from invenio.utils.date import convert_datestruct_to_datetext
+from intbitset import intbitset
 
 # Add trailing slash to CFG_TMPSHAREDDIR, for find command to work
 # with symlinks
@@ -338,7 +337,7 @@ def clean_sessions():
     """
     Deletes expired sessions only.
     """
-    if not CFG_INSPIRE_SITE:
+    if op.has_table('session') and not CFG_INSPIRE_SITE:
         deleted_sessions = 0
         timelimit = convert_datestruct_to_datetext(time.gmtime())
         write_message("Deleting expired sessions since %s" % (timelimit,))

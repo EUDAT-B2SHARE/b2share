@@ -37,6 +37,7 @@ components:
 - bulletin
 - cache
 - checker
+- celery
 - circulation
 - classifier
 - cloudconnector
@@ -49,6 +50,7 @@ components:
 - dashboard
 - debug_toolbar
 - deposit
+- docker
 - docs
 - documentation
 - documents
@@ -117,3 +119,6 @@ components:
 - version
 - webhooks
 - workflows
+
+excludes:
+- (.)+/legacy/(.)+

@@ -1,8 +1,8 @@
 ============================
- Invenio v2.0.1 is released
+ Invenio v2.0.5 is released
 ============================
 
-Invenio v2.0.1 was released on March 20, 2015.
+Invenio v2.0.5 was released on July 17, 2015.
 
 About
 -----
@@ -10,69 +10,110 @@ About
 Invenio is a digital library framework enabling you to build your own
 digital library or document repository on the web.
 
-New features
-------------
+Security fixes
+--------------
 
-+ global:
++ docker:
 
-  - Deprecation policy comes with new deprecation warnings wrappers.
-    (#2875)
+  - Disables debug mode when using standard Docker image. Uses docker
+    compose to set the variable instead.
+
+Improved features
+-----------------
+
++ deposit:
+
+  - Improves handling of large files in deposit.
+
++ docker:
+
+  - Improves Docker documentation notably related to how to work with
+    Invenio site overlays.
+
+  - Changes port number exposed by docker to non-reserved ones to
+    avoid conflicts with local installations. Webport is now 28080,
+    Redis 26379 and MySQL is 23306, which is a simple +20000 shift
+    from the standard ports.
+
+  - Integrates docker boot script into docker image.
+
+  - Changes docker boot script to use `exec`. This ensure signal
+    forwarding and reduces the overhead by one process. As a result
+    container shutdown is faster now.
+
+  - Changes manual master/slave configuration of Docker devboot script
+    to automatic solution using file locks.
+
++ jasmine:
+
+  - Allows using variables from application config for building asset
+    bundles.
 
 Bug fixes
 ---------
 
-+ assets:
++ deposit:
 
-  - Avoids bundle changes to persist between requests in DEBUG mode,
-    which is not desired.  (#2777)
+  - Fixes issue with PLUpload chunking not being enabled.
 
-+ docs:
++ encoder:
 
-  - Adds missing `invenio.base` package to the `config.py` file for a
-    custom overlay in the docs.
+  - Corrects the `compose_file` function call in `process_batch_job`
+    to produce `<directory>/content.<extension>` instead of
+    `<directory>/content.content;<extension>`. (#3354)
 
 + global:
 
-  - Replaces `invenio-demo.cern.ch` by `demo.invenio-software.org`
-    which is the new canonical URL of the demo site.  (#2867)
+  - Fixes the way configuration variables are parsed from ENV. It now
+    uses the same method we are using in `inveniomanage config set`.
+    This fixes the problem that `False` is not parsed correctly.
 
 + installation:
 
-  - Reorders 'compile_catalog' and 'install' commands to fix
-    installation process from PyPI.
+  - Fixes capitalization of package names.
 
-  - Adds apache2 xsendfile package to installation script.  (#2857)
++ legacy:
 
-+ messages:
+  - Fixes inveniogc crash when mysql is NOT used to store sessions.
+    (#3205)
 
-  - Defines a path for jquery.ui required by jQuery-Timepicker-Addon
-    and sets an exact version for the plugin instead of latest.
-    (#2910)
++ login:
 
-+ records:
+  - Provides flash message to indicate that an email with password
+    recovery could not be sent. (#3309)
 
-  - Changes creation_date field definition in tests.  (#2214)
+Notes
+-----
 
-+ search:
++ global:
 
-  - Generates correct url for `/collection` redirect.
+  - Backports Flask-IIIF extension from original commit
+    213b6f1144734c9ecf425a1bc7b78e56ee5e4e3e. The extension is not
+    enabled by default in order to avoid feature addition to existing
+    minor release.
 
 Installation
 ------------
 
-   $ pip install invenio
+   $ pip install invenio==2.0.5
+
+Upgrade
+-------
+
+   $ bibsched stop
+   $ sudo systemctl stop apache2
+   $ pip install --upgrade invenio==2.0.5
+   $ inveniomanage upgrader check
+   $ inveniomanage upgrader run
+   $ sudo systemctl start apache2
+   $ bibsched start
 
 Documentation
 -------------
 
-   http://invenio.readthedocs.org/en/v2.0.1
+   http://invenio.readthedocs.org/en/v2.0.5
 
-Homepage
---------
-
-   https://github.com/inveniosoftware/invenio
-
-Happy hacking and thanks for choosing Invenio.
+Happy hacking and thanks for flying Invenio.
 
 | Invenio Development Team
 |   Email: info@invenio-software.org

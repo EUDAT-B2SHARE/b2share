@@ -53,7 +53,7 @@ EXTENSIONS = [
     'invenio.ext.restful',
     'invenio.ext.menu',
     'invenio.ext.jasmine',  # after assets
-    'flask.ext.breadcrumbs:Breadcrumbs',
+    'flask_breadcrumbs:Breadcrumbs',
     'invenio.modules.deposit.url_converters',
 ]
 
@@ -473,7 +473,7 @@ CFG_CROSSREF_USERNAME = ""
 CFG_DEVEL_SITE = 0
 CFG_DEVEL_TEST_DATABASE_ENGINES = {}
 CFG_DEVEL_TOOLS = []
-CFG_EMAIL_BACKEND = "flask.ext.email.backends.smtp.Mail"
+CFG_EMAIL_BACKEND = "flask_email.backends.smtp.Mail"
 CFG_ERRORLIB_RESET_EXCEPTION_NOTIFICATION_COUNTER_AFTER = 14400
 CFG_FLASK_DISABLED_BLUEPRINTS = []
 CFG_HEPDATA_FIELD = "hepdataparent"
@@ -532,9 +532,8 @@ CFG_OAI_LICENSE_TERMS_SUBFIELD = "a"
 CFG_OAI_LICENSE_URI_SUBFIELD = "u"
 CFG_OAI_LOAD = 500
 CFG_OAI_METADATA_FORMATS = {
-    'oai_dc': ('XOAIDC',
-               'http://www.openarchives.org/OAI/1.1/dc.xsd',
-               'http://purl.org/dc/elements/1.1/'),
+    'oai_dc': ('XOAIDC', 'http://www.openarchives.org/OAI/1.1/dc.xsd',
+                           'http://purl.org/dc/elements/1.1/'),
     'marcxml': ('XOAIMARC',
                 'http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd',
                 'http://www.loc.gov/MARC21/slim'),

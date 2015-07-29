@@ -1,5 +1,5 @@
 # This file is part of Invenio.
-# Copyright (C) 2009, 2010, 2011, 2014 CERN.
+# Copyright (C) 2009, 2010, 2011, 2014, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@ if sys.hexversion < 0x2050000:
     from glob import glob as iglob
 else:
     from glob import iglob
-from flask import url_for
+from flask import url_for, abort
 from six import iteritems
 
 from invenio.config import \
@@ -63,10 +63,13 @@ from invenio.config import \
 from intbitset import intbitset
 from invenio.utils.html import X, EscapedXMLString
 from invenio.legacy.dbquery import run_sql, wash_table_column_name
-from invenio.legacy.search_engine import record_exists, get_all_restricted_recids, get_all_field_values, search_unit_in_bibxxx, get_record, search_pattern
+from invenio.legacy.search_engine import record_exists, get_all_restricted_recids, \
+    get_all_field_values, search_unit_in_bibxxx, get_record, search_pattern, \
+    get_records_that_can_be_displayed
 from invenio.modules.formatter import format_record
 from invenio.legacy.bibrecord import record_get_field_instances
 from invenio.ext.logging import register_exception
+from flask_login import current_user
 from invenio.legacy.oairepository.config import CFG_OAI_REPOSITORY_GLOBAL_SET_SPEC
 from invenio.utils.date import localtime_to_utc, utc_to_localtime
 from invenio.base.globals import cfg
@@ -445,6 +448,8 @@ def oai_list_records_or_identifiers(req, argd):
         cache = {
             'argd': argd,
             'last_recid': recid,
+            # FIXME introduce IP check if you use fireroles for guests
+            'id_user': current_user.get_id(),
             'complete_list': complete_list.fastdump(),
         }
         oai_cache_dump(resumption_token, cache)
@@ -576,12 +581,10 @@ def oai_get_recid(identifier):
     if identifier:
         recids = search_pattern(p=identifier, f=CFG_OAI_ID_FIELD, m='e', ap=-9)
         if recids:
-            restricted_recids = get_all_restricted_recids()
-            for recid in recids:
-                if record_exists(recid) > 0 and recid not in restricted_recids:
+            displayable_recids = get_records_that_can_be_displayed(current_user, recids)
+            for recid in displayable_recids:
+                if record_exists(recid) > 0:
                     return recid
-            if recid not in restricted_recids:
-                return recid
     return None
 
 
@@ -680,14 +683,19 @@ def oai_cache_dump(resumption_token, cache):
     """
     cPickle.dump(cache, open(os.path.join(CFG_CACHEDIR, 'RTdata', resumption_token), 'w'), -1)
 
+
 def oai_cache_load(resumption_token):
-    """
-    Restores the cache from the resumption_token.
-    """
+    """Restore the cache from the resumption_token."""
     fullpath = os.path.join(CFG_CACHEDIR, 'RTdata', resumption_token)
-    if os.path.dirname(os.path.abspath(fullpath)) != os.path.abspath(os.path.join(CFG_CACHEDIR, 'RTdata')):
+    if os.path.dirname(os.path.abspath(fullpath)) != os.path.abspath(
+            os.path.join(CFG_CACHEDIR, 'RTdata')):
         raise ValueError("Invalid path")
-    return cPickle.load(open(fullpath))
+    cache = cPickle.load(open(fullpath))
+
+    if cache.get('id_user', 0) == current_user.get_id():
+        return cache
+    abort(401)
+
 
 def oai_cache_gc():
     """
