@@ -25,8 +25,6 @@ services:
   - redis
   - mongodb
 
-sudo: false
-
 language: python
 
 cache:
@@ -41,14 +39,14 @@ env:
 python:
   - "2.7"
 
-addons:
-  apt:
-    packages:
-      - apache2
-      - git
-      - liblzma-dev
-      - nodejs
-      - poppler-utils
+# addons:
+#   apt:
+#     packages:
+#       - apache2
+#       - git
+#       - liblzma-dev
+#       - nodejs
+#       - poppler-utils
 
 before_install:
   - "travis_retry pip install --upgrade pip"
@@ -56,9 +54,11 @@ before_install:
   - "python requirements.py --extras=$REXTRAS --level=min > .travis-lowest-requirements.txt"
   - "python requirements.py --extras=$REXTRAS --level=pypi > .travis-release-requirements.txt"
   - "python requirements.py --extras=$REXTRAS --level=dev > .travis-devel-requirements.txt"
+  # needed in order to have the last version of nodejs
+  - "curl --silent --location https://deb.nodesource.com/setup_0.12 | sudo -E bash -"
 
 install:
-  - "sudo apt-get -qy install apache2 libapache2-mod-wsgi libapache2-mod-xsendfile ssl-cert poppler-utils git subversion nodejs --fix-missing"
+  - "sudo apt-get -qy install apache2 libapache2-mod-wsgi libapache2-mod-xsendfile ssl-cert poppler-utils git subversion nodejs --fix-missing liblzma-dev"
   - "sudo a2enmod actions"
   - "sudo a2enmod version || echo ':('"
   - "sudo a2enmod rewrite"
