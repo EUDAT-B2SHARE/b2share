@@ -163,6 +163,7 @@ require.config({
     "bootstrap-switch": {
       deps: ["jquery"],
       exports: "$.fn.bootstrapSwitch",
+    },
     select2: {
       deps: ["jquery"],
       exports: "select2"
