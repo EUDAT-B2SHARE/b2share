@@ -41,6 +41,4 @@ node_modules/
 org.eclipse.core.resources.prefs
 tags
 install/.vagrant/
-install-invenio2/.vagrant/
-invenio/base/static/
-install-invenio2/
+b2share/base/static
