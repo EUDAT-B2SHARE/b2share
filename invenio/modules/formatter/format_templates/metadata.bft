@@ -1,8 +1,0 @@
-<name>Record Metadata</name>
-<description>Get the metadata. 
-Much easier to just get this as one giant string, although that makes changing 
-formatting more diffcult. This would all be a bit easier if we were just using
-jinja templates and not this BFE stuff.</description>
-
-        <h3>Metadata</h3>
-            <BFE_METADATA/>

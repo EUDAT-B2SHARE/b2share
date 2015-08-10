@@ -1,22 +1,18 @@
-Invenio installation
+B2Share installation
 ====================
 
-1. About
---------
+1. IMPORTANT
+------------
 
-This document specifies how to quickly install Invenio v2.0.0 for the first
-time. See RELEASE-NOTES if you are upgrading from a previous Invenio release.
+This installation workflow is only valid for the `evolution` branch in
+development mode.
+
 
 2. Prerequisites
 ----------------
 
-Here is the software you need to have around before you start installing
-Invenio for development.
+Your must be deploying on a Unix system.
 
-Unix-like operating system.  The main development and production platforms for
-Invenio at CERN are GNU/Linux distributions Debian, Gentoo, Scientific Linux
-(RHEL-based), Ubuntu, but we also develop on Mac OS X.  Basically any Unix
-system supporting the software listed below should do.
 
 2.1. Debian / Ubuntu LTS
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,7 +189,6 @@ and continue with the installation of prerequisite packages:
 .. code-block:: console
 
     $ brew install redis
-    $ brew install mongodb
 
 
 .. note::
@@ -211,7 +206,7 @@ The following might not be necessary but is good to have for completeness.
 
 .. code-block:: console
 
-    $ brew install libjpeg libtiff freetype libffi
+    $ brew install libjpeg libtiff freetype libffi xz
     $ pip install -I pillow
 
 Install ``node`` by following `Node on OS X`_
@@ -319,97 +314,81 @@ Just like you would do with subversion branches.
     $ export PATH+=:$HOME/bin
 
 
-3. Quick instructions for the impatient Invenio developer
----------------------------------------------------------
-
-This installation process is tailored for running the development version of
-Invenio, check out the :py:ref:`overlay` documentation for the production
-setup.
-
-
 .. _Installation:
 
-3.1. Installation
-~~~~~~~~~~~~~~~~~
+3. Installation
+---------------------
 
 The first step of the installation is to download the development version of
-Invenio and the Invenio Demosite. This development is done in the ``master``
-branch.
+EUDAT-B2SHARE/Invenio and EUDAT-B2SHARE/B2Share.
 
-.. code-block:: console
+.. code-block:: console.. code-block:: console
 
     $ mkdir -p $HOME/src
     $ cd $HOME/src/
-    $ export BRANCH=master
-    $ git clone --branch $BRANCH git://github.com/inveniosoftware/invenio.git
-    $ git clone --branch $BRANCH git://github.com/inveniosoftware/invenio-demosite.git
+    $ git clone git@github.com:EUDAT-B2SHARE/invenio.git
+    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git
 
 We recommend to work using
 `virtual environments <http://www.virtualenv.org/>`_ so packages are installed
-locally and it will make your life easier. ``(invenio)$`` tells your that the
-*invenio* environment is the active one.
+locally and it will make your life easier. ``(b2share-evolution)$`` tells your
+that the *b2share-evolution* environment is the active one.
 
 .. code-block:: console
 
     $ # choose an unique name for your virtual environment
-    $ export VENAME=invenio
+    $ export VENAME=b2share-evolution
     $ mkvirtualenv $VENAME
-    (invenio)$ # we are in the invenio environment now and
-    (invenio)$ # can leave it using the deactivate command.
-    (invenio)$ deactivate
+    (b2share-evolution)$ # we are in the b2share-evolution environment now and
+    (b2share-evolution)$ # can leave it using the deactivate command.
+    (b2share-evolution)$ deactivate
     $ # Now join it back, recreating it would fail.
-    $ workon invenio
-    (invenio)$ # That's all there is to know about it.
+    $ workon b2share-evolution
+    (b2share-evolution)$ # That's all there is to know about it.
 
-Let's put Invenio and the Invenio Demosite in the environment just created.
+Let's put Invenio and B2Share in the environment just created.
 
 .. code-block:: console
 
-    (invenio)$ cdvirtualenv
-    (invenio)$ mkdir src
-    (invenio)$ cd src
-    (invenio)$ git-new-workdir $HOME/src/invenio/ invenio $BRANCH
-    (invenio)$ git-new-workdir $HOME/src/invenio-demosite/ invenio-demosite $BRANCH
+    (b2share-evolution)$ cdvirtualenv
+    (b2share-evolution)$ mkdir src
+    (b2share-evolution)$ cd src
+    (b2share-evolution)$ git-new-workdir $HOME/src/b2share/ b2share evolution
+    (b2share-evolution)$ git-new-workdir $HOME/src/invenio/ invenio b2share-evolution
 
 If you don't want to use the ``git-new-workdir`` way, you can either:
 
 - create a symbolic link,
 - or clone the repository directly into the virtualenv.
 
-
 Installing Invenio.
 
 .. code-block:: console
 
-    (invenio)$ cdvirtualenv src/invenio
-    (invenio)$ pip install -e .[development]
+    (b2share-evolution)$ cdvirtualenv src/invenio
+    (b2share-evolution)$ pip install -e .[development]
 
-Some modules may require specific dependencies listed as ``extras``. Pick the
-ones you need. E.g. to add `images` support, we can do as follow:
 
-.. code-block:: console
-
-    (invenio)$ pip install -e .[img]
-
-If the Invenio is installed in development mode, you will need to compile the
+As Invenio is installed in development mode, you will need to compile the
 translations manually.
 
 .. code-block:: console
 
-    (invenio)$ python setup.py compile_catalog
+    (b2share-evolution)$ python setup.py compile_catalog
 
 .. note:: Translation catalog is compiled automatically if you install
     using `python setup.py install`.
 
-Installing Invenio Demosite. ``exists-action i`` stands for `ignore`, it means
-that it'll will skip any previous installation found. Because the Invenio
-Demosite depends on Invenio, it would have tried to reinstall it without this
+Installing B2Share. ``exists-action i`` stands for `ignore`, it means
+that it'll will skip any previous installation found. Because the B2Share
+depends on Invenio, it would have tried to reinstall it without this
 option. If you omit it, ``pip`` will ask you what action you want to take.
 
 .. code-block:: console
 
-    (invenio)$ cdvirtualenv src/invenio-demosite
-    (invenio)$ pip install -r requirements.txt --exists-action i
+    (b2share-evolution)$ cdvirtualenv src/b2share
+    (b2share-evolution)$ pip install -r requirements.txt --exists-action i
+
 
 Installing the required assets (JavaScript, CSS, etc.) via bower. The file
 ``.bowerrc`` is configuring where bower will download the files and
@@ -417,28 +396,10 @@ Installing the required assets (JavaScript, CSS, etc.) via bower. The file
 
 .. code-block:: console
 
-    (invenio)$ inveniomanage bower -i bower-base.json > bower.json
-    Generates or update bower.json for you.
-    (invenio)$ cat .bowerrc
-    {
-        "directory": "invenio_demosite/base/static/vendors"
-    }
-    (invenio)$ bower install
-    (invenio)$ ls invenio_demosite/base/static/vendors
-    bootstrap
-    ckeditor
-    hogan
-    jquery
-    jquery-tokeninput
-    jquery-ui
-    plupload
-    ...
+    (b2share-evolution)$ inveniomanage bower -i bower-base.json > bower.json
+    (b2share-evolution)$ bower install
 
 
-We recommend you to only alter ``bower-base.json`` and regenerate
-``bower.json`` with it as needed. The
-:py:class:`invenio.ext.assets.commands.BowerCommand` is aggregating all the
-dependencies defined by each bundle.
 
 The last step, which is very important will be to collect all the assets, but
 it will be done after the configuration step.
@@ -453,21 +414,21 @@ Generate the secret key for your installation.
 
 .. code-block:: console
 
-    (invenio)$ inveniomanage config create secret-key
+    (b2share-evolution)$ inveniomanage config create secret-key
 
 If you are planning to develop locally in multiple environments please run
 the following commands.
 
 .. code-block:: console
 
-    (invenio)$ # sanitaze for usage as database name and user
-    (invenio)$ export SAFE_NAME=`echo $VENAME$BRANCH | sed -e 's/[^A-Za-z0-9]//g'`
-    (invenio)$ inveniomanage config set CFG_EMAIL_BACKEND flask_email.backends.console.Mail
-    (invenio)$ inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
-    (invenio)$ inveniomanage config set CFG_DATABASE_NAME $SAFE_NAME
-    (invenio)$ inveniomanage config set CFG_DATABASE_USER $SAFE_NAME
-    (invenio)$ inveniomanage config set CFG_SITE_URL http://localhost:4000
-    (invenio)$ inveniomanage config set CFG_SITE_SECURE_URL http://localhost:4000
+    (b2share-evolution)$ # sanitaze for usage as database name and user
+    (b2share-evolution)$ export SAFE_NAME=b2share_evolution
+    (b2share-evolution)$ inveniomanage config set CFG_EMAIL_BACKEND flask_email.backends.console.Mail
+    (b2share-evolution)$ inveniomanage config set CFG_BIBSCHED_PROCESS_USER $USER
+    (b2share-evolution)$ inveniomanage config set CFG_DATABASE_NAME $SAFE_NAME
+    (b2share-evolution)$ inveniomanage config set CFG_DATABASE_USER $SAFE_NAME
+    (b2share-evolution)$ inveniomanage config set CFG_SITE_URL http://localhost:4000
+    (b2share-evolution)$ inveniomanage config set CFG_SITE_SECURE_URL http://localhost:4000
 
 Assets in non-development mode may be combined and minified using various
 filters (see :ref:`ext_assets`). We need to set the path to the binaries if
@@ -476,12 +437,12 @@ they are not in the environment ``$PATH`` already.
 .. code-block:: console
 
     # Local installation (using package.json)
-    (invenio)$ cdvirtualenv src/invenio
-    (invenio)$ npm install
-    (invenio)$ inveniomanage config set LESS_BIN `find $PWD/node_modules -iname lessc | head -1`
-    (invenio)$ inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname cleancss | head -1`
-    (invenio)$ inveniomanage config set REQUIREJS_BIN `find $PWD/node_modules -iname r.js | head -1`
-    (invenio)$ inveniomanage config set UGLIFYJS_BIN `find $PWD/node_modules -iname uglifyjs | head -1`
+    (b2share-evolution)$ cdvirtualenv src/invenio
+    (b2share-evolution)$ npm install
+    (b2share-evolution)$ inveniomanage config set LESS_BIN `find $PWD/node_modules -iname lessc | head -1`
+    (b2share-evolution)$ inveniomanage config set CLEANCSS_BIN `find $PWD/node_modules -iname cleancss | head -1`
+    (b2share-evolution)$ inveniomanage config set REQUIREJS_BIN `find $PWD/node_modules -iname r.js | head -1`
+    (b2share-evolution)$ inveniomanage config set UGLIFYJS_BIN `find $PWD/node_modules -iname uglifyjs | head -1`
 
 All the assets that are spread among every invenio module or external libraries
 will be collected into the instance directory. By default, it create copies of
@@ -489,33 +450,61 @@ the original files. As a developer you may want to have symbolic links instead.
 
 .. code-block:: console
 
-    # Developer only
-    (invenio)$ inveniomanage config set COLLECT_STORAGE flask_collect.storage.link
+    (b2share-evolution)$ inveniomanage config set COLLECT_STORAGE flask_collect.storage.link
+    (b2share-evolution)$ inveniomanage collect
 
-
-    (invenio)$ inveniomanage collect
-    ...
-    Done collecting.
-    (invenio)$ cdvirtualenv var/invenio.base-instance/static
-    (invenio)$ ls -l
-    css
-    js
-    vendors
-    ...
-
-
-.. _Development:
-
-3.3. Development
-~~~~~~~~~~~~~~~~
 
 Once you have everything installed, you can create the database and populate it
 with demo records.
 
 .. code-block:: console
 
-    (invenio)$ inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
-    (invenio)$ inveniomanage database create
+    (b2share-evolution)$ inveniomanage database init --user=root --password=$MYSQL_ROOT --yes-i-know
+    (b2share-evolution)$ inveniomanage database create
+
+
+
+.. _B2Share_Specific:
+
+3.2. B2Share Specific
+~~~~~~~~~~~~~~~~~~~~~
+
+B2Share still needs some additional commands to be run.
+
+.. code-block:: console
+    (b2share-evolution)$ dbexec < ./install/_collections.sql
+    (b2share-evolution)$ python b2share/upgrades/b2share_2015_06_23_create_domain_admin_groups.py
+
+
+.. _Bibsched:
+
+3.3. Start BibSched tasks
+~~~~~~~~~~~~~~~~~~~~~
+
+Start the bibsched processes.
+
+.. code-block:: console
+   (b2share-evolution)$ bibindex -f50000 -s5m -uadmin
+   (b2share-evolution)$ # another bibindex scheduling for global index because it is a virtual index
+   (b2share-evolution)$ bibindex -w global -f50000 -s5m -uadmin
+   (b2share-evolution)$ bibreformat -oHB -s5m -uadmin
+   (b2share-evolution)$ webcoll -v0 -s5m -uadmin
+   (b2share-evolution)$ bibrank -f50000 -s5m -uadmin
+   (b2share-evolution)$ bibsort -s5m -uadmin
+
+You can check if bibsched is in automatic mode.
+
+.. code-block:: console
+   (b2share-evolution)$ bibsched
+
+In automatic mode the top bar and bottom bar are green. In manual mode they are
+grey. Press `A` to change the mode.
+
+.. _Run_B2Share:
+
+3.2. Run B2Share
+~~~~~~~~~~~~~~~~
+
 
 Now you should be able to run the development server. Invenio uses
 `Celery <http://www.celeryproject.org/>`_ and `Redis <http://redis.io/>`_
@@ -530,12 +519,12 @@ which must be running alongside with the web server.
     $ sudo service redis-server start
 
     # launch celery
-    $ workon invenio
-    (invenio)$ celery worker -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV
+    $ workon b2share-evolution
+    (b2share-evolution)$ celery worker -E -A invenio.celery.celery --workdir=$VIRTUAL_ENV
 
     # in a new terminal
     $ workon invenio
-    (invenio)$ inveniomanage runserver
+    (b2share-evolution)$ inveniomanage runserver
      * Running on http://0.0.0.0:4000/
      * Restarting with reloader
 
@@ -548,7 +537,8 @@ which must be running alongside with the web server.
 
         $ redis-server
 
-**Troubleshooting:** As a developer, you may want to use the provided
+**Simpler way to start all services**
+As a developer, you may want to use the provided
 ``Procfile`` with `honcho <https://pypi.python.org/pypi/honcho>`_. It
 starts all the services at once with nice colors. By default, it also runs
 `flower <https://pypi.python.org/pypi/flower>`_ which offers a web interface
@@ -556,33 +546,11 @@ to monitor the *Celery* tasks.
 
 .. code-block:: console
 
-    (invenio)$ pip install honcho flower
-    (invenio)$ cdvirtualenv src/invenio
-    (invenio)$ honcho start
+    (b2share-evolution)$ pip install honcho flower
+    (b2share-evolution)$ cdvirtualenv src/b2share
+    (b2share-evolution)$ honcho start
 
-When all the servers are running, it is possible to upload the demo records.
+6. Credits
+----------
 
-.. code-block:: console
-
-    $ # in a new terminal
-    $ workon invenio
-    (invenio)$ inveniomanage demosite populate --packages=invenio_demosite.base
-
-And you may now open your favourite web browser on
-`http://0.0.0.0:4000/ <http://0.0.0.0:4000/>`_
-
-Optionally, if you are using Bash shell completion, then you may want to
-register python argcomplete for inveniomanage.
-
-.. code-block:: bash
-
-    eval "$(register-python-argcomplete inveniomanage)"
-
-4. Final words
---------------
-
-Happy hacking and thanks for flying Invenio.
-
-       - Invenio Development Team
-         <info@invenio-software.org>
-         <http://invenio-software.org/>
+This manual has been heavily inspired by Invenio manual.
