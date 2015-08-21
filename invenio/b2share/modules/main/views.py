@@ -3,12 +3,16 @@
 
 from flask import Blueprint, g, request, redirect, url_for, current_app
 
+import os
+
 from invenio.ext.template.context_processor import \
-    register_template_context_processor
+    register_template_context_processor, template_args
 from invenio.base.decorators import templated
 from invenio.modules.formatter import format_record
 from invenio.modules.search.models import Collection
 from invenio.modules.search.forms import EasySearchForm
+from invenio.modules.search.views.search import collection
+
 
 
 blueprint = Blueprint('main', __name__, url_prefix="",
@@ -44,3 +48,26 @@ def index():
             format_record=format_record,
         )
     return dict(collection=collection,latest_deposits=latest_deposits, pagetitle="EUDAT B2SHARE",site_function=func)
+
+
+
+# list all domain logos in this module's static assets folder
+domain_logos = [ img for img in os.listdir(os.path.join(blueprint.static_folder, 'img'))
+                if img.startswith('domain-') ]
+
+@template_args(collection)
+def domain_collection_helpers():
+    """Add helpers to the '/collection' templates"""
+    def get_domain_icon(collection_name):
+        """Return the url to the given domain collection logo if it exists"""
+        if not collection_name or not isinstance(collection_name, basestring):
+            return;
+        logo_file_prefix = 'domain-' + collection_name.lower()
+        matching_logo = [ logo for logo in domain_logos if logo.startswith(logo_file_prefix)]
+        if len(matching_logo) == 1:
+            return url_for('static', filename=os.path.join('img',
+                                                           matching_logo[0]))
+        elif len(matching_logo) > 0:
+            raise Exception('multiple logos matching domain collection ' +
+                            collection_name)
+    return { 'get_domain_icon': get_domain_icon }
