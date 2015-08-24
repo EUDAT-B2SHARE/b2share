@@ -27,7 +27,6 @@
 
 {% block record_header %}
   <a href="{{ url_for('record.metadata', recid=record['recid']) }}">
-    {{ bfe_title(bfo) }}
     {{ record.get('title.title', '') }}
     {{- record.get('title.volume', '')|prefix(', ') }}
     {{- record.get('title.subtitle', '')|prefix(': ') }}
@@ -36,7 +35,6 @@
 {% endblock %}
 
 {% block record_content %}
-  {{ bfe_abstract(bfo, limit="3") }}
   {{ record.get('abstract.summary', '')|sentences(3) }}
 {% endblock %}
 
