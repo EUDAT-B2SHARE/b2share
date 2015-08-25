@@ -9,6 +9,9 @@ image = 'domain-rda.png'
 kind = 'project'
 domaindesc = 'Research Data Alliance.'
 
+# the domain administator can edit even published records
+admin_can_edit_published_record = True
+
 fields = [
     {
         'name': 'date',
