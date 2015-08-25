@@ -114,7 +114,9 @@ class SchemaField:
     def __init__(self, schema_field_dict):
         self.dict = schema_field_dict
         for k in ['name', 'col_type', 'display_text', 'description',
-            'required', 'cardinality', 'data_provide', 'data_source']:
+            'required', 'cardinality', 
+            'advanced', # advanced is for the UI (a not-so-important field) 
+            'data_provide', 'data_source']:
             assert k in schema_field_dict
 
 ###############################################################################
