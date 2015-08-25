@@ -185,7 +185,7 @@ class Record:
         """ Changes the internal record_status field and triggers other events
             accordingly: if submitted inform the admin for review, if rejected
             inform the owner.
-            Automatically creates a new record version."""
+            If new_state == released, automatically creates a new record version."""
         pass
 
     def get_reference_list(self):
