@@ -9,8 +9,11 @@ image = 'domain-rda.png'
 kind = 'project'
 domaindesc = 'Research Data Alliance.'
 
-# the domain administator can edit even published records
+# the domain administators can edit even published records
 admin_can_edit_published_record = True
+
+# only the domain administrators can deposit
+depositing_groups = ['rda_domain_administrators']
 
 fields = [
     {
