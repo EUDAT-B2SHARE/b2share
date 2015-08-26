@@ -39,7 +39,7 @@ from invenio.b2share.modules.b2deposit.b2share_upload_handler \
 from invenio.b2share.modules.b2deposit.b2share_marc_handler \
     import get_depositing_files_metadata, create_marc
 from invenio.b2share.modules.b2deposit.b2share_deposit_handler \
-    import write_marc_to_temp_file, FormWithKey
+    import write_marc_to_temp_file, FormWithKey, is_current_user_allowed_to_deposit
 
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
@@ -446,6 +446,9 @@ class DepositionCommit(B2Resource):
                 'status': 400,
             }
             return json_data, 400
+
+        if not is_current_user_allowed_to_deposit(meta):
+            return {'message':'depositions to this domain are restricted', 'status':401}, 401
 
         if 'open_access' not in form:
             return {'message':'open_access boolean field required', 'status':400}, 400

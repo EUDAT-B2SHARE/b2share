@@ -35,6 +35,14 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         "description": "Test description",
         "open_access": True,
     }
+    linguistics_metadata = {
+        "domain": "Linguistics",
+        "title": "Test title",
+        "description": "Test description",
+        "open_access": True,
+        "language_code": "eng",
+        "ling_resource_type": ['Text'],
+    }
     rda_metadata = {
         "domain": "RDA",
         "title": "Test title",
@@ -159,17 +167,17 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         # create two records with different domains
         files = [("test_file.txt", "test content")]
         gen_record_id = self.create_valid_record(files, self.generic_metadata)
-        rda_record_id = self.create_valid_record(files, self.rda_metadata)
+        linguistics_record_id = self.create_valid_record(files, self.linguistics_metadata)
 
         gen_record_request = self.get_record(gen_record_id, safe=True)
-        rda_record_request = self.get_record(rda_record_id, safe=True)
+        linguistics_record_request = self.get_record(linguistics_record_id, safe=True)
 
         # list records after adding new records
         records_after = self.scan_records()
 
         # both records should appear in the list
         records_before.append(gen_record_request.json)
-        records_before.append(rda_record_request.json)
+        records_before.append(linguistics_record_request.json)
 
         # sort the records on record_id
         records_after.sort(key=lambda rec: rec["record_id"])
@@ -185,15 +193,15 @@ class TestB2DepositRESTAPI(B2ShareAPITestCase):
         # create two records with different domains
         files = [("test_file.txt", "test content")]
         gen_record_id = self.create_valid_record(files, self.generic_metadata)
-        rda_record_id = self.create_valid_record(files, self.rda_metadata)
+        linguistics_record_id = self.create_valid_record(files, self.linguistics_metadata)
 
         gen_record_request = self.get_record(gen_record_id, safe=True)
-        self.get_record(rda_record_id, safe=True)
+        self.get_record(linguistics_record_id, safe=True)
 
         # list records after adding new records
         records_after = self.scan_records("generic")
 
-        # the "generic" record should appear in the list but not the "rda" one
+        # the "generic" record should appear in the list but not the "linguistics" one
         records_before.append(gen_record_request.json)
 
         # sort the records on record_id

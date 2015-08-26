@@ -47,6 +47,17 @@ def deposit(request):
                            domains=metadata_classes().values(),
                            sub_id=uuid.uuid1().hex)
 
+def is_current_user_allowed_to_deposit(meta):
+    # the user's groups are not updated unless we call reload()
+    current_user.reload()
+    user_groups = current_user.get('group', [])
+    depositing_groups = getattr(meta, 'depositing_groups', [])
+    if depositing_groups and not [g for g in user_groups if g in depositing_groups]:
+        # depositing is restricted for this domain
+        # and the current user is not allowed to make deposits
+        return False
+    return True
+
 
 def getform(request, sub_id, domain):
     """
@@ -59,6 +70,9 @@ def getform(request, sub_id, domain):
     else:
         from b2share_model.model import SubmissionMetadata
         meta = SubmissionMetadata()
+
+    if not is_current_user_allowed_to_deposit(meta):
+        return render_template('b2share-addmeta-table-denied.html')
 
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
@@ -95,6 +109,10 @@ def addmeta(request, sub_id):
     else:
         from b2share_model.model import SubmissionMetadata
         meta = SubmissionMetadata()
+
+    if not is_current_user_allowed_to_deposit(meta):
+        return jsonify(valid=False,
+                       html=render_template('b2share-addmeta-table-denied.html'))
 
     MetaForm = model_form(meta.__class__, base_class=FormWithKey,
                           exclude=['submission', 'submission_type'],
