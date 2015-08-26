@@ -107,17 +107,23 @@ def is_record_editable(recid):
     if current_user.is_guest:
         return False
 
-    (domain, owner_email, is_private) = _get_record_info(recid)
+    (domain, owner_email, is_private, admin_can_edit_published_record) = _get_record_info(recid)
 
     # if private record, allow owner of the record
     if is_private and current_user['email'] == owner_email:
         return True
 
-    # if private record, allow community admin
     # the user's groups are not updated unless we call reload()
     current_user.reload()
-    if is_private and get_domain_admin_group(domain) in current_user.get('group', []):
-        return True
+
+    if get_domain_admin_group(domain) in current_user.get('group', []):
+        # if the current user is community admin
+        if is_private:
+            # allow community admin to edit private records
+            return True
+        if admin_can_edit_published_record:
+            # some domains allow community admin to edit public records
+            return True
 
     return False
 
@@ -129,7 +135,10 @@ def _get_record_info(recid):
     is_private = open_access == "restricted" or open_access == False
     domain = read_basic_metadata_field_from_marc(bfo, 'domain')
     owner_email = read_basic_metadata_field_from_marc(bfo, 'uploaded_by')
-    return (domain, owner_email, is_private)
+    metaclass = metadata_classes().get(domain)
+    admin_can_edit_published_record = getattr(metaclass, 'admin_can_edit_published_record', False)
+
+    return (domain, owner_email, is_private, admin_can_edit_published_record)
 
 
 def _bibdoc_file_list(recid):
