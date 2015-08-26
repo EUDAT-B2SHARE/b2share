@@ -16,6 +16,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import os
+from dateutil import parser
 from datetime import datetime
 import hashlib
 import pickle
@@ -157,6 +158,12 @@ def add_file_info(rec, form, email, sub_id, recid):
     else:
         fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
             email)
+
+    if 'embargo_till' in form:
+        embargodate = parser.parse(form['embargo_till'])
+        embargodate = datetime.strftime(embargodate, '%Y-%m-%d')
+        fft_status = 'firerole: deny until "%s"\nallow any\n' % embargodate
+
     for metadata in get_depositing_files_metadata(sub_id):
         path = metadata['file']
         record_add_field(rec, 'FFT',

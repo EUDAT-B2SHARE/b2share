@@ -51,6 +51,7 @@ class SubmissionMetadata(db.Model):
     creator = db.Column(db.String(256))
     title = db.Column(db.String(256), nullable=False)
     open_access = db.Column(db.Boolean(), default=True)
+    embargo_till = db.Column(db.String(128))
 
     licence = db.Column(db.String(128))  # note we set licences in __init__
     publisher = db.Column(db.String(128), default=publisher_default)
@@ -67,8 +68,9 @@ class SubmissionMetadata(db.Model):
     version = db.Column(db.String(128))
     contact_email = db.Column(db.String(256))
 
-    basic_fields = ['title', 'description', 'creator', 'open_access', 'licence',
-                    'publication_date', 'keywords', 'contact_email', 'discipline', ]
+    basic_fields = ['title', 'description', 'creator', 'open_access',
+                    'embargo_till', 'licence', 'publication_date',
+                    'keywords', 'contact_email', 'discipline', ]
     optional_fields = ['contributors', 'resource_type', 'alternate_identifier',
                        'version', 'publisher', 'language', ]
 
@@ -132,6 +134,11 @@ class SubmissionMetadata(db.Model):
                            'access is restricted. In case of restricted '
                            'access the uploaded files will not be public, '
                            'however the metadata will be.'
+        }
+        self.field_args['embargo_till'] = {
+            #'placeholder': 'Embargo end date',
+            'description': 'Submitted files are hidden under embargo and will '
+                           'become accessible the day the embargo ends'
         }
         self.field_args['contributors'] = {
             'placeholder': 'contributor',
