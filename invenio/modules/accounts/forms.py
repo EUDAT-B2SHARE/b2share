@@ -20,6 +20,7 @@
 """WebAccount Forms."""
 
 from flask_login import current_user
+
 from flask_wtf import Form, validators
 
 from invenio.base.globals import cfg
@@ -91,7 +92,7 @@ class ChangeUserEmailSettingsForm(InvenioBaseForm):
         from flask import flash, url_for
         flash(_("Note that if you have changed your email address, you \
                 will have to <a href=%(link)s>reset</a> your password anew.",
-                link=url_for('webaccount.lost')), 'warning')
+                link=url_for('webaccount.lost')), 'warning(html_safe)')
 
 
 class LostPasswordForm(InvenioBaseForm):
