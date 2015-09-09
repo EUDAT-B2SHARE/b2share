@@ -5,7 +5,8 @@ from flask import current_app
 
 from urlparse import urljoin, urlparse
 
-def createHandle(location,checksum=None,suffix=''):
+
+def createHandle(location, checksum=None, suffix=''):
     """ Create a new handle for a file.
 
     Parameters:
@@ -27,19 +28,18 @@ def createHandle(location,checksum=None,suffix=''):
     # read them and set the proxy. If not, do nothing.
     try:
         proxy = current_app.config.get('CFG_SITE_PROXY')
-        proxyPort = current_app.config.get('CFG_SITE_PROXYPORT')
+        proxy_port = current_app.config.get('CFG_SITE_PROXYPORT')
     except:
         proxy = None
-        proxyPort = 80
+        proxy_port = 80
 
     if proxy is not None:
         import socks
-        http = httplib2.Http(proxy_info = httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP,
-                             proxy, proxyPort))
-        http.disable_ssl_certificate_validation = True
+        http = httplib2.Http(
+            proxy_info=httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP,
+                                          proxy, proxy_port))
     else:
         http = httplib2.Http()
-        http.disable_ssl_certificate_validation = True
 
     http.add_credentials(username, password)
 
@@ -50,24 +50,25 @@ def createHandle(location,checksum=None,suffix=''):
     else:
         uri = baseurl + '/' + prefix
     if suffix != '':
-        uri += "/" + suffix.lstrip(prefix+"/")
+        uri += "/" + suffix.lstrip(prefix + "/")
 
     # for a PUT, add 'If-None-Match': '*' to the header
-    hdrs = {'Content-Type':'application/json', 'Accept': 'application/json'}
+    hdrs = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
     if checksum:
         new_handle_json = jsondumps([{'type': 'URL',
                                       'parsed_data': location},
-            {'type':'CHECKSUM','parsed_data': checksum}])
+                                     {'type': 'CHECKSUM',
+                                      'parsed_data': checksum}])
     else:
-        new_handle_json = jsondumps([{'type':'URL',
+        new_handle_json = jsondumps([{'type': 'URL',
                                       'parsed_data': location}])
 
     current_app.logger.debug("json: " + new_handle_json)
 
     try:
         response, content = http.request(uri, method='POST',
-                headers=hdrs, body=new_handle_json)
+                                         headers=hdrs, body=new_handle_json)
     except Exception as e:
         current_app.logger.debug(e)
         abort(503)
@@ -76,13 +77,13 @@ def createHandle(location,checksum=None,suffix=''):
 
     if response.status != 201:
         current_app.logger.debug(
-                  "Not Created: Response status: %s" % response.status)
+            "Not Created: Response status: %s" % response.status)
         abort(response.status)
 
     # get the handle as returned by EPIC
     hdl = response['location']
     pid = '/'.join(urlparse(hdl).path.split('/')[3:])
 
-    CFG_HANDLE_SYSTEM_BASEURL = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
+    CFG_HANDLE_SYSTEM_BASEURL = current_app.config.get(
+        'CFG_HANDLE_SYSTEM_BASEURL')
     return urljoin(CFG_HANDLE_SYSTEM_BASEURL, pid)
-
