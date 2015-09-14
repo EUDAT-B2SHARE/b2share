@@ -4,33 +4,78 @@
 from __future__ import absolute_import
 
 # The current user is implicitly used throughout the API
-from flask.login import current_user
+# from flask.login import current_user
 
 # TODO:
+#   - flat list of files? with pagination?
 #   - versioning of community, schema, records:
 #       - schemas change to new schemas with new ids
-#       - records change to new version ids, the same record id
+#       - deprecate a schema in favour of a new one
 #   - ACL and POLICY definitions
-#   - add User class
+
+
 
 ###############################################################################
 
-class CommunityList:
+class UserRegistry:
+    @staticmethod
+    def create_user(nickname, email, full_name, other_info):
+        """ Returns a newly created user object, or raises exception."""
+        pass
+
+    @staticmethod
+    def get_by_id(user_id):
+        """Returns a User object or nil"""
+        pass
+
+    @staticmethod
+    def get_by_name(nickname):
+        """ Returns a User object or nil. A nickname uniquely identifies
+            one user"""
+        pass
+
+    @staticmethod
+    def search(part_of_nickname_or_full_name):
+        """ Returns a short list of user objects (potential matches)."""
+        pass
+
+
+#from invenio.modules.accounts.models import User as InvenioUser
+
+class User:
+    def login(self):
+        """ Logs in this user (self), making it the flask current_user
+            Raises exception on failure"""
+        pass
+
+    def get_info(self, show_private_info=False):
+        """ Returns a dict with the user's public info (id, nickname)"""
+        pass
+
+    def get_private_info(self, show_private_info=False):
+        """ Returns a dict with the user's private info (email, ???)
+            or raises AccessDenied exception"""
+        pass
+
+
+###############################################################################
+
+class CommunityRegistry:
     @staticmethod
     def get_by_id(community_id):
-        """Returns a Community object"""
+        """Returns a Community object or nil"""
         pass
 
     @staticmethod
     def get_by_name(community_name):
-        """Returns a Community object"""
+        """Returns a Community object or nil"""
         pass
 
     @staticmethod
     def create_community(name, description, logo):
-        """ Returns a newly created community object. Only administrators can
-            call this function. A new community implicitly has associated a new
-            metadata fieldset. """
+        """ Returns a newly created community object or raises exception.
+            Only administrators can call this function. A new community
+            is implicitly associated with a new, empty, schema list. """
         pass
 
 class Community:
@@ -54,6 +99,10 @@ class Community:
         """ Returns the previous version of this community"""
         pass
 
+    def get_schema_list(self):
+        """Returns the SchemaList object, specific for this community"""
+        pass
+
     def is_admin(user_id):
         """ Returns True if the specified user is a community administrator
             of this community"""
@@ -64,6 +113,7 @@ class Community:
             Adding a new admin possible only from B2ACCESS ??? """
         pass
 
+
 ###############################################################################
 
 class SchemaList:
@@ -72,12 +122,11 @@ class SchemaList:
 
     @staticmethod
     def get_basic_schema():
-        """Returns the basic Schema object"""
+        """Returns the basic Schema object, common for all communities"""
         pass
 
-    @staticmethod
-    def get_community_schema_list(community_id):
-        """Returns the SchemaList object, specific for the designated community"""
+    def __getitem__(self, index):
+        """Returns the SchemaField with the specified index in the list"""
         pass
 
     def __iter__(self):
@@ -114,14 +163,14 @@ class SchemaField:
     def __init__(self, schema_field_dict):
         self.dict = schema_field_dict
         for k in ['name', 'col_type', 'display_text', 'description',
-            'required', 'cardinality', 
-            'advanced', # advanced is for the UI (a not-so-important field) 
+            'required', 'cardinality',
+            'advanced', # advanced is for the UI (a not-so-important field)
             'data_provide', 'data_source']:
             assert k in schema_field_dict
 
 ###############################################################################
 
-class RecordList:
+class RecordRegistry:
     @staticmethod
     def get_by_id(record_id):
         """ Returns record object, or just a part of the actual record,
@@ -160,34 +209,20 @@ class RecordSearchFilter:
 
 
 class Record:
-    def get_community_id(self):
-        """Returns the record's community id"""
+    def get_id(self):
+        """Returns the record's id"""
         pass
 
-    def get_schema_id(self):
-        """Returns the record's schema id"""
+    def get_community_id(self):
+        """Returns the record's community id"""
         pass
 
     def get_previous_version(self):
         """Returns the record's previous version, if any."""
         pass
 
-    def get_metadata(self):
-        """ Returns a dict with the all basic and domain specific
-            metadata fields and values"""
-        pass
-
-    def patch_metadata(self, metadata_dict_patch):
-        """ Patches the existing metadata with new metadata.
-            Domain, id, record_state are not changeable.
-            Automatically creates a new record version."""
-        pass
-
-    def change_state(self, new_state, reason):
-        """ Changes the internal record_status field and triggers other events
-            accordingly: if submitted inform the admin for review, if rejected
-            inform the owner.
-            If new_state == released, automatically creates a new record version."""
+    def get_metadata_blocks(self):
+        """ Returns a MetadataBlockList"""
         pass
 
     def get_reference_list(self):
@@ -198,25 +233,69 @@ class Record:
         """Returns the root FileContainer object"""
         pass
 
+    def change_state(self, new_state, reason):
+        """ Changes the internal record_status field and triggers other events
+            accordingly: if submitted inform the admin for review, if rejected
+            inform the owner.
+            If new_state == released, automatically creates a new record version."""
+        pass
+
+
+class MetadataBlockList:
+    """ MetadataBlockList manages the list of metadata blocks for a particular
+        record. """
+    def __getitem__(self, index):
+        """Returns the MetadataBlock with the specified index"""
+        pass
+    def __iter__(self):
+        """Iterates through all the metadata blocks"""
+        pass
+    def insert(self, index, new_metadata_block):
+        """ Inserts a new metadata block.
+            Automatically creates a new record version."""
+        pass
+    def delete(self, index):
+        """ Deletes a metadata_block.
+            REQUIREMENT: record_status == 'draft'."""
+        pass
+
+
+class MetadataBlock:
+    def get_schema_id(self):
+        """ Returns the schema_id of this metadata block"""
+        pass
+
+    def get_metadata(self):
+        """ Returns a lists of MetadataBlock objects with the all basic and community specific
+            metadata fields and values"""
+        pass
+
+    def patch_metadata(self, metadata_dict_patch):
+        """ Patches the existing metadata with new metadata.
+            REQUIREMENT: record_status == 'draft'."""
+        pass
+
 
 class ReferenceList:
     """ ReferenceList manages the list of references for a particular record.
         The references are either ids of records in the same b2share instance
         or PIDs that can point to b2share records in other b2share instances or
         to other resources in general"""
-    def __getitem__(self, reference_id):
-        """Returns a Reference with the specified id"""
+    def __getitem__(self, index):
+        """Returns a Reference with the specified index"""
         pass
     def __iter__(self):
         """Iterates through all the references"""
         pass
     def insert(self, index, new_reference):
         """ Inserts a new reference.
-            Automatically creates a new record version."""
+            REQUIREMENT: record_status == 'draft'."""
         pass
     def delete(self, index):
-        """Deletes a reference. Automatically creates a new record version."""
+        """ Deletes a reference.
+            REQUIREMENT: record_status == 'draft'."""
         pass
+
 
 class Reference:
     """A reference object"""
@@ -235,6 +314,7 @@ class Reference:
             does not point to a local record"""
         pass
 
+
 class FileContainer:
     """A FileContainer can contain other FileContainer objects and also
         File objects. It is like a file system directory. Each FileContainer
@@ -247,17 +327,17 @@ class FileContainer:
 
     def set_name(self, new_name):
         """ Renames the conatainer. This operation can fail if there exists a folder or file with the same name in the same parent folder.
-            Automatically creates a new record version."""
+            REQUIREMENT: record_status == 'draft'."""
         pass
 
     def add_sub_container(self, new_file_container_name):
         """ Adds a new FileContainer as subcontainer of this one.
-            Automatically creates a new record version."""
+            REQUIREMENT: record_status == 'draft'."""
         pass
 
     def delete_sub_container(self, sub_container_id):
         """ Deletes the subcontainer. Fails if the subcontainer is not empty.
-            Automatically creates a new record version."""
+            REQUIREMENT: record_status == 'draft'."""
         pass
 
     def list_files(self):
@@ -268,7 +348,7 @@ class FileContainer:
         """ Adds a new File object. The new_file_URL can be a local file path
             or a real http URL. The implementation must create and manage a
             copy of the data (not refer to external resources).
-            Automatically creates a new record version."""
+            REQUIREMENT: record_status == 'draft'."""
         pass
 
 
@@ -284,9 +364,10 @@ class File:
     def set_name(self, new_name):
         """ Renames the file. This operation can fail if there exists a folder
             or file with the same name in the same parent folder.
-            Automatically creates a new record version."""
+            REQUIREMENT: record_status == 'draft'."""
         pass
 
     def delete(self):
-        """Automatically creates a new record version."""
+        """Automatically creates a new record version.
+            REQUIREMENT: record_status == 'draft'."""
         pass
