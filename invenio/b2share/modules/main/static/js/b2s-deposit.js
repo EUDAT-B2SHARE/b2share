@@ -85,6 +85,45 @@ $(document).ready(function() {
 
     $('#deposit').click(deposit_click_handler);
 
+    function b2drop_login_handler(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var data = {
+            username: $('#b2dropModal #nickname').val(),
+            password: $('#b2dropModal #password').val(),
+        };
+        $.post('/b2deposit/b2drop', data, b2drop_render_handler);
+    }
+
+    function b2drop_render_handler(response) {
+        $("#b2dropModal #login").hide();
+        var div = $("#b2dropModal #files");
+        var files = response.files;
+        for (var i = 0; i < files.length; i++) {
+            div.append(b2drop_render_file(files[i]));
+        }
+        alert(JSON.stringify(response));
+    }
+
+    function b2drop_render_file(f) {
+        // TODO: check XSS
+        return (
+            "<div class='row'>"+
+            "<div class='col-xs-4'>"+f.name+"</div>"+
+            "<div class='col-xs-4'>"+f.size+"</div>"+
+            "<div class='col-xs-4'>"+new Date(f.mtime).toString()+"</div>"+
+            "</div>"
+        );
+    }
+
+    function b2drop_select_handler() {
+        alert("select");
+    }
+
+    $('#b2drop-login').click(b2drop_login_handler);
+    $('#b2drop-select').click(b2drop_select_handler);
+
+
     // the url values are put into html by the flask template renderer
     b2share_init_plupload('#fileupload',
         $("#url_for_upload").attr("value"),
@@ -261,7 +300,7 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
 
     uploader.bind('FilesAdded', function(up, files) {
         var no_files_with_content = true;
-        
+
         for (var t = files.length - 1; t >= 0; t--) {
             if (files[t].size === 0) {
                 alert("File " + files[t].name + " is empty");
@@ -271,9 +310,9 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
                 no_files_with_content = false;
             }
         }
-        if (no_files_with_content === true) { 
+        if (no_files_with_content === true) {
             setDepositBtnState();
-            return; 
+            return;
         }
 
         var hashmap = {};

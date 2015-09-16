@@ -18,8 +18,8 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """B2SHARE Flask Blueprint"""
-from flask import request, Blueprint
-from flask.ext.login import login_required
+from flask import request, Blueprint, jsonify
+from flask.ext.login import login_required, current_user
 from flask.ext.breadcrumbs import default_breadcrumb_root, register_breadcrumb
 from invenio.base.i18n import _
 import invenio.b2share.modules.b2deposit.edit as edt
@@ -92,3 +92,63 @@ def edit(recid):
 @login_required
 def updatemeta(recid):
     return edt.update(int(recid), request.form)
+
+@blueprint.route('/b2drop', methods=['POST'])
+@login_required
+def b2drop():
+    import easywebdav
+    webdav = easywebdav.connect('b2drop.fz-juelich.de', protocol='https', path='/remote.php/webdav/', \
+        username=request.form['username'], password=request.form['password'])
+    # import ipdb; ipdb.set_trace()
+    current_user.b2drop = webdav
+    files = [cleanFile(f) for f in webdav.ls()]
+    res = {"files": files}
+    return jsonify(res)
+
+def cleanFile(f):
+    import string
+    name_parts = string.split(f.name, "/")
+    name = name_parts[-1]
+    if name == "": name = name_parts[-2]
+    return {"path":f.name, "name":name, "size":humansize(f.size), "mtime":f.mtime, "isdir":f.name.endswith("/")}
+
+
+def humansize(v):
+    if v < 1024:
+        return "%5d B" % v
+    elif v < 1024*1024:
+        return "%5d KB" % (v/1024.0)
+    elif v < 1024*1024*1024:
+        return "%5d MB" % (v/(1024*1024))
+    elif v < 1024*1024*1024*1024:
+        return "%5d GB" % (v/(1024*1024*1024))
+    elif v < 1024*1024*1024*1024:
+        return "%5d TB" % (v/(1024*1024*1024*1024))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

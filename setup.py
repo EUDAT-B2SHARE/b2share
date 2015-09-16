@@ -74,6 +74,7 @@ install_requires = [
     "chardet>=2.3.0",
     "datacite>=0.1.0",
     "dictdiffer>=0.0.3",
+    "easywebdav>=1.2.0",
     "feedparser>=5.1",
     "fixture>=1.5",
     "Flask>=0.10.1",
