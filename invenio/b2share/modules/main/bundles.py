@@ -49,6 +49,7 @@ b2s_deposit_js = Bundle(
     "js/lodash-fix.js",
     "vendors/lindat-license-selector/license-selector.min.js",
     "js/b2s-deposit.js",
+    "js/b2s-b2drop.js",
     output="b2s_deposit.js",
     filters="requirejs",
     bower={

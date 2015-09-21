@@ -42,11 +42,9 @@
                 </h2>
 
                 <div class="row" style="margin-left:0">
-                    <div id="drag_and_drop_text" class="col-sm-8 well well-b2sblue" style="height: 122px"></div>
+                    <div id="drag_and_drop_text" class="col-sm-8 well well-b2sblue" style="height: 78px"></div>
                     <div class="col-sm-4">
                         <a class="btn btn-b2sblue" id="pickfiles">Select local files</a>
-                        <p> </p>
-                        <button class="btn btn-b2sblue" data-toggle="modal" data-target="#b2dropModal">Select B2DROP files</button>
                         <p> </p>
                         <a class="btn btn-b2sblue disabled" id="uploadfiles">Start upload</a>
                         <a class="btn btn-b2sblue" id="stopupload" style="display:none">Stop upload</a>
@@ -67,6 +65,29 @@
                 </tbody>
             </table>
 
+            <hr/>
+
+            <div id="filebox-b2drop">
+                <div class="row" style="margin-left:0; margin-bottom:20px">
+                    <div class="col-sm-6">
+                        <button class="btn btn-b2sblue" data-toggle="modal" data-target="#b2dropModal">Upload files from B2DROP</button>
+                    </div>
+                </div>
+            </div>
+
+            <table id="file-table-b2drop" class="table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="filelist-b2drop">
+                </tbody>
+            </table>
+
             <div id="upload-errors"></div>
 
             {# these hidden inputs are used to transfer flask dynamic values to javascript -#}
@@ -77,6 +98,7 @@
             <input type="hidden" id="url_for_get_file" name="url_for_get_file" value="{{ url_for('.get_file', sub_id=sub_id) }}"></input>
             <input type="hidden" id="url_for_getform" name="url_for_getform" value="{{ url_for('.getform', sub_id=sub_id, domain='') }}"></input>
             <input type="hidden" id="url_for_addmeta" name="url_for_addmeta" value="{{ url_for('.addmeta', sub_id=sub_id) }}"></input>
+            <input type="hidden" id="url_for_b2drop_upload" name="url_for_b2drop_upload" value="{{ url_for('.b2drop_upload', sub_id=sub_id) }}"></input>
             <input type="hidden" id="filelist" name="filelist" value=""></input>
 
         </div>
@@ -150,27 +172,39 @@
             </div>
             <div class="modal-body">
                 <div class="login" id="login">
+                <div class="well">
                 <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        <h4>Please log in to B2DROP</h4>
+                    </div>
                     <form>
-                    <div class="col-sm-12">
+                    <div class="col-sm-8 col-sm-offset-2">
                         <div class="input-group">
                             <input class="login-row" type="text" id="nickname" placeholder="Username or email">
-                            <span class="input-group-addon after-input">&gt;</span>
                         </div>
                     </div>
-                    <div class="col-sm-12">
+                    <div class="col-sm-8 col-sm-offset-2">
                         <div class="input-group">
                             <input class="login-row" type="password" id="password" placeholder="Password">
-                            <span class="input-group-addon after-input">&gt;</span>
                         </div>
                     </div>
-                    <div class="col-sm-12">
-                        <button id="b2drop-login" class="btn btn-primary" type="submit">Login</button>
+                    <div class="col-sm-4 col-sm-offset-6">
+                        <button id="b2drop-login" class="btn btn-primary" type="submit" style="width:100px">Log in</button>
                     </div>
                     </form>
+                    </div>
                 </div>
                 </div>
-                <div id="files">
+                <div id="wait" style="display:none">
+                    Please wait...
+                </div>
+                <div id="files" style="display:none">
+                    <table class="table table-condensed table-hover">
+                    </table>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="b2drop-select" type="button" class="btn btn-primary">Select</button>
+                    </div>
                 </div>
             </div>
         </div><!-- /.modal-content -->

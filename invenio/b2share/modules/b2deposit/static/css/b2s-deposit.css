@@ -1,3 +1,54 @@
+/* --- b2drop login and browsing --- */
+
+#b2dropModal .login {
+    text-align:left;
+}
+
+#b2dropModal h4 {
+    color: rgb(200, 100, 10);
+}
+
+#b2dropModal .login h4 {
+    margin-bottom: 20px;
+}
+#b2dropModal .login input[type='text'],
+#b2dropModal .login input[type='password']{
+    border: 1px solid #ccc;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    margin: 0;
+    width: 320px;
+    line-height:28px;
+    font-size: 18px;
+}
+#b2dropModal .login input[type='text']{
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+#b2dropModal .login input[type='password']{
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+#b2drop-login {
+    margin-top:20px;
+}
+
+#b2dropModal label {
+    font-weight: normal;
+}
+
+#b2dropModal .date {
+    text-align:right;
+}
+
+#b2dropModal .selected {
+    color: #9d261d;
+}
+
+/* --- deposits --- */
+
 .newdeposit .well-b2sblue {
     background-color: rgb(198, 214, 224);
     background-image: none;
