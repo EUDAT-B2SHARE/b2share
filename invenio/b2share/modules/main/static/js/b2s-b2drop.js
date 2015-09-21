@@ -7,6 +7,8 @@ $(document).ready(function() {
 
     var ajaxData = {};
 
+    var fileMap = {};
+
     var b2dropUploadURL = $("#url_for_b2drop_upload").attr("value");
 
     function log() {
@@ -50,6 +52,8 @@ $(document).ready(function() {
         if ((!f.isdir && onlydirs) || (f.isdir && !onlydirs)) {
             return;
         }
+        f.id = "b2drop_"+Object.keys(fileMap).length;
+        fileMap[f.path]=f;
         var el = render_file(indent, f);
         headrow.after(el);
         el.attr('data-path', f.path);
@@ -92,24 +96,31 @@ $(document).ready(function() {
         selected.each(function() {
             var path = $(this).attr('data-path');
             ajaxData.path = path;
-            var file = {id:path, name: path, size:0};
+            var file = fileMap[path];
             addFile(file, 'uploading...');
             $.post(b2dropUploadURL, ajaxData,
                 addFile.bind(null, file, 'uploaded'));
         });
+        $('#b2dropModal').modal('hide');
     }
 
     function addFile(file, msg) {
         $('#file-table-b2drop').show('slow');
-        var file_el = $(
-            '<tr id="' + file.id + '" style="display:none;z-index:-100;">' +
-            '<td id="' + file.id + '_link">' + file.name + '</td>' +
-            '<td>' + file.size + '</td>' +
-            '<td width="30%">'+msg+'</td>' +
-            '<td><a id="' + file.id + '_rm" class="rmlink"><i class="glyphicon glyphicon-trash"></i></a></td>' +
-            '</tr>');
-        $('#filelist-b2drop').append(file_el);
-        file_el.show('fast');
+        var file_el = $('#'+file.id);
+        if (file_el.length === 0) {
+            file_el = $(
+                '<tr id="' + file.id + '" style="display:none;z-index:-100;">' +
+                '<td id="' + file.id + '_link">' + file.name + '</td>' +
+                '<td>' + file.size + '</td>' +
+                '<td width="30%">'+msg+'</td>' +
+                '<td><a id="' + file.id + '_rm" class="rmlink"><i class="glyphicon glyphicon-trash"></i></a></td>' +
+                '</tr>');
+            $('#filelist-b2drop').append(file_el);
+            file_el.show('fast');
+        } else {
+            var td = file_el.find('td')[2];
+            $(td).text(msg);
+        }
     }
 
     $('#b2dropModal').modal();

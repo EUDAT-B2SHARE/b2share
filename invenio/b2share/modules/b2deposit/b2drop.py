@@ -48,6 +48,8 @@ class B2DropClient:
         return {"parent": parent, "files": files}
 
     def download(self, sub_id, remote_path, local_name=None):
+        if remote_path and remote_path.startswith(self.path):
+            remote_path = remote_path[len(self.path):]
         if not local_name:
             local_name = os.path.basename(remote_path)
 
@@ -64,8 +66,6 @@ class B2DropClient:
         safename, md5 = encode_filename(local_name)
         file_unique_name = safename + "_" + md5 + get_extension(safename)
         local_path = os.path.join(upload_dir, file_unique_name)
-
-        import ipdb; ipdb.set_trace()
 
         self.client.download(remote_path, local_path)
         filename = create_file_metadata(upload_dir, local_name, file_unique_name, local_path)
@@ -91,8 +91,8 @@ def humansize(v):
     elif v < 1024*1024:
         return "%5d KB" % (v/1024.0)
     elif v < 1024*1024*1024:
-        return "%5d MB" % (v/(1024*1024))
+        return "%5d MB" % (v/(1024.0*1024.0))
     elif v < 1024*1024*1024*1024:
-        return "%5d GB" % (v/(1024*1024*1024))
+        return "%5d GB" % (v/(1024.0*1024.0*1024.0))
     elif v < 1024*1024*1024*1024:
-        return "%5d TB" % (v/(1024*1024*1024*1024))
+        return "%5d TB" % (v/(1024.0*1024.0*1024.0*1024.0))
