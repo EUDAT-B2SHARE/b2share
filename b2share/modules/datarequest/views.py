@@ -20,7 +20,7 @@
 
 from flask import request, Blueprint
 from flask.ext.breadcrumbs import register_breadcrumb
-from invenio.base.i18n import _
+from invenio_base.i18n import _
 import b2share.modules.datarequest.request_data_form as reqdata
 
 blueprint = Blueprint('request_data_form', __name__,

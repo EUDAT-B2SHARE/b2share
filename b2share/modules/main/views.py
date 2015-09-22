@@ -3,12 +3,12 @@
 
 from flask import Blueprint, g, request, redirect, url_for, current_app
 
-from invenio.ext.template.context_processor import \
+from invenio_ext.template.context_processor import \
     register_template_context_processor
-from invenio.base.decorators import templated
-from invenio.modules.formatter import format_record
-from invenio.modules.search.models import Collection
-from invenio.modules.search.forms import EasySearchForm
+from invenio_base.decorators import templated
+from invenio_formatter import format_record
+from invenio_collections.models import Collection
+from invenio_search.forms import EasySearchForm
 
 
 blueprint = Blueprint('main', __name__, url_prefix="",

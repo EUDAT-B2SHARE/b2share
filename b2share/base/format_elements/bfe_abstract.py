@@ -22,7 +22,7 @@
 __revision__ = "$Id$"
 
 #import cgi
-from invenio.modules.formatter import utils as bibformat_utils
+from invenio_formatter import utils as bibformat_utils
 
 def format_element(bfo, prefix_en, prefix_fr, suffix_en, suffix_fr, limit, max_chars,
            extension_en="[...] ",extension_fr="[...] ", contextual="no",

@@ -5,7 +5,7 @@ Loop over all records in Invenio and move 'resource type' metadata from '980' an
 from pprint import pprint
 import itertools
 
-from invenio.base.factory import with_app_context
+from invenio_base.factory import with_app_context
 
 TYPES = ['Text', 'Image', 'Video', 'Audio', 'Time-Series', 'Other']
 

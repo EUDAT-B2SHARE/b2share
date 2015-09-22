@@ -1,5 +1,16 @@
+--index-url https://pypi.python.org/simple/
+
 markdown2
 validate_email
 recaptcha-client
 markdown
 httplib2
+
+
+-e git+https://github.com/EUDAT-B2SHARE/invenio.git@b2share-evolution#egg=invenio
+-e git+https://github.com:inveniosoftware/invenio-accounts.git@master#egg=invenio-accounts
+-e git+https://github.com:inveniosoftware/invenio-oaiharvester.git@master#egg=invenio-oaiharvester
+-e git+https://github.com:inveniosoftware/invenio-upgrader.git@master#egg=invenio-upgrader
+-e git+https://github.com:inveniosoftware/invenio-collections.git@master#egg=invenio-collections
+
+-e .

@@ -29,7 +29,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 from wtforms.ext.sqlalchemy.orm import model_form
 
-from invenio.ext.restful import require_api_auth
+from invenio_ext.restful import require_api_auth
 
 from b2share.modules.b2deposit.b2share_model import metadata_classes
 from b2share.modules.b2deposit.b2share_model.HTML5ModelConverter \
@@ -120,7 +120,7 @@ def get_record_details(recid, curr_user_email=None):
 
     # bibformat uses get_record, usually is one db
     # hit per object; should be fastest
-    from invenio.modules.formatter import engine as bibformat_engine
+    from invenio_formatter import engine as bibformat_engine
     bfo = bibformat_engine.BibFormatObject(recid)
 
     # first put the record_id and list of files
@@ -246,7 +246,7 @@ class ListRecords(B2Resource):
             page_size = MAX_PAGE_SIZE
 
         # enumerate all valid ids
-        from invenio.modules.records.models import Record
+        from invenio_records.models import Record
         records = Record.query.all()
         record_ids = [record.id for record in records]
 

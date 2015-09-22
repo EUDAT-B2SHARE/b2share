@@ -21,7 +21,7 @@
 
 from flask import render_template, current_app
 
-from invenio.ext.email import send_email
+from invenio_ext.email import send_email
 from recaptcha.client import captcha
 from validate_email import validate_email
 import re

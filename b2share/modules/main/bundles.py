@@ -19,7 +19,7 @@
 
 """B2SHARE bundles."""
 
-from invenio.ext.assets import Bundle
+from invenio_ext.assets import Bundle
 
 ############### common
 

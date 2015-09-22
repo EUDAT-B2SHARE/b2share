@@ -17,9 +17,9 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """Tests for checksumming b2share deposits"""
 
-from invenio.ext.restful.utils import APITestCase
-from invenio.base.globals import cfg
-from invenio.ext.sqlalchemy import db
+from invenio_ext.restful.utils import APITestCase
+from invenio_base.globals import cfg
+from invenio_ext.sqlalchemy import db
 
 from flask import url_for
 
@@ -160,7 +160,7 @@ class B2ShareAPITestCase(APITestCase):
     #
     def create_and_login_user(self, user_nickname=None, user_password=None):
         """Create test user and log him in."""
-        from invenio.modules.accounts.models import User
+        from invenio_accounts.models import User
         self.user_nickname = user_nickname or "tester"
         self.user_password = user_password or "tester"
         # remove the user if he exists
@@ -185,7 +185,7 @@ class B2ShareAPITestCase(APITestCase):
         except:
             db.session.rollback()
             raise
-        from invenio.ext.login import login_user
+        from invenio_ext.login import login_user
         from flask.ext.login import current_user
         login_user(self.user.id)
         current_user.reload()
@@ -209,7 +209,7 @@ class B2ShareAPITestCase(APITestCase):
                             url_for('webaccount.login'))
 
     def add_current_user_to_group(self, usergroup_name):
-        from invenio.modules.accounts.models import User, Usergroup, UserUsergroup
+        from invenio_accounts.models import User, Usergroup, UserUsergroup
         from flask.ext.login import current_user
         user = User.query.get(current_user.get_id())
         ug = Usergroup.query.filter(Usergroup.name == usergroup_name).one()
@@ -217,7 +217,7 @@ class B2ShareAPITestCase(APITestCase):
         current_user.reload()
 
     def remove_current_user_from_group(self, usergroup_name):
-        from invenio.modules.accounts.models import User, Usergroup
+        from invenio_accounts.models import User, Usergroup
         from flask.ext.login import current_user
         user = User.query.get(current_user.get_id())
         ug = Usergroup.query.filter(Usergroup.name == usergroup_name).one()
@@ -262,7 +262,7 @@ class B2ShareAPITestCase(APITestCase):
 
     def get_internal_record(self, recid):
         """Retrieve a given record without using B2Deposit."""
-        from invenio.modules.records.api import get_record
+        from invenio_records.api import get_record
         return get_record(recid)
 
     def process_record(self, recid):

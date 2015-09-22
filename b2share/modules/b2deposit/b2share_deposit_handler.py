@@ -27,7 +27,7 @@ from flask import render_template, redirect, url_for, current_app, jsonify
 from wtforms.ext.sqlalchemy.orm import model_form
 
 from invenio.utils.forms import InvenioBaseForm
-from invenio.ext.login import current_user
+from invenio_ext.login import current_user
 
 from b2share_model.HTML5ModelConverter import HTML5ModelConverter
 from b2share_model import metadata_classes

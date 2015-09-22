@@ -20,7 +20,7 @@
 """ B2SHARE Abuse Form Blueprint"""
 from flask import request, Blueprint
 from flask.ext.breadcrumbs import register_breadcrumb
-from invenio.base.i18n import _
+from invenio_base.i18n import _
 import b2share.modules.abuse.abuse_form as abuse
 
 blueprint = Blueprint('abuse_form', __name__, 
