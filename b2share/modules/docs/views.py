@@ -1,7 +1,7 @@
 """SimpleStore Flask Blueprint"""
 from flask import Blueprint, render_template
 from flask.ext.breadcrumbs import register_breadcrumb
-from invenio.base.i18n import _
+from invenio_base.i18n import _
 from flask import redirect
 
 import markdown, os
@@ -10,8 +10,7 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 blueprint = Blueprint('docs', __name__, url_prefix="/docs",  static_url_path='/docs',
                       template_folder='templates', static_folder='static')
 
-
-from invenio.modules.search.models import Collection
+from invenio_collections.models import Collection
 
 
 def _read_markdown_as_html(target):

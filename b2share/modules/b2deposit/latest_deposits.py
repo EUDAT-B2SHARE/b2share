@@ -19,8 +19,8 @@
 
 """Latest deposits"""
 from invenio.legacy.search_engine import perform_request_search
-from invenio.modules.formatter import engine as bibformat_engine
-from invenio.modules.formatter.format_elements import bfe_authors, bfe_title, bfe_abstract, bfe_creation_date
+from invenio_formatter import engine as bibformat_engine
+# from invenio_formatter.format_elements import bfe_authors, bfe_title, bfe_abstract, bfe_creation_date
 
 
 # class MockRequest:
@@ -37,19 +37,20 @@ from invenio.modules.formatter.format_elements import bfe_authors, bfe_title, bf
 # res = perform_request_search(req=req, of="id")
 
 def get_latest_deposits():
-	NUMBER_OF_RECORDS = 4;
+	# NUMBER_OF_RECORDS = 4;
 
-	ids = perform_request_search(of="id", rg=NUMBER_OF_RECORDS, sf="005", so="d")
-	limit_ids = ids[:NUMBER_OF_RECORDS]
-	bfo_list = [bibformat_engine.BibFormatObject(id) for id in limit_ids]
-	recs = [{
-		"id": bfo.recID,
-		"date": bfe_creation_date.format_element(bfo),
-		"author": bfe_authors.format_element(bfo, "1"),
-		"title": bfe_title.format_element(bfo),
-		"description": bfe_abstract.format_element(bfo,
-			prefix_en="", prefix_fr="", suffix_en="", suffix_fr="",
-			limit="", max_chars="72", extension_en="...", extension_fr="..."),
-		"category": bfo.field("980__a"),
-	} for bfo in bfo_list]
-	return recs
+	# ids = perform_request_search(of="id", rg=NUMBER_OF_RECORDS, sf="005", so="d")
+	# limit_ids = ids[:NUMBER_OF_RECORDS]
+	# bfo_list = [bibformat_engine.BibFormatObject(id) for id in limit_ids]
+	# recs = [{
+	#     "id": bfo.recID,
+		# "date": bfe_creation_date.format_element(bfo),
+		# "author": bfe_authors.format_element(bfo, "1"),
+		# "title": bfe_title.format_element(bfo),
+		# "description": bfe_abstract.format_element(bfo,
+		#     prefix_en="", prefix_fr="", suffix_en="", suffix_fr="",
+		#     limit="", max_chars="72", extension_en="...", extension_fr="..."),
+	#     "category": bfo.field("980__a"),
+	# } for bfo in bfo_list]
+	# return recs
+    return []

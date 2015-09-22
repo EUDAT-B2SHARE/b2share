@@ -14,8 +14,8 @@ def do_upgrade():
     from b2share.modules.b2deposit.edit import get_domain_admin_group
     from b2share.modules.b2deposit.b2share_model import metadata_classes
 
-    from invenio.modules.accounts.models import User
-    from invenio.ext.login import login_user
+    from invenio_accounts.models import User
+    from invenio_ext.login import login_user
     from flask.ext.login import current_user
     admin_user = User.query.get(1)
     login_user(admin_user.get_id())
@@ -32,8 +32,8 @@ def do_upgrade():
 
 
 def create_user_group(usergroup_name, description, admin_user_of_group):
-    from invenio.ext.sqlalchemy import db
-    from invenio.modules.accounts.models import Usergroup, UserUsergroup
+    from invenio_ext.sqlalchemy import db
+    from invenio_accounts.models import Usergroup, UserUsergroup
 
     group = Usergroup.query.filter(Usergroup.name == usergroup_name).first()
     if group:
@@ -56,7 +56,7 @@ def create_user_group(usergroup_name, description, admin_user_of_group):
     return True
 
 
-from invenio.base.factory import with_app_context
+from invenio_base.factory import with_app_context
 @with_app_context()
 def main():
     print info()

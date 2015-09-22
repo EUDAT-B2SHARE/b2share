@@ -1,53 +1,54 @@
-from invenio.base.config import PACKAGES as _PACKAGES
+from invenio_base.config import PACKAGES as _PACKAGES
 
 
 PACKAGES = [
     "b2share.modules.*",
-    "b2share.base"
+    "b2share.base",
+    "invenio_oaiharvester"
 ] + _PACKAGES
 
-
 PACKAGES_EXCLUDE = [
-    'invenio.modules.annotations',
-    'invenio.modules.archiver',
-    'invenio.modules.communities',
-    'invenio.modules.linkbacks',
-    'invenio.modules.multimedia',
-    'invenio.modules.pages',
-    'invenio.modules.deposit',
+    'invenio_annotations',
+    'invenio_archiver',
+    'invenio_communities',
+    'invenio_linkbacks',
+    'invenio_multimedia',
+    'invenio_pages',
+    'invenio_deposit',
 ]
 
 # all invenio modules because exclude does not accept wildcards
 invenio_modules = [
-    'invenio.invenio.modules.annotations',
-    'invenio.invenio.modules.documentation',
-    'invenio.invenio.modules.messages',
-    'invenio.invenio.modules.records',
-    'invenio.invenio.modules.authorprofiles',
-    'invenio.invenio.modules.editor',
-    'invenio.invenio.modules.oaiharvester',
-    'invenio.invenio.modules.scheduler',
-    'invenio.invenio.modules.authors',
-    'invenio.invenio.modules.formatter',
-    'invenio.invenio.modules.oairepository'
-    'invenio.invenio.modules.tags',
-    'invenio.invenio.modules.cloudconnector',
-    'invenio.invenio.modules.groups',
-    'invenio.invenio.modules.pages',
-    'invenio.invenio.modules.uploader',
-    'invenio.invenio.modules.comments',
-    'invenio.invenio.modules.knowledge',
-    'invenio.invenio.modules.pidstore',
-    'invenio.invenio.modules.communities',
-    'invenio.invenio.modules.linkbacks',
-    'invenio.invenio.modules.previewer',
-    'invenio.invenio.modules.access',
-    'invenio.invenio.modules.accounts',
-    'invenio.invenio.modules.deposit',
-    'invenio.invenio.modules.oauth2server',
-    'invenio.invenio.modules.oauthclient',
-    'invenio.invenio.modules.search',
-    'invenio.invenio.modules.workflows',
+    "invenio_collections",
+    'invenio_annotations',
+    'invenio_documentation',
+    'invenio_messages',
+    'invenio_records',
+    'invenio_authorprofiles',
+    'invenio_editor',
+    'invenio_oaiharvester',
+    'invenio_scheduler',
+    'invenio_authors',
+    'invenio_formatter',
+    'invenio_oairepository'
+    'invenio_tags',
+    'invenio_cloudconnector',
+    'invenio_groups',
+    'invenio_pages',
+    'invenio_uploader',
+    'invenio_comments',
+    'invenio_knowledge',
+    'invenio_pidstore',
+    'invenio_communities',
+    'invenio_linkbacks',
+    'invenio_previewer',
+    'invenio_access',
+    'invenio_accounts',
+    'invenio_deposit',
+    'invenio_oauth2server',
+    'invenio_oauthclient',
+    'invenio_search',
+    'invenio_workflows',
 ]
 
 # Exclude all Invenio views

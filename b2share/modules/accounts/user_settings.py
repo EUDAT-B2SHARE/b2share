@@ -21,13 +21,13 @@
 
 # Flask
 from flask import url_for
-from invenio.base.i18n import _
-from invenio.ext.template import render_template_to_string
+from invenio_base.i18n import _
+from invenio_ext.template import render_template_to_string
 from invenio.modules.dashboard.settings import Settings, UserSettingsStorage
 
 # Related models
-from invenio.ext.login import current_user
-from invenio.modules.accounts.models import User
+from invenio_ext.login import current_user
+from invenio_accounts.models import User
 
 # from invenio.websession_model import User
 from invenio.legacy.search_engine import perform_request_search

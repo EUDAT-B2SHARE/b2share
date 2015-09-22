@@ -21,7 +21,7 @@
 from flask import request, Blueprint
 from flask.ext.login import login_required
 from flask.ext.breadcrumbs import default_breadcrumb_root, register_breadcrumb
-from invenio.base.i18n import _
+from invenio_base.i18n import _
 import b2share.modules.b2deposit.edit as edt
 import b2share.modules.b2deposit.b2share_upload_handler as uph
 import b2share.modules.b2deposit.b2share_deposit_handler as dep

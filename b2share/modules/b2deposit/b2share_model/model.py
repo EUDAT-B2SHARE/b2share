@@ -19,7 +19,7 @@ import collections
 import csv
 import os.path
 
-from invenio.ext.sqlalchemy import db
+from invenio_ext.sqlalchemy import db
 from flask import current_app
 from datetime import date
 
@@ -275,7 +275,7 @@ class BibrecBib98x(db.Model):
     """Represents a BibrecBib98x record."""
     def __init__(self):
         pass
-    from invenio.modules.records.models import Record as Bibrec
+    from invenio_records.models import Record as Bibrec
     __tablename__ = 'bibrec_bib98x'
     id_bibrec = db.Column(db.MediumInteger(8, unsigned=True),
                 db.ForeignKey(Bibrec.id),

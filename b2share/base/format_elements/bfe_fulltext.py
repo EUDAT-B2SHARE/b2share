@@ -22,7 +22,7 @@ __revision__ = "$Id$"
 
 import re
 from invenio.legacy.bibdocfile.api import BibRecDocs, file_strip_ext, normalize_format, compose_format
-from invenio.base.i18n import gettext_set_language
+from invenio_base.i18n import gettext_set_language
 from invenio.config import CFG_SITE_URL, CFG_BASE_URL, CFG_CERN_SITE, CFG_SITE_RECORD, \
     CFG_BIBFORMAT_HIDDEN_FILE_FORMATS
 from invenio.legacy.bibdocfile.config import CFG_BIBDOCFILE_ICON_SUBFORMAT_RE

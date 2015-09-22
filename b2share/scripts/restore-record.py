@@ -3,7 +3,7 @@ Loop over a list of records in Invenio and restore from revision archive
 """
 
 from pprint import pprint
-from invenio.base.factory import with_app_context
+from invenio_base.factory import with_app_context
 from time import sleep
 
 # RECORDS = [1, 2, 3, 4, 5, 10, 13, 14, 26, 30, 31, 37]

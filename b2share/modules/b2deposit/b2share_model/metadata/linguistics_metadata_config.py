@@ -1,4 +1,4 @@
-from invenio.ext.sqlalchemy import db
+from invenio_ext.sqlalchemy import db
 from linguistics_lang_codes import lang_codes
 
 domain = "Linguistics"

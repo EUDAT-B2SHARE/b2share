@@ -49,7 +49,7 @@ def update(recid, form):
 
     from invenio.legacy.search_engine import get_record
     from invenio.legacy.bibupload.engine import bibupload
-    from invenio.modules.formatter import engine as bibformat_engine
+    from invenio_formatter import engine as bibformat_engine
 
     bfo = bibformat_engine.BibFormatObject(recid)
     domain = read_basic_metadata_field_from_marc(bfo, 'domain')
@@ -122,7 +122,7 @@ def is_record_editable(recid):
     return False
 
 def _get_record_info(recid):
-    from invenio.modules.formatter import engine as bibformat_engine
+    from invenio_formatter import engine as bibformat_engine
     bfo = bibformat_engine.BibFormatObject(recid)
     open_access = read_basic_metadata_field_from_marc(bfo, 'open_access')
 
