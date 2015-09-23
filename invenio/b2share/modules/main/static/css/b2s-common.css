@@ -298,6 +298,7 @@ html,body{height:100%;margin:0; color: #333;font-family: 'Raleway', sans-serif;}
 body.internalpage {background: #FFFFFF; padding: 0;}
 body.internalpage>#page { background-image: none !important; padding: 20px 0;}
 .description-home {margin-top: 70px;}
+.searchbar-home {margin-top: -30px; margin-bottom: 20px; width: 450px;}
 footer {background: #F7F3E9 url("/img/color-line.jpg") repeat-x top left;padding: 20px 10px 10px 10px;font-size: 12px;}
 
 /*** GENERAL STYLE ELEMENTS ***/
@@ -318,7 +319,7 @@ a {color: #F45D00;text-decoration: none;}
 #search-box-main .navbar {margin: 20px 0;}
 
 /**** DEPOSIT AREA - HOME PAGE ****/
-#deposit-area {background: #EEE; padding: 10px 20px; line-height: 65px;}
+#deposit-area {background: #EEE; padding: 10px 20px; line-height: 45px; width: 450px;}
 #deposit-area h1 {margin-top: 10px !important;}
 .deposit {border-bottom: 0;list-style-type: none;padding: 5px 0;}
 ol.deposit-list {-moz-column-count: 2;-moz-column-gap: 20px;-webkit-column-count: 2;-webkit-column-gap: 20px;column-count: 2;column-gap: 20px;}
