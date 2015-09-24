@@ -8,6 +8,7 @@ PACKAGES = [
 ] + _PACKAGES
 
 PACKAGES_EXCLUDE = [
+    "b2share.modules.b2deposit"
     'invenio_annotations',
     'invenio_archiver',
     'invenio_communities',
