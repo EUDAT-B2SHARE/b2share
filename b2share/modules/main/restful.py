@@ -14,8 +14,6 @@ class CommunityList(Resource):
         """
         return None
 
-
-class CommunityRes(Resource):
     def post(self, **kwargs):
         """
         Creates a new community that has associated a new metadata fieldset.
@@ -42,15 +40,13 @@ class Community(Resource):
 # ----------------------------------------------- SCHEMA
 
 
-class schemaList(Resource):
+class SchemaList(Resource):
     def get(self, **kwargs):
         """
         Retrieve list of schemas.
         """
         return None
 
-
-class schemaRes(Resource):
     def post(self, **kwargs):
         """
         Create a new schema
@@ -58,15 +54,13 @@ class schemaRes(Resource):
         return None
 
 
-class schema(Resource):
+class Schema(Resource):
     def get(self, schema_id, **kwargs):
         """
         Get a schema
         """
         return None
 
-
-class schemaDeprecate(Resource):
     def post(self, schema_id, **kwargs):
         """
         Create a new schema from an old one. It might be a new version.
@@ -213,12 +207,9 @@ class User(Resource):
 
 def setup_app(app, api):
     api.add_resource(CommunityList, '/api/communities')
-    api.add_resource(CommunityRes, '/api/communities/create')
     api.add_resource(Community, '/api/communities/<int:community_id>')
-    api.add_resource(schemaList, '/api/schemas')
-    api.add_resource(schemaRes, '/api/schemas/create')
-    api.add_resource(schema, '/api/schemas/<int:schema_id>')
-    api.add_resource(schemaDeprecate, '/api/schemas/<int:schema_id>/deprecate')
+    api.add_resource(SchemaList, '/api/schemas')
+    api.add_resource(Schema, '/api/schemas/<int:schema_id>')
     api.add_resource(RecordList, '/api/records')
     api.add_resource(Record, '/api/records/<int:record_id>')
     api.add_resource(FileList, '/api/records/<int:record_id>/files')
