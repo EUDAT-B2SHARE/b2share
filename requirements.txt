@@ -1,5 +1,7 @@
+
 --index-url https://pypi.python.org/simple/
 
+setuptools>=1.9.0
 markdown2
 validate_email
 recaptcha-client
