@@ -83,6 +83,7 @@ Let's start docker containers with mysql, elasticsearch and redis
 Open another terminal, initialize b2share and start celery:
 
 .. code-block:: console
+
     $ # Enable docker environment
     $ eval $(docker-machine env default)
     $ # Enable the virtual environment we previously created
@@ -109,6 +110,7 @@ Open another terminal, initialize b2share and start celery:
 Open another terminal, start the server:
 
 .. code-block:: console
+
     $ # Enable docker environment
     $ eval $(docker-machine env default)
     $ # Enable the virtual environment we previously created
