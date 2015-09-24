@@ -8,22 +8,132 @@ This installation workflow is only valid for the `evolution` branch in
 development mode.
 
 
-2. Prerequisites
-----------------
+2. Simplified installation
+--------------------------
+
+Install docker as specified here:
+- mac https://docs.docker.com/installation/mac/
+- ubuntu https://docs.docker.com/installation/ubuntulinux/
+
+
+Install python and python virtualenv.
+Here are the commands for mac (see 3.* for other OS):
+
+.. code-block:: console
+
+    $ brew install python --framework --universal
+    $ pip install virtualenv
+    $ pip install virtualenvwrapper
+    # edit the Bash profile
+    $ $EDITOR ~/.bash_profile
+
+Add the following to the file you have opened and paste the following lines.
+
+.. code-block:: text
+
+    export WORKON_HOME=~/.virtualenvs
+    source /usr/local/bin/virtualenvwrapper.sh
+
+Create a python virtual environment.
+
+.. code-block:: console
+
+    $ # choose an unique name for your virtual environment
+    $ export VENAME=b2share-evolution
+    $ mkvirtualenv $VENAME
+    (b2share-evolution)$ # we are in the b2share-evolution environment now and
+    (b2share-evolution)$ # can leave it using the deactivate command.
+    (b2share-evolution)$ deactivate
+    $ # Now join it back, recreating it would fail.
+    $ workon b2share-evolution
+    (b2share-evolution)$ # That's all there is to know about it.
+
+
+Then clone the repository and install the python dependencies:
+
+.. code-block:: console
+
+    $ # Enable the virtual environment we previously created
+    $ workon b2share-evolution
+    (b2share-evolution)$ # Go to its working directory
+    (b2share-evolution)$ cdvirtualenv
+    (b2share-evolution)$ mkdir src && cd src
+    (b2share-evolution)$ # let's clone the repositiory
+    (b2share-evolution)$ git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
+    (b2share-evolution)$ cd b2share
+    (b2share-evolution)$ # install b2share python dependencies. This will create ../invenio and
+    (b2share-evolution)$ # other directories where the master branch of these repositories are
+    (b2share-evolution)$ # then checkouted
+    (b2share-evolution)$ pip install -r requirements.txt
+    (b2share-evolution)$ cd .. && ls
+    b2share			invenio			invenio-accounts	invenio-collections	invenio-oaiharvester	invenio-upgrader
+
+
+Let's start docker containers with mysql, elasticsearch and redis
+
+.. code-block:: console
+
+    (b2share-evolution)$ # Go to b2share directory
+    (b2share-evolution)$ cd $VIRTUAL_ENV/src/b2share/devenv
+    (b2share-evolution)$ docker-compose up
+    Starting devenv_elasticsearch_1...
+    Starting devenv_redis_1...
+    Recreating devenv_mysql_1...
+
+Open another terminal, initialize b2share and start celery:
+
+.. code-block:: console
+    $ # Enable docker environment
+    $ eval $(docker-machine env default)
+    $ # Enable the virtual environment we previously created
+    $ workon b2share-evolution
+    (b2share-evolution)$ # Go to its working directory
+    (b2share-evolution)$ cdvirtualenv src/b2share
+    (b2share-evolution)$ ./devenv/init.sh
+    (b2share-evolution)$ celery worker -E -A invenio_celery.celery --workdir=$VIRTUAL_ENV
+
+     -------------- celery@pb-d-128-141-246-93.cern.ch v3.1.18 (Cipater)
+    ---- **** -----
+    --- * ***  * -- Darwin-14.5.0-x86_64-i386-64bit
+    -- * - **** ---
+    - ** ---------- [config]
+    - ** ---------- .> app:         invenio:0x110296310 (invenio_celery.InvenioLoader)
+    - ** ---------- .> transport:   redis://localhost:6379/1
+    - ** ---------- .> results:     redis://localhost:6379/1
+    - *** --- * --- .> concurrency: 4 (prefork)
+    -- ******* ----
+    --- ***** ----- [queues]
+     -------------- .> celery           exchange=celery(direct) key=celery
+
+
+Open another terminal, start the server:
+
+.. code-block:: console
+    $ # Enable docker environment
+    $ eval $(docker-machine env default)
+    $ # Enable the virtual environment we previously created
+    $ workon b2share-evolution
+    (b2share-evolution)$ # Go to its working directory
+    (b2share-evolution)$ cdvirtualenv src/b2share
+    (b2share-evolution)$ inveniomanage runserver 
+    * Running on http://localhost:4000/ (Press CTRL+C to quit)
+
+3. Prerequisites for advanced installation
+------------------------------------------
 
 Your must be deploying on a Unix system.
 
 
-2.1. Debian / Ubuntu LTS
+3.1. Debian / Ubuntu LTS
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are using Ubuntu 13.10 or later, then you can install Invenio by
-following this tutorial. **Note:** the recommended Python version is 2.7.5+
+If you are using Ubuntu 14.10 or later, then you can install Invenio by
+following this tutorial. **Note:** the recommended Python version is 3.7.5+
 
 .. code-block:: console
 
     $ python --version
-    Python 2.7.5+
+    Python 3.7.5+
     $ sudo apt-get update
     $ sudo apt-get install build-essential git redis-server \
                            libmysqlclient-dev libxml2-dev libxslt-dev \
@@ -34,7 +144,7 @@ following this tutorial. **Note:** the recommended Python version is 2.7.5+
     $ sudo pip install -U virtualenvwrapper pip
     $ source .bashrc
 
-2.1.1. MySQL
+3.1.1. MySQL
 ++++++++++++
 
 MySQL Server will ask you for a password, you will need it later and we will
@@ -44,7 +154,7 @@ refer to it as ``$MYSQL_ROOT``.
 
     $ sudo apt-get install mysql-server
 
-2.1.2. Node.js
+3.1.2. Node.js
 ++++++++++++++
 
 `node.js <http://nodejs.org/>`_ and `npm <https://www.npmjs.org/>`_ from Ubuntu
@@ -56,7 +166,7 @@ are troublesome so we recommend you to install them from Chris Lea's PPA.
     $ sudo apt-get update
     $ sudo apt-get install nodejs
 
-2.2. Centos / RHEL
+3.2. Centos / RHEL
 ~~~~~~~~~~~~~~~~~~
 
 If you are using Redhat, Centos or Scientific Linux this will setup everything
@@ -65,7 +175,7 @@ you need. We are assuming that sudo has been installed and configured nicely.
 .. code-block:: console
 
     $ python --version
-    2.6.6
+    3.6.6
     $ sudo yum update
     $ sudo rpm -Uvh http://mirror.switch.ch/ftp/mirror/epel/6/i386/epel-release-6-8.noarch.rpm
     $ sudo yum -q -y groupinstall "Development Tools"
@@ -76,7 +186,7 @@ you need. We are assuming that sudo has been installed and configured nicely.
     $ sudo pip install -U virtualenvwrapper pip
     $ source /usr/bin/virtualenvwrapper.sh
 
-2.2.1. MySQL
+3.2.1. MySQL
 ++++++++++++
 
 Setting up MySQL Server requires you to give some credentials for the root
@@ -106,7 +216,7 @@ parameter to rpm.
     $ sudo mysql_secure_installation
     # follow the instructions
 
-2.2.2. Node.js
+3.2.2. Node.js
 ++++++++++++++
 
 Node.js requires a bit more manual work to install it from the sources. We are
@@ -133,7 +243,7 @@ centor
 .. _OS X:
 
 
-2.3. OS X
+3.3. OS X
 ~~~~~~~~~~
 
 The steps below can be used to install Invenio on a machine running OS X 10.9 or later.
@@ -241,7 +351,7 @@ The commands for ``OS X`` are the same as in ``Linux``.
 
 .. _MySQL on OS X:
 
-2.3.1. MySQL
+3.4.1. MySQL
 ++++++++++++
 
 We will install MySQL but without a root password.
@@ -265,7 +375,7 @@ You can start, stop, or restart MySQL server by typing:
 
 .. _Node on OS X:
 
-2.3.2. Node.js
+3.4.2. Node.js
 ++++++++++++++
 
 Install ``node`` by typing:
@@ -275,10 +385,10 @@ Install ``node`` by typing:
     $ brew install node
 
 
-2.4. Extra tools
+3.4. Extra tools
 ~~~~~~~~~~~~~~~~
 
-2.4.1. Bower
+3.4.1. Bower
 ++++++++++++
 
 Bower is used to manage the static assets such as JavaScript libraries (e.g.,
@@ -293,7 +403,7 @@ globally (``-g``) but you're free to choose your preferred way.
     $ npm install bower
 
 
-2.4.2 ``git-new-workdir`` (optional)
+3.4.2 ``git-new-workdir`` (optional)
 ++++++++++++++++++++++++++++++++++++
 
 For the rest of the tutorial you may want to use ``git-new-workdir``. It's a
@@ -407,7 +517,7 @@ it will be done after the configuration step.
 
 .. _Configuration:
 
-3.2. Configuration
+4.2. Configuration
 ~~~~~~~~~~~~~~~~~~
 
 Generate the secret key for your installation.
@@ -466,7 +576,7 @@ with demo records.
 
 .. _B2Share_Specific:
 
-3.2. B2Share Specific
+4.2. B2Share Specific
 ~~~~~~~~~~~~~~~~~~~~~
 
 B2Share still needs some additional commands to be run.
@@ -478,7 +588,7 @@ B2Share still needs some additional commands to be run.
 
 .. _Bibsched:
 
-3.3. Start BibSched tasks
+4.3. Start BibSched tasks
 ~~~~~~~~~~~~~~~~~~~~~
 
 Start the bibsched processes.
@@ -502,7 +612,7 @@ grey. Press `A` to change the mode.
 
 .. _Run_B2Share:
 
-3.2. Run B2Share
+4.2. Run B2Share
 ~~~~~~~~~~~~~~~~
 
 
@@ -550,7 +660,7 @@ to monitor the *Celery* tasks.
     (b2share-evolution)$ cdvirtualenv src/b2share
     (b2share-evolution)$ honcho start
 
-6. Credits
+5. Credits
 ----------
 
 This manual has been heavily inspired by Invenio manual.

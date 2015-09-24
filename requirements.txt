@@ -1,5 +1,7 @@
+
 --index-url https://pypi.python.org/simple/
 
+setuptools>=1.9.0
 markdown2
 validate_email
 recaptcha-client
@@ -13,5 +15,6 @@ invenio_celery
 -e git+https://github.com/inveniosoftware/invenio-oaiharvester.git@master#egg=invenio-oaiharvester
 -e git+https://github.com/inveniosoftware/invenio-upgrader.git@master#egg=invenio-upgrader
 -e git+https://github.com/inveniosoftware/invenio-collections.git@master#egg=invenio-collections
+-e git+https://github.com/inveniosoftware/invenio-access.git@master#egg=invenio-access
 
 -e .
