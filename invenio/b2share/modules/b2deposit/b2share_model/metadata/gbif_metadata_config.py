@@ -11,7 +11,7 @@ domaindesc = 'Biodiversity data.'
 fields = [
     {
         'name': 'version_number',
-        'col_type': db.Integer(),
+        'col_type': db.String(256),
         'display_text': 'Version number',
         'description': 'Version number',
         'required': True,
