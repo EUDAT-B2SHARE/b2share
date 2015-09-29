@@ -1,6 +1,6 @@
 #!/bin/sh
 SAFE_NAME='b2share_evo';
-DOCKER_IP=`docker-machine ip default`;
+DOCKER_IP=`docker-machine ip b2share2`;
 
 # cd $VIRTUAL_EN/src/b2share
 
