@@ -84,7 +84,10 @@ def account_info(remote, resp):
         content = response.read()
         response.close()
         dict_content = json.loads(content)
-        return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
+        if dict_content.get('cn') is None:
+            return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
+        else:
+            return dict(email=dict_content.get('email'), nickname=dict_content.get('cn'))
     except http.HTTPError as response:
         content = response.read()
         response.close()
