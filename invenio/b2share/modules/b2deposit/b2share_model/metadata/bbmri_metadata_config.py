@@ -72,14 +72,14 @@ fields = [
     },
     {
         'name': 'planned_sampled_individuals',
-        'col_type': db.Integer(),
+        'col_type': db.String(256),
         'display_text': 'Planned sampled individuals',
         'description': 'Number of individuals with biological samples planned for the study',
         'required': False
     },
     {
         'name': 'planned_total_individuals',
-        'col_type': db.Integer(),
+        'col_type': db.String(256),
         'display_text': 'Planned total individuals',
         'description': 'Total number of individuals planned for the study with or without biological samples',
         'required': False
