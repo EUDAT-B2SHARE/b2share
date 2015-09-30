@@ -28,7 +28,16 @@
                 <img style="position:absolute;right:-150px;width:150px; height:150px" src="/img/bee-shadow.png" alt="Bee"></img>
             </div>
 
+            {% if current_user.is_guest %}
             <h3 class="login-message">Please sign in</h3>
+            {% else %}
+            <h3 class="login-message">You are logged in as
+              <a href="{{ url_for('webaccount.index') }}">
+              {{ current_user.nickname|default(current_user.email) }}</a>
+            </h3>
+            <p></p>
+            {% endif %}
+
 
             <form action="{{ url_for('webaccount.login') }}" method="POST">
                 {{ form.referer }}
