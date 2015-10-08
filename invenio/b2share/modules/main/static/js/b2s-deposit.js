@@ -163,7 +163,8 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
 
     function setDepositBtnState() {
         var state = 'ready';
-        if (!uploader.files.length) {
+        var b2drop_files = window.b2drop_files || [];
+        if (!uploader.files.length && !b2drop_files.length) {
             state = 'nofile';
         } else {
             $.each(uploader.files, function(i, file) {
@@ -171,9 +172,16 @@ function b2share_init_plupload(selector, url, delete_url, get_file_url) {
                      state = 'uploading';
                 }
             });
+            $.each(b2drop_files, function(i, file) {
+                if (file.loaded < file.size) {
+                     state = 'uploading';
+                }
+            });
         }
         change_deposit_button_state(state);
     }
+    window.b2share = window.b2share ||{};
+    window.b2share.setDepositBtnState = setDepositBtnState;
 
     uploader.init();
     setDepositBtnState();

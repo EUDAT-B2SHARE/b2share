@@ -1,5 +1,11 @@
 /* --- b2drop login and browsing --- */
 
+@media (min-width: 960px) {
+    #b2dropModal .modal-dialog {
+        width: 700px;
+    }
+}
+
 #b2dropModal .login {
     text-align:left;
 }

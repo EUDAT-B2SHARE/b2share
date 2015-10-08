@@ -23,6 +23,7 @@ import string
 import time
 import os
 from dateutil.parser import parse
+import urllib
 
 from flask import current_app
 from b2share_upload_handler import encode_filename, get_extension, create_file_metadata
@@ -73,13 +74,14 @@ class B2DropClient:
 
 def cleanFile(f):
     name_parts = string.split(f.name, "/")
-    name = name_parts[-1]
-    if name == "":
-        name = name_parts[-2]
+    orig_name = name_parts[-1]
+    if orig_name == "":
+        orig_name = name_parts[-2]
+    name = urllib.unquote(orig_name).decode('utf8')
     isdir = f.name.endswith("/")
     t = parse(f.mtime).timetuple()
     mtime = 1000*time.mktime(t)
-    ret = {"path":f.name, "name":name, "mtime":mtime, "isdir":isdir}
+    ret = {"path":f.name, "orig_name":orig_name, "name":name, "mtime":mtime, "isdir":isdir}
     if not isdir:
         ret["size"] = humansize(f.size)
     return ret

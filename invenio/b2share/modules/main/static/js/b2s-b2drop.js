@@ -7,9 +7,11 @@ $(document).ready(function() {
 
     var ajaxData = {};
 
-    var fileMap = {};
+    var files = [];
+    window.b2drop_files = files;
 
     var b2dropUploadURL = $("#url_for_b2drop_upload").attr("value");
+    var unUploadURL = $("#url_for_delete").attr("value");
 
     function log() {
         window['console'].log(arguments);
@@ -52,8 +54,8 @@ $(document).ready(function() {
         if ((!f.isdir && onlydirs) || (f.isdir && !onlydirs)) {
             return;
         }
-        f.id = "b2drop_"+Object.keys(fileMap).length;
-        fileMap[f.path]=f;
+        f.id = "b2drop_"+files.length;
+        files.push(f);
         var el = render_file(indent, f);
         headrow.after(el);
         el.attr('data-path', f.path);
@@ -75,7 +77,7 @@ $(document).ready(function() {
 
     function render_file(indent, f) {
         // TODO: check XSS
-        var indentspan = "<span style='margin-left:"+ (50*indent) +"px'></span>";
+        var indentspan = "<span style='margin-left:"+ (40*indent) +"px'></span>";
         var icon = "";
         if (f.isdir) {
             icon = "<span class='glyphicon glyphicon-folder-close' aria-hidden='true'> </span> ";
@@ -96,15 +98,25 @@ $(document).ready(function() {
         selected.each(function() {
             var path = $(this).attr('data-path');
             ajaxData.path = path;
-            var file = fileMap[path];
+            var file = null;
+            for (var i = 0; i < files.length; ++i) {
+                if (files[i].path === path) {
+                    file = files[i];
+                }
+            }
+            file.loaded = 0;
             addFile(file, 'uploading...');
             $.post(b2dropUploadURL, ajaxData,
                 addFile.bind(null, file, 'uploaded'));
         });
         $('#b2dropModal').modal('hide');
+        $('#domains').removeClass('hide');
+        $('#domains').slideDown();
+        window.b2share.setDepositBtnState();
     }
 
     function addFile(file, msg) {
+        file.loaded = file.size;
         $('#file-table-b2drop').show('slow');
         var file_el = $('#'+file.id);
         if (file_el.length === 0) {
@@ -117,13 +129,28 @@ $(document).ready(function() {
                 '</tr>');
             $('#filelist-b2drop').append(file_el);
             file_el.show('fast');
+            $('#' + file.id + '_rm').on("click", removeFile.bind(null, file_el, file));
+
         } else {
             var td = file_el.find('td')[2];
             $(td).text(msg);
         }
     }
 
-    $('#b2dropModal').modal();
+    function removeFile(file_el, file) {
+        function removeFileEl() {
+            file_el.hide('fast');
+            window.b2share.setDepositBtnState();
+        }
+        if (file.loaded >= 0) {
+            ajaxData.path = file.path;
+            $.post(unUploadURL, $.param({filename: file.orig_name || file.name }), removeFileEl);
+        } else {
+            removeFileEl();
+        }
+    }
+
+    // $('#b2dropModal').modal();
     $('#b2drop-login').click(login_handler);
     $('#b2drop-select').click(select_handler);
 });
