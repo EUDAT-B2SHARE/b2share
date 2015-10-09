@@ -37,6 +37,7 @@ $(document).ready(function() {
                 $("#b2dropModal #error").text(text).show();
             },
             success: function (a, b, c) {
+                $("#b2dropModal #wait").hide();
                 $("#b2dropModal #error").hide();
                 successFn(a,b,c);
             },
