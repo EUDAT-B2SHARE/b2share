@@ -107,6 +107,9 @@ setup(
     },
     install_requires=[
         'invenio>2.0',
+        'invenio-oaiharvester',
+        'invenio-oauth2server',
+        'invenio-celery',
         'markdown2',
         'validate_email',
         'recaptcha-client',
