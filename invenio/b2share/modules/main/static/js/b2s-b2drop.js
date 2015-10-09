@@ -17,6 +17,32 @@ $(document).ready(function() {
         window['console'].log(arguments);
     }
 
+    function post(url, data, successFn) {
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            error: function(jqXHR, textStatus, errorThrown) {
+                log(jqXHR, textStatus, errorThrown);
+                $("#b2dropModal #wait").hide();
+                var text = textStatus;
+                if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                    text = jqXHR.responseJSON.error;
+                }
+                if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.code === 401)
+                {
+                    $("#b2dropModal #login").show();
+                    $("#b2dropModal #files").hide();
+                }
+                $("#b2dropModal #error").text(text).show();
+            },
+            success: function (a, b, c) {
+                $("#b2dropModal #error").hide();
+                successFn(a,b,c);
+            },
+        });
+    }
+
     function login_handler(ev) {
         ev.preventDefault();
         ev.stopPropagation();
@@ -28,12 +54,11 @@ $(document).ready(function() {
         $("#b2dropModal #login").hide();
         $("#b2dropModal #wait").show();
         $("#b2dropModal #files").hide();
-        $.post('/b2deposit/b2drop/list', ajaxData, render_handler);
+        post('/b2deposit/b2drop/list', ajaxData, render_handler);
     }
 
     function render_handler(response) {
         $("#b2dropModal #login").hide();
-        $("#b2dropModal #wait").hide();
         $("#b2dropModal #files").show();
         var table = $("#b2dropModal #files table");
         table.show();
@@ -65,7 +90,7 @@ $(document).ready(function() {
     function table_line_handler(row, indent, f) {
         if (f.isdir) {
             ajaxData.path = f.path;
-            $.post('/b2deposit/b2drop/list', ajaxData,
+            post('/b2deposit/b2drop/list', ajaxData,
                 render_subdir_handler.bind(null, row, indent+1));
         } else {
             var input = row.find('input');
@@ -106,7 +131,7 @@ $(document).ready(function() {
             }
             file.loaded = 0;
             addFile(file, 'uploading...');
-            $.post(b2dropUploadURL, ajaxData,
+            post(b2dropUploadURL, ajaxData,
                 addFile.bind(null, file, 'uploaded'));
         });
         $('#b2dropModal').modal('hide');
@@ -144,7 +169,7 @@ $(document).ready(function() {
         }
         if (file.loaded >= 0) {
             ajaxData.path = file.path;
-            $.post(unUploadURL, $.param({filename: file.orig_name || file.name }), removeFileEl);
+            post(unUploadURL, $.param({filename: file.orig_name || file.name }), removeFileEl);
         } else {
             removeFileEl();
         }

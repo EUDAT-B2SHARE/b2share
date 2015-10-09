@@ -99,11 +99,13 @@ def updatemeta(recid):
 def b2drop_list():
     from invenio.b2share.modules.b2deposit.b2drop import B2DropClient
     b2drop = B2DropClient(username=request.form['username'], password=request.form['password'])
-    return jsonify(b2drop.list(request.form['path']))
+    json, code = b2drop.list(request.form['path'])
+    return jsonify(json), code
 
 @blueprint.route('/b2drop/upload/<sub_id>', methods=['POST'])
 @login_required
 def b2drop_upload(sub_id):
     from invenio.b2share.modules.b2deposit.b2drop import B2DropClient
     b2drop = B2DropClient(username=request.form['username'], password=request.form['password'])
-    return jsonify(b2drop.download(sub_id, request.form['path']))
+    json, code = b2drop.download(sub_id, request.form['path'])
+    return jsonify(json), code

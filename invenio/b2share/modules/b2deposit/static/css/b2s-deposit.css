@@ -6,6 +6,11 @@
     }
 }
 
+#b2dropModal .error {
+    text-align:left;
+    color: red;
+}
+
 #b2dropModal .login {
     text-align:left;
 }

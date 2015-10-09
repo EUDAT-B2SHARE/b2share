@@ -24,13 +24,13 @@ import time
 import os
 from dateutil.parser import parse
 import urllib
+import easywebdav
 
 from flask import current_app
 from b2share_upload_handler import encode_filename, get_extension, create_file_metadata
 
 class B2DropClient:
     def __init__(self, username, password):
-        import easywebdav
         self.host = 'b2drop.fz-juelich.de'
         self.protocol = 'https'
         self.path = '/remote.php/webdav/'
@@ -40,37 +40,51 @@ class B2DropClient:
             username=username, password=password)
 
     def list(self, remote_path="/"):
-        parent = remote_path
-        if remote_path and remote_path.startswith(self.path):
-            remote_path = remote_path[len(self.path):]
-        ls = self.client.ls(remote_path)
-        parent = cleanFile(ls[0])
-        files = [cleanFile(f) for f in ls[1:]]
-        return {"parent": parent, "files": files}
+        try:
+            parent = remote_path
+            if remote_path and remote_path.startswith(self.path):
+                remote_path = remote_path[len(self.path):]
+            ls = self.client.ls(remote_path)
+            parent = cleanFile(ls[0])
+            files = [cleanFile(f) for f in ls[1:]]
+            return {"parent": parent, "files": files}, 200
+        except easywebdav.OperationFailed as e:
+            return error(e)
 
     def download(self, sub_id, remote_path, local_name=None):
-        if remote_path and remote_path.startswith(self.path):
-            remote_path = remote_path[len(self.path):]
-        if not local_name:
-            local_name = os.path.basename(remote_path)
+        try:
+            if remote_path and remote_path.startswith(self.path):
+                remote_path = remote_path[len(self.path):]
+            if not local_name:
+                local_name = os.path.basename(remote_path)
 
-        CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
-                                "CFG_B2SHARE_UPLOAD_FOLDER")
-        if not os.path.exists(CFG_B2SHARE_UPLOAD_FOLDER):
-            os.makedirs(CFG_B2SHARE_UPLOAD_FOLDER)
+            CFG_B2SHARE_UPLOAD_FOLDER = current_app.config.get(
+                                    "CFG_B2SHARE_UPLOAD_FOLDER")
+            if not os.path.exists(CFG_B2SHARE_UPLOAD_FOLDER):
+                os.makedirs(CFG_B2SHARE_UPLOAD_FOLDER)
 
-        # webdeposit also adds userid and deptype folders, we just use unique id
-        upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
-        if not os.path.exists(upload_dir):
-            os.makedirs(upload_dir)
+            # webdeposit also adds userid and deptype folders, we just use unique id
+            upload_dir = os.path.join(CFG_B2SHARE_UPLOAD_FOLDER, sub_id)
+            if not os.path.exists(upload_dir):
+                os.makedirs(upload_dir)
 
-        safename, md5 = encode_filename(local_name)
-        file_unique_name = safename + "_" + md5 + get_extension(safename)
-        local_path = os.path.join(upload_dir, file_unique_name)
+            safename, md5 = encode_filename(local_name)
+            file_unique_name = safename + "_" + md5 + get_extension(safename)
+            local_path = os.path.join(upload_dir, file_unique_name)
 
-        self.client.download(remote_path, local_path)
-        filename = create_file_metadata(upload_dir, local_name, file_unique_name, local_path)
-        return { "filename": filename }
+            self.client.download(remote_path, local_path)
+            filename = create_file_metadata(upload_dir, local_name, file_unique_name, local_path)
+            return { "filename": filename }, 200
+        except easywebdav.OperationFailed as e:
+            return error(e)
+
+
+def error(e):
+    err = e.reason
+    if e.actual_code == 401:
+        err = "Login failed"
+    return {"error": err, "code": e.actual_code}, e.actual_code
+
 
 def cleanFile(f):
     name_parts = string.split(f.name, "/")
