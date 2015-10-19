@@ -109,7 +109,6 @@ install:
   - "inveniomanage config set CFG_SITE_FUNCTION \"\""
 
   - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
-  - "inveniomanage config set CFG_B2SHARE_DOMAINS \"generic, drihm, linguistics, euon, bbmri, nrm, gbif, rda\""
   - "inveniomanage config set CFG_EPIC_USERNAME \"\""
   - "inveniomanage config set CFG_EPIC_PASSWORD \"\""
   - "inveniomanage config set CFG_EPIC_BASEURL \"\""
@@ -126,11 +125,8 @@ before_script:
   - "inveniomanage apache create-config"
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create --quiet || echo ':('"
-  - "dbexec < ./install/_collections.sql"
   - "inveniomanage upgrader run"
-  - "python b2share/upgrades/b2share_2015_06_23_create_domain_admin_groups.py"
 
 script:
   - "cd $TRAVIS_BUILD_DIR/b2share/testsuite"
-  - "nosetests -s ."
-  # - "nosetests -s b2share.testsuite"
+  # - "nosetests -s ."

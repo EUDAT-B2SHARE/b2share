@@ -3,6 +3,18 @@
 
 setuptools>=1.9.0
 
+markdown2
+validate_email
+recaptcha-client
+markdown
+httplib2
+
+nose
+invenio_testing
+
+invenio_celery
+
+
 -e git+https://github.com/inveniosoftware/invenio.git@master#egg=invenio
 -e git+https://github.com/inveniosoftware/invenio-oauth2server.git@master#egg=invenio-oauth2server
 
