@@ -25,14 +25,6 @@ class MetadataClasses:
     def load(self):
         # need to do this lazily due to config settings needing flask.current_app
         from model import _create_metadata_class, SubmissionMetadata
-        from flask import current_app
-
-        configured_domains = None
-
-        CFG_B2SHARE_DOMAINS = current_app.config.get('CFG_B2SHARE_DOMAINS')
-        if CFG_B2SHARE_DOMAINS:
-            configured_domains = [d.strip().lower() for d in
-                                  CFG_B2SHARE_DOMAINS.split(',')]
 
         domains = {SubmissionMetadata.domain.lower(): SubmissionMetadata}
         pck = metadata
@@ -42,8 +34,7 @@ class MetadataClasses:
             mod = __import__(modname, fromlist="dummy")
             if hasattr(mod, 'domain'):
                 domain_name = mod.domain.lower()
-                if not configured_domains or domain_name in configured_domains:
-                    domains[domain_name] = _create_metadata_class(mod)
+                domains[domain_name] = _create_metadata_class(mod)
         MetadataClasses.domains = domains
 
     def __call__(self):
