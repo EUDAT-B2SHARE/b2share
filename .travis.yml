@@ -129,5 +129,4 @@ before_script:
 
 script:
   - "cd $TRAVIS_BUILD_DIR/b2share/testsuite"
-  - "nosetests -s ."
-  # - "nosetests -s b2share.testsuite"
+  # - "nosetests -s ."
