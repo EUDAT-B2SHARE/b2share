@@ -15,7 +15,6 @@ blueprint = Blueprint('webui', __name__, url_prefix="",
 
 @blueprint.route('/', methods=['GET'])
 def serve_index():
-    print "serving index"
     return render_template("index.html")
 
 @blueprint.route('/bower_components/<path:path>', methods=['GET'])

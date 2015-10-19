@@ -25,9 +25,14 @@ workon b2share-evolution
 # cdvirtualenv src
 # git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
 # git clone git@github.com:EUDAT-B2SHARE/ui-frontend.git
-# cd b2share
+# cdvirtualenv src/b2share
 # pip install -r requirements.txt
+# ln -s $WORKON_HOME/b2share-evolution/src/ui-frontend $WORKON_HOME/b2share-evolution/var/invenio.base-instance/static/
 
+# cdvirtualenv src/ui-frontend/
+# npm install
+
+# cdvirtualenv src/b2share
 cdvirtualenv src/b2share/devenv
 # docker-machine create -d virtualbox b2share2
 docker-machine start b2share2
