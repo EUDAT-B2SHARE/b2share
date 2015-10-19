@@ -125,9 +125,7 @@ before_script:
   - "inveniomanage apache create-config"
   - "inveniomanage database init --yes-i-know || echo ':('"
   - "inveniomanage database create --quiet || echo ':('"
-  # - "dbexec < ./install/_collections.sql"
   - "inveniomanage upgrader run"
-  - "python b2share/upgrades/b2share_2015_06_23_create_domain_admin_groups.py"
 
 script:
   - "cd $TRAVIS_BUILD_DIR/b2share/testsuite"
