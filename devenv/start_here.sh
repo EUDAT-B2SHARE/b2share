@@ -51,4 +51,5 @@ if [ $? -ne 0 ]; then
 	sleep 1 # give a bit of time to celery
 fi
 
-inveniomanage runserver
+cdvirtualenv src/b2share/devenv
+python b2share/main.py runserver -r -d
