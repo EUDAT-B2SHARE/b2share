@@ -59,35 +59,12 @@ before_install:
   - "travis_retry pip install mock"
   - "travis_retry pip install nose"
   - "travis_retry pip install flask_testing"
-  - "git clone https://github.com/EUDAT-B2SHARE/invenio.git"
-  - "cd invenio"
-  - "git checkout b2share-evolution"
-  - "python requirements.py --extras=$REXTRAS --level=min > .travis-lowest-requirements.txt"
-  - "python requirements.py --extras=$REXTRAS --level=pypi > .travis-release-requirements.txt"
-  - "python requirements.py --extras=$REXTRAS --level=dev > .travis-devel-requirements.txt"
-  # needed in order to have the last version of nodejs
-  # - "curl --silent --location https://deb.nodesource.com/setup_0.12 | sudo -E bash -"
-  - "cd $TRAVIS_BUILD_DIR"
 
 install:
-  # - "sudo apt-get -qy install apache2 libapache2-mod-wsgi libapache2-mod-xsendfile ssl-cert poppler-utils git subversion nodejs --fix-missing liblzma-dev"
-  # - "sudo a2enmod actions"
-  # - "sudo a2enmod version || echo ':('"
-  # - "sudo a2enmod rewrite"
-  # - "sudo mkdir /etc/apache2/ssl"
-
-  # - "sudo /usr/sbin/make-ssl-cert generate-default-snakeoil /etc/apache2/ssl/apache.pem"
-
-  - "travis_retry pip install Babel"
-  - "travis_retry pip install unittest2"
-  - "cd invenio"
-  - "travis_retry pip install -r .travis-$REQUIREMENTS-requirements.txt --allow-all-external --quiet"
-  - "travis_retry pip install -e .[$REXTRAS] --process-dependency-links"
   - "cd $TRAVIS_BUILD_DIR"
-  - "travis_retry pip install -r requirements.txt --allow-all-external --quiet"
+  - "travis_retry pip install -r requirements.txt --allow-all-external"
   - "travis_retry pip install -e .[$REXTRAS] --process-dependency-links"
 
-  - "cd invenio"
   - "python setup.py compile_catalog"
   - "npm update"
 
@@ -100,8 +77,6 @@ install:
   - "inveniomanage config set CFG_SITE_NAME_INTL \"{u'en' : u'B2Share'}\""
   - "inveniomanage config set CFG_SITE_LANGS \"[u'en']\""
 
-  # - "inveniomanage config set CFG_SITE_URL https://0.0.0.0"
-  # - "inveniomanage config set CFG_SITE_SECURE_URL https://0.0.0.0"
   - "inveniomanage config set CFG_SITE_URL http://0.0.0.0"
   - "inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0"
 
@@ -118,15 +93,11 @@ install:
   - "cd $TRAVIS_BUILD_DIR"
 
 before_script:
-  # configure mysql
-  # we need to keep connections open for a long time as we run bibsched tasks in the tests
-  # - echo -e "[server]\nwait_timeout=300" | sudo tee -a /etc/mysql/my.cnf
-  # - sudo service mysql restart
-  - "inveniomanage apache create-config"
-  - "inveniomanage database init --yes-i-know || echo ':('"
-  - "inveniomanage database create --quiet || echo ':('"
-  - "inveniomanage upgrader run"
+  - "cd $TRAVIS_BUILD_DIR"
+  - "inveniomanage database init --user=root --yes-i-know"
+  - "inveniomanage database recreate --yes-i-know"
 
 script:
   - "cd $TRAVIS_BUILD_DIR/b2share/testsuite"
+  # FIXME: run tests again once b2share is refactored
   # - "nosetests -s ."
