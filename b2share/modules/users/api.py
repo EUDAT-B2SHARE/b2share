@@ -9,7 +9,6 @@ from __future__ import absolute_import
 #   - ACL and POLICY definitions
 
 
-
 class UserRegistry:
     @staticmethod
     def create_user(nickname, email, full_name, other_info):
