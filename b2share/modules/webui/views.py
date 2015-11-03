@@ -37,6 +37,10 @@ def serve_any_file_js(path):
 def serve_any_file_layout(path):
     return serve_any_file('layout', path)
 
+@blueprint.route('/fonts/<path:path>', methods=['GET'])
+def serve_any_file_fonts(path):
+    return serve_any_file('fonts', path)
+
 def serve_any_file(prefix, path):
     assets_dir = current_app.config['ASSETS_LOAD_PATH'][0]
     dir = os.path.join(assets_dir, 'ui-frontend/app', prefix)

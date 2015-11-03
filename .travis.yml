@@ -65,37 +65,37 @@ install:
   - "travis_retry pip install -r requirements.txt --allow-all-external"
   - "travis_retry pip install -e .[$REXTRAS] --process-dependency-links"
 
-  - "python setup.py compile_catalog"
+  # - "python setup.py compile_catalog"
   - "npm update"
 
   - "npm install --silent -g bower less clean-css uglify-js requirejs"
   # All the step below this points are solely for test purposes, don't use them
   # to setup your invenio installation. Please do RTFM instead (INSTALL.rst).
-  - "./scripts/setup_devmode.sh"
+  # - "./scripts/setup_devmode.sh"
 
-  - "inveniomanage config set CFG_SITE_NAME B2Share"
-  - "inveniomanage config set CFG_SITE_NAME_INTL \"{u'en' : u'B2Share'}\""
-  - "inveniomanage config set CFG_SITE_LANGS \"[u'en']\""
+  # - "inveniomanage config set CFG_SITE_NAME B2Share"
+  # - "inveniomanage config set CFG_SITE_NAME_INTL \"{u'en' : u'B2Share'}\""
+  # - "inveniomanage config set CFG_SITE_LANGS \"[u'en']\""
 
-  - "inveniomanage config set CFG_SITE_URL http://0.0.0.0"
-  - "inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0"
+  # - "inveniomanage config set CFG_SITE_URL http://0.0.0.0"
+  # - "inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0"
 
 
-  - "inveniomanage config set CFG_SITE_FUNCTION \"\""
+  # - "inveniomanage config set CFG_SITE_FUNCTION \"\""
 
-  - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
-  - "inveniomanage config set CFG_EPIC_USERNAME \"\""
-  - "inveniomanage config set CFG_EPIC_PASSWORD \"\""
-  - "inveniomanage config set CFG_EPIC_BASEURL \"\""
-  - "inveniomanage config set CFG_EPIC_PREFIX \"\""
-  - "inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY \"\""
-  - "inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY \"\""
-  - "cd $TRAVIS_BUILD_DIR"
+  # - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
+  # - "inveniomanage config set CFG_EPIC_USERNAME \"\""
+  # - "inveniomanage config set CFG_EPIC_PASSWORD \"\""
+  # - "inveniomanage config set CFG_EPIC_BASEURL \"\""
+  # - "inveniomanage config set CFG_EPIC_PREFIX \"\""
+  # - "inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY \"\""
+  # - "inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY \"\""
+  # - "cd $TRAVIS_BUILD_DIR"
 
 before_script:
   - "cd $TRAVIS_BUILD_DIR"
-  - "inveniomanage database init --user=root --yes-i-know"
-  - "inveniomanage database recreate --yes-i-know"
+  # - "inveniomanage database init --user=root --yes-i-know"
+  # - "inveniomanage database recreate --yes-i-know"
 
 script:
   - "cd $TRAVIS_BUILD_DIR/b2share/testsuite"
