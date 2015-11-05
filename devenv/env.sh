@@ -22,7 +22,8 @@ END_CONFIG
 
 inveniomanage update config.py
 inveniomanage config set COLLECT_STORAGE flask_collect.storage.link
-inveniomanage database init --user=root --yes-i-knowinveniomanage database recreate --yes-i-know
+inveniomanage database init --user=root --yes-i-know
+inveniomanage database recreate --yes-i-know
 
 cat <<END_INSTRUCTIONS
 
