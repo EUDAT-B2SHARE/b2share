@@ -97,23 +97,26 @@ setup(
     zip_safe=False,
     platforms='any',
     entry_points={
-        'invenio.config': [
-            'b2share = b2share.config'
-        ]
-
-        # "distutils.commands": [
-        #     "inveniomanage = invenio.base.setuptools:InvenioManageCommand",
-        # ]
+        'invenio_base.api_apps': [
+            'b2share_communities = b2share.modules.communities:B2ShareCommunities',
+            'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
+            'b2share_users = b2share.modules.users:B2ShareUsers',
+        ],
     },
     install_requires=[
-        'invenio>2.0',
-        'invenio-oaiharvester',
-        'invenio-oauth2server',
-        'invenio-celery',
-        'markdown2',
-        'validate_email',
-        'recaptcha-client',
-        'markdown',
+        # 'invenio>2.0',
+        # 'invenio-oaiharvester',
+        # 'invenio-oauth2server',
+        'invenio-config>=1.0.0a1,<1.1.0',
+        'invenio-base>=1.0.0a2,<1.1.0',
+        'invenio-records-rest>=1.0.0a2,<1.1.0',
+        'invenio-records>=1.0.0a2,<1.1.0',
+        'invenio-db>=1.0.0a5,<1.1.0',
+        'invenio-celery>=1.0.0a1,<1.1.0',
+        # 'markdown2',
+        # 'validate_email',
+        # 'recaptcha-client',
+        # 'markdown',
         'httplib2',
         'simplejson',
     ],

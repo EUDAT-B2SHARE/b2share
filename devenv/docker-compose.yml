@@ -1,17 +1,17 @@
-mysql:
-    image: mysql
-    ports:
-        - "3306:3306"
-    environment:
-        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-        - MYSQL_USER=b2share_evo
-        - MYSQL_DATABASE=b2share_evo
+# mysql:
+#     image: mysql
+#     ports:
+#         - "3306:3306"
+#     environment:
+#         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+#         - MYSQL_USER=b2share_evo
+#         - MYSQL_DATABASE=b2share_evo
 
-elasticsearch:
-    image: elasticsearch
-    ports:
-        - "9200:9200"
-        - "9300:9300"
+# elasticsearch:
+#     image: elasticsearch
+#     ports:
+#         - "9200:9200"
+#         - "9300:9300"
 
 redis:
     image: redis
