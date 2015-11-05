@@ -15,6 +15,7 @@ blueprint = Blueprint(
     url_prefix='/schemas'
 )
 
+
 def schema_to_json_serializer(data, code=200, headers=None):
     """Build a json flask response using the given data.
     :Returns: A flask response with json data.
@@ -29,6 +30,7 @@ def schema_to_json_serializer(data, code=200, headers=None):
     # TODO: set etag
     # response.set_etag(...)
     return response
+
 
 class SchemaList(ContentNegotiatedMethodView):
 

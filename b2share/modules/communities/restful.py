@@ -17,6 +17,7 @@ blueprint = Blueprint(
     url_prefix='/communities'
 )
 
+
 def community_to_json_serializer(data, code=200, headers=None):
     """Build a json flask response using the given data.
     :Returns: A flask response with json data.
@@ -31,6 +32,7 @@ def community_to_json_serializer(data, code=200, headers=None):
     # TODO: set etag
     # response.set_etag(...)
     return response
+
 
 class CommunityListResource(ContentNegotiatedMethodView):
 
@@ -53,7 +55,7 @@ class CommunityListResource(ContentNegotiatedMethodView):
                 ret.append(c.get_description())
             return {'communities': ret}
         except Exception as xc:
-            return {'message':'Server Error', 'status':500, 'error': xc}, 500
+            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
 
     def post(self, **kwargs):
         """
@@ -64,7 +66,7 @@ class CommunityListResource(ContentNegotiatedMethodView):
         try:
             return CommunityRegistry.create_community(kwargs)
         except Exception as xc:
-            return {'message':'Server Error', 'status':500, 'error': xc}, 500
+            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
 
 
 class CommunityResource(ContentNegotiatedMethodView):
@@ -85,7 +87,7 @@ class CommunityResource(ContentNegotiatedMethodView):
         try:
             return CommunityRegistry.get_by_id(community_id).get_description()
         except Exception as xc:
-            return {'message':'Server Error', 'status':500, 'error': xc}, 500
+            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
 
     def patch(self, community_id, **kwargs):
         """
@@ -94,7 +96,7 @@ class CommunityResource(ContentNegotiatedMethodView):
         try:
             return CommunityRegistry.get_by_id(community_id).patch_description(kwargs)
         except Exception as xc:
-            return {'message':'Server Error', 'status':500, 'error': xc}, 500
+            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
 
 
 blueprint.add_url_rule('/',

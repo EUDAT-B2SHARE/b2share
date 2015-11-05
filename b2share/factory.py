@@ -26,6 +26,7 @@ create_api = create_app_factory(
     ext_entry_points=['invenio_base.api_apps'],
 )
 
+
 def create_app():
     api = create_api()
     app_ui = Flask(__name__,
@@ -34,6 +35,7 @@ def create_app():
                        os.path.join(api.instance_path, 'static')),
                    static_url_path='',
                    instance_path=api.instance_path)
+
     @app_ui.route('/')
     def root():
         return app_ui.send_static_file('index.html')
