@@ -34,19 +34,21 @@
 {% block body %}
 <div id="mainpage" class="row">
     <!-- BEGIN CONTENT LEFT -->
-    <div class="col-xs-12 col-sm-5 col-md-5">
-        <div class="description-home">
+    <div class="col-xs-12 col-sm-5 col-md-5 description-home">
             <h1>STORE AND SHARE YOUR RESEARCH DATA</h1>
-            <p>A user-friendly, secure, robust, reliable and trusted service to share and store your research data adding
-                value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference.
-                Deposit and release your data via the generic interface or select a community extension including specific
-                metadata fields. Releasing your data implies that your deposited data can be referred to, therefore any changes
-                should be reflected in new data uploads.
-                Share your data with others in a safe and trusted environment.
-                Do you belong to a scientific community? Brand and create your own community collection with specific metadata
-                fields customized for your field.</p>
-                <a class="btn btn-default" href="{{ request.url_root+'docs/b2share-about' }}">Read more</a>
-        </div>
+            <p>Search in public datasets or register as a user to upload and
+               share your data!
+            {% if current_user.is_guest %}
+            <a href="{{ url_for('youraccount.register') }}">REGISTER NOW.</a>
+            Already registered? <a href="{{ url_for('webaccount.login',
+             referer=request.url) }}">LOGIN.</a>
+            {% else %}
+            You are logged in as
+            <a href="{{ url_for('webaccount.index') }}">
+            {{ current_user.nickname|default(current_user.email) }}</a>
+            {% endif %}
+            </p>
+
     </div>
     <!-- END CONTENT LEFT -->
 
@@ -55,22 +57,11 @@
 
     <!-- BEGIN CONTENT RIGHT -->
     <div class="col-xs-12 col-sm-6 col-md-6 description-home">
-        <p>Search in public datasets or register as a user to upload and share your data!
-            {% if current_user.is_guest %}
-            <a href="{{ url_for('youraccount.register') }}">REGISTER NOW</a>
-            (Already registered? <a href="{{ url_for('webaccount.login', referer=request.url) }}">LOGIN</a>)
-            {% else %}
-            You are logged in as
-            <a href="{{ url_for('webaccount.index') }}">{{ current_user.nickname|default(current_user.email) }}</a>
-            {% endif %}
-        </p>
+            <h1>SEARCH</h1>
+            <div class="searchbar-home">
+                {%- include "search/form/index.html" -%}
+            </div>
 
-        <h1>SEARCH</h1>
-        <div class="searchbar-home">
-            {%- include "search/form/index.html" -%}
-        </div>
-
-        <hr/>
         <div id="deposit-area" class="clearfix">
             <div class="row">
 

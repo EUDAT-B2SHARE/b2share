@@ -54,15 +54,15 @@ REMOTE_APP = dict(
     ),
     params=dict(
             request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
-            base_url='https://unity.eudat-aai.fz-juelich.de:8443/',
+            base_url='https://b2access.eudat.eu:8443/',
             request_token_url=None,
-            access_token_url= "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/token",
+            access_token_url= "https://b2access.eudat.eu:8443/oauth2/token",
             access_token_method='POST',
-            authorize_url="https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz",
+            authorize_url="https://b2access.eudat.eu:8443/oauth2-as/oauth2-authz",
             app_key="UNITY_APP_CREDENTIALS",
     ),
-    tokeninfo_url = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/tokeninfo",
-    userinfo_url = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/userinfo",
+    tokeninfo_url = "https://b2access.eudat.eu:8443/oauth2/tokeninfo",
+    userinfo_url = "https://b2access.eudat.eu:8443/oauth2/userinfo",
 )
 
 
@@ -84,7 +84,10 @@ def account_info(remote, resp):
         content = response.read()
         response.close()
         dict_content = json.loads(content)
-        return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
+        if dict_content.get('cn') is None:
+            return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
+        else:
+            return dict(email=dict_content.get('email'), nickname=dict_content.get('cn'))
     except http.HTTPError as response:
         content = response.read()
         response.close()

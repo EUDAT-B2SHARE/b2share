@@ -128,10 +128,10 @@ def clean_tempfiles():
             "BibReformat xml files")
     vstr = task_get_option('verbose') > 1 and '-v' or ''
 
-    write_message(" -cleaning up the simplestore upload folder")
+    write_message(" -cleaning up the b2share upload folder")
     gc_exec_command('''find %s -regextype sed -regex '.*[a-z0-9]\{32\}' -type d'''
         ''' -mtime +7 -exec rm -rf {} \;'''
-            % (CFG_SIMPLESTORE_UPLOAD_FOLDER))
+            % (CFG_B2SHARE_UPLOAD_FOLDER))
 
     write_message("- deleting/gzipping temporary old "
             "OAIHarvest xml files")
