@@ -39,7 +39,7 @@
             <p>Search in public datasets or register as a user to upload and
                share your data!
             {% if current_user.is_guest %}
-            <a href="{{ url_for('youraccount.register') }}">REGISTER NOW.</a>
+            <a href="{{ url_for('oauthclient.login', remote_app='unity') }}">REGISTER NOW.</a>
             Already registered? <a href="{{ url_for('webaccount.login',
              referer=request.url) }}">LOGIN.</a>
             {% else %}

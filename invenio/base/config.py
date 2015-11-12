@@ -55,6 +55,7 @@ EXTENSIONS = [
     'invenio.ext.jasmine',  # after assets
     'flask_breadcrumbs:Breadcrumbs',
     'invenio.modules.deposit.url_converters',
+    'invenio.b2share.modules.accounts'
 ]
 
 PACKAGES = [
