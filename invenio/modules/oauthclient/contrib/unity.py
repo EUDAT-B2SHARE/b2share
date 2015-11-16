@@ -41,8 +41,8 @@ def decorate_http_request(remote):
     remote.http_request = new_http_request
 
 REMOTE_APP = dict(
-    title='Unity',
-    description='EUDAT Unity authentication.',
+    title='B2Access',
+    description='EUDAT B2Access authentication.',
     icon='fa fa-github',
     setup=decorate_http_request,
     authorized_handler="invenio.modules.oauthclient.handlers:authorized_signup_handler",

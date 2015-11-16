@@ -1,0 +1,152 @@
+/* --- login --- */
+
+.login {
+    text-align:center;
+}
+.login .centered {
+    display:inline-block;
+    text-align:left;
+}
+
+.login h3 {
+    line-height: 40px;
+}
+
+.login p {
+    margin-left: 20px;
+    font-size: 16px;
+    line-height: 25px;
+}
+.login p a {
+    color: #224A7B;
+}
+
+.login .title img {
+    height: 150px;
+    margin: -24px 0 -60px;
+}
+
+.login-message {
+    font-size: 20px;
+    margin: 50px 0 0 20px;
+}
+
+.login div.input-append {
+    margin-bottom: 5px;
+}
+
+.login input[type='text'],
+.login input[type='password'] {
+    padding-left: 20px;
+}
+
+.login input[type='text'],
+.login input[type='password'],
+.login span.after-input {
+    font-size: 20px;
+    line-height: 30px;
+    height: 40px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.login input[type='text'],
+.login input[type='password'] {
+    border: 1px solid rgb(228, 108, 10);
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    margin: 0;
+}
+
+.login input[type='text']:focus,
+.login input[type='password']:focus {
+  border-color: #E35E2B;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(228, 108, 10, 0.6);
+}
+
+.login span.after-input {
+    width: 38px;
+    color: white;
+    background-color: rgb(228, 108, 10);
+    border: 1px solid rgb(228, 108, 10);
+}
+
+.login .login-row {
+    width: 300px;
+}
+
+.login .remember-me {
+    line-height: 20px;
+    height: 20px;
+}
+
+.login .remember-me label {
+    font-size: 16px;
+    color: #333;
+}
+
+
+.login .login-panels {
+    margin-top: 50px;
+    display: table;
+}
+
+.login .login-panel {
+    display: table-cell;
+    padding: 2em 1em;
+    border: 1px solid #e46c0a;
+    vertical-align: bottom;
+
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+
+.login .login-panel-separator {
+    display: table-cell;
+    vertical-align: middle;
+    width: 2em;
+    color: #e46c0a;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.login .login-btn {
+    width: 100%
+}
+
+.login .b2access-logo {
+    height: 120px;
+    background: url("/img/b2access-icon.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 100%;
+    margin-bottom: 3em;
+}
+
+.login .b2access-login {
+    width: 30em;
+    padding-bottom: 
+}
+
+.login .username-password-login {
+    text-align: left;
+}
+
+.login .lost-password-block {
+    text-align: right;
+}
+
+.login .lost-password-link {
+    padding-left: 2px;
+    color: #333; 
+    text-align: left;
+}
+
+.login .username-password-login login-btn {
+    margin-top: 10px;
+}

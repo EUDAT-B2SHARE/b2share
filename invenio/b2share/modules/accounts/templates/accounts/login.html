@@ -1,0 +1,105 @@
+{#
+# This file is part of Invenio.
+# Copyright (C) 2014 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+{% from "deposits.html" import render_deposits with context %}
+{% from "breadcrumbs.html" import render_breadcrumbs with context %}
+
+{%- extends "accounts/login_base.html" -%}
+
+{%- block global_bundles %}
+    {{ super() }}
+    {% bundles "b2s_accounts.css" %}
+{%- endblock %}
+
+{%- block body -%}
+    <div class="row login">
+        <!--div class="centered"-->
+        <div class="col-md-8 col-md-offset-2 col-xs-12">
+            <div class="hidden-sm" style="position:relative">
+                <img style="position:absolute;right:-150px;width:150px; height:150px" src="/img/bee-shadow.png" alt="Bee"></img>
+            </div>
+
+            {% if current_user.is_guest %}
+            <h3 class="login-message">Please sign in</h3>
+            {% else %}
+            <h3 class="login-message">You are logged in as
+              <a href="{{ url_for('webaccount.index') }}">
+              {{ current_user.nickname|default(current_user.email) }}</a>
+            </h3>
+            <p></p>
+            {% endif %}
+
+            <div class="login-panels-row row">
+                <div class="login-panels">
+
+                    <div class="login-panel b2access-login">
+                        <div class="b2access-logo"></div>
+                        <div>
+                            <a class="btn btn-primary btn-lg login-btn"
+                               href="{{url_for('oauthclient.login',
+                               remote_app='unity')}}">
+                                Sign in with B2ACCESS
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="login-panel-separator">
+                        OR
+                    </div>
+
+                    <div class="login-panel username-password-login">
+
+                        <form action="{{ url_for('webaccount.login') }}" method="POST">
+                            {{ form.referer }}
+                            {{ form.login_method }}
+
+                            <div class="input-group">
+                                <input class="login-row" type="text" name="nickname" placeholder="Username or email"></input>
+                                <span class="input-group-addon after-input">></span>
+                            </div>
+                            <br>
+                            <div class="input-group">
+                                <input class="login-row" type="password" name="password" placeholder="Password"></input>
+                                <span class="input-group-addon after-input">></span>
+                            </div>
+                            <span class="help-block lost-password-block">
+                                <a class="lost-password-link" href="{{ url_for('youraccount.lost') }}">
+                                    <strong>Lost password?</strong>
+                                </a>
+                            </span>
+                            <br>
+                            <div class="checkbox remember-me">
+                                <label class="checkbox">
+                                    <input type="checkbox" name="remember"> Remember me
+                                </label>
+                            </div>
+                            <input type="submit" class="login-btn btn btn-success btn-lg"
+                                                 value="Login"></input>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+            <p><a href="{{ url_for('oauthclient.login', remote_app='unity') }}"><strong style="white-space: nowrap;">
+                Don't have an account? Sign up with B2Access.</strong></a></p>
+
+        </div>
+    </div>
+{%- endblock -%}
