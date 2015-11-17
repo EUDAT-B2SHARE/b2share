@@ -41,6 +41,7 @@ def decorate_http_request(remote):
     remote.http_request = new_http_request
 
 REMOTE_APP = dict(
+    hide=True, # hide b2access from the list of connected applications
     title='B2Access',
     description='EUDAT B2Access authentication.',
     icon='fa fa-github',
