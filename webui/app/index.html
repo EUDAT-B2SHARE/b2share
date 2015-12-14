@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>B2SHARE</title>
+
+    <link rel="shortcut icon" href="/favicon.ico"/>
+
+    <link rel="stylesheet" href="/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/app.css">
+
+    <!--[if lt IE 9]>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/es5-shim/3.4.0/es5-shim.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/es5-shim/3.4.0/es5-sham.js"></script>
+    <![endif]-->
+
+    <style>
+        html,
+        body {
+            margin:0;
+            padding:0;
+            height:100%;
+        }
+        #main-container {
+            min-height:100%;
+            position:relative;
+        }
+        #body {
+            padding-bottom:70px;   /* Height of the footer */
+        }
+        #footer {
+            position:absolute;
+            bottom:0;
+            width:100%;
+            height:70px;   /* Height of the footer */
+        }
+    </style>
+</head>
+
+<body>
+    <noscript>
+    <div>B2SHARE requires JavaScript to be enabled!</div>
+    </noscript>
+
+    <div id="main-container">
+        <div id="body">
+            <div class="row-fluid bg-color-orange text-color-white">
+                <span class="col-xs-offset-1 about-header text-center-responsive text-color-white">
+                    <a href="http://eudat.eu" target="_blank">GO TO EUDAT WEBSITE</a>
+                </span>
+            </div>
+
+            <div id="page"></div>
+        </div>
+
+        <footer id="footer"></footer>
+    </div>
+
+    <script src="/b2share-bundle.js"></script>
+</body>
+</html>

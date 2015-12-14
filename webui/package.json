@@ -1,0 +1,33 @@
+{
+  "name": "b2share-webui",
+  "private": true,
+  "version": "0.3.0",
+  "description": "B2SHARE web user interface",
+  "license": "GPL-2.0",
+  "repository": "https://github.com/EUDAT-B2SHARE/b2share.git",
+  "scripts": {
+    "postinstall": "./copy_files.sh"
+  },
+  "devDependencies": {
+    "webpack": "~1.12.9",
+    "uglify-loader": "~1.3.0",
+    "css-loader": "~0.23.0",
+    "style-loader": "~0.13.0",
+    "babel-loader": "~6.2.0",
+    "babel-core": "~6.2.1",
+    "babel-preset-react": "~6.1.18",
+    "babel-preset-es2015": "~6.1.18"
+  },
+  "dependencies": {
+    "bootstrap": "~3.3.4",
+    "font-awesome": "~4.4.0",
+    "history": "~1.13.1",
+    "immutable": "~3.7.5",
+    "pluralize": "~1.2.1",
+    "react": "~0.14.3",
+    "react-dom": "~0.14.3",
+    "react-notification": "~3.0.3",
+    "react-router": "~1.0.0",
+    "reqwest": "^2.0.5"
+  }
+}
