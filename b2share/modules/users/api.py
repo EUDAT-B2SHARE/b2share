@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# B2SHARE2
 
 from __future__ import absolute_import
 
