@@ -36,12 +36,47 @@ def create_app():
                    static_url_path='',
                    instance_path=api.instance_path)
 
-    @app_ui.route('/')
-    def root():
-        return app_ui.send_static_file('index.html')
+    add_routes(app_ui)
 
     api.wsgi_app = DispatcherMiddleware(app_ui.wsgi_app, {
         '/api': api.wsgi_app
     })
 
     return api
+
+
+def add_routes(app_ui):
+
+    @app_ui.route('/')
+    def root():
+        return app_ui.send_static_file('index.html')
+
+    @app_ui.route('/help', defaults={'path': ''})
+    @app_ui.route('/help/', defaults={'path': ''})
+    @app_ui.route('/help/<path:path>')
+    def serve_help(path):
+        return app_ui.send_static_file('index.html')
+
+    @app_ui.route('/communities', defaults={'path': ''})
+    @app_ui.route('/communities/', defaults={'path': ''})
+    @app_ui.route('/communities/<path:path>')
+    def serve_communities(path):
+        return app_ui.send_static_file('index.html')
+
+    @app_ui.route('/user', defaults={'path': ''})
+    @app_ui.route('/user/', defaults={'path': ''})
+    @app_ui.route('/user/<path:path>')
+    def serve_user(path):
+        return app_ui.send_static_file('index.html')
+
+    @app_ui.route('/records', defaults={'path': ''})
+    @app_ui.route('/records/', defaults={'path': ''})
+    @app_ui.route('/records/<path:path>')
+    def serve_records(path):
+        return app_ui.send_static_file('index.html')
+
+    @app_ui.route('/search', defaults={'path': ''})
+    @app_ui.route('/search/', defaults={'path': ''})
+    @app_ui.route('/search/<path:path>')
+    def serve_search(path):
+        return app_ui.send_static_file('index.html')
