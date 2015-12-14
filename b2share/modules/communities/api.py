@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-# B2SHARE2.api.py
+# B2SHARE2
+
 
 from __future__ import absolute_import
 import abc
 
-class CommunityRegistryInterface:
+
+class CommunityRegistryInterface(object):
     @staticmethod
     @abc.abstractmethod
     def get_by_id(community_id):
@@ -25,13 +27,16 @@ class CommunityRegistryInterface:
 
     @staticmethod
     @abc.abstractmethod
-    def create_community(name, description, logo):
-        """ Returns a newly created community object or raises exception.
+    def create_community(json):
+        """ The json parameter is a dictionary containing the name, domain,
+            description (all strings) and logo (image uri) of the community.
+            Returns a newly created community object or raises exception.
             Only administrators can call this function. A new community
             is implicitly associated with a new, empty, schema list. """
         pass
 
-class CommunityInterface:
+
+class CommunityInterface(object):
     @abc.abstractmethod
     def get_description(self):
         """ Returns a dict describing the user community. Any media objects
@@ -47,7 +52,8 @@ class CommunityInterface:
 
     @abc.abstractmethod
     def patch_description(self, patch_dict):
-        """ Changes the community description with dict. The community id cannot be changed. Only community administrators can call this method"""
+        """ Changes the community description with dict. The community id cannot be changed.
+            Only community administrators can call this method"""
         pass
 
     @abc.abstractmethod
@@ -56,14 +62,8 @@ class CommunityInterface:
         pass
 
     @abc.abstractmethod
-    def get_schema_list(self):
-        """Returns the SchemaList object, specific for this community"""
-        pass
-
-    @abc.abstractmethod
-    def is_admin(user_id):
-        """ Returns True if the specified user is a community administrator
-            of this community"""
+    def get_schema_id_list(self):
+        """Returns a list of ids of schema objects, specific for this community"""
         pass
 
     @abc.abstractmethod
@@ -71,4 +71,3 @@ class CommunityInterface:
         """ Returns a list of user ids representing community administrators.
             Adding a new admin possible only from B2ACCESS ??? """
         pass
-

@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 # B2SHARE
 
+
 from __future__ import absolute_import
 from .api import CommunityRegistryInterface, CommunityInterface
+
 
 class CommunityRegistry(CommunityRegistryInterface):
     communities = []
 
     @staticmethod
     def get_by_id(community_id):
+        community_id = str(community_id)
         for c in CommunityRegistry.communities:
-            if community_id == c["id"]:
+            if community_id == c['id']:
                 return c
         return None
 
@@ -26,56 +29,92 @@ class CommunityRegistry(CommunityRegistryInterface):
         return CommunityRegistry.communities[start:stop]
 
     @staticmethod
-    def create_community(name, description, logo):
-        id = 1 + len(CommunityRegistry.communities)
-        c = Community(id, name, description, logo)
+    def create_community(json):
+        cid = len(CommunityRegistry.communities)
+        c = Community(cid, json)
         CommunityRegistry.communities.append(c)
         return c
 
-class Community(CommunityInterface):
-    def __init__(self, id, name, description, logo):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.logo = logo
-        self.admin_ids = []
-        self.schemas = []
-        self.prev_version = None
+
+class Community(CommunityInterface, dict):
+    @staticmethod
+    def clean(json):
+        return {k: json[k] for k in ['name', 'domain', 'description', 'logo']}
+
+    def __init__(self, cid, json):
+        dict.__init__(self)
+        self.update(self.clean(json))
+        self['id'] = str(cid)
+        self['previous_version'] = None
+        self['schema_id_list'] = []
 
     def get_description(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "logo": self.logo,
-        }
+        return self.clean(self)
 
     def patch_description(self, patch_dict):
-        self.name = patch_dict['name'] if 'name' in patch_dict else self.name
-        self.description = patch_dict['description'] if 'description' in patch_dict else self.description
-        self.logo = patch_dict['logo'] if 'logo' in patch_dict else self.logo
+        self.update(self.clean(patch_dict))
+        return self
 
     def get_previous_version(self):
-        return self.prev_version
+        return self['prev_version']
 
-    def get_schema_list(self):
-        return self.schemas
+    def get_schema_id_list(self):
+        return self['schema_id_list']
 
-    def is_admin(self, user_id):
-        return user_id in self.admin_ids
+    def add_schema(self, schema_json):
+        from ..schemas.mock_impl import SchemaRegistry
+        schema_json['community_id'] = self['id']
+        schema = SchemaRegistry._add(schema_json)
+        self['schema_id_list'].append(schema.get_id())
 
     def get_admins(self):
-        return self.user_admins
+        return []
 
 
 def mock_init():
-    CommunityRegistry.create_community(
-        "Eudat",
-        "The big Eudat community. Use this community if no other is suited for you",
-        "eudat.png")
-    CommunityRegistry.create_community(
-        "Clarin",
-        "The Clarin linguistics community",
-        "clarin.png")
+    from ..schemas.default_schemas import schema_bbmri, schema_clarin
+
+    CommunityRegistry.create_community({
+        'name': "EUDAT",
+        'domain': "",
+        'description': "The big Eudat community. Use this community if no other is suited for you.",
+        'logo': "/img/communities/eudat.png"
+    })
+
+    CommunityRegistry.create_community({
+        'name': "BBMRI",
+        'domain': "Biomedical Research",
+        'description': 'Biomedical Research data.',
+        'logo': "/img/communities/bbmri.png"
+    }).add_schema(schema_bbmri)
+
+    CommunityRegistry.create_community({
+        'name': "CLARIN",
+        'domain': "Linguistics",
+        'description': "The Clarin linguistics community.",
+        'logo': "/img/communities/clarin.png"
+    }).add_schema(schema_clarin)
+
+    CommunityRegistry.create_community({
+        'name': "DRIHM",
+        'domain': "Hydro-Meteorology",
+        'description': 'Meteorology and climate data.',
+        'logo': '/img/communities/drihm.png'
+    })
+
+    CommunityRegistry.create_community({
+        'name': "NRM",
+        'domain': "Herbarium",
+        'description': "Herbarium data.",
+        'logo': "/img/communities/nrm.png"
+    })
+
+    CommunityRegistry.create_community({
+        'name': "RDA",
+        'domain': "Generic",
+        'description': "Research Data Alliance data.",
+        'logo': "/img/communities/rda.png"
+    })
+
 
 mock_init()
