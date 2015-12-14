@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+# B2SHARE2
+
 
 from __future__ import absolute_import
-
 
 
 # TODO:
 #   - versioning of records:
 #   - flat list of files? with pagination?
 
-class RecordRegistry:
+class RecordRegistryInterface(object):
     @staticmethod
     def get_by_id(record_id):
         """ Returns record object, or just a part of the actual record,
@@ -16,7 +17,7 @@ class RecordRegistry:
         pass
 
     @staticmethod
-    def search_by_filter(filter):
+    def search_by_filter(search_filter):
         """ Returns a list of matching record objects, accessible to the
             current user; filter is of type RecordSearchFilter"""
         pass
@@ -33,7 +34,7 @@ class RecordRegistry:
         pass
 
 
-class RecordSearchFilter:
+class RecordSearchFilterInterface(object):
     def __init__(self, criteria, sort):
         criteria = {                       # implicit AND between criteria
             "__any__": "cern pentaquarks",  # search in any field
@@ -46,7 +47,7 @@ class RecordSearchFilter:
         ]
 
 
-class Record:
+class RecordInterface(object):
     def get_id(self):
         """Returns the record's id"""
         pass
@@ -79,7 +80,7 @@ class Record:
         pass
 
 
-class MetadataBlockList:
+class MetadataBlockListInterface(object):
     """ MetadataBlockList manages the list of metadata blocks for a particular
         record. """
     def __getitem__(self, index):
@@ -98,7 +99,7 @@ class MetadataBlockList:
         pass
 
 
-class MetadataBlock:
+class MetadataBlockInterface(object):
     def get_schema_id(self):
         """ Returns the schema_id of this metadata block"""
         pass
@@ -114,7 +115,7 @@ class MetadataBlock:
         pass
 
 
-class ReferenceList:
+class ReferenceListInterface(object):
     """ ReferenceList manages the list of references for a particular record.
         The references are either ids of records in the same b2share instance
         or PIDs that can point to b2share records in other b2share instances or
@@ -135,7 +136,7 @@ class ReferenceList:
         pass
 
 
-class Reference:
+class ReferenceInterface(object):
     """A reference object"""
     def get_relation_type(self):
         """ Returns the relation between the record and the reference. ??? """
@@ -153,7 +154,7 @@ class Reference:
         pass
 
 
-class FileContainer:
+class FileContainerInterface(object):
     """A FileContainer can contain other FileContainer objects and also
         File objects. It is like a file system directory. Each FileContainer
         has its own unique ID, but the names must still be unique to simplify
@@ -164,7 +165,8 @@ class FileContainer:
         pass
 
     def set_name(self, new_name):
-        """ Renames the conatainer. This operation can fail if there exists a folder or file with the same name in the same parent folder.
+        """ Renames the conatainer. This operation can fail if there exists a
+            folder or file with the same name in the same parent folder.
             REQUIREMENT: record_status == 'draft'."""
         pass
 
@@ -190,7 +192,7 @@ class FileContainer:
         pass
 
 
-class File:
+class FileInterface(object):
     """A File has a unique ID per Record, and the file's URL is build using
         this ID. Changing the name of a file does not change its URL. The
         directory tree structure of a Record is just metadata."""

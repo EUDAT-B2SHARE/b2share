@@ -1,29 +1,65 @@
 # -*- coding: utf-8 -*-
+# B2SHARE2
 
 from __future__ import absolute_import
 
-from flask.ext.restful import Resource
+from flask import Blueprint, jsonify
+
+from invenio_rest import ContentNegotiatedMethodView
 
 
-# ----------------------------------------------- RECORDS
+blueprint = Blueprint(
+    'b2share_records',
+    __name__,
+    url_prefix='/xrecords'
+)
 
 
-class RecordList(Resource):
+def community_to_json_serializer(data, code=200, headers=None):
+    """Build a json flask response using the given data.
+    :Returns: A flask response with json data.
+    :Returns Type: :py:class:`flask.Response`
+    """
+    response = jsonify(data)
+    response.status_code = code
+    if headers is not None:
+        response.headers.extend(headers)
+    return response
+
+
+class RecordList(ContentNegotiatedMethodView):
+    view_name = 'record_list'
+
+    def __init__(self, *args, **kwargs):
+        super(RecordList, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, **kwargs):
         """
         Retrieve list of records.
         """
-        return None
+        from .mock_impl import mock_records
+        return {'records': mock_records}
 
     def post(self, **kwargs):
         """
         Creates a new record object (it can be empty or with metadata), owned
         by current user. The default state of record status is 'draft'
         """
-        return None
+        return {}
 
 
-class Record(Resource):
+class Record(ContentNegotiatedMethodView):
+    view_name = 'record_item'
+
+    def __init__(self, *args, **kwargs):
+        super(Record, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, record_id, **kwargs):
         """
         Returns the requested record
@@ -49,7 +85,15 @@ class Record(Resource):
 # ----------------------------------------------- FILES
 
 
-class FileList(Resource):
+class FileList(ContentNegotiatedMethodView):
+    view_name = 'file_list'
+
+    def __init__(self, *args, **kwargs):
+        super(FileList, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, record_id, **kwargs):
         """
         Retrieve list of files in a record.
@@ -63,7 +107,15 @@ class FileList(Resource):
         return None
 
 
-class FileContainer(Resource):
+class FileContainer(ContentNegotiatedMethodView):
+    view_name = 'file_container'
+
+    def __init__(self, *args, **kwargs):
+        super(FileContainer, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, record_id, file_id, **kwargs):
         """
         Get a file metadata
@@ -84,7 +136,15 @@ class FileContainer(Resource):
         return None
 
 
-class File(Resource):
+class File(ContentNegotiatedMethodView):
+    view_name = 'file_item'
+
+    def __init__(self, *args, **kwargs):
+        super(File, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, record_id, file_id, **kwargs):
         """
         Get a file's content
@@ -95,7 +155,15 @@ class File(Resource):
 # ----------------------------------------------- REFERENCES
 
 
-class RecordReferenceList(Resource):
+class RecordReferenceList(ContentNegotiatedMethodView):
+    view_name = 'record_reference_list'
+
+    def __init__(self, *args, **kwargs):
+        super(RecordReferenceList, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, record_id, **kwargs):
         """
         Returns the record's references
@@ -109,7 +177,15 @@ class RecordReferenceList(Resource):
         return None
 
 
-class RecordReference(Resource):
+class RecordReference(ContentNegotiatedMethodView):
+    view_name = 'record_reference_item'
+
+    def __init__(self, *args, **kwargs):
+        super(RecordReference, self).__init__(*args, **kwargs)
+        self.serializers = {
+            'application/json': community_to_json_serializer,
+        }
+
     def get(self, record_id, ref_id, **kwargs):
         """
         Returns a Reference with the specified id
@@ -123,13 +199,15 @@ class RecordReference(Resource):
         return None
 
 
-
-
-def setup_app(app, api):
-    api.add_resource(RecordList, '/api/records')
-    api.add_resource(Record, '/api/records/<int:record_id>')
-    api.add_resource(FileList, '/api/records/<int:record_id>/files')
-    api.add_resource(FileContainer, '/api/records/<int:record_id>/files/<int:file_id>')
-    api.add_resource(File, '/api/records/<record_id>/files/<file_id>/content')
-    api.add_resource(RecordReferenceList, '/api/records/<int:record_id>/references')
-    api.add_resource(RecordReference, '/api/records/<int:record_id>/references/<int:ref_id>')
+blueprint.add_url_rule('/',
+                       view_func=RecordList.as_view(RecordList.view_name))
+blueprint.add_url_rule('/<int:record_id>',
+                       view_func=Record.as_view(Record.view_name))
+blueprint.add_url_rule('/<int:record_id>/files',
+                       view_func=FileList.as_view(FileList.view_name))
+blueprint.add_url_rule('/<int:record_id>/files/<int:file_id>',
+                       view_func=File.as_view(File.view_name))
+blueprint.add_url_rule('/<int:record_id>/references',
+                       view_func=RecordReferenceList.as_view(RecordReferenceList.view_name))
+blueprint.add_url_rule('/<int:record_id>/references/<int:ref_id>',
+                       view_func=RecordReference.as_view(RecordReference.view_name))
