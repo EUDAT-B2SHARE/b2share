@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ###############################################################################
 # --- This script installs the development version of b2share2 ---
@@ -6,17 +6,19 @@
 
 ### The following commands must be run beforehand
 # brew install python --framework --universal
-# pip install virtualenv
-# pip install virtualenvwrapper
+# pip install virtualenv virtualenvwrapper
+
+if [ -n "$VIRTUAL_ENV" ]; then
+	echo "Please deactivate the current virtual environment before running this script"
+	echo "Virtual environment detected: $VIRTUAL_ENV"
+	exit 1
+fi
 
 source /usr/local/bin/virtualenvwrapper.sh
 
 export VIRTUALENV_NAME='b2share-evolution'
 export DB_NAME='b2share-evolution'
 export MACHINE_NAME=b2share
-
-#deactivate if we're already in a virtual env
-deactivate
 
 workon $VIRTUALENV_NAME
 if [ $? -ne 0 ]; then
@@ -26,7 +28,8 @@ if [ $? -ne 0 ]; then
 	cdvirtualenv && mkdir src
 fi
 
-docker-machine start $MACHINE_NAME
+echo "### Prepare docker machine"
+docker-machine start $MACHINE_NAME >/dev/null
 if [ $? -ne 0 ]; then
 	echo; echo "### Create docker machine for b2share"
 	docker-machine create -d virtualbox $MACHINE_NAME
@@ -37,31 +40,27 @@ DOCKER_IP=`docker-machine ip $MACHINE_NAME`
 
 
 cdvirtualenv src
-if [ ! -d ./ui-frontend ]; then
-	echo; echo "### Clone b2share UI"
-	git clone git@github.com:EUDAT-B2SHARE/ui-frontend.git
-	cd ui-frontend
-	npm install
-fi
-
-
-cdvirtualenv src
 if [ ! -d ./b2share ]; then
 	echo; echo "### Clone b2share"
 	git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
 
 	echo; echo "### pip install b2share"
-	cd b2share
+	cdvirtualenv src/b2share
 	pip install -r requirements.txt
 
-	echo; echo "### Configure b2share"
-	cp devenv/b2share.cfg ../../var/b2share-instance/
+	echo; echo "### Configure b2share backend"
+	# cp devenv/b2share.cfg ../../var/b2share-instance/
 	python manage.py db init
 	python manage.py db create
+
+	echo; echo "### Configure b2share webui"
+	cdvirtualenv src/b2share/webui
+	npm install
+	node_modules/webpack/bin/webpack.js -p # pack for production
 fi
 
-cdvirtualenv src
-export B2SHARE_UI_PATH=`pwd`/ui-frontend/app
+cdvirtualenv
+export B2SHARE_UI_PATH=`pwd`/src/b2share/webui/app
 export B2SHARE_BROKER_URL="redis://${DOCKER_IP}:6379/0"
 export B2SHARE_CELERY_RESULT_BACKEND="redis://${DOCKER_IP}:6379/1"
 export B2SHARE_SECRET_KEY=$(base64 /dev/urandom | tr -d '/+' | dd bs=32 count=1 2>/dev/null)

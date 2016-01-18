@@ -1,7 +1,0 @@
-{
-    "name": "b2share",
-    "resolutions": {
-        "jquery": "~1.11",
-        "bootstrap": "~3.2"
-    }
-}

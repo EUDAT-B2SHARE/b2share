@@ -1,0 +1,564 @@
+html, body {
+  height:100%;
+  margin:0;
+  color: #333;
+}
+
+html {
+ overflow-x: hidden;
+}
+
+#header {
+  padding: 0 0;
+  background: #FFFFFF url("/img/img_header.png") no-repeat top right;
+}
+
+footer {
+  background: #F7F3E9 url("/img/color-line.jpg") repeat-x top left;
+  padding: 20px 10px 0px 10px;
+  font-size: 12px;
+}
+
+a {
+  outline: none!important;
+  color: #F45D00;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: none;
+}
+
+#searchform-input-group {padding: 8px 0;}
+#search-box-main .navbar {margin: 20px 0;}
+
+/*** GENERALS ***/
+
+input, select, textarea {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+  outline: none;
+  border: 1px solid #ccc;
+}
+input:focus, select:focus, textarea:focus, button:focus, a:focus {
+  box-shadow: 0 0 10px #F45D00 !important;
+  outline: none !important;
+}
+
+.aligncenter {
+  text-align: center;
+}
+
+.unselectable {
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -khtml-user-select: none;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.vcenter {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+}
+
+/*** error ***/
+
+.errorDiv {
+  position: relative;
+  height: 10px;
+  text-align: center;
+}
+
+.errorRow {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+}
+
+.errorRow div * {
+  color: #fff;
+  border-radius: 4px;
+  text-align: center;
+  margin: 0 auto;
+  background-color: hsla(10, 100%, 50%, 0.75);
+}
+
+.errorRow .errorMessage {
+  margin: 2px 0;
+}
+
+/*** transitions css ***/
+
+.fade-enter {
+  opacity: 0.01;
+  transition: all .2s ease-in;
+}
+.fade-enter.fade-enter-active {
+  opacity: 1;
+}
+.fade-leave {
+  opacity: 1;
+  transition: all .2s ease-in;
+}
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
+}
+
+
+.error-enter {
+  opacity: 0.01;
+  transition: all .2s ease-in;
+}
+.error-enter.error-enter-active {
+  opacity: 1;
+}
+.error-leave {
+  opacity: 1;
+  transition: all .2s ease-in;
+}
+.error-leave.error-leave-active {
+  opacity: 0.01;
+}
+
+
+.display-enter {
+  opacity: 0.01;
+  transition: all 2s ease-in;
+}
+.display-enter.display-enter-active {
+  opacity: 1;
+}
+.display-leave {
+  opacity: 1;
+  transition: all 2s ease-in;
+}
+.display-leave.display-leave-active {
+  opacity: 0.01;
+}
+
+
+/*** navbar ***/
+
+.header-nav .navbar-header {
+  min-height: 120px;
+}
+.header-nav .in .navbar-nav {
+  margin-top: 5px;
+}
+.header-nav .collapsing .navbar-nav {
+  margin-top: 5px;
+}
+
+.navbar.navbar-default li > a.active,
+.navbar.navbar-default li > a.active:hover,
+.navbar.navbar-default li > a.active:focus {
+    background-color: #E5601E;
+    color: white;
+}
+
+
+/* collapse search placement */
+.header-nav .in .nav-search{
+  margin: 10px 0px 0px 0px;
+  padding: 0;
+}
+.header-nav .collapsing .nav-search {
+  margin: 10px 0px 0px 0px;
+  padding: 0;
+}
+
+
+/*** file uploads ***/
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+code {
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-family: "Bitstream Vera Sans Mono", Consolas, Courier, monospace;
+  font-size: 12px;
+  margin: 0 2px;
+  padding: 0px 5px;
+}
+
+
+/*****************************************************************************/
+/* base site */
+
+.about-header {
+  font-size: 13px;
+}
+.about-footer {
+  text-align: right;
+  padding-right: 30px;
+  font-size: 10px;
+  background-color: white;
+}
+.about-footer img {
+  height: 12px;
+}
+.about-footer a {
+  text-decoration: none;
+}
+.spacer-footer{
+  height: 10px;
+  padding: 0;
+  margin: 0;
+}
+.spacer-footer .box-1 {
+  background: #173b93;
+  height: 10px;
+}
+.spacer-footer .box-2 {
+  background: #c73118;
+  height: 10px;
+}
+.spacer-footer .box-3 {
+  background: #f45c0b;
+  height: 10px;
+}
+.spacer-footer .box-4 {
+  background: #fba700;
+  height: 10px;
+}
+.legal-notice{
+  margin-top: 7px;
+  font-size: 11px;
+}
+.navbar-brand .b2share-logo{
+  height: 90px;
+}
+.navbar-brand .eudat-logo{
+  height: 48px;
+}
+.nav-search {
+  display: table;
+  padding: 20px;
+  margin-right: 250px;
+}
+
+.user-notifications {
+  font-size: small;
+}
+
+.user-notifications h4 {
+  font-size: small;
+}
+
+.has-error{
+  color: #b94a48;
+}
+
+.well .divider {
+  height: 10px;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  padding: 5px;
+  clear: both;
+}
+
+.navbar-default {
+  margin-bottom: 0;
+  background: white url('/img/header.png') no-repeat right top;
+}
+
+footer {
+  background-color: #f3f3eb;
+}
+
+footer .navbar-default {
+  background: #F7F3E9 url('/img/footer.png') no-repeat right bottom;
+  min-height: 80px;
+}
+
+#page{
+  background: white url('/img/bg-page.jpg') no-repeat center top;
+  min-height: 800px;
+}
+
+
+/*****************************************************************************/
+/* collapse search placement */
+.header-nav .in .nav-search{
+  margin: 10px 0px 0px 0px;
+  padding: 0;
+}
+.header-nav .collapsing .nav-search {
+  margin: 10px 0px 0px 0px;
+  padding: 0;
+}
+
+#alerts-container {
+  position: absolute;
+  top: 10px;
+  right:50px;
+  z-index: 9999;
+  max-width: 300px;
+  float: right;
+}
+
+#alerts-container .message {
+  margin: 2px;
+}
+
+#alerts-container .message strong {
+  font-style: italic;
+}
+
+.panel-hidden{
+  background-color: transparent;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  border: 0;
+  padding: 5px;
+}
+
+/* form errors */
+input.ng-invalid.ng-touched {
+  background-color: #ffbfbf;
+  color: black;
+  border-color: #b94a48;
+  border-color: #b94a48;
+  box-shadow: 0 0px 0px #b94a48 inset, 0 0 4px #b94a48;
+  outline: 0 none;
+}
+
+input.ng-valid.ng-touched {
+}
+
+
+.list-group-item.active a {
+  color: white;
+}
+.list-group-item.active,
+.list-group-item.active:hover,
+.list-group-item.active:focus {
+  z-index: 2;
+  color: #fff;
+  background-color: #E5601E;
+  border-color: #E5601E;
+}
+
+/*****************************************************************************/
+/* presets */
+
+h1, h2, h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.bg-color-orange {
+  background-color: #E5601E;
+}
+
+.color-primary{
+  color: #E5601E;
+}
+
+.open .color-primary{
+  color: white;
+}
+
+.text-color-white {
+  color: #fff;
+}
+
+.text-color-white a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.text-color-white a:hover {
+  color: #fff;
+  /*text-decoration: none;*/
+}
+.align-right{
+  text-align: right;
+}
+.stop-scrolling {
+  height: 100%;
+  overflow: hidden;
+}
+.no-radius {
+  border-radius: 0px;
+}
+.col-centered{
+    float: none;
+    margin: 0 auto;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary {
+  color: #ffffff;
+  background-color: #ff5400;
+}
+
+/*****************************************************************************/
+/* dashboard last records*/
+
+.records a {
+  text-decoration: none;
+}
+
+.records a:hover .name {
+  text-decoration: underline;
+}
+
+.record {
+  margin: 5px 0 5px 0;
+}
+
+.record p {
+  padding: 0;
+  margin: 0;
+}
+
+.record .date{
+  color: blue;
+}
+
+.record .name {
+  font-weight: 900;
+}
+
+.record .description {
+  color: gray;
+}
+
+.pagination .info {
+  font-size: 0.8em;
+}
+
+/*****************************************************************************/
+/* upload form */
+
+.drop-box {
+  border: 1px solid #bbb;
+  text-align: center;
+}
+.drop-box.dragover {
+  border: 2px solid gray;
+  text-align: center;
+}
+
+.upload-preview .img-empty{
+  width: 100%;
+  padding: 10px;
+  text-align:center;
+}
+
+.upload-preview .media-wrapper{
+  min-height: 80px;
+  padding-bottom: 40px;
+  margin-top: 10px;
+}
+
+.media-wrapper .file-name{
+  font-size: 0.8em;
+}
+
+.media-wrapper .file-type{
+  font-size: 0.8em;
+}
+
+.media-wrapper .file-size{
+  font-size: 0.8em;
+}
+
+/*****************************************************************************/
+/* help and about pages */
+
+.legal-notice img {
+  float: left;
+  padding: 5px;
+}
+
+.footer-version {
+  text-align: right;
+  color: gray;
+  margin-right: 20px;
+  font-size: 0.7em;
+}
+
+/*****************************************************************************/
+/* breadcrumbs */
+
+.breadcrumb {
+  background-color: transparent;
+  font-size: small;
+  padding: 5;
+  margin: 0;
+}
+
+.colorbox {
+  cursor: pointer;
+}
+
+/*****************************************************************************/
+/* communities */
+
+.community {
+  padding: 5px 20px;
+  margin: 10px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  height: 16em;
+}
+
+.community.link {
+  text-align: center;
+}
+
+.community.link:hover {
+  border: 2px solid #F45D00;
+}
+
+.community img.logo {
+  max-width: 128px;
+  max-height: 64px;
+}
+
+.community .domain,
+.community .description {
+  margin: 1em 0;
+  color: #333;
+}

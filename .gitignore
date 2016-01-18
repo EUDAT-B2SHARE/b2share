@@ -42,3 +42,4 @@ org.eclipse.core.resources.prefs
 tags
 install/.vagrant/
 b2share/base/static
+nohup.out
