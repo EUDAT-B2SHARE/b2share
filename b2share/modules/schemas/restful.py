@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# B2SHARE2
 
 """B2Share Communities REST API"""
 
@@ -8,6 +9,7 @@ from flask import Blueprint, jsonify
 
 from invenio_rest import ContentNegotiatedMethodView
 
+from .mock_impl import SchemaRegistry, Schema
 
 blueprint = Blueprint(
     'b2share_schemas',
@@ -34,10 +36,9 @@ def schema_to_json_serializer(data, code=200, headers=None):
 
 class SchemaList(ContentNegotiatedMethodView):
 
-    view_name = 'schemas_list'
+    view_name = 'schema_list'
 
     def __init__(self, *args, **kwargs):
-        """Constructor."""
         super(SchemaList, self).__init__(*args, **kwargs)
         self.serializers = {
             'application/json': schema_to_json_serializer,
@@ -47,7 +48,9 @@ class SchemaList(ContentNegotiatedMethodView):
         """
         Retrieve list of schemas.
         """
-        return None
+        allschemas = SchemaRegistry.get_all(**kwargs)
+        print len(allschemas)
+        return {'schemas': allschemas}
 
     def post(self, **kwargs):
         """
@@ -56,13 +59,12 @@ class SchemaList(ContentNegotiatedMethodView):
         return None
 
 
-class Schema(ContentNegotiatedMethodView):
+class SchemaItem(ContentNegotiatedMethodView):
 
     view_name = 'schema_item'
 
     def __init__(self, *args, **kwargs):
-        """Constructor."""
-        super(Schema, self).__init__(*args, **kwargs)
+        super(SchemaItem, self).__init__(*args, **kwargs)
         self.serializers = {
             'application/json': schema_to_json_serializer,
         }
@@ -71,7 +73,7 @@ class Schema(ContentNegotiatedMethodView):
         """
         Get a schema
         """
-        return None
+        return SchemaRegistry.get_by_id(schema_id)
 
     def post(self, schema_id, **kwargs):
         """
@@ -84,5 +86,5 @@ blueprint.add_url_rule('/',
                        view_func=SchemaList
                        .as_view(SchemaList.view_name))
 blueprint.add_url_rule('/<int:schema_id>',
-                       view_func=Schema
-                       .as_view(Schema.view_name))
+                       view_func=SchemaItem
+                       .as_view(SchemaItem.view_name))

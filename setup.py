@@ -101,6 +101,7 @@ setup(
             'b2share_communities = b2share.modules.communities:B2ShareCommunities',
             'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
             'b2share_users = b2share.modules.users:B2ShareUsers',
+            'b2share_records = b2share.modules.records:B2ShareRecords',
         ],
     },
     install_requires=[
@@ -119,6 +120,7 @@ setup(
         # 'markdown',
         'httplib2',
         'simplejson',
+        'jsonschema',
     ],
     extras_require={
         'development': [

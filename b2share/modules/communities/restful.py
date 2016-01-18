@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# B2SHARE2
 
 """B2Share Communities REST API"""
 
@@ -8,7 +9,8 @@ from flask import Blueprint, jsonify
 
 from invenio_rest import ContentNegotiatedMethodView
 
-from .mock_impl import CommunityRegistry, Community
+from .mock_impl import CommunityRegistry
+from ..schemas.mock_impl import SchemaRegistry
 
 
 blueprint = Blueprint(
@@ -36,7 +38,7 @@ def community_to_json_serializer(data, code=200, headers=None):
 
 class CommunityListResource(ContentNegotiatedMethodView):
 
-    view_name = 'communities_list'
+    view_name = 'community_list'
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
@@ -49,13 +51,7 @@ class CommunityListResource(ContentNegotiatedMethodView):
         """
         Retrieve list of communities.
         """
-        try:
-            ret = []
-            for c in CommunityRegistry.get_all():
-                ret.append(c.get_description())
-            return {'communities': ret}
-        except Exception as xc:
-            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
+        return {'communities': CommunityRegistry.get_all()}
 
     def post(self, **kwargs):
         """
@@ -63,10 +59,7 @@ class CommunityListResource(ContentNegotiatedMethodView):
         Only administrators can use it.
         parameter: name, description, logo
         """
-        try:
-            return CommunityRegistry.create_community(kwargs)
-        except Exception as xc:
-            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
+        return CommunityRegistry.create_community(kwargs)
 
 
 class CommunityResource(ContentNegotiatedMethodView):
@@ -84,24 +77,30 @@ class CommunityResource(ContentNegotiatedMethodView):
         """
         Get a community metadata and description.
         """
-        try:
-            return CommunityRegistry.get_by_id(community_id).get_description()
-        except Exception as xc:
-            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
+
+        community = CommunityRegistry.get_by_id(community_id)
+        if not community:
+            community = CommunityRegistry.get_by_name(community_id)
+        if not community:
+            return {'message': 'Not Found', 'status': 404}, 404
+
+        comm = {k: community[k] for k in ['id', 'name', 'domain', 'description', 'logo']}
+        comm['schema_id_list'] = [{'id': sid} for sid in community['schema_id_list']]
+        for sdict in comm['schema_id_list']:
+            schema = SchemaRegistry.get_by_id(sdict['id'])
+            sdict['link'] = schema.get('id') if schema else None
+        return comm
 
     def patch(self, community_id, **kwargs):
         """
         Modify a community
         """
-        try:
-            return CommunityRegistry.get_by_id(community_id).patch_description(kwargs)
-        except Exception as xc:
-            return {'message': 'Server Error', 'status': 500, 'error': xc}, 500
+        return CommunityRegistry.get_by_id(community_id).patch_description(kwargs)
 
 
 blueprint.add_url_rule('/',
                        view_func=CommunityListResource
                        .as_view(CommunityListResource.view_name))
-blueprint.add_url_rule('/<int:community_id>',
+blueprint.add_url_rule('/<path:community_id>',
                        view_func=CommunityResource
                        .as_view(CommunityResource.view_name))
