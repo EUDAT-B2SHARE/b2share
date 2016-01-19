@@ -33,8 +33,6 @@ install_requires = [
     'invenio-records>=1.0.0a8,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-celery>=1.0.0a3,<1.1.0',
-    'httplib2',
-    'simplejson',
 ]
 
 tests_require = [
@@ -46,7 +44,6 @@ tests_require = [
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
     'pytest>=2.8.0',
-    'nose',
     'Flask-Testing'
 ]
 

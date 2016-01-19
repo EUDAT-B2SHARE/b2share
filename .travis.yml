@@ -23,81 +23,34 @@ notifications:
 services:
   - mysql
   - redis
-  - mongodb
+  - elasticsearch
 
 language: python
 
 cache:
-  - apt
   - pip
 
 env:
-  # - REQUIREMENTS=lowest REXTRAS=docs
-  # - REQUIREMENTS=release REXTRAS=docs
+  - REQUIREMENTS=lowest REXTRAS=docs
+  - REQUIREMENTS=release REXTRAS=docs
   - REQUIREMENTS=devel REXTRAS=docs
 
 python:
   - "2.7"
+  - "3.5"
 
 sudo: false
 
-addons:
-  apt:
-    packages:
-      - apache2
-      - git
-      - liblzma-dev
-      - nodejs
-      - poppler-utils
-      - libapache2-mod-wsgi
-      - libapache2-mod-xsendfile
-      - ssl-cert
-      - subversion
-
 before_install:
-  - "travis_retry pip install --upgrade pip"
-  - "travis_retry pip install mock"
-  - "travis_retry pip install nose"
-  - "travis_retry pip install flask_testing"
+  - "travis_retry pip install --upgrade pip setuptools py"
+  - "travis_retry pip install twine wheel coveralls requirements-builder"
+  - "requirements-builder --level=min setup.py > .travis-lowest-requirements.txt"
+  - "requirements-builder --level=pypi setup.py > .travis-release-requirements.txt"
+  - "requirements-builder --level=dev --req requirements-devel.txt setup.py > .travis-devel-requirements.txt"
 
 install:
-  - "cd $TRAVIS_BUILD_DIR"
-  - "travis_retry pip install -r requirements.txt --allow-all-external"
-  - "travis_retry pip install -e .[$REXTRAS] --process-dependency-links"
-
-  # - "python setup.py compile_catalog"
-  - "npm update"
-
-  - "npm install --silent -g bower less clean-css uglify-js requirejs"
-  # All the step below this points are solely for test purposes, don't use them
-  # to setup your invenio installation. Please do RTFM instead (INSTALL.rst).
-  # - "./scripts/setup_devmode.sh"
-
-  # - "inveniomanage config set CFG_SITE_NAME B2Share"
-  # - "inveniomanage config set CFG_SITE_NAME_INTL \"{u'en' : u'B2Share'}\""
-  # - "inveniomanage config set CFG_SITE_LANGS \"[u'en']\""
-
-  # - "inveniomanage config set CFG_SITE_URL http://0.0.0.0"
-  # - "inveniomanage config set CFG_SITE_SECURE_URL http://0.0.0.0"
-
-
-  # - "inveniomanage config set CFG_SITE_FUNCTION \"\""
-
-  # - "inveniomanage config set CFG_B2SHARE_UPLOAD_FOLDER /tmp/ss/"
-  # - "inveniomanage config set CFG_EPIC_USERNAME \"\""
-  # - "inveniomanage config set CFG_EPIC_PASSWORD \"\""
-  # - "inveniomanage config set CFG_EPIC_BASEURL \"\""
-  # - "inveniomanage config set CFG_EPIC_PREFIX \"\""
-  # - "inveniomanage config set CFG_CAPTCHA_PRIVATE_KEY \"\""
-  # - "inveniomanage config set CFG_CAPTCHA_PUBLIC_KEY \"\""
-  # - "cd $TRAVIS_BUILD_DIR"
-
-before_script:
-  - "cd $TRAVIS_BUILD_DIR"
-  # - "inveniomanage database init --user=root --yes-i-know"
-  # - "inveniomanage database recreate --yes-i-know"
+  - "travis_retry pip install -r .travis-${REQUIREMENTS}-requirements.txt"
+  - "travis_retry pip install -e .[all]"
 
 script:
-  - "cd $TRAVIS_BUILD_DIR/b2share/testsuite"
-  # FIXME: run tests again once b2share is refactored
-  # - "nosetests -s ."
+  - "./run-tests.sh"
