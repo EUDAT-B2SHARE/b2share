@@ -13,7 +13,7 @@ domaindesc = 'Aalto University'
 admin_can_edit_published_record = True
 
 # only the domain administrators can deposit
-depositing_groups = ['aalto_domain_administrators']
+depositing_groups = ['aalto_domain_administrators','aalto_domain_members']
 
 fields = [
     {
