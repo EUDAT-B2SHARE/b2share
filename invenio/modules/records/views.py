@@ -186,9 +186,18 @@ def metadata(recid, of='hd', ot=None):
         id_user=current_user.get_id(),
         request=request)
 
+    record = {}
+    try:
+        from invenio.b2share.modules.b2deposit.restful import get_record_details
+        record = get_record_details(recid)
+    except:
+        pass
+
+    from flask.json import dumps
     from invenio.b2share.modules.b2deposit.edit import is_record_editable
     return render_template('records/metadata.html', of=of, ot=ot,
-                            editable=is_record_editable(recid))
+                            editable=is_record_editable(recid),
+                            record=record, dumps=dumps)
 
 
 @blueprint.route('/<int:recid>/references', methods=['GET', 'POST'])
