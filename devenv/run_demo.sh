@@ -23,7 +23,8 @@ export MACHINE_NAME=b2share
 workon $VIRTUALENV_NAME
 if [ $? -ne 0 ]; then
 	echo; echo "### Make virtual env"
-	mkvirtualenv $VIRTUALENV_NAME
+	# mkvirtualenv $VIRTUALENV_NAME
+	mkvirtualenv --python=/usr/local/bin/python3 $VIRTUALENV_NAME
 	workon $VIRTUALENV_NAME
 	cdvirtualenv && mkdir src
 fi
@@ -50,8 +51,8 @@ if [ ! -d ./b2share ]; then
 
 	echo; echo "### Configure b2share backend"
 	# cp devenv/b2share.cfg ../../var/b2share-instance/
-	python manage.py db init
 	python manage.py db create
+	python manage.py index init
 
 	echo; echo "### Configure b2share webui"
 	cdvirtualenv src/b2share/webui
@@ -64,6 +65,7 @@ export B2SHARE_UI_PATH=`pwd`/src/b2share/webui/app
 export B2SHARE_BROKER_URL="redis://${DOCKER_IP}:6379/0"
 export B2SHARE_CELERY_RESULT_BACKEND="redis://${DOCKER_IP}:6379/1"
 export B2SHARE_SECRET_KEY=$(base64 /dev/urandom | tr -d '/+' | dd bs=32 count=1 2>/dev/null)
+export SEARCH_ELASTIC_HOSTS="${DOCKER_IP}:9200"
 
 cdvirtualenv src/b2share/devenv
 echo; echo "### Run docker-compose detached mode"
@@ -74,9 +76,18 @@ ps aux | grep -v grep | grep celeryd
 if [ $? -ne 0 ]; then
 	echo; echo "### Run celeryd in background"
 	nohup celery worker -E -A b2share.celery -l INFO --workdir=$VIRTUAL_ENV &
-	sleep 1 # give a bit of time to celery
+	sleep 2 # give a bit of time to celery
 fi
 
+echo; echo "### Reinitialize database"
+cdvirtualenv
+rm var/b2share-instance/b2share.db
 cdvirtualenv src/b2share
+python manage.py db create
+python manage.py index init
+
+echo; echo "### Add testing records"
+python manage.py add_records
+
 echo; echo "### Run b2share"
 python manage.py --debug run

@@ -43,6 +43,23 @@ def create_app(**kwargs):
         '/api': api.wsgi_app
     })
 
+
+    from invenio_db import InvenioDB
+    from invenio_pidstore import InvenioPIDStore
+    InvenioDB(api)
+    InvenioPIDStore(api)
+
+    from invenio_records import InvenioRecords
+    from invenio_search import InvenioSearch
+    from invenio_rest import InvenioREST
+
+    InvenioREST(api)
+    InvenioRecords(api)
+    InvenioSearch(api)
+
+    ctx = api.app_context()
+    ctx.push()
+
     return api
 
 
