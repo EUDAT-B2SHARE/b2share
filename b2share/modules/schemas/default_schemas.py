@@ -18,7 +18,6 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2SHARE"""
 
 from __future__ import absolute_import
 
@@ -37,11 +36,11 @@ schema_basic = {
             "description": "The main title of the record.",
             "type": "string",
         },
-        # "description": {
-        #     "title": "Description",
-        #     "description": "The record abstract.",
-        #     "type": "string",
-        # },
+        "description": {
+            "title": "Description",
+            "description": "The record abstract.",
+            "type": "string",
+        },
         "creator": {
             "title": "Author",
             "description": "The record author(s).",
@@ -181,6 +180,73 @@ schema_clarin = {
     "title": "B2SHARE CLARIN Schema",
     "description": """This is the blueprint of the metadata block
                       specific for the CLARIN community""",
+    "type": "object",
+    "properties": {
+        'language_code': {
+            'title': 'Language Code',
+            'description': 'This element can be used to add an ISO language code from '
+                           'ISO-639-3 to uniquely identify the language a document '
+                           'is written in',
+            "type": "string",
+            "default": "eng"
+        },
+        "region": {
+            'title': 'Country/Region',
+            'description': 'This element allows users to specify a country and/or '
+                           'a region to allow depositors to specify where the language '
+                           'the document is in is spoken',
+            "type": "string",
+        },
+        "resource_type": {
+            'title': 'Resource Type',
+            'description': 'This element allows the depositor to specify the type '
+                           'of the resource (Text, Audio, Video, Time-Series, Photo, etc.)',
+            'type': "array",
+            'items': {
+                'type': 'string',
+                'enum': ['Text', 'Image', 'Video', 'Audio', 'Time-Series', 'Other'],
+            }
+        },
+        "project_name": {
+            'title': 'Project Name',
+            'description': 'This element allows the depositor to specify the projects '
+                           'which were at the source of the creation of the resource',
+            'type': "string",
+        },
+        "quality": {
+            'title': 'Quality',
+            'description': 'This element allows depositors to indicate the quality of '
+                           'the resource allowing potential users to immediately see '
+                           'whether the resource is of use for them.',
+            'type': "string",
+        }
+    },
+    "required": ["language", "resource_type"],
+    "additionalProperties": False,
+    "b2share": {
+        "plugins": {
+            'language_code': 'language_chooser',
+        },
+        "overwrite": {
+            "language_code": {
+                "http://b2share.eudat.eu/schemas/B2SHARE+Basic+Optional+Schema": [
+                    "language"
+                ]
+            },
+            "resource_type": {
+                "http://b2share.eudat.eu/schemas/B2SHARE+Basic+Optional+Schema": [
+                    "resource_type"
+                ]
+            },
+        }
+    },
+}
+
+schema_clarin2 = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "B2SHARE CLARIN Duplicated Schema",
+    "description": """This is the blueprint of the metadata block
+                      specific for the CLARIN community, duplicated""",
     "type": "object",
     "properties": {
         'language_code': {
