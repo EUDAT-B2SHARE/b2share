@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router'
 import { server } from '../data/server';
 import { Wait } from './waiting.jsx';
+import { Schema } from './schema.jsx';
 
 
 export const CommunityListPage = React.createClass({
@@ -99,8 +100,8 @@ const Community = React.createClass({
 
     renderSchema(schema) {
         return (
-            <div className="row" key={schema.get('id')}>
-                <Schema schema={schema} />
+            <div key={schema.get('id')} className="col-sm-6" style={{borderBottom:'1px solid #eee'}}>
+                <Schema schema={schema}/>
             </div>
         );
     },
@@ -118,11 +119,12 @@ const Community = React.createClass({
                         { schemas && schemas.count() ?
                             <div className="row">
                                 <div className="col-sm-12">
+                                    <hr/>
                                     <h3>Metadata schemas:</h3>
                                 </div>
                             </div> : false }
                         <div className="row">
-                            { schemas ? schemas.map(s => <Schema schema={s} key={s.get('id')}/>):false }
+                            { schemas ? schemas.map(this.renderSchema) : false }
                         </div>
                     </div>
                 </div>
@@ -132,72 +134,13 @@ const Community = React.createClass({
 });
 
 
-const Schema = React.createClass({
-    mixins: [React.PureRenderMixin],
-
-    render() {
-        const schema = this.props.schema;
-        return (
-            <div className="col-sm-6" style={{borderBottom:'1px solid #ddd'}}>
-                <h4 className="title">{schema.get('title')}</h4>
-                <p className="description">{schema.get('description')}</p>
-            </div>
-        );
-    }
-});
 
 
-const examples = {
-    fields: {
-        "description": {
-            "title": "Description",
-            "description": "The record abstract.",
-            "type": "string",
-        },
-       'authors': {
-            'title': 'Authors',
-            'description': 'Authors...',
-            "type": "array",
-            "items": { "type": "string" },
-            "uniqueItems": true,
-        },
-       'keywords': {
-            'title': 'Keywords',
-            'description': 'Keywords...',
-            "type": "array",
-            "minItems": 2,
-            "maxItems": 5,
-            "items": { "type": "string" },
-            "uniqueItems": true,
-        },
-        'open_access': {
-            'title': 'Open Access',
-            'description': 'Indicate whether the resource is open or access is restricted.',
-            'type': 'boolean',
-        },
-        'embargo_date': {
-            'title': 'Embargo Date',
-            'description': 'Date that the embargo will expire.',
-            'type': 'string',
-            'format': 'date-time',
-            'default': Date.now(),
-        },
-        'contact_email': {
-            'title': 'Contact Email',
-            'description': 'The email of the contact person for this record.',
-            'type': 'string',
-            'format': 'email',
-        },
-    },
-    "b2share": {
-        "plugins": {
-            'language': 'language_chooser',
-            'licence': 'licence_chooser',
-            'discipline': 'discipline_chooser',
-        },
-        "overwrite": {
-            "language_code": { "http://b2share.eudat.eu/schemas/B2SHARE+Basic+Optional+Schema": [ "language" ] },
-            "resource_type": { "http://b2share.eudat.eu/schemas/B2SHARE+Basic+Optional+Schema": [ "resource_type" ] },
-        }
-    },
-}
+
+
+
+
+
+
+
+

@@ -18,11 +18,10 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2Share Communities REST API"""
 
 from __future__ import absolute_import
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from invenio_rest import ContentNegotiatedMethodView
 
@@ -65,9 +64,9 @@ class SchemaList(ContentNegotiatedMethodView):
         """
         Retrieve list of schemas.
         """
-        allschemas = SchemaRegistry.get_all(**kwargs)
-        print len(allschemas)
-        return {'schemas': allschemas}
+        ids = request.args.getlist('schemaIDs[]')
+        schemas = SchemaRegistry.get_list(ids) if ids else SchemaRegistry.get_all(**kwargs)
+        return {'schemas': schemas}
 
     def post(self, **kwargs):
         """

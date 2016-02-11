@@ -18,6 +18,7 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+
 from __future__ import absolute_import
 from .api import SchemaRegistryInterface, SchemaInterface
 from .default_schemas import schema_basic
@@ -58,6 +59,11 @@ class SchemaRegistry(SchemaRegistryInterface):
     @staticmethod
     def get_by_community_id(community_id):
         return [s for s in SchemaRegistry.schemas if s.get_community_id() == community_id]
+
+    @staticmethod
+    def get_list(list):
+        ids = set(list)
+        return [s for s in SchemaRegistry.schemas if s.get_community_id() in ids]
 
     @staticmethod
     def get_all(start=0, stop=20):
