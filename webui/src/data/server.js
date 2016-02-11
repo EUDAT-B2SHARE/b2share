@@ -1,6 +1,6 @@
 import React from 'react';
 import {fromJS} from 'immutable';
-import {ajaxGet} from './ajax'
+import {ajaxGet, ajaxPost} from './ajax'
 import {objEquals} from './misc'
 
 const urlRoot = window.location.origin;
@@ -75,6 +75,24 @@ class Fetcher {
 }
 
 
+class Poster {
+    constructor(url) {
+        this.url = url;
+        this.requestSent = false;
+    }
+
+    post(params, successFn) {
+        if (!this.requestSent) {
+            this.requestSent = true;
+            ajaxPost(this.url, params,
+                successFn,
+                () => { this.requestSent = false; }
+            );
+        }
+    }
+}
+
+
 class Server {
     constructor() {
         this.store = null;
@@ -82,6 +100,8 @@ class Server {
         this.records = new Fetcher(apiUrls.records);
         this.communities = new Fetcher(apiUrls.communities, COMMUNITIES_CACHE_PERIOD);
         this.schemas = new Fetcher(apiUrls.schemas);
+
+        this.newRecord = new Poster(apiUrls.records);
     }
 
     setStore(store) {
@@ -106,6 +126,15 @@ class Server {
         this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
     }
 
+    fetchRecord({id}) {
+        const binding = store.branch('currentRecord');
+        if (!binding.valid()) {
+            return;
+        }
+        const params = {id:id};
+        this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+    }
+
     fetchCommunities() {
         const binding = store.branch('communities');
         if (!binding.valid()) {
@@ -114,17 +143,26 @@ class Server {
         this.communities.fetch(null, (json)=>{binding.set(fromJS(json.communities))});
     }
 
-
     fetchCommunitySchemas(communityID) {
         const findFn = (x) => x.get('id') == communityID || x.get('name') == communityID;
         const community = store.branch('communities').find(findFn);
         if (!community.valid()) {
             return ;
         }
-        const schemaIDs = community.branch('schema_id_list').get();
-        const params = {schemaIDs:schemaIDs.toJS()};
-        this.schemas.fetch(params, (json)=>{community.setIn(['schema_list'], fromJS(json.schemas))});
+        const schema_id_list = community.get('schema_id_list');
+        const schemaIDs = schema_id_list ? schema_id_list.toJS() : [];
+        if (schemaIDs.length) {
+            const params = {schemaIDs:schemaIDs};
+            this.schemas.fetch(params, (json)=>{community.setIn(['schema_list'], fromJS(json.schemas))});
+        } else {
+            community.setIn(['schema_list'], fromJS([]))
+        }
+    }
+
+    createRecord(successFn) {
+        this.newRecord.post(null, successFn);
     }
 };
+
 
 export const server = new Server();

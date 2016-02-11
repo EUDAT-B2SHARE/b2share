@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router'
+import { createAndGoToRecord } from './records.jsx';
 
 
 export const Navbar = React.createClass({
@@ -26,9 +27,7 @@ export const Navbar = React.createClass({
                             <span className="icon-bar"></span>
                         </button>
                         <Link to="/" className="navbar-brand">
-                            <div>
-                                <img style={{height: 90}} src="/img/logo.png"/>
-                            </div>
+                            <img style={{height: 90}} src="/img/logo.png"/>
                         </Link>
                     </div>
 
@@ -77,10 +76,7 @@ const NavbarMenu = React.createClass({
 
                 {/* menu */}
                 <ul className="nav navbar-nav text-uppercase">
-                    {/* basic navigation */}
-                    <li> <Link to="http://www.eudat.eu/services/b2share" activeClassName='active' target='_blank'> What is B2SHARE </Link> </li>
-                    <li> <Link to="http://www.eudat.eu/services/userdoc/b2share" activeClassName='active' target="_blank"> User Guide </Link> </li>
-                    <li> <Link to="/help/faq" activeClassName='active'> FAQs </Link> </li>
+                    <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
                     <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
                     <li> <Link to="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </Link> </li>
 
