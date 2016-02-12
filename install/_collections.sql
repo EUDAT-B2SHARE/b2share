@@ -8,6 +8,7 @@ INSERT INTO collection VALUES (105,'NRM','980:NRM',NULL,NULL);
 INSERT INTO collection VALUES (106,'GBIF','980:GBIF',NULL,NULL);
 INSERT INTO collection VALUES (107,'RDA','980:RDA',NULL,NULL);
 INSERT INTO collection VALUES (108,'Aalto','980:Aalto',NULL,NULL);
+INSERT INTO collection VALUES (109,'EISCAT','980:EISCAT',NULL,NULL);
 -- I don't know what the forth value is. First is parent collection (1 should
 -- be site collection), second is child collection. Third I assume is "regular"
 -- or "virtual" relationship but I'm not sure what this means...
