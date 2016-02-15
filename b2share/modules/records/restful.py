@@ -63,7 +63,6 @@ class HttpResource(ContentNegotiatedMethodView):
     def __init__(self, *args):
         super(HttpResource, self).__init__(*args)
         self.serializers = {
-            'text/html': json_serializer,
             'application/json': json_serializer,
         }
 
