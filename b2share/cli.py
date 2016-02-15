@@ -10,7 +10,7 @@ from flask_cli import with_appcontext
 
 from invenio_base.app import create_cli
 
-from b2share.modules.records.api import Record, RecordSearchFilter
+from b2share.modules.records.api import Record
 
 from .factory import create_app
 
@@ -19,6 +19,9 @@ cli = create_cli(create_app=create_app)
 @cli.command()
 @with_appcontext
 def add_records():
+    add_test_records()
+
+def add_test_records():
     for desc in test_record_descriptions:
         md = {'schema_id': "0", 'open_access': True, }
         md.update(desc)

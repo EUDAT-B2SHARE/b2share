@@ -22,6 +22,8 @@ from __future__ import absolute_import, print_function
 
 import uuid
 
+from flask import current_app
+
 from invenio_db import db
 from invenio_pidstore.minters import recid_minter
 from invenio_records.api import Record as InvenioRecord
@@ -98,14 +100,17 @@ class Record(object):
         record = InvenioRecord.create(data, id_=record_uuid)
         db.session.commit()
 
-        current_search_client.index(
-            index='records',
-            doc_type='record',
-            id=record.id,
-            body=data,
-            version=1,
-            version_type='external_gte',
-        )
+        try:
+            current_search_client.index(
+                index='records',
+                doc_type='record',
+                id=record.id,
+                body=data,
+                version=1,
+                version_type='external_gte',
+            )
+        except Exception as xc:
+            current_app.logger.error(xc)
 
         return Record(record.model)
 
