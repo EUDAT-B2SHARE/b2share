@@ -33,6 +33,7 @@ install_requires = [
     'invenio-records>=1.0.0a8,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-celery>=1.0.0a3,<1.1.0',
+    'invenio-search>=1.0.0a4,<1.1.0',
 ]
 
 tests_require = [
