@@ -18,73 +18,222 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""Communities interface and API."""
 
 from __future__ import absolute_import
-import abc
+
+import sqlalchemy
+from invenio_db import db
+from jsonpatch import apply_patch
+from sqlalchemy.orm.exc import NoResultFound
+
+from .errors import CommunityDeletedError, CommunityDoesNotExistError, \
+    InvalidCommunityError
+from .signals import after_community_delete, after_community_insert, \
+    after_community_update, before_community_delete, before_community_insert, \
+    before_community_update
 
 
-class CommunityRegistryInterface(object):
-    @staticmethod
-    @abc.abstractmethod
-    def get_by_id(community_id):
-        """Returns a Community object or nil"""
-        pass
+class Community(object):
+    """B2Share Community."""
 
-    @staticmethod
-    @abc.abstractmethod
-    def get_by_name(community_name):
-        """Returns a Community object or nil"""
-        pass
+    def __init__(self, model):
+        """
+        Args:
+            model (:class:`b2share.modules.communities.models.Community`):
+                database community model.
+        """
+        self.model = model
 
-    @staticmethod
-    @abc.abstractmethod
-    def get_all(start, stop):
-        """Returns all Community objects with index between start and stop"""
-        pass
+    @classmethod
+    def get(cls, id=None, name=None, with_deleted=False):
+        """Retrieve a community by its id or name.
 
-    @staticmethod
-    @abc.abstractmethod
-    def create_community(json):
-        """ The json parameter is a dictionary containing the name, domain,
-            description (all strings) and logo (image uri) of the community.
-            Returns a newly created community object or raises exception.
-            Only administrators can call this function. A new community
-            is implicitly associated with a new, empty, schema list. """
-        pass
+        Args:
+            id (str): id of the :class:`CommunityInterface` instance.
+            name (str): name of the :class:`CommunityInterface instance.
+            with_deleted (bool): enable the retrieval of deleted records.
 
+        Returns:
+            :class:`CommunityInterface`: The requested community.
 
-class CommunityInterface(object):
-    @abc.abstractmethod
-    def get_description(self):
-        """ Returns a dict describing the user community. Any media objects
-            must be referred to by URL (relative or absolute) """
-        # example:
-        return {
-            "id": 123,
-            "name": "MyCommunity",
-            "description": "MyCommunity is concerned with the study "\
-                "of the newly discovered heptaquark particle",
-            "logo": "assets/communities/mycommunity/logo.png"
-        }
+        Raises:
+            b2share.modules.communities.errors.CommunityDoesNotExistError: The
+                requested community was not found.
+            b2share.modules.communities.errors.CommunityDeletedError: The
+                requested community is marked as deleted and `with_deleted` is
+                    False.
+                ValueError: :attr:`id` and :attr:`name` are not set or both are
+                    set.
+        """
+        from .models import Community as CommunityMetadata
+        if not id and not name:
+            raise ValueError('"id" or "name" should be set.')
+        if id and name:
+            raise ValueError('"id" and "name" should not be both set.')
+        try:
+            if id:
+                metadata = CommunityMetadata.query.filter(
+                    CommunityMetadata.id == id).one()
+            else:
+                metadata = CommunityMetadata.query.filter(
+                    CommunityMetadata.name == name).one()
+            if metadata.deleted and not with_deleted:
+                raise CommunityDeletedError(id)
+            return cls(metadata)
+        except NoResultFound as e:
+            raise CommunityDoesNotExistError(id) from e
 
-    @abc.abstractmethod
-    def patch_description(self, patch_dict):
-        """ Changes the community description with dict. The community id cannot be changed.
-            Only community administrators can call this method"""
-        pass
+    @classmethod
+    # TODO: a query should be given
+    def get_all(cls, start, stop):
+        """Searches for matching communities."""
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def get_previous_version(self):
-        """ Returns the previous version of this community"""
-        pass
+    @classmethod
+    def create_community(cls, name, description, logo=None):
+        """Create a new Community.
 
-    @abc.abstractmethod
-    def get_schema_id_list(self):
-        """Returns a list of ids of schema objects, specific for this community"""
-        pass
+        A new community is implicitly associated with a new, empty, schema
+        list.
 
-    @abc.abstractmethod
-    def get_admins(self):
-        """ Returns a list of user ids representing community administrators.
-            Adding a new admin possible only from B2ACCESS ??? """
-        pass
+        Args:
+            name (str): Community name.
+            description (str): Community description.
+            logo (str): URL to the Community logo.
+
+        Returns:
+            :class:`CommunityInterface`: the newly created community.
+
+        Raises:
+            b2share.modules.communities.errors.InvalidCommunityError: The
+                community creation failed because the arguments are not valid.
+        """
+        from .models import Community as CommunityMetadata
+        try:
+            with db.session.begin_nested():
+                model = CommunityMetadata(name=name, description=description,
+                                          logo=logo)
+                community = cls(model)
+                before_community_insert.send(community)
+                db.session.add(model)
+        except sqlalchemy.exc.IntegrityError as e:
+            raise InvalidCommunityError() from e
+        after_community_insert.send(community)
+        return community
+
+    def update(self, data, clear_fields=False):
+        """Update multiple fields of the community at the same time.
+
+        If the update fails, none of the community's fields are modified.
+
+        Args:
+            data (dict): can have one of those fields: name, description, logo.
+                it replaces the given values.
+            clear_fields (bool): if True, set not specified fields to None.
+
+        Returns:
+            :class:`Community`: self
+
+        Raises:
+            b2share.modules.communities.errors.InvalidCommunityError: The
+                community update failed because the resulting community is
+                not valid.
+        """
+        try:
+            with db.session.begin_nested():
+                before_community_update.send(self)
+                if clear_fields:
+                    for field in ['name', 'description', 'logo']:
+                        setattr(self.model, field, data.get(field, None))
+                else:
+                    for key, value in data.items():
+                        setattr(self.model, key, value)
+                db.session.merge(self.model)
+        except sqlalchemy.exc.IntegrityError as e:
+            raise InvalidCommunityError() from e
+        after_community_update.send(self)
+        return self
+
+    def patch(self, patch):
+        """Update the community's metadata with a json-patch.
+
+        Args:
+            patch (str): json-patch which can modify the following fields:
+                name, description, logo.
+
+        Returns:
+            :class:`Community`: self
+
+        Raises:
+            jsonpatch.JsonPatchConflict: the json patch conflicts on the
+                community.
+
+            jsonpatch.InvalidJsonPatch: the json patch is invalid.
+
+            b2share.modules.communities.errors.InvalidCommunityError: The
+                community patch failed because the resulting community is
+                not valid.
+        """
+        data = apply_patch({
+            'name': self.model.name,
+            'description': self.model.description,
+            'logo': self.model.logo
+        }, patch, True)
+        self.update(data)
+        return self
+
+    # TODO: add properties for getting schemas and admins
+
+    def delete(self):
+        """Mark a community as deleted.
+
+        Returns:
+            :class:`Community`: self
+        """
+        with db.session.begin_nested():
+            before_community_delete.send(self)
+            self.model.deleted = True
+            db.session.merge(self.model)
+            # FIXME: What do we do with this community's records?
+        after_community_delete.send(self)
+        return self
+
+    @property
+    def id(self):
+        """Get community id."""
+        return self.model.id
+
+    @property
+    def created(self):
+        """Get creation timestamp."""
+        return self.model.created
+
+    @property
+    def updated(self):
+        """Get last updated timestamp."""
+        return self.model.updated
+
+    @property
+    def deleted(self):
+        """Get community deletion state.
+
+        Returns:
+            date: True if the community is deleted, else False.
+        """
+        return self.model.deleted
+
+    @property
+    def name(self):
+        """Retrieve community's name."""
+        return self.model.name
+
+    @property
+    def description(self):
+        """Retrieve community's description."""
+        return self.model.description
+
+    @property
+    def logo(self):
+        """Retrieve community's logo."""
+        return self.model.logo

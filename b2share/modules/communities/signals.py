@@ -22,11 +22,37 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2SHARE"""
+"""Community module signals."""
 
-from __future__ import absolute_import, print_function
+from blinker import Namespace
 
-from .ext import B2ShareCommunities
-from .api import Community
+_signals = Namespace()
 
-__all__ = ('B2ShareCommunities', 'Community')
+before_community_insert = _signals.signal('before-community-insert')
+"""Signal is sent before a community is inserted.
+
+Example subscriber
+
+.. code-block:: python
+
+    def listener(sender, *args, **kwargs):
+        sender['key'] = sum(args)
+
+    from invenio_communities.signals import before_community_insert
+    before_community_insert.connect(listener)
+"""
+
+after_community_insert = _signals.signal('after-community-insert')
+"""Signal sent after a community is inserted."""
+
+before_community_update = _signals.signal('before-community-update')
+"""Signal is sent before a community is update."""
+
+after_community_update = _signals.signal('after-community-update')
+"""Signal sent after a community is updated."""
+
+before_community_delete = _signals.signal('before-community-delete')
+"""Signal is sent before a community is delete."""
+
+after_community_delete = _signals.signal('after-community-delete')
+"""Signal sent after a community is delete."""

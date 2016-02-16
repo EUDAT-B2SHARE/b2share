@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,11 +21,18 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2SHARE"""
+"""Test B2Share communities module."""
 
-from __future__ import absolute_import, print_function
+from flask import Flask
 
-from .ext import B2ShareCommunities
-from .api import Community
+from b2share.modules.communities import B2ShareCommunities
 
-__all__ = ('B2ShareCommunities', 'Community')
+
+def test_init():
+    """Test extension initialization."""
+    app = Flask('testapp')
+    app.config.update(SERVER_NAME='http://localhost:5000/')
+    ext = B2ShareCommunities()
+    assert 'b2share-communities' not in app.extensions
+    ext.init_app(app)
+    assert 'b2share-communities' in app.extensions

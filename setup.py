@@ -38,6 +38,7 @@ install_requires = [
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-celery>=1.0.0a3,<1.1.0',
     'invenio-search>=1.0.0a4,<1.1.0',
+    'invenio-access>=1.0.0a3,<1.1.0',
 ]
 
 tests_require = [
@@ -49,7 +50,8 @@ tests_require = [
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
     'pytest>=2.8.0',
-    'Flask-Testing'
+    'Flask-Testing',
+    'mock'
 ]
 
 extras_require = {
@@ -143,9 +145,9 @@ setup(
             'b2share_users = b2share.modules.users:B2ShareUsers',
             'b2share_records = b2share.modules.records:B2ShareRecords',
         ],
-        # 'invenio_db.models': [
-        #     'b2share_communities = b2share.modules.communities.models',
-        # ],
+        'invenio_db.models': [
+            'b2share_communities = b2share.modules.communities.models',
+        ],
     },
     extras_require=extras_require,
     install_requires=install_requires,
