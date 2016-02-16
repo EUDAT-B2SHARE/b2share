@@ -1,5 +1,7 @@
-import React from 'react';
+import React from 'react/addons';
 import ReactDOM from 'react-dom';
+const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
+
 import createBrowserHistory from 'history/lib/createBrowserHistory'
 import Notification from 'react-notification';
 import { fromJS } from 'immutable';
@@ -13,11 +15,11 @@ import { HomePage } from './components/home.jsx';
 import { UserPage } from './components/user.jsx';
 import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, FAQ, SearchHelp } from './components/help.jsx';
 import { CommunityListPage, CommunityPage } from './components/communities.jsx';
-import { RecordListPage, RecordPage } from './components/records.jsx';
+import { RecordListPage, RecordPage, EditRecordPage } from './components/records.jsx';
 import { SearchPage } from './components/search.jsx';
 
 
-const VERSION = '0.3.2';
+const VERSION = '0.3.3';
 
 
 const store = new Store({
@@ -25,6 +27,8 @@ const store = new Store({
         name: null,
     },
     latestRecords: [],
+    records: [],
+    currentRecord: {},
     communities: [],
     search: {
         query: '',
@@ -61,12 +65,14 @@ const AppFrame = React.createClass({
         return (
             <div>
                 <Navbar store={store} dataRef={store.root} />
-                <Breadcrumbs />
-                <div className="container-fluid">
-                    <div className="col-xs-1"></div>
-                    {children}
-                    <div className="col-xs-1"></div>
-                </div>
+                <ReactCSSTransitionGroup transitionAppear={true} transitionAppearTimeout={500} transitionName="route" transitionEnterTimeout={500} transitionLeaveTimeout={500}>
+                    <Breadcrumbs />
+                    <div className="container-fluid">
+                        <div className="col-xs-1"></div>
+                            {children}
+                        <div className="col-xs-1"></div>
+                    </div>
+                </ReactCSSTransitionGroup>
             </div>
         );
     }
@@ -87,14 +93,9 @@ const router = (
 
             <Route path="help">
                 <IndexRoute component={Help} />
-                <Route path="about" component={About} />
-                <Route path="b2share" component={B2ShareHelp} />
-                <Route path="legal-notice" component={LegalNotice} />
-                <Route path="user-guide" component={UserGuide} />
+                <Route path="search" component={SearchHelp} />
                 <Route path="terms-of-use" component={TermsOfUse} />
                 <Route path="api" component={RestApi} />
-                <Route path="faq" component={FAQ} />
-                <Route path="search" component={SearchHelp} />
             </Route>
 
             <Route path="user" component={UserPage} />
@@ -106,7 +107,9 @@ const router = (
 
             <Route path="records" component={Frame} >
                 <IndexRoute component={RecordListPage} />
-                <Route path=":id" component={RecordPage} />
+                <Route path=":id" component={RecordPage}>
+                    <Route path="edit" component={EditRecordPage}/>
+                </Route>
             </Route>
 
             <Route path="search" component={SearchPage} />
@@ -126,7 +129,7 @@ const Footer = React.createClass({
                         <p> <img width="45" height="31" src="/img/flag-ce.jpg" style={{float:'left', marginRight:10}}/>
                             EUDAT receives funding from the European Union’s Horizon 2020 research
                             and innovation programme under grant agreement No. 654065.&nbsp;
-                            <a href="/help/legal-notice">Legal Notice</a>.
+                            <a target="_blank" href="http://www.eudat.eu/legal-notice">Legal Notice</a>.
                         </p>
                     </div>
                     <div className="col-xs-12 col-sm-5 col-md-5 text-right">

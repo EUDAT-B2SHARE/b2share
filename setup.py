@@ -33,6 +33,7 @@ install_requires = [
     'invenio-records>=1.0.0a8,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-celery>=1.0.0a3,<1.1.0',
+    'invenio-search>=1.0.0a4,<1.1.0',
 ]
 
 tests_require = [
@@ -135,6 +136,7 @@ setup(
             'b2share_communities = b2share.modules.communities:B2ShareCommunities',
             'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
             'b2share_users = b2share.modules.users:B2ShareUsers',
+            'b2share_records = b2share.modules.records:B2ShareRecords',
         ],
         # 'invenio_db.models': [
         #     'b2share_communities = b2share.modules.communities.models',

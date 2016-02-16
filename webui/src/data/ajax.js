@@ -25,6 +25,26 @@ export function ajaxGet(url, params, successFn, completeFn) {
 }
 
 
+export function ajaxPost(url, params, successFn, completeFn) {
+    console.log("ajaxPost:", url, params);
+    const aobj = {
+        method: 'post',
+        url: url,
+        type: 'json',
+        contentType: 'application/json',
+        success: successFn,
+        complete: completeFn,
+    }
+    if (params) {
+        aobj.data = params;
+    }
+    if (!aobj.complete) {
+        aobj.complete = function(){};
+    }
+    return ajaxWithError(aobj);
+}
+
+
 function ajaxWithError(ajaxObject) {
     if (!ajaxObject.error) {
         ajaxObject.error = function(xhr) {

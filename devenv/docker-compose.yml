@@ -7,11 +7,11 @@
 #         - MYSQL_USER=b2share_evo
 #         - MYSQL_DATABASE=b2share_evo
 
-# elasticsearch:
-#     image: elasticsearch
-#     ports:
-#         - "9200:9200"
-#         - "9300:9300"
+elasticsearch:
+    image: elasticsearch
+    ports:
+        - "9200:9200"
+        - "9300:9300"
 
 redis:
     image: redis

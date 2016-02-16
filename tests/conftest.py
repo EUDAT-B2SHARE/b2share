@@ -29,6 +29,7 @@ from flask_cli import FlaskCLI
 from invenio_db import InvenioDB, db
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
+from invenio_search import InvenioSearch
 from sqlalchemy_utils.functions import create_database, drop_database
 
 
@@ -47,6 +48,7 @@ def app(request):
     InvenioDB(app)
     InvenioRecords(app)
     InvenioRecordsREST(app)
+    InvenioSearch(app)
 
     with app.app_context():
         if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':

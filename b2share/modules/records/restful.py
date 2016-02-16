@@ -18,25 +18,40 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+
 from __future__ import absolute_import
 
-from flask import Blueprint, jsonify
+import pytz
+
+from flask import Blueprint, jsonify, abort, request, current_app
 
 from invenio_rest import ContentNegotiatedMethodView
+from invenio_records_rest.serializers import record_to_json_serializer
+from .api import Record, RecordSearchFilter
 
 
-blueprint = Blueprint(
-    'b2share_records',
-    __name__,
-    url_prefix='/xrecords'
-)
+blueprint = Blueprint('b2share_records', __name__, url_prefix='/xrecords')
+
+def record_to_dict(record):
+    json = record.json.copy()
+    json.update({
+        'id': record.id,
+        'created': pytz.utc.localize(record.created).isoformat(),
+        'updated': pytz.utc.localize(record.updated).isoformat(),
+        'version_id': record.version_id,
+    })
+    if 'control_number' in json:
+        del json['control_number']
+    return json
 
 
-def community_to_json_serializer(data, code=200, headers=None):
+def json_serializer(data, code=200, headers=None):
     """Build a json flask response using the given data.
     :Returns: A flask response with json data.
     :Returns Type: :py:class:`flask.Response`
     """
+    if isinstance(data, Record):
+        data = record_to_dict(data.record)
     response = jsonify(data)
     response.status_code = code
     if headers is not None:
@@ -44,52 +59,63 @@ def community_to_json_serializer(data, code=200, headers=None):
     return response
 
 
-class RecordList(ContentNegotiatedMethodView):
-    view_name = 'record_list'
-
-    def __init__(self, *args, **kwargs):
-        super(RecordList, self).__init__(*args, **kwargs)
+class HttpResource(ContentNegotiatedMethodView):
+    def __init__(self, *args):
+        super(HttpResource, self).__init__(*args)
         self.serializers = {
-            'application/json': community_to_json_serializer,
+            'application/json': json_serializer,
         }
 
+
+def record_or_else(record_id):
+    record = Record.get_by_id(record_id)
+    if not record:
+        abort(404)
+    return record
+
+
+class HttpRecordList(HttpResource):
     def get(self, **kwargs):
         """
         Retrieve list of records.
         """
-        from .mock_impl import mock_records
-        return {'records': mock_records}
+        start = request.args.get('start') or 0
+        stop = request.args.get('stop') or 10
+        records = Record.list(start, stop)
+        return {'records': [record_to_dict(r.record) for r in records]}
 
-    def post(self, **kwargs):
+    def post(self):
         """
         Creates a new record object (it can be empty or with metadata), owned
         by current user. The default state of record status is 'draft'
         """
-        return {}
 
+        if request.content_type != 'application/json':
+            abort(415)
+        data = request.get_json()
+        if data is None:
+            return abort(400)
 
-class Record(ContentNegotiatedMethodView):
-    view_name = 'record_item'
+        record = Record.create(data)
+        return record, 201
 
-    def __init__(self, *args, **kwargs):
-        super(Record, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': community_to_json_serializer,
-        }
-
-    def get(self, record_id, **kwargs):
+class HttpRecord(HttpResource):
+    def get(self, record_id):
         """
         Returns the requested record
         """
-        return None
+        record = record_or_else(record_id)
+        # import ipdb; ipdb.set_trace()
+        return record
 
-    def patch(self, record_id, **kwargs):
+    def patch(self, record_id):
         """
         Edits the Record and submit it.
         """
-        return None
+        record = record_or_else(record_id)
+        return record.patch()
 
-    def delete(self, record_id, **kwargs):
+    def delete(self, record_id):
         """
         Deletes the record:
             - if the state of record is draft: it will be deleted
@@ -99,53 +125,36 @@ class Record(ContentNegotiatedMethodView):
         return None
 
 
-# ----------------------------------------------- FILES
-
-
-class FileList(ContentNegotiatedMethodView):
-    view_name = 'file_list'
-
-    def __init__(self, *args, **kwargs):
-        super(FileList, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': community_to_json_serializer,
-        }
-
-    def get(self, record_id, **kwargs):
+class HttpFileList(HttpResource):
+    def get(self, record_id):
         """
         Retrieve list of files in a record.
         """
-        return None
+        record = record_or_else(record_id)
+        return record.get_file_container()
 
-    def post(self, record_id, **kwargs):
+    def post(self, record_id):
         """
         Add a new file to the record. The record state should be 'draft'
         """
         return None
 
 
-class FileContainer(ContentNegotiatedMethodView):
-    view_name = 'file_container'
-
-    def __init__(self, *args, **kwargs):
-        super(FileContainer, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': community_to_json_serializer,
-        }
-
-    def get(self, record_id, file_id, **kwargs):
+class HttpFile(HttpResource):
+    def get(self, record_id, file_id):
         """
         Get a file metadata
         """
-        return None
+        record = record_or_else(record_id)
+        return record.get_file_container().get_file(file_id)
 
-    def patch(self, record_id, file_id, **kwargs):
+    def patch(self, record_id, file_id):
         """
         Rename the file or container
         """
         return None
 
-    def delete(self, record_id, file_id, **kwargs):
+    def delete(self, record_id, file_id):
         """
         Delete a file/container (only possible for draft records).
         If it is a container it deletes recursively its children.
@@ -153,78 +162,46 @@ class FileContainer(ContentNegotiatedMethodView):
         return None
 
 
-class File(ContentNegotiatedMethodView):
-    view_name = 'file_item'
-
-    def __init__(self, *args, **kwargs):
-        super(File, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': community_to_json_serializer,
-        }
-
-    def get(self, record_id, file_id, **kwargs):
+class HttpFileContent(HttpResource):
+    def get(self, record_id, file_id):
         """
         Get a file's content
         """
         return None
 
 
-# ----------------------------------------------- REFERENCES
-
-
-class RecordReferenceList(ContentNegotiatedMethodView):
-    view_name = 'record_reference_list'
-
-    def __init__(self, *args, **kwargs):
-        super(RecordReferenceList, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': community_to_json_serializer,
-        }
-
-    def get(self, record_id, **kwargs):
+class HttpRecordRefList(HttpResource):
+    def get(self, record_id):
         """
         Returns the record's references
         """
         return None
 
-    def post(self, record_id, **kwargs):
+    def post(self, record_id):
         """
         Create a new reference
         """
         return None
 
 
-class RecordReference(ContentNegotiatedMethodView):
-    view_name = 'record_reference_item'
-
-    def __init__(self, *args, **kwargs):
-        super(RecordReference, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': community_to_json_serializer,
-        }
-
-    def get(self, record_id, ref_id, **kwargs):
+class HttpRecordRef(HttpResource):
+    def get(self, record_id, ref_id):
         """
         Returns a Reference with the specified id
         """
         return None
 
-    def delete(self, record_id, ref_id, **kwargs):
+    def delete(self, record_id, ref_id):
         """
         Deletes a reference
         """
         return None
 
 
-blueprint.add_url_rule('/',
-                       view_func=RecordList.as_view(RecordList.view_name))
-blueprint.add_url_rule('/<int:record_id>',
-                       view_func=Record.as_view(Record.view_name))
-blueprint.add_url_rule('/<int:record_id>/files',
-                       view_func=FileList.as_view(FileList.view_name))
-blueprint.add_url_rule('/<int:record_id>/files/<int:file_id>',
-                       view_func=File.as_view(File.view_name))
-blueprint.add_url_rule('/<int:record_id>/references',
-                       view_func=RecordReferenceList.as_view(RecordReferenceList.view_name))
-blueprint.add_url_rule('/<int:record_id>/references/<int:ref_id>',
-                       view_func=RecordReference.as_view(RecordReference.view_name))
+blueprint.add_url_rule('/', view_func=HttpRecordList.as_view("record_list"))
+blueprint.add_url_rule('/<int:record_id>', view_func=HttpRecord.as_view("record"))
+blueprint.add_url_rule('/<uuid:record_id>', view_func=HttpRecord.as_view("record_uuid"))
+blueprint.add_url_rule('/<int:record_id>/files', view_func=HttpFileList.as_view("file_list"))
+blueprint.add_url_rule('/<int:record_id>/files/<int:file_id>', view_func=HttpFile.as_view("file"))
+blueprint.add_url_rule('/<int:record_id>/references', view_func=HttpRecordRefList.as_view("record_reference_list"))
+blueprint.add_url_rule('/<int:record_id>/references/<int:ref_id>', view_func=HttpRecordRef.as_view("record_reference"))
