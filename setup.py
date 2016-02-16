@@ -57,6 +57,7 @@ extras_require = {
     ],
     'docs': [
         "Sphinx>=1.3",
+        'sphinxcontrib-httpdomain>=1.4.0',
     ],
     'development': [
         'Flask-DebugToolbar>=0.9',

@@ -23,7 +23,6 @@
 .version
 .ropeproject
 Invenio.egg-info
-Makefile
 Makefile.in
 TAGS
 bower_components/
