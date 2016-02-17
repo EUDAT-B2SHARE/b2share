@@ -27,6 +27,7 @@ if [ $? -ne 0 ]; then
 	mkvirtualenv --python=/usr/local/bin/python3 $VIRTUALENV_NAME
 	workon $VIRTUALENV_NAME
 	cdvirtualenv && mkdir src
+	pip install --upgrade pip
 fi
 
 echo "### Prepare docker machine"
