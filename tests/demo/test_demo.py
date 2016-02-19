@@ -30,7 +30,8 @@ from invenio_records import Record
 
 # add the demo module in sys.path
 sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'demo'))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), '../..',
+                 'demo'))
 from b2share_demo.cli import demo as demo_cmd  # noqa
 from b2share_demo.ext import B2ShareDemo  # noqa
 

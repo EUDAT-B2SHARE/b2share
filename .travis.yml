@@ -36,7 +36,8 @@ env:
   - REQUIREMENTS=devel REXTRAS=docs
 
 python:
-  - "2.7"
+  - "3.3"
+  - "3.4"
   - "3.5"
 
 sudo: false

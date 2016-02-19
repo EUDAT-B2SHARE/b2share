@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of EUDAT B2Share.
+# Copyright (C) 2016 CERN.
+#
+# B2Share is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# B2Share is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with B2Share; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
+
+"""B2Share Communities REST API"""
+
+from flask import jsonify, url_for
+
+
+def community_self_link(community, **kwargs):
+    """Create self link to a given community.
+
+    Args:
+        community (:class:`b2share.modules.communities.api:Community`):
+            community to which the generated link will point.
+
+        **kwargs: additional parameters given to flask.url_for.
+
+    :Returns:
+        str: link pointing to the given community.
+    """
+    return url_for(
+        'b2share_communities.communities_item',
+        community_id=community.id, **kwargs)
+
+
+def community_to_dict(community):
+    return dict(
+        id=community.id,
+        name=community.name,
+        description=community.description,
+        logo=community.logo,
+        created=community.created,
+        updated=community.updated,
+        links=dict(
+            self=community_self_link(community, _external=True)
+        )
+    )
+
+
+def community_to_json_serializer(community, code=200, headers=None):
+    """Build a json flask response using the given community data.
+
+    Returns:
+        :class:`flask.Response`: A flask response with json data.
+    """
+    response = jsonify(community_to_dict(community))
+    response.status_code = code
+    if headers is not None:
+        response.headers.extend(headers)
+
+    # TODO: set location to seld
+    response.headers['Location'] = community_self_link(community,
+                                                       _external=True)
+    # TODO: set etag
+    response.set_etag(str(community.updated))
+    return response
+
+
+def search_to_json_serializer(data, code=200, headers=None):
+    """Build a json flask response using the given search result.
+
+    Returns:
+        :class:`flask.Response`: A flask response with json data.
+    """
+    # TODO
+    raise NotImplementedError()

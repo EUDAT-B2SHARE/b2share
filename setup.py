@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2015, 2016, University of Tuebingen, CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 """B2Share application
 """  # FIXME improve this documentation
@@ -34,6 +38,7 @@ install_requires = [
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-celery>=1.0.0a3,<1.1.0',
     'invenio-search>=1.0.0a4,<1.1.0',
+    'invenio-access>=1.0.0a3,<1.1.0',
 ]
 
 tests_require = [
@@ -45,7 +50,8 @@ tests_require = [
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
     'pytest>=2.8.0',
-    'Flask-Testing'
+    'Flask-Testing',
+    'mock'
 ]
 
 extras_require = {
@@ -57,6 +63,7 @@ extras_require = {
     ],
     'docs': [
         "Sphinx>=1.3",
+        'sphinxcontrib-httpdomain>=1.4.0',
     ],
     'development': [
         'Flask-DebugToolbar>=0.9',
@@ -138,9 +145,9 @@ setup(
             'b2share_users = b2share.modules.users:B2ShareUsers',
             'b2share_records = b2share.modules.records:B2ShareRecords',
         ],
-        # 'invenio_db.models': [
-        #     'b2share_communities = b2share.modules.communities.models',
-        # ],
+        'invenio_db.models': [
+            'b2share_communities = b2share.modules.communities.models',
+        ],
     },
     extras_require=extras_require,
     install_requires=install_requires,
