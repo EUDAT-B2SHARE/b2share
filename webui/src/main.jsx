@@ -1,4 +1,4 @@
-import React from 'react/addons';
+import React from 'react/lib/ReactWithAddons';
 import ReactDOM from 'react-dom';
 const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
@@ -15,11 +15,11 @@ import { HomePage } from './components/home.jsx';
 import { UserPage } from './components/user.jsx';
 import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListPage, CommunityPage } from './components/communities.jsx';
-import { RecordListPage, RecordPage, EditRecordPage } from './components/records.jsx';
+import { RecordListPage } from './components/record_list.jsx';
+import { RecordPage, NewRecordPage, EditRecordPage } from './components/record.jsx';
 import { SearchPage } from './components/search.jsx';
 
-
-const VERSION = '0.3.3';
+const VERSION = '0.4.0';
 
 
 const store = new Store({
@@ -107,6 +107,7 @@ const router = (
 
             <Route path="records" component={Frame} >
                 <IndexRoute component={RecordListPage} />
+                <Route path="new" component={NewRecordPage}/>
                 <Route path=":id" component={RecordPage}>
                     <Route path="edit" component={EditRecordPage}/>
                 </Route>
@@ -119,7 +120,7 @@ const router = (
 
 
 const Footer = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return  (

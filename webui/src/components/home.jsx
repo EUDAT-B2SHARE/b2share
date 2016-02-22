@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Router, Route, IndexRoute, Link } from 'react-router'
 import { server } from '../data/server';
 import { currentUser } from './user.jsx';
-import { LatestRecords, createAndGoToRecord } from './records.jsx';
+import { LatestRecords } from './record_list.jsx';
 import { Wait } from './waiting.jsx';
 
 export const HomePage = React.createClass({
@@ -28,8 +28,8 @@ export const HomePage = React.createClass({
                                 <h3>Create Record</h3>
                             </div>
                             <div className="col-sm-5">
-                                <a className="btn btn-primary btn-block" style={{marginTop:'1em'}} onClick={createAndGoToRecord}>
-                                    Create a new record</a>
+                                <Link to={"/records/new"} className="btn btn-primary btn-block" style={{marginTop:'1em'}}>
+                                    Create a new record</Link>
                             </div>
                         </div>
 

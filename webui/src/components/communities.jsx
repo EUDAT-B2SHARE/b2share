@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { server } from '../data/server';
 import { Wait } from './waiting.jsx';
@@ -42,7 +42,7 @@ export const CommunityPage = React.createClass({
 
 
 const CommunityList = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     renderCommunity(community) {
         const desc = community.get('description') || "";
@@ -51,7 +51,6 @@ const CommunityList = React.createClass({
                 <Link to={"/communities/"+community.get('name')}>
                     <div className="community link">
                         <h3 className="name">{community.get('name')}</h3>
-                        <h4 className="domain">{community.get('domain')}</h4>
                         <img className="logo" src={community.get('logo')}/>
                         <p className="description"> {desc.substring(0,200)} </p>
                     </div>
@@ -81,14 +80,31 @@ const CommunityList = React.createClass({
 
 
 const Community = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     renderCommunity(community) {
         const desc = community.get('description') || "";
+
+        const bland={color:'#888'};
+        const created = new Date(community.get('created')).toLocaleString();
+        const updated = new Date(community.get('updated')).toLocaleString();
         return (
             <div className="row" key={community.get("id")}>
                 <div className="col-sm-6">
-                    <h4 className="domain">{community.get('domain')}</h4>
+                    <div>
+                        <p>
+                            <span style={bland}>Created at </span>
+                            <span style={{color:'#225'}}>{created}</span>
+                        </p>
+                        <div style={{clear:"both"}}/>
+                        { created != updated
+                            ? <p>
+                                <span style={bland}>Last updated at </span>
+                                <span style={{color:'#225'}}>{updated}</span>
+                              </p>
+                            : false }
+                    </div>
+                    <div style={{clear:"both", height:10}}/>
                     <p className="description"> {desc} </p>
                 </div>
                 <div className="col-sm-6">
@@ -132,15 +148,4 @@ const Community = React.createClass({
         );
     }
 });
-
-
-
-
-
-
-
-
-
-
-
 

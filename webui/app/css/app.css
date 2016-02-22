@@ -7,6 +7,9 @@ html, body {
 html {
  overflow-x: hidden;
 }
+body {
+  background: white url('/img/bg-page.jpg') no-repeat center 200px;
+}
 
 #header {
   padding: 0 0;
@@ -303,7 +306,6 @@ footer .navbar-default {
 }
 
 #page{
-  background: white url('/img/bg-page.jpg') no-repeat center 200px;
   min-height: 800px;
 }
 
@@ -466,6 +468,17 @@ h1, h2, h3 {
 
 .pagination .info {
   font-size: 0.8em;
+}
+
+/*****************************************************************************/
+/* new record */
+
+.new-record {
+  margin-top: 2em;
+}
+
+.new-record .submit {
+  margin-top: 2em;
 }
 
 /*****************************************************************************/

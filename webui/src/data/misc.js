@@ -1,4 +1,3 @@
-import React from 'react';
 import {fromJS} from 'immutable';
 import {ajax} from './ajax'
 
@@ -30,4 +29,13 @@ export function objEquals(o1, o2) {
     } else {
         return o1 === o2;
     }
+}
+
+export function timestamp2str(ts) {
+    const date = new Date(ts);
+    const y = date.getFullYear().toString();
+    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const m = month[date.getMonth()]
+    const d = date.getDate().toString();
+    return d + " " + m + " " + y;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 
 var Restapi = require('../docs/templates/rest-api');

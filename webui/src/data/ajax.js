@@ -1,18 +1,20 @@
-import React from 'react';
-import Immutable from 'immutable';
 import reqwest from 'reqwest'
+
+
+const DEFAULT_TIMEOUT_MS = 10 * 1000; // 10 seconds
 
 
 export let errorHandler = function(text){};
 
 
-export function ajaxGet(url, params, successFn, completeFn) {
+export function ajaxGet(url, params, successFn, errorFn, completeFn) {
     console.log("ajaxGet:", url, params);
     const aobj = {
         url: url,
         type: 'json',
         contentType: 'application/json',
         success: successFn,
+        error: errorFn,
         complete: completeFn,
     }
     if (params) {
@@ -25,7 +27,7 @@ export function ajaxGet(url, params, successFn, completeFn) {
 }
 
 
-export function ajaxPost(url, params, successFn, completeFn) {
+export function ajaxPost(url, params, successFn, errorFn, completeFn) {
     console.log("ajaxPost:", url, params);
     const aobj = {
         method: 'post',
@@ -33,10 +35,12 @@ export function ajaxPost(url, params, successFn, completeFn) {
         type: 'json',
         contentType: 'application/json',
         success: successFn,
+        error: errorFn,
         complete: completeFn,
+        timeout: DEFAULT_TIMEOUT_MS,
     }
     if (params) {
-        aobj.data = params;
+        aobj.data = JSON.stringify(params);
     }
     if (!aobj.complete) {
         aobj.complete = function(){};

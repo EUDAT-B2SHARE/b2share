@@ -1,4 +1,3 @@
-import React from 'react';
 import {fromJS} from 'immutable';
 import {ajaxGet, ajaxPost} from './ajax'
 import {objEquals} from './misc'
@@ -17,15 +16,6 @@ const apiUrls = {
 };
 
 
-const SECONDS = 1000;
-const MINUTES = 60 * SECONDS;
-const FAR_FUTURE = 100 * 365 * 24 * 60 * MINUTES; // 100 years or so
-
-
-const LATEST_RECORDS_CACHE_PERIOD = 1 * MINUTES;
-const COMMUNITIES_CACHE_PERIOD = 1 * MINUTES;
-
-
 class Timer {
     constructor(period) {
         // initially tick is 0, so ticking() returns false
@@ -42,32 +32,24 @@ class Timer {
 
 
 class Fetcher {
-    constructor(url, timerPeriod) {
+    constructor(url) {
         this.url = url;
         this.requestSent = false;
-        this.timer = new Timer(timerPeriod);
     }
 
     fetch(params, callback) {
+        return this.fetchWithPathParam("", params, callback);
+    }
+
+    fetchWithPathParam(pathParam, params, successFn, errorFn) {
         if (this.requestSent) {
             return;
         }
-        if (this.timer.ticking()) {
-            // cache considered still valid
-            return;
-        }
-        if (this.params !== undefined && objEquals(params, this.params)) {
-            // !! GET call considered idempotent
-            return;
-        }
-        this.params = params;
         if (!this.requestSent) {
             this.requestSent = true;
-            ajaxGet(this.url, this.params,
-                (dataJS) => {
-                    callback(dataJS);
-                    this.timer.restart();
-                },
+            ajaxGet(this.url+pathParam, params,
+                (dataJS) => { successFn(dataJS); },
+                errorFn,
                 () => { this.requestSent = false; }
             );
         }
@@ -81,11 +63,12 @@ class Poster {
         this.requestSent = false;
     }
 
-    post(params, successFn) {
+    post(params, successFn, errorFn) {
         if (!this.requestSent) {
             this.requestSent = true;
             ajaxPost(this.url, params,
                 successFn,
+                errorFn,
                 () => { this.requestSent = false; }
             );
         }
@@ -96,9 +79,9 @@ class Poster {
 class Server {
     constructor() {
         this.store = null;
-        this.latestRecords = new Fetcher(apiUrls.records, LATEST_RECORDS_CACHE_PERIOD);
+        this.latestRecords = new Fetcher(apiUrls.records);
         this.records = new Fetcher(apiUrls.records);
-        this.communities = new Fetcher(apiUrls.communities, COMMUNITIES_CACHE_PERIOD);
+        this.communities = new Fetcher(apiUrls.communities);
         this.schemas = new Fetcher(apiUrls.schemas);
 
         this.newRecord = new Poster(apiUrls.records);
@@ -126,13 +109,14 @@ class Server {
         this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
     }
 
-    fetchRecord({id}) {
+    fetchRecord(id) {
         const binding = store.branch('currentRecord');
         if (!binding.valid()) {
             return;
         }
-        const params = {id:id};
-        this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+        this.records.fetchWithPathParam(id, {},
+            (json)=>{binding.set(fromJS(json))},
+            (json)=>{binding.set(fromJS({error:404}))});
     }
 
     fetchCommunities() {
@@ -159,8 +143,8 @@ class Server {
         }
     }
 
-    createRecord(successFn) {
-        this.newRecord.post(null, successFn);
+    createRecord(data, successFn) {
+        this.newRecord.post(data, successFn);
     }
 };
 

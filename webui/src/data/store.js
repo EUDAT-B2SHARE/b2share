@@ -1,4 +1,3 @@
-import React from 'react';
 import Immutable from 'immutable';
 
 export class Store {
@@ -19,6 +18,9 @@ export class Store {
     // sets data node at path
     setIn(path, data) {
         if (!path || !path.length) return ;
+        const obj = this.root.getIn(path);
+        if (obj && obj.equals && obj.equals(data)) return;
+        // console.log('set in: ', path, data);
         this.root = this.root.setIn(path, data);
         this.onChange();
     }

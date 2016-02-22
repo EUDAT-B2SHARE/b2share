@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import ReactDOM from 'react-dom';
 
 const PT = React.PropTypes;

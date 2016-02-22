@@ -1,11 +1,11 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { server } from '../data/server';
 import { Wait } from './waiting.jsx';
 
 
 export const Schema = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     getType(p) {
         let type = p.get('type');
@@ -32,6 +32,9 @@ export const Schema = React.createClass({
 
     render() {
         const schema = this.props.schema;
+        if (!schema || !schema.valid()) {
+            return <Wait/>;
+        }
         return (
             <div className="container-fluid">
                 <div className="row">

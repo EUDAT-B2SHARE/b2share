@@ -1,10 +1,10 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { createAndGoToRecord } from './records.jsx';
+import { createAndGoToRecord } from './record.jsx';
 
 
 export const Navbar = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     getInitialState() {
         return { open: true };
@@ -40,7 +40,7 @@ export const Navbar = React.createClass({
 
 
 const NavbarSearch = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return (
@@ -66,7 +66,7 @@ const NavbarSearch = React.createClass({
 
 
 const NavbarMenu = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         const user = this.props.store.branch('user');
@@ -89,7 +89,7 @@ const NavbarMenu = React.createClass({
 
 
 const NavbarUser = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return (
@@ -116,7 +116,7 @@ const NavbarUser = React.createClass({
 
 
 const NavbarNoUser = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return (
@@ -171,5 +171,4 @@ export const Breadcrumbs = React.createClass({
         );
     }
 });
-
 
