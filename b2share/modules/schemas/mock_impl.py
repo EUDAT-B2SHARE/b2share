@@ -70,12 +70,14 @@ class SchemaRegistry(SchemaRegistryInterface):
         return SchemaRegistry.schemas[start:stop]
 
     @staticmethod
-    def _add(json_schema):
+    def create_schema(json_schema, community_id):
         schema_id = len(SchemaRegistry.schemas)
         json_schema['id'] = '{}{}'.format(SCHEMA_URI_PREFIX, schema_id)
+        if community_id:
+            json_schema['community_id'] = str(community_id)
         validate_metadata_schema(json_schema)
         schema = Schema(json_schema)
         SchemaRegistry.schemas.append(schema)
         return schema
 
-SchemaRegistry._add(schema_basic)
+SchemaRegistry.create_schema(schema_basic, None)

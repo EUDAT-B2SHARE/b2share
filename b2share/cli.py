@@ -10,11 +10,69 @@ from flask_cli import with_appcontext
 
 from invenio_base.app import create_cli
 
-from b2share.modules.records.api import Record
-
 from .factory import create_app
 
+from invenio_db import db
+from b2share.modules.communities.api import Community
+from b2share.modules.records.api import Record
+from b2share.modules.schemas.mock_impl import SchemaRegistry
+from b2share.modules.schemas.default_schemas import schema_bbmri, schema_clarin
+
 cli = create_cli(create_app=create_app)
+
+@cli.command()
+@with_appcontext
+def add_communities():
+    add_test_communities()
+
+def add_test_communities():
+    for c in test_communities:
+        community = Community.create_community(name=c.get('name'),
+                                               description=c.get('description'),
+                                               logo=c.get('logo'))
+        db.session.commit()
+        print ("----------- Created community {}".format(community.id))
+        for s in c.get('schemas'):
+            SchemaRegistry.create_schema(s, community_id=community.id)
+
+test_communities = [
+    {
+        'name': "Eudat",
+        'description': "The big Eudat community. Use this community if no other is suited for you",
+        'logo': "/img/communities/eudat.png",
+        'schemas': []
+    },
+    {
+        'name': "BBMRI",
+        'description': "Biomedical Research data",
+        'logo': "/img/communities/bbmri.png",
+        'schemas': [schema_bbmri]
+    },
+    {
+        'name': "CLARIN",
+        'description': "The Clarin linguistics community",
+        'logo': "/img/communities/clarin.png",
+        'schemas': [schema_clarin, schema_clarin]
+    },
+    {
+        'name': "DRIHM",
+        'description': 'Meteorology and climate data.',
+        'logo': '/img/communities/drihm.png',
+        'schemas': []
+    },
+    {
+        'name': "NRM",
+        'description': "Herbarium data.",
+        'logo': "/img/communities/nrm.png",
+        'schemas': []
+    },
+    {
+        'name': "RDA",
+        'description': "Research Data Alliance community.",
+        'logo': "/img/communities/rda.png",
+        'schemas': []
+    },
+]
 
 @cli.command()
 @with_appcontext
@@ -130,4 +188,7 @@ test_record_descriptions = [
                         "BASIS for all integrated Monitoring Ontologies"
     }
 ]
+
+
+
 

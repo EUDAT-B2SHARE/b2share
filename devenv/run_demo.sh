@@ -87,6 +87,8 @@ cdvirtualenv src/b2share
 python manage.py db create
 python manage.py index init
 
+echo; echo "### Add testing communities and schemas"
+python manage.py add_communities
 echo; echo "### Add testing records"
 python manage.py add_records
 
