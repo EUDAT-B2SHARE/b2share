@@ -85,10 +85,15 @@ class Community(object):
             raise CommunityDoesNotExistError(id) from e
 
     @classmethod
+    # TODO: change this into a search function, not just a list of communities
     # TODO: a query should be given
     def get_all(cls, start, stop):
         """Searches for matching communities."""
-        raise NotImplementedError()
+        start = int(start)
+        stop = int(stop)
+        from .models import Community as CommunityMeta
+        metadata = CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+        return [cls(md) for md in metadata]
 
     @classmethod
     def create_community(cls, name, description, logo=None):

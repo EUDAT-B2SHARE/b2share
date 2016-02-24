@@ -28,7 +28,7 @@ from __future__ import absolute_import
 
 from functools import wraps
 
-from flask import Blueprint, abort, current_app, make_response, request
+from flask import Blueprint, abort, current_app, make_response, request, jsonify
 from invenio_db import db
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_rest.decorators import require_content_types
@@ -127,7 +127,16 @@ class CommunityListResource(ContentNegotiatedMethodView):
 
     def get(self):
         """Retrieve a list of communities."""
-        raise NotImplementedError()
+        # TODO: change this to a search function, not just a list of communities
+        from .serializers import community_to_dict
+        start = request.args.get('start') or 0
+        stop = request.args.get('stop') or 20
+        community_list = Community.get_all(start, stop)
+        response = jsonify({
+            'communities': [community_to_dict(c) for c in community_list]
+        })
+        # TODO: set etag
+        return response
 
     def post(self):
         """Create a new community."""
