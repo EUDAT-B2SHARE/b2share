@@ -91,8 +91,8 @@ class Community(object):
         """Searches for matching communities."""
         start = int(start)
         stop = int(stop)
-        from .models import Community as CommunityMetadata
-        metadata = CommunityMetadata.query.limit(stop)[start:]
+        from .models import Community as CommunityMeta
+        metadata = CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
         return [cls(md) for md in metadata]
 
     @classmethod
