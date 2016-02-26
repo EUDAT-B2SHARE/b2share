@@ -25,7 +25,7 @@ from flask import Blueprint, jsonify, request
 
 from invenio_rest import ContentNegotiatedMethodView
 
-from .mock_impl import SchemaRegistry, Schema
+from .api import SchemaRegistry
 
 blueprint = Blueprint(
     'b2share_schemas',
@@ -43,29 +43,23 @@ def schema_to_json_serializer(data, code=200, headers=None):
     response.status_code = code
     if headers is not None:
         response.headers.extend(headers)
-    # TODO: set location to seld
-    # response.headers['location'] = ...
-    # TODO: set etag
-    # response.set_etag(...)
     return response
 
 
 class SchemaList(ContentNegotiatedMethodView):
-
-    view_name = 'schema_list'
-
     def __init__(self, *args, **kwargs):
         super(SchemaList, self).__init__(*args, **kwargs)
         self.serializers = {
+            'text/html': schema_to_json_serializer,
             'application/json': schema_to_json_serializer,
         }
 
     def get(self, **kwargs):
         """
-        Retrieve list of schemas.
+        Retrieve list of schemas based on list of schema ids
         """
         ids = request.args.getlist('schemaIDs[]')
-        schemas = SchemaRegistry.get_list(ids) if ids else SchemaRegistry.get_all(**kwargs)
+        schemas = SchemaRegistry.get_by_id_list(ids) if ids else SchemaRegistry.get_all(**kwargs)
         return {'schemas': schemas}
 
     def post(self, **kwargs):
@@ -76,9 +70,6 @@ class SchemaList(ContentNegotiatedMethodView):
 
 
 class SchemaItem(ContentNegotiatedMethodView):
-
-    view_name = 'schema_item'
-
     def __init__(self, *args, **kwargs):
         super(SchemaItem, self).__init__(*args, **kwargs)
         self.serializers = {
@@ -98,9 +89,5 @@ class SchemaItem(ContentNegotiatedMethodView):
         return None
 
 
-blueprint.add_url_rule('/',
-                       view_func=SchemaList
-                       .as_view(SchemaList.view_name))
-blueprint.add_url_rule('/<int:schema_id>',
-                       view_func=SchemaItem
-                       .as_view(SchemaItem.view_name))
+blueprint.add_url_rule('/', view_func=SchemaList .as_view('schema_list'))
+blueprint.add_url_rule('/<uuid:schema_id>', view_func=SchemaItem .as_view('schema'))

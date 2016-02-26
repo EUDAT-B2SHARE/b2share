@@ -15,10 +15,19 @@ from .factory import create_app
 from invenio_db import db
 from b2share.modules.communities.api import Community
 from b2share.modules.records.api import Record
-from b2share.modules.schemas.mock_impl import SchemaRegistry
+from b2share.modules.schemas.api import SchemaRegistry
 from b2share.modules.schemas.default_schemas import schema_bbmri, schema_clarin
 
+
 cli = create_cli(create_app=create_app)
+
+
+@cli.command()
+@with_appcontext
+def init_schemas():
+    from b2share.modules.schemas.api import init
+    init()
+
 
 @cli.command()
 @with_appcontext
@@ -74,6 +83,7 @@ test_communities = [
     },
 ]
 
+
 @cli.command()
 @with_appcontext
 def add_records():
@@ -104,7 +114,6 @@ def add_test_records():
         }
         record = Record.create(json)
         print ("----------- Created record {}".format(record.get_id()))
-
 
 
 test_record_descriptions = [
@@ -188,7 +197,4 @@ test_record_descriptions = [
                         "BASIS for all integrated Monitoring Ontologies"
     }
 ]
-
-
-
 

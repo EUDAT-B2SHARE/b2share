@@ -32,11 +32,11 @@ restricted_metaschema = {
     "id": "http://b2share.eudat.eu/schemas/restricted_metaschema",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "B2SHARE restricted metaschema",
-    "description": """In B2SHARE, a community creates json schemas that define
-                        the structure of metadata blocks. These json schemas
-                        cannot be of any general jsonschema form, but can only
-                        declare json objects containing simple properties which
-                        are at most arrays of primitive types.""",
+    "description": "In B2SHARE, a community creates json schemas that define "
+                   "the structure of metadata blocks. These json schemas "
+                   "cannot be of any general jsonschema form, but can only "
+                   "declare json objects containing simple properties which "
+                   "are at most arrays of primitive types.",
     "type": "object",
     "properties": {
         "id": {"type": "string"},
@@ -113,6 +113,7 @@ restricted_metaschema = {
     },
 }
 
+# TODO: make a test from this static check
 jsonschema.Draft4Validator.check_schema(restricted_metaschema)
 metaschema_validator = jsonschema.Draft4Validator(restricted_metaschema)
 

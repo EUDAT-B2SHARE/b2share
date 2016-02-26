@@ -64,6 +64,7 @@ class HttpResource(ContentNegotiatedMethodView):
         super(HttpResource, self).__init__(*args)
         self.serializers = {
             'application/json': json_serializer,
+            'text/html': json_serializer,
         }
 
 
@@ -89,14 +90,13 @@ class HttpRecordList(HttpResource):
         Creates a new record object (it can be empty or with metadata), owned
         by current user. The default state of record status is 'draft'
         """
-
         if request.content_type != 'application/json':
             abort(415)
-        data = request.get_json()
-        if data is None:
+        metadata = request.get_json()
+        if metadata is None:
             return abort(400)
 
-        record = Record.create(data)
+        record = Record.create(metadata)
         return record, 201
 
 class HttpRecord(HttpResource):
@@ -199,9 +199,7 @@ class HttpRecordRef(HttpResource):
 
 
 blueprint.add_url_rule('/', view_func=HttpRecordList.as_view("record_list"))
-blueprint.add_url_rule('/<int:record_id>', view_func=HttpRecord.as_view("record"))
-blueprint.add_url_rule('/<uuid:record_id>', view_func=HttpRecord.as_view("record_uuid"))
-blueprint.add_url_rule('/<int:record_id>/files', view_func=HttpFileList.as_view("file_list"))
-blueprint.add_url_rule('/<int:record_id>/files/<int:file_id>', view_func=HttpFile.as_view("file"))
-blueprint.add_url_rule('/<int:record_id>/references', view_func=HttpRecordRefList.as_view("record_reference_list"))
-blueprint.add_url_rule('/<int:record_id>/references/<int:ref_id>', view_func=HttpRecordRef.as_view("record_reference"))
+blueprint.add_url_rule('/<uuid:record_id>', view_func=HttpRecord.as_view("record"))
+blueprint.add_url_rule('/<uuid:record_id>/files', view_func=HttpFileList.as_view("file_list"))
+blueprint.add_url_rule('/<uuid:record_id>/references', view_func=HttpRecordRefList.as_view("record_reference_list"))
+blueprint.add_url_rule('/<uuid:record_id>/references/<int:ref_id>', view_func=HttpRecordRef.as_view("record_reference"))

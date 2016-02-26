@@ -23,8 +23,97 @@ from __future__ import absolute_import
 
 from datetime import datetime
 
+
+record_json = {
+    "id": "ee28c046-e533-4434-8850-4a27249792e3",
+    "created": "2016-02-23T11:26:34.130676+00:00",
+    "updated": "2016-02-23T11:26:34.130681+00:00",
+    "version_id": 1,
+
+    "metadata": {
+        "$schema": "http://b2share/...",
+        "@context": {},
+
+        "owner_id": "2D9932C7-CA95-4560-8B0B-A6289F2F21CC",
+        "community_id": "7A6744C4-DA71-4433-A719-931FE972D37C",
+
+        "record_status": "draft",
+
+        # generic, global fields, basically equivalent with DC
+        "title": "Interaction and dialogue with ...",
+        "creator": [
+            "Prof. Dr. Andreas Blütte"
+        ],
+        "description":  "Prof. Dr. Andreas Blütte's keynote...",
+        "open_access": True,
+
+        "files": [
+            {
+                "id": 1,
+                "type": "",
+                "uri": "http://"
+            }
+        ],
+        "community_specific": {
+            # community-specific metadata block
+            "B0B4A784-1A71-42E7-BB31-84AF90518332": {
+                "project_name": "xxx",
+                "region": "xxx",
+                "language_code": "xxx",
+            },
+        },
+        "references": [
+            {
+                "id": 1,
+                "type": "article",
+                "uri": "http://arxiv.org/abs/1512.00849"
+            }
+        ],
+    }
+}
+
+
+# on PUT with application/json:
+# {
+#         "title": "Interaction and dialogue with ...",
+#         "creator": [
+#                "Prof. Dr. Andreas Blütte"
+#         ],
+#         "description":  "Prof. Dr. Andreas Blütte's keynote...",
+# }
+
+# “$schema”: “http://.../api/schemas/<id>#/schema”
+
+# “http://.../api/schemas/<id>” => {
+#   id: …
+#   links: { self: … }
+#   community_id: …
+#   block_schema: true,                         # block_schema = true  means that this is a sub-schema (small schema)
+#   status: draft                                            # other values: released, deprecated
+#   recommended_successor: http://.../api/schemas/<id>       # if the current status is deprecated
+#   schema: {
+#    <JSON_SCHEMA>
+#  }
+# }
+
+# GET /api/schemas/schemas?accepted_by=<community_id>&block_schema=false
+
+# GET /api/schemas/schemas?accepted_by=<community_id>&name=particle physics*
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
 schema_basic = {
-    '$schema': "http://json-schema.org/draft-04/schema#",
+    '$schema': "http://json-schema.org/draft-04/schema#", #"http://b2share.eudat.eu/schemas/restricted_metaschema",
     "id": "http://b2share.eudat.eu/schemas/0",
     "title": "B2SHARE Basic Schema",
     "description": """This is the blueprint of the metadata block
