@@ -37,10 +37,10 @@ a:hover {
 /*** GENERALS ***/
 
 input, select, textarea {
-  -webkit-transition: all 0.30s ease-in-out;
-  -moz-transition: all 0.30s ease-in-out;
-  -ms-transition: all 0.30s ease-in-out;
-  -o-transition: all 0.30s ease-in-out;
+  -webkit-transition: all 0.30s ease-out;
+  -moz-transition: all 0.30s ease-out;
+  -ms-transition: all 0.30s ease-out;
+  -o-transition: all 0.30s ease-out;
   outline: none;
   border: 1px solid #ccc;
 }
@@ -110,14 +110,14 @@ input:focus, select:focus, textarea:focus, button:focus, a:focus {
 
 .fade-enter {
   opacity: 0.01;
-  transition: all .2s ease-in;
+  transition: all .2s linear;
 }
 .fade-enter.fade-enter-active {
   opacity: 1;
 }
 .fade-leave {
   opacity: 1;
-  transition: all .2s ease-in;
+  transition: all .2s linear;
 }
 .fade-leave.fade-leave-active {
   opacity: 0.01;
@@ -126,37 +126,50 @@ input:focus, select:focus, textarea:focus, button:focus, a:focus {
 
 .error-enter {
   opacity: 0.01;
-  transition: all .2s ease-in;
+  transition: all .2s linear;
 }
 .error-enter.error-enter-active {
   opacity: 1;
 }
 .error-leave {
   opacity: 1;
-  transition: all .2s ease-in;
+  transition: all .2s linear;
 }
 .error-leave.error-leave-active {
   opacity: 0.01;
 }
 
 
+/* route */
+
+.route-appear {
+  opacity: 0.01;
+  transition: opacity .2s linear;
+}
+
+.route-appear.route-appear-active {
+  opacity: 1;
+}
+
+
 .route-enter {
   opacity: 0.01;
+  transition: opacity .2s linear;
 }
 
 .route-enter.route-enter-active {
   opacity: 1;
-  transition: all .5s ease-in;
 }
 
 .route-leave {
   opacity: 1;
+  transition: opacity .2s linear;
 }
 
 .route-leave.route-leave-active {
-  opacity: 0.01;
-  transition: all .3s ease-in;
+  opacity: 0;
 }
+
 
 /*** navbar ***/
 

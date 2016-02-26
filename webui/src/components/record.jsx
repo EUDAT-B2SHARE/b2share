@@ -4,6 +4,7 @@ import { Map } from 'immutable';
 import { server } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { timestamp2str } from '../data/misc.js'
+import { Animate } from './animate.jsx';
 
 
 export const RecordPage = React.createClass({
@@ -64,7 +65,7 @@ const Record = React.createClass({
 
         return (
             <p> <span style={{color:'black'}}> by </span>
-                { creators && creators.length
+                { creators && creators.count()
                     ? creators.map(c => <a className="creator" key={c}> {c}</a>)
                     : <span style={{color:'black'}}> [Unknown] </span>
                 }

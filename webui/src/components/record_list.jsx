@@ -4,6 +4,7 @@ import { Map } from 'immutable';
 import { server } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { timestamp2str } from '../data/misc.js'
+import { Animate } from './animate.jsx';
 
 
 export const RecordListPage = React.createClass({
@@ -15,7 +16,7 @@ export const RecordListPage = React.createClass({
 
     render() {
         return this.records.valid() ?
-            <RecordList records={this.records.get()} /> :
+            <Animate><RecordList records={this.records.get()} /></Animate> :
             <Wait/>;
     }
 });

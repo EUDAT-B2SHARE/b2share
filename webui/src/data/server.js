@@ -143,8 +143,11 @@ class Server {
         }
     }
 
-    createRecord(data, successFn) {
-        this.newRecord.post(data, successFn);
+    createRecord(metadata, successFn) {
+        const json = {
+            metadata: metadata
+        };
+        this.newRecord.post(json, successFn);
     }
 };
 

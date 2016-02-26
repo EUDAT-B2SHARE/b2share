@@ -10,6 +10,7 @@ import { Router, Route, IndexRoute, Link } from 'react-router'
 import { server } from './data/server';
 import { Store } from './data/store';
 
+import { Animate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs } from './components/navbar.jsx';
 import { HomePage } from './components/home.jsx';
 import { UserPage } from './components/user.jsx';
@@ -60,19 +61,19 @@ const AppFrame = React.createClass({
 
     render() {
         // adding a mutating ref seems necessary to propagate changes
-        const children = React.cloneElement(this.props.children, {store: store, dataRef:store.root});
+        const additionalProps = {store: store, dataRef: store.root,  key: this.props.location.pathname}
         const notif = <Notification isActive={true} message={"Hi asdf asd fa sdfa sdf as dfa sdf asfd"} action={"action1"} />;
         return (
             <div>
                 <Navbar store={store} dataRef={store.root} />
-                <ReactCSSTransitionGroup transitionAppear={true} transitionAppearTimeout={500} transitionName="route" transitionEnterTimeout={500} transitionLeaveTimeout={500}>
+                <Animate>
                     <Breadcrumbs />
                     <div className="container-fluid">
                         <div className="col-xs-1"></div>
-                            {children}
+                            { React.cloneElement(this.props.children, additionalProps) }
                         <div className="col-xs-1"></div>
                     </div>
-                </ReactCSSTransitionGroup>
+                </Animate>
             </div>
         );
     }
@@ -81,7 +82,12 @@ const AppFrame = React.createClass({
 
 const Frame = React.createClass({
     render() {
-        return React.cloneElement(this.props.children, {store:store, data: store.root})
+        const additionalProps = {store: store, dataRef: store.root,  key: this.props.location.pathname}
+        return (
+            <Animate>
+                { React.cloneElement(this.props.children, additionalProps) }
+            </Animate>
+        );
     }
 });
 
