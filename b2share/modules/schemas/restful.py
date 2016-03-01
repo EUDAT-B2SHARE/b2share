@@ -25,7 +25,7 @@ from flask import Blueprint, jsonify, request
 
 from invenio_rest import ContentNegotiatedMethodView
 
-from .api import SchemaRegistry
+from .api import Schema
 
 blueprint = Blueprint(
     'b2share_schemas',
@@ -59,8 +59,8 @@ class SchemaList(ContentNegotiatedMethodView):
         Retrieve list of schemas based on list of schema ids
         """
         ids = request.args.getlist('schemaIDs[]')
-        schemas = SchemaRegistry.get_by_id_list(ids) if ids else SchemaRegistry.get_all(**kwargs)
-        return {'schemas': schemas}
+        schemas = Schema.get_by_id_list(ids) if ids else Schema.get_all(**kwargs)
+        return {'schemas': [s.model.json for s in schemas]}
 
     def post(self, **kwargs):
         """
@@ -80,7 +80,7 @@ class SchemaItem(ContentNegotiatedMethodView):
         """
         Get a schema
         """
-        return SchemaRegistry.get_by_id(schema_id)
+        return Schema.get_by_id(schema_id).model.json
 
     def post(self, schema_id, **kwargs):
         """

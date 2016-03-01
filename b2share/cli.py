@@ -15,18 +15,12 @@ from .factory import create_app
 from invenio_db import db
 from b2share.modules.communities.api import Community
 from b2share.modules.records.api import Record
-from b2share.modules.schemas.api import SchemaRegistry
-from b2share.modules.schemas.default_schemas import schema_bbmri, schema_clarin
+from b2share.modules.schemas.api import Schema
+from b2share.modules.schemas.default_schemas import make_community_schema
+from b2share.modules.schemas.default_schemas import block_schema_bbmri, block_schema_clarin
 
 
 cli = create_cli(create_app=create_app)
-
-
-@cli.command()
-@with_appcontext
-def init_schemas():
-    from b2share.modules.schemas.api import init
-    init()
 
 
 @cli.command()
@@ -41,8 +35,16 @@ def add_test_communities():
                                                logo=c.get('logo'))
         db.session.commit()
         print ("----------- Created community {}".format(community.id))
+
         for s in c.get('schemas'):
-            SchemaRegistry.create_schema(s, community_id=community.id)
+            Schema.create_schema(community_id=community.id, json_schema=s, block_schema=True)
+        db.session.commit()
+
+        jsonschema = make_community_schema(community.id)
+        schema = Schema.create_schema(community_id=community.id, json_schema=jsonschema, block_schema=False)
+        db.session.commit()
+
+        print ("----------- Created community schema {}".format(schema.get_id()))
 
 test_communities = [
     {
@@ -55,13 +57,13 @@ test_communities = [
         'name': "BBMRI",
         'description': "Biomedical Research data",
         'logo': "/img/communities/bbmri.png",
-        'schemas': [schema_bbmri]
+        'schemas': [block_schema_bbmri]
     },
     {
         'name': "CLARIN",
         'description': "The Clarin linguistics community",
         'logo': "/img/communities/clarin.png",
-        'schemas': [schema_clarin, schema_clarin]
+        'schemas': [block_schema_clarin, block_schema_clarin]
     },
     {
         'name': "DRIHM",

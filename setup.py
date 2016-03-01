@@ -147,6 +147,7 @@ setup(
         ],
         'invenio_db.models': [
             'b2share_communities = b2share.modules.communities.models',
+            'b2share_schemas = b2share.modules.schemas.models',
         ],
     },
     extras_require=extras_require,

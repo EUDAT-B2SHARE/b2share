@@ -24,6 +24,6 @@ from __future__ import absolute_import, print_function
 
 from .ext import B2ShareSchemas
 
-from .validate import metaschema_validator
+from .validate import validate_block_schema
 
 __all__ = ('B2ShareSchemas')

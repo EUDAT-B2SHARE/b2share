@@ -24,7 +24,7 @@ from __future__ import absolute_import
 from datetime import datetime
 
 
-record_json = {
+record_json_template = {
     "id": "ee28c046-e533-4434-8850-4a27249792e3",
     "created": "2016-02-23T11:26:34.130676+00:00",
     "updated": "2016-02-23T11:26:34.130681+00:00",
@@ -49,7 +49,7 @@ record_json = {
 
         "files": [
             {
-                "id": 1,
+                "file_id": 1,
                 "type": "",
                 "uri": "http://"
             }
@@ -64,7 +64,7 @@ record_json = {
         },
         "references": [
             {
-                "id": 1,
+                "reference_id": 1,
                 "type": "article",
                 "uri": "http://arxiv.org/abs/1512.00849"
             }
@@ -112,12 +112,79 @@ record_json = {
 #
 
 
-schema_basic = {
-    '$schema': "http://json-schema.org/draft-04/schema#", #"http://b2share.eudat.eu/schemas/restricted_metaschema",
-    "id": "http://b2share.eudat.eu/schemas/0",
-    "title": "B2SHARE Basic Schema",
-    "description": """This is the blueprint of the metadata block
-                      that each B2SHARE record must have""",
+def make_community_schema(community_id):
+    return {
+        "title": "B2SHARE Community Schema",
+        "description": "This is the schema internally used for validating "
+                       "a B2SHARE record's metadata",
+        "allOf": [
+            {   # fields inserted by the server, programmatically: owner_id, files
+                "type": "object",
+                "properties": {
+                    "owner_id": {
+                        "title": "OwnerID",
+                        "description": "Record's owner id",
+                        "type": "string",
+                    },
+                    "files": {
+                        'type':'array',
+                        "items": {
+                            "type": "object",
+                        },
+                        "uniqueItems": True,
+                    },
+                }
+            },
+            make_community_schema_for_api_inputs(community_id)
+        ],
+    }
+
+
+def make_community_schema_for_api_inputs(community_id):
+    return {
+        "title": "B2SHARE Community Schema ",
+        "description": "This is the schema used by B2SHARE for validating data "
+                       "coming from the REST API and going into a record",
+        "allOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "community_id": {
+                        "title": "CommunityID",
+                        "description": "The Community id that the record belongs to",
+                        'type':'string',
+                        'enum':[str(community_id)]
+                    },
+
+                    "record_status": {
+                        'type': 'string',
+                        'enum': ['draft', 'submitted', 'released', 'deleted'],
+                    },
+
+                    "community_specific": {
+                        'type':'object',
+                        "properties": {}, # no required properties
+                        # we must programmatically enforce constraints here,
+                        # the name of a property indicates the schema to use for its validation
+                    },
+
+                    "references": {
+                        'type':'array',
+                        "items": {
+                            "type": "object",
+                        },
+                        "uniqueItems": True,
+                    }
+                }
+            },
+            basic_dc_fields,
+        ]
+    }
+
+basic_dc_fields = {
+    "title": "B2SHARE Basic Block Schema",
+    "description": "This is the schema used for validating "
+                   "the basic metadata fields of a B2SHARE record",
     "type": "object",
     "properties": {
         "title": {
@@ -163,7 +230,7 @@ schema_basic = {
             'description': 'Date that the embargo will expire.',
             'type': 'string',
             'format': 'date-time',
-            'default': datetime.now(),
+            'default': str(datetime.now()),
         },
         'contact_email': {
             'title': 'Contact Email',
@@ -204,11 +271,17 @@ schema_basic = {
             'description': 'Language...',
             "type": "string", # plugin
         },
-        # 'alternate_identifier' to be moved into relations
+        'alternate_identifier': {
+            'title': 'Alternate Identifier',
+            'description': 'Alternate Identifier...',
+            "type": "string"
+        },
     },
     "required": ["title", "description", "open_access"],
-    "additionalProperties": False,
+    "additionalProperties": True,
     "b2share": {
+        "recommended": ['creator', 'licence', 'publication_date',
+                        'keywords', 'contact_email', 'discipline'],
         "plugins": {
             'licence': 'licence_chooser',
             'discipline': 'discipline_chooser',
@@ -227,7 +300,7 @@ schema_basic = {
     },
 }
 
-schema_bbmri = {
+block_schema_bbmri = {
     '$schema': "http://json-schema.org/draft-04/schema#",
     "title": "B2SHARE BBMRI Schema",
     "description": """This is the blueprint of the metadata block
@@ -264,7 +337,7 @@ schema_bbmri = {
 }
 
 
-schema_clarin = {
+block_schema_clarin = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "B2SHARE CLARIN Schema",
     "description": """This is the blueprint of the metadata block
@@ -331,7 +404,7 @@ schema_clarin = {
     },
 }
 
-schema_clarin2 = {
+block_schema_clarin2 = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "B2SHARE CLARIN Duplicated Schema",
     "description": """This is the blueprint of the metadata block

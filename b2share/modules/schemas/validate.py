@@ -28,7 +28,7 @@ import jsonschema
 # metaschema is a restricted definition of the official jsonschema metaschema
 # see https://github.com/json-schema/json-schema/blob/master/draft-04/schema
 # the restricted metaschema must be used to validate community schemas
-restricted_metaschema = {
+restricted_metaschema_for_metadata_blocks = {
     "id": "http://b2share.eudat.eu/schemas/restricted_metaschema",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "B2SHARE restricted metaschema",
@@ -113,12 +113,20 @@ restricted_metaschema = {
     },
 }
 
-# TODO: make a test from this static check
-jsonschema.Draft4Validator.check_schema(restricted_metaschema)
-metaschema_validator = jsonschema.Draft4Validator(restricted_metaschema)
 
-def validate_metadata_schema(schema):
+# TODO: make also a test from this static check
+jsonschema.Draft4Validator.check_schema(restricted_metaschema_for_metadata_blocks)
+block_metaschema_validator = jsonschema.Draft4Validator(restricted_metaschema_for_metadata_blocks)
+
+
+def validate_block_schema(schema):
     """ The schema param must be a json/dict object.
         The function raises an error if the schema is invalid"""
     jsonschema.Draft4Validator.check_schema(schema)
-    metaschema_validator.validate(schema)
+    block_metaschema_validator.validate(schema)
+
+
+def validate_community_schema(schema):
+    """ The schema param must be a json/dict object.
+        The function raises an error if the schema is invalid"""
+    jsonschema.Draft4Validator.check_schema(schema)
