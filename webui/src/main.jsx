@@ -13,7 +13,7 @@ import { Store } from './data/store';
 import { Navbar, Breadcrumbs } from './components/navbar.jsx';
 import { HomePage } from './components/home.jsx';
 import { UserPage } from './components/user.jsx';
-import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, FAQ, SearchHelp } from './components/help.jsx';
+import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListPage, CommunityPage } from './components/communities.jsx';
 import { RecordListPage, RecordPage, EditRecordPage } from './components/records.jsx';
 import { SearchPage } from './components/search.jsx';
