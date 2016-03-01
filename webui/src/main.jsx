@@ -96,6 +96,7 @@ const router = (
                 <Route path="search" component={SearchHelp} />
                 <Route path="terms-of-use" component={TermsOfUse} />
                 <Route path="api" component={RestApi} />
+				<Route path="Frequently-Asked-Question" component={FAQ} />
             </Route>
 
             <Route path="user" component={UserPage} />

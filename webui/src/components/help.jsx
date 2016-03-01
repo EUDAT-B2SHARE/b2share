@@ -1,6 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router'
 
+var Restapi = require('../docs/templates/rest-api');
+var Termofuse = require('../docs/templates/tou');
+var Faqq = require('../docs/templates/faq');
+
+
 export const Help = React.createClass({
     render() {
         return (
@@ -24,7 +29,7 @@ export const Help = React.createClass({
                                         <Link to="http://www.eudat.eu/services/userdoc/b2share" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
                                     </li>
                                     <li className="list-group-item">
-                                        <Link to="/help/faq"><i className="fa fa-comments"></i> FAQ</Link>
+                                        <Link to="/help/Frequently-Asked-Question"><i className="fa fa-comments"></i> FAQ</Link>
                                     </li>
                                     <li className="list-group-item">
                                         <Link to="/help/search"><i className="fa fa-search"></i> Search</Link>
@@ -94,12 +99,13 @@ export const UserGuide = React.createClass({
 });
 
 export const TermsOfUse = React.createClass({
-    render() {
+	render: function() {
+		var termofuse;
         return (
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-sm-10">
-                        <h1>Terms of Use</h1>
+						<Termofuse term_of_use={termofuse}/>
                     </div>
                 </div>
             </div>
@@ -108,26 +114,28 @@ export const TermsOfUse = React.createClass({
 });
 
 export const RestApi = React.createClass({
-    render() {
+    render: function() {
+	    var restapihelp;
         return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>The REST API</h1>
-                    </div>
-                </div>
-            </div>
+			<div className="container-fluid">
+				<div className="row">
+					<div className="col-sm-10">
+						<Restapi rest_api={restapihelp}/>
+					</div>
+				</div>
+			</div>
         );
     }
 });
 
 export const FAQ = React.createClass({
-    render() {
+	render: function() {
+		var faq_var;
         return (
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-sm-10">
-                        <h1>F. A. Q.</h1>
+						<Faqq faq_class={faq_var}/>
                     </div>
                 </div>
             </div>
