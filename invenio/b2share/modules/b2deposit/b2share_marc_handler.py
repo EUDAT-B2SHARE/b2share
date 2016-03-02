@@ -153,16 +153,19 @@ def add_file_info(rec, form, email, sub_id, recid):
     """
     Adds the path to the file and access rights to ther record.
     """
+    fft_open_access = 'deny all\n'
     if 'open_access' in form:
-        fft_status = 'firerole: allow any\n'
-    else:
-        fft_status = 'firerole: allow email "{0}"\ndeny all'.format(
-            email)
+        fft_open_access = 'allow any\n'
 
-    if 'embargo_till' in form:
+    fft_embargo = ''
+    if 'embargo_till' in form and form['embargo_till']:
         embargodate = parser.parse(form['embargo_till'])
         embargodate = datetime.strftime(embargodate, '%Y-%m-%d')
-        fft_status = 'firerole: deny until "%s"\nallow any\n' % embargodate
+        fft_embargo = 'deny until "%s"\n' % embargodate
+
+    fft_owner = 'allow email "{0}"\n'.format(email)
+    fft_status = 'firerole: {0}{1}{2}'.format(
+        fft_owner, fft_embargo, fft_open_access)
 
     for metadata in get_depositing_files_metadata(sub_id):
         path = metadata['file']

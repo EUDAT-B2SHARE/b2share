@@ -42,10 +42,12 @@ class FormWithKey(InvenioBaseForm):
 
 def deposit(request):
     """ Renders the deposit start page """
+    site_function = current_app.config.get("CFG_SITE_FUNCTION") or ""
     return render_template('b2share-deposit.html',
                            url_prefix=url_for('.deposit'),
                            domains=metadata_classes().values(),
-                           sub_id=uuid.uuid1().hex)
+                           sub_id=uuid.uuid1().hex,
+                           site_function=site_function)
 
 def is_current_user_allowed_to_deposit(meta):
     # the user's groups are not updated unless we call reload()

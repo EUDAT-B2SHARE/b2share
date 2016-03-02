@@ -48,6 +48,11 @@
             {{ current_user.nickname|default(current_user.email) }}</a>
             {% endif %}
             </p>
+            {% if not site_function %}
+            <!-- we are on production site, link to testing and training -->
+            <h4 style='margin-top:2em'>Testing and Training</h4>
+            <p>Please use <a href='https://trng-b2share.eudat.eu'>https://trng-b2share.eudat.eu</a> for testing or training purposes.</p>
+            {% endif %}
 
     </div>
     <!-- END CONTENT LEFT -->
