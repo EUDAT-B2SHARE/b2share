@@ -21,3 +21,4 @@ INSERT INTO collection_collection VALUES (1,105,'r',6);
 INSERT INTO collection_collection VALUES (1,106,'r',7);
 INSERT INTO collection_collection VALUES (1,107,'r',8);
 INSERT INTO collection_collection VALUES (1,108,'r',9);
+INSERT INTO collection_collection VALUES (1,109,'r',10);
