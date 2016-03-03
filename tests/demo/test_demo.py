@@ -19,10 +19,12 @@
 
 """Test B2Share demonstration module."""
 
-import os
-import sys
 from functools import partial
 
+import os
+import sys
+
+import pytest
 from click.testing import CliRunner
 from flask_cli import ScriptInfo
 from invenio_pidstore.resolver import Resolver
@@ -32,20 +34,27 @@ from invenio_records import Record
 sys.path.append(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), '../..',
                  'demo'))
+
+from b2share.modules.communities import B2ShareCommunities
+from b2share.modules.schemas import B2ShareSchemas
+from b2share.modules.schemas.cli import schemas as schemas_cmd
 from b2share_demo.cli import demo as demo_cmd  # noqa
 from b2share_demo.ext import B2ShareDemo  # noqa
 
 
+@pytest.mark.parametrize('app', [({'extensions':
+                                   [B2ShareCommunities, B2ShareSchemas,
+                                    B2ShareDemo]})],
+                         indirect=['app'])
 def test_demo_cmd_load(app):
     """Test the `load` CLI command."""
-    B2ShareDemo(app)
-
     with app.app_context():
         runner = CliRunner()
         script_info = ScriptInfo(create_app=lambda info: app)
 
         # Run 'load' command
         with runner.isolated_filesystem():
+            result = runner.invoke(schemas_cmd, ['init'], obj=script_info)
             result = runner.invoke(demo_cmd, ['load'], obj=script_info)
             assert result.exit_code == 0
 

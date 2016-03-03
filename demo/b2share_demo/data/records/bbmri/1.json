@@ -1,0 +1,9 @@
+{
+    "title": "My Test BBMRI Record",
+    "community": "$COMMUNITY_ID[BBMRI]",
+    "community_specific": {
+        "$BLOCK_SCHEMA_ID[bbmri]": {
+            "study_design": ["Case-control"]
+        }
+    }
+}

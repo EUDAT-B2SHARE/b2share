@@ -22,7 +22,8 @@
 
 from __future__ import absolute_import, print_function
 
-from .restful import blueprint
+from .cli import schemas as schemas_cmd
+from .views import blueprint
 
 
 class B2ShareSchemas(object):
@@ -36,8 +37,9 @@ class B2ShareSchemas(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
-        app.extensions['b2share-schemas'] = self
         app.register_blueprint(blueprint)
+        app.cli.add_command(schemas_cmd)
+        app.extensions['b2share-schemas'] = self
 
     def init_config(self, app):
         """Initialize configuration."""

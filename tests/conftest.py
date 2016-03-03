@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016 University of Tuebingen, CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -26,9 +26,12 @@
 from __future__ import absolute_import, print_function
 
 import os
+import re
 from collections import namedtuple
+from contextlib import contextmanager
 
 import pytest
+import responses
 from flask import Flask
 from flask_cli import FlaskCLI
 from flask_security import url_for_security
@@ -38,8 +41,8 @@ from invenio_accounts import InvenioAccounts
 from invenio_db import InvenioDB, db
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
-from invenio_search import InvenioSearch
 from invenio_rest import InvenioREST
+from invenio_search import InvenioSearch
 from sqlalchemy_utils.functions import create_database, drop_database
 
 
@@ -129,3 +132,41 @@ def login_user(app):
             'email': user_info.email, 'password': user_info.password})
         assert res.status_code == 302
     return login
+
+
+@pytest.yield_fixture
+def flask_http_responses(app):
+    """Routes HTTP requests to the given flask application.
+
+    The routing is done only when the requested URL matches the application
+    endpoints.
+
+    Args:
+        app: the flask application.
+
+    Returns:
+        function: a context manager enabling the HTTP requests routing.
+    """
+    @contextmanager
+    def router():
+        """Context manager used to enable the routing."""
+        def router_callback(request):
+            with app.test_client() as client:
+                headers = [(key, value) for key, value in
+                           request.headers.items()]
+                res = getattr(client, request.method.lower())(
+                    request.url,
+                    data=request.body,
+                    headers=headers)
+                return (res.status, res.headers, res.get_data())
+        with responses.RequestsMock(assert_all_requests_are_fired=False) \
+                as rsps:
+            for rule in app.url_map.iter_rules():
+                url_regexp = re.compile('http://' +
+                                        app.config.get('SERVER_NAME') +
+                                        re.sub(r'<[^>]+>', '\S+', rule.rule))
+                for method in rule.methods:
+                    rsps.add_callback(method, url_regexp,
+                                        callback=router_callback)
+            yield
+    yield router

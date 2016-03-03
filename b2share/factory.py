@@ -30,6 +30,9 @@ create_api = create_app_factory(
 
 def create_app(**kwargs):
     api = create_api(**kwargs)
+    api.config.update(
+        APPLICATION_ROOT='/api'
+    )
     app_ui = Flask(__name__,
                    static_folder=os.environ.get(
                        'B2SHARE_UI_PATH',
@@ -42,7 +45,6 @@ def create_app(**kwargs):
     api.wsgi_app = DispatcherMiddleware(app_ui.wsgi_app, {
         '/api': api.wsgi_app
     })
-
 
     from invenio_db import InvenioDB
     from invenio_pidstore import InvenioPIDStore

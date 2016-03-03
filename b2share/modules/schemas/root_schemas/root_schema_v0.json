@@ -1,0 +1,99 @@
+{
+    "version": 0,
+    "json_schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {
+            "$schema": { "type": "string" },
+            "community": {
+                "title": "Community.",
+                "description": "Identifier of the community to which the record has been submitted",
+                "type": "string"
+            },
+            "title": {
+                "title": "Title",
+                "description": "The main title of the record.",
+                "type": "string"
+            },
+            "description": {
+                "title": "Description",
+                "description": "The record abstract.",
+                "type": "string"
+            },
+            "creator": {
+                "title": "Author",
+                "description": "The record author(s).",
+                "type": "array",
+                "items": {"type": "string"},
+                "uniqueItems": true
+            },
+            "keywords": {
+                "title": "Keywords",
+                "description": "Keywords...",
+                "type": "array",
+                "items": {"type": "string"},
+                "uniqueItems": true
+            },
+            "open_access": {
+                "title": "Open Access",
+                "description": "Indicate whether the resource is open or access is restricted. In case of restricted access the uploaded files will not be public, however the metadata will be.",
+                "type": "boolean"
+            },
+            "licence": {
+                "title": "Licence",
+                "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                "type": "string"
+            },
+            "embargo_date": {
+                "title": "Embargo Date",
+                "description": "Date that the embargo will expire.",
+                "type": "string",
+                "format": "date-time"
+            },
+            "contact_email": {
+                "title": "Contact Email",
+                "description": "The email of the contact person for this record.",
+                "type": "string",
+                "format": "email"
+            },
+            "discipline": {
+                "title": "Discipline",
+                "description": "Scientific discipline...",
+                "type": "string"
+            },
+
+            "contributor": {
+                "title": "Contributor",
+                "description": "Contributor...",
+                "type": "array",
+                "items": {"type": "string"},
+                "uniqueItems": true
+            },
+            "resource_type": {
+                "title": "Resource Type",
+                "description": "Resource Type...",
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": ["Text", "Image", "Video", "Audio", "Time-Series", "Other"]
+                },
+                "uniqueItems": true
+            },
+            "version": {
+                "title": "Version",
+                "description": "Version...",
+                "type": "string"
+            },
+            "language": {
+                "title": "Language",
+                "description": "Language...",
+                "type": "string"
+            },
+            "community_specific": {
+                "type": "object"
+            }
+        },
+        "required": ["community", "title"],
+        "additionalProperties": false
+    }
+}
