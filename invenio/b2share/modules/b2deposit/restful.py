@@ -216,6 +216,8 @@ class ListRecordsByDomain(B2Resource):
         # get domain id from domain name
         from .b2share_model.model import Bib98x, BibrecBib98x
         domain = Bib98x.query.filter_by(value=domain_name).first()
+        if not domain:
+            return jsonify({'records': []})
 
         domain_records = BibrecBib98x.query.filter_by(id_bibxxx=domain.id).all()
         record_ids = [record.id_bibrec for record in domain_records]
