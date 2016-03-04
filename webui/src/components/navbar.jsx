@@ -51,7 +51,7 @@ const NavbarSearch = React.createClass({
                             <i className="fa fa-question-circle"></i>
                         </button>
                     </span>
-                    <input className="form-control no-radius" type="text" name="query"
+                    <input className="form-control" style={{borderRadius:0}} type="text" name="query"
                         autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">

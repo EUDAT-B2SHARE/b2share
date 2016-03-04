@@ -17,6 +17,3 @@ export const UserProfile = React.createClass({
         return <div>UserProfile</div>;
     }
 });
-
-
-

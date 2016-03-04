@@ -61,7 +61,7 @@ const CommunityList = React.createClass({
 
     render() {
         return (
-            <div className="container-fluid">
+            <div className="container-fluid community-list-page">
                 <div className="row">
                     <div className="col-sm-10">
                         <h1>Communities</h1>
@@ -126,7 +126,7 @@ const Community = React.createClass({
         const community = this.props.community;
         const schemas = community.get('schema_list');
         return (
-            <div className="container-fluid">
+            <div className="container-fluid community-page">
                 <div className="row">
                     <div className="col-sm-10">
                         <h1>{community.get('name')}</h1>
