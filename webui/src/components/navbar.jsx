@@ -4,8 +4,7 @@ import { createAndGoToRecord } from './record.jsx';
 
 
 export const Navbar = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
+    // not a pure render
     getInitialState() {
         return { open: true };
     },
@@ -66,18 +65,19 @@ const NavbarSearch = React.createClass({
 
 
 const NavbarMenu = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
+    // not a pure render, depends on the URL
     render() {
+        console.log('navbar')
+        const topgap = {marginTop:'0.5em'}
         const user = this.props.store.branch('user');
         return (
             <div className="collapse navbar-collapse" id="header-navbar-collapse">
                 <NavbarSearch />
 
-                {/* menu */}
-                <ul className="nav navbar-nav text-uppercase">
+                <ul className="nav navbar-nav text-uppercase" style={topgap}>
                     <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
                     <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
+                    <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
                     <li> <Link to="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </Link> </li>
 
                     { user.get('name') ? <NavbarUser /> : <NavbarNoUser /> }
