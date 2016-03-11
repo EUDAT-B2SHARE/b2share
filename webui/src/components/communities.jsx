@@ -61,16 +61,12 @@ const CommunityList = React.createClass({
 
     render() {
         return (
-            <div className="container-fluid community-list-page">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>Communities</h1>
+            <div className="community-list-page">
+                <h1>Communities</h1>
 
-                        <div className="container-fluid">
-                        <div className="row">
-                            { this.props.communities.map(this.renderCommunity) }
-                        </div>
-                        </div>
+                <div className="container-fluid">
+                    <div className="row">
+                        { this.props.communities.map(this.renderCommunity) }
                     </div>
                 </div>
             </div>
@@ -126,23 +122,19 @@ const Community = React.createClass({
         const community = this.props.community;
         const schemas = community.get('schema_list');
         return (
-            <div className="container-fluid community-page">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>{community.get('name')}</h1>
+            <div className="community-page">
+                <h1>{community.get('name')}</h1>
 
-                        { this.renderCommunity(community) }
-                        { schemas && schemas.count() ?
-                            <div className="row">
-                                <div className="col-sm-12">
-                                    <hr/>
-                                    <h3>Metadata schemas:</h3>
-                                </div>
-                            </div> : false }
-                        <div className="row">
-                            { schemas ? schemas.map(this.renderSchema) : false }
+                { this.renderCommunity(community) }
+                { schemas && schemas.count() ?
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <hr/>
+                            <h3>Metadata schemas:</h3>
                         </div>
-                    </div>
+                    </div> : false }
+                <div className="row">
+                    { schemas ? schemas.map(this.renderSchema) : false }
                 </div>
             </div>
         );

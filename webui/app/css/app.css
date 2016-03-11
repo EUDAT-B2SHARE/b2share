@@ -64,7 +64,7 @@ a.navbar-brand {
 .nav-search {
   display: table;
   padding: 20px;
-  margin-right: 250px;
+  margin-right: 220px;
 }
 
 .well .divider {
@@ -137,16 +137,16 @@ a.navbar-brand {
 
 /*** transitions css ***/
 
-.fade-enter {
+/*.fade-enter {
   opacity: 0.01;
-  transition: all .2s linear;
+  transition: all .1s linear;
 }
 .fade-enter.fade-enter-active {
   opacity: 1;
 }
 .fade-leave {
   opacity: 1;
-  transition: all .2s linear;
+  transition: all .1s linear;
 }
 .fade-leave.fade-leave-active {
   opacity: 0.01;
@@ -155,25 +155,35 @@ a.navbar-brand {
 
 .error-enter {
   opacity: 0.01;
-  transition: all .2s linear;
+  transition: all .1s linear;
 }
 .error-enter.error-enter-active {
   opacity: 1;
 }
 .error-leave {
   opacity: 1;
-  transition: all .2s linear;
+  transition: all .1s linear;
 }
 .error-leave.error-leave-active {
   opacity: 0.01;
 }
-
+*/
 
 /* route */
 
+div.animator {
+  position: relative;
+  width: 100%;
+}
+div.animator > div {
+  position: absolute;
+  width: 100%;
+  top: 0px;
+}
+
 .route-appear {
   opacity: 0.01;
-  transition: opacity .2s linear;
+  transition: opacity .1s;
 }
 
 .route-appear.route-appear-active {
@@ -183,7 +193,7 @@ a.navbar-brand {
 
 .route-enter {
   opacity: 0.01;
-  transition: opacity .2s linear;
+  transition: opacity .1s;
 }
 
 .route-enter.route-enter-active {
@@ -192,11 +202,11 @@ a.navbar-brand {
 
 .route-leave {
   opacity: 1;
-  transition: opacity .2s linear;
+  transition: opacity .1s;
 }
 
 .route-leave.route-leave-active {
-  opacity: 0;
+  opacity: 0.01;
 }
 
 
@@ -275,6 +285,7 @@ a.navbar-brand {
 
 .breadcrumb {
   background-color: #fff;
+  font-size: 12px;
 }
 .breadcrumb > li + li:before {
     content: "»";
@@ -397,17 +408,32 @@ a.navbar-brand {
 
 .new-record .community {
   text-align: center;
+  font-weight: bold;
 }
 
 .new-record .community:hover {
+  border: 1px solid gray;
+  box-shadow: 0 0 10px gray !important;
+}
+
+.new-record .community.active {
+  color: #F45D00;
   border: 1px solid #F45D00;
   box-shadow: 0 0 10px #F45D00 !important;
 }
 
 .new-record .community img.logo {
-  max-width: 128px;
+  max-width: 96px;
   max-height: 64px;
 }
+
+.new-record .community.inactive img{
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+}
+
 
 /*****************************************************************************/
 /* upload form */

@@ -13,9 +13,9 @@ export const HomePage = React.createClass({
 
     render() {
         return (
-            <div className="container-fluid">
+            <div className="container-fluid home-page">
                 <div className="row">
-                    <div className="col-sm-10">
+                    <div className="col-sm-12">
                         <div style={{margin:'2em 0', textAlign: 'center'}}>
                             <h3>Store and share your research data</h3>
                             <p>Search in public datasets or register as a user to upload and share your data!</p>

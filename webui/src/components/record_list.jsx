@@ -10,7 +10,7 @@ import { Animate } from './animate.jsx';
 export const RecordListPage = React.createClass({
     componentWillMount() {
         const { start, stop, sortBy, order } = this.props.location;
-        server.fetchRecords({start:start, stop:stop, sortBy:sortBy, order:order});
+        server.fetchRecordList({start:start, stop:stop, sortBy:sortBy, order:order});
         this.records = this.props.store.branch('records');
     },
 
@@ -27,14 +27,11 @@ const RecordList = React.createClass({
 
     render() {
         return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>Records</h1>
-
-                        <div className="row">
+            <div>
+                <h1>Records</h1>
+                <div className="container-fluid">
+                    <div className="row">
                         { this.props.records.map(renderRecord) }
-                        </div>
                     </div>
                 </div>
             </div>

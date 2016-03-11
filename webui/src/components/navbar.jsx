@@ -17,7 +17,7 @@ export const Navbar = React.createClass({
         return (
             <nav className="header-nav navbar navbar-default navbar-static-top">
                 <div className="container-fluid">
-                    <div className="col-xs-1"></div>
+                    <div className="col-xs-1"/>
                     <div className="navbar-header">
                         <button type="button" className="navbar-toggle collapsed" onClick={this.toggle}>
                             <span className="sr-only">Toggle Navigation Menu</span>
@@ -67,7 +67,6 @@ const NavbarSearch = React.createClass({
 const NavbarMenu = React.createClass({
     // not a pure render, depends on the URL
     render() {
-        console.log('navbar')
         const topgap = {marginTop:'0.5em'}
         const user = this.props.store.branch('user');
         return (
@@ -161,12 +160,9 @@ export const Breadcrumbs = React.createClass({
         pairs[pairs.length-1][3] = true;
         return (
             <div className="row">
-                <div className="col-xs-1 hidden-xs"/>
-                <div className="col-sm-10">
-                    <ol className="breadcrumb">
-                        { pairs.map(this.renderItem) }
-                    </ol>
-                </div>
+                <ol className="breadcrumb">
+                    { pairs.map(this.renderItem) }
+                </ol>
             </div>
         );
     }

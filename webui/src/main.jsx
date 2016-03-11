@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
 import createBrowserHistory from 'history/lib/createBrowserHistory'
-import Notification from 'react-notification';
 import { fromJS } from 'immutable';
 import { Router, Route, IndexRoute, Link } from 'react-router'
 
@@ -17,7 +16,8 @@ import { UserPage } from './components/user.jsx';
 import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListPage, CommunityPage } from './components/communities.jsx';
 import { RecordListPage } from './components/record_list.jsx';
-import { RecordPage, NewRecordPage, EditRecordPage } from './components/record.jsx';
+import { RecordPage } from './components/record.jsx';
+import { NewRecordPage, EditRecordPage } from './components/edit_record.jsx';
 import { SearchPage } from './components/search.jsx';
 
 const VERSION = '0.4.0';
@@ -62,18 +62,19 @@ const AppFrame = React.createClass({
     render() {
         // adding a mutating ref seems necessary to propagate changes
         const additionalProps = {store: store, dataRef: store.root,  key: this.props.location.pathname}
-        const notif = <Notification isActive={true} message={"Hi asdf asd fa sdfa sdf as dfa sdf asfd"} action={"action1"} />;
         return (
             <div>
                 <Navbar store={store} dataRef={store.root} />
-                <Animate>
-                    <Breadcrumbs />
-                    <div className="container-fluid">
-                        <div className="col-xs-1"></div>
+                <div className="container-fluid">
+                    <div className="col-xs-1"/>
+                    <div className="col-xs-10">
+                        <Breadcrumbs />
+                        <Animate>
                             { React.cloneElement(this.props.children, additionalProps) }
-                        <div className="col-xs-1"></div>
+                        </Animate>
                     </div>
-                </Animate>
+                    <div className="col-xs-1"/>
+                </div>
             </div>
         );
     }

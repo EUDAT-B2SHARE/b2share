@@ -45,14 +45,12 @@ class Fetcher {
         if (this.requestSent) {
             return;
         }
-        if (!this.requestSent) {
-            this.requestSent = true;
-            ajaxGet(this.url+pathParam, params,
-                (dataJS) => { successFn(dataJS); },
-                errorFn,
-                () => { this.requestSent = false; }
-            );
-        }
+        this.requestSent = true;
+        ajaxGet(this.url+pathParam, params,
+            (dataJS) => { successFn(dataJS); },
+            errorFn,
+            () => { this.requestSent = false; }
+        );
     }
 }
 
@@ -80,7 +78,8 @@ class Server {
     constructor() {
         this.store = null;
         this.latestRecords = new Fetcher(apiUrls.records);
-        this.records = new Fetcher(apiUrls.records);
+        this.recordSearch = new Fetcher(apiUrls.records);
+        this.record = new Fetcher(apiUrls.records);
         this.communities = new Fetcher(apiUrls.communities);
         this.schemas = new Fetcher(apiUrls.schemas);
 
@@ -100,13 +99,13 @@ class Server {
         this.latestRecords.fetch(params, (json)=>{binding.set(fromJS(json.records))});
     }
 
-    fetchRecords({start, stop, sortBy, order}) {
+    fetchRecordList({start, stop, sortBy, order}) {
         const binding = store.branch('records');
         if (!binding.valid()) {
             return;
         }
         const params = {start:start, stop:stop, sortBy:sortBy, order:order};
-        this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+        this.recordSearch.fetch(params, (json)=>{binding.set(fromJS(json.records))});
     }
 
     fetchRecord(id) {
@@ -114,7 +113,7 @@ class Server {
         if (!binding.valid()) {
             return;
         }
-        this.records.fetchWithPathParam(id, {},
+        this.record.fetchWithPathParam(id, {},
             (json)=>{binding.set(fromJS(json))},
             (json)=>{binding.set(fromJS({error:404}))});
     }

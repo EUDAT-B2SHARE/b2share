@@ -39,3 +39,13 @@ export function timestamp2str(ts) {
     const d = date.getDate().toString();
     return d + " " + m + " " + y;
 }
+
+export function objToArray(o) {
+    const a = [];
+    for (const x in o) {
+        if (o.hasOwnProperty(x)) {
+            a.push(x);
+        }
+    }
+    return a;
+}

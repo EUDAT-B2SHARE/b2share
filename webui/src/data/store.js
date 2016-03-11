@@ -66,7 +66,7 @@ class Branch {
     }
 
     // how many elements has the data in this branch?
-    count() { a
+    count() {
         if (!this.path) return 0;
         return this.get().count();
     }

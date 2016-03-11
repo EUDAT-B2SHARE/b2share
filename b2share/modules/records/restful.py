@@ -94,7 +94,7 @@ class HttpRecordList(HttpResource):
             abort(415)
         metadata = request.get_json()
         if metadata is None:
-            return abort(400)
+            return {'error':'missing metadata for creating new record'}, 400
 
         record = Record.create(metadata)
         return record, 201

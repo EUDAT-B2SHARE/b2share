@@ -26,9 +26,9 @@ export const RecordPage = React.createClass({
         if (!this.record || !this.record.valid()) {
             return <Wait/>;
         }
-        // if (this.props.children) {
-        //     return React.cloneElement(this.props.children, {record:this.record.get()})
-        // }
+        if (this.props.children) {
+            return React.cloneElement(this.props.children, {store: this.props.store, record:this.record.get()})
+        }
         return <Record record={this.record.get()} />;
     }
 });
@@ -60,8 +60,11 @@ const Record = React.createClass({
         );
     },
 
-    renderCreators(basic) {
-        const creators = basic.get('creator') || [];
+    renderCreators(metadata) {
+        const creators = metadata.get('creator');
+        if (!creators) {
+            return false;
+        }
 
         return (
             <p> <span style={{color:'black'}}> by </span>
@@ -76,20 +79,19 @@ const Record = React.createClass({
     render() {
         const record = this.props.record;
         const metadata = record.get('metadata') || Map();
-        const basic = metadata.find(md => md.get('schema_id') == '0') || Map();
-        const desc = basic.get('description') ||"";
+        const desc = metadata.get('description') ||"";
 
         return (
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-sm-10">
                         <div className="large-record">
-                            <h3 className="name">{basic.get('title')}</h3>
+                            <h3 className="name">{metadata.get('title')}</h3>
 
                             { this.renderDates(record) }
                             <div style={{clear:"both", height:10}}/>
 
-                            { this.renderCreators(basic) }
+                            { this.renderCreators(metadata) }
 
                             <p className="description">{desc.substring(0,200)}</p>
                         </div>
@@ -100,75 +102,3 @@ const Record = React.createClass({
     }
 });
 
-
-export const NewRecordPage = React.createClass({
-    mixins: [React.addons.LinkedStateMixin],
-
-    getInitialState() {
-        return {
-            title: ""
-        }
-    },
-
-    createAndGoToRecord(event) {
-        event.preventDefault();
-        console.log(this.state);
-        server.createRecord( { title: this.state.title },
-            record => { window.location.assign(`${window.location.origin}/records/${record.id}/edit`); }
-        );
-    },
-
-    render() {
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <div className="new-record">
-
-                            <form className="form-horizontal" onSubmit={this.createAndGoToRecord}>
-                                <div className="form-group">
-                                    <label htmlFor="title" className="col-sm-2 control-label">Title</label>
-                                    <div className="col-sm-10">
-                                        <input type="text" className="form-control" id="title" valueLink={this.linkState('title')}
-                                            placeholder="Record Title"/>
-                                    </div>
-                                </div>
-
-                                <div className="form-group submit">
-                                    <div className="col-sm-offset-2 col-sm-6">
-                                        <button type="submit" className="btn btn-primary btn-default btn-block">
-                                            Create Draft Record</button>
-                                    </div>
-                                </div>
-                            </form>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});
-
-
-export const EditRecord = React.createClass({
-    mixins: [React.PureRenderMixin],
-
-    render() {
-        const record = this.props.record;
-        const metadata = record.get('metadata') || Map();
-        const basic = metadata.find(md => md.get('schema_id') == '0') || Map();
-        const desc = basic.get('description') ||"";
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h3 className="name">{basic.get('title')}</h3>
-                        <p className="date">{new Date(1000*record.get('created_at')).toLocaleString()}</p>
-                        <p className="description">{desc.substring(0,200)}</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});

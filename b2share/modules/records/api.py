@@ -72,14 +72,12 @@ class Record(object):
             if sort_key:
                 query = query.sort(sort_key)
 
-        response = current_search_client.search(
+        return current_search_client.search(
             index='records',
             doc_type='record',
             body=query.body,
             version=True,
         )
-        hits = response.get('hits').get('hits')
-        return hits
 
     @classmethod
     def list(cls, start=0, stop=10):
