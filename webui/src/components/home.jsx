@@ -1,17 +1,17 @@
 import React from 'react/lib/ReactWithAddons';
 import { Router, Route, IndexRoute, Link } from 'react-router'
 import { server } from '../data/server';
+import { store } from '../data/store';
 import { currentUser } from './user.jsx';
 import { LatestRecords } from './record_list.jsx';
 import { Wait } from './waiting.jsx';
 
 export const HomePage = React.createClass({
-    componentWillMount() {
-        this.binding = this.props.store.branch('latestRecords');
-        server.fetchLatestRecords();
-    },
-
     render() {
+        const latestRecords = store.getIn(['latestRecords']);
+        if (!latestRecords) {
+            server.fetchLatestRecords();
+        }
         return (
             <div className="container-fluid home-page">
                 <div className="row">
@@ -34,7 +34,7 @@ export const HomePage = React.createClass({
                         </div>
 
                         <hr/>
-                        { this.binding.valid() ? <LatestRecords records={this.binding.get()} /> : <Wait />}
+                        { latestRecords ? <LatestRecords records={latestRecords} /> : <Wait />}
                     </div>
                 </div>
             </div>

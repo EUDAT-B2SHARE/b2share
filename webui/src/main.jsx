@@ -2,52 +2,34 @@ import React from 'react/lib/ReactWithAddons';
 import ReactDOM from 'react-dom';
 const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
-import createBrowserHistory from 'history/lib/createBrowserHistory'
+import { browserHistory } from 'react-router';
 import { fromJS } from 'immutable';
 import { Router, Route, IndexRoute, Link } from 'react-router'
 
-import { server } from './data/server';
-import { Store } from './data/store';
+import { serverCache } from './data/server';
 
-import { Animate } from './components/animate.jsx';
+import { ReplaceAnimate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs } from './components/navbar.jsx';
-import { HomePage } from './components/home.jsx';
-import { UserPage } from './components/user.jsx';
+import { HomeRoute } from './components/home.jsx';
+import { UserRoute } from './components/user.jsx';
 import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
-import { CommunityListPage, CommunityPage } from './components/communities.jsx';
-import { RecordListPage } from './components/record_list.jsx';
-import { RecordPage } from './components/record.jsx';
-import { NewRecordPage, EditRecordPage } from './components/edit_record.jsx';
-import { SearchPage } from './components/search.jsx';
-
-const VERSION = '0.4.0';
+import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
+import { RecordListRoute } from './components/record_list.jsx';
+import { RecordRoute, NewRecordRoute, EditRecordRoute  } from './components/record.jsx';
+import { SearchRoute } from './components/search.jsx';
 
 
-const store = new Store({
-    user: {
-        name: null,
-    },
-    latestRecords: [],
-    records: [],
-    currentRecord: {},
-    communities: [],
-    search: {
-        query: '',
-    }
-});
-
-
-server.setStore(store);
+const VERSION = '0.5.0';
 
 
 const AppFrame = React.createClass({
     getInitialState() {
-        return { dataRef: store.root };
+        return { dataRef: serverCache.store.root };
     },
 
     updateStateOnTick() {
         const updateState = () =>
-            this.setState({ dataRef: store.root });
+            this.setState({ dataRef: serverCache.store.root });
         if (window.requestAnimationFrame) {
             window.requestAnimationFrame(updateState);
         } else {
@@ -56,22 +38,25 @@ const AppFrame = React.createClass({
     },
 
     componentWillMount() {
-        store.onChange = this.updateStateOnTick;
+        serverCache.store.onChange = this.updateStateOnTick;
     },
 
     render() {
         // adding a mutating ref seems necessary to propagate changes
-        const additionalProps = {store: store, dataRef: store.root,  key: this.props.location.pathname}
+        console.log('appframe:', this.props);
+        console.log('appframe:', this.context);
+        const additionalProps = {dataRef: this.state.dataRef,  key: this.props.location.pathname}
+                            // { React.cloneElement(this.props.children, additionalProps) }
         return (
             <div>
-                <Navbar store={store} dataRef={store.root} />
+                <Navbar dataRef={this.state.dataRef} />
                 <div className="container-fluid">
                     <div className="col-xs-1"/>
                     <div className="col-xs-10">
                         <Breadcrumbs />
-                        <Animate>
-                            { React.cloneElement(this.props.children, additionalProps) }
-                        </Animate>
+                        <ReplaceAnimate>
+                            { this.props.children }
+                        </ReplaceAnimate>
                     </div>
                     <div className="col-xs-1"/>
                 </div>
@@ -83,20 +68,20 @@ const AppFrame = React.createClass({
 
 const Frame = React.createClass({
     render() {
-        const additionalProps = {store: store, dataRef: store.root,  key: this.props.location.pathname}
+        const additionalProps = {dataRef: this.props.dataRef,  key: this.props.location.pathname}
         return (
-            <Animate>
+            <ReplaceAnimate>
                 { React.cloneElement(this.props.children, additionalProps) }
-            </Animate>
+            </ReplaceAnimate>
         );
     }
 });
 
 
 const router = (
-    <Router history={createBrowserHistory()}>
+    <Router history={browserHistory}>
         <Route path="/" component={AppFrame}>
-            <IndexRoute component={HomePage} />
+            <IndexRoute component={HomeRoute} />
 
             <Route path="help">
                 <IndexRoute component={Help} />
@@ -105,22 +90,23 @@ const router = (
                 <Route path="api" component={RestApi} />
             </Route>
 
-            <Route path="user" component={UserPage} />
+            <Route path="user" component={UserRoute} />
 
             <Route path="communities" component={Frame} >
-                <IndexRoute component={CommunityListPage} />
-                <Route path=":id" component={CommunityPage} />
+                <IndexRoute component={CommunityListRoute} />
+                <Route path=":id" component={CommunityRoute} />
             </Route>
 
             <Route path="records" component={Frame} >
-                <IndexRoute component={RecordListPage} />
-                <Route path="new" component={NewRecordPage}/>
-                <Route path=":id" component={RecordPage}>
-                    <Route path="edit" component={EditRecordPage}/>
+                <IndexRoute component={RecordListRoute} />
+                <Route path="new" component={NewRecordRoute}/>
+                <Route path=":id" component={Frame} >
+                    <IndexRoute component={RecordRoute} />
+                    <Route path="edit" component={EditRecordRoute}/>
                 </Route>
             </Route>
 
-            <Route path="search" component={SearchPage} />
+            <Route path="search" component={SearchRoute} />
         </Route>
     </Router>
 );

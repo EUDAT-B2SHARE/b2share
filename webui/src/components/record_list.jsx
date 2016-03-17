@@ -2,21 +2,22 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { Map } from 'immutable';
 import { server } from '../data/server';
+import { store } from '../data/store';
 import { Wait } from './waiting.jsx';
 import { timestamp2str } from '../data/misc.js'
-import { Animate } from './animate.jsx';
+import { ReplaceAnimate } from './animate.jsx';
 
 
 export const RecordListPage = React.createClass({
     componentWillMount() {
         const { start, stop, sortBy, order } = this.props.location;
         server.fetchRecordList({start:start, stop:stop, sortBy:sortBy, order:order});
-        this.records = this.props.store.branch('records');
+        this.records = serverCache.getRecords();
     },
 
     render() {
         return this.records.valid() ?
-            <Animate><RecordList records={this.records.get()} /></Animate> :
+            <ReplaceAnimate><RecordList records={this.records.get()} /></ReplaceAnimate> :
             <Wait/>;
     }
 });
@@ -55,8 +56,8 @@ export const LatestRecords = React.createClass({
                     { this.props.records.map(renderRecord) }
                 </div>
                 <div className="row">
-                    <div className="col-sm-12">
-                        <Link to="/records" className="btn btn-default"> More Records ... </Link>
+                    <div className="col-sm-offset-6 col-sm-6" style={{marginTop:'1em', marginBottom:'1em',}}>
+                        <Link to="/records" className="btn btn-default btn-block"> More Records ... </Link>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { createAndGoToRecord } from './record.jsx';
+import { serverCache } from '../data/server';
 
 
 export const Navbar = React.createClass({
@@ -30,7 +30,7 @@ export const Navbar = React.createClass({
                         </Link>
                     </div>
 
-                    { this.state.open ? <NavbarMenu store={this.props.store} ref={this.props.store.root} /> : false }
+                    { this.state.open ? <NavbarMenu/> : false }
                 </div>
             </nav>
         );
@@ -68,7 +68,7 @@ const NavbarMenu = React.createClass({
     // not a pure render, depends on the URL
     render() {
         const topgap = {marginTop:'0.5em'}
-        const user = this.props.store.branch('user');
+        const user = serverCache.getUser();
         return (
             <div className="collapse navbar-collapse" id="header-navbar-collapse">
                 <NavbarSearch />
@@ -77,7 +77,7 @@ const NavbarMenu = React.createClass({
                     <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
                     <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
                     <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
-                    <li> <Link to="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </Link> </li>
+                    <li> <a href="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </a> </li>
 
                     { user.get('name') ? <NavbarUser /> : <NavbarNoUser /> }
                 </ul>

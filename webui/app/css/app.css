@@ -171,16 +171,6 @@ a.navbar-brand {
 
 /* route */
 
-div.animator {
-  position: relative;
-  width: 100%;
-}
-div.animator > div {
-  position: absolute;
-  width: 100%;
-  top: 0px;
-}
-
 .route-appear {
   opacity: 0.01;
   transition: opacity .1s;

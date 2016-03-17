@@ -5,37 +5,33 @@ import { Wait } from './waiting.jsx';
 import { Schema } from './schema.jsx';
 
 
-export const CommunityListPage = React.createClass({
-    componentWillMount() {
-        server.fetchCommunities();
-        this.binding = this.props.store.branch('communities');
-    },
-
+export const CommunityListRoute = React.createClass({
     render() {
-        return this.binding.valid() ?
-            <CommunityList communities={this.binding.get()} /> :
-            <Wait/>;
+        const communities = store.getIn(['communities']);
+        if (!communities) {
+            server.fetchCommunities();
+            return <Wait/>;
+        }
+        return <CommunityList communities={communities} />;
     }
 });
 
 
-export const CommunityPage = React.createClass({
-    componentWillMount() {
-        server.fetchCommunities();
-        this.componentWillReceiveProps(this.props);
-    },
-
-    componentWillReceiveProps(nextProps) {
-        const { id } = nextProps.params; // community id or name
-        server.fetchCommunitySchemas(id);
-        const findFn = (x) => x.get('id') == id || x.get('name') == id;
-        this.binding = nextProps.store.branch('communities').find(findFn);
-    },
-
+export const CommunityRoute = React.createClass({
     render() {
-        if (this.binding.valid()) window.comm = this.binding.get();
-        return this.binding.valid() ?
-            <Community community={this.binding.get()} /> :
+        const { id } = nextProps.params; // community id or name
+        const communities = store.getIn(['communities']);
+        if (!communities) {
+            server.fetchCommunities();
+        } else {
+            const findFn = (x) => x.get('id') == id || x.get('name') == id;
+            this.community = communities.find(findFn);
+        }
+        // TODO: sort this out; when do we fetch the schemas?
+        // server.fetchCommunitySchemas(id);
+
+        return this.community ?
+            <Community community={this.community} /> :
             <Wait/>;
     }
 });

@@ -1,5 +1,6 @@
 import {fromJS} from 'immutable';
 import {ajaxGet, ajaxPost} from './ajax'
+import {Store} from './store'
 import {objEquals} from './misc'
 
 const urlRoot = window.location.origin;
@@ -25,23 +26,23 @@ class Timer {
     restart() {
         this.tick = Date.now()+this.period;
     }
-    ticking() {
-        return this.tick > Date.now();
+    elapsed() {
+        return this.tick <= Date.now();
     }
 }
 
 
-class Fetcher {
+class Getter {
     constructor(url) {
         this.url = url;
         this.requestSent = false;
     }
 
-    fetch(params, callback) {
-        return this.fetchWithPathParam("", params, callback);
+    get(params, callback) {
+        return this.getWithPathParam("", params, callback);
     }
 
-    fetchWithPathParam(pathParam, params, successFn, errorFn) {
+    getWithPathParam(pathParam, params, successFn, errorFn) {
         if (this.requestSent) {
             return;
         }
@@ -74,81 +75,125 @@ class Poster {
 }
 
 
-class Server {
+const serverApi = {
+    records : new Getter(apiUrls.records),
+    communities : new Getter(apiUrls.communities),
+    schemas : new Getter(apiUrls.schemas),
+    newRecord : new Poster(apiUrls.records),
+};
+
+
+// todo: handle http error cases
+class ServerCache {
     constructor() {
-        this.store = null;
-        this.latestRecords = new Fetcher(apiUrls.records);
-        this.recordSearch = new Fetcher(apiUrls.records);
-        this.record = new Fetcher(apiUrls.records);
-        this.communities = new Fetcher(apiUrls.communities);
-        this.schemas = new Fetcher(apiUrls.schemas);
+        this.store = new Store({
+            user: {
+                name: null,
+            },
 
-        this.newRecord = new Poster(apiUrls.records);
+            latestRecords: [], // full list of latest records
+            recordsCache: {}, // map of record IDs to records
+            searchRecords: [], // full list of searched records
+
+            communities: [], // full list of communities
+        });
+
+        this.user = store.branch(['user']);
+
+        this.latestRecords = store.branch(['latestRecords']);
+        this.recordsCache = store.branch(['recordsCache']);
+        this.searchRecords = store.branch(['searchRecords']);
+
+        this.communities = store.branch(['communities']);
     }
 
-    setStore(store) {
-        this.store = store;
-    }
-
-    fetchLatestRecords() {
-        const binding = store.branch('latestRecords');
-        if (!binding.valid()) {
-            return;
-        }
+    _fetchLatestRecords() {
+        const setter = (json) => { this.latestRecords.set(fromJS(json.records)) };
         const params = {start:0, stop:10, sortBy:'date', order:'descending'};
-        this.latestRecords.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+        serverApi.records.get(params, setter);
     }
 
-    fetchRecordList({start, stop, sortBy, order}) {
-        const binding = store.branch('records');
-        if (!binding.valid()) {
-            return;
-        }
+    _fetchRecords({start, stop, sortBy, order}) {
+        const setter = (json) => { this.searchRecords.set(fromJS(json.records)) };
         const params = {start:start, stop:stop, sortBy:sortBy, order:order};
-        this.recordSearch.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+        serverApi.records.get(params, setter);
     }
 
-    fetchRecord(id) {
-        const binding = store.branch('currentRecord');
-        if (!binding.valid()) {
-            return;
-        }
-        this.record.fetchWithPathParam(id, {},
-            (json)=>{binding.set(fromJS(json))},
-            (json)=>{binding.set(fromJS({error:404}))});
+    _fetchRecord(id) {
+        const setter = (json) => { this.recordsCache.update((a) => a.push(json)); };
+        serverApi.records.getWithPathParam(id, {}, setter);
     }
 
-    fetchCommunities() {
-        const binding = store.branch('communities');
-        if (!binding.valid()) {
-            return;
-        }
-        this.communities.fetch(null, (json)=>{binding.set(fromJS(json.communities))});
+    _fetchCommunities() {
+        const setter = (json) => { this.communities.set(fromJS(json.communities)) };
+        serverApi.communities.get(null, setter);
     }
 
-    fetchCommunitySchemas(communityID) {
+    _fetchCommunitySchemas(communityID) {
         const findFn = (x) => x.get('id') == communityID || x.get('name') == communityID;
-        const community = store.branch('communities').find(findFn);
-        if (!community.valid()) {
+        const community = this.communities.find(findFn);
+        if (!community) {
+            console.error('fetchCommunitySchemas: unfetched community:', communityID);
             return ;
         }
-        const schema_id_list = community.get('schema_id_list');
-        const schemaIDs = schema_id_list ? schema_id_list.toJS() : [];
-        if (schemaIDs.length) {
-            const params = {schemaIDs:schemaIDs};
-            this.schemas.fetch(params, (json)=>{community.setIn(['schema_list'], fromJS(json.schemas))});
-        } else {
-            community.setIn(['schema_list'], fromJS([]))
-        }
+        // todo: finish fetching community schemas
     }
 
-    createRecord(metadata, successFn) {
+    getLatestRecords() {
+        const records = this.latestRecords.get();
+        if (!records) {
+            this._fetchLatestRecords();
+        }
+        return records;
+    }
+
+    getRecords({start, stop, sortBy, order}) {
+        // todo: implement this
+    }
+
+    getRecord(id) {
+        const findFn = (x) => x.get('id') == id;
+        const record = this.recordsCache.find(findFn);
+        if (!record) {
+            this._fetchRecord(id);
+        }
+        return record;
+    }
+
+    getCommunities() {
+        const communities = this.communities.get();
+        if (!communities) {
+            this._fetchCommunities();
+        }
+        return communities;
+    }
+
+    getCommunitySchemas(communityID) {
+        //todo
+    }
+
+    getUser() {
+        //todo: fix this
+        return this.user.get();
+    }
+
+    createRecord(initialMetadata, successFn) {
+        const json = {
+            metadata: initialMetadata
+        };
+        serverApi.newRecord.post(json, successFn);
+    }
+
+    updateRecord(metadata) {
         const json = {
             metadata: metadata
         };
-        this.newRecord.post(json, successFn);
+        this.recordsCache.update(records => {
+            records.set(json);
+        });
+        serverApi.records.post(json, successFn);
     }
 };
 
 
-export const server = new Server();
+export const serverCache = new ServerCache();
