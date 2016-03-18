@@ -28,12 +28,11 @@ const AppFrame = React.createClass({
     },
 
     updateStateOnTick() {
-        const updateState = () =>
-            this.setState({ dataRef: serverCache.store.root });
+        const updateState = () => this.setState({ dataRef: serverCache.store.root });
         if (window.requestAnimationFrame) {
             window.requestAnimationFrame(updateState);
         } else {
-            setTimeout(updateState, 16);
+            updateState();
         }
     },
 
@@ -42,11 +41,9 @@ const AppFrame = React.createClass({
     },
 
     render() {
-        // adding a mutating ref seems necessary to propagate changes
-        console.log('appframe:', this.props);
-        console.log('appframe:', this.context);
+        console.log('appframe props:', this.props);
+        // adding a mutating ref is necessary to propagate changes
         const additionalProps = {dataRef: this.state.dataRef,  key: this.props.location.pathname}
-                            // { React.cloneElement(this.props.children, additionalProps) }
         return (
             <div>
                 <Navbar dataRef={this.state.dataRef} />
@@ -55,7 +52,7 @@ const AppFrame = React.createClass({
                     <div className="col-xs-10">
                         <Breadcrumbs />
                         <ReplaceAnimate>
-                            { this.props.children }
+                            { this.props.children && React.cloneElement(this.props.children, additionalProps) }
                         </ReplaceAnimate>
                     </div>
                     <div className="col-xs-1"/>
@@ -71,7 +68,7 @@ const Frame = React.createClass({
         const additionalProps = {dataRef: this.props.dataRef,  key: this.props.location.pathname}
         return (
             <ReplaceAnimate>
-                { React.cloneElement(this.props.children, additionalProps) }
+                { this.props.children && React.cloneElement(this.props.children, additionalProps) }
             </ReplaceAnimate>
         );
     }

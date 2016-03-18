@@ -18,10 +18,11 @@ export const RecordRoute = React.createClass({
             return <Wait/>;
         }
 
-        const content = this.props.children ?
-            React.cloneElement(this.props.children, {record: this.record.get()}) :
-            <Record record={this.record.get()} />;
-        return (<ReplaceAnimate> {content} </ReplaceAnimate>);
+        return (
+            <ReplaceAnimate>
+                <Record record={record.get()} />
+            </ReplaceAnimate>
+        );
     }
 });
 
