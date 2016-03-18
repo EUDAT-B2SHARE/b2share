@@ -93,6 +93,7 @@ def test_valid_create(app, create_user, login_user,
             login_user(allowed_user, client)
             # check that the returned self link returns the same data
             subtest_self_link(response_data, headers, client)
+            assert headers['Location'] == response_data['links']['self']
         # check that one community has been created
         assert len(CommunityModel.query.all()) == 1
 

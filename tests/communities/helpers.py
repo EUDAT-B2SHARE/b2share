@@ -75,7 +75,6 @@ def subtest_self_link(response_data, response_headers, client):
     self_data = json.loads(self_response.get_data(as_text=True))
     assert self_data == response_data
     if response_headers:
-        assert response_headers['Location'] == response_data['links']['self']
         assert response_headers['ETag'] == self_response.headers['ETag']
 
 

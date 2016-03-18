@@ -68,10 +68,6 @@ def community_to_json_serializer(community, code=200, headers=None):
     if headers is not None:
         response.headers.extend(headers)
 
-    # TODO: set location to seld
-    response.headers['Location'] = community_self_link(community,
-                                                       _external=True)
-    # TODO: set etag
     response.set_etag(str(community.updated))
     return response
 
