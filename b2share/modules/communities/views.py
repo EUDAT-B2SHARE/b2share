@@ -43,7 +43,7 @@ from .permissions import communities_create_all_permission, \
     delete_permission_factory, read_permission_factory, \
     update_permission_factory
 from .serializers import community_to_json_serializer, \
-    search_to_json_serializer
+    search_to_json_serializer, community_self_link
 
 current_communities = LocalProxy(
     lambda: current_app.extensions['b2share-communities'])
@@ -159,6 +159,8 @@ class CommunityListResource(ContentNegotiatedMethodView):
                 community=community,
                 code=201,
             )
+            # set the header's Location field.
+            response.headers['Location'] = community_self_link(community)
             db.session.commit()
             return response
         except InvalidCommunityError as e1:

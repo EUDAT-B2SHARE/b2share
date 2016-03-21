@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 """Communities interface and API."""
 
@@ -63,7 +67,7 @@ class Community(object):
             b2share.modules.communities.errors.CommunityDeletedError: The
                 requested community is marked as deleted and `with_deleted` is
                     False.
-                ValueError: :attr:`id` and :attr:`name` are not set or both are
+            ValueError: :attr:`id` and :attr:`name` are not set or both are
                     set.
         """
         from .models import Community as CommunityMetadata

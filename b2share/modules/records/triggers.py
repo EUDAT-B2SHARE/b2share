@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,31 +21,30 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2share records extension"""
+"""B2share records triggers."""
 
-from __future__ import absolute_import, print_function
+import uuid
 
-# from .restful import blueprint
-# from invenio_records.api import Record
+from invenio_records.signals import before_record_insert
 
-from .triggers import register_triggers
+from b2share.modules.schemas.api import CommunitySchema
+from b2share.modules.schemas.serializers import \
+    community_schema_json_schema_link
+
+from .errors import InvalidRecordError
 
 
-class B2ShareRecords(object):
-    """B2Share Records extension."""
+def register_triggers(app):
+    before_record_insert.connect(set_record_schema)
 
-    def __init__(self, app=None):
-        """Extension initialization."""
-        if app:
-            self.init_app(app)
 
-    def init_app(self, app):
-        """Flask application initialization."""
-        self.init_config(app)
-        app.extensions['b2share-records'] = self
-        # app.register_blueprint(blueprint)
-        register_triggers(app)
-
-    def init_config(self, app):
-        """Initialize configuration."""
-        pass
+def set_record_schema(record, **kwargs):
+    if 'community' not in record or not record['community']:
+        raise InvalidRecordError(
+            'Record\s metadata has no community field.')
+    try:
+        community_id = uuid.UUID(record['community'])
+    except ValueError as e:
+        raise InvalidRecordError('Community ID is not a valid UUID.') from e
+    schema = CommunitySchema.get_community_schema(community_id)
+    record['$schema'] = community_schema_json_schema_link(schema)

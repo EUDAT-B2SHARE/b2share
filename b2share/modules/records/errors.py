@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -17,14 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2SHARE"""
+"""B2share records errors."""
 
-from __future__ import absolute_import, print_function
 
-from .ext import B2ShareSchemas
-from .api import RootSchema, BlockSchema, CommunitySchema
+class B2ShareRecordsError(Exception):
+    """B2Share records error."""
 
-from .validate import metaschema_validator
 
-__all__ = ('B2ShareSchemas', 'BlockSchema', 'CommunitySchema', 'RootSchema')
+class InvalidRecordError(B2ShareRecordsError):
+    """Raise when a record has no community."""
