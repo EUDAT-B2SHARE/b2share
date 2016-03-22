@@ -31,6 +31,9 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "### Prepare docker machine"
+if [ "$1" = "--reinit" ]; then
+	docker-machine rm -y $MACHINE_NAME >/dev/null
+fi
 docker-machine start $MACHINE_NAME >/dev/null
 if [ $? -ne 0 ]; then
 	echo; echo "### Create docker machine for b2share"
@@ -40,6 +43,13 @@ fi
 eval $(docker-machine env $MACHINE_NAME)
 DOCKER_IP=`docker-machine ip $MACHINE_NAME`
 
+cdvirtualenv
+export B2SHARE_UI_PATH=`pwd`/src/b2share/webui/app
+export B2SHARE_BROKER_URL="redis://${DOCKER_IP}:6379/0"
+export B2SHARE_CELERY_RESULT_BACKEND="redis://${DOCKER_IP}:6379/1"
+export B2SHARE_SECRET_KEY=$(base64 /dev/urandom | tr -d '/+' | dd bs=32 count=1 2>/dev/null)
+export SEARCH_ELASTIC_HOSTS="${DOCKER_IP}:9200"
+export B2SHARE_SERVER_NAME="localhost:5000"
 
 cdvirtualenv src
 if [ ! -d ./b2share ]; then
@@ -50,23 +60,23 @@ if [ ! -d ./b2share ]; then
 	cdvirtualenv src/b2share
 	pip install -r requirements.txt
 
+	echo; echo "### pip install b2share demo"
+	cdvirtualenv src/b2share/demo
+	pip install -e .
+
 	echo; echo "### Configure b2share backend"
-	# cp devenv/b2share.cfg ../../var/b2share-instance/
-	python manage.py db create
-	python manage.py index init
+	b2share db create
+	b2share schemas init
+	b2share index init
+
+	echo; echo "### Add demo objects"
+	b2share demo load
 
 	echo; echo "### Configure b2share webui"
 	cdvirtualenv src/b2share/webui
 	npm install
 	node_modules/webpack/bin/webpack.js -p # pack for production
 fi
-
-cdvirtualenv
-export B2SHARE_UI_PATH=`pwd`/src/b2share/webui/app
-export B2SHARE_BROKER_URL="redis://${DOCKER_IP}:6379/0"
-export B2SHARE_CELERY_RESULT_BACKEND="redis://${DOCKER_IP}:6379/1"
-export B2SHARE_SECRET_KEY=$(base64 /dev/urandom | tr -d '/+' | dd bs=32 count=1 2>/dev/null)
-export SEARCH_ELASTIC_HOSTS="${DOCKER_IP}:9200"
 
 cdvirtualenv src/b2share/devenv
 echo; echo "### Run docker-compose detached mode"
@@ -80,17 +90,17 @@ if [ $? -ne 0 ]; then
 	sleep 2 # give a bit of time to celery
 fi
 
-echo; echo "### Reinitialize database"
-cdvirtualenv
-rm var/b2share-instance/b2share.db
-cdvirtualenv src/b2share
-python manage.py db create
-python manage.py index init
+if [ "$1" = "--reinit" ]; then
+	echo; echo "### Reinitialize database"
+	b2share db destroy --yes-i-know
+	b2share db create
+	b2share index destroy --yes-i-know
+	b2share index init
+	b2share schemas init
 
-echo; echo "### Add testing communities and schemas"
-python manage.py add_communities
-echo; echo "### Add testing records"
-python manage.py add_records
+	echo; echo "### Add demo objects"
+	b2share demo load
+fi
 
 echo; echo "### Run b2share"
-python manage.py --debug run
+b2share --debug run
