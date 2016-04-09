@@ -26,6 +26,7 @@
 import uuid
 
 from invenio_records.signals import before_record_insert
+from invenio_search import current_search_client
 
 from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.schemas.serializers import \
@@ -36,6 +37,7 @@ from .errors import InvalidRecordError
 
 def register_triggers(app):
     before_record_insert.connect(set_record_schema)
+    before_record_insert.connect(index_record)
 
 
 def set_record_schema(record, **kwargs):
@@ -48,3 +50,14 @@ def set_record_schema(record, **kwargs):
         raise InvalidRecordError('Community ID is not a valid UUID.') from e
     schema = CommunitySchema.get_community_schema(community_id)
     record['$schema'] = community_schema_json_schema_link(schema)
+
+
+def index_record(record, **kwargs):
+    current_search_client.index(
+        index='records',
+        doc_type='record',
+        id=record.id,
+        body=record,
+        version=1,
+        version_type='external_gte',
+    )
