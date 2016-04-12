@@ -51,10 +51,14 @@ def jsonresolver_loader(url_map):
             version=schema_version_nb)
         return community_schema_to_dict(community_schema)
     url_map.add(Rule(
-        '/api/communities/<string:community_id>/schemas/<int:schema_version_nb>',
+        '{}/communities/<string:community_id>/schemas/'
+        '<int:schema_version_nb>'.format(
+            current_app.config.get('APPLICATION_ROOT') or ''),
         endpoint=community_resolver,
         host=current_app.config['SERVER_NAME']))
     url_map.add(Rule(
-        '/api/schemas/<string:schema_id>/versions/<int:schema_version_nb>',
+        '{}/schemas/<string:schema_id>/versions'
+        '/<int:schema_version_nb>'.format(
+            current_app.config.get('APPLICATION_ROOT') or '' ),
         endpoint=block_schema_resolver,
         host=current_app.config['SERVER_NAME']))

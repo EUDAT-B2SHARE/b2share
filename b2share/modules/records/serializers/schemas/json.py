@@ -2,7 +2,6 @@
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,27 +21,20 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share Schemas module Command Line Interface."""
+"""B2Share Records JSON schemas used for serialization."""
 
-from __future__ import absolute_import
+from marshmallow import Schema, fields, pre_dump
 
-import click
-from flask_cli import with_appcontext
+class RecordSchemaJSONV1(Schema):
+    """Schema for records v1 in JSON."""
 
-from .errors import RootSchemaAlreadyExistsError
-from .helpers import load_root_schemas
+    id = fields.String(attribute='pid.pid_value')
+    metadata = fields.Raw()
+    links = fields.Raw()
+    created = fields.Str()
+    updated = fields.Str()
 
-@click.group()
-def schemas():
-    """Schemas management commands."""
-
-
-@schemas.command()
-@with_appcontext
-@click.option('-v', '--verbose', is_flag=True, default=False)
-def init(verbose):
-    """CLI command loading Root Schema files in the database."""
-    try:
-        load_root_schemas(cli=True, verbose=verbose)
-    except RootSchemaAlreadyExistsError as e:
-        raise click.ClickException(str(e))
+    @pre_dump
+    def filter_internal(self, data):
+        """Remove '_internal' field from the record metadata."""
+        del data['metadata']['_internal']

@@ -26,12 +26,16 @@
 from __future__ import absolute_import, print_function
 
 import os
+import shutil
 import re
+import tempfile
+import sys
 from collections import namedtuple
 from contextlib import contextmanager
 
 import pytest
 import responses
+from b2share.modules.schemas.helpers import load_root_schemas
 from flask import Flask
 from flask_cli import FlaskCLI
 from flask_security import url_for_security
@@ -39,43 +43,44 @@ from flask_security.utils import encrypt_password
 from invenio_access import InvenioAccess
 from invenio_accounts import InvenioAccounts
 from invenio_db import InvenioDB, db
+from invenio_files_rest.models import Location
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_rest import InvenioREST
-from invenio_search import InvenioSearch
+from invenio_search import InvenioSearch, current_search_client
+from invenio_pidstore import InvenioPIDStore
+from invenio_files_rest import InvenioFilesREST
 from sqlalchemy_utils.functions import create_database, drop_database
+from werkzeug.wsgi import DispatcherMiddleware
 
+from b2share.config import RECORDS_REST_ENDPOINTS
+
+# add the demo module in sys.path
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                 'demo'))
 
 @pytest.fixture(scope='function')
-def app(request):
+def app(request, tmpdir):
     """Flask application fixture."""
-    app = Flask('testapp')
-    app.config.update(
-        # DEBUG=True,
+    from b2share.factory import create_app, create_api
+
+    instance_path = tmpdir.mkdir('instance_dir').strpath
+    os.environ.update(
+        B2SHARE_INSTANCE_PATH=os.environ.get(
+            'INSTANCE_PATH', instance_path),
+    )
+    app = create_api(
         TESTING=True,
         SERVER_NAME='localhost:5000',
+        DEBUG_TB_ENABLED=False,
         SQLALCHEMY_DATABASE_URI=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'
-        ),
-        SECRET_KEY="CHANGE_ME",
-        SECURITY_PASSWORD_SALT='CHANGEME',
-        # this is only for tests
+            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
         LOGIN_DISABLED=False,
         WTF_CSRF_ENABLED=False,
+        SECRET_KEY="CHANGE_ME",
+        SECURITY_PASSWORD_SALT='CHANGEME',
     )
-    FlaskCLI(app)
-    InvenioDB(app)
-    InvenioRecords(app)
-    InvenioAccounts(app)
-    InvenioAccess(app)
-    InvenioREST(app)
-    InvenioRecordsREST(app)
-    InvenioSearch(app)
-
-    # register additional extensions provided by the test
-    if hasattr(request, 'param') and 'extensions' in request.param:
-        for ext in request.param['extensions']:
-            ext(app)
 
     # update the application with the configuration provided by the test
     if hasattr(request, 'param') and 'config' in request.param:
@@ -85,6 +90,10 @@ def app(request):
         if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':
             create_database(db.engine.url)
         db.create_all()
+        es_index = RECORDS_REST_ENDPOINTS['recuuid']['search_index']
+        if current_search_client.indices.exists(es_index):
+            current_search_client.indices.delete(es_index)
+            current_search_client.indices.create(es_index)
 
     def finalize():
         with app.app_context():
@@ -134,6 +143,43 @@ def login_user(app):
     return login
 
 
+@pytest.fixture(scope='function')
+def test_communities(app, tmp_location):
+    """Load test communities."""
+    from b2share_demo.helpers import load_demo_data
+
+    with app.app_context():
+        tmp_location.default = True
+        db.session.merge(tmp_location)
+        db.session.commit()
+        # load root schemas
+        load_root_schemas()
+        # load the demo
+        load_demo_data(os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data'), verbose=0)
+        db.session.commit()
+
+
+@pytest.yield_fixture()
+def tmp_location(app):
+    """File system location."""
+    with app.app_context():
+        tmppath = tempfile.mkdtemp()
+
+        loc = Location(
+            name='extra',
+            uri=tmppath,
+            default=False
+        )
+        db.session.add(loc)
+        db.session.commit()
+
+    yield loc
+
+    shutil.rmtree(tmppath)
+
+
 @pytest.yield_fixture
 def flask_http_responses(app):
     """Routes HTTP requests to the given flask application.
@@ -162,9 +208,11 @@ def flask_http_responses(app):
         with responses.RequestsMock(assert_all_requests_are_fired=False) \
                 as rsps:
             for rule in app.url_map.iter_rules():
-                url_regexp = re.compile('http://' +
-                                        app.config.get('SERVER_NAME') +
-                                        re.sub(r'<[^>]+>', '\S+', rule.rule))
+                url_regexp = re.compile(
+                    'http://' +
+                    app.config.get('SERVER_NAME') +
+                    (app.config.get('APPLICATION_ROOT')  or '') +
+                    re.sub(r'<[^>]+>', '\S+', rule.rule))
                 for method in rule.methods:
                     rsps.add_callback(method, url_regexp,
                                         callback=router_callback)

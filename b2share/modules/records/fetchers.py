@@ -2,7 +2,6 @@
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,27 +21,21 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share Schemas module Command Line Interface."""
+"""PID Fetchers."""
 
-from __future__ import absolute_import
+from collections import namedtuple
 
-import click
-from flask_cli import with_appcontext
+from .providers import RecordUUIDProvider
 
-from .errors import RootSchemaAlreadyExistsError
-from .helpers import load_root_schemas
+FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
 
-@click.group()
-def schemas():
-    """Schemas management commands."""
+from invenio_records_rest.views import Blueprint
 
 
-@schemas.command()
-@with_appcontext
-@click.option('-v', '--verbose', is_flag=True, default=False)
-def init(verbose):
-    """CLI command loading Root Schema files in the database."""
-    try:
-        load_root_schemas(cli=True, verbose=verbose)
-    except RootSchemaAlreadyExistsError as e:
-        raise click.ClickException(str(e))
+def b2share_record_uuid_fetcher(record_uuid, data):
+    """Fetch a record's identifiers."""
+    return FetchedPID(
+        provider=RecordUUIDProvider,
+        pid_type=RecordUUIDProvider.pid_type,
+        pid_value=str(record_uuid),
+    )

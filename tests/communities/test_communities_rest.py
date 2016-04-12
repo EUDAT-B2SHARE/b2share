@@ -35,16 +35,14 @@ from helpers import community_metadata, community_patch, \
 from invenio_db import db
 from mock import patch
 
-from b2share.modules.communities import B2ShareCommunities, Community
+from b2share.modules.communities import Community
 from b2share.modules.communities.errors import CommunityDeletedError
 from b2share.modules.communities.models import Community as CommunityModel
 
 # Decorator running a community test with and without access control enabled
 community_with_and_without_access_control = pytest.mark.parametrize('app', [({
-    'extensions': [B2ShareCommunities],
     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
 }), ({
-    'extensions': [B2ShareCommunities],
     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': False}
 })],
     indirect=['app'])
@@ -60,15 +58,16 @@ def test_valid_create(app, create_user, login_user,
         communities_permissions(allowed_user.id).read_permission(True)
         db.session.commit()
 
-    with app.app_context():
-        with app.test_client() as client:
+    with app.test_client() as client:
+        with app.app_context():
             login_user(allowed_user, client)
 
             headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
+                        ('Accept', 'application/json')]
+            res = client.post(url_for('b2share_communities.communities_list',
+                                      _external=False),
+                                data=json.dumps(community_metadata),
+                                headers=headers)
             assert res.status_code == 201
             # check that the returned community matches the given data
             response_data = json.loads(res.get_data(as_text=True))

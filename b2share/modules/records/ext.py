@@ -26,9 +26,6 @@
 
 from __future__ import absolute_import, print_function
 
-# from .restful import blueprint
-# from invenio_records.api import Record
-
 from .triggers import register_triggers
 
 
@@ -44,7 +41,6 @@ class B2ShareRecords(object):
         """Flask application initialization."""
         self.init_config(app)
         app.extensions['b2share-records'] = self
-        # app.register_blueprint(blueprint)
         register_triggers(app)
 
     def init_config(self, app):

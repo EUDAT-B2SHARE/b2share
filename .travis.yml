@@ -52,6 +52,10 @@ before_install:
 install:
   - "travis_retry pip install -r .travis-${REQUIREMENTS}-requirements.txt"
   - "travis_retry pip install -e .[all]"
+  # FIXME demo install should be included in 'all'
+  - "travis_retry cd demo"
+  - "travis_retry pip install -e .[all]"
+  - "travis_retry cd $TRAVIS_BUILD_DIR"
 
 script:
   - "./run-tests.sh"

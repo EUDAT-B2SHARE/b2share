@@ -2,7 +2,6 @@
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,27 +21,4 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share Schemas module Command Line Interface."""
-
-from __future__ import absolute_import
-
-import click
-from flask_cli import with_appcontext
-
-from .errors import RootSchemaAlreadyExistsError
-from .helpers import load_root_schemas
-
-@click.group()
-def schemas():
-    """Schemas management commands."""
-
-
-@schemas.command()
-@with_appcontext
-@click.option('-v', '--verbose', is_flag=True, default=False)
-def init(verbose):
-    """CLI command loading Root Schema files in the database."""
-    try:
-        load_root_schemas(cli=True, verbose=verbose)
-    except RootSchemaAlreadyExistsError as e:
-        raise click.ClickException(str(e))
+"""B2Share Records Serialization schemas."""

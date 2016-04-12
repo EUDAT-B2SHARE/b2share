@@ -91,6 +91,9 @@
             },
             "community_specific": {
                 "type": "object"
+            },
+            "_internal": {
+                "type": "object"
             }
         },
         "required": ["community", "title"],

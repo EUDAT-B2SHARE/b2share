@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,27 +21,26 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share Schemas module Command Line Interface."""
+"""B2share records extension"""
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
-import click
-from flask_cli import with_appcontext
+from .cli import files as files_cmd
 
-from .errors import RootSchemaAlreadyExistsError
-from .helpers import load_root_schemas
+class B2ShareFiles(object):
+    """B2Share Files extension."""
 
-@click.group()
-def schemas():
-    """Schemas management commands."""
+    def __init__(self, app=None):
+        """Extension initialization."""
+        if app:
+            self.init_app(app)
 
+    def init_app(self, app):
+        """Flask application initialization."""
+        self.init_config(app)
+        app.cli.add_command(files_cmd)
+        app.extensions['b2share-files'] = self
 
-@schemas.command()
-@with_appcontext
-@click.option('-v', '--verbose', is_flag=True, default=False)
-def init(verbose):
-    """CLI command loading Root Schema files in the database."""
-    try:
-        load_root_schemas(cli=True, verbose=verbose)
-    except RootSchemaAlreadyExistsError as e:
-        raise click.ClickException(str(e))
+    def init_config(self, app):
+        """Initialize configuration."""
+        pass

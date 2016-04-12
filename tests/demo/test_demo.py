@@ -30,22 +30,10 @@ from flask_cli import ScriptInfo
 from invenio_pidstore.resolver import Resolver
 from invenio_records import Record
 
-# add the demo module in sys.path
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), '../..',
-                 'demo'))
-
-from b2share.modules.communities import B2ShareCommunities
-from b2share.modules.schemas import B2ShareSchemas
 from b2share.modules.schemas.cli import schemas as schemas_cmd
-from b2share_demo.cli import demo as demo_cmd  # noqa
-from b2share_demo.ext import B2ShareDemo  # noqa
+from b2share_demo.cli import demo as demo_cmd
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas,
-                                    B2ShareDemo]})],
-                         indirect=['app'])
 def test_demo_cmd_load(app):
     """Test the `load` CLI command."""
     with app.app_context():
@@ -55,11 +43,12 @@ def test_demo_cmd_load(app):
         # Run 'load' command
         with runner.isolated_filesystem():
             result = runner.invoke(schemas_cmd, ['init'], obj=script_info)
+            assert result.exit_code == 0
             result = runner.invoke(demo_cmd, ['load'], obj=script_info)
             assert result.exit_code == 0
 
-        resolver = Resolver(pid_type='recid', object_type='rec',
+        resolver = Resolver(pid_type='recuuid', object_type='rec',
                             getter=partial(Record.get_record,
                                            with_deleted=True))
         # check that the loaded record exists
-        resolver.resolve('1')
+        resolver.resolve('a1c2ef96-a1e4-46fa-9bd7-a2a46d2242d4')
