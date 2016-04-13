@@ -74,7 +74,8 @@ def _create_communities(path, verbose):
                     json_config = json.loads(json_file.read())
                     community = Community.create_community(
                         name=json_config['name'],
-                        description=json_config['description']
+                        description=json_config['description'],
+                        id_=UUID(json_config['id']),
                     )
                     if verbose > 1:
                         click.secho('Created community {0} with ID {1}'.format(
@@ -100,7 +101,9 @@ def _create_block_schemas(communities, verbose):
                     'block_schemas'].items():
                 block_schema = BlockSchema.create_block_schema(
                     community.ref.id,
-                    schema_name)
+                    schema_name,
+                    id_=UUID(schema['id']),
+                )
                 for json_schema in schema['versions']:
                     block_schema.create_version(json_schema)
                 nb_block_schemas += 1

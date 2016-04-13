@@ -1,6 +1,7 @@
 {
     "name": "BBMRI",
     "description": "BBMRI community.",
+    "id": "99916f6f-9a2c-4feb-a342-6552ac7f1529",
     "community_schemas": [
         {
             "root_schema_version": 0,
@@ -19,6 +20,7 @@
     ],
     "block_schemas": {
         "bbmri": {
+            "id": "362e6f81-68fb-4d71-9496-34ca00e59769",
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",
