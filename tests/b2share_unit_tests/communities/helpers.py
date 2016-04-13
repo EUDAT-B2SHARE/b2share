@@ -58,26 +58,6 @@ updated_community_metadata = deepcopy(community_metadata)
 updated_community_metadata.update(community_update)
 
 
-def subtest_self_link(response_data, response_headers, client):
-    """Check that the returned self link returns the same data.
-
-    Also, check that headers have the same link as 'Location'.
-    """
-    assert 'links' in response_data.keys() \
-        and isinstance(response_data['links'], dict)
-    assert 'self' in response_data['links'].keys() \
-        and isinstance(response_data['links']['self'], string_types)
-    headers = [('Accept', 'application/json')]
-    self_response = client.get(response_data['links']['self'],
-                               headers=headers)
-
-    assert self_response.status_code == 200
-    self_data = json.loads(self_response.get_data(as_text=True))
-    assert self_data == response_data
-    if response_headers:
-        assert response_headers['ETag'] == self_response.headers['ETag']
-
-
 def patch_with_json_patch(community_id, client):
     """Request a PATCH of a community with a json-patch."""
     headers = [('Content-Type', 'application/json-patch+json'),

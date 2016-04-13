@@ -96,6 +96,9 @@ def community_schema_to_dict(community_schema):
         community=community_schema.community,
         version=community_schema.version,
         json_schema=community_schema.build_json_schema(),
+        links={
+            'self': community_schema_self_link(community_schema)
+        }
     )
 
 
@@ -103,6 +106,7 @@ def community_schema_to_json_serializer(community_schema, code=200,
                                         headers=None):
     response = jsonify(community_schema_to_dict(community_schema))
     response.status_code = code
+    response.set_etag(str(community_schema.released.utcfromtimestamp(0)))
     if headers is not None:
         response.headers.extend(headers)
     return response

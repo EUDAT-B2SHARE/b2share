@@ -59,6 +59,8 @@ from b2share.config import RECORDS_REST_ENDPOINTS
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
                  'demo'))
+# add tests to the sys path
+sys.path.append(os.path.dirname(__file__))
 
 @pytest.fixture(scope='function')
 def app(request, tmpdir):

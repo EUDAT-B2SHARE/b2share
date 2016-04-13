@@ -16,12 +16,64 @@
                 },
                 "additionalProperties": false
             }
+        },
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[MyTestSchema]": {
+                        "$ref":
+                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[MyTestSchema]::2]#/json_schema"
+                    }
+                },
+                "additionalProperties": false
+            }
         }
     ],
     "block_schemas": {
         "MyTestSchema": {
             "id": "38e12922-a361-49a1-853b-92a6863bfa58",
             "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "title": "B2SHARE MyTestCommunity Schema",
+                    "description": "This is the blueprint of the metadata block specific for the MyTestCommunity community",
+                    "type": "object",
+                    "properties": {
+                        "study_id": {
+                            "title": "Study ID",
+                            "description": "The unique ID or acronym for the study",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "title": "B2SHARE MyTestCommunity Schema",
+                    "description": "This is the blueprint of the metadata block specific for the MyTestCommunity community",
+                    "type": "object",
+                    "properties": {
+                        "study_id": {
+                            "title": "Study ID",
+                            "description": "The unique ID or acronym for the study",
+                            "type": "string"
+                        },
+                        "study_design": {
+                            "title": "Study design",
+                            "description": "The type of study. Can be one or several of the following values.",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["Case-control", "Cohort", "Cross-sectional", "Longitudinal",
+                                    "Twin-study", "Quality control", "Population-based", "Other"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",
                     "title": "B2SHARE MyTestCommunity Schema",

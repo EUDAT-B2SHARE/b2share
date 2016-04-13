@@ -30,6 +30,7 @@ from functools import wraps
 
 from flask import Blueprint, abort
 from invenio_rest import ContentNegotiatedMethodView
+from b2share.modules.communities.views import pass_community
 
 from .api import BlockSchema, CommunitySchema
 from .errors import BlockSchemaDoesNotExistError, \
@@ -97,22 +98,30 @@ def pass_community_schema(f):
     @wraps(f)
     def inner(self, community_id, schema_version_nb, *args, **kwargs):
         try:
-            community_schema = CommunitySchema.get_community_schema(
-                community_id=community_id,
-                version=schema_version_nb
-            )
+            if schema_version_nb.isdigit():
+                version_nb = int(schema_version_nb)
+                community_schema = CommunitySchema.get_community_schema(
+                    community_id=community_id,
+                    version=version_nb
+                )
+            else:
+                if schema_version_nb == 'last':
+                    community_schema = CommunitySchema.get_community_schema(
+                        community_id=community_id
+                    )
+                else:
+                    abort(400)
         except CommunitySchemaDoesNotExistError:
             abort(404)
         return f(self, community_schema=community_schema, *args, **kwargs)
     return inner
 
-
-class CommunityResource(ContentNegotiatedMethodView):
+class CommunitySchemaResource(ContentNegotiatedMethodView):
     view_name = 'community_schema_item'
 
     def __init__(self, **kwargs):
         """Constructor."""
-        super(CommunityResource, self).__init__(
+        super(CommunitySchemaResource, self).__init__(
             serializers={
                 'application/json':
                 community_schema_to_json_serializer,
@@ -136,6 +145,6 @@ blueprint.add_url_rule(
     .as_view(BlockSchemaVersionResource.view_name))
 
 blueprint.add_url_rule(
-    '/communities/<string:community_id>/schemas/<int:schema_version_nb>',
-    view_func=CommunityResource
-    .as_view(CommunityResource.view_name))
+    '/communities/<string:community_id>/schemas/<string:schema_version_nb>',
+    view_func=CommunitySchemaResource
+    .as_view(CommunitySchemaResource.view_name))

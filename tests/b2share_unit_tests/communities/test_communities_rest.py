@@ -30,8 +30,9 @@ import uuid
 
 import pytest
 from flask import url_for
-from helpers import community_metadata, community_patch, \
-    patched_community_metadata, subtest_self_link
+from b2share_unit_tests.communities.helpers import community_metadata, \
+    community_patch, patched_community_metadata
+from b2share_unit_tests.helpers import subtest_self_link
 from invenio_db import db
 from mock import patch
 
