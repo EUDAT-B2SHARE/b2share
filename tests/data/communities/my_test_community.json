@@ -1,6 +1,7 @@
 {
     "name": "MyTestCommunity",
     "description": "Test community.",
+    "id": "2b884138-898f-4651-bf82-34dea0e0e83f",
     "community_schemas": [
         {
             "root_schema_version": 0,
@@ -19,6 +20,7 @@
     ],
     "block_schemas": {
         "MyTestSchema": {
+            "id": "38e12922-a361-49a1-853b-92a6863bfa58",
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",

@@ -100,7 +100,7 @@ class Community(object):
         return [cls(md) for md in metadata]
 
     @classmethod
-    def create_community(cls, name, description, logo=None):
+    def create_community(cls, name, description, logo=None, id_=None):
         """Create a new Community.
 
         A new community is implicitly associated with a new, empty, schema
@@ -121,8 +121,11 @@ class Community(object):
         from .models import Community as CommunityMetadata
         try:
             with db.session.begin_nested():
+                kwargs = {}
+                if id_ is not None:
+                    kwargs['id'] = id_
                 model = CommunityMetadata(name=name, description=description,
-                                          logo=logo)
+                                          logo=logo, **kwargs)
                 community = cls(model)
                 before_community_insert.send(community)
                 db.session.add(model)

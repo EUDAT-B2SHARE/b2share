@@ -174,7 +174,7 @@ class BlockSchema(object):
             raise BlockSchemaDoesNotExistError() from e
 
     @classmethod
-    def create_block_schema(cls, community_id, name):
+    def create_block_schema(cls, community_id, name, id_=None):
         """Create a new block schema.
 
         Args:
@@ -183,8 +183,11 @@ class BlockSchema(object):
         from .models import BlockSchema as BlockSchemaModel
         try:
             with db.session.begin_nested():
+                kwargs = {}
+                if id_ is not None:
+                    kwargs['id'] = id_
                 model = BlockSchemaModel(
-                    community=community_id, name=name)
+                    community=community_id, name=name, **kwargs)
                 block_schema = cls(model)
                 db.session.add(model)
         except (sqlalchemy.exc.IntegrityError, sqlalchemy.exc.DataError) as e:
