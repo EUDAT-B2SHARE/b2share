@@ -1,0 +1,59 @@
+{
+    "name": "MyTestCommunity",
+    "description": "Test community.",
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[MyTestSchema]": {
+                        "$ref":
+                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[MyTestSchema]::0]#/json_schema"
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    ],
+    "block_schemas": {
+        "MyTestSchema": {
+            "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "title": "B2SHARE MyTestCommunity Schema",
+                    "description": "This is the blueprint of the metadata block specific for the MyTestCommunity community",
+                    "type": "object",
+                    "properties": {
+                        "study_id": {
+                            "title": "Study ID",
+                            "description": "The unique ID or acronym for the study",
+                            "type": "string"
+                        },
+                        "study_design": {
+                            "title": "Study design",
+                            "description": "The type of study. Can be one or several of the following values.",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["Case-control", "Cohort", "Cross-sectional", "Longitudinal",
+                                    "Twin-study", "Quality control", "Population-based", "Other"]
+                            }
+                        },
+                        "sex": {
+                            "title": "Sex",
+                            "description": "The sex of the study participants. Can be several of the following values: Female, Male, Other",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["Female", "Male", "Other"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

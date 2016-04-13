@@ -32,15 +32,23 @@ from setuptools.command.test import test as TestCommand
 
 install_requires = [
     'invenio-config>=1.0.0a1,<1.1.0',
-    'invenio-base>=1.0.0a5,<1.1.0',
-    'invenio-records-rest>=1.0.0a3,<1.1.0',
-    'invenio-records>=1.0.0a8,<1.1.0',
+    'invenio-base>=1.0.0a6,<1.1.0',
+    'invenio-rest>=1.0.0a6,<1.1.0',
+    'invenio-records-rest>=1.0.0a8,<1.1.0',
+    'invenio-records>=1.0.0a14,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
-    'invenio-celery>=1.0.0a3,<1.1.0',
-    'invenio-search>=1.0.0a4,<1.1.0',
-    'invenio-access>=1.0.0a3,<1.1.0',
+    'invenio-celery>=1.0.0a4,<1.1.0',
+    'invenio-search>=1.0.0a5,<1.1.0',
+    'invenio-access>=1.0.0a4,<1.1.0',
     'jsonresolver[jsonschema]>=0.1.1',
+    'invenio-files-rest>=1.0.0a1,<1.1.0',
+    'invenio-accounts>=v1.0.0a9,<1.1.0',
+    'invenio-pidstore>=v1.0.0a7,<1.1.0',
 ]
+
+if sys.version_info < (3,4):
+    # In Python 3.4, pathlib is now part of the standard library.
+    install_requires += ["pathlib >= 1.0.1"]
 
 tests_require = [
     'check-manifest>=0.25',
@@ -146,6 +154,7 @@ setup(
             'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
             'b2share_users = b2share.modules.users:B2ShareUsers',
             'b2share_records = b2share.modules.records:B2ShareRecords',
+            'b2share_files = b2share.modules.files:B2ShareFiles',
         ],
         'invenio_db.models': [
             'b2share_communities = b2share.modules.communities.models',
@@ -153,6 +162,14 @@ setup(
         ],
         'invenio_records.jsonresolver': [
             'b2share_schemas = b2share.modules.schemas.jsonresolver',
+        ],
+        'invenio_pidstore.minters': [
+            'b2share_record_uuid_minter '
+            '= b2share.modules.records.minters:b2share_record_uuid_minter',
+        ],
+        'invenio_pidstore.fetchers': [
+            'b2share_record_uuid_fetcher '
+            '= b2share.modules.records.fetchers:b2share_record_uuid_fetcher',
         ],
     },
     extras_require=extras_require,

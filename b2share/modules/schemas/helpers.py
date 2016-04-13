@@ -21,14 +21,18 @@
 
 import json
 import re
+import os
 from functools import lru_cache
 from urllib.error import URLError
 from urllib.request import urlopen
 
+from invenio_db import db
+from jsonschema import validate
 import chardet
 import jsonschema
 
-from .errors import InvalidJSONSchemaError
+from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
+    RootSchemaAlreadyExistsError
 
 
 @lru_cache(maxsize=1000)
@@ -91,3 +95,67 @@ def resolve_schemas_ref(source):
         block_schema_version_match,
         source
     )
+
+
+root_schema_config_schema = {
+    'type': 'object',
+    'properties': {
+        'version': {'type': 'integer'},
+        'json_schema': {'type': 'object'}
+    },
+    'required': ['version', 'json_schema'],
+    'additionalProperties': False,
+}
+
+
+def load_root_schemas(cli=False, verbose=False):
+    """Load root schemas in the database.
+
+    Args:
+        verbose (bool): enable verbose messages if :param:`cli` is True.
+        cli (bool): enable click messages.
+    """
+    import click
+    from .api import RootSchema
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    root_schemas_dir = os.path.join(current_dir, 'root_schemas')
+    if cli:
+        click.secho('LOADING root schemas from "{}".'
+                    .format(root_schemas_dir), fg='yellow', bold=True)
+    configs_count = 0
+    for filename in sorted(os.listdir(root_schemas_dir)):
+        if os.path.splitext(filename)[1] == '.json':
+            if cli and verbose:
+                click.echo('READING schema from "{}"'.format(filename),
+                           nl=False)
+            try:
+                with open(os.path.join(root_schemas_dir,
+                                       filename)) as json_file:
+                    json_config = json.loads(json_file.read())
+                validate(json_config, root_schema_config_schema)
+                version = json_config['version']
+                json_schema = json_config['json_schema']
+                retrieved = RootSchema.get_root_schema(version)
+                # check that the schema is the same
+                if json.loads(retrieved.json_schema) != json_schema:
+                    if cli and verbose:
+                        raise RootSchemaAlreadyExistsError(
+                            'Already loaded Root JSON Schema '
+                            'version {0} does not match the one in file "{1}".'
+                            .format(version,
+                                    os.path.join(root_schemas_dir, filename)),
+                        )
+                if cli and verbose:
+                    click.echo(' => SCHEMA ALREADY LOADED.')
+            except RootSchemaDoesNotExistError:
+                if cli and verbose:
+                    click.echo(' => LOADING root schema version {0}.'
+                               .format(version, filename))
+                configs_count += 1
+                RootSchema.create_new_version(version, json_schema)
+                db.session.commit()
+            except Exception:
+                click.echo()
+                raise
+    if cli:
+        click.secho('LOADED {} schemas'.format(configs_count), fg='green')

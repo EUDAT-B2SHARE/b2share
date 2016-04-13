@@ -88,7 +88,7 @@ def community_schema_self_link(community_schema, **kwargs):
 
 def community_schema_json_schema_link(community_schema, **kwargs):
     return '{}#/json_schema'.format(
-        community_schema_self_link(community_schema))
+        community_schema_self_link(community_schema, _external=True))
 
 
 def community_schema_to_dict(community_schema):

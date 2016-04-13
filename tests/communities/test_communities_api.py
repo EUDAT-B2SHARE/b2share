@@ -29,13 +29,11 @@ from helpers import community_metadata, community_patch, community_update, \
 from invenio_db import db
 from jsonpatch import InvalidJsonPatch, JsonPatchConflict
 
-from b2share.modules.communities import B2ShareCommunities, Community
+from b2share.modules.communities import Community
 from b2share.modules.communities.errors import CommunityDeletedError, \
     CommunityDoesNotExistError, InvalidCommunityError
 
 
-@pytest.mark.parametrize('app', [({'extensions': [B2ShareCommunities]})],
-                         indirect=['app'])
 def test_create_community_and_get(app):
     """Test Community.create_community() and Community.get()."""
     with app.app_context():
@@ -75,8 +73,6 @@ def test_create_community_and_get(app):
             assert getattr(retrieved_by_name, field) == value
 
 
-@pytest.mark.parametrize('app', [({'extensions': [B2ShareCommunities]})],
-                         indirect=['app'])
 def test_patch(app):
     """Test Community.patch()."""
     with app.app_context():
@@ -120,8 +116,6 @@ def test_patch(app):
             assert getattr(patched, field) == value
 
 
-@pytest.mark.parametrize('app', [({'extensions': [B2ShareCommunities]})],
-                         indirect=['app'])
 def test_update(app):
     """Test Community.update()."""
     with app.app_context():
@@ -149,8 +143,6 @@ def test_update(app):
             assert getattr(updated, field) == value
 
 
-@pytest.mark.parametrize('app', [({'extensions': [B2ShareCommunities]})],
-                         indirect=['app'])
 def test_clear_update(app):
     """Test Community.update(clear_fields=True)."""
     with app.app_context():
@@ -177,8 +169,6 @@ def test_clear_update(app):
                 assert getattr(updated, field) == value
 
 
-@pytest.mark.parametrize('app', [({'extensions': [B2ShareCommunities]})],
-                         indirect=['app'])
 def test_delete(app):
     """Test Community.delete()."""
     with app.app_context():

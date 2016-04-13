@@ -2,7 +2,6 @@
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,27 +21,21 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share Schemas module Command Line Interface."""
+"""Functional tests' fixtures."""
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
-import click
-from flask_cli import with_appcontext
+import pytest
+from b2share.factory import create_app
 
-from .errors import RootSchemaAlreadyExistsError
-from .helpers import load_root_schemas
+# @pytest.fixture(scope='function')
+# def app(request, tmpdir):
+#     """Flask application fixture."""
+#     instance_dir = tmpdir.mkdir('instance_dir')
 
-@click.group()
-def schemas():
-    """Schemas management commands."""
-
-
-@schemas.command()
-@with_appcontext
-@click.option('-v', '--verbose', is_flag=True, default=False)
-def init(verbose):
-    """CLI command loading Root Schema files in the database."""
-    try:
-        load_root_schemas(cli=True, verbose=verbose)
-    except RootSchemaAlreadyExistsError as e:
-        raise click.ClickException(str(e))
+#     os.environ.update(
+#         B2SHARE_INSTANCE_PATH=os.environ.get(
+#             'INSTANCE_PATH', instance_dir),
+#     )
+#     with app.app_context():
+#             yield app

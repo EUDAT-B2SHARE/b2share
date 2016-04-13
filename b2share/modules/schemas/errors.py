@@ -49,6 +49,11 @@ class RootSchemaDoesNotExistError(B2ShareSchemasError):
     pass
 
 
+class RootSchemaAlreadyExistsError(B2ShareSchemasError):
+    """A new root schema conflicts with an existing one."""
+    pass
+
+
 class InvalidRootSchemaError(B2ShareSchemasError):
     """Exception raised when a root schema is invalid."""
     pass
