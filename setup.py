@@ -33,7 +33,7 @@ from setuptools.command.test import test as TestCommand
 install_requires = [
     'invenio-config>=1.0.0a1,<1.1.0',
     'invenio-base>=1.0.0a6,<1.1.0',
-    'invenio-rest>=1.0.0a6,<1.1.0',
+    'invenio-rest[cors]>=1.0.0a6,<1.1.0',
     'invenio-records-rest>=1.0.0a8,<1.1.0',
     'invenio-records>=1.0.0a14,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
