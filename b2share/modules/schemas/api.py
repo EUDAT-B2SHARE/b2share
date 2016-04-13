@@ -444,7 +444,9 @@ class CommunitySchema(object):
                 else:
                     model = CommunitySchemaVersion.query.filter(
                         CommunitySchemaVersion.community == community_id
-                    ).order_by(CommunitySchemaVersion.version.desc()).one()
+                    ).order_by(
+                        CommunitySchemaVersion.version.desc()
+                    ).limit(1).one()
                 return cls(model)
         except NoResultFound as e:
             raise CommunitySchemaDoesNotExistError(id) from e

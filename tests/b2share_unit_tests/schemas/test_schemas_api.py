@@ -40,77 +40,9 @@ from b2share.modules.schemas.errors import BlockSchemaDoesNotExistError, \
     BlockSchemaIsDeprecated, InvalidBlockSchemaError, InvalidJSONSchemaError, \
     InvalidRootSchemaError, RootSchemaDoesNotExistError
 
-communities_metadata = [
-    {
-        'name': 'mycommunity 1',
-        'description': 'My community 1 description',
-    }, {
-        'name': 'mycommunity 2',
-        'description': 'My community 2 description',
-    },
-]
-
-root_schemas_json_schemas = [{
-    '$schema': 'http://json-schema.org/draft-04/schema#',
-    'type': 'object',
-    'properties': {
-        'authors': {
-            'type': 'array',
-            'items': {'type': 'string'}
-        },
-        'community_specific': {'type': 'object'},
-    },
-    'required': ['authors'],
-    'additionalProperties': False,
-}, {
-    '$schema': 'http://json-schema.org/draft-04/schema#',
-    'type': 'object',
-    'properties': {
-        'authors': {
-            'type': 'array',
-            'items': {'type': 'string'}
-        },
-        'community_specific': {'type': 'object'},
-        'files': {
-            'type': 'array',
-            'items': {'type': 'string'},
-        },
-    },
-    'required': ['authors', 'files'],
-    'additionalProperties': False,
-}]
-
-block_schemas_json_schemas = [[
-    {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'type': 'object',
-        'properties': {
-            'experiment_nb': {'type': 'number'},
-        },
-        'additionalProperties': False,
-    },
-    {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'type': 'object',
-        'properties': {
-            'experiment_nb': {'type': 'number'},
-            'experiment_date': {'type': 'string'},
-        },
-        'required': ['experiment_date'],
-        'additionalProperties': False,
-    },
-
-], [
-    {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'type': 'object',
-        'properties': {
-            'analysis_result': {'type': 'string'},
-        },
-        'additionalProperties': False,
-    },
-]]
-
+from b2share_unit_tests.schemas.data import (
+    communities_metadata, root_schemas_json_schemas,
+    block_schemas_json_schemas)
 
 @pytest.mark.parametrize('app', [({'extensions':
                                    [B2ShareCommunities, B2ShareSchemas]})],

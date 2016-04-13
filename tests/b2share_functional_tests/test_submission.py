@@ -89,6 +89,8 @@ def test_simple_submission(app, test_communities):
                 record_create_res = client.post(record_list_url(),
                                                 data=record_str,
                                                 headers=headers)
+                # import ipdb
+                # ipdb.set_trace()
                 assert record_create_res.status_code == 201
                 record_create_data = json.loads(
                     record_create_res.get_data(as_text=True))
