@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 import os
 from shutil import rmtree
 import pathlib
+from shutil import copyfile
 
 import click
 from flask_cli import with_appcontext
@@ -36,6 +37,7 @@ from invenio_db import db
 from invenio_files_rest.models import Location
 
 from .helpers import load_demo_data
+from . import config as demo_config
 
 
 @click.group(chain=True)
@@ -46,9 +48,8 @@ def demo():
 @demo.command()
 @with_appcontext
 @click.option('-v', '--verbose', count=True)
-def load(verbose):
+def load_data(verbose):
     """Load demonstration data."""
-
     # add files location
     files_path = os.path.join(current_app.instance_path, 'files')
     if os.path.exists(files_path):
@@ -64,3 +65,31 @@ def load(verbose):
                          'data'),
             verbose=verbose)
     db.session.commit()
+
+
+@demo.command()
+@with_appcontext
+@click.option('-v', '--verbose', count=True)
+@click.option('-f', '--force', is_flag=True, default=False,
+              help='Overwrite the current configuration if it exists.')
+def load_config(verbose, force):
+    """Copy the demo configuration to the application instance directory."""
+    if verbose > 0:
+        click.secho('Loading demo configuration.', fg='yellow', bold=True)
+    instance_config_path = os.path.join(
+        '{}'.format(current_app.instance_path),
+        '{}.cfg'.format(current_app.name))
+    if os.path.exists(instance_config_path):
+        if not force:
+            raise click.ClickException(
+                'Application configuration file "{}" already exists. Use '
+                'the -f option to overwrite it.'.format(
+                    instance_config_path))
+        elif verbose > 0:
+            click.secho('Configuration file exists. Overriding it!',
+                        fg='red', bold=True)
+    demo_config_path = os.path.join(os.path.dirname(__file__), 'config.py')
+    copyfile(demo_config_path, instance_config_path)
+    if verbose > 0:
+        click.secho('Configuration file "{}" created.'.format(
+            instance_config_path), fg='green')

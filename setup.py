@@ -44,6 +44,7 @@ install_requires = [
     'invenio-files-rest>=1.0.0a1,<1.1.0',
     'invenio-accounts>=v1.0.0a9,<1.1.0',
     'invenio-pidstore>=v1.0.0a7,<1.1.0',
+    'invenio-oauthclient>=1.0.0a1,<1.1.0',
 ]
 
 if sys.version_info < (3,4):
