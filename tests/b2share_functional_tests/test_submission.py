@@ -53,6 +53,7 @@ from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 records_data=[{
     'title': 'My Test BBMRI Record',
     'community': '$COMMUNITY_ID[MyTestCommunity]',
+    "open_access": True,
     'community_specific': {
         '$BLOCK_SCHEMA_ID[MyTestSchema]': {
             'study_design': ['Case-control']
@@ -61,6 +62,7 @@ records_data=[{
 }, {
     'title': 'New BBMRI dataset',
     'community': '$COMMUNITY_ID[MyTestCommunity]',
+    "open_access": True,
     'community_specific': {
         '$BLOCK_SCHEMA_ID[MyTestSchema]': {
             'study_design': ['Case-control']

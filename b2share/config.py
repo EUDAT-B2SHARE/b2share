@@ -97,7 +97,7 @@ RECORDS_REST_DEFAULT_DELETE_PERMISSION_FACTORY = deny_all
 
 B2ACCESS_APP_CREDENTIALS = dict(
     # B2ACCESS authentication key and secret
-    consumer_key=os.environ.get("B2ACESS_CONSUMER_KEY"),
+    consumer_key=os.environ.get("B2ACCESS_CONSUMER_KEY"),
     consumer_secret=os.environ.get("B2ACCESS_SECRET_KEY"),
 )
 

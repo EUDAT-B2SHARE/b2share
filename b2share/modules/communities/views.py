@@ -130,7 +130,7 @@ class CommunityListResource(ContentNegotiatedMethodView):
         # TODO: change this to a search function, not just a list of communities
         from .serializers import community_to_dict
         start = request.args.get('start') or 0
-        stop = request.args.get('stop') or 20
+        stop = request.args.get('stop') or 100
         community_list = Community.get_all(start, stop)
         response = jsonify({
             'communities': [community_to_dict(c) for c in community_list]

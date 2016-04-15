@@ -12,12 +12,12 @@
             },
             "title": {
                 "title": "Title",
-                "description": "The main title of the record.",
+                "description": "The title of the uploaded resource - a name that indicates the content to be expected.",
                 "type": "string"
             },
             "description": {
                 "title": "Description",
-                "description": "The record abstract.",
+                "description": "A more elaborate description of the resource. Focus on a description of content making it easy for others to find it and to interpret its relevance quickly.",
                 "type": "string"
             },
             "creator": {
@@ -27,22 +27,10 @@
                 "items": {"type": "string"},
                 "uniqueItems": true
             },
-            "keywords": {
-                "title": "Keywords",
-                "description": "Keywords...",
-                "type": "array",
-                "items": {"type": "string"},
-                "uniqueItems": true
-            },
             "open_access": {
                 "title": "Open Access",
                 "description": "Indicate whether the resource is open or access is restricted. In case of restricted access the uploaded files will not be public, however the metadata will be.",
                 "type": "boolean"
-            },
-            "licence": {
-                "title": "Licence",
-                "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
-                "type": "string"
             },
             "embargo_date": {
                 "title": "Embargo Date",
@@ -50,28 +38,40 @@
                 "type": "string",
                 "format": "date-time"
             },
+            "licence": {
+                "title": "Licence",
+                "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                "type": "string"
+            },
+            "keywords": {
+                "title": "Keywords",
+                "description": "A comma separated list of keywords that characterize the content.",
+                "type": "array",
+                "items": {"type": "string"},
+                "uniqueItems": true
+            },
             "contact_email": {
                 "title": "Contact Email",
-                "description": "The email of the contact person for this record.",
+                "description": "Contact email information for this record",
                 "type": "string",
                 "format": "email"
             },
             "discipline": {
                 "title": "Discipline",
-                "description": "Scientific discipline...",
+                "description": "The scientific discipline linked with the resource.",
                 "type": "string"
             },
 
-            "contributor": {
-                "title": "Contributor",
-                "description": "Contributor...",
+            "contributors": {
+                "title": "Contributors",
+                "description": "A semicolon separated list of all other contributors. Mention all other persons that were relevant in the creation of the resource.",
                 "type": "array",
                 "items": {"type": "string"},
                 "uniqueItems": true
             },
             "resource_type": {
                 "title": "Resource Type",
-                "description": "Resource Type...",
+                "description": "The type of the resource.",
                 "type": "array",
                 "items": {
                     "type": "string",
@@ -79,16 +79,29 @@
                 },
                 "uniqueItems": true
             },
+            "alternate_identifier": {
+                "title": "Alternate identifier",
+                "description": "Any kind of other reference such as a URN, URI or an ISBN number.",
+                "type": "string"
+            },
             "version": {
                 "title": "Version",
-                "description": "Version...",
+                "description": "Denote the version of the resource.",
                 "type": "string"
+            },
+            "publisher": {
+                "title": "Publisher",
+                "description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
+                "type": "string",
+                "default": "https://b2share.eudat.eu"
             },
             "language": {
                 "title": "Language",
-                "description": "Language...",
-                "type": "string"
+                "description": "The name of the language the document is written in.",
+                "type": "string",
+                "default": "en"
             },
+
             "community_specific": {
                 "type": "object"
             },
@@ -96,7 +109,13 @@
                 "type": "object"
             }
         },
-        "required": ["community", "title"],
-        "additionalProperties": false
+        "required": ["community", "title", "open_access"],
+        "additionalProperties": false,
+        "b2share": {
+            "presentation": {
+                "unfolded": [ "community", "title", "description", "creator", "open_access", "licence", "keywords", "contact_email", "discipline" ],
+                "folded": [ "contributors", "resource_type", "alternate_identifier", "version", "publisher", "language"]
+            }
+        }
     }
 }

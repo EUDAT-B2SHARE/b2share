@@ -68,7 +68,7 @@ if [ ! -d ./b2share ]; then
 	b2share index init
 
 	echo; echo "### Add demo objects"
-	b2share demo load
+	b2share demo load_data
 
 	echo; echo "### Configure b2share webui"
 	cdvirtualenv src/b2share/webui
@@ -97,7 +97,7 @@ if [ "$1" = "--reinit" ]; then
 	b2share schemas init
 
 	echo; echo "### Add demo objects"
-	b2share demo load
+	b2share demo load_data
 fi
 
 echo; echo "### Run b2share"
