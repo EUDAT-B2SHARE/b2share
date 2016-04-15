@@ -8,4 +8,7 @@ if [ $? -ne 0 ]; then
 fi
 
 eval "$(docker-machine env $MACHINE_NAME)"
-docker-compose up
+docker-compose up -d
+
+echo
+echo "B2SHARE soon available at:   http://$(docker-machine ip $MACHINE_NAME):5000"

@@ -38,5 +38,5 @@ COPY supervisord.conf /etc/
 RUN systemctl disable firewalld
 
 WORKDIR /eudat/b2share
-#CMD ["/usr/bin/supervisord"]
-CMD ["/eudat/b2share.sh"]
+
+CMD ["/usr/bin/supervisord"]
