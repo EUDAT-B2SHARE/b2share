@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import ReactDOM from 'react-dom';
 
 const PT = React.PropTypes;
@@ -6,7 +6,6 @@ const PT = React.PropTypes;
 const ReactCSSTransitionGroup = React.addons.ReactCSSTransitionGroup;
 const ReactTransitionGroup = React.addons.TransitionGroup;
 
-///////////////////////////////////////////////////////////////////////////////
 
 function setState(state) {
     var t = this;
@@ -15,31 +14,6 @@ function setState(state) {
     }
 }
 
-function humanSize(sz) {
-    let K = 1000, M = K*K, G = K*M, T = K*G;
-
-    if (sz < K) {
-        return [sz,'B '];
-    } else if (sz < M) {
-        return [(sz/K).toFixed(1), 'KB'];
-    } else if (sz < G) {
-        return [(sz/M).toFixed(1), 'MB'];
-    } else if (sz < T) {
-        return [(sz/G).toFixed(1), 'GB'];
-    } else {
-        return [(sz/T).toFixed(1), 'TB'];
-    }
-}
-
-function pairs(o) {
-    var a = []
-    for (var k in o) {
-        if (o.hasOwnProperty(k)) {
-            a.push([k, o[k]]);
-        }
-    }
-    return a;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Slides

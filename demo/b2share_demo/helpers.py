@@ -75,6 +75,7 @@ def _create_communities(path, verbose):
                     community = Community.create_community(
                         name=json_config['name'],
                         description=json_config['description'],
+                        logo=json_config['logo'],
                         id_=UUID(json_config['id']),
                     )
                     if verbose > 1:

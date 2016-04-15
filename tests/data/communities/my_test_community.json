@@ -2,6 +2,7 @@
     "name": "MyTestCommunity",
     "description": "Test community.",
     "id": "2b884138-898f-4651-bf82-34dea0e0e83f",
+    "logo": "",
     "community_schemas": [
         {
             "root_schema_version": 0,

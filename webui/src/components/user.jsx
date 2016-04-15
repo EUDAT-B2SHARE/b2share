@@ -1,10 +1,10 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 
 export const currentUser = {
     // name: 'guest'
 };
 
-export const UserPage = React.createClass({
+export const UserRoute = React.createClass({
     render() {
         return <div>UserPage</div>;
     }
@@ -17,6 +17,3 @@ export const UserProfile = React.createClass({
         return <div>UserProfile</div>;
     }
 });
-
-
-

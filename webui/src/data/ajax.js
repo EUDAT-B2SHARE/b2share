@@ -1,45 +1,48 @@
-import React from 'react';
-import Immutable from 'immutable';
 import reqwest from 'reqwest'
 
 
-export let errorHandler = function(text){};
+const DEFAULT_TIMEOUT_GET_MS = 10 * 1000; // 10 seconds
+const DEFAULT_TIMEOUT_POST_MS = 10 * 1000; // 10 seconds
 
 
-export function ajaxGet(url, params, successFn, completeFn) {
-    console.log("ajaxGet:", url, params);
+export let errorHandler = {fn:function(text){}};
+
+
+export function ajaxGet({url, params, etag, successFn, errorFn, completeFn}) {
+    console.log("--- ajaxGet:", url, params);
     const aobj = {
         url: url,
         type: 'json',
         contentType: 'application/json',
         success: successFn,
+        error: errorFn,
         complete: completeFn,
+        timeout: DEFAULT_TIMEOUT_GET_MS,
     }
     if (params) {
         aobj.data = params;
     }
-    if (!aobj.complete) {
-        aobj.complete = function(){};
+    if (etag) {
+        aobj.headers = {'If-None-Match': etag};
     }
     return ajaxWithError(aobj);
 }
 
 
-export function ajaxPost(url, params, successFn, completeFn) {
-    console.log("ajaxPost:", url, params);
+export function ajaxPost({url, params, successFn, errorFn, completeFn}) {
+    console.log("--- ajaxPost:", url, params);
     const aobj = {
         method: 'post',
         url: url,
         type: 'json',
         contentType: 'application/json',
         success: successFn,
+        error: errorFn,
         complete: completeFn,
+        timeout: DEFAULT_TIMEOUT_POST_MS,
     }
     if (params) {
-        aobj.data = params;
-    }
-    if (!aobj.complete) {
-        aobj.complete = function(){};
+        aobj.data = JSON.stringify(params);
     }
     return ajaxWithError(aobj);
 }
@@ -50,13 +53,13 @@ function ajaxWithError(ajaxObject) {
         ajaxObject.error = function(xhr) {
             console.error("ajax error, xhr: ", xhr);
             if (!xhr) {
-                errorHandler("Unexpected error");
+                errorHandler.fn("Unexpected error");
                 return;
             }
             if (xhr.readyState === 0) {
-                errorHandler("Network error, please check your internet connection");
+                errorHandler.fn("Network error, please check your internet connection");
             } else {
-                errorHandler(`Error: ${xhr.statusText}`);
+                errorHandler.fn(`Error: ${xhr.statusText}`);
             }
         };
     }
@@ -89,8 +92,9 @@ function ajaxWithToken(ajaxObject) {
                 setSessionUserToken(token);
             }
         }
-        console.log('ajaxRet:', ajaxObject.url, data);
-        return oldSuccess(data);
+        var etag = request.getResponseHeader('ETag');
+        console.log('--> ajaxRet:', ajaxObject.url, data, {etag: etag});
+        return oldSuccess(data, etag);
     }
 
     const oldError = ajaxObject.error;
