@@ -1,6 +1,6 @@
 {
-    "name": "BBMRI: Biomedical Research",
-    "description": "The BBMRI community.",
+    "name": "BBMRI",
+    "description": "Biomedical Research.",
     "logo": "/img/communities/bbmri.png",
     "id": "99916f6f-9a2c-4feb-a342-6552ac7f1529",
     "community_schemas": [

@@ -67,7 +67,8 @@ if [ ! -d ./b2share ]; then
 	b2share schemas init
 	b2share index init
 
-	echo; echo "### Add demo objects"
+	echo; echo "### Add demo config and objects"
+	b2share demo load_config
 	b2share demo load_data
 
 	echo; echo "### Configure b2share webui"
@@ -96,7 +97,8 @@ if [ "$1" = "--reinit" ]; then
 	b2share index init
 	b2share schemas init
 
-	echo; echo "### Add demo objects"
+	echo; echo "### Add demo config and objects"
+	b2share demo load_config -f
 	b2share demo load_data
 fi
 
