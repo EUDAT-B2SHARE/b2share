@@ -28,8 +28,8 @@ export const HomePage = React.createClass({
                                 <h3>Create Record</h3>
                             </div>
                             <div className="col-sm-5">
-                                <a className="btn btn-primary btn-block" style={{marginTop:'1em'}} onClick={createAndGoToRecord}>
-                                    Create a new record</a>
+                                <Link to="/upload" className="btn btn-primary btn-block" style={{marginTop:'1em'}} >
+                                    Create a new record</Link>
                             </div>
                         </div>
 

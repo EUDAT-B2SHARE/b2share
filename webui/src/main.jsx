@@ -17,6 +17,7 @@ import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, 
 import { CommunityListPage, CommunityPage } from './components/communities.jsx';
 import { RecordListPage, RecordPage, EditRecordPage } from './components/records.jsx';
 import { SearchPage } from './components/search.jsx';
+import { Upload } from './components/upload.jsx';
 
 
 const VERSION = '0.3.3';
@@ -99,6 +100,8 @@ const router = (
             </Route>
 
             <Route path="user" component={UserPage} />
+
+            <Route path="upload" component={Upload} />
 
             <Route path="communities" component={Frame} >
                 <IndexRoute component={CommunityListPage} />
