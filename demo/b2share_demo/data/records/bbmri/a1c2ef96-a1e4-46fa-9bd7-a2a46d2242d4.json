@@ -1,10 +1,22 @@
 {
-    "title": "My Test BBMRI Record",
-    "community": "$COMMUNITY_ID[BBMRI: Biomedical Research]",
+    "title": "REST paper 2014",
+    "community": "$COMMUNITY_ID[BBMRI]",
     "open_access": true,
+    "description": "REST mediates androgen receptor actions on gene repression and predicts early recurrence of prostate cancer",
+    "keywords": ["prostate cancer", "REST", "TFBS", "ChiP-seq"],
+    "resource_type": ["Text"],
+    "contact_email": "x@example.com",
     "community_specific": {
         "$BLOCK_SCHEMA_ID[bbmri]": {
-            "study_design": ["Case-control"]
+            "study_id": "REST",
+            "study_name": "REST",
+            "study_description": "REST mediates androgen receptor actions on gene repression and predicts early recurrence of prostate cancer",
+            "principal_investigator": "Amilcar Flores",
+            "study_design": ["Other"],
+            "disease": "C61",
+            "categories_of_data_collected": ["Biological samples"],
+            "sex": ["Male"],
+            "material_type": ["Other"]
         }
     }
 }
