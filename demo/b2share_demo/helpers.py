@@ -51,8 +51,8 @@ def load_demo_data(path, verbose=0):
     """
     with db.session.begin_nested():
         communities = _create_communities(path, verbose)
-        block_schemas = _create_block_schemas(communities, verbose)
-        _create_community_schemas(communities, block_schemas, verbose)
+        _create_block_schemas(communities, verbose)
+        _create_community_schemas(communities, verbose)
         _create_records(path, verbose)
 
 
@@ -112,7 +112,7 @@ def _create_block_schemas(communities, verbose):
                     fg='green')
 
 
-def _create_community_schemas(communities, block_schemas, verbose):
+def _create_community_schemas(communities, verbose):
     """Create demo community schemas."""
     if verbose > 0:
         click.secho('Creating community schemas', fg='yellow', bold=True)
