@@ -1,59 +1,47 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { server } from '../data/server';
+import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { Schema } from './schema.jsx';
 
 
-export const CommunityListPage = React.createClass({
-    componentWillMount() {
-        server.fetchCommunities();
-        this.binding = this.props.store.branch('communities');
-    },
-
+export const CommunityListRoute = React.createClass({
     render() {
-        return this.binding.valid() ?
-            <CommunityList communities={this.binding.get()} /> :
+        const communities = serverCache.getCommunities();
+        return communities ?
+            <CommunityList communities={communities} /> :
             <Wait/>;
     }
 });
 
 
-export const CommunityPage = React.createClass({
-    componentWillMount() {
-        server.fetchCommunities();
-        this.componentWillReceiveProps(this.props);
-    },
-
-    componentWillReceiveProps(nextProps) {
-        const { id } = nextProps.params; // community id or name
-        server.fetchCommunitySchemas(id);
-        const findFn = (x) => x.get('id') == id || x.get('name') == id;
-        this.binding = nextProps.store.branch('communities').find(findFn);
-    },
-
+export const CommunityRoute = React.createClass({
     render() {
-        if (this.binding.valid()) window.comm = this.binding.get();
-        return this.binding.valid() ?
-            <Community community={this.binding.get()} /> :
+        const { id } = this.props.params; // community id or name
+        const community = serverCache.getCommunity(id);
+
+        return community ?
+            <Community community={community} /> :
             <Wait/>;
     }
 });
 
 
 const CommunityList = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     renderCommunity(community) {
-        const desc = community.get('description') || "";
+        const id = community.get('id');
+        const name = community.get('name') || "";
+        const description = community.get('description') || "";
+        const logo = community.get('logo') || "";
         return (
-            <div className="col-sm-6" key={community.get('id')}>
-                <Link to={"/communities/"+community.get('name')}>
+            <div className="col-sm-6" key={id}>
+                <Link to={"/communities/"+name}>
                     <div className="community link">
-                        <h3 className="name">{community.get('name')}</h3>
-                        <h4 className="domain">{community.get('domain')}</h4>
-                        <img className="logo" src={community.get('logo')}/>
-                        <p className="description"> {desc.substring(0,200)} </p>
+                        <h3 className="name">{name}</h3>
+                        <img className="logo" src={logo}/>
+                        <p className="description"> {description.substring(0,200)} </p>
                     </div>
                 </Link>
             </div>
@@ -62,16 +50,12 @@ const CommunityList = React.createClass({
 
     render() {
         return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>Communities</h1>
+            <div className="community-list-page">
+                <h1>Communities</h1>
 
-                        <div className="container-fluid">
-                        <div className="row">
-                            { this.props.communities.map(this.renderCommunity) }
-                        </div>
-                        </div>
+                <div className="container-fluid">
+                    <div className="row">
+                        { this.props.communities.map(this.renderCommunity) }
                     </div>
                 </div>
             </div>
@@ -81,14 +65,31 @@ const CommunityList = React.createClass({
 
 
 const Community = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     renderCommunity(community) {
         const desc = community.get('description') || "";
+
+        const bland={color:'#888'};
+        const created = new Date(community.get('created')).toLocaleString();
+        const updated = new Date(community.get('updated')).toLocaleString();
         return (
             <div className="row" key={community.get("id")}>
                 <div className="col-sm-6">
-                    <h4 className="domain">{community.get('domain')}</h4>
+                    <div>
+                        <p>
+                            <span style={bland}>Created at </span>
+                            <span style={{color:'#225'}}>{created}</span>
+                        </p>
+                        <div style={{clear:"both"}}/>
+                        { created != updated
+                            ? <p>
+                                <span style={bland}>Last updated at </span>
+                                <span style={{color:'#225'}}>{updated}</span>
+                              </p>
+                            : false }
+                    </div>
+                    <div style={{clear:"both", height:10}}/>
                     <p className="description"> {desc} </p>
                 </div>
                 <div className="col-sm-6">
@@ -98,49 +99,35 @@ const Community = React.createClass({
         );
     },
 
-    renderSchema(schema) {
-        return (
-            <div key={schema.get('id')} className="col-sm-6" style={{borderBottom:'1px solid #eee'}}>
+    renderSchema([schemaID, schemaVersion]) {
+        console.log("render schema", schemaID, schemaVersion);
+        const schema = serverCache.getBlockSchema(schemaID, schemaVersion);
+        return !schema ? false :
+            <div key={schemaID} className="col-sm-6" style={{borderBottom:'1px solid #eee'}}>
                 <Schema schema={schema}/>
-            </div>
-        );
+            </div>;
+
     },
 
     render() {
         const community = this.props.community;
-        const schemas = community.get('schema_list');
+        const blockSchemaIDs = community ? serverCache.getCommunityBlockSchemaIDs(community.get('id'), 'last') : null;
         return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>{community.get('name')}</h1>
+            <div className="community-page">
+                <h1>{community.get('name')}</h1>
 
-                        { this.renderCommunity(community) }
-                        { schemas && schemas.count() ?
-                            <div className="row">
-                                <div className="col-sm-12">
-                                    <hr/>
-                                    <h3>Metadata schemas:</h3>
-                                </div>
-                            </div> : false }
-                        <div className="row">
-                            { schemas ? schemas.map(this.renderSchema) : false }
+                { this.renderCommunity(community) }
+                { blockSchemaIDs ?
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <hr/>
+                            <h3>Metadata schemas:</h3>
                         </div>
-                    </div>
+                    </div> : false }
+                <div className="row">
+                    { blockSchemaIDs ? blockSchemaIDs.entries().map(this.renderSchema) : false }
                 </div>
             </div>
         );
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-

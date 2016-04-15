@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 
 var Restapi = require('../docs/templates/rest-api');
@@ -8,7 +8,7 @@ var Termofuse = require('../docs/templates/tou');
 export const Help = React.createClass({
     render() {
         return (
-            <div className="container-fluid">
+            <div className="container-fluid help-page">
                 <div className="row">
                     <div className="col-sm-10">
                         <div className="page-header"> <h2>Help</h2> </div>

@@ -1,78 +1,58 @@
-import React from 'react/addons';
+import React from 'react/lib/ReactWithAddons';
 import ReactDOM from 'react-dom';
 const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
-import createBrowserHistory from 'history/lib/createBrowserHistory'
-import Notification from 'react-notification';
 import { fromJS } from 'immutable';
-import { Router, Route, IndexRoute, Link } from 'react-router'
+import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 
-import { server } from './data/server';
-import { Store } from './data/store';
+import { serverCache } from './data/server';
 
+import { ReplaceAnimate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs } from './components/navbar.jsx';
-import { HomePage } from './components/home.jsx';
-import { UserPage } from './components/user.jsx';
+import { HomeRoute } from './components/home.jsx';
+import { UserRoute } from './components/user.jsx';
 import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
-import { CommunityListPage, CommunityPage } from './components/communities.jsx';
-import { RecordListPage, RecordPage, EditRecordPage } from './components/records.jsx';
-import { SearchPage } from './components/search.jsx';
+import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
+import { SearchRecordRoute } from './components/search.jsx';
+import { RecordRoute, NewRecordRoute, EditRecordRoute  } from './components/record.jsx';
 
 
-const VERSION = '0.3.3';
-
-
-const store = new Store({
-    user: {
-        name: null,
-    },
-    latestRecords: [],
-    records: [],
-    currentRecord: {},
-    communities: [],
-    search: {
-        query: '',
-    }
-});
-
-
-server.setStore(store);
-
+const VERSION = '0.6.0';
 
 const AppFrame = React.createClass({
     getInitialState() {
-        return { dataRef: store.root };
+        return { dataRef: serverCache.store.root };
     },
 
     updateStateOnTick() {
-        const updateState = () =>
-            this.setState({ dataRef: store.root });
+        const updateState = () => this.setState({ dataRef: serverCache.store.root });
         if (window.requestAnimationFrame) {
             window.requestAnimationFrame(updateState);
         } else {
-            setTimeout(updateState, 16);
+            updateState();
         }
     },
 
     componentWillMount() {
-        store.onChange = this.updateStateOnTick;
+        serverCache.store.onChange = this.updateStateOnTick;
     },
 
     render() {
-        // adding a mutating ref seems necessary to propagate changes
-        const children = React.cloneElement(this.props.children, {store: store, dataRef:store.root});
-        const notif = <Notification isActive={true} message={"Hi asdf asd fa sdfa sdf as dfa sdf asfd"} action={"action1"} />;
+        // adding a mutating ref is necessary to propagate changes
+        const additionalProps = {dataRef: this.state.dataRef,  pathName: this.props.location.pathname}
         return (
             <div>
-                <Navbar store={store} dataRef={store.root} />
-                <ReactCSSTransitionGroup transitionAppear={true} transitionAppearTimeout={500} transitionName="route" transitionEnterTimeout={500} transitionLeaveTimeout={500}>
-                    <Breadcrumbs />
-                    <div className="container-fluid">
-                        <div className="col-xs-1"></div>
-                            {children}
-                        <div className="col-xs-1"></div>
+                <Navbar dataRef={this.state.dataRef} />
+                <div className="container-fluid">
+                    <div className="col-xs-1"/>
+                    <div className="col-xs-10">
+                        <Breadcrumbs />
+                        <ReplaceAnimate>
+                            { this.props.children && React.cloneElement(this.props.children, additionalProps) }
+                        </ReplaceAnimate>
                     </div>
-                </ReactCSSTransitionGroup>
+                    <div className="col-xs-1"/>
+                </div>
             </div>
         );
     }
@@ -81,15 +61,20 @@ const AppFrame = React.createClass({
 
 const Frame = React.createClass({
     render() {
-        return React.cloneElement(this.props.children, {store:store, data: store.root})
+        const additionalProps = {dataRef: this.props.dataRef,  pathName: this.props.location.pathname}
+        return (
+            <ReplaceAnimate>
+                { this.props.children && React.cloneElement(this.props.children, additionalProps) }
+            </ReplaceAnimate>
+        );
     }
 });
 
 
 const router = (
-    <Router history={createBrowserHistory()}>
+    <Router history={browserHistory}>
         <Route path="/" component={AppFrame}>
-            <IndexRoute component={HomePage} />
+            <IndexRoute component={HomeRoute} />
 
             <Route path="help">
                 <IndexRoute component={Help} />
@@ -98,28 +83,29 @@ const router = (
                 <Route path="api" component={RestApi} />
             </Route>
 
-            <Route path="user" component={UserPage} />
+            <Route path="user" component={UserRoute} />
 
             <Route path="communities" component={Frame} >
-                <IndexRoute component={CommunityListPage} />
-                <Route path=":id" component={CommunityPage} />
+                <IndexRoute component={CommunityListRoute} />
+                <Route path=":id" component={CommunityRoute} />
             </Route>
 
             <Route path="records" component={Frame} >
-                <IndexRoute component={RecordListPage} />
-                <Route path=":id" component={RecordPage}>
-                    <Route path="edit" component={EditRecordPage}/>
+                <IndexRoute component={SearchRecordRoute} />
+                <Route path="new" component={NewRecordRoute}/>
+                <Route path=":id" component={Frame} >
+                    <IndexRoute component={RecordRoute} />
+                    <Route path="edit" component={EditRecordRoute}/>
                 </Route>
             </Route>
 
-            <Route path="search" component={SearchPage} />
         </Route>
     </Router>
 );
 
 
 const Footer = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return  (

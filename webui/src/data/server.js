@@ -1,76 +1,83 @@
-import React from 'react';
 import {fromJS} from 'immutable';
-import {ajaxGet, ajaxPost} from './ajax'
-import {objEquals} from './misc'
+import {ajaxGet, ajaxPost, errorHandler} from './ajax'
+import {Store} from './store'
+import {objEquals, expect} from './misc'
 
 const urlRoot = window.location.origin;
 
 
 const apiUrls = {
-    users:          `${urlRoot}/api/users/`,
-    userLogin:      `${urlRoot}/api/users/login/`,
+    users()                           { return `${urlRoot}/api/users/` },
+    userLogin()                       { return `${urlRoot}/api/users/login/` },
 
-    communities:    `${urlRoot}/api/communities/`,
+    records()                         { return `${urlRoot}/api/records/` },
+    record(id)                        { return `${urlRoot}/api/records/${id}` },
 
-    schemas:        `${urlRoot}/api/schemas/`,
-    records:        `${urlRoot}/api/xrecords/`,
+    communities()                     { return `${urlRoot}/api/communities/` },
+    community(id)                     { return `${urlRoot}/api/communities/${id}` },
+    communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
+
+    schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
+
+    extractSchemaVersionFromUrl(schemaURL) {
+        const m = /\/versions\/(\d+).*/.match(schemaURL);
+        if (m && m[1]) {
+            return m[1]
+        }
+        if (/\/versions\/last.*/.match(schemaURL)) {
+            return 'last';
+        }
+        return null;
+    },
 };
 
 
-const SECONDS = 1000;
-const MINUTES = 60 * SECONDS;
-const FAR_FUTURE = 100 * 365 * 24 * 60 * MINUTES; // 100 years or so
-
-
-const LATEST_RECORDS_CACHE_PERIOD = 1 * MINUTES;
-const COMMUNITIES_CACHE_PERIOD = 1 * MINUTES;
+const GETTER_HYSTERESIS_INTERVAL_MS = 15; // one frame time
 
 
 class Timer {
     constructor(period) {
-        // initially tick is 0, so ticking() returns false
         this.tick = 0;
-        this.period = period || -1;
+        this.period = period || 0;
     }
     restart() {
-        this.tick = Date.now()+this.period;
+        this.tick = Date.now();
     }
     ticking() {
-        return this.tick > Date.now();
+        return Date.now() < this.tick + this.period;
     }
 }
 
 
-class Fetcher {
-    constructor(url, timerPeriod) {
+class Getter {
+    constructor(url, params, fetchSuccessFn) {
         this.url = url;
-        this.requestSent = false;
-        this.timer = new Timer(timerPeriod);
+        this.params = params;
+        this.etag = null;
+        this.timer = new Timer(GETTER_HYSTERESIS_INTERVAL_MS);
+        this.fetchSuccessFn = fetchSuccessFn;
     }
 
-    fetch(params, callback) {
-        if (this.requestSent) {
+    autofetch() {
+        this.fetch(this.params);
+    }
+
+    fetch(params) {
+        if (this.timer.ticking() && objEquals(params, this.params)) {
+            console.log('hysteresis!');
             return;
         }
-        if (this.timer.ticking()) {
-            // cache considered still valid
-            return;
-        }
-        if (this.params !== undefined && objEquals(params, this.params)) {
-            // !! GET call considered idempotent
-            return;
-        }
+        this.timer.restart();
         this.params = params;
-        if (!this.requestSent) {
-            this.requestSent = true;
-            ajaxGet(this.url, this.params,
-                (dataJS) => {
-                    callback(dataJS);
-                    this.timer.restart();
-                },
-                () => { this.requestSent = false; }
-            );
-        }
+        ajaxGet({
+            url: this.url,
+            params: this.params,
+            etag: this.etag,
+            successFn: (data, etag) => {
+                this.etag = etag;
+                this.fetchSuccessFn(data);
+            },
+        });
     }
 }
 
@@ -79,90 +86,213 @@ class Poster {
     constructor(url) {
         this.url = url;
         this.requestSent = false;
+        console.log('new poster', url);
     }
 
     post(params, successFn) {
+        console.log('post', this.url, params);
         if (!this.requestSent) {
             this.requestSent = true;
-            ajaxPost(this.url, params,
-                successFn,
-                () => { this.requestSent = false; }
-            );
+            ajaxPost({
+                url: this.url,
+                params: params,
+                successFn: successFn,
+                completeFn: () => { this.requestSent = false; },
+            });
         }
     }
 }
 
 
-class Server {
+// TODO: handle http error cases
+// TODO: do memory profile
+class ServerCache {
     constructor() {
-        this.store = null;
-        this.latestRecords = new Fetcher(apiUrls.records, LATEST_RECORDS_CACHE_PERIOD);
-        this.records = new Fetcher(apiUrls.records);
-        this.communities = new Fetcher(apiUrls.communities, COMMUNITIES_CACHE_PERIOD);
-        this.schemas = new Fetcher(apiUrls.schemas);
+        this.store = new Store({
+            user: {
+                name: null,
+            },
 
-        this.newRecord = new Poster(apiUrls.records);
+            notifications: [],
+
+            latestRecords: [], // latest records with params
+            searchRecords: [], // searched records view, with params
+            recordCache: {}, // map of record IDs to records
+
+            communities: [], // communities view, with params
+            communityCache: {}, // map of community IDs to communities
+            blockSchemaCache: {}, // map of block schema IDs to schemas
+        });
+
+        this.getters = {};
+
+        this.getters.latestRecords = new Getter(
+            apiUrls.records(),
+            {start:0, stop:10, sortBy:'date', order:'descending'},
+            (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)) );
+
+        this.getters.searchRecords = new Getter(
+            apiUrls.records(),
+            {query:'', start:0, stop:10, sortBy:'date', order:'descending'},
+            (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)) );
+
+        this.getters.communities = new Getter(
+            apiUrls.communities(), {},
+            (data) => {
+                const icommunities = fromJS(data.communities);
+                this.store.setIn(['communities'], icommunities);
+                this.store.updateIn(['communityCache'], (cache) => {
+                    icommunities.forEach( (icommunity) => {
+                        const id = icommunity.get('id');
+                        let c = cache.get(id);
+                        c = c ? c.merge(icommunity) : icommunity;
+                        cache = cache.set(id, c);
+                    });
+                    return cache;
+                });
+            });
+
+        this.getters.record = (recordID) => {
+            const placeDataFn = (data) => {
+                expect(recordID == data.id);
+                const updater = (records) => records.set(data.id, fromJS(data));
+                this.store.updateIn(['recordCache'], updater);
+            };
+            return new Getter(apiUrls.record(recordID), {}, placeDataFn);
+        },
+
+        // this.getters.community = (communityID) => {
+        //     const placeDataFn = (data) => {
+        //         expect(communityID == data.id);
+        //         const icommunity = fromJS(data);
+        //         const updater = (communities) => {
+        //             let c = communities.get(communityID);
+        //             c = c ? c.merge(icommunity) : icommunity;
+        //             return communities.set(communityID, c);
+        //         };
+        //         this.store.updateIn(['communityCache'], updater);
+        //     };
+        //     return new Getter(apiUrls.community(communityID), {}, placeDataFn);
+        // },
+
+        this.getters.communitySchema = (communityID, version) => {
+            const placeDataFn = (data) => {
+                expect(communityID == data.community);
+                const ischema = fromJS(data);
+                const updater = (communities) => {
+                    let c = communities.get(communityID) || fromJS({});
+                    let s = c.get('schemas') || fromJS({});
+                    s = s.set(version, ischema);
+                    if (version === 'last') {
+                        s = s.set(data.version, ischema);
+                    }
+                    c = c.set('schemas', s)
+                    return communities.set(communityID, c);
+                };
+                this.store.updateIn(['communityCache'], updater);
+            };
+            return new Getter(apiUrls.communitySchema(communityID, version), {}, placeDataFn);
+        },
+
+        this.getters.blockSchema = (schemaID, version) => {
+            const placeDataFn = (data) => {
+                expect(schemaID == data.id);
+                const ischema = fromJS(data);
+                const updater = (schemas) => {
+                    let s = schemas.get(schemaID) || fromJS({});
+                    s = s.set(version, ischema);
+                    if (version === 'last') {
+                        s = s.set(data.version, ischema);
+                    }
+                    return schemas.set(schemaID, s);
+                };
+                this.store.updateIn(['blockSchemaCache'], updater);
+            };
+            return new Getter(apiUrls.schemas(schemaID, version), {}, placeDataFn);
+        },
+
+        this.posters = {};
+
+        this.posters.records = new Poster(apiUrls.records());
+
     }
 
-    setStore(store) {
-        this.store = store;
+    getLatestRecords() {
+        this.getters.latestRecords.autofetch();
+        return this.store.getIn(['latestRecords']);
     }
 
-    fetchLatestRecords() {
-        const binding = store.branch('latestRecords');
-        if (!binding.valid()) {
-            return;
+    searchRecords({query, start, stop, sortBy, order}) {
+        this.getters.searchRecords.fetch(query, start, stop, sortBy, order);
+        return this.store.getIn(['searchRecords']);
+    }
+
+    getRecord(id) {
+        this.getters.record(id).fetch();
+        return this.store.getIn(['recordCache', id]);
+    }
+
+    getCommunities() {
+        this.getters.communities.autofetch();
+        return this.store.getIn(['communities']);
+    }
+
+    getCommunity(communityIDorName) {
+        this.getters.communities.autofetch();
+        const c = this.store.getIn(['communityCache', communityIDorName])
+        return c ? c :
+            this.store.findIn(['communities'], x => (x.get('name') == communityIDorName));
+    }
+
+    getCommunityBlockSchemaIDs(communityID, version) {
+        const c = this.store.getIn(['communityCache', communityID]);
+        if (!c || !c.get('schema')) {
+            this.getters.communitySchema(communityID, version).fetch();
+            return null;
         }
-        const params = {start:0, stop:10, sortBy:'date', order:'descending'};
-        this.latestRecords.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+        const blockRefs = c.getIn(['schema', version,
+            'json_schema', 'allOf', 1, 'properties', 'community_specific', 'properties']);
+        // blockRefs must be : { key: {$ref:url} }
+
+        if (!blockRefs) {
+            return null;
+        }
+        const ret = {};
+        blockRefs.entries().forEach( ([k,v]) => ret[k] = apiUrls.extractSchemaVersionFromUrl(v.get('$ref')) );
+        return ret;
     }
 
-    fetchRecords({start, stop, sortBy, order}) {
-        const binding = store.branch('records');
-        if (!binding.valid()) {
-            return;
+    getBlockSchema(schemaID, version) {
+        const s = this.store.getIn(['blockSchemaCache', schemaID, version]);
+        if (!s) {
+            this.getters.blockSchema(schemaID, version).fetch();
         }
-        const params = {start:start, stop:stop, sortBy:sortBy, order:order};
-        this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+        return s;
     }
 
-    fetchRecord({id}) {
-        const binding = store.branch('currentRecord');
-        if (!binding.valid()) {
-            return;
-        }
-        const params = {id:id};
-        this.records.fetch(params, (json)=>{binding.set(fromJS(json.records))});
+    getUser() {
+        // TODO: call server for user info
+        return this.store.getIn(['user']);
     }
 
-    fetchCommunities() {
-        const binding = store.branch('communities');
-        if (!binding.valid()) {
-            return;
-        }
-        this.communities.fetch(null, (json)=>{binding.set(fromJS(json.communities))});
+    createRecord(initialMetadata, successFn) {
+        this.posters.records.post(initialMetadata, successFn);
     }
 
-    fetchCommunitySchemas(communityID) {
-        const findFn = (x) => x.get('id') == communityID || x.get('name') == communityID;
-        const community = store.branch('communities').find(findFn);
-        if (!community.valid()) {
-            return ;
-        }
-        const schema_id_list = community.get('schema_id_list');
-        const schemaIDs = schema_id_list ? schema_id_list.toJS() : [];
-        if (schemaIDs.length) {
-            const params = {schemaIDs:schemaIDs};
-            this.schemas.fetch(params, (json)=>{community.setIn(['schema_list'], fromJS(json.schemas))});
-        } else {
-            community.setIn(['schema_list'], fromJS([]))
-        }
+    updateRecord(id, metadata) {
+        this.posters.record(id).post(metadata, successFn);
     }
 
-    createRecord(successFn) {
-        this.newRecord.post(null, successFn);
+    notifyAlert(text) {
+        console.log('notif', text);
+        this.store.updateIn(['notifications'], n => n.push({level:'alert', text: text}));
+        // TODO: purge alerts
     }
 };
 
 
-export const server = new Server();
+export const serverCache = new ServerCache();
+
+errorHandler.fn = function(text) {
+    serverCache.notifyAlert(text);
+}

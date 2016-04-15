@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { server } from '../data/server';
+import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 
 

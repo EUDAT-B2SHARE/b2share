@@ -1,11 +1,10 @@
-import React from 'react';
+import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { createAndGoToRecord } from './records.jsx';
+import { serverCache } from '../data/server';
 
 
 export const Navbar = React.createClass({
-    mixins: [React.PureRenderMixin],
-
+    // not a pure render
     getInitialState() {
         return { open: true };
     },
@@ -18,7 +17,7 @@ export const Navbar = React.createClass({
         return (
             <nav className="header-nav navbar navbar-default navbar-static-top">
                 <div className="container-fluid">
-                    <div className="col-xs-1"></div>
+                    <div className="col-xs-1"/>
                     <div className="navbar-header">
                         <button type="button" className="navbar-toggle collapsed" onClick={this.toggle}>
                             <span className="sr-only">Toggle Navigation Menu</span>
@@ -31,7 +30,7 @@ export const Navbar = React.createClass({
                         </Link>
                     </div>
 
-                    { this.state.open ? <NavbarMenu store={this.props.store} ref={this.props.store.root} /> : false }
+                    { this.state.open ? <NavbarMenu/> : false }
                 </div>
             </nav>
         );
@@ -40,18 +39,28 @@ export const Navbar = React.createClass({
 
 
 const NavbarSearch = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.LinkedStateMixin],
+
+    getInitialState() {
+        return { query: "" };
+    },
+
+    search(event) {
+        event.preventDefault();
+        window.location.assign(`${window.location.origin}/records/?q=${this.state.query}`);
+    },
 
     render() {
+        // TODO: smoother experience on search: try Link with params
         return (
-            <form>
+            <form onSubmit={this.search}>
                 <div className="nav-search">
                     <span className="input-group-btn">
                         <button onClick={this.search} className="btn btn-default" type="button">
                             <i className="fa fa-question-circle"></i>
                         </button>
                     </span>
-                    <input className="form-control no-radius" type="text" name="query"
+                    <input className="form-control" style={{borderRadius:0}} type="text" name="query" valueLink={this.linkState('query')}
                         autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">
@@ -66,19 +75,19 @@ const NavbarSearch = React.createClass({
 
 
 const NavbarMenu = React.createClass({
-    mixins: [React.PureRenderMixin],
-
+    // not a pure render, depends on the URL
     render() {
-        const user = this.props.store.branch('user');
+        const topgap = {marginTop:'0.5em'}
+        const user = serverCache.getUser();
         return (
             <div className="collapse navbar-collapse" id="header-navbar-collapse">
                 <NavbarSearch />
 
-                {/* menu */}
-                <ul className="nav navbar-nav text-uppercase">
+                <ul className="nav navbar-nav text-uppercase" style={topgap}>
                     <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
                     <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
-                    <li> <Link to="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </Link> </li>
+                    <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
+                    <li> <a href="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </a> </li>
 
                     { user.get('name') ? <NavbarUser /> : <NavbarNoUser /> }
                 </ul>
@@ -89,7 +98,7 @@ const NavbarMenu = React.createClass({
 
 
 const NavbarUser = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return (
@@ -116,7 +125,7 @@ const NavbarUser = React.createClass({
 
 
 const NavbarNoUser = React.createClass({
-    mixins: [React.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
 
     render() {
         return (
@@ -161,15 +170,11 @@ export const Breadcrumbs = React.createClass({
         pairs[pairs.length-1][3] = true;
         return (
             <div className="row">
-                <div className="col-xs-1 hidden-xs"/>
-                <div className="col-sm-10">
-                    <ol className="breadcrumb">
-                        { pairs.map(this.renderItem) }
-                    </ol>
-                </div>
+                <ol className="breadcrumb">
+                    { pairs.map(this.renderItem) }
+                </ol>
             </div>
         );
     }
 });
-
 
