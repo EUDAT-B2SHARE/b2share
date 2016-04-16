@@ -23,6 +23,7 @@ const VERSION = '0.6.0';
 // TODO: edit records
 // TODO: file uplaods
 // TODO: installation instructions
+// TODO: stop cycle in case of 404
 
 // TODO: remove eudat empty block schema
 // TODO: eliminate duplicate server calls

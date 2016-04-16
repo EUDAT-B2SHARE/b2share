@@ -333,6 +333,7 @@ a.navbar-brand {
   border: 1px solid transparent;
   border-radius: 8px;
   height: 8em;
+  max-width: 10em;
   overflow: hidden;
   text-align: center;
   font-weight: bold;
@@ -347,6 +348,11 @@ a.navbar-brand {
   color: #F45D00;
   border: 1px solid #F45D00;
   box-shadow: 0 0 10px #F45D00 !important;
+}
+
+.community-small.passive {
+  border: 1px solid #eee;
+  box-shadow: 0 0 10px #eee !important;
 }
 
 .community-small img.logo {

@@ -5,7 +5,6 @@ import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { keys, timestamp2str } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
-import { renderSmallCommunity } from './record.jsx';
 
 
 export const NewRecordRoute = React.createClass({
@@ -147,7 +146,7 @@ const EditRecord = React.createClass({
     componentWillMount() {
         this.record = this.props.record;
         this.community = this.props.community;
-        this.schema = this.props.schema || defaultSchema;
+        this.schema = this.props.schema;
         this.fields = keys(this.schema.properties);
         this.metadata = this.record.get('metadata') || Map();
 
@@ -216,3 +215,20 @@ const EditRecord = React.createClass({
         );
     }
 });
+
+///////////////////////////////////////////////////////////////////////////////
+
+export function renderSmallCommunity(community, active, onClickFn) {
+    const activeClass = active ? " active": " inactive";
+    return (
+        <div key={community.get('id')}>
+            <div className={"community-small" + activeClass} title={community.get('description')}
+                    onClick={onClickFn ? onClickFn : ()=>{}}>
+                <p className="name">{community.get('name')}</p>
+                <img className="logo" src={community.get('logo')}/>
+            </div>
+        </div>
+    );
+}
+
+

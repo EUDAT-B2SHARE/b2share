@@ -62,13 +62,33 @@ const Record = React.createClass({
         );
     },
 
+    renderSmallCommunity(community) {
+        if (!community) {
+            return false;
+        }
+        return (
+            <div key={community.get('id')}>
+                <div className="community-small passive" title={community.get('description')}>
+                    <p className="name">{community.get('name')}</p>
+                    <img className="logo" src={community.get('logo')}/>
+                </div>
+            </div>
+        );
+    },
+
     renderFixedFields(record, community) {
         const metadata = record.get('metadata') || Map();
         const description = metadata.get('description') ||"";
         const keywords = metadata.get('keywords') || List();
+        const sr = {marginBottom:0, padding:'0.5em', float:'right'};
         return (
             <div>
-                <h3 className="name">{metadata.get('title')}</h3>
+                <div className="row">
+                    <div className="col-md-12">
+                        <Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
+                        <h3 className="name">{metadata.get('title')}</h3>
+                    </div>
+                </div>
                 <div className="row">
                     <div className="col-md-8">
                         { this.renderCreators(metadata) }
@@ -81,12 +101,14 @@ const Record = React.createClass({
 
                         <p className="keywords">
                             <span style={{fontWeight:'bold'}}>Keywords: </span>
-                            {keywords.map(k => <Link to='/records' params={{query:k}} key={k}>{k}; </Link>)}
+                            {keywords.map(k => <Link to={{pathname:'/records', query:{query:k}}} key={k}>{k}; </Link>)}
                         </p>
                     </div>
 
                     <div className="col-md-4">
-                        { community ? renderSmallCommunity(community, true) : false }
+                        <div style={{float:'right', width:'10em'}}>
+                        { this.renderSmallCommunity(community) }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -193,22 +215,3 @@ const Record = React.createClass({
         );
     }
 });
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-export function renderSmallCommunity(community, active, onClickFn) {
-    const activeClass = active ? " active": " inactive";
-    return (
-        <div key={community.get('id')}>
-            <div className={"community-small" + activeClass} title={community.get('description')}
-                    onClick={onClickFn ? onClickFn : ()=>{}}>
-                <p className="name">{community.get('name')}</p>
-                <img className="logo" src={community.get('logo')}/>
-            </div>
-        </div>
-    );
-}
-
-
