@@ -4,6 +4,7 @@ import { serverCache } from '../data/server';
 import { pairs } from '../data/misc';
 import { Wait } from './waiting.jsx';
 import { Schema } from './schema.jsx';
+import { ReplaceAnimate } from './animate.jsx';
 
 
 export const CommunityListRoute = React.createClass({
@@ -20,16 +21,16 @@ export const CommunityRoute = React.createClass({
     render() {
         const { id } = this.props.params; // community id or name
         const community = serverCache.getCommunity(id);
-
-        let blocks = [];
-        if (community) {
-            const blockIDs = serverCache.getCommunityBlockSchemaIDs(community.get('id'), 'last') || [];
-            blocks = pairs(blockIDs).map( ([sid,sver]) => serverCache.getBlockSchema(sid, sver));
+        if (!community) {
+            return <Wait/>;
         }
 
-        return community ?
-            <Community community={community} blockSchemas={blocks}/> :
-            <Wait/>;
+        const [rootSchema, blockSchemas] = serverCache.getCommunitySchemas(community.get('id'), 'last');
+        return (
+            <ReplaceAnimate>
+                <Community community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
+            </ReplaceAnimate>
+        );
     }
 });
 
@@ -106,7 +107,7 @@ const Community = React.createClass({
         );
     },
 
-    renderSchema(schema) {
+    renderSchema([schemaID, schema]) {
         return !schema ? false :
             <div key={schema.get('id')} className="col-sm-12" style={{borderBottom:'1px solid #eee'}}>
                 <Schema schema={schema}/>
@@ -130,7 +131,7 @@ const Community = React.createClass({
                         </div>
                     </div> : false }
                 <div className="row">
-                    { blockSchemas.map(this.renderSchema) }
+                    { blockSchemas ? blockSchemas.map(this.renderSchema) : false}
                 </div>
             </div>
         );

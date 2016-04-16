@@ -1,8 +1,9 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
+import { Map, List } from 'immutable';
+import { timestamp2str } from '../data/misc.js'
 import { serverCache } from '../data/server';
 import { currentUser } from './user.jsx';
-import { renderRecord } from './search.jsx';
 import { Wait } from './waiting.jsx';
 
 export const HomeRoute = React.createClass({
@@ -45,12 +46,46 @@ const LatestRecords = React.createClass({
         records: React.PropTypes.object.isRequired,
     },
 
+    renderCreators(creators) {
+        if (!creators || !creators.count()) {
+            return false;
+        }
+        return (
+            <span>
+                <span style={{color:'black'}}> by </span>
+                {creators.map(c => <span className="creator" key={c}> {c}</span>)}
+            </span>
+        );
+    },
+
+    renderRecord(record) {
+        const id = record.get('id');
+        const created = record.get('created');
+        const updated = record.get('updated');
+        const metadata = record.get('metadata') || Map();
+        const title = metadata.get('title') ||"";
+        const description = metadata.get('description') ||"";
+        const creators = metadata.get('creator') || List();
+        return (
+            <div className="record col-md-6" key={record.get('id')}>
+                <Link to={'/records/'+id}>
+                    <p className="name">{title}</p>
+                    <p>
+                        <span className="date">{timestamp2str(created)}</span>
+                        {this.renderCreators(creators)}
+                    </p>
+                    <p className="description">{description.substring(0,200)}</p>
+                </Link>
+            </div>
+        );
+    },
+
     render() {
         return (
             <div>
                 <h3>Latest Records</h3>
                 <div className="row">
-                    { this.props.records.map(renderRecord) }
+                    { this.props.records.map(this.renderRecord) }
                 </div>
                 <div className="row">
                     <div className="col-sm-offset-6 col-sm-5" style={{marginTop:'1em', marginBottom:'1em',}}>

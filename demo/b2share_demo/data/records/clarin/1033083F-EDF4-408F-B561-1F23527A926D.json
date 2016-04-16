@@ -8,7 +8,7 @@
     "contact_email": "x@example.com",
     "community_specific": {
         "$BLOCK_SCHEMA_ID[clarin]": {
-            "language_code": "REST",
+            "language_code": "eng",
             "ling_resource_type": ["Text"]
         }
     }

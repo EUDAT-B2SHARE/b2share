@@ -19,7 +19,25 @@ const apiUrls = {
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
 
+    extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
+        if (!communitySchemaURL) {
+            return [];
+        }
+        const m = communitySchemaURL.match(/.*\/api\/communities\/([^\/]+)\/schemas\/(\d+).*/);
+        if (m) {
+            return [m[1], m[2]];
+        }
+        const mlast = communitySchemaURL.match(/.*\/api\/communities\/([^\/]+)\/schemas\/last.*/);
+        if (mlast) {
+            return [mlast[1], 'last'];
+        }
+        return [];
+    },
+
     extractSchemaVersionFromUrl(schemaURL) {
+        if (!schemaURL) {
+            return null;
+        }
         const m = schemaURL.match(/.*\/versions\/(\d+).*/);
         if (m && m[1]) {
             return m[1]
@@ -32,7 +50,7 @@ const apiUrls = {
 };
 
 
-const GETTER_HYSTERESIS_INTERVAL_MS = 15; // one frame time
+const GETTER_HYSTERESIS_INTERVAL_MS = 500; // half a second
 
 
 class Timer {
@@ -63,7 +81,7 @@ class Getter {
     }
 
     fetch(params) {
-        if (this.timer.ticking() && objEquals(params, this.params)) {
+        if (this.timer.ticking() && this.equals(params, this.params)) {
             return;
         }
         this.timer.restart();
@@ -77,6 +95,13 @@ class Getter {
                 this.fetchSuccessFn(data);
             },
         });
+    }
+
+    equals(o1, o2) {
+        if ((o1 === null || o1 === undefined) && (o2 === null || o2 === undefined)) {
+            return true;
+        }
+        return objEquals(o1, o2)
     }
 }
 
@@ -135,7 +160,7 @@ class ServerCache {
             (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)) );
 
         this.getters.communities = new Getter(
-            apiUrls.communities(), {},
+            apiUrls.communities(), null,
             (data) => {
                 let map = OrderedMap();
                 data.communities.forEach(c => { map = map.set(c.id, fromJS(c)); } );
@@ -148,7 +173,7 @@ class ServerCache {
                 const updater = (records) => records.set(data.id, fromJS(data));
                 this.store.updateIn(['recordCache'], updater);
             };
-            return new Getter(apiUrls.record(recordID), {}, placeDataFn);
+            return new Getter(apiUrls.record(recordID), null, placeDataFn);
         },
 
         this.getters.communitySchema = (communityID, version) => {
@@ -165,7 +190,7 @@ class ServerCache {
                 };
                 this.store.updateIn(['communitySchemas'], updater);
             };
-            return new Getter(apiUrls.communitySchema(communityID, version), {}, placeDataFn);
+            return new Getter(apiUrls.communitySchema(communityID, version), null, placeDataFn);
         },
 
         this.getters.blockSchema = (schemaID, version) => {
@@ -182,7 +207,7 @@ class ServerCache {
                 };
                 this.store.updateIn(['blockSchemas'], updater);
             };
-            return new Getter(apiUrls.schema(schemaID, version), {}, placeDataFn);
+            return new Getter(apiUrls.schema(schemaID, version), null, placeDataFn);
         },
 
         this.posters = {};
@@ -222,30 +247,46 @@ class ServerCache {
         return c ? c : communities.valueSeq().find(x => x.get('name') == communityIDorName);
     }
 
-    getCommunityBlockSchemaIDs(communityID, version) {
-        const cs = this.store.getIn(['communitySchemas', communityID, version]);
-        if (!cs) {
-            this.getters.communitySchema(communityID, version).fetch();
-            return null;
-        }
-        const blockRefs = cs.getIn(['json_schema', 'allOf', 1,
-                'properties', 'community_specific', 'properties']);
-        // blockRefs must be : { key: {$ref:url} }
-
-        if (!blockRefs) {
-            return null;
-        }
-        const ret = {};
-        blockRefs.entrySeq().forEach( ([k,v]) => ret[k] = apiUrls.extractSchemaVersionFromUrl(v.get('$ref')) );
-        return ret;
-    }
-
     getBlockSchema(schemaID, version) {
         const s = this.store.getIn(['blockSchemas', schemaID, version]);
         if (!s) {
             this.getters.blockSchema(schemaID, version).fetch();
         }
         return s;
+    }
+
+    getCommunitySchemas(communityID, version) {
+        const cs = this.store.getIn(['communitySchemas', communityID, version]);
+        if (!cs) {
+            this.getters.communitySchema(communityID, version).fetch();
+            return [];
+        }
+        const allOf = cs.getIn(['json_schema', 'allOf']);
+        if (!allOf) {
+            return [];
+        }
+        const rootSchema = allOf.get(0);
+        let blockSchemas = [];
+        const blockRefs = allOf.getIn([1, 'properties', 'community_specific', 'properties']);
+        // blockRefs must be : { id: {$ref:url} }
+
+        if (blockRefs) {
+            blockSchemas = blockRefs.entrySeq().map(
+                ([id,ref]) => {
+                    const ver = apiUrls.extractSchemaVersionFromUrl(ref.get('$ref'));
+                    return [id, this.getBlockSchema(id, ver)];
+                }
+            );
+        }
+        return [rootSchema, blockSchemas];
+    }
+
+    getRecordSchemas(record) {
+        if (!record) {
+            return [];
+        }
+        const [communityID, ver] = apiUrls.extractCommunitySchemaInfoFromUrl(record.getIn(['metadata', '$schema']));
+        return this.getCommunitySchemas(communityID, ver);
     }
 
     getUser() {
