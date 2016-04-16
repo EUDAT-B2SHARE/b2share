@@ -328,14 +328,50 @@ a.navbar-brand {
 /*****************************************************************************/
 /* communities */
 
+.community-small {
+  padding: 10px 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  height: 8em;
+  overflow: hidden;
+  text-align: center;
+  font-weight: bold;
+}
+
+.community-small:hover {
+  border: 1px solid gray;
+  box-shadow: 0 0 10px gray !important;
+}
+
+.community-small.active {
+  color: #F45D00;
+  border: 1px solid #F45D00;
+  box-shadow: 0 0 10px #F45D00 !important;
+}
+
+.community-small img.logo {
+  max-width: 96px;
+  max-height: 64px;
+}
+
+.community-small.inactive img{
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+}
+
+
+
+
+/*****************************************************************************/
+/* records */
+
 .large-record {
   background-color: white;
   padding-bottom:1em;
 }
 
-
-/*****************************************************************************/
-/* communities */
 
 .community-page {
   background-color: white;
@@ -401,6 +437,15 @@ a.navbar-brand {
 }
 
 /*****************************************************************************/
+/* records */
+
+.large-record {
+  background-color: white;
+  padding-bottom:1em;
+}
+
+
+/*****************************************************************************/
 /* new record */
 
 .new-record {
@@ -410,43 +455,6 @@ a.navbar-brand {
 .new-record .submit {
   margin-top: 2em;
 }
-
-.new-record .community {
-  padding: 10px 4px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  height: 8em;
-  overflow: hidden;
-}
-
-.new-record .community {
-  text-align: center;
-  font-weight: bold;
-}
-
-.new-record .community:hover {
-  border: 1px solid gray;
-  box-shadow: 0 0 10px gray !important;
-}
-
-.new-record .community.active {
-  color: #F45D00;
-  border: 1px solid #F45D00;
-  box-shadow: 0 0 10px #F45D00 !important;
-}
-
-.new-record .community img.logo {
-  max-width: 96px;
-  max-height: 64px;
-}
-
-.new-record .community.inactive img{
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
-  -moz-filter: grayscale(100%);
-  filter: gray;
-}
-
 
 /*****************************************************************************/
 /* upload form */
@@ -516,5 +524,3 @@ code {
   margin: 0 2px;
   padding: 0px 5px;
 }
-
-
