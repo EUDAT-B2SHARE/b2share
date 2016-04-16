@@ -1,4 +1,4 @@
-import {fromJS} from 'immutable';
+import {fromJS, OrderedMap, List} from 'immutable';
 import {ajaxGet, ajaxPost, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
@@ -20,7 +20,7 @@ const apiUrls = {
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
 
     extractSchemaVersionFromUrl(schemaURL) {
-        const m = /\/versions\/(\d+).*/.match(schemaURL);
+        const m = schemaURL.match(/.*\/versions\/(\d+).*/);
         if (m && m[1]) {
             return m[1]
         }
@@ -64,7 +64,6 @@ class Getter {
 
     fetch(params) {
         if (this.timer.ticking() && objEquals(params, this.params)) {
-            console.log('hysteresis!');
             return;
         }
         this.timer.restart();
@@ -86,11 +85,9 @@ class Poster {
     constructor(url) {
         this.url = url;
         this.requestSent = false;
-        console.log('new poster', url);
     }
 
     post(params, successFn) {
-        console.log('post', this.url, params);
         if (!this.requestSent) {
             this.requestSent = true;
             ajaxPost({
@@ -119,10 +116,11 @@ class ServerCache {
             searchRecords: [], // searched records view, with params
             recordCache: {}, // map of record IDs to records
 
-            communities: [], // communities view, with params
-            communityCache: {}, // map of community IDs to communities
-            blockSchemaCache: {}, // map of block schema IDs to schemas
+            communities: {}, // ordered map of community IDs to communities
+            communitySchemas: {}, // map of community schema IDs to versions to schemas
+            blockSchemas: {}, // map of block schema IDs to versions to schemas
         });
+        this.store.setIn(['communities'], OrderedMap());
 
         this.getters = {};
 
@@ -139,17 +137,9 @@ class ServerCache {
         this.getters.communities = new Getter(
             apiUrls.communities(), {},
             (data) => {
-                const icommunities = fromJS(data.communities);
-                this.store.setIn(['communities'], icommunities);
-                this.store.updateIn(['communityCache'], (cache) => {
-                    icommunities.forEach( (icommunity) => {
-                        const id = icommunity.get('id');
-                        let c = cache.get(id);
-                        c = c ? c.merge(icommunity) : icommunity;
-                        cache = cache.set(id, c);
-                    });
-                    return cache;
-                });
+                let map = OrderedMap();
+                data.communities.forEach(c => { map = map.set(c.id, fromJS(c)); } );
+                this.store.setIn(['communities'], map);
             });
 
         this.getters.record = (recordID) => {
@@ -161,35 +151,19 @@ class ServerCache {
             return new Getter(apiUrls.record(recordID), {}, placeDataFn);
         },
 
-        // this.getters.community = (communityID) => {
-        //     const placeDataFn = (data) => {
-        //         expect(communityID == data.id);
-        //         const icommunity = fromJS(data);
-        //         const updater = (communities) => {
-        //             let c = communities.get(communityID);
-        //             c = c ? c.merge(icommunity) : icommunity;
-        //             return communities.set(communityID, c);
-        //         };
-        //         this.store.updateIn(['communityCache'], updater);
-        //     };
-        //     return new Getter(apiUrls.community(communityID), {}, placeDataFn);
-        // },
-
         this.getters.communitySchema = (communityID, version) => {
             const placeDataFn = (data) => {
                 expect(communityID == data.community);
                 const ischema = fromJS(data);
-                const updater = (communities) => {
-                    let c = communities.get(communityID) || fromJS({});
-                    let s = c.get('schemas') || fromJS({});
+                const updater = (schemas) => {
+                    let s = schemas.get(communityID) || fromJS({});
                     s = s.set(version, ischema);
                     if (version === 'last') {
                         s = s.set(data.version, ischema);
                     }
-                    c = c.set('schemas', s)
-                    return communities.set(communityID, c);
+                    return schemas.set(communityID, s);
                 };
-                this.store.updateIn(['communityCache'], updater);
+                this.store.updateIn(['communitySchemas'], updater);
             };
             return new Getter(apiUrls.communitySchema(communityID, version), {}, placeDataFn);
         },
@@ -206,9 +180,9 @@ class ServerCache {
                     }
                     return schemas.set(schemaID, s);
                 };
-                this.store.updateIn(['blockSchemaCache'], updater);
+                this.store.updateIn(['blockSchemas'], updater);
             };
-            return new Getter(apiUrls.schemas(schemaID, version), {}, placeDataFn);
+            return new Getter(apiUrls.schema(schemaID, version), {}, placeDataFn);
         },
 
         this.posters = {};
@@ -234,36 +208,40 @@ class ServerCache {
 
     getCommunities() {
         this.getters.communities.autofetch();
-        return this.store.getIn(['communities']);
+        const communities = this.store.getIn(['communities']);
+        return communities ? List(communities.valueSeq()) : communities;
     }
 
     getCommunity(communityIDorName) {
         this.getters.communities.autofetch();
-        const c = this.store.getIn(['communityCache', communityIDorName])
-        return c ? c :
-            this.store.findIn(['communities'], x => (x.get('name') == communityIDorName));
+        const communities = this.store.getIn(['communities']);
+        if (!communities) {
+            return null;
+        }
+        const c = communities.get(communityIDorName);
+        return c ? c : communities.valueSeq().find(x => x.get('name') == communityIDorName);
     }
 
     getCommunityBlockSchemaIDs(communityID, version) {
-        const c = this.store.getIn(['communityCache', communityID]);
-        if (!c || !c.get('schema')) {
+        const cs = this.store.getIn(['communitySchemas', communityID, version]);
+        if (!cs) {
             this.getters.communitySchema(communityID, version).fetch();
             return null;
         }
-        const blockRefs = c.getIn(['schema', version,
-            'json_schema', 'allOf', 1, 'properties', 'community_specific', 'properties']);
+        const blockRefs = cs.getIn(['json_schema', 'allOf', 1,
+                'properties', 'community_specific', 'properties']);
         // blockRefs must be : { key: {$ref:url} }
 
         if (!blockRefs) {
             return null;
         }
         const ret = {};
-        blockRefs.entries().forEach( ([k,v]) => ret[k] = apiUrls.extractSchemaVersionFromUrl(v.get('$ref')) );
+        blockRefs.entrySeq().forEach( ([k,v]) => ret[k] = apiUrls.extractSchemaVersionFromUrl(v.get('$ref')) );
         return ret;
     }
 
     getBlockSchema(schemaID, version) {
-        const s = this.store.getIn(['blockSchemaCache', schemaID, version]);
+        const s = this.store.getIn(['blockSchemas', schemaID, version]);
         if (!s) {
             this.getters.blockSchema(schemaID, version).fetch();
         }

@@ -19,6 +19,13 @@ import { RecordRoute, NewRecordRoute, EditRecordRoute  } from './components/reco
 
 const VERSION = '0.6.0';
 
+// TODO: remove eudat empty block schema
+// TODO: eliminate duplicate server calls
+// TODO: show records metadata
+// TODO: edit records
+// TODO: file uplaods
+// TODO: user login
+
 const AppFrame = React.createClass({
     getInitialState() {
         return { dataRef: serverCache.store.root };

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Map } from 'immutable';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
-import { objToArray, timestamp2str } from '../data/misc';
+import { keys, timestamp2str } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 
 
@@ -215,7 +215,7 @@ const EditRecord = React.createClass({
         this.record = this.props.record;
         this.community = this.props.community;
         this.schema = this.props.schema || defaultSchema;
-        this.fields = objToArray(this.schema.properties);
+        this.fields = keys(this.schema.properties);
         this.metadata = this.record.get('metadata') || Map();
 
         let state = {};
