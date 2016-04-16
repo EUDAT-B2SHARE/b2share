@@ -85,3 +85,18 @@ export function expect(condition) {
         }
     }
 }
+
+// useful for react handlers
+export function stateSetter(obj, state) {
+    return function() {
+        obj.setState(state);
+    }
+}
+
+export function stateLinker(obj, id) {
+    return function(event) {
+        const x = {};
+        x[id] = event.target.value;
+        obj.setState(x);
+    }
+}

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
-import { keys, timestamp2str } from '../data/misc';
+import { keys, timestamp2str, stateLinker, pairs } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 
 
@@ -137,79 +137,74 @@ export const EditRecordRoute = React.createClass({
 
 
 const EditRecord = React.createClass({
-    mixins: [React.addons.LinkedStateMixin],
-
     getInitialState() {
-        return {};
+        return {
+            errors: {},
+        };
     },
 
-    componentWillMount() {
-        this.record = this.props.record;
-        this.community = this.props.community;
-        this.schema = this.props.schema;
-        this.fields = keys(this.schema.properties);
-        this.metadata = this.record.get('metadata') || Map();
-
-        let state = {};
-        if (this.fields && this.metadata) {
-            for (const i in this.fields) {
-                const f = this.fields[i];
-                state[f] = this.metadata.get(f);
-            }
-        }
-        this.setState(state);
-    },
-
-    rnd() {
-        const BIG = 1024 * 1024 * 1024;
-        return Math.floor((Math.random() * BIG) + BIG);
+    renderFileZone() {
+        return (
+            <div className="row">
+                <div className="col-md-12">
+                    <div className="deposit-step">
+                        <p>Step 01</p>
+                        <h4>Drag and drop files here</h4>
+                    </div>
+                </div>
+            </div>
+        );
     },
 
     renderField(id, field) {
         const gap = {marginTop:'1em'};
         return (
             <div className="form-group row" key={id} style={gap} title={field.description}>
-                <label htmlFor={id} className="col-sm-3 control-label" style={{marginTop:10}}>{field.title}</label>
+                <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>{field.title}</label>
                 <div className="col-sm-9">
-                    <input type="text" className="form-control" id={id} valueLink={this.linkState(id)} />
+                    { plugin ? this.renderPlugin(id, field) :
+                        <input type="text" className="form-control" id={id}
+                            value={this.state[id]} onChange={stateLinker(this, id)} />
+                    }
                 </div>
             </div>
         );
     },
 
+    renderFieldBlock(record, schemaID, schema) {
+        console.log("field block", schemaID, schema);
+        return (
+            <div className="row">
+            </div>
+        );
+    },
+
     render() {
+        const record = this.props.record;
+        const rootSchema = this.props.rootSchema;
+        const blockSchemas = this.props.blockSchemas;
+        if (!record || !rootSchema) {
+            return <Wait/>;
+        }
         return (
             <div className="edit-record">
                 <div className="row">
-                    <div className="col-md-12">
-                        <div className="deposit-step">
-                            <p>Step 01</p>
-                            <h4>Drag and drop files here</h4>
+                    <form className="form" onSubmit={this.updateRecord}>
+                        { this.renderFieldBlock(this.props.record, null, rootSchema) }
+
+                        { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
+                            this.renderFieldBlock(this.props.record, id, this.props.blockSchemas) ) : false }
+
+                        <div className="form-group submit row">
+                            {pairs(this.state.errors).map( ([id, msg]) =>
+                                <div className="col-sm-9 col-sm-offset-3">{msg} </div>) }
+                            <div className="col-sm-offset-3 col-sm-9" style={gap}>
+                                <button type="submit" className="btn btn-primary btn-default btn-block">
+                                    Update Draft/Record</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-12">
-                        <form className="form" onSubmit={this.createAndGoToRecord}>
-                            <div className="form-group row">
-                                <label htmlFor="community" className="col-sm-3 control-label">
-                                    <div style={{fontWeight:'bold'}}>Community</div>
-                                </label>
-                                <div className="col-sm-9">
-                                    {renderSmallCommunity(this.community, true)}
-                                </div>
-                            </div>
 
-                            {this.fields.map(f => this.renderField(f, this.schema.properties[f]))}
-
-                            <div className="form-group submit">
-                                <div className="col-sm-offset-3 col-sm-6" style={{marginTop:'1em'}}>
-                                    <button type="submit" className="btn btn-primary btn-default btn-block">
-                                        Create Draft Record</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             </div>
         );

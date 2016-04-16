@@ -7,13 +7,6 @@ const ReactCSSTransitionGroup = React.addons.ReactCSSTransitionGroup;
 const ReactTransitionGroup = React.addons.TransitionGroup;
 
 
-function setState(state) {
-    var t = this;
-    if (t && t != window && t.setState) {
-        t.setState(state);
-    }
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Slides
