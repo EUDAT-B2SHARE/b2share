@@ -1,6 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { Map } from 'immutable';
+import { Map, List } from 'immutable';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { keys, timestamp2str } from '../data/misc';
@@ -14,12 +14,187 @@ export const RecordRoute = React.createClass({
         if (!record) {
             return <Wait/>;
         }
-
-        return record ?
-            <ReplaceAnimate> <Record record={record}/> </ReplaceAnimate> :
-            <Wait/>;
+        const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
+        const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+        return (
+            <ReplaceAnimate>
+                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
+            </ReplaceAnimate>
+        );
     }
 });
+
+const Record = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+
+    renderDates(record) {
+        const created = timestamp2str(record.get('created'));
+        const updated = timestamp2str(record.get('updated'));
+        return (
+            <div>
+                <p>
+                    <span style={{color:'#225'}}>{created}</span>
+                </p>
+                { created != updated
+                    ? <p>
+                        <span style={bland}>Last updated at </span>
+                        <span style={{color:'#225'}}>{updated}</span>
+                      </p>
+                    : false }
+            </div>
+        );
+    },
+
+    renderCreators(metadata) {
+        const creators = metadata.get('creator');
+        if (!creators) {
+            return false;
+        }
+
+        return (
+            <p>
+                <span style={{color:'black'}}> by </span>
+                { creators && creators.count()
+                    ? creators.map(c => <a className="creator" key={c}> {c}</a>)
+                    : <span style={{color:'black'}}> [Unknown] </span>
+                }
+            </p>
+        );
+    },
+
+    renderFixedFields(record, community) {
+        const metadata = record.get('metadata') || Map();
+        const description = metadata.get('description') ||"";
+        const keywords = metadata.get('keywords') || List();
+        return (
+            <div>
+                <h3 className="name">{metadata.get('title')}</h3>
+
+                { this.renderCreators(metadata) }
+                { this.renderDates(record) }
+
+                <p className="description">
+                    <span style={{fontWeight:'bold'}}>Abstract: </span>
+                    {description}
+                </p>
+
+                { community ?
+                    <p className="community">
+                        <span style={{fontWeight:'bold'}}>Community: </span>
+                        {community.get('name')}
+                    </p> : false }
+
+                <p className="keywords">
+                    <span style={{fontWeight:'bold'}}>Keywords: </span>
+                    {keywords.map(k => <Link to='/records' params={{query:k}} key={k}>{k}; </Link>)}
+                </p>
+            </div>
+        );
+    },
+
+    renderFieldType(id, name, type, value) {
+        if (type === 'array') {
+            value = value.map(v => <span key={v}>{v}; </span>);
+        } else if (type === 'boolean') {
+            value = value ? "True":"False";
+        } else if (type === 'date-time') {
+            value = timestamp2str(value);
+        }
+        return (
+            <div className={"row "+id} key={id} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+                <div className="col-md-3" style={{fontWeight:'bold'}}>{name}: </div>
+                <div className="col-md-9">{value}</div>
+            </div>
+        );
+    },
+
+    renderFieldBySchema(fieldName, fieldSchema, metadata) {
+        let v = metadata.get(fieldName);
+        if (!v) {
+            return false;
+        }
+        if (v.toJS) {
+            v = v.toJS();
+        }
+        const name = fieldSchema.get('title') || fieldName;
+        const type = fieldSchema.get('type');
+        const format = fieldSchema.get('format');
+        return this.renderFieldType(fieldName, name, format ? format : type, v);
+    },
+
+    renderRootMetadata(record, rootSchema) {
+        if (!rootSchema) {
+            return false;
+        }
+        const except = {'$schema':true, 'community_specific':true,
+            'title':true, 'description':true, 'keywords':true, 'community':true, 'creator':true};
+        const metadata = record.get('metadata') || Map();
+
+        const fields = [];
+        rootSchema.get('properties').entrySeq().forEach( ([p, v]) => {
+            if (!except.hasOwnProperty(p)) {
+                const f = this.renderFieldBySchema(p, v, metadata);
+                if (f) {
+                    fields.push(f);
+                }
+            }
+        });
+
+        return (
+            <div style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
+                {fields}
+            </div>
+        );
+    },
+
+    renderBlocksMetadata(record, blockSchemas) {
+        if (!blockSchemas) {
+            return false;
+        }
+        const except = {'$schema':true};
+        const community_specific = record.getIn(['metadata', 'community_specific']) || Map();
+
+        const fields = [];
+        blockSchemas.forEach( ([schemaID, schemaBlock]) => {
+            const metadataBlock = community_specific.get(schemaID);
+            if (metadataBlock && schemaBlock) {
+                schemaBlock.getIn(['json_schema', 'properties']).entrySeq().forEach( ([p, v]) => {
+                    if (!except.hasOwnProperty(p)) {
+                        const f = this.renderFieldBySchema(p, v, metadataBlock);
+                        if (f) {
+                            fields.push(f);
+                        }
+                    }
+                });
+            }
+        });
+
+        return (
+            <div style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
+                {fields}
+            </div>
+        );
+    },
+
+    render() {
+        return (
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-md-12">
+                        <div className="large-record">
+                            {this.renderFixedFields(this.props.record, this.props.community)}
+                            {this.renderRootMetadata(this.props.record, this.props.rootSchema)}
+                            {this.renderBlocksMetadata(this.props.record, this.props.blockSchemas)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 export const NewRecordRoute = React.createClass({
     mixins: [React.addons.LinkedStateMixin],
@@ -118,92 +293,6 @@ export const EditRecordRoute = React.createClass({
 });
 
 
-///////////////////////////////////////////////////////////////////////////////
-
-const Record = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
-    renderDates(record) {
-        const floatRight={float:'right'};
-        const bland={color:'#888'};
-
-        const created = new Date(record.get('created')).toLocaleString();
-        const updated = new Date(record.get('updated')).toLocaleString();
-        return (
-            <div style={floatRight}>
-                <p style={floatRight}>
-                    <span style={bland}>Created at </span>
-                    <span style={{color:'#225'}}>{created}</span>
-                </p>
-                <div style={{clear:"both"}}/>
-                { created != updated
-                    ? <p style={floatRight}>
-                        <span style={bland}>Last updated at </span>
-                        <span style={{color:'#225'}}>{updated}</span>
-                      </p>
-                    : false }
-            </div>
-        );
-    },
-
-    renderCreators(metadata) {
-        const creators = metadata.get('creator');
-        if (!creators) {
-            return false;
-        }
-
-        return (
-            <p> <span style={{color:'black'}}> by </span>
-                { creators && creators.count()
-                    ? creators.map(c => <a className="creator" key={c}> {c}</a>)
-                    : <span style={{color:'black'}}> [Unknown] </span>
-                }
-            </p>
-        );
-    },
-
-    render() {
-        const record = this.props.record;
-        const metadata = record.get('metadata') || Map();
-        const desc = metadata.get('description') ||"";
-
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <div className="large-record">
-                            <h3 className="name">{metadata.get('title')}</h3>
-
-                            { this.renderDates(record) }
-                            <div style={{clear:"both", height:10}}/>
-
-                            { this.renderCreators(metadata) }
-
-                            <p className="description">{desc.substring(0,200)}</p>
-                        </div>
-                        </div>
-                </div>
-            </div>
-        );
-    }
-});
-
-
-function renderCommunity(community, active, onClickFn) {
-    const activeClass = active ? " active": " inactive";
-    const newpadding = {padding:'0 2px'};
-    return (
-        <div className="col-lg-2 col-sm-3 col-xs-6" style={newpadding} key={community.get('id')}>
-            <div className={"community"+activeClass} title={community.get('description')}
-                    onClick={onClickFn ? onClickFn : ()=>{}}>
-                <p className="name">{community.get('name')}</p>
-                <img className="logo" src={community.get('logo')}/>
-            </div>
-        </div>
-    );
-}
-
-
 const EditRecord = React.createClass({
     mixins: [React.addons.LinkedStateMixin],
 
@@ -286,118 +375,18 @@ const EditRecord = React.createClass({
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const defaultSchema = {
-    "title": "B2SHARE Basic Block Schema",
-    "description": "This is the schema used for validating the basic metadata fields of a B2SHARE record",
-    "type": "object",
-    "properties": {
-        "title": {
-            "title": "Title",
-            "description": "The main title of the record.",
-            "type": "string",
-        },
-        "description": {
-            "title": "Description",
-            "description": "The record abstract.",
-            "type": "string",
-        },
-        "creator": {
-            "title": "Author",
-            "description": "The record author(s).",
-            "type": "array",
-            "items": {"type": "string"},
-            "uniqueItems": true,
-        },
-        'keywords': {
-            'title': 'Keywords',
-            'description': 'Keywords...',
-            "type": "array",
-            "items": {"type": "string"},
-            "uniqueItems": true,
-        },
-        'open_access': {
-            'title': 'Open Access',
-            'description': 'Indicate whether the resource is open or access is restricted. In case of restricted access the uploaded files will not be public, however the metadata will be.',
-            'type': 'boolean',
-        },
-        'licence': {
-            'title': 'Licence',
-            'description': 'Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.',
-            'type': 'string'
-        },
-        'embargo_date': {
-            'title': 'Embargo Date',
-            'description': 'Date that the embargo will expire.',
-            'type': 'string',
-            'format': 'date-time',
-            'default': new Date(),
-        },
-        'contact_email': {
-            'title': 'Contact Email',
-            'description': 'The email of the contact person for this record.',
-            'type': 'string',
-            'format': 'email',
-        },
-        'discipline': {
-            'title': 'Discipline',
-            'description': 'Scientific discipline...',
-            'type': 'string'
-        },
-
-        'contributor': {
-            'title': 'Contributor',
-            'description': 'Contributor...',
-            "type": "array",
-            "items": {"type": "string"},
-            "uniqueItems": true,
-        },
-        'resource_type': {
-            'title': 'Resource Type',
-            'description': 'Resource Type...',
-            "type": "array",
-            "items": {
-                'type': 'string',
-                'enum': ['Text', 'Image', 'Video', 'Audio', 'Time-Series', 'Other'],
-            },
-            "uniqueItems": true,
-        },
-        'version': {
-            'title': 'Version',
-            'description': 'Version...',
-            'type': 'string',
-        },
-        'language': {
-            'title': 'Language',
-            'description': 'Language...',
-            "type": "string"
-        },
-        'alternate_identifier': {
-            'title': 'Alternate Identifier',
-            'description': 'Alternate Identifier...',
-            "type": "string"
-        },
-    },
-    "required": ["title", "description", "open_access"],
-    "additionalProperties": true,
-    "b2share": {
-        "recommended": ['creator', 'licence', 'publication_date',
-                        'keywords', 'contact_email', 'discipline'],
-        "plugins": {
-            'licence': 'licence_chooser',
-            'discipline': 'discipline_chooser',
-            'language': 'language_chooser',
-        },
-        "mapping": {
-            "oai_dc": {
-                "title": "dc.title",
-                "description": "dc.description",
-                "creator": "dc.creator",
-                "subject": "dc.subject",
-            },
-            "marcxml": {
-            },
-        }
-    },
+function renderCommunity(community, active, onClickFn) {
+    const activeClass = active ? " active": " inactive";
+    const newpadding = {padding:'0 2px'};
+    return (
+        <div className="col-lg-2 col-sm-3 col-xs-6" style={newpadding} key={community.get('id')}>
+            <div className={"community"+activeClass} title={community.get('description')}
+                    onClick={onClickFn ? onClickFn : ()=>{}}>
+                <p className="name">{community.get('name')}</p>
+                <img className="logo" src={community.get('logo')}/>
+            </div>
+        </div>
+    );
 }
 
 

@@ -30,7 +30,7 @@ export const Navbar = React.createClass({
                         </Link>
                     </div>
 
-                    { this.state.open ? <NavbarMenu/> : false }
+                    { this.state.open ? <NavbarMenu location={this.props.location}/> : false }
                 </div>
             </nav>
         );
@@ -50,8 +50,30 @@ const NavbarSearch = React.createClass({
         window.location.assign(`${window.location.origin}/records/?q=${this.state.query}`);
     },
 
-    render() {
+    componentWillMount() {
+        this.componentWillReceiveProps(this.props.location);
+    },
+
+    componentWillReceiveProps(np) {
+        const { start, stop, sortBy, order, query } = np.query || {};
+        const upstate = {};
+        if (query)  { upstate.query = query; }
+        if (start)  { upstate.start = start; }
+        if (stop)   { upstate.stop  = stop; }
+        if (sortBy) { upstate.sortBy = sortBy; }
+        if (order)  { upstate.order = order; }
+        if (query || start || stop || sortBy || order) {
+            console.log("search", np, upstate);
+            this.setState(upstate);
+        }
         // TODO: smoother experience on search: try Link with params
+    },
+
+    change(event) {
+        this.setState({query: event.target.value});
+    },
+
+    render() {
         return (
             <form onSubmit={this.search}>
                 <div className="nav-search">
@@ -60,7 +82,8 @@ const NavbarSearch = React.createClass({
                             <i className="fa fa-question-circle"></i>
                         </button>
                     </span>
-                    <input className="form-control" style={{borderRadius:0}} type="text" name="query" valueLink={this.linkState('query')}
+                    <input className="form-control" style={{borderRadius:0}} type="text" name="query"
+                        value={this.state.query} onChange={this.change}
                         autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">
@@ -81,7 +104,7 @@ const NavbarMenu = React.createClass({
         const user = serverCache.getUser();
         return (
             <div className="collapse navbar-collapse" id="header-navbar-collapse">
-                <NavbarSearch />
+                <NavbarSearch location={this.props.location}/>
 
                 <ul className="nav navbar-nav text-uppercase" style={topgap}>
                     <li> <Link to="/help" activeClassName='active'> Help </Link> </li>

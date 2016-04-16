@@ -19,7 +19,25 @@ const apiUrls = {
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
 
+    extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
+        if (!communitySchemaURL) {
+            return [];
+        }
+        const m = communitySchemaURL.match(/.*\/api\/communities\/([^\/]+)\/schemas\/(\d+).*/);
+        if (m) {
+            return [m[1], m[2]];
+        }
+        const mlast = communitySchemaURL.match(/.*\/api\/communities\/([^\/]+)\/schemas\/last.*/);
+        if (mlast) {
+            return [mlast[1], 'last'];
+        }
+        return [];
+    },
+
     extractSchemaVersionFromUrl(schemaURL) {
+        if (!schemaURL) {
+            return null;
+        }
         const m = schemaURL.match(/.*\/versions\/(\d+).*/);
         if (m && m[1]) {
             return m[1]
@@ -264,8 +282,11 @@ class ServerCache {
     }
 
     getRecordSchemas(record) {
-
-        return [rootSchema, blockSchemas];
+        if (!record) {
+            return [];
+        }
+        const [communityID, ver] = apiUrls.extractCommunitySchemaInfoFromUrl(record.getIn(['metadata', '$schema']));
+        return this.getCommunitySchemas(communityID, ver);
     }
 
     getUser() {

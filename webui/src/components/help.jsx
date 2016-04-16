@@ -16,29 +16,24 @@ export const Help = React.createClass({
                 </div>
 
                 <div className="row">
-                    <div className="col-xs-1 hidden-xs"/>
-                    <div className="col-sm-10">
-                        <div className="row">
-                            <div className="col-sm-3">
-                                <ul className="list-group">
-                                    <li className="list-group-item">
-                                        <Link to="http://www.eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE</Link>
-                                    </li>
-                                    <li className="list-group-item">
-                                        <Link to="http://www.eudat.eu/services/userdoc/b2share" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
-                                    </li>
-                                    <li className="list-group-item">
-                                        <Link to="/help/search"><i className="fa fa-search"></i> Search</Link>
-                                    </li>
-                                    <li className="list-group-item">
-                                        <Link to="/help/terms-of-use"><i className="fa fa-question-circle"></i> Term-Of-Use</Link>
-                                    </li>
-                                    <li className="list-group-item">
-                                        <Link to="/help/api"><i className="fa fa-list"></i> RestAPI</Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div className="col-sm-3">
+                        <ul className="list-group">
+                            <li className="list-group-item">
+                                <Link to="http://www.eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE</Link>
+                            </li>
+                            <li className="list-group-item">
+                                <Link to="http://www.eudat.eu/services/userdoc/b2share" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
+                            </li>
+                            <li className="list-group-item">
+                                <Link to="/help/search"><i className="fa fa-search"></i> Search</Link>
+                            </li>
+                            <li className="list-group-item">
+                                <Link to="/help/terms-of-use"><i className="fa fa-question-circle"></i> Term-Of-Use</Link>
+                            </li>
+                            <li className="list-group-item">
+                                <Link to="/help/api"><i className="fa fa-list"></i> RestAPI</Link>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

@@ -19,11 +19,15 @@ import { RecordRoute, NewRecordRoute, EditRecordRoute  } from './components/reco
 
 const VERSION = '0.6.0';
 
-// TODO: remove eudat empty block schema
-// TODO: eliminate duplicate server calls
-// TODO: show records metadata
 // TODO: edit records
 // TODO: file uplaods
+// TODO: installation instructions
+
+// TODO: remove eudat empty block schema
+// TODO: eliminate duplicate server calls
+// TODO: remove valueLink
+// TODO: reevaluate window.location.assign
+// TODO: show md fields in presentation order
 // TODO: user login
 
 const AppFrame = React.createClass({
@@ -49,16 +53,16 @@ const AppFrame = React.createClass({
         const additionalProps = {dataRef: this.state.dataRef,  pathName: this.props.location.pathname}
         return (
             <div>
-                <Navbar dataRef={this.state.dataRef} />
+                <Navbar dataRef={this.state.dataRef}  location={this.props.location}/>
                 <div className="container-fluid">
-                    <div className="col-xs-1"/>
-                    <div className="col-xs-10">
+                    <div className="col-sm-1"/>
+                    <div className="col-sm-10">
                         <Breadcrumbs />
                         <ReplaceAnimate>
                             { this.props.children && React.cloneElement(this.props.children, additionalProps) }
                         </ReplaceAnimate>
                     </div>
-                    <div className="col-xs-1"/>
+                    <div className="col-sm-1"/>
                 </div>
             </div>
         );
