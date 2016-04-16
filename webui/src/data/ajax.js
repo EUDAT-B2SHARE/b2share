@@ -7,9 +7,11 @@ const DEFAULT_TIMEOUT_POST_MS = 10 * 1000; // 10 seconds
 
 export let errorHandler = {fn:function(text){}};
 
+const starttime = Date.now();
+function timestamp() { return Date.now() - starttime; }
 
 export function ajaxGet({url, params, etag, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxGet:", url, params);
+    console.log("--- ajaxGet:", timestamp(), url, params);
     const aobj = {
         url: url,
         type: 'json',
@@ -30,7 +32,7 @@ export function ajaxGet({url, params, etag, successFn, errorFn, completeFn}) {
 
 
 export function ajaxPost({url, params, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxPost:", url, params);
+    console.log("--- ajaxPost:", timestamp(), url, params);
     const aobj = {
         method: 'post',
         url: url,
@@ -93,7 +95,7 @@ function ajaxWithToken(ajaxObject) {
             }
         }
         var etag = request.getResponseHeader('ETag');
-        console.log('  > ajaxRet:', ajaxObject.url, data, {etag: etag});
+        console.log('  > ajaxRet:', timestamp(), ajaxObject.url, data, {etag: etag});
         return oldSuccess(data, etag);
     }
 
