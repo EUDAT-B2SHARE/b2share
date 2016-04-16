@@ -30,28 +30,28 @@
                     "type": "object",
                     "properties": {
                         "date": {
-                            "display_text": "Date",
+                            "title": "Date",
                             "description": "Date",
                             "type": "string",
                             "format": "date-time"
                         },
                         "coverage": {
-                            "display_text": "Coverage",
+                            "title": "Coverage",
                             "description": "Coverage",
                             "type": "string"
                         },
                         "format": {
-                            "display_text": "Format",
+                            "title": "Format",
                             "description": "Format",
                             "type": "string"
                         },
                         "relation": {
-                            "display_text": "Relation",
+                            "title": "Relation",
                             "description": "Relation",
                             "type": "string"
                         },
                         "source": {
-                            "display_text": "Source",
+                            "title": "Source",
                             "description": "Source",
                             "type": "string"
                         }

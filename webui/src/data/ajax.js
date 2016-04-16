@@ -93,7 +93,7 @@ function ajaxWithToken(ajaxObject) {
             }
         }
         var etag = request.getResponseHeader('ETag');
-        console.log('--> ajaxRet:', ajaxObject.url, data, {etag: etag});
+        console.log('  > ajaxRet:', ajaxObject.url, data, {etag: etag});
         return oldSuccess(data, etag);
     }
 

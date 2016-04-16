@@ -1,6 +1,7 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { serverCache } from '../data/server';
+import { pairs } from '../data/misc';
 import { Wait } from './waiting.jsx';
 import { Schema } from './schema.jsx';
 
@@ -20,8 +21,14 @@ export const CommunityRoute = React.createClass({
         const { id } = this.props.params; // community id or name
         const community = serverCache.getCommunity(id);
 
+        let blocks = [];
+        if (community) {
+            const blockIDs = serverCache.getCommunityBlockSchemaIDs(community.get('id'), 'last') || [];
+            blocks = pairs(blockIDs).map( ([sid,sver]) => serverCache.getBlockSchema(sid, sver));
+        }
+
         return community ?
-            <Community community={community} /> :
+            <Community community={community} blockSchemas={blocks}/> :
             <Wait/>;
     }
 });
@@ -99,11 +106,9 @@ const Community = React.createClass({
         );
     },
 
-    renderSchema([schemaID, schemaVersion]) {
-        console.log("render schema", schemaID, schemaVersion);
-        const schema = serverCache.getBlockSchema(schemaID, schemaVersion);
+    renderSchema(schema) {
         return !schema ? false :
-            <div key={schemaID} className="col-sm-6" style={{borderBottom:'1px solid #eee'}}>
+            <div key={schema.get('id')} className="col-sm-12" style={{borderBottom:'1px solid #eee'}}>
                 <Schema schema={schema}/>
             </div>;
 
@@ -111,21 +116,21 @@ const Community = React.createClass({
 
     render() {
         const community = this.props.community;
-        const blockSchemaIDs = community ? serverCache.getCommunityBlockSchemaIDs(community.get('id'), 'last') : null;
+        const blockSchemas = this.props.blockSchemas;
         return (
             <div className="community-page">
                 <h1>{community.get('name')}</h1>
 
                 { this.renderCommunity(community) }
-                { blockSchemaIDs ?
+                { blockSchemas ?
                     <div className="row">
                         <div className="col-sm-12">
                             <hr/>
-                            <h3>Metadata schemas:</h3>
+                            <h3>Schemas</h3>
                         </div>
                     </div> : false }
                 <div className="row">
-                    { blockSchemaIDs ? blockSchemaIDs.entries().map(this.renderSchema) : false }
+                    { blockSchemas.map(this.renderSchema) }
                 </div>
             </div>
         );

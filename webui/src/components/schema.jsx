@@ -8,22 +8,34 @@ export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     getType(p) {
-        let type = p.get('type');
+        let type = p.get('type') || "";
         if (type === 'array') {
-            const etype = p.getIn(['items', 'type']);
-            if (etype) {
-                type += '<'+ etype + '>';
+            const items = p.get('items');
+            if (items) {
+                const itemType = this.getType(items);
+                if (itemType) {
+                    type += '<'+ itemType + '>';
+                }
             }
+        }
+        const format = p.get('format');
+        if (format) {
+            type += " ["+format+"]";
         }
         return type;
     },
 
     renderProperty([id, p]) {
+        const title = p.get('title') || id;
         return (
-            <div key={id} className="row">
-                <div className="col-sm-12">
-                    <span style={{fontWeight:'bold'}}> {p.get('title')} </span>
+            <div key={id} className="row" style={{marginTop:'1em'}}>
+                <div className="col-sm-3">
+                    <span style={{fontWeight:'bold'}}> {title} </span>
+                </div>
+                <div className="col-sm-3">
                     <span style={{fontFamily:'monospace'}}> {this.getType(p)}  </span>
+                </div>
+                <div className="col-sm-6">
                     {p.get('description')}
                 </div>
             </div>
@@ -35,15 +47,17 @@ export const Schema = React.createClass({
         if (!schema) {
             return <Wait/>;
         }
+        console.log('schema', schema.toJS());
+        const jschema = schema.get('json_schema');
         return (
-            <div className="container-fluid">
+            <div>
                 <div className="row">
                     <div className="col-sm-12">
-                        <h4 className="title">{schema.get('title')}</h4>
-                        <p className="description">{schema.get('description')}</p>
+                        <h4 className="title">{jschema.get('title')}</h4>
+                        <p className="description">{jschema.get('description')}</p>
                     </div>
                 </div>
-                { schema.get('properties').entrySeq().map(this.renderProperty) }
+                { jschema.get('properties').entrySeq().map(this.renderProperty) }
             </div>
         );
     }

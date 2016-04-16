@@ -1,6 +1,3 @@
-import {fromJS} from 'immutable';
-import {ajax} from './ajax'
-
 export function objEquals(o1, o2) {
     if (typeof(o1) !== typeof(o2)) {
         return false;
@@ -30,16 +27,6 @@ export function timestamp2str(ts) {
     return d + " " + m + " " + y;
 }
 
-export function objToArray(o) {
-    const a = [];
-    for (const x in o) {
-        if (o.hasOwnProperty(x)) {
-            a.push(x);
-        }
-    }
-    return a;
-}
-
 export function countProps(o) {
     let n = 0;
     for (let p in o) {
@@ -65,6 +52,16 @@ export function humanSize(sz) {
     } else {
         return [(sz/T).toFixed(1), 'TB'];
     }
+}
+
+export function keys(o) {
+    const a = [];
+    for (const x in o) {
+        if (o.hasOwnProperty(x)) {
+            a.push(x);
+        }
+    }
+    return a;
 }
 
 export function pairs(o) {
