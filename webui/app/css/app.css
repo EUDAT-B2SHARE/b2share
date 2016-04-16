@@ -290,12 +290,18 @@ a.navbar-brand {
 }
 
 .record:hover {
-  background-color:#eee;
+  border: 1px solid #eee;
+  box-shadow: 0 0 4px #eee !important;
+  background-color: white;
 }
 
 .record {
   padding: 5px;
   word-break: break-word;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow: 0 0 4px white !important;
+  background-color: white;
 }
 
 .record p {
@@ -322,6 +328,21 @@ a.navbar-brand {
 /*****************************************************************************/
 /* communities */
 
+.large-record {
+  background-color: white;
+  padding-bottom:1em;
+}
+
+
+/*****************************************************************************/
+/* communities */
+
+.community-page {
+  background-color: white;
+  padding-bottom:1em;
+}
+
+
 .community-list-page .community {
   padding: 5px 20px;
   margin: 10px;
@@ -332,6 +353,8 @@ a.navbar-brand {
 
 .community-list-page .community.link {
   text-align: center;
+  background-color: white;
+  border: 1px solid #eee;
 }
 
 .community-list-page .community.link:hover {
