@@ -1,9 +1,9 @@
 import {fromJS, OrderedMap, List} from 'immutable';
-import {ajaxGet, ajaxPost, errorHandler} from './ajax'
+import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
 
-const urlRoot = window.location.origin;
+const urlRoot = ""; // window.location.origin;
 
 
 const apiUrls = {
@@ -106,6 +106,22 @@ class Getter {
 }
 
 
+class Pool {
+    constructor(newFn) {
+        this.newFn = newFn;
+        this.pool = {};
+    }
+    get(x) {
+        let r = this.pool[x];
+        if (!r) {
+            r = this.newFn(x);
+            this.pool[x] = r;
+        }
+        return r;
+    }
+}
+
+
 class Poster {
     constructor(url) {
         this.url = url;
@@ -116,6 +132,30 @@ class Poster {
         if (!this.requestSent) {
             this.requestSent = true;
             ajaxPost({
+                url: this.url,
+                params: params,
+                successFn: successFn,
+                completeFn: () => { this.requestSent = false; },
+            });
+        }
+    }
+
+    put(params, successFn) {
+        if (!this.requestSent) {
+            this.requestSent = true;
+            ajaxPut({
+                url: this.url,
+                params: params,
+                successFn: successFn,
+                completeFn: () => { this.requestSent = false; },
+            });
+        }
+    }
+
+    patch(params, successFn) {
+        if (!this.requestSent) {
+            this.requestSent = true;
+            ajaxPatch({
                 url: this.url,
                 params: params,
                 successFn: successFn,
@@ -167,53 +207,57 @@ class ServerCache {
                 this.store.setIn(['communities'], map);
             });
 
-        this.getters.record = (recordID) => {
+        this.getters.record = new Pool(recordID => {
             const placeDataFn = (data) => {
                 expect(recordID == data.id);
                 const updater = (records) => records.set(data.id, fromJS(data));
                 this.store.updateIn(['recordCache'], updater);
             };
             return new Getter(apiUrls.record(recordID), null, placeDataFn);
-        },
+        }),
 
-        this.getters.communitySchema = (communityID, version) => {
-            const placeDataFn = (data) => {
-                expect(communityID == data.community);
-                const ischema = fromJS(data);
-                const updater = (schemas) => {
-                    let s = schemas.get(communityID) || fromJS({});
-                    s = s.set(version, ischema);
-                    if (version === 'last') {
-                        s = s.set(data.version, ischema);
-                    }
-                    return schemas.set(communityID, s);
+        this.getters.communitySchema = new Pool( communityID =>
+            new Pool ( version => {
+                const placeDataFn = (data) => {
+                    expect(communityID == data.community);
+                    const ischema = fromJS(data);
+                    const updater = (schemas) => {
+                        let s = schemas.get(communityID) || fromJS({});
+                        s = s.set(version, ischema);
+                        if (version === 'last') {
+                            s = s.set(data.version, ischema);
+                        }
+                        return schemas.set(communityID, s);
+                    };
+                    this.store.updateIn(['communitySchemas'], updater);
                 };
-                this.store.updateIn(['communitySchemas'], updater);
-            };
-            return new Getter(apiUrls.communitySchema(communityID, version), null, placeDataFn);
-        },
+                return new Getter(apiUrls.communitySchema(communityID, version), null, placeDataFn);
+            })
+        ),
 
-        this.getters.blockSchema = (schemaID, version) => {
-            const placeDataFn = (data) => {
-                expect(schemaID == data.id);
-                const ischema = fromJS(data);
-                const updater = (schemas) => {
-                    let s = schemas.get(schemaID) || fromJS({});
-                    s = s.set(version, ischema);
-                    if (version === 'last') {
-                        s = s.set(data.version, ischema);
-                    }
-                    return schemas.set(schemaID, s);
+        this.getters.blockSchema = new Pool(schemaID =>
+            new Pool(version => {
+                const placeDataFn = (data) => {
+                    expect(schemaID == data.id);
+                    const ischema = fromJS(data);
+                    const updater = (schemas) => {
+                        let s = schemas.get(schemaID) || fromJS({});
+                        s = s.set(version, ischema);
+                        if (version === 'last') {
+                            s = s.set(data.version, ischema);
+                        }
+                        return schemas.set(schemaID, s);
+                    };
+                    this.store.updateIn(['blockSchemas'], updater);
                 };
-                this.store.updateIn(['blockSchemas'], updater);
-            };
-            return new Getter(apiUrls.schema(schemaID, version), null, placeDataFn);
-        },
+                return new Getter(apiUrls.schema(schemaID, version), null, placeDataFn);
+            })
+        ),
 
         this.posters = {};
 
         this.posters.records = new Poster(apiUrls.records());
-
+        this.posters.record = new Pool(recordID => new Poster(apiUrls.record(recordID)));
     }
 
     getLatestRecords() {
@@ -224,11 +268,6 @@ class ServerCache {
     searchRecords({query, start, stop, sortBy, order}) {
         this.getters.searchRecords.fetch(query, start, stop, sortBy, order);
         return this.store.getIn(['searchRecords']);
-    }
-
-    getRecord(id) {
-        this.getters.record(id).fetch();
-        return this.store.getIn(['recordCache', id]);
     }
 
     getCommunities() {
@@ -247,10 +286,15 @@ class ServerCache {
         return c ? c : communities.valueSeq().find(x => x.get('name') == communityIDorName);
     }
 
+    getRecord(id) {
+        this.getters.record.get(id).fetch();
+        return this.store.getIn(['recordCache', id]);
+    }
+
     getBlockSchema(schemaID, version) {
         const s = this.store.getIn(['blockSchemas', schemaID, version]);
         if (!s) {
-            this.getters.blockSchema(schemaID, version).fetch();
+            this.getters.blockSchema.get(schemaID).get(version).fetch();
         }
         return s;
     }
@@ -258,7 +302,7 @@ class ServerCache {
     getCommunitySchemas(communityID, version) {
         const cs = this.store.getIn(['communitySchemas', communityID, version]);
         if (!cs) {
-            this.getters.communitySchema(communityID, version).fetch();
+            this.getters.communitySchema.get(communityID).get(version).fetch();
             return [];
         }
         const allOf = cs.getIn(['json_schema', 'allOf']);
@@ -298,8 +342,12 @@ class ServerCache {
         this.posters.records.post(initialMetadata, successFn);
     }
 
-    updateRecord(id, metadata) {
-        this.posters.record(id).post(metadata, successFn);
+    updateRecord(id, metadata, successFn) {
+        this.posters.record.get(id).put(metadata, successFn);
+    }
+
+    patchRecord(id, patch, successFn) {
+        this.posters.record.get(id).patch(patch, successFn);
     }
 
     notifyAlert(text) {

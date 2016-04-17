@@ -50,6 +50,43 @@ export function ajaxPost({url, params, successFn, errorFn, completeFn}) {
 }
 
 
+export function ajaxPut({url, params, successFn, errorFn, completeFn}) {
+    console.log("--- ajaxPut:", timestamp(), url, params);
+    const aobj = {
+        method: 'put',
+        url: url,
+        type: 'json',
+        contentType: 'application/json',
+        success: successFn,
+        error: errorFn,
+        complete: completeFn,
+        timeout: DEFAULT_TIMEOUT_POST_MS,
+    }
+    if (params) {
+        aobj.data = JSON.stringify(params);
+    }
+    return ajaxWithError(aobj);
+}
+
+export function ajaxPatch({url, params, successFn, errorFn, completeFn}) {
+    console.log("--- ajaxPatch:", timestamp(), url, params);
+    const aobj = {
+        method: 'patch',
+        url: url,
+        type: 'json',
+        contentType: 'application/json-patch+json',
+        success: successFn,
+        error: errorFn,
+        complete: completeFn,
+        timeout: DEFAULT_TIMEOUT_POST_MS,
+    }
+    if (params) {
+        aobj.data = JSON.stringify(params);
+    }
+    return ajaxWithError(aobj);
+}
+
+
 function ajaxWithError(ajaxObject) {
     if (!ajaxObject.error) {
         ajaxObject.error = function(xhr) {
@@ -101,6 +138,10 @@ function ajaxWithToken(ajaxObject) {
 
     const oldError = ajaxObject.error;
     ajaxObject.error = function(xhr) {
+        if (xhr.status === 304) {
+            console.log('  > ajaxRet:', timestamp(), 'not modified', ajaxObject.url);
+            return;
+        }
         if (xhr.status == 401) {
             setSessionUserToken("");
         }

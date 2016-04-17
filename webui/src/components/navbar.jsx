@@ -30,7 +30,7 @@ export const Navbar = React.createClass({
                         </Link>
                     </div>
 
-                    { this.state.open ? <NavbarMenu location={this.props.location}/> : false }
+                    { this.state.open ? <NavbarMenu collapse={!this.state.open} location={this.props.location}/> : false }
                 </div>
             </nav>
         );
@@ -39,15 +39,13 @@ export const Navbar = React.createClass({
 
 
 const NavbarSearch = React.createClass({
-    mixins: [React.addons.LinkedStateMixin],
-
     getInitialState() {
         return { query: "" };
     },
 
     search(event) {
         event.preventDefault();
-        window.location.assign(`${window.location.origin}/records/?q=${this.state.query}`);
+        window.location.assign(`${window.location.origin}/records/?query=${this.state.query}`);
     },
 
     componentWillMount() {
@@ -102,8 +100,9 @@ const NavbarMenu = React.createClass({
     render() {
         const topgap = {marginTop:'0.5em'}
         const user = serverCache.getUser();
+        const cname = this.props.collapse ? "collapse":"";
         return (
-            <div className="collapse navbar-collapse" id="header-navbar-collapse">
+            <div className={cname + " navbar-collapse"} id="header-navbar-collapse">
                 <NavbarSearch location={this.props.location}/>
 
                 <ul className="nav navbar-nav text-uppercase" style={topgap}>

@@ -20,12 +20,14 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.6",
+    "fast-json-patch": "^0.5.6",
     "font-awesome": "^4.4.0",
     "immutable": "^3.7.6",
     "pluralize": "^1.2.1",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
     "react-router": "^2.1.1",
+    "react-toggle": "^2.1.0",
     "reqwest": "^2.0.5"
   }
 }

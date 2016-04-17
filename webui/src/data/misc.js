@@ -85,3 +85,10 @@ export function expect(condition) {
         }
     }
 }
+
+// useful for react handlers
+export function stateSetter(obj, state) {
+    return function() {
+        obj.setState(state);
+    }
+}

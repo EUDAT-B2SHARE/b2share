@@ -59,7 +59,7 @@
                     "additionalProperties": false,
                     "b2share": {
                         "presentation": {
-                            "unfolded": [ "date", "coverage", "format", "relation", "source"]
+                            "major": [ "date", "coverage", "format", "relation", "source"]
                         }
                     }
                 }

@@ -65,7 +65,7 @@
                     "additionalProperties": false,
                     "b2share": {
                         "presentation": {
-                            "unfolded": [ "language_code", "region", "ling_resource_type", "project_name", "quality"],
+                            "major": [ "language_code", "region", "ling_resource_type", "project_name", "quality"],
                             "plugins": {"language_code": "language_chooser"}
                         },
                         "overwrites": {

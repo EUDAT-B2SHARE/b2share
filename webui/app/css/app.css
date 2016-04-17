@@ -290,12 +290,18 @@ a.navbar-brand {
 }
 
 .record:hover {
-  background-color:#eee;
+  border: 1px solid #eee;
+  box-shadow: 0 0 4px #eee !important;
+  background-color: white;
 }
 
 .record {
   padding: 5px;
   word-break: break-word;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow: 0 0 4px white !important;
+  background-color: white;
 }
 
 .record p {
@@ -322,6 +328,54 @@ a.navbar-brand {
 /*****************************************************************************/
 /* communities */
 
+.community-small {
+  padding: 10px 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  height: 8em;
+  max-width: 10em;
+  overflow: hidden;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid #eee;
+  box-shadow: 0 0 10px #eee !important;
+}
+
+.community-small:hover {
+  border: 1px solid gray;
+  box-shadow: 0 0 10px gray !important;
+}
+
+.community-small.active {
+  color: #F45D00;
+  border: 1px solid #F45D00;
+  box-shadow: 0 0 10px #F45D00 !important;
+}
+
+.community-small.passive {
+  border: 1px solid #eee;
+  box-shadow: 0 0 10px #eee !important;
+}
+
+.community-small img.logo {
+  max-width: 96px;
+  max-height: 64px;
+}
+
+.community-small.inactive img{
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+}
+
+
+.community-page {
+  background-color: white;
+  padding-bottom:1em;
+}
+
+
 .community-list-page .community {
   padding: 5px 20px;
   margin: 10px;
@@ -332,6 +386,8 @@ a.navbar-brand {
 
 .community-list-page .community.link {
   text-align: center;
+  background-color: white;
+  border: 1px solid #eee;
 }
 
 .community-list-page .community.link:hover {
@@ -378,7 +434,17 @@ a.navbar-brand {
 }
 
 /*****************************************************************************/
-/* new record */
+/* records */
+
+.large-record {
+  background-color: white;
+  padding-bottom:1em;
+}
+
+.edit-record {
+  background-color: white;
+  padding-bottom:1em;
+}
 
 .new-record {
   margin-top: 2em;
@@ -387,43 +453,6 @@ a.navbar-brand {
 .new-record .submit {
   margin-top: 2em;
 }
-
-.new-record .community {
-  padding: 10px 4px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  height: 8em;
-  overflow: hidden;
-}
-
-.new-record .community {
-  text-align: center;
-  font-weight: bold;
-}
-
-.new-record .community:hover {
-  border: 1px solid gray;
-  box-shadow: 0 0 10px gray !important;
-}
-
-.new-record .community.active {
-  color: #F45D00;
-  border: 1px solid #F45D00;
-  box-shadow: 0 0 10px #F45D00 !important;
-}
-
-.new-record .community img.logo {
-  max-width: 96px;
-  max-height: 64px;
-}
-
-.new-record .community.inactive img{
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
-  -moz-filter: grayscale(100%);
-  filter: gray;
-}
-
 
 /*****************************************************************************/
 /* upload form */
@@ -493,5 +522,3 @@ code {
   margin: 0 2px;
   padding: 0px 5px;
 }
-
-
