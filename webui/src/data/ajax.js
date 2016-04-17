@@ -101,6 +101,10 @@ function ajaxWithToken(ajaxObject) {
 
     const oldError = ajaxObject.error;
     ajaxObject.error = function(xhr) {
+        if (xhr.status === 304) {
+            console.log('  > ajaxRet:', timestamp(), 'not modified', ajaxObject.url);
+            return;
+        }
         if (xhr.status == 401) {
             setSessionUserToken("");
         }
