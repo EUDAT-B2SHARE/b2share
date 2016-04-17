@@ -337,6 +337,8 @@ a.navbar-brand {
   overflow: hidden;
   text-align: center;
   font-weight: bold;
+  border: 1px solid #eee;
+  box-shadow: 0 0 10px #eee !important;
 }
 
 .community-small:hover {
@@ -365,17 +367,6 @@ a.navbar-brand {
   -webkit-filter: grayscale(100%);
   -moz-filter: grayscale(100%);
   filter: gray;
-}
-
-
-
-
-/*****************************************************************************/
-/* records */
-
-.large-record {
-  background-color: white;
-  padding-bottom:1em;
 }
 
 
@@ -450,9 +441,10 @@ a.navbar-brand {
   padding-bottom:1em;
 }
 
-
-/*****************************************************************************/
-/* new record */
+.edit-record {
+  background-color: white;
+  padding-bottom:1em;
+}
 
 .new-record {
   margin-top: 2em;

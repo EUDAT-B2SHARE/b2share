@@ -3,7 +3,7 @@ import {ajaxGet, ajaxPost, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
 
-const urlRoot = window.location.origin;
+const urlRoot = ""; // window.location.origin;
 
 
 const apiUrls = {

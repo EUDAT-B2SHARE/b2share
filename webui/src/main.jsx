@@ -20,6 +20,12 @@ import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 const VERSION = '0.6.0';
 
+// TODO: remove this
+import { Map, List } from 'immutable';
+window.Map = Map;
+window.List = List;
+
+
 // TODO: edit records
 // TODO: file uplaods
 // TODO: installation instructions
@@ -31,6 +37,7 @@ const VERSION = '0.6.0';
 // TODO: reevaluate window.location.assign
 // TODO: show md fields in presentation order
 // TODO: user login
+// TODO: make communities links (keyboard selectable)
 
 const AppFrame = React.createClass({
     getInitialState() {

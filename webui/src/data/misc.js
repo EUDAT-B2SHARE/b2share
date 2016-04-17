@@ -92,11 +92,3 @@ export function stateSetter(obj, state) {
         obj.setState(state);
     }
 }
-
-export function stateLinker(obj, id) {
-    return function(event) {
-        const x = {};
-        x[id] = event.target.value;
-        obj.setState(x);
-    }
-}

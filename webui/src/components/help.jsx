@@ -16,7 +16,7 @@ export const Help = React.createClass({
                 </div>
 
                 <div className="row">
-                    <div className="col-sm-3">
+                    <div className="col-sm-6">
                         <ul className="list-group">
                             <li className="list-group-item">
                                 <Link to="http://www.eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE</Link>

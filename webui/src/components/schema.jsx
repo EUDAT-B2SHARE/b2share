@@ -4,25 +4,35 @@ import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 
 
+export function getType(property) {
+    const isArray = property.get('type') === 'array';
+    if (!isArray) {
+        return {
+            isArray: false,
+            type: property.get('type'),
+            format: property.get('format'),
+        }
+    }
+
+    const items = property.get('items');
+    if (items) {
+        const t = getType(items);
+        return {
+            isArray: true,
+            type: t.type,
+            format: t.format,
+        }
+    }
+}
+
+
 export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    getType(p) {
-        let type = p.get('type') || "";
-        if (type === 'array') {
-            const items = p.get('items');
-            if (items) {
-                const itemType = this.getType(items);
-                if (itemType) {
-                    type += '<'+ itemType + '>';
-                }
-            }
-        }
-        const format = p.get('format');
-        if (format) {
-            type += " ["+format+"]";
-        }
-        return type;
+    getTypeString(property) {
+        const t = getType(property);
+        const s = t.type + (t.format ? (" ["+t.format+"]"):'');
+        return t.isArray ? ('array <'+s+'>') : s;
     },
 
     renderProperty([id, p]) {
@@ -33,7 +43,7 @@ export const Schema = React.createClass({
                     <span style={{fontWeight:'bold'}}> {title} </span>
                 </div>
                 <div className="col-sm-3">
-                    <span style={{fontFamily:'monospace'}}> {this.getType(p)}  </span>
+                    <span style={{fontFamily:'monospace'}}> {this.getTypeString(p)}  </span>
                 </div>
                 <div className="col-sm-6">
                     {p.get('description')}

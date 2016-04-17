@@ -1,11 +1,13 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link } from 'react-router'
-import { Map, List } from 'immutable';
+import { Link } from 'react-router';
+import Toggle from 'react-toggle';
+
+import { Map, List, OrderedMap } from 'immutable';
+import { keys, timestamp2str, pairs } from '../data/misc';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
-import { keys, timestamp2str, stateLinker, pairs } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
-
+import { getType } from './schema.jsx';
 
 export const NewRecordRoute = React.createClass({
     mixins: [React.addons.LinkedStateMixin],
@@ -140,6 +142,7 @@ const EditRecord = React.createClass({
     getInitialState() {
         return {
             errors: {},
+            record: null,
         };
     },
 
@@ -156,49 +159,166 @@ const EditRecord = React.createClass({
         );
     },
 
-    renderField(id, field) {
-        const gap = {marginTop:'1em'};
+    getValue(blockID, fieldID) {
+        const r = this.state.record;
+        if (!r) {
+            return null;
+        }
+        const v = blockID ? r.getIn(['community_specific', blockID, fieldID]) : r.get(fieldID);
+        // console.log('get field ' + blockID +"/"+ fieldID + " = ", v);
+        return v;
+    },
+
+    setValue(blockID, fieldID, value) {
+        let r = this.state.record;
+        if (blockID) {
+            if (!r.has('community_specific')) {
+                r = r.set('community_specific', Map());
+            }
+            if (!r.hasIn(['community_specific'], blockID)) {
+                r = r.setIn(['community_specific', blockID], Map());
+            }
+        }
+
+        r = blockID ? r.setIn(['community_specific', blockID, fieldID], value) : r.set(fieldID, value);
+        // console.log('set field ' + blockID +"/"+ fieldID + " to:", value);
+        this.setState({record:r});
+    },
+
+    onChangeField(blockID, fieldID, event) {
+        this.setValue(blockID, fieldID, event.target.value);
+    },
+
+    renderFieldText(blockID, fieldID, fieldSchema) {
         return (
-            <div className="form-group row" key={id} style={gap} title={field.description}>
-                <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>{field.title}</label>
+            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
+                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                    {fieldSchema.get('title') || fieldID}</label>
                 <div className="col-sm-9">
-                    { plugin ? this.renderPlugin(id, field) :
-                        <input type="text" className="form-control" id={id}
-                            value={this.state[id]} onChange={stateLinker(this, id)} />
-                    }
+                    <input type="text" className="form-control" id={fieldID}
+                        value={this.getValue(blockID, fieldID)} onChange={this.onChangeField.bind(this, blockID, fieldID)} />
                 </div>
             </div>
         );
     },
 
-    renderFieldBlock(record, schemaID, schema) {
-        console.log("field block", schemaID, schema);
+    renderFieldDateTime(blockID, fieldID, fieldSchema) {
         return (
-            <div className="row">
+            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
+                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                    {fieldSchema.get('title') || fieldID}</label>
+                <div className="col-sm-9">
+                    <input type="text" className="form-control" id={fieldID}
+                        value={this.getValue(blockID, fieldID)} onChange={this.onChangeField.bind(this, blockID, fieldID)} />
+                </div>
             </div>
         );
     },
 
+    renderFieldBoolean(blockID, fieldID, fieldSchema) {
+        return (
+            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
+                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                    {fieldSchema.get('title') || fieldID}</label>
+                <div className="col-sm-9">
+                     <Toggle defaultChecked={this.getValue(blockID, fieldID)} onChange={this.onChangeField.bind(this, blockID, fieldID)} />
+                </div>
+            </div>
+        );
+    },
+
+    renderFieldCommunity(blockID, fieldID, fieldSchema) {
+        return (
+            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
+                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                    {fieldSchema.get('title') || fieldID}</label>
+                <div className="col-sm-9">
+                    {this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>}
+                </div>
+            </div>
+        );
+    },
+
+    renderField(blockID, fieldID, fieldSchema) {
+        const plugin = null;
+        if (!fieldSchema) {
+            return false;
+        }
+        const type = getType(fieldSchema);
+        if (!blockID && fieldID === 'community') {
+            return this.renderFieldCommunity(blockID, fieldID, fieldSchema, type.isArray);
+        } else if (type.type === 'boolean') {
+            return this.renderFieldBoolean(blockID, fieldID, fieldSchema, type.isArray);
+        } else if (type.type === 'string' && type.format === 'date-time') {
+            return this.renderFieldDateTime(blockID, fieldID, fieldSchema, type.isArray);
+        }
+        return this.renderFieldText(blockID, fieldID, fieldSchema, type.isArray);
+    },
+
+    renderFieldBlock(schemaID, schema) {
+        if (!schema) {
+            return <Wait key={schemaID}/>;
+        }
+        const except = {'$schema':true, 'community_specific':true, '_internal':true};
+        const properties = schema.get('properties');
+        const plugins = schema.getIn(['b2share', 'plugins']);
+        const presentation = schema.getIn(['b2share', 'presentation']);
+
+        const majorIDs = presentation ? presentation.get('major') : null;
+        const minorIDs = presentation ?  presentation.get('minor') : null;
+
+        let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get('id')]) : []);
+        let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get('id')]) : []);
+        properties.entrySeq().forEach(([id, def]) => {
+            if (majors.has(id)) {
+                majors = majors.set(id, def);
+            } else if (minors.has(id)) {
+                minors = minors.set(id, def);
+            } else if (!except.hasOwnProperty(id)) {
+                majors = majors.set(id, def);
+            }
+        });
+
+        const majorFields = majors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
+        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
+
+        return (
+            <div className="row" key={schemaID} style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
+                { majorFields }
+            </div>
+        );
+    },
+
+    componentWillMount() {
+        this.componentWillReceiveProps(this.props);
+    },
+
+    componentWillReceiveProps(props) {
+        if (props.record && !this.state.record) {
+            this.setState({record:props.record.get('metadata')});
+        }
+    },
+
     render() {
-        const record = this.props.record;
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
-        if (!record || !rootSchema) {
+        if (!this.state.record || !rootSchema) {
             return <Wait/>;
         }
         return (
             <div className="edit-record">
                 <div className="row">
                     <form className="form" onSubmit={this.updateRecord}>
-                        { this.renderFieldBlock(this.props.record, null, rootSchema) }
+                        { this.renderFieldBlock(null, rootSchema) }
 
                         { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
-                            this.renderFieldBlock(this.props.record, id, this.props.blockSchemas) ) : false }
+                            this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
+                          ) : false }
 
-                        <div className="form-group submit row">
+                        <div className="form-group submit row" style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
                             {pairs(this.state.errors).map( ([id, msg]) =>
                                 <div className="col-sm-9 col-sm-offset-3">{msg} </div>) }
-                            <div className="col-sm-offset-3 col-sm-9" style={gap}>
+                            <div className="col-sm-offset-3 col-sm-9">
                                 <button type="submit" className="btn btn-primary btn-default btn-block">
                                     Update Draft/Record</button>
                             </div>
