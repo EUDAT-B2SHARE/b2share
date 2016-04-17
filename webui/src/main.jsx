@@ -20,20 +20,15 @@ import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 const VERSION = '0.6.0';
 
-// TODO: remove this
-import { Map, List } from 'immutable';
-window.Map = Map;
-window.List = List;
-
-
-// TODO: edit records
+// TODO: edit records: show folds and block names
+// TODO: edit records: proper cardinality
+// TODO: edit records: error testing per field
+// TODO: edit records: date types, selector types, plugins
 // TODO: file uplaods
 // TODO: installation instructions
 // TODO: stop cycle in case of 404
 
 // TODO: remove eudat empty block schema
-// TODO: eliminate duplicate server calls
-// TODO: remove valueLink
 // TODO: reevaluate window.location.assign
 // TODO: show md fields in presentation order
 // TODO: user login

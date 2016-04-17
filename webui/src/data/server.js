@@ -1,5 +1,5 @@
 import {fromJS, OrderedMap, List} from 'immutable';
-import {ajaxGet, ajaxPost, errorHandler} from './ajax'
+import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
 
@@ -139,6 +139,30 @@ class Poster {
             });
         }
     }
+
+    put(params, successFn) {
+        if (!this.requestSent) {
+            this.requestSent = true;
+            ajaxPut({
+                url: this.url,
+                params: params,
+                successFn: successFn,
+                completeFn: () => { this.requestSent = false; },
+            });
+        }
+    }
+
+    patch(params, successFn) {
+        if (!this.requestSent) {
+            this.requestSent = true;
+            ajaxPatch({
+                url: this.url,
+                params: params,
+                successFn: successFn,
+                completeFn: () => { this.requestSent = false; },
+            });
+        }
+    }
 }
 
 
@@ -233,7 +257,7 @@ class ServerCache {
         this.posters = {};
 
         this.posters.records = new Poster(apiUrls.records());
-
+        this.posters.record = new Pool(recordID => new Poster(apiUrls.record(recordID)));
     }
 
     getLatestRecords() {
@@ -318,8 +342,12 @@ class ServerCache {
         this.posters.records.post(initialMetadata, successFn);
     }
 
-    updateRecord(id, metadata) {
-        this.posters.record(id).post(metadata, successFn);
+    updateRecord(id, metadata, successFn) {
+        this.posters.record.get(id).put(metadata, successFn);
+    }
+
+    patchRecord(id, patch, successFn) {
+        this.posters.record.get(id).patch(patch, successFn);
     }
 
     notifyAlert(text) {

@@ -1,13 +1,15 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 import Toggle from 'react-toggle';
+import { compare } from 'fast-json-patch';
 
-import { Map, List, OrderedMap } from 'immutable';
+import { Map, List, OrderedMap, fromJS } from 'immutable';
 import { keys, timestamp2str, pairs } from '../data/misc';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { ReplaceAnimate } from './animate.jsx';
 import { getType } from './schema.jsx';
+
 
 export const NewRecordRoute = React.createClass({
     mixins: [React.addons.LinkedStateMixin],
@@ -69,6 +71,10 @@ export const NewRecordRoute = React.createClass({
         );
     },
 
+    onTitleChange(event) {
+        this.setState({title:event.target.value});
+    },
+
     render() {
         const communities = serverCache.getCommunities();
         const gap = {marginTop:'1em'};
@@ -88,7 +94,7 @@ export const NewRecordRoute = React.createClass({
                         <div className="form-group row">
                             <label htmlFor="title" className="col-sm-3 control-label" style={stitle}>Title</label>
                             <div className="col-sm-9" style={gap}>
-                                <input type="text" className="form-control" id="title" valueLink={this.linkState('title')} />
+                                <input type="text" className="form-control" id='title' value={this.state.title} onChange={this.onTitleChange} />
                             </div>
                         </div>
 
@@ -146,6 +152,12 @@ const EditRecord = React.createClass({
         };
     },
 
+    setError(id, msg) {
+        const err = this.state.errors;
+        err[id] = msg;
+        this.setState({errors: this.state.errors});
+    },
+
     renderFileZone() {
         return (
             <div className="row">
@@ -159,17 +171,24 @@ const EditRecord = React.createClass({
         );
     },
 
-    getValue(blockID, fieldID) {
+    getValue(blockID, fieldID, type) {
         const r = this.state.record;
         if (!r) {
             return null;
         }
         const v = blockID ? r.getIn(['community_specific', blockID, fieldID]) : r.get(fieldID);
-        // console.log('get field ' + blockID +"/"+ fieldID + " = ", v);
+        if (v != undefined && v != null) {
+            if (type.isArray && v.toJS){
+                return v.toJS().join("; ");
+            }
+            if (type.type === 'boolean') {
+                return v === 'true' || v === true;
+            }
+        }
         return v;
     },
 
-    setValue(blockID, fieldID, value) {
+    setValue(blockID, fieldID, type, value) {
         let r = this.state.record;
         if (blockID) {
             if (!r.has('community_specific')) {
@@ -180,54 +199,61 @@ const EditRecord = React.createClass({
             }
         }
 
+        if (type.isArray) {
+            value = fromJS(value.split(";").map(s => s.trim()));
+        }
         r = blockID ? r.setIn(['community_specific', blockID, fieldID], value) : r.set(fieldID, value);
         // console.log('set field ' + blockID +"/"+ fieldID + " to:", value);
         this.setState({record:r});
     },
 
-    onChangeField(blockID, fieldID, event) {
-        this.setValue(blockID, fieldID, event.target.value);
+    onChangeField(blockID, fieldID, type, event) {
+        this.setValue(blockID, fieldID, type, event.target.value);
     },
 
-    renderFieldText(blockID, fieldID, fieldSchema) {
+    onChangeCheckbox(blockID, fieldID, type, event) {
+        this.setValue(blockID, fieldID, type, event.target.checked);
+    },
+
+    renderFieldText(blockID, fieldID, fieldSchema, type) {
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                     {fieldSchema.get('title') || fieldID}</label>
                 <div className="col-sm-9">
                     <input type="text" className="form-control" id={fieldID}
-                        value={this.getValue(blockID, fieldID)} onChange={this.onChangeField.bind(this, blockID, fieldID)} />
+                        value={this.getValue(blockID, fieldID, type) || ""} onChange={this.onChangeField.bind(this, blockID, fieldID, type)} />
                 </div>
             </div>
         );
     },
 
-    renderFieldDateTime(blockID, fieldID, fieldSchema) {
+    renderFieldDateTime(blockID, fieldID, fieldSchema, type) {
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                     {fieldSchema.get('title') || fieldID}</label>
                 <div className="col-sm-9">
                     <input type="text" className="form-control" id={fieldID}
-                        value={this.getValue(blockID, fieldID)} onChange={this.onChangeField.bind(this, blockID, fieldID)} />
+                        value={this.getValue(blockID, fieldID, type)} onChange={this.onChangeField.bind(this, blockID, fieldID, type)} />
                 </div>
             </div>
         );
     },
 
-    renderFieldBoolean(blockID, fieldID, fieldSchema) {
+    renderFieldBoolean(blockID, fieldID, fieldSchema, type) {
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                     {fieldSchema.get('title') || fieldID}</label>
                 <div className="col-sm-9">
-                     <Toggle defaultChecked={this.getValue(blockID, fieldID)} onChange={this.onChangeField.bind(this, blockID, fieldID)} />
+                     <Toggle defaultChecked={this.getValue(blockID, fieldID, type)} onChange={this.onChangeCheckbox.bind(this, blockID, fieldID, type)} />
                 </div>
             </div>
         );
     },
 
-    renderFieldCommunity(blockID, fieldID, fieldSchema) {
+    renderFieldCommunity(blockID, fieldID, fieldSchema, type) {
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
@@ -246,13 +272,13 @@ const EditRecord = React.createClass({
         }
         const type = getType(fieldSchema);
         if (!blockID && fieldID === 'community') {
-            return this.renderFieldCommunity(blockID, fieldID, fieldSchema, type.isArray);
+            return this.renderFieldCommunity(blockID, fieldID, fieldSchema, type);
         } else if (type.type === 'boolean') {
-            return this.renderFieldBoolean(blockID, fieldID, fieldSchema, type.isArray);
+            return this.renderFieldBoolean(blockID, fieldID, fieldSchema, type);
         } else if (type.type === 'string' && type.format === 'date-time') {
-            return this.renderFieldDateTime(blockID, fieldID, fieldSchema, type.isArray);
+            return this.renderFieldDateTime(blockID, fieldID, fieldSchema, type);
         }
-        return this.renderFieldText(blockID, fieldID, fieldSchema, type.isArray);
+        return this.renderFieldText(blockID, fieldID, fieldSchema, type);
     },
 
     renderFieldBlock(schemaID, schema) {
@@ -297,6 +323,16 @@ const EditRecord = React.createClass({
         if (props.record && !this.state.record) {
             this.setState({record:props.record.get('metadata')});
         }
+    },
+
+    updateRecord(event) {
+        event.preventDefault();
+        const original = this.props.record.get('metadata').toJS();
+        const updated = this.state.record.toJS();
+        const patch = compare(original, updated);
+        serverCache.patchRecord(this.props.record.get('id'), patch,
+            record => { window.location.assign(`${window.location.origin}/records/${record.id}`); }
+        );
     },
 
     render() {
