@@ -11,4 +11,5 @@ if [ ! -f /eudat/provisioned ]; then
     /usr/bin/b2share demo load_data
     touch /eudat/provisioned
 fi
-/usr/bin/b2share run
+
+/usr/bin/b2share run -h 0.0.0.0
