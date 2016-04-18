@@ -25,3 +25,5 @@ b2share:
     links:
         - elasticsearch
         - redis
+    environment:
+        - "B2SHARE_SERVER_NAME=${B2SHARE_SERVER_NAME}:5000"

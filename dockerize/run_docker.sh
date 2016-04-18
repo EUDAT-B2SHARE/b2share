@@ -8,7 +8,9 @@ if [ $? -ne 0 ]; then
 fi
 
 eval "$(docker-machine env $MACHINE_NAME)"
+export B2SHARE_SERVER_NAME="$(docker-machine ip $MACHINE_NAME)"
+echo B2SHARE_SERVER_NAME=$B2SHARE_SERVER_NAME
 docker-compose up -d
 
 echo
-echo "B2SHARE soon available at:   http://$(docker-machine ip $MACHINE_NAME):5000"
+echo "B2SHARE should soon become available at:   http://$B2SHARE_SERVER_NAME:5000"
