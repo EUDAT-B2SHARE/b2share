@@ -1,142 +1,82 @@
 B2Share installation
 ====================
 
-1. IMPORTANT
-------------
+1. Install B2SHARE for evaluation, using Docker
+-----------------------------------------------
 
-This installation workflow is only valid for the `evolution` branch in
-development mode.
+1.1. If running Docker locally
+------------------------------
 
-2. Prerequisites
-----------------
+If you can run docker on the same host (on Linux), go into the ``dockerize`` folder:
+
+.. code-block:: console
+
+    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
+    $ cd b2share/dockerize
+
+and then run ``docker-compose`` as below:
+
+.. code-block:: console
+
+    $ export B2SHARE_SERVER_NAME=localhost
+    $ docker-compose up
+
+After the docker image is built and running, b2share will be available at http://localhost:5000
+
+
+1.1. If running Docker with docker-machine and virtualbox
+---------------------------------------------------------
+
+If you can not run docker on the same host but you can use docker-machine and a virtualbox VM (e.g. on OSX), go into the ``dockerize`` folder:
+
+.. code-block:: console
+
+    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
+    $ cd b2share/dockerize
+
+and then run the following script:
+
+.. code-block:: console
+
+    $ ./run_docker.sh
+
+The script will try to create a new VM box using docker-machine and virtualbox, and run docker-compose on it.
+After the docker image is built and started, a message will be displayed pointing the URL of the B2SHARE instance.
+
+
+2. Install B2SHARE for development
+----------------------------------
 
 Before installing B2Share you will need the following software:
-- python
-- python virtualenv
-- docker
+
+- ``python3``
+- ``virtualenv`` and ``virtualenvwrapper``
 
 .. code-block:: console
 
+    $ # on OSX, with brew:
     $ brew install python --framework --universal
-    $ pip install virtualenv
-    $ pip install virtualenvwrapper
-    # edit the Bash profile
-    $ $EDITOR ~/.bash_profile
+    $ pip install virtualenv virtualenvwrapper
 
-Add the following to the file you have opened and paste the following lines.
+- ``docker``, ``docker-compose``, and ``docker-machine``
 
-.. code-block:: text
-
-    export WORKON_HOME=~/.virtualenvs
-    source /usr/local/bin/virtualenvwrapper.sh
-
-The dev environment supposes that the docker machine is called b2share. If
-you are on mac you can create it like this:
-
-.. code-block:: console
-    $ docker-machine create --driver virtualbox b2share
-
-
-3. Development environment installation
----------------------------------------
-
-Create a python virtual environment.
+If the conditions are satisfied, open one terminal window and download in a temporary folder the ``devenv/docker-compose`` and ``devenv/run_demo.sh`` files:
 
 .. code-block:: console
 
-    $ # choose an unique name for your virtual environment
-    $ export VENAME=b2share-evolution
-    $ mkvirtualenv $VENAME
-    (b2share-evolution)$ # we are in the b2share-evolution environment now and
-    (b2share-evolution)$ # can leave it using the deactivate command.
-    (b2share-evolution)$ deactivate
-    $ # Now join it back, recreating it would fail.
-    $ workon b2share-evolution
-    (b2share-evolution)$ # That's all there is to know about it.
+    $ mdir develop-b2share
+    $ cd develop-b2share
+    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/evolution/devenv/docker-compose.yml
+    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/evolution/devenv/run_demo.sh
 
 
-Then clone the repository and install the python dependencies:
+Then start the ``run_demo.sh`` script:
 
 .. code-block:: console
 
-    $ # Enable the virtual environment we previously created
-    $ workon b2share-evolution
-    (b2share-evolution)$ # Go to its working directory
-    (b2share-evolution)$ cdvirtualenv
-    (b2share-evolution)$ mkdir src && cd src
-    (b2share-evolution)$ # let's clone the repositiory
-    (b2share-evolution)$ git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
-    (b2share-evolution)$ cd b2share
-    (b2share-evolution)$ # install b2share python dependencies.
-    (b2share-evolution)$ pip install -r requirements.txt
+    $ chmod +x ./run_demo.sh
+    $ ./run_demo.sh
 
-Let's start docker containers with mysql, elasticsearch and redis
+The script will create a python virtualenv, clone the evolution branch of B2SHARE into it, install the necessary python packages, build the web UI and start the Flask server in development mode. B2SHARE should be available at http://localhost:5000.
 
-.. code-block:: console
-
-    (b2share-evolution)$ # Go to b2share directory
-    (b2share-evolution)$ cd $VIRTUAL_ENV/src/b2share/devenv
-    (b2share-evolution)$ docker-compose up
-    Starting devenv_elasticsearch_1...
-    Starting devenv_redis_1...
-    Recreating devenv_mysql_1...
-
-
-Open another terminal, initialize b2share and start celery:
-
-.. code-block:: console
-
-    $ # Enable docker environment
-    $ eval $(docker-machine env default)
-    $ # Enable the virtual environment we previously created
-    $ workon b2share-evolution
-    (b2share-evolution)$ # Go to its working directory
-    (b2share-evolution)$ cdvirtualenv src/b2share
-    (b2share-evolution)$ # Set the env variables
-    (b2share-evolution)$ source ./devenv/docker_env.sh
-    (b2share-evolution)$ celery worker -E -A invenio_celery.celery --workdir=$VIRTUAL_ENV
-
-     -------------- celery@pb-d-128-141-246-93.cern.ch v3.1.18 (Cipater)
-    ---- **** -----
-    --- * ***  * -- Darwin-14.5.0-x86_64-i386-64bit
-    -- * - **** ---
-    - ** ---------- [config]
-    - ** ---------- .> app:         invenio:0x110296310 (invenio_celery.InvenioLoader)
-    - ** ---------- .> transport:   redis://localhost:6379/1
-    - ** ---------- .> results:     redis://localhost:6379/1
-    - *** --- * --- .> concurrency: 4 (prefork)
-    -- ******* ----
-    --- ***** ----- [queues]
-     -------------- .> celery           exchange=celery(direct) key=celery
-
-Open another terminal and clone the AngularJS-UI
-
-.. code-block:: console
-    $ # Enable docker environment
-    $ eval $(docker-machine env default)
-    $ # Enable the virtual environment we previously created
-    $ workon b2share-evolution
-    (b2share-evolution)$ cd $VIRTUAL_ENV/src
-    (b2share-evolution)$ git clone git@github.com:EUDAT-B2SHARE/ui-frontend.git
-    (b2share-evolution)$ # Install it
-    (b2share-evolution)$ cd ui-frontend
-    (b2share-evolution)$ npm install
-    (b2share-evolution)$ # export the path so that the files are served by
-                         # the flask application
-    (b2share-evolution)$ export B2SHARE_UI_PATH=`pwd`/app
-
-
-Initialize the server
-.. code-block:: console
-    (b2share-evolution)$ cd $VIRTUAL_ENV/src/b2share
-    (b2share-evolution)$ # Set the env variables
-    (b2share-evolution)$ source ./devenv/docker_env.sh
-    (b2share-evolution)$ ./devenv/init.sh
-
-Start the server:
-
-.. code-block:: console
-    (b2share-evolution)$ cd $VIRTUAL_ENV/src/b2share
-    (b2share-evolution)$ inveniomanage runserver 
-    * Running on http://localhost:4000/ (Press CTRL+C to quit)
-
+If working on the web UI, see also: https://github.com/EUDAT-B2SHARE/b2share/wiki/Developer's-corner.
