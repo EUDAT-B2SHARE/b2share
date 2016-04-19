@@ -20,6 +20,10 @@ export VIRTUALENV_NAME='b2share-evolution'
 export DB_NAME='b2share-evolution'
 export MACHINE_NAME=b2share
 
+if [ "$1" = "--reinit" ]; then
+	REINIT=1
+fi
+
 workon $VIRTUALENV_NAME
 if [ $? -ne 0 ]; then
 	echo; echo "### Make virtual env"
@@ -61,14 +65,7 @@ if [ ! -d ./b2share ]; then
 	cdvirtualenv src/b2share/demo
 	pip install -e .
 
-	echo; echo "### Configure b2share backend"
-	b2share db create
-	b2share schemas init
-	b2share index init
-
-	echo; echo "### Add demo config and objects"
-	b2share demo load_config
-	b2share demo load_data
+	REINIT=1
 
 	echo; echo "### Configure b2share webui"
 	cdvirtualenv src/b2share/webui
@@ -88,7 +85,7 @@ if [ $? -ne 0 ]; then
 	sleep 2 # give a bit of time to celery
 fi
 
-if [ "$1" = "--reinit" ]; then
+if [ -n "$REINIT" ]; then
 	echo; echo "### Reinitialize database"
 	b2share db destroy --yes-i-know
 	b2share db create
