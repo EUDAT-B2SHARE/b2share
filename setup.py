@@ -39,6 +39,7 @@ install_requires = [
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-celery>=1.0.0a4,<1.1.0',
     'invenio-search>=1.0.0a5,<1.1.0',
+    'invenio-query-parser>=0.5.0,<1.1.0',
     'invenio-access>=1.0.0a4,<1.1.0',
     'jsonresolver[jsonschema]>=0.1.1',
     'invenio-files-rest>=1.0.0a1,<1.1.0',
