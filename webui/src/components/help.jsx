@@ -41,53 +41,6 @@ export const Help = React.createClass({
     }
 });
 
-export const About = React.createClass({
-    render() {
-        return <div>About</div>;
-    }
-});
-
-export const B2ShareHelp = React.createClass({
-    render() {
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>What is B2SHARE</h1>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});
-
-export const LegalNotice = React.createClass({
-    render() {
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>Legal Notice</h1>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});
-
-export const UserGuide = React.createClass({
-    render() {
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>User Guide</h1>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});
 
 export const TermsOfUse = React.createClass({
 	render: function() {

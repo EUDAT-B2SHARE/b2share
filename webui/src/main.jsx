@@ -11,7 +11,7 @@ import { ReplaceAnimate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs } from './components/navbar.jsx';
 import { HomeRoute } from './components/home.jsx';
 import { UserRoute } from './components/user.jsx';
-import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
+import { Help, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
 import { SearchRecordRoute } from './components/search.jsx';
 import { RecordRoute  } from './components/record.jsx';
