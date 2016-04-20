@@ -22,7 +22,7 @@ ENV B2SHARE_SECRET_KEY="sX5BwQI8cZQmxmM6RfI08zSDm6tPt8Tc"
 ENV B2SHARE_SEARCH_ELASTIC_HOSTS="elasticsearch:9200"
 
 WORKDIR /eudat/b2share/webui
-RUN npm install && \
+RUN npm install --unsafe-perm && \
     node_modules/webpack/bin/webpack.js -p
 
 WORKDIR /eudat/b2share
