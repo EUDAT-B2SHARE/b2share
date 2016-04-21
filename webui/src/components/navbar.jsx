@@ -1,5 +1,5 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link } from 'react-router'
+import { Link, browserHistory } from 'react-router'
 import { serverCache } from '../data/server';
 
 
@@ -45,7 +45,7 @@ const NavbarSearch = React.createClass({
 
     search(event) {
         event.preventDefault();
-        window.location.assign(`${window.location.origin}/records/?query=${this.state.query}`);
+        browserHistory.push(`/records/?query=${this.state.query}`);
     },
 
     componentWillMount() {

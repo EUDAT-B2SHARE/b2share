@@ -25,11 +25,9 @@ const VERSION = '0.6.0';
 // TODO: edit records: error testing per field
 // TODO: edit records: date types, selector types, plugins
 // TODO: file uplaods
-// TODO: installation instructions
 // TODO: stop cycle in case of 404
 
 // TODO: remove eudat empty block schema
-// TODO: reevaluate window.location.assign
 // TODO: show md fields in presentation order
 // TODO: user login
 // TODO: make communities links (keyboard selectable)
