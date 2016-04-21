@@ -1,5 +1,5 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link } from 'react-router';
+import { Link, browserHistory } from 'react-router'
 import Toggle from 'react-toggle';
 import { compare } from 'fast-json-patch';
 
@@ -9,6 +9,15 @@ import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { ReplaceAnimate } from './animate.jsx';
 import { getType } from './schema.jsx';
+
+import ReactWidgets from 'react-widgets';
+import moment from 'moment';
+import momentLocalizer from 'react-widgets/lib/localizers/moment';
+import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
+momentLocalizer(moment);
+numberLocalizer();
+
+const DateTimePicker = ReactWidgets.DateTimePicker;
 
 
 export const NewRecordRoute = React.createClass({
@@ -40,7 +49,7 @@ export const NewRecordRoute = React.createClass({
         }
         serverCache.createRecord(
             { community: this.state.community_id, title: this.state.title, open_access: true },
-            record => { window.location.assign(`${window.location.origin}/records/${record.id}/edit`); }
+            record => { browserHistory.push(`/records/${record.id}/edit`); }
         );
     },
 
@@ -217,51 +226,27 @@ const EditRecord = React.createClass({
 
     renderFieldText(blockID, fieldID, fieldSchema, type) {
         return (
-            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
-                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                    {fieldSchema.get('title') || fieldID}</label>
-                <div className="col-sm-9">
-                    <input type="text" className="form-control" id={fieldID}
-                        value={this.getValue(blockID, fieldID, type) || ""} onChange={this.onChangeField.bind(this, blockID, fieldID, type)} />
-                </div>
-            </div>
+            <input type="text" className="form-control" id={fieldID}
+                value={this.getValue(blockID, fieldID, type) || ""} onChange={this.onChangeField.bind(this, blockID, fieldID, type)} />
         );
     },
 
     renderFieldDateTime(blockID, fieldID, fieldSchema, type) {
+        const onChange = x => { console.log('picked ', x); this.setValue(blockID, fieldID, type, moment(x).format()); }
         return (
-            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
-                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                    {fieldSchema.get('title') || fieldID}</label>
-                <div className="col-sm-9">
-                    <input type="text" className="form-control" id={fieldID}
-                        value={this.getValue(blockID, fieldID, type)} onChange={this.onChangeField.bind(this, blockID, fieldID, type)} />
-                </div>
-            </div>
+            <DateTimePicker defaultValue={moment().toDate()} onChange={onChange} initialView={"year"}/>
         );
     },
 
     renderFieldBoolean(blockID, fieldID, fieldSchema, type) {
         return (
-            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
-                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                    {fieldSchema.get('title') || fieldID}</label>
-                <div className="col-sm-9">
-                     <Toggle defaultChecked={this.getValue(blockID, fieldID, type)} onChange={this.onChangeCheckbox.bind(this, blockID, fieldID, type)} />
-                </div>
-            </div>
+            <Toggle defaultChecked={this.getValue(blockID, fieldID, type)} onChange={this.onChangeCheckbox.bind(this, blockID, fieldID, type)} />
         );
     },
 
     renderFieldCommunity(blockID, fieldID, fieldSchema, type) {
         return (
-            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
-                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                    {fieldSchema.get('title') || fieldID}</label>
-                <div className="col-sm-9">
-                    {this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>}
-                </div>
-            </div>
+            this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
         );
     },
 
@@ -271,14 +256,35 @@ const EditRecord = React.createClass({
             return false;
         }
         const type = getType(fieldSchema);
+
+        let field = false;
         if (!blockID && fieldID === 'community') {
-            return this.renderFieldCommunity(blockID, fieldID, fieldSchema, type);
+            field = this.renderFieldCommunity(blockID, fieldID, fieldSchema, type);
         } else if (type.type === 'boolean') {
-            return this.renderFieldBoolean(blockID, fieldID, fieldSchema, type);
+            field = this.renderFieldBoolean(blockID, fieldID, fieldSchema, type);
         } else if (type.type === 'string' && type.format === 'date-time') {
-            return this.renderFieldDateTime(blockID, fieldID, fieldSchema, type);
+            field = this.renderFieldDateTime(blockID, fieldID, fieldSchema, type);
+        } else {
+            field = this.renderFieldText(blockID, fieldID, fieldSchema, type);
         }
-        return this.renderFieldText(blockID, fieldID, fieldSchema, type);
+
+        return (
+            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
+                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                    <span style={{float:'right'}}>
+                        {fieldSchema.get('title') || fieldID}
+                    </span>
+                </label>
+                <div className="col-sm-9">
+                    {field}
+                </div>
+            </div>
+        );
+
+    },
+
+    renderOptionalBlock(schemaID, schema) {
+        return false;
     },
 
     renderFieldBlock(schemaID, schema) {
@@ -310,7 +316,11 @@ const EditRecord = React.createClass({
 
         return (
             <div className="row" key={schemaID} style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
+                <h4 className="col-sm-offset-3 col-sm-9" style={{marginBottom:'1em'}}>
+                    { schemaID ? schema.get('title') : 'Basic fields' }
+                </h4>
                 { majorFields }
+                { this.renderOptionalBlock(minorFields) }
             </div>
         );
     },
@@ -331,7 +341,7 @@ const EditRecord = React.createClass({
         const updated = this.state.record.toJS();
         const patch = compare(original, updated);
         serverCache.patchRecord(this.props.record.get('id'), patch,
-            record => { window.location.assign(`${window.location.origin}/records/${record.id}`); }
+            record => { browserHistory.push(`/records/${record.id}`); }
         );
     },
 

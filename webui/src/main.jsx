@@ -11,7 +11,7 @@ import { ReplaceAnimate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs } from './components/navbar.jsx';
 import { HomeRoute } from './components/home.jsx';
 import { UserRoute } from './components/user.jsx';
-import { Help, About, B2ShareHelp, LegalNotice, UserGuide, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
+import { Help, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
 import { SearchRecordRoute } from './components/search.jsx';
 import { RecordRoute  } from './components/record.jsx';
@@ -25,11 +25,9 @@ const VERSION = '0.6.0';
 // TODO: edit records: error testing per field
 // TODO: edit records: date types, selector types, plugins
 // TODO: file uplaods
-// TODO: installation instructions
 // TODO: stop cycle in case of 404
 
 // TODO: remove eudat empty block schema
-// TODO: reevaluate window.location.assign
 // TODO: show md fields in presentation order
 // TODO: user login
 // TODO: make communities links (keyboard selectable)
