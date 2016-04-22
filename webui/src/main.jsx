@@ -18,9 +18,8 @@ import { RecordRoute  } from './components/record.jsx';
 import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 
-const VERSION = '0.6.0';
+const VERSION = '0.7.0';
 
-// TODO: edit records: show folds and block names
 // TODO: edit records: proper cardinality
 // TODO: edit records: error testing per field
 // TODO: edit records: date types, selector types, plugins

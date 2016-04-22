@@ -3,12 +3,12 @@ import { Link, browserHistory } from 'react-router'
 import Toggle from 'react-toggle';
 import { compare } from 'fast-json-patch';
 
-import { Map, List, OrderedMap, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { keys, timestamp2str, pairs } from '../data/misc';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
-import { ReplaceAnimate } from './animate.jsx';
-import { getType } from './schema.jsx';
+import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
+import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 import ReactWidgets from 'react-widgets';
 import moment from 'moment';
@@ -283,44 +283,55 @@ const EditRecord = React.createClass({
 
     },
 
-    renderOptionalBlock(schemaID, schema) {
-        return false;
-    },
-
     renderFieldBlock(schemaID, schema) {
         if (!schema) {
             return <Wait key={schemaID}/>;
         }
-        const except = {'$schema':true, 'community_specific':true, '_internal':true};
-        const properties = schema.get('properties');
+        let open = this.state.folds ? this.state.folds[schemaID||""] : false;
         const plugins = schema.getIn(['b2share', 'plugins']);
-        const presentation = schema.getIn(['b2share', 'presentation']);
 
-        const majorIDs = presentation ? presentation.get('major') : null;
-        const minorIDs = presentation ?  presentation.get('minor') : null;
-
-        let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get('id')]) : []);
-        let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get('id')]) : []);
-        properties.entrySeq().forEach(([id, def]) => {
-            if (majors.has(id)) {
-                majors = majors.set(id, def);
-            } else if (minors.has(id)) {
-                minors = minors.set(id, def);
-            } else if (!except.hasOwnProperty(id)) {
-                majors = majors.set(id, def);
-            }
-        });
+        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
 
         const majorFields = majors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
         const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
 
+        const onMoreDetails = e => {
+            e.preventDefault();
+            const folds = this.state.folds || {};
+            folds[schemaID||""] = !folds[schemaID||""];
+            this.setState({folds:folds});
+        }
+
+        const foldBlock = minorFields.count() ? (
+            <div className="col-sm-12">
+                <div className="row">
+                    <div className="col-sm-offset-3 col-sm-9" style={{marginTop:'1em', marginBottom:'1em'}}>
+                        <a href="#" onClick={onMoreDetails} style={{padding:'0.5em'}}>
+                            { !open ? "Show more details" : "Hide details" }
+                        </a>
+                    </div>
+                </div>
+                <HeightAnimate delta={20}>
+                    { open ? minorFields : false }
+                </HeightAnimate>
+            </div>
+        ) : false;
+
         return (
-            <div className="row" key={schemaID} style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
-                <h4 className="col-sm-offset-3 col-sm-9" style={{marginBottom:'1em'}}>
-                    { schemaID ? schema.get('title') : 'Basic fields' }
-                </h4>
-                { majorFields }
-                { this.renderOptionalBlock(minorFields) }
+            <div style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
+                <div className="row">
+                    <h3 className="col-sm-offset-3 col-sm-9" style={{marginBottom:'1em'}}>
+                        { schemaID ? schema.get('title') : 'Basic fields' }
+                    </h3>
+                </div>
+                <div className="row">
+                    <div className="col-sm-12">
+                        { majorFields }
+                    </div>
+                </div>
+                <div className="row">
+                    { foldBlock }
+                </div>
             </div>
         );
     },
@@ -353,7 +364,7 @@ const EditRecord = React.createClass({
         }
         return (
             <div className="edit-record">
-                <div className="row">
+                <div>
                     <form className="form" onSubmit={this.updateRecord}>
                         { this.renderFieldBlock(null, rootSchema) }
 
