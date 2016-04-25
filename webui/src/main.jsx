@@ -23,11 +23,10 @@ const VERSION = '0.7.0';
 // TODO: edit records: error testing per field
 // TODO: edit records: plugins
 // TODO: edit records: open enums
-// TODO: file uplaods
+// TODO: file uploads
 // TODO: stop cycle in case of 404
 
 // TODO: remove eudat empty block schema
-// TODO: show md fields in presentation order
 // TODO: user login
 // TODO: make communities links (keyboard selectable)
 
