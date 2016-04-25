@@ -1,8 +1,8 @@
 {
     "id": "4ba7c0fd-1435-4313-9c13-4d888d60321a",
-    "description": "Herbarium data.",    
+    "description": "Herbarium data.",
     "logo": "/img/communities/nrm.png",
-    "name": "NRM",    
+    "name": "NRM",
     "community_schemas": [
         {
             "root_schema_version": 0,
@@ -20,12 +20,12 @@
     ],
     "block_schemas": {
         "nrm": {
-            "id": "fa52bec3-a847-4602-8af5-b8d41a5215bc",            
+            "id": "fa52bec3-a847-4602-8af5-b8d41a5215bc",
             "versions": [
                 {
                     "title": "B2SHARE NRM Schema",
                     "$schema": "http://json-schema.org/draft-04/schema#",
-                    "description": "This is the blueprint of the metadata block specific for the NRM community",                    
+                    "description": "This is the blueprint of the metadata block specific for the NRM community",
                     "type": "object",
                     "properties": {
                         "latitude": {
@@ -66,7 +66,7 @@
                         }
                     },
                     "required": [ "uuid", "species_name", "collector_name", "collection_date", "locality" ],
-                    "additionalProperties": false,
+                    "additionalProperties": false
                 }
             ]
         }

@@ -27,7 +27,7 @@
                     "$schema": "http://json-schema.org/draft-04/schema#",
                     "required": [ "ref_date", "reference_system","topic", "responsible_party", "geo_location", "spatial_resolution", "vertical_extent", "lineage" ],
                     "title": "B2SHARE DRIHM Schema",
-                    "type": "object",                    
+                    "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "ref_date": {
@@ -61,13 +61,13 @@
                             "type": "string"
                         },
                         "spatial_resolution": {
-                            "title": "Spatial Resolutio",
-                            "description": "Spatial Resolutio",
+                            "title": "Spatial Resolution",
+                            "description": "Spatial Resolution",
                             "type": "string"
                         },
                         "topic": {
-                            "title": "Topic Categor",
-                            "description": "Topic Categor",
+                            "title": "Topic Category",
+                            "description": "Topic Category",
                             "type": "string"
                         }
                     }
