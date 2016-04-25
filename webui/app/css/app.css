@@ -329,6 +329,7 @@ a.navbar-brand {
 /* communities */
 
 .community-small {
+  display: block;
   padding: 10px 4px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -339,6 +340,8 @@ a.navbar-brand {
   font-weight: bold;
   border: 1px solid #eee;
   box-shadow: 0 0 10px #eee !important;
+  margin-bottom: 15px;
+  color: black;
 }
 
 .community-small:hover {
@@ -521,4 +524,30 @@ code {
   font-size: 12px;
   margin: 0 2px;
   padding: 0px 5px;
+}
+
+
+/*****************************************************************************/
+/* styling of react-widgets */
+
+.rw-multiselect-taglist > li {
+  background-color: white;
+}
+.rw-multiselect-taglist > input.rw-input {
+  box-shadow: 0 0 0 transparent !important;
+  outline: none !important;
+}
+
+.rw-widget>.rw-select {
+  background-color: white;
+}
+.rw-widget.rw-state-focus,.rw-widget.rw-state-focus:hover{
+  border-color:#F45D00;
+}
+ul.rw-list>li.rw-list-option.rw-state-focus,.rw-selectlist>li.rw-list-option.rw-state-focus {
+  border-color:#F45D00;
+}
+.rw-multiselect-taglist .rw-tag-btn {
+  padding:5px;
+  color:#F45D00;
 }

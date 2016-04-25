@@ -37,7 +37,7 @@ const Record = React.createClass({
                 </p>
                 { created != updated
                     ? <p>
-                        <span style={bland}>Last updated at </span>
+                        <span style={{color:'#aaa'}}>Last updated at </span>
                         <span style={{color:'#225'}}>{updated}</span>
                       </p>
                     : false }

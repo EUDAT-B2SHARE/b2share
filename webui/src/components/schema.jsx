@@ -33,24 +33,28 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
 };
 
 export function getType(property) {
+    let ret = null;
     const isArray = property.get('type') === 'array';
     if (!isArray) {
-        return {
+        ret = {
             isArray: false,
             type: property.get('type'),
             format: property.get('format'),
+            enum: property.get('enum'),
+        }
+    } else {
+        const items = property.get('items');
+        if (items) {
+            const t = getType(items);
+            ret = {
+                isArray: true,
+                type: t.type,
+                format: t.format,
+                enum: t.enum,
+            }
         }
     }
-
-    const items = property.get('items');
-    if (items) {
-        const t = getType(items);
-        return {
-            isArray: true,
-            type: t.type,
-            format: t.format,
-        }
-    }
+    return ret;
 }
 
 

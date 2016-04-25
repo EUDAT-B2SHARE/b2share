@@ -1,23 +1,21 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link, browserHistory } from 'react-router'
-import Toggle from 'react-toggle';
+import { Map, fromJS } from 'immutable';
 import { compare } from 'fast-json-patch';
 
-import { Map, fromJS } from 'immutable';
-import { keys, timestamp2str, pairs } from '../data/misc';
-import { serverCache } from '../data/server';
-import { Wait } from './waiting.jsx';
-import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
-import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
-
-import ReactWidgets from 'react-widgets';
+import Toggle from 'react-toggle';
+import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
 import moment from 'moment';
 import momentLocalizer from 'react-widgets/lib/localizers/moment';
 import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 momentLocalizer(moment);
 numberLocalizer();
 
-const DateTimePicker = ReactWidgets.DateTimePicker;
+import { keys, timestamp2str, pairs } from '../data/misc';
+import { serverCache } from '../data/server';
+import { Wait } from './waiting.jsx';
+import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
+import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
 export const NewRecordRoute = React.createClass({
@@ -185,13 +183,10 @@ const EditRecord = React.createClass({
         if (!r) {
             return null;
         }
-        const v = blockID ? r.getIn(['community_specific', blockID, fieldID]) : r.get(fieldID);
+        let v = blockID ? r.getIn(['community_specific', blockID, fieldID]) : r.get(fieldID);
         if (v != undefined && v != null) {
-            if (type.isArray && v.toJS){
-                return v.toJS().join("; ");
-            }
-            if (type.type === 'boolean') {
-                return v === 'true' || v === true;
+            if (v.toJS){
+                v = v.toJS();
             }
         }
         return v;
@@ -208,45 +203,79 @@ const EditRecord = React.createClass({
             }
         }
 
+        if (type.isArray && !Array.isArray(value)) {
+            console.error("array expected, instead got:", value);
+        }
         if (type.isArray) {
-            value = fromJS(value.split(";").map(s => s.trim()));
+            value = fromJS(value);
         }
         r = blockID ? r.setIn(['community_specific', blockID, fieldID], value) : r.set(fieldID, value);
         // console.log('set field ' + blockID +"/"+ fieldID + " to:", value);
         this.setState({record:r});
     },
 
-    onChangeField(blockID, fieldID, type, event) {
-        this.setValue(blockID, fieldID, type, event.target.value);
+    renderScalarField(type, getValue, setValue) {
+        if (type.type === 'boolean') {
+            return <Toggle defaultChecked={getValue()} onChange={event => setValue(event.target.checked)} />
+        } else if (type.type === 'integer') {
+            return <NumberPicker defaultValue={getValue()} onChange={setValue} />
+        } else if (type.type === 'number') {
+            return <NumberPicker defaultValue={getValue()} onChange={setValue} />
+        } else if (type.type === 'string') {
+            const value = ""+(getValue() || "");
+            if (type.enum) {
+                return <DropdownList defaultValue={getValue()} data={type.enum.toJS()} onChange={setValue} />
+            } else if (type.format === 'date-time') {
+                return <DateTimePicker defaultValue={moment(getValue()).toDate()}
+                        initialView={"year"} onChange={date => setValue(moment(date).toISOString())} />
+            } else if (type.format === 'email') {
+                return <input type="text" className="form-control" placeholder="email@example.com"
+                        value={getValue() || ""} onChange={event => setValue(event.target.value)} />
+            } else {
+                return <textarea className="form-control" rows={value.length > 100 ? 5 : 1}
+                        value={getValue() || ""} onChange={event => setValue(event.target.value)} />
+            }
+        } else {
+            console.error("Cannot render field of type:", type);
+        }
     },
 
-    onChangeCheckbox(blockID, fieldID, type, event) {
-        this.setValue(blockID, fieldID, type, event.target.checked);
-    },
-
-    renderFieldText(blockID, fieldID, fieldSchema, type) {
+    renderArrayField(type, getValue, setValue, _, index) {
+        const getV = () => {
+            const values = getValue();
+            return values ? values[index] : undefined;
+        }
+        const setV = (v) => {
+            const values = getValue() || [];
+            values[index] = v;
+            setValue(values);
+        }
+        const btnOnClick = (ev) => {
+            ev.preventDefault();
+            let values = getValue();
+            if (index === 0) {
+                if (values) {
+                    values.push("");
+                } else {
+                    values=[""];
+                }
+            } else {
+                values.splice(index, 1);
+            }
+            setValue(values);
+        }
         return (
-            <input type="text" className="form-control" id={fieldID}
-                value={this.getValue(blockID, fieldID, type) || ""} onChange={this.onChangeField.bind(this, blockID, fieldID, type)} />
-        );
-    },
-
-    renderFieldDateTime(blockID, fieldID, fieldSchema, type) {
-        const onChange = x => { console.log('picked ', x); this.setValue(blockID, fieldID, type, moment(x).format()); }
-        return (
-            <DateTimePicker defaultValue={moment().toDate()} onChange={onChange} initialView={"year"}/>
-        );
-    },
-
-    renderFieldBoolean(blockID, fieldID, fieldSchema, type) {
-        return (
-            <Toggle defaultChecked={this.getValue(blockID, fieldID, type)} onChange={this.onChangeCheckbox.bind(this, blockID, fieldID, type)} />
-        );
-    },
-
-    renderFieldCommunity(blockID, fieldID, fieldSchema, type) {
-        return (
-            this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
+            <div id={index} key={index} className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
+                {this.renderScalarField(type, getV, setV)}
+                {index == 0 ?
+                    <a className="input-group-addon" href="#" onClick={btnOnClick}  style={{backgroundColor:'white'}} >
+                        <span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/>
+                    </a> :
+                    <a className="input-group-addon" href="#" onClick={btnOnClick}  style={{backgroundColor:'white'}} >
+                        <span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/>
+                    </a>
+                }
+            </div>
         );
     },
 
@@ -256,17 +285,27 @@ const EditRecord = React.createClass({
             return false;
         }
         const type = getType(fieldSchema);
+        const getValue = this.getValue.bind(this, blockID, fieldID, type);
+        const setValue = this.setValue.bind(this, blockID, fieldID, type);
 
         let field = false;
         if (!blockID && fieldID === 'community') {
-            field = this.renderFieldCommunity(blockID, fieldID, fieldSchema, type);
-        } else if (type.type === 'boolean') {
-            field = this.renderFieldBoolean(blockID, fieldID, fieldSchema, type);
-        } else if (type.type === 'string' && type.format === 'date-time') {
-            field = this.renderFieldDateTime(blockID, fieldID, fieldSchema, type);
+            field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
+        } else if (!type.isArray) {
+            field = this.renderScalarField(type, getValue, setValue);
         } else {
-            field = this.renderFieldText(blockID, fieldID, fieldSchema, type);
+            let values = getValue() || [""];
+            if (values.length === 0) {
+                values.push("");
+            }
+            field = values.map(this.renderArrayField.bind(this, type, getValue, setValue));
         }
+
+        const arrstyle= !type.isArray ? {} : {
+            paddingLeft:'10px',
+            borderLeft:'1px solid black',
+            borderRadius:'4px',
+        };
 
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
@@ -275,12 +314,11 @@ const EditRecord = React.createClass({
                         {fieldSchema.get('title') || fieldID}
                     </span>
                 </label>
-                <div className="col-sm-9">
+                <div className="col-sm-9" style={arrstyle}>
                     {field}
                 </div>
             </div>
         );
-
     },
 
     renderFieldBlock(schemaID, schema) {
@@ -317,8 +355,9 @@ const EditRecord = React.createClass({
             </div>
         ) : false;
 
+        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'} : {};
         return (
-            <div style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
+            <div style={blockStyle} key={schemaID}>
                 <div className="row">
                     <h3 className="col-sm-offset-3 col-sm-9" style={{marginBottom:'1em'}}>
                         { schemaID ? schema.get('title') : 'Basic fields' }
@@ -365,7 +404,7 @@ const EditRecord = React.createClass({
         return (
             <div className="edit-record">
                 <div>
-                    <form className="form" onSubmit={this.updateRecord}>
+                    <form className="form-horizontal" onSubmit={this.updateRecord}>
                         { this.renderFieldBlock(null, rootSchema) }
 
                         { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
@@ -390,17 +429,15 @@ const EditRecord = React.createClass({
 
 ///////////////////////////////////////////////////////////////////////////////
 
-export function renderSmallCommunity(community, active, onClickFn) {
+function renderSmallCommunity(community, active, onClickFn) {
     const activeClass = active ? " active": " inactive";
     return (
-        <div key={community.get('id')}>
-            <div className={"community-small" + activeClass} title={community.get('description')}
-                    onClick={onClickFn ? onClickFn : ()=>{}}>
-                <p className="name">{community.get('name')}</p>
-                <img className="logo" src={community.get('logo')}/>
-            </div>
-        </div>
+        <a href="#" key={community.get('id')}
+                className={"community-small" + activeClass} title={community.get('description')}
+                onClick={onClickFn ? onClickFn : ()=>{}}>
+            <p className="name">{community.get('name')}</p>
+            <img className="logo" src={community.get('logo')}/>
+        </a>
     );
 }
-
 
