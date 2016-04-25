@@ -2,7 +2,7 @@
     "id": "94a9567e-2fba-4677-8fde-a8b68bdb63e8",
     "description": "Meteorology and climate data.",
     "name": "DRIHM",
-    "logo": "/img/communities/drihm.jpg",
+    "logo": "/img/communities/drihm.png",
     "community_schemas": [
         {
             "json_schema": {

@@ -101,7 +101,10 @@ const Community = React.createClass({
                     <p className="description"> {desc} </p>
                 </div>
                 <div className="col-sm-6">
-                    <img className="logo" src={community.get('logo')}/>
+                    <div className="community-small passive" title={community.get('description')}>
+                        <p className="name">{community.get('name')}</p>
+                        <img className="logo" src={community.get('logo')}/>
+                    </div>
                 </div>
             </div>
         );
