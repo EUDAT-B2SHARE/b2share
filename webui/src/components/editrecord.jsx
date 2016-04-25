@@ -11,7 +11,7 @@ import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 momentLocalizer(moment);
 numberLocalizer();
 
-import { keys, timestamp2str, pairs } from '../data/misc';
+import { keys, pairs } from '../data/misc';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
@@ -97,9 +97,11 @@ export const NewRecordRoute = React.createClass({
         return (
             <div className="new-record">
                 <div className="row">
-                    <form className="form" onSubmit={this.createAndGoToRecord}>
+                    <form className="form-horizontal" onSubmit={this.createAndGoToRecord}>
                         <div className="form-group row">
-                            <label htmlFor="title" className="col-sm-3 control-label" style={stitle}>Title</label>
+                            <label htmlFor="title" className="col-sm-3 control-label" style={stitle}>
+                                <span style={{float:'right'}}>Title</span>
+                            </label>
                             <div className="col-sm-9" style={gap}>
                                 <input type="text" className="form-control" id='title' value={this.state.title} onChange={this.onTitleChange} />
                             </div>
@@ -107,7 +109,7 @@ export const NewRecordRoute = React.createClass({
 
                         <div className="form-group row">
                             <label htmlFor="community" className="col-sm-3 control-label" style={scomm}>
-                                <div style={{fontWeight:'bold'}}>Community</div>
+                                <span style={{float:'right'}}>Community</span>
                             </label>
                             <div className="col-sm-9">
                                 {this.renderCommunityList(communities)}
@@ -227,7 +229,7 @@ const EditRecord = React.createClass({
                 return <DropdownList defaultValue={getValue()} data={type.enum.toJS()} onChange={setValue} />
             } else if (type.format === 'date-time') {
                 return <DateTimePicker defaultValue={moment(getValue()).toDate()}
-                        initialView={"year"} onChange={date => setValue(moment(date).toISOString())} />
+                        onChange={date => setValue(moment(date).toISOString())} />
             } else if (type.format === 'email') {
                 return <input type="text" className="form-control" placeholder="email@example.com"
                         value={getValue() || ""} onChange={event => setValue(event.target.value)} />

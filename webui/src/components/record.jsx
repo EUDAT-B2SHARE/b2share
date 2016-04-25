@@ -1,10 +1,13 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
+import moment from 'moment';
+import Toggle from 'react-toggle';
 import { serverCache } from '../data/server';
-import { Wait } from './waiting.jsx';
-import { keys, timestamp2str } from '../data/misc';
+import { keys } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
+import { Wait } from './waiting.jsx';
+import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
 export const RecordRoute = React.createClass({
@@ -28,8 +31,8 @@ const Record = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     renderDates(record) {
-        const created = timestamp2str(record.get('created'));
-        const updated = timestamp2str(record.get('updated'));
+        const created = moment(record.get('created')).format('ll');
+        const updated = moment(record.get('updated')).format('ll');
         return (
             <div>
                 <p>
@@ -115,99 +118,97 @@ const Record = React.createClass({
         );
     },
 
-    renderFieldType(id, name, type, value) {
-        if (type === 'array') {
-            value = value.map(v => <span key={v}>{v}; </span>);
-        } else if (type === 'boolean') {
-            value = value ? "True":"False";
+    renderFieldByType(type, value) {
+        if (type.isArray) {
+            const innerType = Object.assign({}, type, {isArray:false});
+            value = value.map((v,i) => <span key={i}>{this.renderFieldByType(innerType, v)}; </span>);
         } else if (type === 'date-time') {
-            value = timestamp2str(value);
+            value = moment(value).format;
         }
-        return (
-            <div className={"row "+id} key={id} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                <div className="col-md-3" style={{fontWeight:'bold'}}>{name}: </div>
-                <div className="col-md-9">{value}</div>
-            </div>
-        );
+
+        if (type.type === 'boolean') {
+            return <label><span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span><Toggle defaultChecked={value} /></label>;
+        }
+
+        return value;
     },
 
-    renderFieldBySchema(fieldName, fieldSchema, metadata) {
-        let v = metadata.get(fieldName);
+    renderField(blockID, fieldID, fieldSchema) {
+        let v = blockID ? this.props.record.getIn(['metadata', 'community_specific', blockID, fieldID]) :
+                            this.props.record.getIn(['metadata', fieldID]);
+        if (v != undefined && v != null) {
+            if (v.toJS){
+                v = v.toJS();
+            }
+        }
         if (!v) {
             return false;
         }
-        if (v.toJS) {
-            v = v.toJS();
-        }
-        const name = fieldSchema.get('title') || fieldName;
-        const type = fieldSchema.get('type');
-        const format = fieldSchema.get('format');
-        return this.renderFieldType(fieldName, name, format ? format : type, v);
-    },
-
-    renderRootMetadata(record, rootSchema) {
-        if (!rootSchema) {
-            return false;
-        }
-        const except = {'$schema':true, 'community_specific':true,
-            'title':true, 'description':true, 'keywords':true, 'community':true, 'creator':true};
-        const metadata = record.get('metadata') || Map();
-
-        const fields = [];
-        rootSchema.get('properties').entrySeq().forEach( ([p, v]) => {
-            if (!except.hasOwnProperty(p)) {
-                const f = this.renderFieldBySchema(p, v, metadata);
-                if (f) {
-                    fields.push(f);
-                }
-            }
-        });
-
+        const type = getType(fieldSchema);
         return (
-            <div style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
-                {fields}
+            <div key={fieldID} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+                <label style={{fontWeight:'bold'}}>{fieldSchema.get('title') || fieldName}: </label>
+                <span> {this.renderFieldByType(type, v)}</span>
             </div>
         );
     },
 
-    renderBlocksMetadata(record, blockSchemas) {
-        if (!blockSchemas) {
-            return false;
+    renderFieldBlock(schemaID, schema) {
+        if (!schema) {
+            return <Wait key={schemaID}/>;
         }
-        const except = {'$schema':true};
-        const community_specific = record.getIn(['metadata', 'community_specific']) || Map();
 
-        const fields = [];
-        blockSchemas.forEach( ([schemaID, schemaBlock]) => {
-            const metadataBlock = community_specific.get(schemaID);
-            if (metadataBlock && schemaBlock) {
-                schemaBlock.getIn(['json_schema', 'properties']).entrySeq().forEach( ([p, v]) => {
-                    if (!except.hasOwnProperty(p)) {
-                        const f = this.renderFieldBySchema(p, v, metadataBlock);
-                        if (f) {
-                            fields.push(f);
-                        }
-                    }
-                });
-            }
-        });
+        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
 
+        const except = {'title':true, 'description':true, 'keywords':true, 'community':true, 'creator':true};
+
+        const majorFields = majors.entrySeq().map(([id, f]) => except[id] ? false : this.renderField(schemaID, id, f));
+        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
+
+        if (majorFields.every(x=>!x) && minorFields.every(x=>!x)) {
+            // return false;
+        }
+
+        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em'} : {};
         return (
-            <div style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
-                {fields}
+            <div style={blockStyle} key={schemaID}>
+                <div className="row">
+                    <h3 className="col-sm-9" style={{marginBottom:'1em'}}>
+                        { schemaID ? schema.get('title') : 'Basic fields' }
+                    </h3>
+                </div>
+                <div className="row">
+                    <div className="col-sm-12">
+                        { majorFields }
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-sm-12">
+                        { minorFields }
+                    </div>
+                </div>
             </div>
         );
     },
 
     render() {
+        const rootSchema = this.props.rootSchema;
+        const blockSchemas = this.props.blockSchemas;
+        if (!this.props.record || !rootSchema) {
+            return <Wait/>;
+        }
         return (
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-md-12">
                         <div className="large-record">
                             {this.renderFixedFields(this.props.record, this.props.community)}
-                            {this.renderRootMetadata(this.props.record, this.props.rootSchema)}
-                            {this.renderBlocksMetadata(this.props.record, this.props.blockSchemas)}
+
+                            { this.renderFieldBlock(null, rootSchema) }
+
+                            { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
+                                this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
+                              ) : false }
                         </div>
                     </div>
                 </div>
