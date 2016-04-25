@@ -44,7 +44,7 @@ const CommunityList = React.createClass({
         const description = community.get('description') || "";
         const logo = community.get('logo') || "";
         return (
-            <div className="col-sm-6" key={id}>
+            <div className="col-sm-6 col-lg-4" key={id}>
                 <Link to={"/communities/"+name}>
                     <div className="community link">
                         <h3 className="name">{name}</h3>
