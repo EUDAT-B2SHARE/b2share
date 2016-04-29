@@ -26,29 +26,30 @@
 from __future__ import absolute_import, print_function
 
 
-OAUTHCLIENT_REMOTE_APPS=dict(
+OAUTHCLIENT_REMOTE_APPS = dict(
     #: B2ACCESS Staging instance for the demo
     b2access=dict(
         title='B2Access',
         description='EUDAT B2Access authentication.',
         icon='',
-        authorized_handler="invenio_oauthclient.handlers:authorized_signup_handler",
-        disconnect_handler="invenio_oauthclient.handlers:disconnect_handler",
+        authorized_handler='b2share.oauth.b2access:authorized_signup_handler',
+        disconnect_handler='b2share.oauth.b2access:disconnect_handler',
         signup_handler=dict(
-            info="b2share.oauth.b2access:account_info",
-            setup="b2share.oauth.b2access:account_setup",
-            view="invenio_oauthclient.handlers:signup_handler",
+            info='b2share.oauth.b2access:account_info',
+            setup='b2share.oauth.b2access:account_setup',
+            view='b2share.oauth.b2access:signup_handler',
         ),
+        remote_app='b2share.oauth.b2access:B2AccessOAuthRemoteApp',
         params=dict(
             request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
             base_url='https://unity.eudat-aai.fz-juelich.de:8443/',
             request_token_url=None,
-            access_token_url= "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/token",
+            access_token_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2/token',
             access_token_method='POST',
-            authorize_url="https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz",
-            app_key="B2ACCESS_APP_CREDENTIALS",
+            authorize_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz',
+            app_key='B2ACCESS_APP_CREDENTIALS',
         ),
-        tokeninfo_url = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/tokeninfo",
-        userinfo_url = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2/userinfo",
+        tokeninfo_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2/tokeninfo',
+        userinfo_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2/userinfo',
     )
 )
