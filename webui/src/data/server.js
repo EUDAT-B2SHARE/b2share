@@ -1,5 +1,5 @@
 import {fromJS, OrderedMap, List} from 'immutable';
-import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, errorHandler} from './ajax'
+import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
 
@@ -18,6 +18,8 @@ const apiUrls = {
     communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
+
+    languages()                       { return `${urlRoot}/languages.json` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -50,7 +52,17 @@ const apiUrls = {
 };
 
 
+const NOTIFICATION_DISPLAY_TIME = 10 * 1000; // 10 seconds
 const GETTER_HYSTERESIS_INTERVAL_MS = 500; // half a second
+
+
+function extractFileBucket(linkHeader) {
+    const re = /(.*);+\s*rel=\"[^\"]*b2share\.eudat\.eu\/relation_types\/record_bucket\".*/;
+    const m = linkHeader.match(re);
+    const ret = (m && m[1]) ? m[1] : null;
+    return ret;
+}
+
 
 
 class Timer {
@@ -84,15 +96,19 @@ class Getter {
         if (this.timer.ticking() && this.equals(params, this.params)) {
             return;
         }
+        this.forceFetch(params);
+    }
+
+    forceFetch(params) {
         this.timer.restart();
         this.params = params;
         ajaxGet({
             url: this.url,
             params: this.params,
             etag: this.etag,
-            successFn: (data, etag) => {
+            successFn: (data, linkHeader, etag) => {
                 this.etag = etag;
-                this.fetchSuccessFn(data);
+                this.fetchSuccessFn(data, linkHeader);
             },
         });
     }
@@ -140,10 +156,10 @@ class Poster {
         }
     }
 
-    put(params, successFn) {
+    patch(params, successFn) {
         if (!this.requestSent) {
             this.requestSent = true;
-            ajaxPut({
+            ajaxPatch({
                 url: this.url,
                 params: params,
                 successFn: successFn,
@@ -151,13 +167,59 @@ class Poster {
             });
         }
     }
+}
 
-    patch(params, successFn) {
+class FilePoster {
+    constructor(url) {
+        this.url = url;
+        this.xhr = null;
+    }
+
+    put(file, progressFn) {
+        if (this.xhr) {
+            console.error("already uploading file");
+            return ;
+        }
+
+        const fd = new FormData();
+        fd.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        this.xhr = xhr;
+        xhr.upload.addEventListener("progress", (e) => {
+            progressFn('uploading', 1 + (e.loaded / e.total * 99));
+        }, false);
+
+        xhr.open("PUT", this.url);
+        xhr.onreadystatechange = () => {
+            if (XMLHttpRequest.DONE !== xhr.readyState) {
+                return;
+            }
+            this.xhr = null;
+            if (400 <= xhr.status) {
+                progressFn('error', xhr);
+            } else {
+                progressFn('done', xhr);
+                this.xhr = null;
+            }
+        };
+
+        progressFn('uploading', 0);
+        xhr.send(fd);
+        return xhr;
+    }
+}
+
+class Deleter {
+    constructor() {
+        this.requestSent = false;
+    }
+
+    delete(url, successFn) {
         if (!this.requestSent) {
             this.requestSent = true;
-            ajaxPatch({
-                url: this.url,
-                params: params,
+            ajaxDelete({
+                url: url,
                 successFn: successFn,
                 completeFn: () => { this.requestSent = false; },
             });
@@ -175,7 +237,7 @@ class ServerCache {
                 name: null,
             },
 
-            notifications: [],
+            notifications: {}, // alert level -> { alert text -> x }
 
             latestRecords: [], // latest records with params
             searchRecords: [], // searched records view, with params
@@ -184,8 +246,11 @@ class ServerCache {
             communities: {}, // ordered map of community IDs to communities
             communitySchemas: {}, // map of community schema IDs to versions to schemas
             blockSchemas: {}, // map of block schema IDs to versions to schemas
+
+            languages: null,
         });
         this.store.setIn(['communities'], OrderedMap());
+        this.store.setIn(['notifications'], OrderedMap());
 
         this.getters = {};
 
@@ -208,13 +273,34 @@ class ServerCache {
             });
 
         this.getters.record = new Pool(recordID => {
-            const placeDataFn = (data) => {
+            const placeDataFn = (data, linkHeader) => {
                 expect(recordID == data.id);
+                if (!data.links) {
+                    data.links = {}
+                };
+                data.links.fileBucket = extractFileBucket(linkHeader);
                 const updater = (records) => records.set(data.id, fromJS(data));
                 this.store.updateIn(['recordCache'], updater);
             };
             return new Getter(apiUrls.record(recordID), null, placeDataFn);
-        }),
+        });
+
+        this.getters.fileBucket = new Pool(recordID => {
+            const fileBucketUrl = this.store.getIn(['recordCache', recordID, 'links', 'fileBucket']);
+            if (!fileBucketUrl) {
+                console.error("accessing fileBucketUrl before record fetch", recordID);
+                return null;
+            }
+            const placeDataFn = (data, linkHeader) => {
+                data.forEach(jsonfile => {
+                    const m = jsonfile.url.match(/.*\/(.*)/);
+                    jsonfile.name = (m && m[1]) ? m[1] : jsonfile.url;
+                });
+                const updater = (record) => record.setIn(['files'], fromJS(data));
+                this.store.updateIn(['recordCache', recordID], updater);
+            };
+            return new Getter(fileBucketUrl, null, placeDataFn);
+        });
 
         this.getters.communitySchema = new Pool( communityID =>
             new Pool ( version => {
@@ -233,7 +319,7 @@ class ServerCache {
                 };
                 return new Getter(apiUrls.communitySchema(communityID, version), null, placeDataFn);
             })
-        ),
+        );
 
         this.getters.blockSchema = new Pool(schemaID =>
             new Pool(version => {
@@ -252,13 +338,27 @@ class ServerCache {
                 };
                 return new Getter(apiUrls.schema(schemaID, version), null, placeDataFn);
             })
-        ),
+        );
 
         this.posters = {};
 
         this.posters.records = new Poster(apiUrls.records());
         this.posters.record = new Pool(recordID => new Poster(apiUrls.record(recordID)));
+        this.posters.files = new Pool(recordID =>
+            new Pool(fileName => {
+                const fileBucketUrl = this.store.getIn(['recordCache', recordID, 'links', 'fileBucket']);
+                if (!fileBucketUrl) {
+                    console.error("accessing fileBucketUrl poster before record fetch", recordID);
+                    return null;
+                }
+                return new FilePoster(fileBucketUrl + '/' + fileName);
+            })
+        );
+
+        this.deleters = {};
+        this.deleters.file = new Deleter();
     }
+
 
     getLatestRecords() {
         this.getters.latestRecords.autofetch();
@@ -290,6 +390,19 @@ class ServerCache {
         this.getters.record.get(id).fetch();
         return this.store.getIn(['recordCache', id]);
     }
+
+    getRecordFiles(recordID, useForce) {
+        if (!recordID) {
+            return [];
+        }
+        if (useForce) {
+            this.getters.fileBucket.get(recordID).forceFetch();
+        } else {
+            this.getters.fileBucket.get(recordID).fetch();
+        }
+        return this.store.getIn(['recordCache', recordID, 'files']);
+    }
+
 
     getBlockSchema(schemaID, version) {
         const s = this.store.getIn(['blockSchemas', schemaID, version]);
@@ -338,8 +451,44 @@ class ServerCache {
         return this.store.getIn(['user']);
     }
 
+    getLanguages() {
+        const langs = this.store.getIn(['languages']);
+        if (!langs) {
+            ajaxGet({
+                url: apiUrls.languages(),
+                successFn: (data) => {
+                    const langs = data.languages.map(([id, name]) => ({id, name}));
+                    console.log('got languages: ', langs.length);
+                    this.store.setIn(['languages'], langs);
+                },
+            });
+        }
+        return langs;
+    }
+
     createRecord(initialMetadata, successFn) {
         this.posters.records.post(initialMetadata, successFn);
+    }
+
+    putFile(record, fileObject, progressFn) {
+        const progFn = (status, param) => {
+            if (status === 'done') {
+                this.getRecordFiles(record.get('id'), true); // force fetch files
+            }
+            progressFn(status, param)
+        };
+        return this.posters.files.get(record.get('id')).get(fileObject.name).put(fileObject, progFn);
+    }
+
+    deleteFile(record, fileUUID) {
+        const fileList = record.get('files') || List();
+        const [fileIndex, file] = fileList.findEntry(f => f.get('uuid') === fileUUID);
+        console.log('delete', fileIndex, file);
+        if (file) {
+            this.deleters.file.delete(file.get('url'), () => {
+                this.store.deleteIn(['recordCache', record.get('id'), 'files', fileIndex]);
+            });
+        }
     }
 
     updateRecord(id, metadata, successFn) {
@@ -352,8 +501,13 @@ class ServerCache {
 
     notifyAlert(text) {
         console.log('notif', text);
-        this.store.updateIn(['notifications'], n => n.push({level:'alert', text: text}));
-        // TODO: purge alerts
+        this.store.updateIn(['notifications'], n => {
+            const x = n.getIn(['alert', text]);
+            return x ? n : n.setIn(['alert', text, Date.now()])
+        });
+        setTimeout(() => {
+            this.store.updateIn(['notifications'], n => n.deleteIn(['alert', text]));
+        }, NOTIFICATION_DISPLAY_TIME);
     }
 };
 

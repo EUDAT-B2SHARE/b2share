@@ -43,7 +43,7 @@ export const HeightAnimate = React.createClass({
 
     render() {
         return (
-            <div style={{ height: this.state.height, overflow: 'hidden', transition: 'height .2s' }}>
+            <div style={{ height: this.state.height, overflow: 'visible', transition: 'height .2s' }}>
                 <div ref={el => this.wrapper = el} style={{margin:0, padding:0}}>
                     { this.props.children }
                 </div>

@@ -4,7 +4,7 @@ import { Map, List } from 'immutable';
 import moment from 'moment';
 import Toggle from 'react-toggle';
 import { serverCache } from '../data/server';
-import { keys } from '../data/misc';
+import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait } from './waiting.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
@@ -19,6 +19,8 @@ export const RecordRoute = React.createClass({
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+        serverCache.getRecordFiles(id);
+
         return (
             <ReplaceAnimate>
                 <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
@@ -89,7 +91,7 @@ const Record = React.createClass({
                 <div className="row">
                     <div className="col-md-12">
                         <Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
-                        <h3 className="name">{metadata.get('title')}</h3>
+                        <h2 className="name">{metadata.get('title')}</h2>
                     </div>
                 </div>
                 <div className="row">
@@ -127,7 +129,7 @@ const Record = React.createClass({
         }
 
         if (type.type === 'boolean') {
-            return <label><span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span><Toggle defaultChecked={value} /></label>;
+            return <label><span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span><Toggle defaultChecked={value} disabled="disabled" /></label>;
         }
 
         return value;
@@ -191,9 +193,38 @@ const Record = React.createClass({
         );
     },
 
+    renderFileList(files) {
+        if (!files || !files.count()) {
+            return false;
+        }
+        const renderFile = file => {
+            return (
+                <dl className="dl-horizontal file" key={file.get('uuid')} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+                    <dt>Name</dt><dd><a href={file.get('url')}>{file.get('name')}</a></dd>
+                    <dt>PID</dt><dd>{file.get('PID') || "-"}</dd>
+                    <dt>Size</dt><dd>{humanSize(file.get('size'))}</dd>
+                    <dt>Checksum</dt><dd>{file.get('checksum')}</dd>
+                </dl>
+            );
+        };
+        return (
+            <div>
+                <div className="row">
+                    <h3 className="col-sm-9">
+                        { 'Files' }
+                    </h3>
+                </div>
+                <div className='fileList'>
+                    { files.map(renderFile) }
+                </div>
+            </div>
+        );
+    },
+
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
+        const files = this.props.record.get('files');
         if (!this.props.record || !rootSchema) {
             return <Wait/>;
         }
@@ -209,6 +240,8 @@ const Record = React.createClass({
                             { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
                                 this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
                               ) : false }
+
+                            { this.renderFileList(files) }
                         </div>
                     </div>
                 </div>

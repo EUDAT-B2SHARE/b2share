@@ -329,19 +329,19 @@ a.navbar-brand {
 /* communities */
 
 .community-small {
-  display: block;
-  padding: 10px 4px;
-  border: 1px solid transparent;
+  background-color: white;
+  border: 1px solid #eee;
   border-radius: 8px;
+  box-shadow: 0 0 10px #eee !important;
+  color: black;
+  display: block;
+  font-weight: bold;
   height: 8em;
   max-width: 10em;
   overflow: hidden;
+  padding: 10px 4px;
   text-align: center;
-  font-weight: bold;
-  border: 1px solid #eee;
-  box-shadow: 0 0 10px #eee !important;
   margin-bottom: 15px;
-  color: black;
 }
 
 .community-small:hover {
@@ -459,6 +459,90 @@ a.navbar-brand {
 
 /*****************************************************************************/
 /* upload form */
+
+.dropzone {
+  background-color: white;
+  border: 3px dashed #888;
+  border-radius: 16px;
+  height: 10em;
+  width:100%;
+}
+.dropzone:hover, .dropzone.active {
+  border: 3px dashed #F45D00;
+  box-shadow: 0 0 16px #F45D00 !important;
+}
+
+.b2dropzone {
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+
+  background-color: white;
+  border: 3px solid #888;
+  border-radius: 16px;
+  color: #888;
+  height: 4em;
+  border-radius: 8px;
+  overflow:hidden;
+  text-align:center;
+  padding:0.5em;
+  width:100%;
+}
+.b2dropzone > img {
+  display:inline;
+  max-width: 20%;
+  width: 50px;
+  padding-bottom:1em;
+}
+.b2dropzone > h3 {
+  display:inline;
+  padding-left:1em;
+}
+.b2dropzone:hover, .b2dropzone:focus {
+  background-color: #0F4094;
+  border: 3px solid #0F4094;
+  box-shadow: 0 0 4px #F45D00 !important;
+  color: white;
+  filter: none;
+  -webkit-filter: none;
+  -moz-filter: none;
+  filter: none;
+}
+
+.fileList {
+  margin-top: 1em;
+  background-color: white;
+}
+
+.fileList .file {
+  margin: 0.5em 0px;
+  padding: 0.5em 0;
+}
+.fileList .file:nth-child(odd) {
+  background-color: #f8f8f8;
+}
+.fileList .file:nth-child(even) {
+  background-color: #fefefe;
+}
+.fileList .file:hover {
+  background-color: #eee;
+}
+
+.fileList .file .btn.remove {
+  float: right;
+  color: #F45D00;
+  border: none;
+  background-color: transparent;
+}
+.fileList .file .btn.remove:hover {
+  color: red;
+}
+
+.large-record .file dd {
+  font-family: monospace;
+}
+
 
 .drop-box {
   border: 1px solid #bbb;

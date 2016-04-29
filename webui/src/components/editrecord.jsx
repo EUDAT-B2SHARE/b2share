@@ -11,6 +11,7 @@ import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 momentLocalizer(moment);
 numberLocalizer();
 
+import { Files } from './editfiles.jsx';
 import { keys, pairs } from '../data/misc';
 import { serverCache } from '../data/server';
 import { Wait } from './waiting.jsx';
@@ -103,7 +104,9 @@ export const NewRecordRoute = React.createClass({
                                 <span style={{float:'right'}}>Title</span>
                             </label>
                             <div className="col-sm-9" style={gap}>
-                                <input type="text" className="form-control" id='title' value={this.state.title} onChange={this.onTitleChange} />
+                                <input type="text" className="form-control" id='title'
+                                    style={{fontSize:24, height:48}}
+                                    value={this.state.title} onChange={this.onTitleChange} />
                             </div>
                         </div>
 
@@ -143,6 +146,7 @@ export const EditRecordRoute = React.createClass({
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+        serverCache.getRecordFiles(id);
 
         return (
             <ReplaceAnimate>
@@ -158,6 +162,7 @@ const EditRecord = React.createClass({
         return {
             errors: {},
             record: null,
+            fileState: null,
         };
     },
 
@@ -165,19 +170,6 @@ const EditRecord = React.createClass({
         const err = this.state.errors;
         err[id] = msg;
         this.setState({errors: this.state.errors});
-    },
-
-    renderFileZone() {
-        return (
-            <div className="row">
-                <div className="col-md-12">
-                    <div className="deposit-step">
-                        <p>Step 01</p>
-                        <h4>Drag and drop files here</h4>
-                    </div>
-                </div>
-            </div>
-        );
     },
 
     getValue(blockID, fieldID, type) {
@@ -233,8 +225,11 @@ const EditRecord = React.createClass({
             } else if (type.format === 'email') {
                 return <input type="text" className="form-control" placeholder="email@example.com"
                         value={getValue() || ""} onChange={event => setValue(event.target.value)} />
-            } else {
+            } else if (type.longString) {
                 return <textarea className="form-control" rows={value.length > 100 ? 5 : 1}
+                        value={getValue() || ""} onChange={event => setValue(event.target.value)} />
+            } else {
+                return <input type="text" className="form-control"
                         value={getValue() || ""} onChange={event => setValue(event.target.value)} />
             }
         } else {
@@ -287,6 +282,9 @@ const EditRecord = React.createClass({
             return false;
         }
         const type = getType(fieldSchema);
+        if (fieldID === 'description') {
+            type.longString = true;
+        }
         const getValue = this.getValue.bind(this, blockID, fieldID, type);
         const setValue = this.setValue.bind(this, blockID, fieldID, type);
 
@@ -347,7 +345,9 @@ const EditRecord = React.createClass({
                 <div className="row">
                     <div className="col-sm-offset-3 col-sm-9" style={{marginTop:'1em', marginBottom:'1em'}}>
                         <a href="#" onClick={onMoreDetails} style={{padding:'0.5em'}}>
-                            { !open ? "Show more details" : "Hide details" }
+                            { !open ?
+                                <span>Show more details <span className="glyphicon glyphicon-chevron-right" style={{top:'0.1em'}} aria-hidden="true"/></span>:
+                                <span>Hide details <span className="glyphicon glyphicon-chevron-down" style={{top:'0.2em'}} aria-hidden="true"/></span> }
                         </a>
                     </div>
                 </div>
@@ -389,6 +389,9 @@ const EditRecord = React.createClass({
 
     updateRecord(event) {
         event.preventDefault();
+        if (this.state.fileState !== 'done') {
+            return;
+        }
         const original = this.props.record.get('metadata').toJS();
         const updated = this.state.record.toJS();
         const patch = compare(original, updated);
@@ -405,24 +408,43 @@ const EditRecord = React.createClass({
         }
         return (
             <div className="edit-record">
-                <div>
-                    <form className="form-horizontal" onSubmit={this.updateRecord}>
-                        { this.renderFieldBlock(null, rootSchema) }
+                <div className="row">
+                    <div className="col-md-12">
+                        <h2 className="name">
+                            <span style={{color:'#aaa'}}>Editing </span>
+                            {this.state.record.get('title')}
+                        </h2>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-5 col-md-12">
+                        <Files files={this.props.record.has('files') ? this.props.record.get('files').toJS() : []}
+                            setState={fileState => this.setState({fileState})}
+                            putFile={serverCache.putFile.bind(serverCache, this.props.record)}
+                            deleteFile={serverCache.deleteFile.bind(serverCache, this.props.record)}/>
+                    </div>
+                    <div className="col-lg-7 col-md-12">
+                        <form className="form-horizontal" onSubmit={this.updateRecord}>
+                            { this.renderFieldBlock(null, rootSchema) }
 
-                        { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
-                            this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
-                          ) : false }
-
-                        <div className="form-group submit row" style={{marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'}}>
-                            {pairs(this.state.errors).map( ([id, msg]) =>
-                                <div className="col-sm-9 col-sm-offset-3">{msg} </div>) }
-                            <div className="col-sm-offset-3 col-sm-9">
-                                <button type="submit" className="btn btn-primary btn-default btn-block">
-                                    Update Draft/Record</button>
-                            </div>
+                            { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
+                                this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
+                              ) : false }
+                        </form>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="form-group submit row" style={{marginTop:'2em', marginBottom:'2em', paddingTop:'2em', borderTop:'1px solid #eee'}}>
+                        {pairs(this.state.errors).map( ([id, msg]) =>
+                            <div className="col-sm-9 col-sm-offset-3">{msg} </div>) }
+                        <div className="col-sm-offset-3 col-sm-6">
+                            <label style={{fontSize:18, fontWeight:'normal'}}><input type="checkbox"/> Submit draft for publication</label>
+                            <p>When the draft is published it will be assigned a PID, making it publicly citable.
+                                But a published record can no longer be modified by its owner. </p>
+                            <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateRecord}>
+                                { this.state.publish ? "Update and Publish": "Update Draft"}</button>
                         </div>
-
-                    </form>
+                    </div>
                 </div>
             </div>
         );

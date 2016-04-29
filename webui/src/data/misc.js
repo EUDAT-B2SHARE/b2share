@@ -44,13 +44,13 @@ export function humanSize(sz) {
     if (sz < K) {
         return [sz,'B '];
     } else if (sz < M) {
-        return [(sz/K).toFixed(1), 'KB'];
+        return [(sz/K).toFixed(2), 'KB'];
     } else if (sz < G) {
-        return [(sz/M).toFixed(1), 'MB'];
+        return [(sz/M).toFixed(2), 'MB'];
     } else if (sz < T) {
-        return [(sz/G).toFixed(1), 'GB'];
+        return [(sz/G).toFixed(2), 'GB'];
     } else {
-        return [(sz/T).toFixed(1), 'TB'];
+        return [(sz/T).toFixed(2), 'TB'];
     }
 }
 

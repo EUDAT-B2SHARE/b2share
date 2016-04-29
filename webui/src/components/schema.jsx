@@ -89,7 +89,6 @@ export const Schema = React.createClass({
         if (!schema) {
             return <Wait/>;
         }
-        console.log('schema', schema.toJS());
         const jschema = schema.get('json_schema');
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(jschema);
         return (
