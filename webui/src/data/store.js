@@ -53,6 +53,15 @@ export class Store {
         this.root = this.root.setIn(path, y);
         this.onChange();
     }
+
+    // deletes data node at path
+    deleteIn(path) {
+        if (!path || !path.length) return ;
+        if (this.root.hasIn(path)) {
+            this.root = this.root.deleteIn(path);
+            this.onChange();
+        }
+    }
 };
 
 

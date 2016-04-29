@@ -87,6 +87,23 @@ export function ajaxPatch({url, params, successFn, errorFn, completeFn}) {
 }
 
 
+export function ajaxDelete({url, params, successFn, errorFn, completeFn}) {
+    console.log("--- ajaxDelete:", timestamp(), url, params);
+    const aobj = {
+        method: 'delete',
+        url: url,
+        success: successFn,
+        error: errorFn,
+        complete: completeFn,
+        timeout: DEFAULT_TIMEOUT_POST_MS,
+    }
+    if (params) {
+        aobj.data = JSON.stringify(params);
+    }
+    return ajaxWithError(aobj);
+}
+
+
 function ajaxWithError(ajaxObject) {
     if (!ajaxObject.error) {
         ajaxObject.error = function(xhr) {
@@ -131,9 +148,10 @@ function ajaxWithToken(ajaxObject) {
                 setSessionUserToken(token);
             }
         }
+        var link = request.getResponseHeader('Link');
         var etag = request.getResponseHeader('ETag');
-        console.log('  > ajaxRet:', timestamp(), ajaxObject.url, data, {etag: etag});
-        return oldSuccess(data, etag);
+        console.log('  > ajaxRet:', timestamp(), ajaxObject.url, {data, link, etag});
+        return oldSuccess(data, link, etag);
     }
 
     const oldError = ajaxObject.error;

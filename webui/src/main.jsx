@@ -18,17 +18,15 @@ import { RecordRoute  } from './components/record.jsx';
 import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 
-const VERSION = '0.7.0';
+const VERSION = '0.8.0';
 
+// TODO: notifications
+// TODO: remove eudat empty block schema
+// TODO: user login
+// TODO: test file uploads in various browsers
 // TODO: edit records: error testing per field
 // TODO: edit records: plugins
 // TODO: edit records: open enums
-// TODO: file uploads
-// TODO: stop cycle in case of 404
-
-// TODO: remove eudat empty block schema
-// TODO: user login
-// TODO: make communities links (keyboard selectable)
 
 const AppFrame = React.createClass({
     getInitialState() {
