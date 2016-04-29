@@ -23,50 +23,186 @@
 
 """EUDAT B2ACCESS OAuth configuration."""
 
+import base64
 
-# def decorate_http_request(remote):
-#     """ Decorate the OAuth call to access token endpoint to inject the Authorization header"""
-#     old_http_request = remote.http_request
-#     def new_http_request(uri, headers=None, data=None, method=None):
-#         if not headers:
-#             headers = {}
-#         if not headers.get("Authorization"):
-#             from urlparse import parse_qs
-#             from base64 import b64encode
-#             args = parse_qs(data)
-#             client_id_list = args.get('client_id')
-#             client_id = None if len(client_id_list) == 0 else client_id_list[0]
-#             client_secret_list = args.get('client_secret')
-#             client_secret = None if len(client_secret_list) == 0 else client_secret_list[0]
-#             userpass = b64encode("%s:%s" % (client_id, client_secret)).decode("ascii")
-#             headers.update({ 'Authorization' : 'Basic %s' %  (userpass,) })
-#         return old_http_request(uri, headers=headers, data=data, method=method)
-#     remote.http_request = new_http_request
+from flask import abort, current_app, redirect, request, \
+    session, url_for
+from flask_oauthlib.client import OAuthException, OAuthRemoteApp, \
+    parse_response
+from flask_oauthlib.utils import to_bytes
+from flask_security import current_user
+from invenio_oauthclient.handlers import response_token_setter, token_getter, \
+    token_session_key
+from invenio_oauthclient.proxies import current_oauthclient
+from invenio_oauthclient.signals import account_info_received, \
+    account_setup_received
+from invenio_oauthclient.utils import oauth_authenticate, oauth_get_user
+
 
 REMOTE_APP = dict(
     title='B2Access',
     description='EUDAT B2Access authentication.',
     icon='',
-    # setup=decorate_http_request,
-    authorized_handler="invenio_oauthclient.handlers:authorized_signup_handler",
-    disconnect_handler="invenio_oauthclient.handlers:disconnect_handler",
+    authorized_handler='b2share.oauth.b2access:authorized_signup_handler',
+    disconnect_handler='b2share.oauth.b2access:disconnect_handler',
     signup_handler=dict(
-        info="b2share.oauth.b2access:account_info",
-        setup="b2share.oauth.b2access:account_setup",
-        view="invenio_oauthclient.handlers:signup_handler",
+        info='b2share.oauth.b2access:account_info',
+        setup='b2share.oauth.b2access:account_setup',
+        view='b2share.oauth.b2access:signup_handler',
     ),
+    remote_app='b2share.oauth.b2access:B2AccessOAuthRemoteApp',
     params=dict(
         request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
         base_url='https://b2access.eudat.eu:8443/',
         request_token_url=None,
-        access_token_url= "https://b2access.eudat.eu:8443/oauth2/token",
+        access_token_url='https://b2access.eudat.eu:8443/oauth2/token',
         access_token_method='POST',
-        authorize_url="https://b2access.eudat.eu:8443/oauth2-as/oauth2-authz",
-        app_key="B2ACCESS_APP_CREDENTIALS",
+        authorize_url='https://b2access.eudat.eu:8443/oauth2-as/oauth2-authz',
+        app_key='B2ACCESS_APP_CREDENTIALS',
     ),
-    tokeninfo_url = "https://b2access.eudat.eu:8443/oauth2/tokeninfo",
-    userinfo_url = "https://b2access.eudat.eu:8443/oauth2/userinfo",
+    tokeninfo_url='https://b2access.eudat.eu:8443/oauth2/tokeninfo',
+    userinfo_url='https://b2access.eudat.eu:8443/oauth2/userinfo',
 )
+
+
+class B2AccessOAuthRemoteApp(OAuthRemoteApp):
+    """Custom OAuth remote app handling Basic HTTP Authentication (RFC2617)."""
+
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super(B2AccessOAuthRemoteApp, self).__init__(*args, **kwargs)
+
+    def handle_oauth2_response(self):
+        """Handles an oauth2 authorization response.
+
+        This method overrides the one provided by OAuthRemoteApp in order to
+        support Basic HTTP Authentication.
+        """
+        if self.access_token_method != 'POST':
+            raise OAuthException(
+                ('Unsupported access_token_method: {}. '
+                 'Only POST is supported.').format(self.access_token_method)
+            )
+
+        client = self.make_client()
+        remote_args = {
+            'code': request.args.get('code'),
+            'client_secret': self.consumer_secret,
+            'redirect_uri': (
+                session.get('%s_oauthredir' % self.name) or
+                url_for('invenio_oauthclient.authorized',
+                        remote_app=self.name, _external=True)
+            ),
+        }
+        remote_args.update(self.access_token_params)
+        # build the Basic HTTP Authentication code
+        b2access_basic_auth = base64.encodestring(bytes('{0}:{1}'.format(
+            self.consumer_key, self.consumer_secret),
+            'utf-8')).decode('ascii').replace('\n', '')
+        body = client.prepare_request_body(**remote_args)
+        resp, content = self.http_request(
+            self.expand_url(self.access_token_url),
+            # set the Authentication header
+            headers={
+                'Authorization': 'Basic {}'.format(b2access_basic_auth),
+            },
+            data=to_bytes(body, self.encoding),
+            method=self.access_token_method,
+        )
+
+        data = parse_response(resp, content, content_type=self.content_type)
+        if resp.code not in (200, 201):
+            raise OAuthException(
+                'Invalid response from %s' % self.name,
+                type='invalid_response', data=data
+            )
+        return data
+
+
+def authorized_signup_handler(resp, remote, *args, **kwargs):
+    """Handle sign-in/up functionality.
+
+    This is needed as we don't use Flask Forms (for now), thus the default
+    function would fail.
+    """
+    # Remove any previously stored auto register session key
+    session.pop(token_session_key(remote.name) + '_autoregister', None)
+
+    # Store token in session
+    # ----------------------
+    # Set token in session - token object only returned if
+    # current_user.is_autenticated().
+    token = response_token_setter(remote, resp)
+    handlers = current_oauthclient.signup_handlers[remote.name]
+
+    # Sign-in/up user
+    # ---------------
+    if not current_user.is_authenticated:
+        account_info = handlers['info'](resp)
+        account_info_received.send(
+            remote, token=token, response=resp, account_info=account_info
+        )
+
+        user = oauth_get_user(
+            remote.consumer_key,
+            account_info=account_info,
+            access_token=token_getter(remote)[0],
+        )
+
+        if user is None:
+            # Auto sign-up if user not found
+            user = oauth_register(account_info)
+
+        # Authenticate user
+        if not oauth_authenticate(remote.consumer_key, user,
+                                  require_existing_link=False,
+                                  remember=current_app.config[
+                                      'OAUTHCLIENT_REMOTE_APPS']
+                                  [remote.name].get('remember', False)):
+            return current_app.login_manager.unauthorized()
+
+        # Link account
+        # ------------
+        # Need to store token in database instead of only the session when
+        # called first time.
+        token = response_token_setter(remote, resp)
+
+    # Setup account
+    # -------------
+    if not token.remote_account.extra_data:
+        account_setup = handlers['setup'](token, resp)
+        account_setup_received.send(
+            remote, token=token, response=resp, account_setup=account_setup
+        )
+
+    return redirect('/')
+
+
+def oauth_register(account_info):
+    """Register new OAuth users.
+
+    This is needed as we don't use Flask Forms (for now), thus the default
+    function would fail.
+    """
+    from flask_security.registerable import register_user
+    email = account_info.get("email")
+    return register_user(email=email, password=None)
+
+
+def disconnect_handler(remote, *args, **kwargs):
+    """Handle unlinking of remote account.
+
+    Disconnecting B2Access accounts is disabled.
+    """
+    return abort(404)
+
+
+def signup_handler(remote, *args, **kwargs):
+    """Handle extra signup information.
+
+    This is disabled for B2Share.
+    """
+    return abort(404)
 
 
 def account_info(remote, resp):
@@ -78,15 +214,16 @@ def account_info(remote, resp):
     except ImportError:
         from urllib import request as http
 
-    url = REMOTE_APP.get('userinfo_url')
-    headers = { 'Authorization' : 'Bearer %s' %  (resp.get('access_token'),) }
+    url = current_app.config['OAUTHCLIENT_REMOTE_APPS'][remote.name][
+        'userinfo_url']
+    headers = {'Authorization': 'Bearer %s' % (resp.get('access_token'),)}
     req = http.Request(url, headers=headers)
     response, content = None, None
     try:
         response = http.urlopen(req)
         content = response.read()
         response.close()
-        dict_content = json.loads(content)
+        dict_content = json.loads(content.decode('utf-8'))
         if dict_content.get('cn') is None:
             return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
         else:
@@ -99,6 +236,6 @@ def account_info(remote, resp):
     return dict(email=None, nickname=None)
 
 
-def account_setup(remote, token):
+def account_setup(remote, token, resp):
     """ Perform additional setup after user have been logged in. """
     pass
