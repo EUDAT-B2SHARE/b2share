@@ -1,7 +1,7 @@
 {
   "name": "b2share-webui",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "B2SHARE web user interface",
   "license": "GPL-2.0",
   "repository": "https://github.com/EUDAT-B2SHARE/b2share.git",

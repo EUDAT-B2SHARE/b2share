@@ -1,7 +1,7 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { serverCache } from '../data/server';
-import { pairs } from '../data/misc';
+import { pairs, humanSize } from '../data/misc';
 import { Wait } from './waiting.jsx';
 import { ReplaceAnimate } from './animate.jsx';
 
@@ -113,6 +113,9 @@ export const Files = React.createClass({
         const files = this.state.files.filter(x => x !== f);
         if (files.length !== this.state.files.length) {
             this.setState({files:files});
+            if (!files || !files.length ) {
+                this.props.setState('done');
+            }
         } else if (f.uuid) {
             this.props.deleteFile(f.uuid);
         }
@@ -163,30 +166,34 @@ export const Files = React.createClass({
     },
 
     renderFile: function(f, i) {
-        // if (f.preview) {
-        //     const img = <img src={f.preview} style={{maxWidth:'50%', maxHeight:'50%'}}/>;
-        //     const preview = <div className="row"> <div className="col-md-12" style={{textAlign:'center'}}> { img } </div> </div>;
-        // }
         return (
             <div key={f.uuid || (f.name+i)} className="file">
                 <div className="row" style={{}}>
-                    <div className="col-md-10">
-                        <span style={{width:'100%', lineHeight:'26px', paddingLeft:10}}>{f.name}</span>
-                    </div>
-                    <div className="col-md-2">
-                        <button type="button" className="btn btn-sm remove" onClick={()=>{f.remove=true; this.forceUpdate()}}> <i className="glyphicon glyphicon-remove"/> </button>
+                    <div className="col-sm-12">
+                        <dl className="dl-horizontal">
+                            <dt>Name</dt>
+                            <div>
+                                <dd><a href={f.url}>{f.name}</a></dd>
+                                <button type="button" className="btn btn-sm remove" style={{float:'right'}}
+                                    onClick={()=>{f.remove=true; this.forceUpdate()}}> <i className="glyphicon glyphicon-remove"/>
+                                </button>
+                            </div>
+                            { f.PID ? <div><dt>PID</dt><dd>{f.PID}</dd></div> : false }
+                            <dt>Size</dt><dd>{humanSize(f.size)}</dd>
+                            { f.checksum ? <div><dt>Checksum</dt><dd>{f.checksum}</dd></div> : false }
+                        </dl>
                     </div>
                 </div>
                 { f.remove ?
                     <div className="row" style={{borderTop:'2px solid white'}}>
-                        <div className="col-md-10 col-md-offset-1"> <p style={{textAlign:'center', padding:'1em 0'}}>
+                        <div className="col-sm-10 col-sm-offset-1"> <p style={{textAlign:'center', padding:'1em 0'}}>
                             {f.progress ? 'Stop uploading and remove this file?' : 'Remove this file?'}
                             { f.uuid ? ' This operation will change the record.' : false }
                         </p> </div>
-                        <div className="col-md-4 col-md-offset-2">
+                        <div className="col-sm-4 col-sm-offset-2">
                             <button type="button" className="btn btn-default btn-block btn-sm" onClick={this.handleRemove.bind(this, f)}> Yes </button>
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-sm-4">
                             <button type="button" className="btn btn-default btn-block btn-sm" onClick={()=>{f.remove=false; this.forceUpdate()}}> No </button>
                         </div>
                     </div> : false}

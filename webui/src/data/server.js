@@ -156,6 +156,18 @@ class Poster {
         }
     }
 
+    put(params, successFn) {
+        if (!this.requestSent) {
+            this.requestSent = true;
+            ajaxPut({
+                url: this.url,
+                params: params,
+                successFn: successFn,
+                completeFn: () => { this.requestSent = false; },
+            });
+        }
+    }
+
     patch(params, successFn) {
         if (!this.requestSent) {
             this.requestSent = true;
@@ -228,8 +240,6 @@ class Deleter {
 }
 
 
-// TODO: handle http error cases
-// TODO: do memory profile
 class ServerCache {
     constructor() {
         this.store = new Store({
@@ -250,7 +260,9 @@ class ServerCache {
             languages: null,
         });
         this.store.setIn(['communities'], OrderedMap());
-        this.store.setIn(['notifications'], OrderedMap());
+        this.store.setIn(['notifications'], OrderedMap([
+            ['danger', OrderedMap()], ['warning', OrderedMap()], ['info', OrderedMap()]
+        ]));
 
         this.getters = {};
 
@@ -483,7 +495,6 @@ class ServerCache {
     deleteFile(record, fileUUID) {
         const fileList = record.get('files') || List();
         const [fileIndex, file] = fileList.findEntry(f => f.get('uuid') === fileUUID);
-        console.log('delete', fileIndex, file);
         if (file) {
             this.deleters.file.delete(file.get('url'), () => {
                 this.store.deleteIn(['recordCache', record.get('id'), 'files', fileIndex]);
@@ -499,15 +510,29 @@ class ServerCache {
         this.posters.record.get(id).patch(patch, successFn);
     }
 
-    notifyAlert(text) {
-        console.log('notif', text);
-        this.store.updateIn(['notifications'], n => {
-            const x = n.getIn(['alert', text]);
-            return x ? n : n.setIn(['alert', text, Date.now()])
+    notify(level, text) {
+        this.store.updateIn(['notifications', level], n => {
+            console.log('notify', this.store.getIn(['notifications']).toJS());
+            const x = n.get(text);
+            if (x) {
+                console.log('old notif', level, text);
+                return n;
+            } else {
+                console.log('new notif', level, text);
+                return n.set(text, Date.now());
+            }
         });
         setTimeout(() => {
-            this.store.updateIn(['notifications'], n => n.deleteIn(['alert', text]));
+            this.store.updateIn(['notifications'], n => n.deleteIn([level, text]));
         }, NOTIFICATION_DISPLAY_TIME);
+    }
+
+    getNotifications() {
+        return this.store.getIn(['notifications']);
+    }
+
+    notifyDanger(text) {
+        this.notify('danger', text);
     }
 };
 
@@ -515,5 +540,5 @@ class ServerCache {
 export const serverCache = new ServerCache();
 
 errorHandler.fn = function(text) {
-    serverCache.notifyAlert(text);
+    serverCache.notifyDanger(text);
 }

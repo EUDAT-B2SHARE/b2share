@@ -162,8 +162,26 @@ const EditRecord = React.createClass({
         return {
             errors: {},
             record: null,
-            fileState: null,
+            fileState: 'done',
         };
+    },
+
+    renderFileBlock() {
+        const setState = fileState => {
+            const errors = this.state.errors;
+            if (fileState === 'done') {
+                delete errors['files'];
+            } else {
+                errors['files'] = fileState ='Waiting for files to finish uploading';
+            }
+            this.setState({fileState, errors});
+        }
+        return (
+            <Files files={this.props.record.has('files') ? this.props.record.get('files').toJS() : []}
+                setState={setState}
+                putFile={serverCache.putFile.bind(serverCache, this.props.record)}
+                deleteFile={serverCache.deleteFile.bind(serverCache, this.props.record)}/>
+        );
     },
 
     setError(id, msg) {
@@ -418,10 +436,7 @@ const EditRecord = React.createClass({
                 </div>
                 <div className="row">
                     <div className="col-lg-5 col-md-12">
-                        <Files files={this.props.record.has('files') ? this.props.record.get('files').toJS() : []}
-                            setState={fileState => this.setState({fileState})}
-                            putFile={serverCache.putFile.bind(serverCache, this.props.record)}
-                            deleteFile={serverCache.deleteFile.bind(serverCache, this.props.record)}/>
+                        { this.renderFileBlock() }
                     </div>
                     <div className="col-lg-7 col-md-12">
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
@@ -436,7 +451,7 @@ const EditRecord = React.createClass({
                 <div className="row">
                     <div className="form-group submit row" style={{marginTop:'2em', marginBottom:'2em', paddingTop:'2em', borderTop:'1px solid #eee'}}>
                         {pairs(this.state.errors).map( ([id, msg]) =>
-                            <div className="col-sm-9 col-sm-offset-3">{msg} </div>) }
+                            <div className="col-sm-offset-3 col-sm-6 label label-warning">{msg} </div>) }
                         <div className="col-sm-offset-3 col-sm-6">
                             <label style={{fontSize:18, fontWeight:'normal'}}><input type="checkbox"/> Submit draft for publication</label>
                             <p>When the draft is published it will be assigned a PID, making it publicly citable.

@@ -67,6 +67,25 @@ a.navbar-brand {
   margin-right: 220px;
 }
 
+.navbar-nav {
+  margin-top: 0.5em;
+}
+.navbar-nav.user {
+  padding-right: 2em;
+}
+
+@media (min-width: 1024px) {
+  .navbar-nav.user {
+    float:right;
+    margin-right: 220px;
+  }
+}
+@media (min-width: 768px) {
+  .navbar-nav.user {
+    float:right;
+  }
+}
+
 .well .divider {
   height: 10px;
   width: 100%;
@@ -196,6 +215,37 @@ a.navbar-brand {
 }
 
 .route-leave.route-leave-active {
+  opacity: 0.01;
+}
+
+
+/* list */
+
+.list-appear {
+  opacity: 0.01;
+  transition: opacity 1s;
+}
+
+.list-appear.list-appear-active {
+  opacity: 1;
+}
+
+
+.list-enter {
+  opacity: 0.01;
+  transition: opacity 1s;
+}
+
+.list-enter.list-enter-active {
+  opacity: 1;
+}
+
+.list-leave {
+  opacity: 1;
+  transition: opacity 1s;
+}
+
+.list-leave.list-leave-active {
   opacity: 0.01;
 }
 
@@ -518,6 +568,7 @@ a.navbar-brand {
 .fileList .file {
   margin: 0.5em 0px;
   padding: 0.5em 0;
+  word-wrap: break-word;
 }
 .fileList .file:nth-child(odd) {
   background-color: #f8f8f8;
@@ -539,8 +590,21 @@ a.navbar-brand {
   color: red;
 }
 
-.large-record .file dd {
-  font-family: monospace;
+@media (min-width: 768px) {
+  .file dt {
+    width:8em;
+  }
+  .file dd {
+      margin-left: 9em;
+  }
+}
+
+
+.file .dl-horizontal {
+  margin-bottom: 0;
+}
+.file dd {
+  font-family: "Bitstream Vera Sans Mono", Consolas, Courier, monospace;
 }
 
 
@@ -558,25 +622,6 @@ a.navbar-brand {
   padding: 10px;
   text-align:center;
 }
-
-.upload-preview .media-wrapper{
-  min-height: 80px;
-  padding-bottom: 40px;
-  margin-top: 10px;
-}
-
-.media-wrapper .file-name{
-  font-size: 0.8em;
-}
-
-.media-wrapper .file-type{
-  font-size: 0.8em;
-}
-
-.media-wrapper .file-size{
-  font-size: 0.8em;
-}
-
 
 /*** file uploads ***/
 

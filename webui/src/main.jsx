@@ -8,7 +8,7 @@ import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 import { serverCache } from './data/server';
 
 import { ReplaceAnimate } from './components/animate.jsx';
-import { Navbar, Breadcrumbs } from './components/navbar.jsx';
+import { Navbar, Breadcrumbs, Notifications } from './components/navbar.jsx';
 import { HomeRoute } from './components/home.jsx';
 import { UserRoute } from './components/user.jsx';
 import { Help, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
@@ -18,15 +18,15 @@ import { RecordRoute  } from './components/record.jsx';
 import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 
-const VERSION = '0.8.0';
+const VERSION = '0.9.0';
 
-// TODO: notifications
-// TODO: remove eudat empty block schema
 // TODO: user login
 // TODO: test file uploads in various browsers
 // TODO: edit records: error testing per field
 // TODO: edit records: plugins
-// TODO: edit records: open enums
+// TODO: edit records: open enums (rename enum to options?)
+// TODO: handle http error cases (record, community not found)
+// TODO: do memory profile
 
 const AppFrame = React.createClass({
     getInitialState() {
@@ -56,6 +56,7 @@ const AppFrame = React.createClass({
                     <div className="col-sm-1"/>
                     <div className="col-sm-10">
                         <Breadcrumbs />
+                        <Notifications />
                         <ReplaceAnimate>
                             { this.props.children && React.cloneElement(this.props.children, additionalProps) }
                         </ReplaceAnimate>
