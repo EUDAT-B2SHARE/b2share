@@ -25,7 +25,7 @@
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",
-                    "title": "B2SHARE Linguistics Schema",
+                    "title": "CLARIN Metadata",
                     "description": "This is the blueprint of the metadata block specific for the clarin community",
                     "type": "object",
                     "properties": {

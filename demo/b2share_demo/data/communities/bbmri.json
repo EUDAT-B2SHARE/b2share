@@ -25,7 +25,7 @@
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",
-                    "title": "B2SHARE BBMRI Schema",
+                    "title": "BBMRI Metadata",
                     "description": "This is the blueprint of the metadata block specific for the BBMRI community",
                     "type": "object",
                     "properties": {

@@ -1,8 +1,8 @@
 {
-    "name": "Aalto",    
+    "name": "Aalto",
     "description": "Aalto University",
     "id": "c4234f93-da96-4d2f-a2c8-fa83d0775212",
-    "logo": "/img/communities/aalto.jpg",    
+    "logo": "/img/communities/aalto.jpg",
     "community_schemas": [
         {
             "json_schema": {
@@ -20,13 +20,13 @@
     ],
     "block_schemas": {
         "aalto": {
-            "id": "419e94c9-9c8b-4527-b12c-51fdd1f27947",            
+            "id": "419e94c9-9c8b-4527-b12c-51fdd1f27947",
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",
-                    "description": "This is the blueprint of the metadata block specific for the Aalto community",                    
-                    "title": "B2SHARE Aalto Schema",
-                    "type": "object",  
+                    "description": "This is the blueprint of the metadata block specific for the Aalto community",
+                    "title": "Aalto Metadata",
+                    "type": "object",
                     "properties": {
                         "project_name": {
                             "title": "Project Name",
@@ -66,7 +66,7 @@
                         }
                     },
                     "required": [ "language_code" ],
-                    "additionalProperties": false,                    
+                    "additionalProperties": false,
                     "b2share": {
                         "presentation": {
                             "major": [ "project_name", "project_url", "language_code", "funding_id", "owner_org", "funder", "owner" ],

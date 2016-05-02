@@ -2,7 +2,7 @@
     "description": "Ontological data.",
     "id": "893fad89-dc4a-4f1b-a9ba-4240aa18e12b",
     "name": "EUON",
-    "logo": "/img/communities/euon.png",    
+    "logo": "/img/communities/euon.png",
     "community_schemas": [
         {
             "json_schema": {
@@ -20,10 +20,10 @@
     ],
     "block_schemas": {
         "euon": {
-            "id": "c46a2f19-58fc-4487-9176-5c538e028e55",            
+            "id": "c46a2f19-58fc-4487-9176-5c538e028e55",
             "versions": [
                 {
-                    "title": "B2SHARE EUON Schema",
+                    "title": "EUON Metadata",
                     "description": "This is the blueprint of the metadata block specific for the EUON community",
                     "properties": {
                         "modificationDate": {
