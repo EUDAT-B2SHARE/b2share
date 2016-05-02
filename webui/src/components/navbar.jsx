@@ -1,10 +1,11 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link, browserHistory } from 'react-router'
 import { serverCache } from '../data/server';
+import { ListAnimate, HeightAnimate } from './animate.jsx';
 
 
 export const Navbar = React.createClass({
-    // not a pure render
+    // not a pure render, depends on the URL
     getInitialState() {
         return { open: true };
     },
@@ -38,7 +39,32 @@ export const Navbar = React.createClass({
 });
 
 
+const NavbarMenu = React.createClass({
+    // not a pure render, depends on the URL
+    render() {
+        const user = serverCache.getUser();
+        const cname = this.props.collapse ? "collapse":"";
+        return (
+            <div className={cname + " navbar-collapse"} id="header-navbar-collapse">
+                <NavbarSearch location={this.props.location}/>
+
+                <ul className="nav navbar-nav text-uppercase">
+                    <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
+                    <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
+                    <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
+                    <li> <a href="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </a> </li>
+                </ul>
+                <ul className="nav navbar-nav text-uppercase user">
+                    { user.get('name') ? <NavbarUser /> : <NavbarNoUser /> }
+                </ul>
+            </div>
+        );
+    }
+});
+
+
 const NavbarSearch = React.createClass({
+    // not a pure render, depends on the URL
     getInitialState() {
         return { query: "" };
     },
@@ -64,7 +90,6 @@ const NavbarSearch = React.createClass({
             console.log("search", np, upstate);
             this.setState(upstate);
         }
-        // TODO: smoother experience on search: try Link with params
     },
 
     change(event) {
@@ -95,25 +120,15 @@ const NavbarSearch = React.createClass({
 });
 
 
-const NavbarMenu = React.createClass({
-    // not a pure render, depends on the URL
+const NavbarNoUser = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+
     render() {
-        const topgap = {marginTop:'0.5em'}
-        const user = serverCache.getUser();
-        const cname = this.props.collapse ? "collapse":"";
         return (
-            <div className={cname + " navbar-collapse"} id="header-navbar-collapse">
-                <NavbarSearch location={this.props.location}/>
-
-                <ul className="nav navbar-nav text-uppercase" style={topgap}>
-                    <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
-                    <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
-                    <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
-                    <li> <a href="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </a> </li>
-
-                    { user.get('name') ? <NavbarUser /> : <NavbarNoUser /> }
-                </ul>
-            </div>
+            <li>
+                <Link activeClassName='active' to="/users/login" className="visible-xs"><i className="fa fa-sign-in"/></Link>
+                <Link activeClassName='active' to="/users/login" className="hidden-xs"><i className="fa fa-sign-in"/> Login</Link>
+            </li>
         );
     }
 });
@@ -146,21 +161,8 @@ const NavbarUser = React.createClass({
 });
 
 
-const NavbarNoUser = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
-    render() {
-        return (
-            <li>
-                <Link activeClassName='active' to="/users/login" className="visible-xs"><i className="fa fa-sign-in"/></Link>
-                <Link activeClassName='active' to="/users/login" className="hidden-xs"><i className="fa fa-sign-in"/> Login</Link>
-            </li>
-        );
-    }
-});
-
-
 export const Breadcrumbs = React.createClass({
+    // not a pure render, depends on the URL
     renderLink(text, path, isfirst, islast) {
         if (isfirst && islast) {
             return <i className="fa fa-home"/>;
@@ -200,3 +202,35 @@ export const Breadcrumbs = React.createClass({
     }
 });
 
+
+export const Notifications = React.createClass({
+    renderNotification(level, text) {
+        console.log('render not', level, text);
+        return (
+            <li className={"alert alert-"+level} key={text}>
+                {text}
+            </li>
+        );
+    },
+
+    renderAlerts([level, texts]) {
+        return(
+            <ListAnimate key={level}>
+                {texts.entrySeq().map(([t, date]) => this.renderNotification(level, t))}
+            </ListAnimate>
+        );
+    },
+
+    render() {
+        const notifs = serverCache.getNotifications();
+        return (
+            <ol className="list-unstyled">
+                <HeightAnimate>
+                    <ListAnimate>
+                        {notifs.entrySeq().map(this.renderAlerts)}
+                    </ListAnimate>
+                </HeightAnimate>
+            </ol>
+        );
+    }
+});

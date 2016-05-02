@@ -38,7 +38,7 @@ export class Store {
     setIn(path, data) {
         if (!path || !path.length) return ;
         const obj = this.root.getIn(path);
-        if (obj && obj.equals && obj.equals(data)) return;
+        if (obj && obj.equals && obj.equals(data) || (obj === data)) return;
         // console.log('set in: ', path, data);
         this.root = this.root.setIn(path, data);
         this.onChange();
@@ -49,7 +49,7 @@ export class Store {
         if (!path || !path.length) return ;
         const x = this.root.getIn(path);
         const y = updateFn(x);
-        if (x && x.equals && x.equals(y)) return;
+        if (x && x.equals && x.equals(y) || (x === y)) return;
         this.root = this.root.setIn(path, y);
         this.onChange();
     }

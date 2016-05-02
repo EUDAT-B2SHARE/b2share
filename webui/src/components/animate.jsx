@@ -16,6 +16,19 @@ export const ReplaceAnimate = React.createClass({
     }
 });
 
+export const ListAnimate = React.createClass({
+    render() {
+        const delta = 1000;
+        return (
+            <ReactCSSTransitionGroup component="div" className="animator" transitionName="list"
+                    transitionAppear={true} transitionAppearTimeout={delta}
+                    transitionEnterTimeout={delta} transitionLeaveTimeout={delta}>
+                { this.props.children }
+            </ReactCSSTransitionGroup>
+        );
+    }
+});
+
 export const HeightAnimate = React.createClass({
     getInitialState() {
         return {
