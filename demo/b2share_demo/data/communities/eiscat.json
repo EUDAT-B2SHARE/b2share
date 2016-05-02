@@ -2,7 +2,7 @@
     "logo": "/img/communities/eiscat.png",
     "description": "Incoherent scatter radar data",
     "id": "b344f92a-cd0e-4e4c-aa09-28b5f95f7e41",
-    "name": "EISCAT",    
+    "name": "EISCAT",
     "community_schemas": [
         {
             "json_schema": {
@@ -20,12 +20,12 @@
     ],
     "block_schemas": {
         "eiscat": {
-            "id": "cee77dd0-9149-4a7b-9c28-85a8f7052bd9",            
+            "id": "cee77dd0-9149-4a7b-9c28-85a8f7052bd9",
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",
                     "type": "object",
-                    "title": "B2SHARE EISCAT Schema",
+                    "title": "EISCAT Metadata",
                     "description": "This is the blueprint of the metadata block specific for the EISCAT community",
                     "properties": {
                         "end_time": {

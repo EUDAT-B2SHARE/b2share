@@ -26,7 +26,7 @@
                     "description": "This is the blueprint of the metadata block specific for the DRIHM community",
                     "$schema": "http://json-schema.org/draft-04/schema#",
                     "required": [ "ref_date", "reference_system","topic", "responsible_party", "geo_location", "spatial_resolution", "vertical_extent", "lineage" ],
-                    "title": "B2SHARE DRIHM Schema",
+                    "title": "DRIHM Metadata",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {

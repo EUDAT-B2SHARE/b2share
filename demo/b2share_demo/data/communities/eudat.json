@@ -9,29 +9,11 @@
             "json_schema": {
                 "$schema": "http://json-schema.org/draft-04/schema#",
                 "type": "object",
-                "properties": {
-                    "$BLOCK_SCHEMA_ID[empty]": {
-                        "$ref":
-                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[empty]::0]#/json_schema"
-                    }
-                },
+                "properties": {},
                 "additionalProperties": false
             }
         }
     ],
     "block_schemas": {
-        "empty": {
-            "id": "F64F4883-AE9F-418F-9AC4-F7BB7EF5A3F0",
-            "versions": [
-                {
-                    "$schema": "http://json-schema.org/draft-04/schema#",
-                    "title": "B2SHARE Empty Schema",
-                    "description": "Just an empty object",
-                    "type": "object",
-                    "properties": {},
-                    "additionalProperties": false
-                }
-            ]
-        }
     }
 }

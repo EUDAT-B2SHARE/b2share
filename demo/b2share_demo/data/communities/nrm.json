@@ -23,7 +23,7 @@
             "id": "fa52bec3-a847-4602-8af5-b8d41a5215bc",
             "versions": [
                 {
-                    "title": "B2SHARE NRM Schema",
+                    "title": "NRM Metadata",
                     "$schema": "http://json-schema.org/draft-04/schema#",
                     "description": "This is the blueprint of the metadata block specific for the NRM community",
                     "type": "object",
