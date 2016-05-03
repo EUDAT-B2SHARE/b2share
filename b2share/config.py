@@ -28,7 +28,7 @@ from __future__ import absolute_import, print_function
 import os
 
 from invenio_records_rest.utils import deny_all
-from b2share.oauth import b2access
+from b2share.modules.oauthclient import b2access
 from invenio_search import RecordsSearch
 
 # Default language and timezone
