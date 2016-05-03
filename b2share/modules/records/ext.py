@@ -26,6 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
+from invenio_records_rest.utils import PIDConverter
+
 from .triggers import register_triggers
 
 
@@ -42,6 +44,7 @@ class B2ShareRecords(object):
         self.init_config(app)
         app.extensions['b2share-records'] = self
         register_triggers(app)
+        app.url_map.converters['pid'] = PIDConverter
 
     def init_config(self, app):
         """Initialize configuration."""
