@@ -43,11 +43,12 @@ instance_path = os.getenv(env_prefix + '_INSTANCE_PATH') or \
     os.path.join(sys.prefix, 'var', 'b2share-instance')
 """Instance path for B2Share."""
 
+
 def create_api(*args, **kwargs):
     app = create_app_factory(
         'b2share',
         config_loader=config_loader,
-        extension_entry_points=['invenio_base.apps','invenio_base.api_apps'],
+        extension_entry_points=['invenio_base.api_apps'],
         instance_path=instance_path,
     )(*args, **kwargs)
     app.register_blueprint(oauth_client_blueprint)

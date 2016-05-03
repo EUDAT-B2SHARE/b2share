@@ -29,6 +29,7 @@ import os
 
 from invenio_records_rest.utils import deny_all
 from b2share.oauth import b2access
+from invenio_search import RecordsSearch
 
 # Default language and timezone
 BABEL_DEFAULT_LANGUAGE = 'en'
@@ -49,7 +50,7 @@ RECORDS_REST_ENDPOINTS = dict(
         pid_minter='b2share_record_uuid_minter',
         pid_fetcher='b2share_record_uuid_fetcher',
         list_route='/records/',
-        item_route='/records/<pid_value>',
+        item_route='/records/<pid(recuuid):pid_value>',
         search_index='records',
         search_type=None,
         record_serializers={
@@ -61,7 +62,7 @@ RECORDS_REST_ENDPOINTS = dict(
                                  ':json_v1_search'),
         },
         default_media_type='application/json',
-        query_factory_imp='invenio_records_rest.query.es_query_factory',
+        search_class=RecordsSearch,
     ),
 )
 
@@ -102,6 +103,6 @@ B2ACCESS_APP_CREDENTIALS = dict(
 )
 
 
-OAUTHCLIENT_REMOTE_APPS=dict(
+OAUTHCLIENT_REMOTE_APPS = dict(
     b2access=b2access.REMOTE_APP,
 )
