@@ -33,7 +33,7 @@ from setuptools.command.test import test as TestCommand
 install_requires = [
     'invenio-access>=1.0.0a5,<1.1.0',
     'invenio-accounts>=v1.0.0a10,<1.1.0',
-    'invenio-base>=1.0.0a7,<1.1.0',
+    'invenio-base>=1.0.0a8,<1.1.0',
     'invenio-celery>=1.0.0a4,<1.1.0',
     'invenio-config>=1.0.0a1,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
@@ -43,10 +43,10 @@ install_requires = [
     'invenio-pidstore>=v1.0.0a7,<1.1.0',
     'invenio-query-parser>=0.6.0,<1.1.0',
     'invenio-records>=1.0.0a15,<1.1.0',
-    'invenio-records-rest>=1.0.0a11,<1.1.0',
+    'invenio-records-rest>=1.0.0a13,<1.1.0',
     'invenio-rest[cors]>=1.0.0a7,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
-    'jsonresolver[jsonschema]>=0.1.1',
+    'jsonresolver[jsonschema]>=0.2.1',
 ]
 
 if sys.version_info < (3,4):
@@ -160,6 +160,10 @@ setup(
             'b2share_files = b2share.modules.files:B2ShareFiles',
             # enable OAuthClient on the API
             'invenio_oauthclient = invenio_oauthclient:InvenioOAuthClient',
+            'invenio_mail = invenio_mail:InvenioMail',
+        ],
+        'invenio_base.api_blueprints': [
+            'invenio_oauthclient = invenio_oauthclient.views.client:blueprint',
         ],
         'invenio_db.models': [
             'b2share_communities = b2share.modules.communities.models',

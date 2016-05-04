@@ -29,8 +29,6 @@ import sys
 from flask import Flask
 from invenio_base.app import create_app_factory
 from invenio_config import create_conf_loader
-from invenio_oauthclient.views.client import blueprint as \
-    oauth_client_blueprint
 from werkzeug.wsgi import DispatcherMiddleware
 
 from . import config
@@ -49,9 +47,10 @@ def create_api(*args, **kwargs):
         'b2share',
         config_loader=config_loader,
         extension_entry_points=['invenio_base.api_apps'],
+        blueprint_entry_points=['invenio_base.api_blueprints'],
+        converter_entry_points=['invenio_base.api_converters'],
         instance_path=instance_path,
     )(*args, **kwargs)
-    app.register_blueprint(oauth_client_blueprint)
     return app
 
 
