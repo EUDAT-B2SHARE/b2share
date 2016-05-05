@@ -22,7 +22,7 @@
 
 from __future__ import absolute_import, print_function
 
-from .restful import blueprint
+from .views import blueprint
 
 
 class B2ShareUsers(object):

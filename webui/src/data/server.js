@@ -5,6 +5,7 @@ import {objEquals, expect} from './misc'
 
 const urlRoot = ""; // window.location.origin;
 
+export const loginURL = `${urlRoot}/api/oauth/login/b2access`;
 
 const apiUrls = {
     users()                           { return `${urlRoot}/api/users/` },
@@ -18,6 +19,8 @@ const apiUrls = {
     communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
+
+    user()                            { return `${urlRoot}/api/users/current` },
 
     languages()                       { return `${urlRoot}/languages.json` },
 
@@ -243,9 +246,7 @@ class Deleter {
 class ServerCache {
     constructor() {
         this.store = new Store({
-            user: {
-                name: null,
-            },
+            user: { name: null },
 
             notifications: {}, // alert level -> { alert text -> x }
 
@@ -459,8 +460,15 @@ class ServerCache {
     }
 
     getUser() {
-        // TODO: call server for user info
-        return this.store.getIn(['user']);
+        const user = this.store.getIn(['user']);
+        if (!user || !user.name)
+            ajaxGet({
+                url: apiUrls.user(),
+                successFn: (data) => {
+                    this.store.setIn(['user'], fromJS(data));
+                },
+            });
+        return user;
     }
 
     getLanguages() {
@@ -512,13 +520,10 @@ class ServerCache {
 
     notify(level, text) {
         this.store.updateIn(['notifications', level], n => {
-            console.log('notify', this.store.getIn(['notifications']).toJS());
             const x = n.get(text);
             if (x) {
-                console.log('old notif', level, text);
                 return n;
             } else {
-                console.log('new notif', level, text);
                 return n.set(text, Date.now());
             }
         });

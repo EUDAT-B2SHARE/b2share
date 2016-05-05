@@ -20,7 +20,6 @@ import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 const VERSION = '0.9.0';
 
-// TODO: user login
 // TODO: test file uploads in various browsers
 // TODO: edit records: error testing per field
 // TODO: edit records: plugins

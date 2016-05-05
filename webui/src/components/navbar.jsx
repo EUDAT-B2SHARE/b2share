@@ -2,6 +2,7 @@ import React from 'react/lib/ReactWithAddons';
 import { Link, browserHistory } from 'react-router'
 import { serverCache } from '../data/server';
 import { ListAnimate, HeightAnimate } from './animate.jsx';
+import { NavbarUser } from './user.jsx';
 
 
 export const Navbar = React.createClass({
@@ -42,7 +43,6 @@ export const Navbar = React.createClass({
 const NavbarMenu = React.createClass({
     // not a pure render, depends on the URL
     render() {
-        const user = serverCache.getUser();
         const cname = this.props.collapse ? "collapse":"";
         return (
             <div className={cname + " navbar-collapse"} id="header-navbar-collapse">
@@ -54,8 +54,8 @@ const NavbarMenu = React.createClass({
                     <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
                     <li> <a href="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </a> </li>
                 </ul>
-                <ul className="nav navbar-nav text-uppercase user">
-                    { user.get('name') ? <NavbarUser /> : <NavbarNoUser /> }
+                <ul className="nav navbar-nav user">
+                    <NavbarUser user={serverCache.getUser()}/>
                 </ul>
             </div>
         );
@@ -66,34 +66,34 @@ const NavbarMenu = React.createClass({
 const NavbarSearch = React.createClass({
     // not a pure render, depends on the URL
     getInitialState() {
-        return { query: "" };
+        return { q: "" };
     },
 
     search(event) {
         event.preventDefault();
-        browserHistory.push(`/records/?query=${this.state.query}`);
+        browserHistory.push(`/records/?q=${this.state.q}`);
     },
 
     componentWillMount() {
-        this.componentWillReceiveProps(this.props.location);
+        this.componentWillReceiveProps(this.props);
     },
 
     componentWillReceiveProps(np) {
-        const { start, stop, sortBy, order, query } = np.query || {};
+        const location = np.location || {};
+        const { start, stop, sortBy, order, q } = location.query || {};
         const upstate = {};
-        if (query)  { upstate.query = query; }
+        if (q)  { upstate.q = q; }
         if (start)  { upstate.start = start; }
         if (stop)   { upstate.stop  = stop; }
         if (sortBy) { upstate.sortBy = sortBy; }
         if (order)  { upstate.order = order; }
-        if (query || start || stop || sortBy || order) {
-            console.log("search", np, upstate);
+        if (q || start || stop || sortBy || order) {
             this.setState(upstate);
         }
     },
 
     change(event) {
-        this.setState({query: event.target.value});
+        this.setState({q: event.target.value});
     },
 
     render() {
@@ -105,8 +105,8 @@ const NavbarSearch = React.createClass({
                             <i className="fa fa-question-circle"></i>
                         </button>
                     </span>
-                    <input className="form-control" style={{borderRadius:0}} type="text" name="query"
-                        value={this.state.query} onChange={this.change}
+                    <input className="form-control" style={{borderRadius:0}} type="text" name="q"
+                        value={this.state.q} onChange={this.change}
                         autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">
@@ -115,47 +115,6 @@ const NavbarSearch = React.createClass({
                     </span>
                 </div>
             </form>
-        );
-    }
-});
-
-
-const NavbarNoUser = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
-    render() {
-        return (
-            <li>
-                <Link activeClassName='active' to="/users/login" className="visible-xs"><i className="fa fa-sign-in"/></Link>
-                <Link activeClassName='active' to="/users/login" className="hidden-xs"><i className="fa fa-sign-in"/> Login</Link>
-            </li>
-        );
-    }
-});
-
-
-const NavbarUser = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
-    render() {
-        return (
-            <li className="dropdown">
-                <a href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                    <i className="fa fa-user"></i>
-                    <i className="fa fa-user color-primary"></i>
-                    <span className="caret"></span></a>
-                <ul className="dropdown-menu pull-right" role="menu">
-                    <li><Link to="/users/profile"> <i className="fa fa-info"></i> Profile </Link></li>
-                    <li>
-                        <Link to="/users/notifications">
-                            <i className="fa fa-comments-o"></i> Notifications
-                            <span className="label label-primary">1</span>
-                        </Link>
-                    </li>
-                    <li className="divider"></li>
-                    <li><Link to="/users/logout"> <i className="fa fa-sign-out"></i> Logout </Link></li>
-                </ul>
-            </li>
         );
     }
 });
@@ -205,7 +164,6 @@ export const Breadcrumbs = React.createClass({
 
 export const Notifications = React.createClass({
     renderNotification(level, text) {
-        console.log('render not', level, text);
         return (
             <li className={"alert alert-"+level} key={text}>
                 {text}

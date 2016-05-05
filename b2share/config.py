@@ -106,3 +106,6 @@ B2ACCESS_APP_CREDENTIALS = dict(
 OAUTHCLIENT_REMOTE_APPS = dict(
     b2access=b2access.REMOTE_APP,
 )
+
+if os.environ.get("USE_STAGING_B2ACCESS"):
+    OAUTHCLIENT_REMOTE_APPS['b2access'] = b2access.STAGING_REMOTE_APP
