@@ -64,7 +64,11 @@ a.navbar-brand {
 .nav-search {
   display: table;
   padding: 20px;
-  margin-right: 220px;
+}
+@media (min-width: 768px) {
+  .nav-search {
+    margin-right: 220px;
+  }
 }
 
 .navbar-nav {

@@ -5,6 +5,7 @@ import { timestamp2str } from '../data/misc.js'
 import { serverCache } from '../data/server';
 import { currentUser } from './user.jsx';
 import { Wait } from './waiting.jsx';
+import { LoginOrRegister } from './user.jsx';
 
 export const HomeRoute = React.createClass({
     render() {
@@ -16,8 +17,7 @@ export const HomeRoute = React.createClass({
                         <div style={{margin:'2em 0', textAlign: 'center'}}>
                             <h3>Store and share your research data</h3>
                             <p>Search in public datasets or register as a user to upload and share your data!</p>
-                            { currentUser.x ? false :
-                                <a href="/oauth/login/unity">Login <span style={{color:"black"}}>or</span> Register</a> }
+                            <LoginOrRegister/>
                         </div>
                         <hr/>
                         <div className="row">
