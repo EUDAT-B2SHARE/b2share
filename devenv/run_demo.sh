@@ -47,6 +47,7 @@ DOCKER_IP=`docker-machine ip $MACHINE_NAME`
 cdvirtualenv
 export B2SHARE_UI_PATH=`pwd`/src/b2share/webui/app
 export B2SHARE_BROKER_URL="redis://${DOCKER_IP}:6379/0"
+export B2SHARE_ACCOUNTS_SESSION_REDIS_URL="redis://${DOCKER_IP}:6379/0"
 export B2SHARE_CELERY_RESULT_BACKEND="redis://${DOCKER_IP}:6379/1"
 export B2SHARE_SECRET_KEY=$(base64 /dev/urandom | tr -d '/+' | dd bs=32 count=1 2>/dev/null)
 export B2SHARE_SEARCH_ELASTIC_HOSTS="${DOCKER_IP}:9200"
@@ -99,7 +100,6 @@ if [ -n "$REINIT" ]; then
 fi
 
 echo; echo "### Run b2share"
-export USE_STAGING_B2ACCESS=1
 export SSL_CERT_FILE="staging_b2access.pem"
 # return URL is configured to be http://localhost:5000/api/oauth/authorized/b2access/
 export B2ACCESS_CONSUMER_KEY=b2share_demo
