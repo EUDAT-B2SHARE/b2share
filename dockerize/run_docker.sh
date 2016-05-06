@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export MACHINE_NAME=b2sharebeta1
+export MACHINE_NAME=b2sharebeta
 
 docker-machine start $MACHINE_NAME >/dev/null 2>/dev/null
 if [ $? -ne 0 ]; then

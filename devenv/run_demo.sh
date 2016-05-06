@@ -99,7 +99,6 @@ if [ -n "$REINIT" ]; then
 fi
 
 echo; echo "### Run b2share"
-export USE_STAGING_B2ACCESS=1
 export SSL_CERT_FILE="staging_b2access.pem"
 # return URL is configured to be http://localhost:5000/api/oauth/authorized/b2access/
 export B2ACCESS_CONSUMER_KEY=b2share_demo
