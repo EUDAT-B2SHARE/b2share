@@ -23,8 +23,10 @@ and then run ``docker-compose`` as below:
 
 After the docker image is built and running, b2share will be available at http://localhost:5000
 
+The staging B2ACCESS server is by default configured to work in this setup. Logging in should work without issues.
 
-1.1. If running Docker with docker-machine and virtualbox
+
+1.2. If running Docker with docker-machine and virtualbox
 ---------------------------------------------------------
 
 If you can not run docker on the same host but you can use docker-machine and a virtualbox VM (e.g. on OSX), go into the ``dockerize`` folder:
@@ -42,6 +44,17 @@ and then run the following script:
 
 The script will try to create a new VM box using docker-machine and virtualbox, and run docker-compose on it.
 After the docker image is built and started, a message will be displayed pointing the URL of the B2SHARE instance.
+
+1.2.1 B2ACCESS configuration
+----------------------------
+
+The staging B2ACCESS server, as configured by default, will NOT WORK in this setup, because the expected
+return URL is ``http://localhost:5000/...`` and not ``http://$(docker ip b2sharebeta)/...`` as it should. The recommended solution is for the
+local administrator to create a new OAuth client account at https://unity.eudat-aai.fz-juelich.de:8443/home/home, and then update the Dockerfile
+with the new client id and client secret (see ``ENV B2ACCESS_CONSUMER_KEY=...`` and ``ENV B2ACCESS_SECRET_KEY=...``).
+
+Additional customizations of the B2ACCESS server configuration can be performed after the b2share is provisioned (after the b2share.sh script
+runs ``/usr/bin/b2share demo load_config``). The script creates a configuration file in ``/usr/var/b2share-instance/b2share.cfg``, which can be edited as necessary.
 
 
 2. Install B2SHARE for development
