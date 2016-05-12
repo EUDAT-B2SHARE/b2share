@@ -12,7 +12,6 @@ fields = [
         'name': 'metadata_url',
         'col_type': db.String(256),
         'display_text': 'Metadata URL',
-        'description': 'Metadata URL',
-        'required': True,
+        'description': 'The location of the full metadata record',
     },
 ]
