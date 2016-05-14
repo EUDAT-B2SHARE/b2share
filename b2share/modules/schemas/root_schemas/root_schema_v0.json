@@ -5,6 +5,11 @@
         "type": "object",
         "properties": {
             "$schema": { "type": "string" },
+            "owner": {
+                "title": "Owner",
+                "description": "Identifier of the user that owns the record",
+                "type": "string"
+            },
             "community": {
                 "title": "Community",
                 "description": "Identifier of the community to which the record has been submitted",

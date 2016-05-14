@@ -84,6 +84,11 @@ export const NewRecordRoute = React.createClass({
     },
 
     render() {
+        const user = serverCache.getUser();
+        if (!user || !user.get('name')) {
+            serverCache.notifyWarning('Please login. Creating a new record requires a user to be logged in.')
+        }
+
         const communities = serverCache.getCommunities();
         const gap = {marginTop:'1em'};
         const biggap = {marginTop:'2em'};

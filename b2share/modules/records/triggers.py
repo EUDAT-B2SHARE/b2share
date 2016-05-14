@@ -26,9 +26,14 @@
 from __future__ import absolute_import, print_function
 
 import uuid
-
 import pytz
-from invenio_records.signals import before_record_insert, after_record_insert
+
+from flask import abort
+from flask_login import current_user
+
+from invenio_records.signals import (
+        before_record_insert, after_record_insert,
+        before_record_update, after_record_update)
 
 from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.schemas.serializers import \
@@ -37,14 +42,20 @@ from invenio_files_rest.models import Bucket
 from invenio_search import current_search_client
 
 from .errors import InvalidRecordError
-from .constants import (RECORDS_INTERNAL_FIELD as interal_field,
+from .constants import (RECORDS_INTERNAL_FIELD as internal_field,
                         RECORDS_BUCKETS_FIELD as buckets_field)
 
 
 def register_triggers(app):
     before_record_insert.connect(set_record_schema)
+    before_record_insert.connect(set_record_owner)
     before_record_insert.connect(create_record_files_bucket)
     after_record_insert.connect(index_record)
+
+    before_record_update.connect(check_record_immutable_fields)
+    before_record_update.connect(re_add_record_files_bucket)
+    after_record_update.connect(index_record)
+
 
 
 def set_record_schema(record, **kwargs):
@@ -60,12 +71,19 @@ def set_record_schema(record, **kwargs):
     record['$schema'] = community_schema_json_schema_link(schema)
 
 
+def set_record_owner(record, **kwargs):
+    if not current_user.is_authenticated:
+         # double check, the permission module should have rejected the request
+        abort(401)
+    record['owner'] = str(current_user.id)
+
+
 def create_record_files_bucket(record, **kwargs):
     """Create the corresponding file bucket when a record is inserted."""
     bucket = Bucket.create()
-    if interal_field not in record:
-        record[interal_field] = {}
-    internals = record[interal_field]
+    if internal_field not in record:
+        record[internal_field] = {}
+    internals = record[internal_field]
     internals[buckets_field] = [str(bucket.id)]
 
 
@@ -82,3 +100,18 @@ def index_record(record):
         version=record.revision_id,
         version_type='external_gte',
     )
+
+
+# TODO(edima): replace this check with explicit permissions
+def check_record_immutable_fields(record):
+    """Checks that the previous community and owner fields are preserved"""
+    previous_md = record.model.json
+    if previous_md.get('owner') != record.get('owner'):
+        raise AlteredRecordError('The owner field cannot be changed')
+    if previous_md.get('community') != record.get('community'):
+        raise AlteredRecordError('The community field cannot be changed')
+
+
+def re_add_record_files_bucket(record):
+    previous_md = record.model.json
+    record[internal_field] = previous_md[internal_field]

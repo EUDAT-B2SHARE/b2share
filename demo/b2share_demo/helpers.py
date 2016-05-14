@@ -33,6 +33,8 @@ from collections import namedtuple
 from uuid import UUID
 
 import click
+from flask import current_app
+
 from invenio_db import db
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_records.api import Record
@@ -50,13 +52,43 @@ def load_demo_data(path, verbose=0):
         verbose (int): verbosity level.
     """
     with db.session.begin_nested():
-        communities = _create_communities(path, verbose)
-        _create_block_schemas(communities, verbose)
-        _create_community_schemas(communities, verbose)
-        _create_records(path, verbose)
+        user_info = _create_user(verbose)
+        with current_app.test_request_context('/'):
+            current_app.login_manager.reload_user(user_info['user'])
+            communities = _create_communities(path, verbose)
+            _create_block_schemas(communities, verbose)
+            _create_community_schemas(communities, verbose)
+            _create_records(path, verbose)
 
 
 DemoCommunity = namedtuple('DemoCommunity', ['ref', 'config'])
+
+
+def _create_user(verbose):
+    """Create demo user."""
+    if verbose > 0:
+        click.secho('Creating user', fg='yellow', bold=True)
+
+    user_info = {
+        'id': None,
+        'name': 'FirstUser',
+        'email': 'firstuser@example.com',
+        'password': '1234567890',
+    }
+    from flask_security.utils import encrypt_password
+    accounts = current_app.extensions['invenio-accounts']
+
+    with db.session.begin_nested():
+        user = accounts.datastore.create_user(
+            email=user_info.get('email'),
+            password=encrypt_password(user_info.get('password')),
+            active=True,
+        )
+        db.session.add(user)
+        user_info['id'] = user.id
+        user_info['user'] = user
+
+    return user_info
 
 
 def _create_communities(path, verbose):
@@ -149,13 +181,13 @@ def _create_records(path, verbose):
                         record_str = record_file.read()
                     record_str = resolve_community_id(record_str)
                     record_str = resolve_block_schema_id(record_str)
-                    provider = RecordUUIDProvider.create(
+                    RecordUUIDProvider.create(
                         object_type='rec', object_uuid=rec_uuid)
-                    Record.create(json.loads(record_str), id_=rec_uuid)
+                    json_data = json.loads(record_str)
+                    Record.create(json_data, id_=rec_uuid)
                     if verbose > 1:
                         click.secho('CREATED RECORD {0}:\n {1}'.format(
-                            str(rec_uuid), json.dumps(json.loads(record_str),
-                                                  indent=4)
+                            str(rec_uuid), json.dumps(json_data, indent=4)
                         ))
                     nb_records += 1
     if verbose > 0:

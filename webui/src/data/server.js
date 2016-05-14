@@ -539,6 +539,14 @@ class ServerCache {
     notifyDanger(text) {
         this.notify('danger', text);
     }
+
+    notifyWarning(text) {
+        this.notify('warning', text);
+    }
+
+    notifyInfo(text) {
+        this.notify('info', text);
+    }
 };
 
 
