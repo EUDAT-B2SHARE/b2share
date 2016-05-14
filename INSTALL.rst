@@ -23,7 +23,7 @@ and then run ``docker-compose`` as below:
 
 After the docker image is built and running, b2share will be available at http://localhost:5000
 
-The staging B2ACCESS server is by default configured to work in this setup. Logging in should work without issues.
+Logging in with B2ACCESS requires some configuration; please check for more details in the B2ACCESS configuration section below.
 
 
 1.2. If running Docker with docker-machine and virtualbox
@@ -45,16 +45,27 @@ and then run the following script:
 The script will try to create a new VM box using docker-machine and virtualbox, and run docker-compose on it.
 After the docker image is built and started, a message will be displayed pointing the URL of the B2SHARE instance.
 
-1.2.1 B2ACCESS configuration
+Logging in with B2ACCESS requires some configuration; please check for more details in the B2ACCESS configuration section below.
+
+1.3 B2ACCESS configuration
 ----------------------------
 
-The staging B2ACCESS server, as configured by default, will NOT WORK in this setup, because the expected
-return URL is ``http://localhost:5000/...`` and not ``http://$(docker ip b2sharebeta)/...`` as it should. The recommended solution is for the
-local administrator to create a new OAuth client account at https://unity.eudat-aai.fz-juelich.de:8443/home/home, and then update the Dockerfile
-with the new client id and client secret (see ``ENV B2ACCESS_CONSUMER_KEY=...`` and ``ENV B2ACCESS_SECRET_KEY=...``).
+In order for the users to be able to login using B2ACCESS, an additional configuration step must be performed. The local administrator must create a new
+OAuth client account at https://unity.eudat-aai.fz-juelich.de:8443/home/home, providing as the return URL the address of the local B2SHARE server
+and the authorization path (e.g. http://localhost:5000/api/oauth/authorized/b2access/ for a localhost installation, or
+http://$(docker ip b2sharebeta):5000/api/oauth/authorized/b2access/ for an installation using with docker-machine). After successfully
+registering the B2ACCESS account, the administrator must set the following environment variables with the username and password provided
+for the B2ACCESS account, before starting the service by running ``docker-compose`` or the ``run_docker.sh`` script:
+
+.. code-block:: console
+
+    $ export B2ACCESS_CONSUMER_KEY=...
+    $ export B2ACCESS_SECRET_KEY=...
+    $ docker-compose up # or ./run_docker.sh
 
 Additional customizations of the B2ACCESS server configuration can be performed after the b2share is provisioned (after the b2share.sh script
-runs ``/usr/bin/b2share demo load_config``). The script creates a configuration file in ``/usr/var/b2share-instance/b2share.cfg``, which can be edited as necessary.
+runs ``/usr/bin/b2share demo load_config``). The script creates a configuration file in ``/usr/var/b2share-instance/b2share.cfg``, which can be
+edited as necessary.
 
 
 2. Install B2SHARE for development

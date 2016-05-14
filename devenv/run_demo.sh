@@ -99,9 +99,12 @@ if [ -n "$REINIT" ]; then
 	b2share demo load_data
 fi
 
+if [ -n "$B2ACCESS_CONSUMER_KEY" -o -n "$B2ACCESS_CONSUMER_SECRET" ]; then
+	echo "Warning: B2ACCESS_CONSUMER_KEY / B2ACCESS_CONSUMER_SECRET are NOT configured"
+	echo "         For the B2ACCESS login to work, please create a B2ACCESS OAuth client with the following return address:"
+	echo "             http://localhost:5000/api/oauth/authorized/b2access/"
+fi
+
 echo; echo "### Run b2share"
 export SSL_CERT_FILE="staging_b2access.pem"
-# return URL is configured to be http://localhost:5000/api/oauth/authorized/b2access/
-export B2ACCESS_CONSUMER_KEY=b2share_demo
-export B2ACCESS_SECRET_KEY=demo3b2share3beta
 b2share --debug run
