@@ -30,3 +30,9 @@ class B2ShareRecordsError(Exception):
 
 class InvalidRecordError(B2ShareRecordsError):
     """Raise when a record has no community."""
+
+# TODO(edima): remove this when we have support for permissions
+class AlteredRecordError(B2ShareRecordsError):
+    """Raise when a record update changes what is considered
+       immutable record data."""
+
