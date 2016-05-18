@@ -40,8 +40,9 @@ from b2share.modules.schemas.serializers import \
     community_schema_json_schema_link
 from invenio_files_rest.models import Bucket
 from invenio_search import current_search_client
+from invenio_rest.errors import FieldError
 
-from .errors import InvalidRecordError
+from .errors import InvalidRecordError, AlteredRecordError
 from .constants import (RECORDS_INTERNAL_FIELD as internal_field,
                         RECORDS_BUCKETS_FIELD as buckets_field)
 
@@ -52,8 +53,12 @@ def register_triggers(app):
     before_record_insert.connect(create_record_files_bucket)
     after_record_insert.connect(index_record)
 
+    # TODO(edima): replace this check with explicit permissions
     before_record_update.connect(check_record_immutable_fields)
-    before_record_update.connect(re_add_record_files_bucket)
+
+    # don't trust the user, reset record schema on update
+    before_record_update.connect(set_updated_record_schema)
+    before_record_update.connect(set_updated_record_files_bucket)
     after_record_update.connect(index_record)
 
 
@@ -61,12 +66,15 @@ def register_triggers(app):
 def set_record_schema(record, **kwargs):
     """Set the record schema when it is created."""
     if 'community' not in record or not record['community']:
-        raise InvalidRecordError(
-            'Record\s metadata has no community field.')
+        raise InvalidRecordError(errors=[
+            FieldError('community', 'Record metadata has no community field.')
+        ])
     try:
         community_id = uuid.UUID(record['community'])
     except ValueError as e:
-        raise InvalidRecordError('Community ID is not a valid UUID.') from e
+        raise InvalidRecordError(errors=[
+            FieldError('community', 'Community ID is not a valid UUID.')
+        ])
     schema = CommunitySchema.get_community_schema(community_id)
     record['$schema'] = community_schema_json_schema_link(schema)
 
@@ -107,11 +115,23 @@ def check_record_immutable_fields(record):
     """Checks that the previous community and owner fields are preserved"""
     previous_md = record.model.json
     if previous_md.get('owner') != record.get('owner'):
-        raise AlteredRecordError('The owner field cannot be changed')
+        raise AlteredRecordError(errors=[
+            FieldError('owner', 'The owner field cannot be changed.')
+        ])
     if previous_md.get('community') != record.get('community'):
-        raise AlteredRecordError('The community field cannot be changed')
+        raise AlteredRecordError(errors=[
+            FieldError('community', 'The community field cannot be changed.')
+        ])
 
 
-def re_add_record_files_bucket(record):
+def set_updated_record_files_bucket(record):
     previous_md = record.model.json
     record[internal_field] = previous_md[internal_field]
+
+
+def set_updated_record_schema(record):
+    previous_md = record.model.json
+    if record['community'] == previous_md['community']:
+        record['$schema'] = previous_md['$schema']
+    else:
+        set_record_schema(record)

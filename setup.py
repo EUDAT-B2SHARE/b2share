@@ -44,7 +44,7 @@ install_requires = [
     'invenio-query-parser>=0.6.0,<1.1.0',
     'invenio-records>=1.0.0a15,<1.1.0',
     'invenio-records-rest>=1.0.0a13,<1.1.0',
-    'invenio-rest[cors]>=1.0.0a7,<1.1.0',
+    'invenio-rest[cors]>=1.0.0a8,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
 ]
