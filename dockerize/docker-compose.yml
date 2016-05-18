@@ -27,3 +27,5 @@ b2share:
         - redis
     environment:
         - "B2SHARE_SERVER_NAME=${B2SHARE_SERVER_NAME}:5000"
+        - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
+        - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
