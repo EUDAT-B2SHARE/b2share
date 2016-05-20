@@ -75,6 +75,11 @@ if [ ! -d ./b2share ]; then
 fi
 
 cdvirtualenv src/b2share/devenv
+if [ -n "$REINIT" ]; then
+	echo; echo "### Reinitialize elasticsearch and redis"
+	docker-compose down
+	docker-compose down
+fi
 echo; echo "### Run docker-compose detached mode"
 docker-compose up -d
 
