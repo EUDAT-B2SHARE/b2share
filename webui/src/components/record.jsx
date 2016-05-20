@@ -135,7 +135,7 @@ const Record = React.createClass({
         return value;
     },
 
-    renderField(blockID, fieldID, fieldSchema) {
+    renderField(blockID, fieldID, fieldSchema, blockSchema) {
         let v = blockID ? this.props.record.getIn(['metadata', 'community_specific', blockID, fieldID]) :
                             this.props.record.getIn(['metadata', fieldID]);
         if (v != undefined && v != null) {
@@ -146,7 +146,7 @@ const Record = React.createClass({
         if (!v) {
             return false;
         }
-        const type = getType(fieldSchema);
+        const type = getType(fieldSchema, fieldID, blockSchema);
         return (
             <div key={fieldID} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
                 <label style={{fontWeight:'bold'}}>{fieldSchema.get('title') || fieldName}: </label>
@@ -164,8 +164,8 @@ const Record = React.createClass({
 
         const except = {'title':true, 'description':true, 'keywords':true, 'community':true, 'creator':true};
 
-        const majorFields = majors.entrySeq().map(([id, f]) => except[id] ? false : this.renderField(schemaID, id, f));
-        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
+        const majorFields = majors.entrySeq().map(([id, f]) => except[id] ? false : this.renderField(schemaID, id, f, schema));
+        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f, schema));
 
         if (majorFields.every(x=>!x) && minorFields.every(x=>!x)) {
             // return false;

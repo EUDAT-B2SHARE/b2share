@@ -165,9 +165,9 @@ export const EditRecordRoute = React.createClass({
 const EditRecord = React.createClass({
     getInitialState() {
         return {
-            errors: {},
             record: null,
             fileState: 'done',
+            errors: {},
         };
     },
 
@@ -175,9 +175,9 @@ const EditRecord = React.createClass({
         const setState = fileState => {
             const errors = this.state.errors;
             if (fileState === 'done') {
-                delete errors['files'];
+                delete errors.files;
             } else {
-                errors['files'] = fileState ='Waiting for files to finish uploading';
+                errors.files = 'Waiting for files to finish uploading';
             }
             this.setState({fileState, errors});
         }
@@ -228,7 +228,13 @@ const EditRecord = React.createClass({
         }
         r = blockID ? r.setIn(['community_specific', blockID, fieldID], value) : r.set(fieldID, value);
         // console.log('set field ' + blockID +"/"+ fieldID + " to:", value);
-        this.setState({record:r});
+        const errors = this.state.errors;
+        if (!this.validField(value, type)) {
+            errors[fieldID] = `Please provide a value for the required field ${fieldID}`
+        } else {
+            delete errors[fieldID];
+        }
+        this.setState({record:r, errors});
     },
 
     renderScalarField(type, getValue, setValue) {
@@ -299,12 +305,12 @@ const EditRecord = React.createClass({
         );
     },
 
-    renderField(blockID, fieldID, fieldSchema) {
+    renderField(blockID, fieldID, fieldSchema, blockSchema) {
         const plugin = null;
         if (!fieldSchema) {
             return false;
         }
-        const type = getType(fieldSchema);
+        const type = getType(fieldSchema, fieldID, blockSchema);
         if (fieldID === 'description') {
             type.longString = true;
         }
@@ -329,12 +335,12 @@ const EditRecord = React.createClass({
             borderLeft:'1px solid black',
             borderRadius:'4px',
         };
-
+        const isError = this.state.errors.hasOwnProperty(fieldID);
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                    <span style={{float:'right'}}>
-                        {fieldSchema.get('title') || fieldID}
+                    <span style={{float:'right', color:isError?'red':'black'}}>
+                        {fieldSchema.get('title') || fieldID} {type.required ? "*":""}
                     </span>
                 </label>
                 <div className="col-sm-9" style={arrstyle}>
@@ -353,8 +359,8 @@ const EditRecord = React.createClass({
 
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
 
-        const majorFields = majors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
-        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f));
+        const majorFields = majors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f, schema));
+        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f, schema));
 
         const onMoreDetails = e => {
             e.preventDefault();
@@ -406,13 +412,56 @@ const EditRecord = React.createClass({
 
     componentWillReceiveProps(props) {
         if (props.record && !this.state.record) {
-            this.setState({record:props.record.get('metadata')});
+            let record = props.record.get('metadata');
+            this.setState({record});
         }
+    },
+
+    validField(value, type) {
+        if (type.required) {
+            if (value === undefined || value === null || value === "")
+                return false;
+        }
+        return true;
+    },
+
+    findValidationErrors() {
+        const rootSchema = this.props.rootSchema;
+        const blockSchemas = this.props.blockSchemas || [];
+        if (!rootSchema) {
+            return;
+        }
+        const errors = {};
+        const r = this.state.record;
+
+        rootSchema.get('properties').entrySeq().forEach(([id, f]) => {
+            const type = getType(f, id, rootSchema);
+            if (!this.validField(r.get(id), type)) {
+                errors[id] = `Please provide a valid value for field "${id}"`;
+            }
+        });
+
+        blockSchemas.map(([blockID, blockSchema]) => {
+            const schema = blockSchema.get('json_schema');
+            schema.get('properties').entrySeq().forEach(([id, f]) => {
+                const type = getType(f, id, schema);
+                if (!this.validField(r.getIn(['community_specific', blockID, id]), type)) {
+                    errors[id] = `Please provide a valid value for community field "${id}"`;
+                }
+            });
+        });
+
+        if (this.state.errors.files) {
+            errors.files = this.state.errors.files;
+        }
+        return errors;
     },
 
     updateRecord(event) {
         event.preventDefault();
-        if (this.state.fileState !== 'done') {
+        const errors = this.findValidationErrors();
+        if (this.state.fileState !== 'done' || pairs(errors).length > 0) {
+            this.setState({errors});
             return;
         }
         const original = this.props.record.get('metadata').toJS();
@@ -456,7 +505,7 @@ const EditRecord = React.createClass({
                 <div className="row">
                     <div className="form-group submit row" style={{marginTop:'2em', marginBottom:'2em', paddingTop:'2em', borderTop:'1px solid #eee'}}>
                         {pairs(this.state.errors).map( ([id, msg]) =>
-                            <div className="col-sm-offset-3 col-sm-6 label label-warning">{msg} </div>) }
+                            <div className="col-sm-offset-3 col-sm-6 alert alert-warning" key={id}>{msg} </div>) }
                         <div className="col-sm-offset-3 col-sm-6">
                             <label style={{fontSize:18, fontWeight:'normal'}}><input type="checkbox"/> Submit draft for publication</label>
                             <p>When the draft is published it will be assigned a PID, making it publicly citable.

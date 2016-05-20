@@ -42,8 +42,8 @@ export const NavbarUser = React.createClass({
             <li className={"dropdown"+(this.state.open ? " open":"")} onClick={this.toggleOpen}>
                 <a href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" onClick={this.ignore}>
                     <i className="glyphicon glyphicon-user"></i>
+                    {" "} {user.get('name')} {" "}
                     <span className="caret"></span>
-                    {user.get('name')}
                 </a>
                 <ul className="dropdown-menu pull-right" role="menu">
                     <li><Link to="/user"> <i className="fa fa-info"></i> Profile </Link></li>

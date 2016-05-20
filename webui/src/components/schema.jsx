@@ -18,7 +18,7 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get('id')]) : []);
     let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get('id')]) : []);
 
-    const except = {'$schema':true, 'community_specific':true, '_internal':true};
+    const except = {'$schema':true, 'community_specific':true, '_internal':true, 'owner':true};
     properties.entrySeq().forEach(([id, def]) => {
         if (majors.has(id)) {
             majors = majors.set(id, def);
@@ -32,8 +32,9 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     return [majors, minors];
 };
 
-export function getType(property) {
+export function getType(property, propertyID, schema) {
     let ret = null;
+    // console.log(property);
     const isArray = property.get('type') === 'array';
     if (!isArray) {
         ret = {
@@ -54,6 +55,12 @@ export function getType(property) {
             }
         }
     }
+    if (schema && schema.get('required')) {
+        const index = schema.get('required').keyOf(propertyID);
+        if (index !== undefined) {
+            ret.required = true;
+        }
+    }
     return ret;
 }
 
@@ -61,21 +68,26 @@ export function getType(property) {
 export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    getTypeString(property) {
-        const t = getType(property);
-        const s = t.type + (t.format ? (" ["+t.format+"]"):'');
-        return t.isArray ? ('array <'+s+'>') : s;
-    },
-
-    renderProperty([id, p]) {
+    renderProperty(schema, [id, p]) {
         const title = p.get('title') || id;
+        const type = getType(p, id, schema);
+        let typeString = type.type;
+        if (type.format) {
+            typeString = " ["+type.format+"]";
+        }
+        if (type.isArray) {
+            typeString = 'array <'+typeString+'>';
+        }
+        if (type.required) {
+            typeString += ' (required)';
+        }
         return (
             <div key={id} className="row" style={{marginTop:'1em'}}>
                 <div className="col-sm-3">
                     <span style={{fontWeight:'bold'}}> {title} </span>
                 </div>
                 <div className="col-sm-3">
-                    <span style={{fontFamily:'monospace'}}> {this.getTypeString(p)}  </span>
+                    <span style={{fontFamily:'monospace'}}> {typeString} </span>
                 </div>
                 <div className="col-sm-6">
                     {p.get('description')}
@@ -99,8 +111,8 @@ export const Schema = React.createClass({
                         <p className="description">{jschema.get('description')}</p>
                     </div>
                 </div>
-                { majors.entrySeq().map(this.renderProperty) }
-                { minors.entrySeq().map(this.renderProperty) }
+                { majors.entrySeq().map(this.renderProperty.bind(this, jschema)) }
+                { minors.entrySeq().map(this.renderProperty.bind(this, jschema)) }
             </div>
         );
     }
