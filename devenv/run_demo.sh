@@ -18,7 +18,11 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 export VIRTUALENV_NAME='b2share-evolution'
 export DB_NAME='b2share-evolution'
+
+# remove this line to bypass docker-machine
 export MACHINE_NAME=b2share
+# and customize this line to point to the IP
+DOCKER_IP=localhost
 
 if [ "$1" = "--reinit" ]; then
 	REINIT=1
@@ -34,15 +38,17 @@ if [ $? -ne 0 ]; then
 	pip install --upgrade pip
 fi
 
-echo "### Prepare docker machine"
-docker-machine start $MACHINE_NAME >/dev/null
-if [ $? -ne 0 ]; then
-	echo; echo "### Create docker machine for b2share"
-	docker-machine create -d virtualbox $MACHINE_NAME
-	docker-machine start $MACHINE_NAME
+if [ -n "$MACHINE_NAME" ]; then
+	echo "### Prepare docker machine"
+	docker-machine start $MACHINE_NAME >/dev/null
+	if [ $? -ne 0 ]; then
+		echo; echo "### Create docker machine for b2share"
+		docker-machine create -d virtualbox $MACHINE_NAME
+		docker-machine start $MACHINE_NAME
+	fi
+	eval $(docker-machine env $MACHINE_NAME)
+	DOCKER_IP=`docker-machine ip $MACHINE_NAME`
 fi
-eval $(docker-machine env $MACHINE_NAME)
-DOCKER_IP=`docker-machine ip $MACHINE_NAME`
 
 cdvirtualenv
 export B2SHARE_UI_PATH=`pwd`/src/b2share/webui/app
@@ -104,8 +110,8 @@ if [ -n "$REINIT" ]; then
 	b2share demo load_data
 fi
 
-if [ -n "$B2ACCESS_CONSUMER_KEY" -o -n "$B2ACCESS_CONSUMER_SECRET" ]; then
-	echo "Warning: B2ACCESS_CONSUMER_KEY / B2ACCESS_CONSUMER_SECRET are NOT configured"
+if [ -z "$B2ACCESS_CONSUMER_KEY" -o -z "$B2ACCESS_SECRET_KEY" ]; then
+	echo "Warning: B2ACCESS_CONSUMER_KEY / B2ACCESS_SECRET_KEY are NOT configured"
 	echo "         For the B2ACCESS login to work, please create a B2ACCESS OAuth client with the following return address:"
 	echo "             http://localhost:5000/api/oauth/authorized/b2access/"
 fi
