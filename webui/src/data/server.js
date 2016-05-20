@@ -246,8 +246,6 @@ class Deleter {
 class ServerCache {
     constructor() {
         this.store = new Store({
-            user: { name: null },
-
             notifications: {}, // alert level -> { alert text -> x }
 
             latestRecords: [], // latest records with params
@@ -461,14 +459,15 @@ class ServerCache {
 
     getUser() {
         const user = this.store.getIn(['user']);
-        if (!user || !user.name)
-            ajaxGet({
-                url: apiUrls.user(),
-                successFn: (data) => {
-                    this.store.setIn(['user'], fromJS(data));
-                },
-            });
-        return user;
+        if (user) {
+            return user;
+        }
+        ajaxGet({
+            url: apiUrls.user(),
+            successFn: (data) => {
+                this.store.setIn(['user'], fromJS(data));
+            },
+        });
     }
 
     getLanguages() {
