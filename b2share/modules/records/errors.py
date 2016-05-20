@@ -24,7 +24,12 @@
 """B2share records errors."""
 
 
-class B2ShareRecordsError(Exception):
+from jsonschema.exceptions import ValidationError
+
+from invenio_rest.errors import RESTValidationError, FieldError
+
+
+class B2ShareRecordsError(RESTValidationError):
     """B2Share records error."""
 
 
@@ -36,3 +41,16 @@ class AlteredRecordError(B2ShareRecordsError):
     """Raise when a record update changes what is considered
        immutable record data."""
 
+
+def register_error_handlers(app):
+    @app.errorhandler(ValidationError)
+    def handle_validation_error(err):
+        field = '/'.join(err.path)
+        if err.validator == 'required' or err.validator == 'additionalProperties':
+            try:
+                field = err.message.split('\'')[1]
+            except IndexError:
+                pass # ignore
+        return InvalidRecordError(errors=[
+            FieldError(field, err.message)
+        ])

@@ -26,30 +26,18 @@
 from __future__ import absolute_import, print_function
 
 import json
-import os
-import re
-import sys
 from io import BytesIO
 from datetime import datetime
 
 import pytest
 
-from b2share.modules.communities import B2ShareCommunities, Community
-from b2share.modules.communities.errors import CommunityDoesNotExistError
-from b2share.modules.schemas import B2ShareSchemas, BlockSchema, \
-    CommunitySchema, RootSchema
-from b2share.modules.records import B2ShareRecords
-from b2share.modules.records.links import http_header_link_regex, \
-    RECORD_BUCKET_RELATION_TYPE
-from b2share.modules.files import B2ShareFiles
-from b2share.modules.schemas.errors import BlockSchemaDoesNotExistError, \
-    BlockSchemaIsDeprecated, InvalidBlockSchemaError, InvalidJSONSchemaError, \
-    InvalidRootSchemaError, RootSchemaDoesNotExistError
 from flask import url_for
-from invenio_records.api import Record
+
 from invenio_search import current_search_client
 from invenio_db import db
 
+from b2share.modules.records.links import http_header_link_regex, \
+    RECORD_BUCKET_RELATION_TYPE
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 
 
