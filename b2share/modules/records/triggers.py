@@ -34,6 +34,8 @@ from flask_login import current_user
 from invenio_records.signals import (
         before_record_insert, after_record_insert,
         before_record_update, after_record_update)
+from invenio_records.signals import before_record_insert, after_record_insert
+from flask import abort
 
 from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.schemas.serializers import \
@@ -41,6 +43,7 @@ from b2share.modules.schemas.serializers import \
 from invenio_files_rest.models import Bucket
 from invenio_search import current_search_client
 from invenio_rest.errors import FieldError
+from flask_security import current_user
 
 from .errors import InvalidRecordError, AlteredRecordError
 from .constants import (RECORDS_INTERNAL_FIELD as internal_field,
@@ -48,18 +51,23 @@ from .constants import (RECORDS_INTERNAL_FIELD as internal_field,
 
 
 def register_triggers(app):
-    before_record_insert.connect(set_record_schema)
+# <<<<<<< 57a4a0851b40c088bd7012c0a1345161bcdb269e
+    # before_record_insert.connect(set_record_schema)
     before_record_insert.connect(set_record_owner)
-    before_record_insert.connect(create_record_files_bucket)
-    after_record_insert.connect(index_record)
+    # before_record_insert.connect(create_record_files_bucket)
+    # after_record_insert.connect(index_record)
+# =======
+    # before_record_insert.connect(prepare_new_record)
+    # after_record_insert.connect(index_record)
+# >>>>>>> global: invenio-deposit integration
 
     # TODO(edima): replace this check with explicit permissions
     before_record_update.connect(check_record_immutable_fields)
 
     # don't trust the user, reset record schema on update
-    before_record_update.connect(set_updated_record_schema)
-    before_record_update.connect(set_updated_record_files_bucket)
-    after_record_update.connect(index_record)
+    # before_record_update.connect(set_updated_record_schema)
+    # before_record_update.connect(set_updated_record_files_bucket)
+    # after_record_update.connect(index_record)
 
 
 

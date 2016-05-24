@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,22 +21,25 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""PID Fetchers."""
+"""PID minters."""
 
-from collections import namedtuple
+from __future__ import absolute_import, print_function
 
-from .providers import RecordUUIDProvider
+import uuid
 
-FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
-
-from invenio_records_rest.views import Blueprint
+from .providers import DepositUUIDProvider
 
 
-def b2share_record_uuid_fetcher(record_uuid, data):
-    """Fetch a record's identifiers."""
-    return FetchedPID(
-        provider=RecordUUIDProvider,
-        pid_type=RecordUUIDProvider.pid_type,
-        pid_value=str(next(pid['value'] for pid in data['_pid']
-                           if pid['type'] == RecordUUIDProvider.pid_type)),
+def b2share_deposit_uuid_minter(record_uuid, data):
+    """Mint deposit's PID."""
+    provider = DepositUUIDProvider.create(
+        object_type='rec', object_uuid=record_uuid,
+        # we reuse the deposit UUID as PID value. This makes the demo easier.
+        pid_value=record_uuid.hex
     )
+    data['_deposit'] = {
+        'id': provider.pid.pid_value,
+        # FIXME: do not set the status once it is done by invenio-deposit API
+        'status': 'draft',
+    }
+    return provider.pid

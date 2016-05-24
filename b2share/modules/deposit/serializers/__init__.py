@@ -21,22 +21,17 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""PID Fetchers."""
+"""B2Share serializers."""
 
-from collections import namedtuple
+from __future__ import absolute_import, print_function
 
-from .providers import RecordUUIDProvider
+from invenio_records_rest.serializers.response import search_responsify
+from b2share.modules.records.serializers.schemas.json import RecordSchemaJSONV1
 
-FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
+from b2share.modules.records.serializers.response import record_responsify, \
+    JSONSerializer
+from b2share.modules.deposit.links import deposit_links_factory
 
-from invenio_records_rest.views import Blueprint
-
-
-def b2share_record_uuid_fetcher(record_uuid, data):
-    """Fetch a record's identifiers."""
-    return FetchedPID(
-        provider=RecordUUIDProvider,
-        pid_type=RecordUUIDProvider.pid_type,
-        pid_value=str(next(pid['value'] for pid in data['_pid']
-                           if pid['type'] == RecordUUIDProvider.pid_type)),
-    )
+json_v1 = JSONSerializer(deposit_links_factory, RecordSchemaJSONV1)
+json_v1_response = record_responsify(json_v1, 'application/json')
+json_v1_search = search_responsify(json_v1, 'application/json')

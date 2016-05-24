@@ -25,11 +25,21 @@
 
 from __future__ import absolute_import, print_function
 
+from b2share.modules.records.fetchers import b2share_record_uuid_fetcher
+
 from .providers import RecordUUIDProvider
 
 
 def b2share_record_uuid_minter(record_uuid, data):
     """Use record's UUID as unique identifier."""
     provider = RecordUUIDProvider.create(
-        object_type='rec', object_uuid=record_uuid)
+        object_type='rec', object_uuid=record_uuid,
+        pid_value=data['_deposit']['id']
+    )
+    if not '_pid' in data:
+        data['_pid'] = []
+    data['_pid'].append({
+        'value': provider.pid.pid_value,
+        'type': provider.pid.pid_type,
+    })
     return provider.pid

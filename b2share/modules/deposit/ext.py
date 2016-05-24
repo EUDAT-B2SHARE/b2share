@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,22 +21,32 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""PID Fetchers."""
+"""B2share records extension"""
 
-from collections import namedtuple
+from __future__ import absolute_import, print_function
 
-from .providers import RecordUUIDProvider
+from invenio_records_rest.utils import PIDConverter
 
-FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
-
-from invenio_records_rest.views import Blueprint
+from .views import create_blueprint
 
 
-def b2share_record_uuid_fetcher(record_uuid, data):
-    """Fetch a record's identifiers."""
-    return FetchedPID(
-        provider=RecordUUIDProvider,
-        pid_type=RecordUUIDProvider.pid_type,
-        pid_value=str(next(pid['value'] for pid in data['_pid']
-                           if pid['type'] == RecordUUIDProvider.pid_type)),
-    )
+class B2ShareDeposit(object):
+    """B2Share Deposit extension."""
+
+    def __init__(self, app=None):
+        """Extension initialization."""
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        """Flask application initialization."""
+        self.init_config(app)
+        app.extensions['b2share-deposit'] = self
+        # Register records API blueprints
+        app.register_blueprint(
+            create_blueprint(app.config['B2SHARE_DEPOSIT_REST_ENDPOINTS'])
+        )
+
+    def init_config(self, app):
+        """Initialize configuration."""
+        pass

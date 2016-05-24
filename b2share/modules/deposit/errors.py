@@ -16,10 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
 
--e git+https://github.com/inveniosoftware/invenio-deposit.git#egg=invenio-deposit
--e git+git://github.com/inveniosoftware/invenio-base.git#egg=invenio-base
--e git+git://github.com/inveniosoftware/invenio-rest.git#egg=invenio-rest
--e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore
--e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
--e git+git://github.com/inveniosoftware/invenio-search.git#egg=invenio-search
+"""B2Share Deposit errors."""
+
+class B2ShareDepositError(Exception):
+    """B2Share Deposit module Exception."""
+
+class InvalidDepositDataError(B2ShareDepositError):
+    """Exception raised when the deposit data is invalid."""

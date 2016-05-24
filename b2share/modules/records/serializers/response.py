@@ -28,9 +28,10 @@ Responsible for creating a HTTP response given the output of a serializer.
 
 from __future__ import absolute_import, print_function
 
-from flask import current_app, url_for
+from flask import current_app, url_for, g
+from invenio_records_rest.serializers.json import JSONSerializer as \
+    InvenioJSONSerializer
 
-from ..constants import RECORDS_INTERNAL_FIELD, RECORDS_BUCKETS_FIELD
 from ..links import RECORD_BUCKET_RELATION_TYPE
 
 
@@ -49,12 +50,27 @@ def record_responsify(serializer, mimetype):
         response.set_etag(str(record.revision_id))
         if headers is not None:
             response.headers.extend(headers)
-        # add bucket links in header
-        buckets = record[RECORDS_INTERNAL_FIELD][RECORDS_BUCKETS_FIELD]
-        for bucket in buckets:
-            link = bucket_link_tpl.format(
-                url_for('invenio_files_rest.bucket_api', bucket_id=bucket,
-                        _external=True))
-            response.headers.add('Link', link)
+        # add bucket link in header
+        bucket = record.files.bucket
+        link = bucket_link_tpl.format(
+            url_for('invenio_files_rest.bucket_api', bucket_id=bucket.id,
+                    _external=True))
+        response.headers.add('Link', link)
         return response
     return view
+
+
+class JSONSerializer(InvenioJSONSerializer):
+
+    def __init__(self, links_factory, *args, **kwargs):
+        super(JSONSerializer, self).__init__(*args, **kwargs)
+        # self.links_factory = links_factory
+
+    def preprocess_record(self, pid, record, links_factory=None):
+        # if links_factory is None:
+        #     links_factory = self.links_factory
+        # return super(JSONSerializer, self).preprocess_record(
+        #     pid, record, links_factory(record))
+        g.record = record
+        return super(JSONSerializer, self).preprocess_record(
+            pid, record, links_factory)
