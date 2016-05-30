@@ -31,6 +31,7 @@ from invenio_records_rest.utils import PIDConverter
 from .triggers import register_triggers
 from .errors import register_error_handlers
 from .views import create_blueprint
+from .handle import init_handle_client
 
 
 class B2ShareRecords(object):
@@ -51,6 +52,7 @@ class B2ShareRecords(object):
         app.register_blueprint(
             create_blueprint(app.config['B2SHARE_RECORDS_REST_ENDPOINTS'])
         )
+        init_handle_client(app)
         app.url_map.converters['pid'] = PIDConverter
 
     def init_config(self, app):
