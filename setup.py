@@ -53,6 +53,7 @@ install_requires = [
     'invenio-rest[cors]>=1.0.0a9,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
+    'easywebdav>=1.2.0',
 ]
 
 if sys.version_info < (3, 4):
@@ -167,6 +168,7 @@ setup(
             'b2share_records = b2share.modules.records:B2ShareRecords',
             'b2share_deposit = b2share.modules.deposit:B2ShareDeposit',
             'b2share_files = b2share.modules.files:B2ShareFiles',
+            'b2share_remotes = b2share.modules.remotes:B2ShareRemotes',
             # enable OAuthClient on the API
             'invenio_oauthclient = invenio_oauthclient:InvenioOAuthClient',
             'invenio_oauth2server = invenio_oauth2server:InvenioOAuth2Server',
