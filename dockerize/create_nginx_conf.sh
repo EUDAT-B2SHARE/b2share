@@ -10,9 +10,16 @@ server {
         listen 80;
         server_name $FQDN;
         charset utf-8;
+        
+        location /oai2d {
+                proxy_pass http://$FQDN:5000/oai2d;
+                proxy_set_header Host $FQDN;
+                proxy_set_header X-Real-IP $IP_ADDR;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        }
 
         location / {
-                proxy_pass http://$FQDN:5000;
+                proxy_pass https://$FQDN;
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
