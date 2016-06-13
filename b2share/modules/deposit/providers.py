@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -25,17 +25,15 @@
 
 from __future__ import absolute_import, print_function
 
+import uuid
 from invenio_pidstore.providers.base import BaseProvider
 from invenio_pidstore.models import PIDStatus
 
 
-class RecordUUIDProvider(BaseProvider):
-    """Record identifier provider.
+class DepositUUIDProvider(BaseProvider):
+    """Deposit identifier provider."""
 
-    The deposit PID value has to be provided as it is used for the record PID.
-    """
-
-    pid_type = 'b2share_record'
+    pid_type = 'b2share_deposit'
     """Type of persistent identifier."""
 
     pid_provider = None
@@ -46,12 +44,13 @@ class RecordUUIDProvider(BaseProvider):
     """
 
     default_status = PIDStatus.REGISTERED
-    """Record UUIDs are registered immediately."""
+    """Deposit UUIDs are registered immediately."""
 
     @classmethod
     def create(cls, object_type=None, object_uuid=None, **kwargs):
-        """Create a new record identifier from the depoist PID value."""
-        assert 'pid_value' in kwargs
+        """Create a new record identifier."""
+        if 'pid_value' not in kwargs:
+            kwargs.setdefault('pid_value', uuid.uuid4().hex)
         kwargs.setdefault('status', cls.default_status)
-        return super(RecordUUIDProvider, cls).create(
+        return super(DepositUUIDProvider, cls).create(
             object_type=object_type, object_uuid=object_uuid, **kwargs)

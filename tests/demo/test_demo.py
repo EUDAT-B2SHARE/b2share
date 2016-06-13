@@ -50,8 +50,8 @@ def test_demo_cmd_load(app):
             # assert result.exit_code == 0
             # FIXME: check that the config is loaded
 
-        resolver = Resolver(pid_type='recuuid', object_type='rec',
+        resolver = Resolver(pid_type='b2share_record', object_type='rec',
                             getter=partial(Record.get_record,
                                            with_deleted=True))
         # check that the loaded record exists
-        resolver.resolve('a1c2ef96-a1e4-46fa-9bd7-a2a46d2242d4')
+        resolver.resolve('a1c2ef96a1e446fa9bd7a2a46d2242d4')

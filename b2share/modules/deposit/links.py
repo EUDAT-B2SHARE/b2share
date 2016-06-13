@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,31 +21,25 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Link helper and types."""
-
-import re
+"""B2Share Deposit Link factory."""
 
 from flask import url_for, g
 
-
-RECORD_BUCKET_RELATION_TYPE = \
-    'http://b2share.eudat.eu/relation_types/record_bucket'
-"""Relation type used for a record's submission bucket links."""
-
-def http_header_link_regex(relation_type):
-    """Create a regex matching the http header links of the given type."""
-    return re.compile(r'.*;+\s*rel="{}"\s*(;.*)?'.format(
-        re.escape(relation_type)))
-
-
-# def record_links_factory(record):
+# def deposit_links_factory(record):
 #     """Factory for record links generation."""
 #     def links_factory(pid):
-def record_links_factory(pid):
+
+def deposit_links_factory(pid):
     """Factory for record links generation."""
-    endpoint = 'b2share_records_rest.{0}_item'.format(pid.pid_type)
+    endpoint = 'b2share_deposit_rest.{0}_item'.format(pid.pid_type)
     links = dict(self=url_for(endpoint, pid_value=pid.pid_value,
                 _external=True))
+
+    def _url(name, **kwargs):
+        """URL builder."""
+        endpoint = 'b2share_deposit_rest.{0}_{1}'.format(pid.pid_type, name)
+        return url_for(endpoint, pid_value=pid.pid_value, _external=True,
+                    **kwargs)
 
     if hasattr(g, 'record'):
         record = g.record
@@ -54,5 +48,7 @@ def record_links_factory(pid):
         links['files'] = url_for('invenio_files_rest.bucket_api',
                                     bucket_id=record.files.bucket,
                                     _external=True)
+    for action in ('publish', 'edit', 'discard'):
+        links[action] = _url('actions', action=action)
     return links
     # return links_factory

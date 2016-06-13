@@ -47,6 +47,7 @@ install_requires = [
     'invenio-rest[cors]>=1.0.0a8,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
+    'invenio-deposit>=1.0.0.dev20150000',
 ]
 
 if sys.version_info < (3,4):
@@ -157,6 +158,7 @@ setup(
             'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
             'b2share_users = b2share.modules.users:B2ShareUsers',
             'b2share_records = b2share.modules.records:B2ShareRecords',
+            'b2share_deposit = b2share.modules.deposit:B2ShareDeposit',
             'b2share_files = b2share.modules.files:B2ShareFiles',
             # enable OAuthClient on the API
             'invenio_oauthclient = invenio_oauthclient:InvenioOAuthClient',
@@ -164,6 +166,7 @@ setup(
         ],
         'invenio_base.api_blueprints': [
             'invenio_oauthclient = invenio_oauthclient.views.client:blueprint',
+            # 'b2share_deposit = b2share.modules.deposit.views:blueprint',
         ],
         'invenio_db.models': [
             'b2share_communities = b2share.modules.communities.models',
@@ -173,12 +176,19 @@ setup(
             'b2share_schemas = b2share.modules.schemas.jsonresolver',
         ],
         'invenio_pidstore.minters': [
-            'b2share_record_uuid_minter '
+            'b2share_record'
             '= b2share.modules.records.minters:b2share_record_uuid_minter',
+            'b2share_deposit'
+            '= b2share.modules.deposit.minters:b2share_deposit_uuid_minter',
+        ],
+        'invenio_base.api_converters': [
+            'file_key = b2share.modules.deposit.utils:FileKeyConverter',
         ],
         'invenio_pidstore.fetchers': [
-            'b2share_record_uuid_fetcher '
+            'b2share_record'
             '= b2share.modules.records.fetchers:b2share_record_uuid_fetcher',
+            'b2share_deposit'
+            '= b2share.modules.deposit.fetchers:b2share_deposit_uuid_fetcher',
         ],
     },
     extras_require=extras_require,

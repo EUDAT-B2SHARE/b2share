@@ -34,7 +34,7 @@ class RecordSchemaJSONV1(Schema):
     created = fields.Str()
     updated = fields.Str()
 
-    @pre_dump
-    def filter_internal(self, data):
-        """Remove '_internal' field from the record metadata."""
-        del data['metadata']['_internal']
+    # @pre_dump
+    # def filter_internal(self, data):
+    #     """Remove '_internal' field from the record metadata."""
+    #     del data['metadata']['_internal']

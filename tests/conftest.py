@@ -53,7 +53,8 @@ from invenio_files_rest import InvenioFilesREST
 from sqlalchemy_utils.functions import create_database, drop_database
 from werkzeug.wsgi import DispatcherMiddleware
 
-from b2share.config import RECORDS_REST_ENDPOINTS
+from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
+    B2SHARE_DEPOSIT_REST_ENDPOINTS
 
 # add the demo module in sys.path
 sys.path.append(
@@ -92,10 +93,14 @@ def app(request, tmpdir):
         if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':
             create_database(db.engine.url)
         db.create_all()
-        es_index = RECORDS_REST_ENDPOINTS['recuuid']['search_index']
-        if current_search_client.indices.exists(es_index):
-            current_search_client.indices.delete(es_index)
-            current_search_client.indices.create(es_index)
+        es_indexes = [
+            B2SHARE_RECORDS_REST_ENDPOINTS['b2share_record']['search_index'],
+            B2SHARE_DEPOSIT_REST_ENDPOINTS['b2share_deposit']['search_index'],
+        ]
+        for es_index in es_indexes:
+            if current_search_client.indices.exists(es_index):
+                current_search_client.indices.delete(es_index)
+                current_search_client.indices.create(es_index)
 
     def finalize():
         with app.app_context():

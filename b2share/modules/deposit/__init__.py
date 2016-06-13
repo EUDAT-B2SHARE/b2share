@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016 University of Tuebingen, CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -17,9 +17,10 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
--e git+https://github.com/inveniosoftware/invenio-deposit.git#egg=invenio-deposit
--e git+git://github.com/inveniosoftware/invenio-base.git#egg=invenio-base
--e git+git://github.com/inveniosoftware/invenio-rest.git#egg=invenio-rest
--e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore
--e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
--e git+git://github.com/inveniosoftware/invenio-search.git#egg=invenio-search
+"""B2SHARE"""
+
+from __future__ import absolute_import, print_function
+
+from .ext import B2ShareDeposit
+
+__all__ = ('B2ShareDeposit')

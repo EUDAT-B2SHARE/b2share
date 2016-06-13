@@ -36,8 +36,12 @@ import click
 from flask import current_app
 
 from invenio_db import db
+from invenio_files_rest.models import ObjectVersion
+from invenio_indexer.api import RecordIndexer
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
-from invenio_records.api import Record
+from invenio_records_files.api import Record
+from b2share.modules.deposit.api import Deposit
+from b2share.modules.deposit.providers import DepositUUIDProvider
 
 from b2share.modules.communities import Community
 from b2share.modules.schemas import BlockSchema, CommunitySchema
@@ -166,6 +170,9 @@ def _create_community_schemas(communities, verbose):
 
 def _create_records(path, verbose):
     """Create demo records."""
+    indexer = RecordIndexer(
+        record_to_index=lambda record: ('records', 'record')
+    )
     if verbose > 0:
         click.secho('Creating records', fg='yellow', bold=True)
     with db.session.begin_nested():
@@ -181,13 +188,23 @@ def _create_records(path, verbose):
                         record_str = record_file.read()
                     record_str = resolve_community_id(record_str)
                     record_str = resolve_block_schema_id(record_str)
-                    RecordUUIDProvider.create(
-                        object_type='rec', object_uuid=rec_uuid)
-                    json_data = json.loads(record_str)
-                    Record.create(json_data, id_=rec_uuid)
+                    deposit = Deposit.create(json.loads(record_str),
+                                             id_=rec_uuid)
+                    from six import BytesIO
+                    ObjectVersion.create(deposit.files.bucket, 'myfile',
+                        stream=BytesIO(b'mycontent'))
+                    deposit.publish()
+                    pid, record = deposit.fetch_published()
+                    # index the record
+                    indexer.index(record)
                     if verbose > 1:
                         click.secho('CREATED RECORD {0}:\n {1}'.format(
-                            str(rec_uuid), json.dumps(json_data, indent=4)
+                            str(rec_uuid), json.dumps(record,
+                                                  indent=4)
+                        ))
+                        click.secho('CREATED DEPOSIT {0}:\n {1}'.format(
+                            str(rec_uuid), json.dumps(deposit,
+                                                  indent=4)
                         ))
                     nb_records += 1
     if verbose > 0:
