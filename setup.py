@@ -47,7 +47,7 @@ install_requires = [
     'invenio-rest[cors]>=1.0.0a8,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
-    'invenio-deposit>=1.0.0.dev20150000',
+    'invenio-deposit>=1.0.0a1,<1.1.0',
 ]
 
 if sys.version_info < (3,4):
