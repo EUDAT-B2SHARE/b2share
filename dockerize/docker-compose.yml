@@ -1,11 +1,13 @@
-# mysql:
-#     image: mysql
+# mariadb:
+#     image: mariadb
 #     ports:
 #         - "3306:3306"
 #     environment:
 #         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
 #         - MYSQL_USER=b2share_evo
 #         - MYSQL_DATABASE=b2share_evo
+#     volumes:
+#         - /data/db:/var/lib/mysql
 
 elasticsearch:
     image: elasticsearch
@@ -29,3 +31,10 @@ b2share:
         - "B2SHARE_SERVER_NAME=${B2SHARE_SERVER_NAME}:5000"
         - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
         - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
+nginx:
+    build: nginx
+    ports:
+        - "80:80"
+        - "443:443"
+    links:
+        - b2share
