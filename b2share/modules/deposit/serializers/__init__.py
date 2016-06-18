@@ -26,12 +26,12 @@
 from __future__ import absolute_import, print_function
 
 from invenio_records_rest.serializers.response import search_responsify
-from b2share.modules.records.serializers.schemas.json import RecordSchemaJSONV1
+from b2share.modules.records.serializers.schemas.json import DraftSchemaJSONV1
 
 from b2share.modules.records.serializers.response import record_responsify, \
     JSONSerializer
 from b2share.modules.deposit.links import deposit_links_factory
 
-json_v1 = JSONSerializer(deposit_links_factory, RecordSchemaJSONV1)
+json_v1 = JSONSerializer(deposit_links_factory, DraftSchemaJSONV1)
 json_v1_response = record_responsify(json_v1, 'application/json')
 json_v1_search = search_responsify(json_v1, 'application/json')
