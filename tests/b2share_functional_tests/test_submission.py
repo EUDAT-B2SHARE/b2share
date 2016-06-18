@@ -101,7 +101,6 @@ def test_deposit(app, test_communities, create_user, login_user):
                 draft_create_data = json.loads(
                     draft_create_res.get_data(as_text=True))
 
-
                 # Test file upload
                 headers = {'Accept': '*/*'}
                 object_url = '{0}/{1}'.format(
@@ -174,7 +173,7 @@ def test_deposit(app, test_communities, create_user, login_user):
                 # Test record GET
                 record_get_res = client.get(
                     url_for('b2share_records_rest.b2share_record_item',
-                            pid_value=draft_publish_data['metadata']['_deposit']['pid']['value']),
+                            pid_value=draft_publish_data['id']),
                     headers=headers)
                 assert record_get_res.status_code == 200
                 record_get_data = json.loads(
@@ -212,7 +211,7 @@ def test_deposit(app, test_communities, create_user, login_user):
                 # Test record GET
                 record_get2_res = client.get(
                     url_for('b2share_records_rest.b2share_record_item',
-                            pid_value=draft_publish_data['metadata']['_deposit']['pid']['value']),
+                            pid_value=draft_publish_data['id']),
                     headers=headers)
                 assert record_get2_res.status_code == 200
                 record_get2_data = json.loads(
