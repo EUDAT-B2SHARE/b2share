@@ -2,9 +2,9 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { timestamp2str } from '../data/misc.js'
-import { serverCache } from '../data/server';
+import { serverCache, Error } from '../data/server';
 import { currentUser } from './user.jsx';
-import { Wait } from './waiting.jsx';
+import { Wait, Err } from './waiting.jsx';
 import { LoginOrRegister } from './user.jsx';
 
 export const HomeRoute = React.createClass({
@@ -81,6 +81,9 @@ const LatestRecords = React.createClass({
     },
 
     render() {
+        if (this.props.records instanceof Error) {
+            return false;
+        }
         return (
             <div>
                 <h3>Latest Records</h3>

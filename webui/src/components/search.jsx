@@ -1,8 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
-import { serverCache } from '../data/server';
-import { Wait } from './waiting.jsx';
+import { serverCache, Error } from '../data/server';
+import { Wait, Err } from './waiting.jsx';
 import { timestamp2str } from '../data/misc.js'
 import { ReplaceAnimate } from './animate.jsx';
 
@@ -11,6 +11,9 @@ export const SearchRecordRoute = React.createClass({
     render() {
         const { start, stop, sortBy, order, query } = this.props.location;
         const records = serverCache.searchRecords({start:start, stop:stop, sortBy:sortBy, order:order, query:query});
+        if (records instanceof Error) {
+            return <Err err={records}/>;
+        }
         return records ?
             <ReplaceAnimate><RecordList records={records} /></ReplaceAnimate> :
             <Wait/>;

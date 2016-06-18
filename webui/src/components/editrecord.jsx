@@ -13,8 +13,8 @@ numberLocalizer();
 
 import { Files } from './editfiles.jsx';
 import { keys, pairs } from '../data/misc';
-import { serverCache } from '../data/server';
-import { Wait } from './waiting.jsx';
+import { serverCache, Error } from '../data/server';
+import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
@@ -83,13 +83,19 @@ export const NewRecordRoute = React.createClass({
         this.setState({title:event.target.value});
     },
 
-    render() {
+    componentWillMount() {
         const user = serverCache.getUser();
         if (!user || !user.get('name')) {
-            serverCache.notifyWarning('Please login. Creating a new record requires a user to be logged in.')
+            serverCache.notifyWarning('Please login. A new record can only be created by logged in users.');
         }
+    },
 
+    render() {
+        const user = serverCache.getUser();
         const communities = serverCache.getCommunities();
+        if (communities instanceof Error) {
+            return <Err err={communities}/>;
+        }
         const gap = {marginTop:'1em'};
         const biggap = {marginTop:'2em'};
         const stitle = {marginTop:'1em'};
@@ -145,13 +151,22 @@ export const NewRecordRoute = React.createClass({
 export const EditRecordRoute = React.createClass({
     render() {
         const { id } = this.props.params;
-        const record = serverCache.getRecord(id);
+        const record = serverCache.getDraft(id);
         if (!record) {
             return <Wait/>;
         }
+        if (record instanceof Error) {
+            return <Err err={record}/>;
+        }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
+        if (rootSchema instanceof Error) {
+            return <Err err={rootSchema}/>;
+        }
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
-        serverCache.getRecordFiles(id);
+        if (community instanceof Error) {
+            return <Err err={community}/>;
+        }
+        serverCache.getDraftFiles(id);
 
         return (
             <ReplaceAnimate>
@@ -181,8 +196,12 @@ const EditRecord = React.createClass({
             }
             this.setState({fileState, errors});
         }
+        const files = this.props.record.get('files');
+        if (files instanceof Error) {
+            return <Err err={files}/>;
+        }
         return (
-            <Files files={this.props.record.has('files') ? this.props.record.get('files').toJS() : []}
+            <Files files={files ? files.toJS() : []}
                 setState={setState}
                 putFile={serverCache.putFile.bind(serverCache, this.props.record)}
                 deleteFile={serverCache.deleteFile.bind(serverCache, this.props.record)}/>
@@ -418,7 +437,7 @@ const EditRecord = React.createClass({
     },
 
     validField(value, type) {
-        if (type.required) {
+        if (type && type.required) {
             if (value === undefined || value === null || value === "")
                 return false;
         }
@@ -524,6 +543,9 @@ const EditRecord = React.createClass({
 
 function renderSmallCommunity(community, active, onClickFn) {
     const activeClass = active ? " active": " inactive";
+    if (!community || community instanceof Error) {
+        return false;
+    }
     return (
         <a href="#" key={community.get('id')}
                 className={"community-small" + activeClass} title={community.get('description')}

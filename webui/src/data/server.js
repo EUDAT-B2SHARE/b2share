@@ -13,6 +13,7 @@ const apiUrls = {
 
     records()                         { return `${urlRoot}/api/records/` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },
+    draft(id)                         { return `${urlRoot}/api/records/${id}/draft` },
 
     communities()                     { return `${urlRoot}/api/communities/` },
     community(id)                     { return `${urlRoot}/api/communities/${id}` },
@@ -55,17 +56,8 @@ const apiUrls = {
 };
 
 
-const NOTIFICATION_DISPLAY_TIME = 10 * 1000; // 10 seconds
+export const NOTIFICATION_DISPLAY_TIME = 10 * 1000; // 10 seconds
 const GETTER_HYSTERESIS_INTERVAL_MS = 500; // half a second
-
-
-function extractFileBucket(linkHeader) {
-    const re = /(.*);+\s*rel=\"[^\"]*b2share\.eudat\.eu\/relation_types\/record_bucket\".*/;
-    const m = linkHeader.match(re);
-    const ret = (m && m[1]) ? m[1] : null;
-    return ret;
-}
-
 
 
 class Timer {
@@ -83,12 +75,13 @@ class Timer {
 
 
 class Getter {
-    constructor(url, params, fetchSuccessFn) {
+    constructor(url, params, fetchSuccessFn, fetchErrorFn) {
         this.url = url;
         this.params = params;
         this.etag = null;
         this.timer = new Timer(GETTER_HYSTERESIS_INTERVAL_MS);
         this.fetchSuccessFn = fetchSuccessFn;
+        this.fetchErrorFn = fetchErrorFn;
     }
 
     autofetch() {
@@ -113,6 +106,7 @@ class Getter {
                 this.etag = etag;
                 this.fetchSuccessFn(data, linkHeader);
             },
+            errorFn: this.fetchErrorFn,
         });
     }
 
@@ -242,22 +236,24 @@ class Deleter {
     }
 }
 
-
 class ServerCache {
     constructor() {
         this.store = new Store({
-            notifications: {}, // alert level -> { alert text -> x }
 
             latestRecords: [], // latest records with params
             searchRecords: [], // searched records view, with params
             recordCache: {}, // map of record IDs to records
+            draftCache: {}, // map of draft IDs to drafts
 
             communities: {}, // ordered map of community IDs to communities
             communitySchemas: {}, // map of community schema IDs to versions to schemas
             blockSchemas: {}, // map of block schema IDs to versions to schemas
 
             languages: null,
+
+            notifications: {}, // alert level -> { alert text -> x }
         });
+
         this.store.setIn(['communities'], OrderedMap());
         this.store.setIn(['notifications'], OrderedMap([
             ['danger', OrderedMap()], ['warning', OrderedMap()], ['info', OrderedMap()]
@@ -268,12 +264,14 @@ class ServerCache {
         this.getters.latestRecords = new Getter(
             apiUrls.records(),
             {start:0, stop:10, sortBy:'date', order:'descending'},
-            (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)) );
+            (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)),
+            (xhr) => this.store.setIn(['latestRecords'], new Error(xhr)) );
 
         this.getters.searchRecords = new Getter(
             apiUrls.records(),
             {query:'', start:0, stop:10, sortBy:'date', order:'descending'},
-            (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)) );
+            (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)),
+            (xhr) => this.store.setIn(['searchRecords'], new Error(xhr)) );
 
         this.getters.communities = new Getter(
             apiUrls.communities(), null,
@@ -281,25 +279,23 @@ class ServerCache {
                 let map = OrderedMap();
                 data.communities.forEach(c => { map = map.set(c.id, fromJS(c)); } );
                 this.store.setIn(['communities'], map);
-            });
+            },
+            (xhr) => this.store.setIn(['communities'], new Error(xhr)) );
 
-        this.getters.record = new Pool(recordID => {
-            const placeDataFn = (data, linkHeader) => {
-                expect(recordID == data.id);
-                if (!data.links) {
-                    data.links = {}
-                };
-                data.links.fileBucket = extractFileBucket(linkHeader);
-                const updater = (records) => records.set(data.id, fromJS(data));
-                this.store.updateIn(['recordCache'], updater);
-            };
-            return new Getter(apiUrls.record(recordID), null, placeDataFn);
-        });
+        this.getters.record = new Pool(recordID =>
+            new Getter(apiUrls.record(recordID), null,
+                (data) => this.store.setIn(['recordCache', recordID], fromJS(data)),
+                (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
 
-        this.getters.fileBucket = new Pool(recordID => {
-            const fileBucketUrl = this.store.getIn(['recordCache', recordID, 'links', 'fileBucket']);
+        this.getters.draft = new Pool(draftID =>
+            new Getter(apiUrls.draft(draftID), null,
+                (data) => this.store.setIn(['draftCache', draftID], fromJS(data)),
+                (xhr) => this.store.setIn(['draftCache', draftID], new Error(xhr)) ));
+
+        this.getters.fileBucket = new Pool(draftID => {
+            const fileBucketUrl = this.store.getIn(['draftCache', draftID, 'links', 'files']);
             if (!fileBucketUrl) {
-                console.error("accessing fileBucketUrl before record fetch", recordID);
+                console.error("accessing fileBucketUrl before draft fetch", draftID);
                 return null;
             }
             const placeDataFn = (data, linkHeader) => {
@@ -307,10 +303,10 @@ class ServerCache {
                     const m = jsonfile.url.match(/.*\/(.*)/);
                     jsonfile.name = (m && m[1]) ? m[1] : jsonfile.url;
                 });
-                const updater = (record) => record.setIn(['files'], fromJS(data));
-                this.store.updateIn(['recordCache', recordID], updater);
+                this.store.setIn(['draftCache', draftID, 'files'], fromJS(data));
             };
-            return new Getter(fileBucketUrl, null, placeDataFn);
+            const errorFn = (xhr) => this.store.setIn(['draftCache', draftID, 'files'], new Error(xhr));
+            return new Getter(fileBucketUrl, null, placeDataFn, errorFn);
         });
 
         this.getters.communitySchema = new Pool( communityID =>
@@ -328,7 +324,8 @@ class ServerCache {
                     };
                     this.store.updateIn(['communitySchemas'], updater);
                 };
-                return new Getter(apiUrls.communitySchema(communityID, version), null, placeDataFn);
+                const errorFn = (xhr) => this.store.setIn(['communitySchemas', communityID, version], new Error(xhr));
+                return new Getter(apiUrls.communitySchema(communityID, version), null, placeDataFn, errorFn);
             })
         );
 
@@ -347,19 +344,19 @@ class ServerCache {
                     };
                     this.store.updateIn(['blockSchemas'], updater);
                 };
-                return new Getter(apiUrls.schema(schemaID, version), null, placeDataFn);
+                const errorFn = (xhr) => this.store.setIn(['blockSchemas', schemaID, version], new Error(xhr));
+                return new Getter(apiUrls.schema(schemaID, version), null, placeDataFn, errorFn);
             })
         );
 
         this.posters = {};
-
         this.posters.records = new Poster(apiUrls.records());
-        this.posters.record = new Pool(recordID => new Poster(apiUrls.record(recordID)));
-        this.posters.files = new Pool(recordID =>
+        this.posters.draft = new Pool(draftID => new Poster(apiUrls.draft(draftID)));
+        this.posters.files = new Pool(draftID =>
             new Pool(fileName => {
-                const fileBucketUrl = this.store.getIn(['recordCache', recordID, 'links', 'fileBucket']);
+                const fileBucketUrl = this.store.getIn(['draftCache', draftID, 'links', 'files']);
                 if (!fileBucketUrl) {
-                    console.error("accessing fileBucketUrl poster before record fetch", recordID);
+                    console.error("accessing fileBucketUrl poster before draft fetch", draftID);
                     return null;
                 }
                 return new FilePoster(fileBucketUrl + '/' + fileName);
@@ -369,7 +366,6 @@ class ServerCache {
         this.deleters = {};
         this.deleters.file = new Deleter();
     }
-
 
     getLatestRecords() {
         this.getters.latestRecords.autofetch();
@@ -393,8 +389,14 @@ class ServerCache {
         if (!communities) {
             return null;
         }
-        const c = communities.get(communityIDorName);
-        return c ? c : communities.valueSeq().find(x => x.get('name') == communityIDorName);
+        if (communities instanceof Error) {
+            return communities;
+        }
+        let c = communities.get(communityIDorName);
+        if (!c) {
+            c = communities.valueSeq().find(x => x.get('name') == communityIDorName);
+        }
+        return c ? c : new Error({status:404, statusText:'The community information cannot be found'});
     }
 
     getRecord(id) {
@@ -402,18 +404,22 @@ class ServerCache {
         return this.store.getIn(['recordCache', id]);
     }
 
-    getRecordFiles(recordID, useForce) {
-        if (!recordID) {
+    getDraft(id) {
+        this.getters.draft.get(id).fetch();
+        return this.store.getIn(['draftCache', id]);
+    }
+
+    getDraftFiles(draftID, useForce) {
+        if (!draftID) {
             return [];
         }
         if (useForce) {
-            this.getters.fileBucket.get(recordID).forceFetch();
+            this.getters.fileBucket.get(draftID).forceFetch();
         } else {
-            this.getters.fileBucket.get(recordID).fetch();
+            this.getters.fileBucket.get(draftID).fetch();
         }
-        return this.store.getIn(['recordCache', recordID, 'files']);
+        return this.store.getIn(['draftCache', draftID, 'files']);
     }
-
 
     getBlockSchema(schemaID, version) {
         const s = this.store.getIn(['blockSchemas', schemaID, version]);
@@ -428,6 +434,9 @@ class ServerCache {
         if (!cs) {
             this.getters.communitySchema.get(communityID).get(version).fetch();
             return [];
+        }
+        if (cs instanceof Error) {
+            return [cs, null]
         }
         const allOf = cs.getIn(['json_schema', 'allOf']);
         if (!allOf) {
@@ -464,9 +473,8 @@ class ServerCache {
         }
         ajaxGet({
             url: apiUrls.user(),
-            successFn: (data) => {
-                this.store.setIn(['user'], fromJS(data));
-            },
+            successFn: (data) => this.store.setIn(['user'], fromJS(data)),
+            errorFn: (xhr) => this.store.setIn(['user'], new Error(xhr)),
         });
     }
 
@@ -480,6 +488,7 @@ class ServerCache {
                     console.log('got languages: ', langs.length);
                     this.store.setIn(['languages'], langs);
                 },
+                errorFn: (xhr) => this.store.setIn(['languages'], new Error(xhr)),
             });
         }
         return langs;
@@ -489,46 +498,36 @@ class ServerCache {
         this.posters.records.post(initialMetadata, successFn);
     }
 
-    putFile(record, fileObject, progressFn) {
+    putFile(draft, fileObject, progressFn) {
         const progFn = (status, param) => {
             if (status === 'done') {
-                this.getRecordFiles(record.get('id'), true); // force fetch files
+                this.getDraftFiles(draft.get('id'), true); // force fetch files
             }
             progressFn(status, param)
         };
-        return this.posters.files.get(record.get('id')).get(fileObject.name).put(fileObject, progFn);
+        return this.posters.files.get(draft.get('id')).get(fileObject.name).put(fileObject, progFn);
     }
 
-    deleteFile(record, fileUUID) {
-        const fileList = record.get('files') || List();
+    deleteFile(draft, fileUUID) {
+        const fileList = draft.get('files') || List();
         const [fileIndex, file] = fileList.findEntry(f => f.get('uuid') === fileUUID);
         if (file) {
             this.deleters.file.delete(file.get('url'), () => {
-                this.store.deleteIn(['recordCache', record.get('id'), 'files', fileIndex]);
+                this.getDraftFiles(draft.get('id'), true); // force fetch files
             });
         }
     }
 
     updateRecord(id, metadata, successFn) {
-        this.posters.record.get(id).put(metadata, successFn);
+        this.posters.draft.get(id).put(metadata, successFn);
     }
 
     patchRecord(id, patch, successFn) {
-        this.posters.record.get(id).patch(patch, successFn);
+        this.posters.draft.get(id).patch(patch, successFn);
     }
 
     notify(level, text) {
-        this.store.updateIn(['notifications', level], n => {
-            const x = n.get(text);
-            if (x) {
-                return n;
-            } else {
-                return n.set(text, Date.now());
-            }
-        });
-        setTimeout(() => {
-            this.store.updateIn(['notifications'], n => n.deleteIn([level, text]));
-        }, NOTIFICATION_DISPLAY_TIME);
+        this.store.setIn(['notifications', level, text], Date.now());
     }
 
     getNotifications() {
@@ -549,8 +548,26 @@ class ServerCache {
 };
 
 
-export const serverCache = new ServerCache();
+export class Error {
+    constructor({status, statusText, responseText}) {
+        this.code = status;
+        this.text = statusText;
+        this.data = null;
+        try {
+            this.data = JSON.parse(responseText); }
+        catch (err) {
+            this.data = responseText;
+        };
+    }
+}
 
 errorHandler.fn = function(text) {
-    serverCache.notifyDanger(text);
+    const date = serverCache.store.getIn(['notifications', 'danger', text]);
+    if (!date || date + NOTIFICATION_DISPLAY_TIME < Date.now()) {
+        serverCache.notifyDanger(text);
+        console.log('danger:', text);
+    }
 }
+
+export const serverCache = new ServerCache();
+

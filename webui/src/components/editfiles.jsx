@@ -1,8 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { serverCache } from '../data/server';
+import { serverCache, Error } from '../data/server';
 import { pairs, humanSize } from '../data/misc';
-import { Wait } from './waiting.jsx';
+import { Wait, Err } from './waiting.jsx';
 import { ReplaceAnimate } from './animate.jsx';
 
 const PT = React.PropTypes;

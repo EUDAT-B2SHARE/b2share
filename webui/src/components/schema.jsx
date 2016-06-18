@@ -1,8 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
 import { OrderedMap } from 'immutable';
 import { Link } from 'react-router'
-import { serverCache } from '../data/server';
-import { Wait } from './waiting.jsx';
+import { serverCache, Error } from '../data/server';
+import { Wait, Err } from './waiting.jsx';
 
 
 export function getSchemaOrderedMajorAndMinorFields(schema) {
@@ -18,7 +18,8 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get('id')]) : []);
     let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get('id')]) : []);
 
-    const except = {'$schema':true, 'community_specific':true, '_internal':true, 'owner':true};
+    const except = {'$schema':true, 'community_specific':true, 'owner':true,
+                    '_internal':true, '_deposit':true, '_files':true, '_pid':true, };
     properties.entrySeq().forEach(([id, def]) => {
         if (majors.has(id)) {
             majors = majors.set(id, def);

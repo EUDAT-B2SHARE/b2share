@@ -1,6 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link, browserHistory } from 'react-router'
-import { serverCache } from '../data/server';
+import { serverCache, Error, NOTIFICATION_DISPLAY_TIME } from '../data/server';
 import { ListAnimate, HeightAnimate } from './animate.jsx';
 import { NavbarUser } from './user.jsx';
 
@@ -163,7 +163,10 @@ export const Breadcrumbs = React.createClass({
 
 
 export const Notifications = React.createClass({
-    renderNotification(level, text) {
+    renderNotification(level, text, date) {
+        if (date + NOTIFICATION_DISPLAY_TIME < Date.now()) {
+            return false; // old notification, ignore
+        }
         return (
             <li className={"alert alert-"+level} key={text}>
                 {text}
@@ -174,18 +177,18 @@ export const Notifications = React.createClass({
     renderAlerts([level, texts]) {
         return(
             <ListAnimate key={level}>
-                {texts.entrySeq().map(([t, date]) => this.renderNotification(level, t))}
+                {texts.entrySeq().map(([t, date]) => this.renderNotification(level, t, date))}
             </ListAnimate>
         );
     },
 
     render() {
-        const notifs = serverCache.getNotifications();
+        const levels = serverCache.getNotifications();
         return (
             <ol className="list-unstyled">
                 <HeightAnimate>
                     <ListAnimate>
-                        {notifs.entrySeq().map(this.renderAlerts)}
+                        {levels.entrySeq().map(this.renderAlerts)}
                     </ListAnimate>
                 </HeightAnimate>
             </ol>

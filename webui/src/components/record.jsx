@@ -3,10 +3,10 @@ import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import moment from 'moment';
 import Toggle from 'react-toggle';
-import { serverCache } from '../data/server';
+import { serverCache, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
-import { Wait } from './waiting.jsx';
+import { Wait, Err } from './waiting.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
@@ -14,12 +14,14 @@ export const RecordRoute = React.createClass({
     render() {
         const { id } = this.props.params;
         const record = serverCache.getRecord(id);
+        if (record instanceof Error) {
+            return <Err err={record}/>;
+        }
         if (!record) {
             return <Wait/>;
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
-        serverCache.getRecordFiles(id);
 
         return (
             <ReplaceAnimate>
@@ -70,6 +72,9 @@ const Record = React.createClass({
     renderSmallCommunity(community) {
         if (!community) {
             return false;
+        }
+        if (community instanceof Error) {
+            return <Err err={community}/>;
         }
         return (
             <div key={community.get('id')}>
@@ -149,7 +154,7 @@ const Record = React.createClass({
         const type = getType(fieldSchema, fieldID, blockSchema);
         return (
             <div key={fieldID} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                <label style={{fontWeight:'bold'}}>{fieldSchema.get('title') || fieldName}: </label>
+                <label style={{fontWeight:'bold'}}>{fieldSchema.get('title') || fieldID}: </label>
                 <span> {this.renderFieldByType(type, v)}</span>
             </div>
         );
@@ -197,6 +202,9 @@ const Record = React.createClass({
         if (!files || !files.count()) {
             return false;
         }
+        if (files instanceof Error) {
+            return <Err err={files}/>;
+        }
         const renderFile = file => {
             return (
                 <dl className="dl-horizontal file" key={file.get('uuid')} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
@@ -224,7 +232,7 @@ const Record = React.createClass({
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
-        const files = this.props.record.get('files');
+        const files = this.props.record.get('files') || this.props.record.getIn(['metadata', '_files']);
         if (!this.props.record || !rootSchema) {
             return <Wait/>;
         }
