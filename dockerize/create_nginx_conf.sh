@@ -12,14 +12,14 @@ server {
         charset utf-8;
         
         location /oai2d {
-                proxy_pass http://$FQDN:5000/oai2d;
+                proxy_pass http://b2share:5000/oai2d;
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
 
         location / {
-                proxy_pass https://$FQDN;
+                proxy_pass https://b2share;
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -35,13 +35,13 @@ server {
         listen 443 ssl;
         server_name $FQDN;
         charset utf-8;
-        ssl_certificate         /etc/ssl/b2share_ssl.crt;
-        ssl_certificate_key     /etc/ssl/b2share_ssl.key;
+        ssl_certificate         /etc/ssl/b2share.crt;
+        ssl_certificate_key     /etc/ssl/b2share.key;
         ssl_protocols           TLSv1 TLSv1.1 TLSv1.2;
         ssl_ciphers             HIGH:!aNULL:!MD5;
 
         location / {
-                proxy_pass http://$FQDN:5000;
+                proxy_pass http://b2share:5000;
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
