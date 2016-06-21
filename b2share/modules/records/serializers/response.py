@@ -72,5 +72,28 @@ class JSONSerializer(InvenioJSONSerializer):
         # return super(JSONSerializer, self).preprocess_record(
         #     pid, record, links_factory(record))
         g.record = record
-        return super(JSONSerializer, self).preprocess_record(
+        rec = super(JSONSerializer, self).preprocess_record(
             pid, record, links_factory)
+
+        metadata = rec['metadata']
+        try:
+            metadata['record_status'] = metadata['_deposit']['status']
+            if metadata['record_status'] == 'published':
+                rec['files'] = metadata['_files']
+            del metadata['_deposit']
+            del metadata['_files']
+            del metadata['_pid']
+
+            for f in rec['files']:
+                f['url'] = url_for(
+                    'invenio_files_rest.object_api',
+                    bucket_id=f['bucket'],
+                    key=f['key'],
+                    _external=True)
+                f['name'] = f['key']
+                del f['key']
+
+        except KeyError as e:
+            current_app.logger.error(e)
+
+        return rec

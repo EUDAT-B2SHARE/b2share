@@ -39,7 +39,6 @@ export class Store {
         if (!path || !path.length) return ;
         const obj = this.root.getIn(path);
         if (obj && obj.equals && obj.equals(data) || (obj === data)) return;
-        // console.log('set in: ', path, data);
         this.root = this.root.setIn(path, data);
         this.onChange();
     }

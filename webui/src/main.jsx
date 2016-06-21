@@ -21,10 +21,8 @@ import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 const VERSION = '0.9.0';
 
 // TODO: test file uploads in various browsers
-// TODO: edit records: error testing per field
 // TODO: edit records: plugins
 // TODO: edit records: open enums (rename enum to options?)
-// TODO: handle http error cases (record, community not found)
 // TODO: do memory profile
 
 const AppFrame = React.createClass({

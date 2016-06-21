@@ -186,7 +186,7 @@ def oauth_register(account_info):
     """
     from flask_security.registerable import register_user
     email = account_info.get("email")
-    return register_user(email=email, password=None)
+    return register_user(email=email, password="")
 
 
 def disconnect_handler(remote, *args, **kwargs):

@@ -1,6 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link, browserHistory } from 'react-router'
-import { serverCache, loginURL } from '../data/server';
+import { serverCache, Error, loginURL } from '../data/server';
 
 export const LoginOrRegister = React.createClass({
     mixins: [React.addons.PureRenderMixin],

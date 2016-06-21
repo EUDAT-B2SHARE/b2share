@@ -1,8 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { serverCache } from '../data/server';
+import { serverCache, Error } from '../data/server';
 import { pairs } from '../data/misc';
-import { Wait } from './waiting.jsx';
+import { Wait, Err } from './waiting.jsx';
 import { Schema } from './schema.jsx';
 import { ReplaceAnimate } from './animate.jsx';
 
@@ -10,6 +10,9 @@ import { ReplaceAnimate } from './animate.jsx';
 export const CommunityListRoute = React.createClass({
     render() {
         const communities = serverCache.getCommunities();
+        if (communities instanceof Error) {
+            return <Err err={communities}/>;
+        }
         return communities ?
             <CommunityList communities={communities} /> :
             <Wait/>;
@@ -24,8 +27,12 @@ export const CommunityRoute = React.createClass({
         if (!community) {
             return <Wait/>;
         }
+        if (community instanceof Error) {
+            return <Err err={community}/>;
+        }
 
         const [rootSchema, blockSchemas] = serverCache.getCommunitySchemas(community.get('id'), 'last');
+
         return (
             <ReplaceAnimate>
                 <Community community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
@@ -120,6 +127,9 @@ const Community = React.createClass({
 
     render() {
         const community = this.props.community;
+        if (community instanceof Error) {
+            return <Err err={community}/>;
+        }
         const blockSchemas = this.props.blockSchemas;
         return (
             <div className="community-page">
