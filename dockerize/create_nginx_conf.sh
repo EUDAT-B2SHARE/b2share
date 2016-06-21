@@ -19,7 +19,7 @@ server {
         }
 
         location / {
-                proxy_pass https://b2share;
+                proxy_pass https://$FQDN;
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
