@@ -18,7 +18,7 @@
             },
             "_pid": {
                 "title": "Persistent Identifiers",
-                "description": "Array of persistent identidiers pointing to this record",
+                "description": "Array of persistent identifiers pointing to this record",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -49,8 +49,8 @@
                 "description": "A more elaborate description of the resource. Focus on a description of content making it easy for others to find it and to interpret its relevance quickly.",
                 "type": "string"
             },
-            "creator": {
-                "title": "Author",
+            "creators": {
+                "title": "Authors",
                 "description": "The record author(s).",
                 "type": "array",
                 "items": {"type": "string"},
@@ -93,7 +93,7 @@
 
             "contributors": {
                 "title": "Contributors",
-                "description": "A semicolon separated list of all other contributors. Mention all other persons that were relevant in the creation of the resource.",
+                "description": "The list of all other contributors. Mention all persons that were relevant in the creation of the resource.",
                 "type": "array",
                 "items": {"type": "string"},
                 "uniqueItems": true
@@ -138,6 +138,9 @@
                 "type": "object"
             },
             "_deposit": {
+                "type": "object"
+            },
+            "_oai": {
                 "type": "object"
             },
             "_files": {
