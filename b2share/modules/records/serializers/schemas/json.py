@@ -25,31 +25,27 @@
 
 from marshmallow import Schema, fields, pre_dump
 
+
 class DraftSchemaJSONV1(Schema):
-    """Schema for drafts v1 in JSON."""
-
-    id = fields.String(attribute='pid.pid_value')
-    metadata = fields.Raw()
-    links = fields.Raw()
-    created = fields.Str()
-    updated = fields.Str()
-
-    # @pre_dump
-    # def filter_internal(self, data):
-    #     """Remove '_internal' field from the record metadata."""
-    #     del data['metadata']['_internal']
-
-class RecordSchemaJSONV1(Schema):
     """Schema for records v1 in JSON."""
 
     id = fields.String(attribute='pid.pid_value')
     metadata = fields.Raw()
     links = fields.Raw()
-    files = fields.Raw()
     created = fields.Str()
     updated = fields.Str()
 
-    # @pre_dump
-    # def filter_internal(self, data):
-    #     """Remove '_internal' field from the record metadata."""
-    #     del data['metadata']['_internal']
+    @pre_dump
+    def filter_internal(self, data):
+        """Remove internal fields from the record metadata."""
+        data['metadata']['owners'] = data['metadata']['_deposit']['owners']
+        del data['metadata']['_deposit']
+        if '_files' in data['metadata']:
+            del data['metadata']['_files']
+        if '_pid' in data['metadata']:
+            del data['metadata']['_pid']
+        return data
+
+
+class RecordSchemaJSONV1(DraftSchemaJSONV1):
+    """Schema for drafts v1 in JSON."""

@@ -24,19 +24,29 @@
 """B2Share Deposit API."""
 
 import uuid
+from enum import Enum
 
-from flask import current_app, url_for
+from flask import url_for
 from invenio_deposit.api import Deposit as DepositRecord
 from b2share.modules.schemas.api import CommunitySchema
-from b2share.modules.schemas.serializers import \
-    community_schema_json_schema_link
 from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 from invenio_indexer.api import RecordIndexer
-# from b2share.modules.records.api import Record
 from invenio_records_files.api import Record
 
-from .errors import InvalidDepositDataError
+from .errors import InvalidDepositDataError, InvalidDepositStateError
+from invenio_records.errors import MissingModelError
+from b2share.modules.records.errors import InvalidRecordError
+
+
+class PublicationStates(Enum):
+    """States of a record."""
+    draft = 1
+    """Deposit is a draft. This is the initial state of every new deposit."""
+    submitted = 2
+    """Deposit is submitted. Only deposit in "draft" state can be submitted."""
+    published = 3
+    """Deposit is published."""
 
 
 class Deposit(DepositRecord):
@@ -56,7 +66,6 @@ class Deposit(DepositRecord):
     deposit_fetcher = staticmethod(b2share_deposit_uuid_fetcher)
     """Deposit fetcher."""
 
-
     def __init__(self, *args, **kwargs):
         super(Deposit, self).__init__(*args, **kwargs)
 
@@ -64,8 +73,6 @@ class Deposit(DepositRecord):
     def record_schema(self):
         """Convert deposit schema to a valid record schema."""
         return self['$schema']
-        # return self['_internal']['record_schema']
-
 
     def build_deposit_schema(self, record):
         """Convert record schema to a valid deposit schema."""
@@ -74,6 +81,9 @@ class Deposit(DepositRecord):
     @classmethod
     def create(cls, data, id_=None):
         """Create a deposit."""
+        # check that the status field is not set
+        assert 'publication_state' not in data
+        data['publication_state'] = PublicationStates.draft.name
         # Set record's schema
         if '$schema' in data:
             raise InvalidDepositDataError('"$schema" field should not be set.')
@@ -85,19 +95,57 @@ class Deposit(DepositRecord):
         except ValueError as e:
             raise InvalidRecordError('Community ID is not a valid UUID.') from e
         schema = CommunitySchema.get_community_schema(community_id)
-        record_schema = community_schema_json_schema_link(schema)
-        # data['_internal'] = {'record_schema': record_schema}
         data['$schema'] = '{}#/json_schema'.format(url_for(
-            # 'b2share_deposit_rest.community_deposit_schema',
             'b2share_schemas.community_schema_item',
             community_id=community_id,
             schema_version_nb=schema.version,
             _external=True))
         return super(Deposit, cls).create(data, id_=id_)
 
-    def submit(self):
+    def _prepare_edit(self, record):
+        data = super(Deposit, self)._prepare_edit(record)
+        data['publication_state'] = PublicationStates.draft.name
+
+    def commit(self):
+        """Store changes on current instance in database.
+
+        This method extends the default implementation by publishing the
+        deposition when 'publication_state' is set to 'published'.
+        """
+        if self.model is None or self.model.json is None:
+            raise MissingModelError()
+        # test invalid state transitions
+        if (self['publication_state'] == PublicationStates.submitted.name
+                and self.model.json['publication_state'] !=
+                PublicationStates.draft.name):
+            raise InvalidDepositStateError(
+                'Cannot submit a deposit in {} state'.format(
+                    self.model.json['publication_state'])
+            )
+
+        # publish the deposition if needed
+        if (self['publication_state'] == PublicationStates.published.name
+                # check invenio-deposit status so that we do not loop
+                and self['_deposit']['status'] != 'published'):
+            super(Deposit, self).publish()  # publish() already calls commit()
+        else:
+            super(Deposit, self).commit()
+        return self
+
+    def publish(self, pid=None, id_=None):
+        self['publication_state'] = PublicationStates.published.name
+        return super(Deposit, self).publish(pid=pid, id_=id_)
+
+    def submit(self, commit=True):
         """Submit a record for review.
 
         For now it immediately publishes the record.
         """
-        self.publish()
+        if (PublicationStates[self['publication_state']] !=
+                PublicationStates.draft):
+            raise InvalidDepositStateError('Cannot submit a deposit in '
+                                           '{} state'.format(
+                                               self['publication_state']))
+        self['publication_state'] = PublicationStates.submitted.name
+        if commit:
+            self.commit()

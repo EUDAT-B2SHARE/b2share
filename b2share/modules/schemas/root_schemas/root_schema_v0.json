@@ -5,6 +5,12 @@
         "type": "object",
         "properties": {
             "$schema": { "type": "string" },
+            "publication_state": {
+                "title": "Publication State",
+                "description": "State of the publication workflow.",
+                "type": "string",
+                "enum": [ "draft", "submitted", "published" ]
+            },
             "owner": {
                 "title": "Owner",
                 "description": "Identifier of the user that owns the record",
