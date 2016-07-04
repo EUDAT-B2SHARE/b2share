@@ -31,15 +31,16 @@ from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
 install_requires = [
-    'invenio-access>=1.0.0a7,<1.1.0',
+    'invenio-access>=1.0.0a8,<1.1.0',
     'invenio-accounts>=v1.0.0a12,<1.1.0',
-    'invenio-base>=1.0.0a11,<1.1.0',
+    'invenio-base>=1.0.0a12,<1.1.0',
     'invenio-celery>=1.0.0a4,<1.1.0',
     'invenio-config>=1.0.0a1,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-files-rest>=1.0.0a3,<1.1.0',
     'invenio-mail>=1.0.0a4,<1.1.0',
     'invenio-oauthclient>=1.0.0a6,<1.1.0',
+    'invenio-oauth2server>=1.0.0a5,<1.1.0',
     'invenio-pidstore>=v1.0.0a7,<1.1.0',
     'invenio-query-parser>=0.6.0,<1.1.0',
     'invenio-records>=1.0.0a16,<1.1.0',
@@ -164,6 +165,7 @@ setup(
             'b2share_files = b2share.modules.files:B2ShareFiles',
             # enable OAuthClient on the API
             'invenio_oauthclient = invenio_oauthclient:InvenioOAuthClient',
+            'invenio_oauth2server = invenio_oauth2server:InvenioOAuth2Server',
             'invenio_mail = invenio_mail:InvenioMail',
         ],
         'invenio_base.api_blueprints': [

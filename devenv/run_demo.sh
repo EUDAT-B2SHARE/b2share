@@ -8,6 +8,11 @@
 # brew install python --framework --universal
 # pip install virtualenv virtualenvwrapper
 
+# define MACHINE_NAME to use a docker machine
+# and customize this line to point to the correct IP
+DOCKER_IP=localhost
+
+
 if [ -n "$VIRTUAL_ENV" ]; then
 	echo "Please deactivate the current virtual environment before running this script"
 	echo "Virtual environment detected: $VIRTUAL_ENV"
@@ -18,11 +23,6 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 export VIRTUALENV_NAME='b2share-evolution'
 export DB_NAME='b2share-evolution'
-
-# remove this line to bypass docker-machine
-export MACHINE_NAME=b2share
-# and customize this line to point to the IP
-DOCKER_IP=localhost
 
 if [ "$1" = "--reinit" ]; then
 	REINIT=1
@@ -118,4 +118,5 @@ fi
 
 echo; echo "### Run b2share"
 export SSL_CERT_FILE="staging_b2access.pem"
-b2share --debug run
+export FLASK_DEBUG=1
+b2share run

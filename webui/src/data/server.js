@@ -22,6 +22,7 @@ const apiUrls = {
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
 
     user()                            { return `${urlRoot}/api/users/current` },
+    userTokens()                      { return `${urlRoot}/api/users/current/tokens` },
 
     languages()                       { return `${urlRoot}/languages.json` },
 
@@ -475,6 +476,21 @@ class ServerCache {
             url: apiUrls.user(),
             successFn: (data) => this.store.setIn(['user'], fromJS(data)),
             errorFn: (xhr) => this.store.setIn(['user'], new Error(xhr)),
+        });
+    }
+
+    getUserTokens(successFn) {
+        ajaxGet({
+            url: apiUrls.userTokens(),
+            successFn: (data) => successFn(data.hits.hits),
+        });
+    }
+
+    newUserToken(tokenName, successFn) {
+        ajaxPost({
+            params: {token_name:tokenName},
+            url: apiUrls.userTokens(),
+            successFn: successFn,
         });
     }
 
