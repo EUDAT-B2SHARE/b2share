@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import, print_function
 
+import json
 import os
 import shutil
 import re
@@ -32,26 +33,20 @@ import tempfile
 import sys
 from collections import namedtuple
 from contextlib import contextmanager
+from copy import deepcopy
 
 import pytest
 import responses
+from b2share_unit_tests.helpers import authenticated_user
+from b2share.modules.deposit.api import Deposit
 from b2share.modules.schemas.helpers import load_root_schemas
-from flask import Flask
-from flask_cli import FlaskCLI
+from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from flask_security import url_for_security
 from flask_security.utils import encrypt_password
-from invenio_access import InvenioAccess
-from invenio_accounts import InvenioAccounts
-from invenio_db import InvenioDB, db
+from invenio_db import db
 from invenio_files_rest.models import Location
-from invenio_records import InvenioRecords
-from invenio_records_rest import InvenioRecordsREST
-from invenio_rest import InvenioREST
-from invenio_search import InvenioSearch, current_search_client
-from invenio_pidstore import InvenioPIDStore
-from invenio_files_rest import InvenioFilesREST
+from invenio_search import current_search_client
 from sqlalchemy_utils.functions import create_database, drop_database
-from werkzeug.wsgi import DispatcherMiddleware
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -63,10 +58,11 @@ sys.path.append(
 # add tests to the sys path
 sys.path.append(os.path.dirname(__file__))
 
+
 @pytest.fixture(scope='function')
 def app(request, tmpdir):
     """Flask application fixture."""
-    from b2share.factory import create_app, create_api
+    from b2share.factory import create_api
 
     instance_path = tmpdir.mkdir('instance_dir').strpath
     os.environ.update(
@@ -137,6 +133,18 @@ def create_user(app):
 
 
 @pytest.fixture(scope='function')
+def test_users(app, request, create_user):
+    """Create test users."""
+    with app.app_context():
+        if hasattr(request, 'param') and 'users' in request.param:
+            result = {username: create_user(username)
+                      for username in request.param['users']}
+            db.session.commit()
+            return result
+        return {}
+
+
+@pytest.fixture(scope='function')
 def login_user(app):
     """Login a user."""
 
@@ -166,6 +174,58 @@ def test_communities(app, tmp_location):
             os.path.dirname(os.path.realpath(__file__)),
             'data'), verbose=0)
         db.session.commit()
+
+
+@pytest.fixture(scope='function')
+def test_records_data(app, test_communities):
+    """Generate test deposits data.
+
+    Returns:
+        :list: list of generated record data
+    """
+    records_data = [{
+        'title': 'My Test BBMRI Record',
+        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        "open_access": True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    }, {
+        'title': 'New BBMRI dataset',
+        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        "open_access": True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    }]
+    with app.app_context():
+        return [
+            json.loads(resolve_block_schema_id(resolve_community_id(
+                json.dumps(data)))
+            ) for data in records_data
+        ]
+
+
+@pytest.fixture(scope='function')
+def test_deposits(app, request, test_records_data, test_users, login_user):
+    """Fixture creating test deposits."""
+    with app.app_context():
+        def create_deposits():
+            return [Deposit.create(data=data).id
+                    for data in deepcopy(test_records_data)]
+        creator = None
+        if hasattr(request, 'param') and 'deposits_creator' in request.param:
+            creator = test_users[request.param['deposits_creator']]
+            with authenticated_user(creator):
+                deposits = create_deposits()
+        else:
+            deposits = create_deposits()
+        db.session.commit()
+        return deposits
 
 
 @pytest.yield_fixture()
@@ -218,10 +278,10 @@ def flask_http_responses(app):
                 url_regexp = re.compile(
                     'http://' +
                     app.config.get('SERVER_NAME') +
-                    (app.config.get('APPLICATION_ROOT')  or '') +
+                    (app.config.get('APPLICATION_ROOT') or '') +
                     re.sub(r'<[^>]+>', '\S+', rule.rule))
                 for method in rule.methods:
                     rsps.add_callback(method, url_regexp,
-                                        callback=router_callback)
+                                      callback=router_callback)
             yield
     yield router

@@ -24,31 +24,34 @@
 """B2Share Deposit Link factory."""
 
 from flask import url_for, g
+from b2share.modules.records.providers import RecordUUIDProvider
 
-# def deposit_links_factory(record):
-#     """Factory for record links generation."""
-#     def links_factory(pid):
 
 def deposit_links_factory(pid):
     """Factory for record links generation."""
-    endpoint = 'b2share_deposit_rest.{0}_item'.format(pid.pid_type)
-    links = dict(self=url_for(endpoint, pid_value=pid.pid_value,
-                _external=True))
+    deposit_endpoint = 'b2share_deposit_rest.{0}_item'.format(pid.pid_type)
+    record_endpoint = 'b2share_records_rest.{0}_item'.format(
+        RecordUUIDProvider.pid_type
+    )
+    links = dict(
+        self=url_for(deposit_endpoint, pid_value=pid.pid_value,
+                     _external=True),
+        publication=url_for(record_endpoint, pid_value=pid.pid_value,
+                            _external=True)
+    )
 
     def _url(name, **kwargs):
         """URL builder."""
         endpoint = 'b2share_deposit_rest.{0}_{1}'.format(pid.pid_type, name)
         return url_for(endpoint, pid_value=pid.pid_value, _external=True,
-                    **kwargs)
+                       **kwargs)
 
     if hasattr(g, 'record'):
         record = g.record
         # FIXME: index the record bucket with the bucket so that we can
         # add the "files" link
-        links['files'] = url_for('invenio_files_rest.bucket_api',
-                                    bucket_id=record.files.bucket,
-                                    _external=True)
-    for action in ('publish', 'edit', 'discard'):
-        links[action] = _url('actions', action=action)
+        if record.files is not None:
+            links['files'] = url_for('invenio_files_rest.bucket_api',
+                                     bucket_id=record.files.bucket,
+                                     _external=True)
     return links
-    # return links_factory

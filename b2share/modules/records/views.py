@@ -22,26 +22,16 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 
-import copy
 import uuid
-from functools import partial, wraps
+from functools import partial
 
-from flask import Blueprint, abort, current_app, jsonify, make_response, \
-    request, url_for
-from flask.views import MethodView
+from flask import Blueprint, abort, request, url_for
 from invenio_db import db
-from invenio_pidstore import current_pidstore
-from invenio_pidstore.models import PersistentIdentifier
 from invenio_pidstore.resolver import Resolver
 from invenio_records_files.api import Record
-from invenio_rest import ContentNegotiatedMethodView
-from invenio_rest.decorators import require_content_types
 from invenio_rest.errors import RESTValidationError
 from invenio_search import RecordsSearch
-from jsonpatch import JsonPatchException, JsonPointerException
 from jsonschema.exceptions import ValidationError
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.local import LocalProxy
 from invenio_records_rest.views import (RecordsListResource, RecordResource,
                                         RecordsListOptionsResource,
                                         SuggestResource)
@@ -49,9 +39,8 @@ from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.query import default_search_factory
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import verify_record_permission
-from b2share.modules.deposit.api import Deposit
-from invenio_records.api import Record
 from b2share.modules.deposit.links import deposit_links_factory
+
 
 def create_blueprint(endpoints):
     """Create Invenio-Records-REST blueprint."""
@@ -171,6 +160,9 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
     resolver = Resolver(pid_type=pid_type, object_type='rec',
                         getter=partial(record_class.get_record,
                                        with_deleted=True))
+
+    # import deposit here in order to avoid dependency loop
+    from b2share.modules.deposit.api import Deposit
 
     list_view = B2shareRecordsListResource.as_view(
         RecordsListResource.view_name.format(endpoint),

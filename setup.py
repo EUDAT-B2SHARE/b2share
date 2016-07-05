@@ -50,9 +50,11 @@ install_requires = [
     'invenio-deposit>=1.0.0a1,<1.1.0',
 ]
 
-if sys.version_info < (3,4):
+if sys.version_info < (3, 4):
     # In Python 3.4, pathlib is now part of the standard library.
     install_requires += ["pathlib >= 1.0.1"]
+    # Backport of Python 3.4 enums to earlier versions
+    install_requires.append('enum34>=1.1.6')
 
 tests_require = [
     'check-manifest>=0.25',
@@ -166,7 +168,8 @@ setup(
         ],
         'invenio_base.api_blueprints': [
             'invenio_oauthclient = invenio_oauthclient.views.client:blueprint',
-            # 'b2share_deposit = b2share.modules.deposit.views:blueprint',
+            'b2share_communities = '
+            'b2share.modules.communities.views:blueprint',
         ],
         'invenio_db.models': [
             'b2share_communities = b2share.modules.communities.models',

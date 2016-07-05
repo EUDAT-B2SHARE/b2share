@@ -32,27 +32,25 @@ RECORD_BUCKET_RELATION_TYPE = \
     'http://b2share.eudat.eu/relation_types/record_bucket'
 """Relation type used for a record's submission bucket links."""
 
+
 def http_header_link_regex(relation_type):
     """Create a regex matching the http header links of the given type."""
     return re.compile(r'.*;+\s*rel="{}"\s*(;.*)?'.format(
         re.escape(relation_type)))
 
 
-# def record_links_factory(record):
-#     """Factory for record links generation."""
-#     def links_factory(pid):
 def record_links_factory(pid):
     """Factory for record links generation."""
     endpoint = 'b2share_records_rest.{0}_item'.format(pid.pid_type)
     links = dict(self=url_for(endpoint, pid_value=pid.pid_value,
-                _external=True))
+                              _external=True))
 
     if hasattr(g, 'record'):
         record = g.record
         # FIXME: index the record bucket with the bucket so that we can
         # add the "files" link
-        links['files'] = url_for('invenio_files_rest.bucket_api',
-                                    bucket_id=record.files.bucket,
-                                    _external=True)
+        if record.files is not None:
+            links['files'] = url_for('invenio_files_rest.bucket_api',
+                                     bucket_id=record.files.bucket,
+                                     _external=True)
     return links
-    # return links_factory

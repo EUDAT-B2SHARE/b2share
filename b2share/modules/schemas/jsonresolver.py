@@ -30,8 +30,6 @@ import jsonresolver
 from werkzeug.routing import Rule
 
 from .api import BlockSchema, CommunitySchema
-from b2share.modules.deposit.views import deposit_schema_to_dict, \
-    CommunityDepositSchema
 from .serializers import block_schema_version_to_dict, community_schema_to_dict
 
 
@@ -53,26 +51,16 @@ def jsonresolver_loader(url_map):
             version=schema_version_nb)
         return community_schema_to_dict(community_schema)
 
-    def community_deposit_resolver(community_id, schema_version_nb):
-        community_schema = CommunitySchema.get_community_schema(
-            community_id=community_id,
-            version=schema_version_nb)
-        return deposit_schema_to_dict(CommunityDepositSchema(community_schema))
     url_map.add(Rule(
         '{}/communities/<string:community_id>/schemas/'
         '<int:schema_version_nb>'.format(
             current_app.config.get('APPLICATION_ROOT') or ''),
         endpoint=community_resolver,
         host=current_app.config['SERVER_NAME']))
-    url_map.add(Rule(
-        '{}/communities/<string:community_id>/schemas/'
-        '<int:schema_version_nb>/deposit'.format(
-            current_app.config.get('APPLICATION_ROOT') or ''),
-        endpoint=community_deposit_resolver,
-        host=current_app.config['SERVER_NAME']))
+
     url_map.add(Rule(
         '{}/schemas/<string:schema_id>/versions'
         '/<int:schema_version_nb>'.format(
-            current_app.config.get('APPLICATION_ROOT') or '' ),
+            current_app.config.get('APPLICATION_ROOT') or ''),
         endpoint=block_schema_resolver,
         host=current_app.config['SERVER_NAME']))

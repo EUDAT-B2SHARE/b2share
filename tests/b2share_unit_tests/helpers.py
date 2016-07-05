@@ -24,8 +24,12 @@
 """Test helpers."""
 
 import json
+from contextlib import contextmanager
 
+from flask import current_app
 from six import string_types
+from flask_login import login_user, logout_user
+from invenio_accounts.models import User
 
 
 def subtest_self_link(response_data, response_headers, client):
@@ -44,3 +48,17 @@ def subtest_self_link(response_data, response_headers, client):
     assert self_data == response_data
     if response_headers:
         assert response_headers['ETag'] == self_response.headers['ETag']
+
+
+@contextmanager
+def authenticated_user(userinfo):
+    """Authentication context manager."""
+    user = User.query.filter(User.id == userinfo.id).one()
+    with current_app.test_request_context():
+        login_user(user)
+        try:
+            yield
+        finally:
+            logout_user()
+
+

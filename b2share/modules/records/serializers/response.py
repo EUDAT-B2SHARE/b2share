@@ -42,6 +42,7 @@ def record_responsify(serializer, mimetype):
     :param mimetype: MIME type of response.
     """
     bucket_link_tpl = '{0}; rel="' + RECORD_BUCKET_RELATION_TYPE + '"'
+
     def view(pid, record, code=200, headers=None, links_factory=None):
         response = current_app.response_class(
             serializer.serialize(pid, record, links_factory=links_factory),
@@ -51,49 +52,19 @@ def record_responsify(serializer, mimetype):
         if headers is not None:
             response.headers.extend(headers)
         # add bucket link in header
-        bucket = record.files.bucket
-        link = bucket_link_tpl.format(
-            url_for('invenio_files_rest.bucket_api', bucket_id=bucket.id,
-                    _external=True))
-        response.headers.add('Link', link)
+        if record.files is not None:
+            bucket = record.files.bucket
+            link = bucket_link_tpl.format(
+                url_for('invenio_files_rest.bucket_api', bucket_id=bucket.id,
+                        _external=True))
+            response.headers.add('Link', link)
         return response
     return view
 
 
 class JSONSerializer(InvenioJSONSerializer):
-
-    def __init__(self, links_factory, *args, **kwargs):
-        super(JSONSerializer, self).__init__(*args, **kwargs)
-        # self.links_factory = links_factory
-
     def preprocess_record(self, pid, record, links_factory=None):
-        # if links_factory is None:
-        #     links_factory = self.links_factory
-        # return super(JSONSerializer, self).preprocess_record(
-        #     pid, record, links_factory(record))
         g.record = record
         rec = super(JSONSerializer, self).preprocess_record(
             pid, record, links_factory)
-
-        metadata = rec['metadata']
-        try:
-            metadata['record_status'] = metadata['_deposit']['status']
-            if metadata['record_status'] == 'published':
-                rec['files'] = metadata['_files']
-            del metadata['_deposit']
-            del metadata['_files']
-            del metadata['_pid']
-
-            for f in rec['files']:
-                f['url'] = url_for(
-                    'invenio_files_rest.object_api',
-                    bucket_id=f['bucket'],
-                    key=f['key'],
-                    _external=True)
-                f['name'] = f['key']
-                del f['key']
-
-        except KeyError as e:
-            current_app.logger.error(e)
-
         return rec

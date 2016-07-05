@@ -25,82 +25,19 @@
 
 from __future__ import absolute_import, print_function
 
-import uuid
 import pytz
 
-from flask import abort
-from flask_login import current_user
+from invenio_records.signals import before_record_update
 
-from invenio_records.signals import (
-        before_record_insert, after_record_insert,
-        before_record_update, after_record_update)
-from invenio_records.signals import before_record_insert, after_record_insert
-from flask import abort
-
-from b2share.modules.schemas.api import CommunitySchema
-from b2share.modules.schemas.serializers import \
-    community_schema_json_schema_link
-from invenio_files_rest.models import Bucket
 from invenio_search import current_search_client
 from invenio_rest.errors import FieldError
-from flask_security import current_user
 
-from .errors import InvalidRecordError, AlteredRecordError
-from .constants import (RECORDS_INTERNAL_FIELD as internal_field,
-                        RECORDS_BUCKETS_FIELD as buckets_field)
+from .errors import AlteredRecordError
 
 
 def register_triggers(app):
-# <<<<<<< 57a4a0851b40c088bd7012c0a1345161bcdb269e
-    # before_record_insert.connect(set_record_schema)
-    before_record_insert.connect(set_record_owner)
-    # before_record_insert.connect(create_record_files_bucket)
-    # after_record_insert.connect(index_record)
-# =======
-    # before_record_insert.connect(prepare_new_record)
-    # after_record_insert.connect(index_record)
-# >>>>>>> global: invenio-deposit integration
-
     # TODO(edima): replace this check with explicit permissions
     before_record_update.connect(check_record_immutable_fields)
-
-    # don't trust the user, reset record schema on update
-    # before_record_update.connect(set_updated_record_schema)
-    # before_record_update.connect(set_updated_record_files_bucket)
-    # after_record_update.connect(index_record)
-
-
-
-def set_record_schema(record, **kwargs):
-    """Set the record schema when it is created."""
-    if 'community' not in record or not record['community']:
-        raise InvalidRecordError(errors=[
-            FieldError('community', 'Record metadata has no community field.')
-        ])
-    try:
-        community_id = uuid.UUID(record['community'])
-    except ValueError as e:
-        raise InvalidRecordError(errors=[
-            FieldError('community', 'Community ID is not a valid UUID.')
-        ])
-    schema = CommunitySchema.get_community_schema(community_id)
-    record['$schema'] = community_schema_json_schema_link(schema)
-
-
-def set_record_owner(record, **kwargs):
-    if not current_user.is_authenticated:
-         # double check, the permission module should have rejected the request
-        abort(401)
-    record['owner'] = str(current_user.id)
-
-
-def create_record_files_bucket(record, **kwargs):
-    """Create the corresponding file bucket when a record is inserted."""
-    bucket = Bucket.create()
-    if internal_field not in record:
-        record[internal_field] = {}
-    internals = record[internal_field]
-    internals[buckets_field] = [str(bucket.id)]
 
 
 def index_record(record):
@@ -130,16 +67,3 @@ def check_record_immutable_fields(record):
         raise AlteredRecordError(errors=[
             FieldError('community', 'The community field cannot be changed.')
         ])
-
-
-def set_updated_record_files_bucket(record):
-    previous_md = record.model.json
-    record[internal_field] = previous_md[internal_field]
-
-
-def set_updated_record_schema(record):
-    previous_md = record.model.json
-    if record['community'] == previous_md['community']:
-        record['$schema'] = previous_md['$schema']
-    else:
-        set_record_schema(record)
