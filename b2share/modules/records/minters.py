@@ -25,7 +25,12 @@
 
 from __future__ import absolute_import, print_function
 
-from b2share.modules.records.fetchers import b2share_record_uuid_fetcher
+from datetime import datetime
+
+from flask import current_app
+
+from invenio_oaiserver.provider import OAIIDProvider
+from invenio_oaiserver.utils import datetime_to_datestamp
 
 from .providers import RecordUUIDProvider
 
@@ -41,5 +46,28 @@ def b2share_record_uuid_minter(record_uuid, data):
     data['_pid'].append({
         'value': provider.pid.pid_value,
         'type': provider.pid.pid_type,
+    })
+
+    b2share_oaiid_minter(record_uuid, data)
+
+    return provider.pid
+
+
+def b2share_oaiid_minter(record_uuid, data):
+    """Mint record identifiers."""
+    pid_value = data.get('_oai', {}).get('id')
+    if pid_value is None:
+        assert '_deposit' in data and 'id' in data['_deposit']
+        id_ = str(data['_deposit']['id'])
+        pid_value = current_app.config.get('OAISERVER_ID_PREFIX', '') + id_
+    provider = OAIIDProvider.create(
+        object_type='rec', object_uuid=record_uuid,
+        pid_value=str(pid_value)
+    )
+    data.setdefault('_oai', {})
+    data['_oai'].update({
+        'id': provider.pid.pid_value,
+        'sets': [],
+        'updated': datetime_to_datestamp(datetime.utcnow()),
     })
     return provider.pid
