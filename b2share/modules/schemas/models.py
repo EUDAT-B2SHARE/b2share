@@ -28,6 +28,8 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from invenio_db import db
+from sqlalchemy_utils.models import Timestamp
+from sqlalchemy_utils.models import Timestamp
 from sqlalchemy_utils.types import UUIDType
 
 from b2share.modules.communities.models import Community
@@ -45,11 +47,14 @@ class RootSchemaVersion(db.Model):
     """JSON Schema."""
 
 
-class BlockSchema(db.Model):
+class BlockSchema(db.Model, Timestamp):
     """Represent one of the community's metadata block schema in the database.
 
     Every schema is versioned. Previous versions can always be accessible.
     These versions are represented as BlockSchemaVersion.
+
+    Additionally it contains two columns ``created`` and ``updated``
+    with automatically managed timestamps.
     """
 
     __tablename__ = 'b2share_block_schema'

@@ -31,6 +31,7 @@ import jsonschema
 import pytest
 from flask import url_for
 from invenio_db import db
+from jsonpatch import JsonPatchConflict
 
 from b2share.modules.communities import B2ShareCommunities, Community
 from b2share.modules.communities.errors import CommunityDoesNotExistError
@@ -38,8 +39,9 @@ from b2share.modules.schemas import B2ShareSchemas, BlockSchema, \
     CommunitySchema, RootSchema
 from b2share.modules.schemas.errors import BlockSchemaDoesNotExistError, \
     BlockSchemaIsDeprecated, InvalidBlockSchemaError, InvalidJSONSchemaError, \
-    InvalidRootSchemaError, RootSchemaDoesNotExistError
-
+    InvalidRootSchemaError, RootSchemaDoesNotExistError, \
+    InvalidSchemaVersionError, SchemaVersionExistsError
+from b2share_unit_tests.communities.helpers import community_metadata
 from b2share_unit_tests.schemas.data import (
     communities_metadata, root_schemas_json_schemas,
     block_schemas_json_schemas)
@@ -268,6 +270,23 @@ def test_block_schemas_versions(app):
         with pytest.raises(IndexError):
             all_versions[len(block_schemas_json_schemas[0])]
 
+    with app.app_context():
+        retrieved_block_schema = BlockSchema.get_block_schema(
+            block_schema_1_id)
+        all_versions = retrieved_block_schema.versions
+        assert len(all_versions) == 2
+
+        retrieved_block_schema.create_version(
+            block_schemas_json_schemas[0][0],
+            len(all_versions)
+        )
+
+        with pytest.raises(SchemaVersionExistsError):
+            retrieved_block_schema.create_version(
+                block_schemas_json_schemas[0][0],
+                1
+            )
+
 
 @pytest.mark.parametrize('app', [({'extensions':
                                    [B2ShareCommunities, B2ShareSchemas]})],
@@ -457,3 +476,48 @@ def test_community_schema(app, flask_http_responses):
                             # the others JSON metadata
                             jsonschema.validate(metadatas[index2],
                                                 validation_schemas[index])
+
+
+def test_patch(app):
+    """Test BlockSchema.patch()."""
+    with app.app_context():
+        created_community = Community.create_community(**community_metadata)
+        block_schema = BlockSchema.create_block_schema(created_community.id, 'abc')
+        block_schema_id = block_schema.id
+        db.session.commit()
+
+        retrieved = BlockSchema.get_block_schema(block_schema_id)
+        retrieved.patch([{'op': 'replace', 'path': '/name', 'value': 'patched'}])
+        db.session.commit()
+
+    with app.app_context():
+        patched = BlockSchema.get_block_schema(block_schema_id)
+        assert block_schema_id == patched.id
+        assert getattr(patched, 'name') == 'patched'
+
+        with pytest.raises(JsonPatchConflict):
+            patched.patch([{'op': 'replace', 'path': '/non_exist_name', 'value': None}])
+        assert getattr(patched, 'name') == 'patched'
+
+
+def test_update(app):
+    """Test BlockSchema.update()."""
+    with app.app_context():
+        created_community = Community.create_community(**community_metadata)
+        block_schema = BlockSchema.create_block_schema(created_community.id, 'abc')
+        block_schema_id = block_schema.id
+        db.session.commit()
+
+    with app.app_context():
+        retrieved = BlockSchema.get_block_schema(block_schema_id)
+        retrieved.update({'name': 'updated'})
+        db.session.commit()
+
+    with app.app_context():
+        updated = BlockSchema.get_block_schema(block_schema_id)
+        assert block_schema_id == updated.id
+        assert getattr(updated, 'name') == 'updated'
+
+        with pytest.raises(InvalidBlockSchemaError):
+            updated.update({'name': None})
+        assert getattr(updated, 'name') == 'updated'

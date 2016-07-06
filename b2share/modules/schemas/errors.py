@@ -82,6 +82,42 @@ class BlockSchemaVersionIsReleased(B2ShareSchemasError):
     """Exception raised while trying to modify a released block schema."""
     pass
 
+
+#
+# BLOCK SCHEMA VERSION ERRORS
+#
+
+class InvalidSchemaVersionError(B2ShareSchemasError):
+    """Exception raised when trying to add a version with wrong id."""
+
+    MESSAGE = """Version number is invalid. Provided version number should
+                follow the last existing version number, which currently
+                is {0}."""
+
+    def __init__(self, last_version):
+        """Constructor."""
+        self.last_version = last_version
+        """Error message."""
+        super(InvalidSchemaVersionError, self).__init__(
+            self.MESSAGE.format(last_version)
+        )
+
+
+class SchemaVersionExistsError(B2ShareSchemasError):
+    """Exception raised when trying to add an existing version."""
+
+    MESSAGE = """Version number already exists. Provided version number should
+                follow the last existing version number, which currently
+                is {0}."""
+
+    def __init__(self, last_version):
+        """Constructor."""
+        self.last_version = last_version
+        """Error message."""
+        super(SchemaVersionExistsError, self).__init__(
+            self.MESSAGE.format(last_version)
+        )
+
 #
 # COMMUNITY SCHEMA VERSION ERRORS
 #

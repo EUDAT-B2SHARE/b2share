@@ -55,6 +55,16 @@ def block_schema_version_json_schema_link(block_schema_version, **kwargs):
 
 
 def block_schema_version_to_dict(block_schema_version):
+    """Serializes block schema version to dict.
+
+    Args:
+        block_schema_version
+            (:class:`b2share.modules.schemas.api:BlockSchemaVersion`):
+            block schema version that will be serialized.
+
+    Returns:
+        dict: serialized BlockSchemaVersion.
+    """
     return dict(
         id=block_schema_version.block_schema.id,
         version=block_schema_version.version,
@@ -64,6 +74,20 @@ def block_schema_version_to_dict(block_schema_version):
 
 def block_schema_version_to_json_serializer(block_schema_version, code=200,
                                             headers=None):
+    """Serializes block schema version to json response.
+
+    Args:
+        block_schema_version
+            (:class:`b2share.modules.schemas.api:BlockSchemaVersion`):
+            block schema version that will be serialized.
+
+        code: http response status.
+
+        headers: additional http response headers.
+
+    Returns:
+        Response: serialized response from BlockSchemaVersion.
+    """
     response = jsonify(block_schema_version_to_dict(block_schema_version))
     response.status_code = code
     if headers is not None:
@@ -80,7 +104,7 @@ def community_schema_self_link(community_schema, **kwargs):
 
         **kwargs: additional parameters given to flask.url_for.
 
-    :Returns:
+    Returns:
         str: link pointing to the given community schema.
     """  # noqa
     return url_for(
@@ -112,6 +136,71 @@ def community_schema_to_json_serializer(community_schema, code=200,
     response = jsonify(community_schema_to_dict(community_schema))
     response.status_code = code
     response.set_etag(str(community_schema.released.utcfromtimestamp(0)))
+    if headers is not None:
+        response.headers.extend(headers)
+    return response
+
+
+def block_schema_to_dict(schema):
+    """Serializes block schema to dict.
+
+    Args:
+        schema: block schema to serialize into dict.
+
+    Returns:
+        dict: dict from BlockSchema.
+     """
+    return dict(
+        schema_id=str(schema.id),
+        name=schema.name
+    )
+
+
+def block_schema_to_json_serializer(schema, code=200, headers=None):
+    """Serializes block schema to json response.
+
+    Args:
+        schema: block schema to serialize into json response.
+        code: http response code.
+        headers: additional http response headers.
+
+    Returns:
+        Response: response from list of BlockSchemas.
+     """
+    response = jsonify(block_schema_to_dict(schema))
+    response.status_code = code
+    if headers is not None:
+        response.headers.extend(headers)
+    return response
+
+
+def schemas_list_to_dict(schemas):
+    """Serializes schemas list to dict.
+
+    Args:
+        schemas: list of BlockSchemas.
+
+    Returns:
+        dict: dict with list of BlockSchema.
+     """
+    return dict(
+        schemas=list(map(block_schema_to_dict, schemas))
+    )
+
+
+def schemas_list_to_json_serializer(schemas, code=200, headers=None):
+    """Serializes schema list to json response.
+
+    Args:
+        schemas: list of block schemas.
+        code: http response code.
+        headers: additional http response headers.
+
+    Returns:
+        Response: response from list of BlockSchemas.
+     """
+    response = jsonify(schemas_list_to_dict(schemas))
+    response.status_code = code
     if headers is not None:
         response.headers.extend(headers)
     return response
