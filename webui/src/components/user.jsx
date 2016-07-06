@@ -101,7 +101,70 @@ export const UserProfile = React.createClass({
                         <p>Email: {user.get('email') || "-"}</p>
                         <p>Roles: {user.get('roles') || "-"}</p>
                         <p><Link to={"/records?q=owner_id:"+user.get('id')}>Own records</Link></p>
+                        <TokenList />
                     </div>
+                </div>
+            </div>
+        );
+    }
+});
+
+
+const TokenList = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+
+    getInitialState() {
+        return {
+            name: "",
+            token: null,
+            tokenList: [],
+        }
+    },
+
+    componentWillMount() {
+        serverCache.getUserTokens(tokenList => this.setState({tokenList}));
+    },
+
+    newToken(e) {
+        e.preventDefault();
+        serverCache.newUserToken(this.state.name, token => this.setState({token}))
+    },
+
+    renderToken(t) {
+        console.log(t, t.name);
+        return <div>{t.name}</div>;
+    },
+
+    render() {
+        return (
+            <div>
+                <div className="panel">
+                    Tokens:
+                    <ul>
+                        { this.state.tokenList.map(this.renderToken) }
+                    </ul>
+                </div>
+
+                {this.state.token ?
+                    <div className="panel"> Just created:
+                        <p>{this.state.token.name}</p>
+                        <p>{this.state.token.access_token}</p>
+                        <p className="alert alert-warning">Please copy the personal access token now. You won't see it again!</p>
+                    </div> : false
+                }
+
+                <div className="panel">
+                    Create new token:
+                    <form onSubmit={this.newToken}>
+                        <input className="form-control" style={{borderRadius:0}} type="text" name="name"
+                            value={this.state.name} onChange={e => this.setState({name: e.target.value})}
+                            autoComplete="off" placeholder="New token name..."/>
+                        <span className="input-group-btn">
+                            <button className="btn btn-primary" type="submit">
+                                <i className="fa fa-search"></i> New Token
+                            </button>
+                        </span>
+                    </form>
                 </div>
             </div>
         );
