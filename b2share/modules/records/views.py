@@ -39,7 +39,6 @@ from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.query import default_search_factory
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import verify_record_permission
-from b2share.modules.deposit.links import deposit_links_factory
 
 
 def create_blueprint(endpoints):
@@ -236,6 +235,9 @@ class B2shareRecordsListResource(RecordsListResource):
 
         :returns: The created record.
         """
+        # import deposit dependencies here in order to avoid recursive imports
+        from b2share.modules.deposit.links import deposit_links_factory
+
         if request.content_type not in self.loaders:
             abort(415)
 
