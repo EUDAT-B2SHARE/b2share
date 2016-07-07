@@ -35,6 +35,21 @@ from invenio_db import db
 
 def test_deposit(app, test_communities, create_user, login_user,
                  test_records_data):
+
+    def test_files(client, bucket_link, uploaded_files):
+        headers = {'Accept': '*/*'}
+        file_list_res = client.get(bucket_link,
+                                   headers=headers)
+        assert file_list_res.status_code == 200
+        file_list_data = json.loads(
+            file_list_res.get_data(as_text=True))
+        assert 'contents' in file_list_data
+        assert len(file_list_data['contents']) == len(uploaded_files)
+        for draft_file in file_list_data['contents']:
+            assert 'size' in draft_file and 'key' in draft_file
+            uploaded_content = uploaded_files[draft_file['key']]
+            assert draft_file['size'] == len(uploaded_content)
+
     with app.app_context():
         allowed_user = create_user('allowed')
         db.session.commit()
@@ -58,41 +73,31 @@ def test_deposit(app, test_communities, create_user, login_user,
                 draft_create_data = json.loads(
                     draft_create_res.get_data(as_text=True))
 
-                # Test file upload
-                headers = {'Accept': '*/*'}
-                object_url = '{0}/{1}'.format(
-                    draft_create_data['links']['files'], 'myfile1.dat')
-                file_content = b'contents1'
-                data = {'file': (BytesIO(file_content), 'file1.dat')}
-                file_put_res = client.put(object_url,
-                                          data=data,
-                                          headers=headers)
-                assert file_put_res.status_code == 200
-                file_put_data = json.loads(
-                    file_put_res.get_data(as_text=True))
-                assert file_put_data['size'] == len(file_content)
+                uploaded_files = {
+                    'myfile1.dat': b'contents1',
+                    'myfile2.dat': b'contents2'
+                }
 
-                # Test file upload
-                headers = {'Accept': '*/*'}
-                object_url = '{0}/{1}'.format(
-                    draft_create_data['links']['files'], 'myfile2.dat')
-                file_content = b'contents2'
-                data = {'file': (BytesIO(file_content), 'file2.dat')}
-                file_put_res = client.put(object_url,
-                                          data=data,
-                                          headers=headers)
-                assert file_put_res.status_code == 200
-                file_put_data = json.loads(
-                    file_put_res.get_data(as_text=True))
-                assert file_put_data['size'] == len(file_content)
+                for file_key, file_content in uploaded_files.items():
+                    # Test file upload
+                    headers = {'Accept': '*/*'}
+                    object_url = '{0}/{1}'.format(
+                        draft_create_data['links']['files'], file_key)
+                    file_put_res = client.put(
+                        object_url,
+                        input_stream=BytesIO(file_content),
+                        headers=headers
+                    )
+                    assert file_put_res.status_code == 200
+                    file_put_data = json.loads(
+                        file_put_res.get_data(as_text=True))
+                    assert 'created' in file_put_data
 
-                # Test file upload
-                headers = {'Accept': '*/*'}
-                file_list_res = client.get(draft_create_data['links']['files'],
-                                           headers=headers)
-                assert file_list_res.status_code == 200
-                file_list_data = json.loads(
-                    file_list_res.get_data(as_text=True))
+                # test uploaded files
+                test_files(client, draft_create_data['links']['files'],
+                           uploaded_files)
+
+                # Test file list
 
                 # test draft PATCH
                 headers = [('Content-Type', 'application/json-patch+json'),
@@ -160,3 +165,7 @@ def test_deposit(app, test_communities, create_user, login_user,
                     record_get_res.get_data(as_text=True))
 
                 # FIXME: test draft edition once we support it
+
+                # test that published record's files match too
+                test_files(client, record_get_data['links']['files'],
+                           uploaded_files)
