@@ -661,6 +661,15 @@ code {
 
 
 /*****************************************************************************/
+/* styling of user profile page */
+
+.access-token {
+  font-family: "Bitstream Vera Sans Mono", Consolas, Courier, monospace;
+  color: red;
+}
+
+
+/*****************************************************************************/
 /* styling of react-widgets */
 
 .rw-multiselect-taglist > li {
