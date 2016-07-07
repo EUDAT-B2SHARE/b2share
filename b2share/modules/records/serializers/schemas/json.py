@@ -44,6 +44,8 @@ class DraftSchemaJSONV1(Schema):
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
             del data['metadata']['_pid']
+        if '_oai' in data['metadata']:
+            del data['metadata']['_oai']
         return data
 
 
