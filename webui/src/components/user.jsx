@@ -91,17 +91,106 @@ export const UserProfile = React.createClass({
         if (!user || !user.get('name')) {
             return this.renderNoUser();
         }
+        const roles = user.get('roles');
         return (
             <div>
                 <h1>User Profile</h1>
 
                 <div className="container-fluid">
                     <div className="row">
-                        <p>Name: {user.get('name')}</p>
-                        <p>Email: {user.get('email') || "-"}</p>
-                        <p>Roles: {user.get('roles') || "-"}</p>
-                        <p><Link to={"/records?q=owner_id:"+user.get('id')}>Own records</Link></p>
+                        <p><span style={{fontWeight:'bold'}}>Name:</span> {user.get('name')}</p>
+                        <p><span style={{fontWeight:'bold'}}>Email:</span> {user.get('email') || "-"}</p>
                     </div>
+                    <div className="row">
+                        <h3>Roles</h3>
+                        {roles && roles.count() ?
+                            roles.map(r => <li>{r}</li>)
+                            : <p>You have no assigned roles</p>
+                        }
+                    </div>
+                    <div className="row">
+                        <h3>Own records</h3>
+                        <p><Link to={"/records?q=owners:"+user.get('id')}>
+                            Please click here to view your published records
+                            </Link></p>
+                    </div>
+                    <div className="row">
+                        <h3>API Tokens</h3>
+                        <TokenList />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+});
+
+
+const TokenList = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+
+    getInitialState() {
+        return {
+            name: "",
+            token: null,
+            tokenList: [],
+        }
+    },
+
+    componentWillMount() {
+        serverCache.getUserTokens(tokenList => this.setState({tokenList}));
+    },
+
+    newToken(e) {
+        e.preventDefault();
+        serverCache.newUserToken(this.state.name, token => {
+            const tokenList = this.state.tokenList;
+            tokenList.push(token);
+            this.setState({token, tokenList})
+        });
+    },
+
+    renderToken(t) {
+        console.log(t);
+        return <li className="list-group-item" key={t.id}>{t.name}</li>;
+    },
+
+    render() {
+        return (
+            <div>
+                <div>
+                    <p>Active tokens:</p>
+                    <ul className="list-group">
+                        { this.state.tokenList.map(this.renderToken) }
+                    </ul>
+                </div>
+
+                {this.state.token ?
+                    <div className="alert alert-success">
+                        <h4>A new access token has just been created:</h4>
+                        <dl className="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd>{this.state.token.name}</dd>
+                            <dt>Access token</dt>
+                            <dd className="access-token">{this.state.token.access_token}</dd>
+                        </dl>
+                        <p className="alert alert-warning">Please copy the personal access token now. You won't see it again!</p>
+                    </div> : false
+                }
+
+                <div>
+                    <p className="control-label">Create new token:</p>
+                    <form className="form-inline" onSubmit={this.newToken}>
+                        <div className="form-group">
+                            <input className="form-control" style={{borderRadius:0}} type="text" name="name"
+                                value={this.state.name} onChange={e => this.setState({name: e.target.value})}
+                                autoComplete="off" placeholder="New token name..."/>
+                        </div>
+                        <div className="form-group">
+                                <button className="btn btn-primary" type="submit">
+                                    <i className="fa fa-search"></i> New Token
+                                </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         );

@@ -20,10 +20,19 @@
 
 from __future__ import absolute_import
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, abort, request
 from flask_login import current_user
+from flask_security.decorators import auth_required
 
+from invenio_db import db
 from invenio_rest import ContentNegotiatedMethodView
+from invenio_oauth2server import current_oauth2server
+from invenio_oauth2server.models import Token
+
+from .serializers import (user_to_json_serializer,
+                          token_to_json_serializer,
+                          token_list_to_json_serializer)
+
 
 blueprint = Blueprint(
     'b2share_users',
@@ -32,38 +41,99 @@ blueprint = Blueprint(
 )
 
 
-def user_to_json_serializer(user, code=200, headers=None):
-    """Build a json flask response using the given data.
-    :Returns: A flask response with json data.
-    :Returns Type: :py:class:`flask.Response`
-    """
-    data = {}
-    if user.is_authenticated:
-        data = {
-            'id': user.id,
-            'name': user.email,
-            'email': user.email,
-            'roles': user.roles
-        }
-
-    response = jsonify(data)
-    response.status_code = code
-    if headers is not None:
-        response.headers.extend(headers)
-    return response
-
-
 class CurrentUser(ContentNegotiatedMethodView):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(CurrentUser, self).__init__(*args, **kwargs)
-        self.serializers = {
-            'application/json': user_to_json_serializer,
-        }
+        super(CurrentUser, self).__init__(
+            default_method_media_type={
+                'GET': 'application/json',
+                'POST': 'application/json',
+            },
+            default_media_type='application/json',
+            *args, **kwargs)
 
     def get(self, **kwargs):
-        return current_user
+        return user_to_json_serializer(current_user)
+
+
+def _get_token(token_id, is_personal=True, is_internal=False):
+    if not token_id:
+        abort(400)
+    token = Token.query.filter_by(
+        id=token_id,
+        user_id=current_user.get_id(),
+        is_personal=is_personal,
+        is_internal=is_internal,
+    ).first()
+    if token is None:
+        abort(404)
+    return token
+
+
+class UserTokenList(ContentNegotiatedMethodView):
+
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super(UserTokenList, self).__init__(
+            default_method_media_type={
+                'GET': 'application/json',
+                'POST': 'application/json',
+            },
+            default_media_type='application/json',
+            *args, **kwargs)
+
+    @auth_required('token', 'session')
+    def get(self, **kwargs):
+        token_list = Token.query.filter_by(
+            user_id=current_user.get_id(),
+            is_personal=True,
+            is_internal=False,
+        ).all()
+        # import ipdb; ipdb.set_trace()
+        return token_list_to_json_serializer(token_list)
+
+    @auth_required('token', 'session')
+    def post(self, **kwargs):
+        token_name = request.get_json().get('token_name')
+        if not token_name:
+            abort(400)
+
+        scopes = current_oauth2server.scope_choices()
+        scopes_str = " ".join([s[0] for s in scopes])
+        token = Token.create_personal(
+            token_name, current_user.get_id(), scopes=scopes_str
+        )
+        db.session.commit()
+        return token_to_json_serializer(token, show_access_token=True)
+
+
+class UserToken(ContentNegotiatedMethodView):
+
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super(UserToken, self).__init__(
+            default_method_media_type={
+                'GET': 'application/json',
+                'POST': 'application/json',
+            },
+            default_media_type='application/json',
+            *args, **kwargs)
+
+
+    @auth_required('token', 'session')
+    def get(self, token_id, **kwargs):
+        token = _get_token(token_id)
+        return token_to_json_serializer(token)
+
+    @auth_required('token', 'session')
+    def delete(self, token_id, **kwargs):
+        token = _get_token(token_id)
+        db.session.delete(token)
+        db.session.commit()
+        return {} # ok
 
 
 blueprint.add_url_rule('/current', view_func=CurrentUser.as_view('current_user'))
+blueprint.add_url_rule('/current/tokens', view_func=UserTokenList.as_view('user_token_list'))
+blueprint.add_url_rule('/current/tokens/<token_id>', view_func=UserToken.as_view('user_token_item'))
