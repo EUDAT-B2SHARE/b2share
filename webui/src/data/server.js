@@ -558,9 +558,10 @@ class ServerCache {
     }
 
     b2dropCopyFile(record, b2dropPath, fileName, progressFn) {
-        const fileBucketUrl = this.store.getIn(['recordCache', record.get('id'), 'links', 'fileBucket']);
+        let fileBucketUrl = record.getIn(['links', 'files']) ||
+            this.store.getIn(['recordCache', record.get('id'), 'links', 'files']);
         if (!fileBucketUrl) {
-            console.error("accessing fileBucketUrl b2drop putter before record fetch", recordID);
+            console.error("cannot find fileBucketUrl", record.toJS());
             return null;
         }
         const successFn = x => {

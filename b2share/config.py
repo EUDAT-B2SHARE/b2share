@@ -42,8 +42,6 @@ BABEL_DEFAULT_TIMEZONE = 'Europe/Zurich'
 I18N_LANGUAGES = [
 ]
 
-ACCOUNTS_REGISTER_BLUEPRINT = True
-
 # FIXME disable authentication by default as B2Access integration is not yet
 # done.
 B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED = True

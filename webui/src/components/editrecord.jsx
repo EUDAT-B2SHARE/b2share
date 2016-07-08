@@ -199,6 +199,7 @@ const EditRecord = React.createClass({
         }
         const files = this.props.record.get('files');
         if (files instanceof Error) {
+            console.log("No files in record")
             return <Err err={files}/>;
         }
         return (

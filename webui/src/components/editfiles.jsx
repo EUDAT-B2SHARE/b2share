@@ -59,6 +59,7 @@ export const DropZone = React.createClass({
     },
 });
 
+
 export const B2DropZone = React.createClass({
     propTypes: {
         onFiles: PT.func.isRequired,
@@ -169,8 +170,9 @@ export const B2DropZone = React.createClass({
     },
 
     renderFile: function(file, index) {
-        const iconClass = !file.isdir ? "glyphicon-file" :
-                            file.children == undefined ? "glyphicon-folder-close" : "glyphicon-folder-open";
+        const iconClass = !file.isdir ? "glyphicon-file"
+                            : file.children == undefined ? "glyphicon-folder-close"
+                            : "glyphicon-folder-open";
         const size = file.size ? humanSize(file.size) : "";
         const date = moment(file.date).format('ll');
         const indentStyle = {paddingLeft: (3*file.indent)+'em'};
@@ -205,7 +207,7 @@ export const B2DropZone = React.createClass({
                 </ol>
                 <div style={{textAlign:'center', margin:'2em'}}>
                     <button className="btn btn-primary" onClick={this.handleSelectFiles}>
-                        Select Files
+                        Copy selected files to B2SHARE
                     </button>
                     {" "}
                     <button className="btn btn-default" onClick={e => this.props.close()}>
@@ -245,6 +247,7 @@ export const B2DropZone = React.createClass({
         );
     },
 });
+
 
 export const Files = React.createClass({
     propTypes: {
