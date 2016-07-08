@@ -1,5 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
+import moment from 'moment';
 import { serverCache, Error } from '../data/server';
 import { pairs, humanSize } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
@@ -167,20 +168,22 @@ export const Files = React.createClass({
 
     renderFile: function(f, i) {
         return (
-            <div key={f.uuid || (f.name+i)} className="file">
+            <div key={f.name || f.key} className="file">
                 <div className="row" style={{}}>
                     <div className="col-sm-12">
                         <dl className="dl-horizontal">
                             <dt>Name</dt>
                             <div>
-                                <dd><a href={f.url}>{f.name}</a></dd>
+                                <dd><a href={f.url}>{f.name || f.key}</a></dd>
                                 <button type="button" className="btn btn-sm remove" style={{float:'right'}}
                                     onClick={()=>{f.remove=true; this.forceUpdate()}}> <i className="glyphicon glyphicon-remove"/>
                                 </button>
                             </div>
                             { f.PID ? <div><dt>PID</dt><dd>{f.PID}</dd></div> : false }
+                            { f.mimetype ? <div><dt>Media Type</dt><dd>{f.mimetype}</dd></div> : false }
                             <dt>Size</dt><dd>{humanSize(f.size)}</dd>
                             { f.checksum ? <div><dt>Checksum</dt><dd>{f.checksum}</dd></div> : false }
+                            { f.updated ? <div><dt>Updated</dt><dd>{moment(f.updated).format('ll')}</dd></div> : false }
                         </dl>
                     </div>
                 </div>

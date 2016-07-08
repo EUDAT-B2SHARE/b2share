@@ -339,6 +339,20 @@ a.navbar-brand {
 /*****************************************************************************/
 /* dashboard last records*/
 
+.form-group-lg .form-control {
+    height: 46px;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.3333333;
+    border-radius: 6px;
+}
+.form-group-lg button {
+    height: 46px;
+    font-size: 18px;
+    line-height: 1.3333333;
+    border-radius: 6px;
+}
+
 .records a:hover .name {
   text-decoration: underline;
 }

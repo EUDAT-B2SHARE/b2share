@@ -486,9 +486,20 @@ const EditRecord = React.createClass({
         const original = this.props.record.get('metadata').toJS();
         const updated = this.state.record.toJS();
         const patch = compare(original, updated);
-        serverCache.patchRecord(this.props.record.get('id'), patch,
-            record => { browserHistory.push(`/records/${record.id}`); }
-        );
+        const onUpdate = this.getPublishedState() ?
+            (record) => browserHistory.push(`/records/${record.id}`) :
+            (record) => serverCache.getDraft(record.id);
+        serverCache.patchRecord(this.props.record.get('id'), patch, onUpdate);
+    },
+
+    getPublishedState() {
+        return this.state.record.getIn(['metadata', 'publication_state']) == 'published';
+    },
+
+    setPublishedState(e) {
+        const state = e.target.checked ? 'published' : 'draft';
+        const record = this.state.record.setIn(['metadata', 'publication_state'], state);
+        this.setState({record});
     },
 
     render() {
@@ -526,9 +537,12 @@ const EditRecord = React.createClass({
                         {pairs(this.state.errors).map( ([id, msg]) =>
                             <div className="col-sm-offset-3 col-sm-6 alert alert-warning" key={id}>{msg} </div>) }
                         <div className="col-sm-offset-3 col-sm-6">
-                            <label style={{fontSize:18, fontWeight:'normal'}}><input type="checkbox"/> Submit draft for publication</label>
+                            <label style={{fontSize:18, fontWeight:'normal'}}>
+                                <input type="checkbox" value={this.getPublishedState} onChange={this.setPublishedState}/>
+                                {" "}Submit draft for publication
+                            </label>
                             <p>When the draft is published it will be assigned a PID, making it publicly citable.
-                                But a published record can no longer be modified by its owner. </p>
+                                But a published record's files can no longer be modified by its owner. </p>
                             <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateRecord}>
                                 { this.state.publish ? "Update and Publish": "Update Draft"}</button>
                         </div>
