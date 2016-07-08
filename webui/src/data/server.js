@@ -299,13 +299,7 @@ class ServerCache {
                 console.error("accessing fileBucketUrl before draft fetch", draftID);
                 return null;
             }
-            const placeDataFn = (data, linkHeader) => {
-                data.forEach(jsonfile => {
-                    const m = jsonfile.url.match(/.*\/(.*)/);
-                    jsonfile.name = (m && m[1]) ? m[1] : jsonfile.url;
-                });
-                this.store.setIn(['draftCache', draftID, 'files'], fromJS(data));
-            };
+            const placeDataFn = data => this.store.setIn(['draftCache', draftID, 'files'], fromJS(data.contents));
             const errorFn = (xhr) => this.store.setIn(['draftCache', draftID, 'files'], new Error(xhr));
             return new Getter(fileBucketUrl, null, placeDataFn, errorFn);
         });
@@ -397,7 +391,7 @@ class ServerCache {
         if (!c) {
             c = communities.valueSeq().find(x => x.get('name') == communityIDorName);
         }
-        return c ? c : new Error({status:404, statusText:'The community information cannot be found'});
+        return c;
     }
 
     getRecord(id) {

@@ -31,6 +31,13 @@ export const RecordRoute = React.createClass({
     }
 });
 
+
+const excludeFields = {
+    'title': true, 'description': true, 'keywords': true, 'community': true,
+    'creators': true, 'publication_state': true,
+};
+
+
 const Record = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
@@ -167,14 +174,10 @@ const Record = React.createClass({
 
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
 
-        const except = {'title':true, 'description':true, 'keywords':true, 'community':true, 'creator':true};
-
-        const majorFields = majors.entrySeq().map(([id, f]) => except[id] ? false : this.renderField(schemaID, id, f, schema));
-        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f, schema));
-
-        if (majorFields.every(x=>!x) && minorFields.every(x=>!x)) {
-            // return false;
-        }
+        const majorFields = majors.entrySeq().map(
+            ([id, f]) => excludeFields[id] ? false : this.renderField(schemaID, id, f, schema));
+        const minorFields = minors.entrySeq().map(
+            ([id, f]) => this.renderField(schemaID, id, f, schema));
 
         const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em'} : {};
         return (
@@ -208,9 +211,12 @@ const Record = React.createClass({
         const renderFile = file => {
             return (
                 <dl className="dl-horizontal file" key={file.get('uuid')} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                    <dt>Name</dt><dd><a href={file.get('url')}>{file.get('name')}</a></dd>
+                    <dt>Name</dt><dd><a href={file.get('url')}>{file.get('key')}</a></dd>
                     <dt>PID</dt><dd>{file.get('PID') || "-"}</dd>
+                    <dt>Media Type</dt><dd>{file.get('mimetype') || "-"}</dd>
                     <dt>Size</dt><dd>{humanSize(file.get('size'))}</dd>
+                    <dt>Checksum</dt><dd>{file.get('checksum') || "-"}</dd>
+                    <dt>Updated</dt><dd>{moment(file.get('updated')).format('ll')}</dd>
                     <dt>Checksum</dt><dd>{file.get('checksum')}</dd>
                 </dl>
             );

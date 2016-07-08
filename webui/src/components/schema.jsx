@@ -6,8 +6,7 @@ import { Wait, Err } from './waiting.jsx';
 
 const except = {'$schema':true, 'community_specific':true, 'owner':true,
                 '_internal':true, '_deposit':true, '_files':true,
-                '_oai':true, '_pid':true, };
-
+                '_pid':true, '_oai':true, 'publication_state': true, };
 
 export function getSchemaOrderedMajorAndMinorFields(schema) {
     if (!schema) {

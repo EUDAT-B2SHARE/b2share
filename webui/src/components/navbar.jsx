@@ -1,8 +1,9 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link, browserHistory } from 'react-router'
+import { Link } from 'react-router'
 import { serverCache, Error, NOTIFICATION_DISPLAY_TIME } from '../data/server';
 import { ListAnimate, HeightAnimate } from './animate.jsx';
 import { NavbarUser } from './user.jsx';
+import { searchRecord } from './search.jsx';
 
 
 export const Navbar = React.createClass({
@@ -44,9 +45,10 @@ const NavbarMenu = React.createClass({
     // not a pure render, depends on the URL
     render() {
         const cname = this.props.collapse ? "collapse":"";
+        const hideSearchBar = this.props.location.pathname == '/records' || this.props.location.pathname == '/records/';
         return (
             <div className={cname + " navbar-collapse"} id="header-navbar-collapse">
-                <NavbarSearch location={this.props.location}/>
+                <NavbarSearch location={this.props.location} visibility={!hideSearchBar}/>
 
                 <ul className="nav navbar-nav text-uppercase">
                     <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
@@ -71,7 +73,11 @@ const NavbarSearch = React.createClass({
 
     search(event) {
         event.preventDefault();
-        browserHistory.push(`/records/?q=${this.state.q}`);
+        searchRecord(this.state);
+    },
+
+    searchHelp(event) {
+        event.preventDefault();
     },
 
     componentWillMount() {
@@ -97,11 +103,12 @@ const NavbarSearch = React.createClass({
     },
 
     render() {
+        const visibility = this.props.visibility ? "visible" : "hidden";
         return (
-            <form onSubmit={this.search}>
+            <form onSubmit={this.search} style={{visibility}}>
                 <div className="nav-search">
                     <span className="input-group-btn">
-                        <button onClick={this.search} className="btn btn-default" type="button">
+                        <button onClick={this.searchHelp} className="btn btn-default" type="button">
                             <i className="fa fa-question-circle"></i>
                         </button>
                     </span>
