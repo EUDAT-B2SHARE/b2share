@@ -217,7 +217,6 @@ const Record = React.createClass({
                     <dt>Size</dt><dd>{humanSize(file.get('size'))}</dd>
                     <dt>Checksum</dt><dd>{file.get('checksum') || "-"}</dd>
                     <dt>Updated</dt><dd>{moment(file.get('updated')).format('ll')}</dd>
-                    <dt>Checksum</dt><dd>{file.get('checksum')}</dd>
                 </dl>
             );
         };

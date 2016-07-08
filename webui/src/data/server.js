@@ -24,6 +24,10 @@ const apiUrls = {
     user()                            { return `${urlRoot}/api/users/current` },
     userTokens()                      { return `${urlRoot}/api/users/current/tokens` },
 
+    remotes(remote)                   { return `${urlRoot}/api/remotes` + (remote ? `/${remote}` : ``) },
+    remotesJob()                      { return `${urlRoot}/api/remotes/jobs` },
+    b2drop(path_)                     { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
+
     languages()                       { return `${urlRoot}/languages.json` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
@@ -534,6 +538,47 @@ class ServerCache {
 
     patchRecord(id, patch, successFn) {
         this.posters.draft.get(id).patch(patch, successFn);
+    }
+
+    b2dropInit(username, password, successFn, errorFn) {
+        ajaxPut({
+            url: apiUrls.b2drop(),
+            params: { username, password },
+            successFn,
+            errorFn
+        });
+    }
+
+    b2dropList(path, successFn, errorFn) {
+        ajaxGet({
+            url: apiUrls.b2drop(path),
+            successFn,
+            errorFn,
+        });
+    }
+
+    b2dropCopyFile(record, b2dropPath, fileName, progressFn) {
+        let fileBucketUrl = record.getIn(['links', 'files']) ||
+            this.store.getIn(['recordCache', record.get('id'), 'links', 'files']);
+        if (!fileBucketUrl) {
+            console.error("cannot find fileBucketUrl", record.toJS());
+            return null;
+        }
+        const successFn = x => {
+            progressFn('done', x);
+            this.getRecordFiles(record.get('id'), true); // force fetch files
+        }
+        const errorFn = x => progressFn('error', x);
+        progressFn('uploading', 1);
+        ajaxPost({
+            url: apiUrls.remotesJob(),
+            params: {
+                source_remote_url: apiUrls.b2drop(b2dropPath),
+                destination_file_url: fileBucketUrl + '/' + fileName,
+            },
+            successFn,
+            errorFn,
+        });
     }
 
     notify(level, text) {
