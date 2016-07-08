@@ -4,6 +4,10 @@ import { Link } from 'react-router'
 import { serverCache, Error } from '../data/server';
 import { Wait, Err } from './waiting.jsx';
 
+const except = {'$schema':true, 'community_specific':true, 'owner':true,
+                '_internal':true, '_deposit':true, '_files':true,
+                '_oai':true, '_pid':true, };
+
 
 export function getSchemaOrderedMajorAndMinorFields(schema) {
     if (!schema) {
@@ -18,8 +22,6 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get('id')]) : []);
     let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get('id')]) : []);
 
-    const except = {'$schema':true, 'community_specific':true, 'owner':true,
-                    '_internal':true, '_deposit':true, '_files':true, '_pid':true, };
     properties.entrySeq().forEach(([id, def]) => {
         if (majors.has(id)) {
             majors = majors.set(id, def);

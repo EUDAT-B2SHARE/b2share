@@ -3,7 +3,7 @@
     "community": "$COMMUNITY_ID[CLARIN]",
     "open_access": true,
     "description": "Description of verbal paradigms in Bengali. The description is written in Czech.",
-    "creator": ["Daniel Zeman"],
+    "creators": ["Daniel Zeman"],
     "resource_type": ["Text"],
     "contact_email": "x@example.com",
     "community_specific": {

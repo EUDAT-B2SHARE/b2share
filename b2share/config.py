@@ -32,6 +32,10 @@ from invenio_records_rest.utils import deny_all, allow_all
 from b2share.modules.oauthclient import b2access
 from invenio_search import RecordsSearch
 
+
+SUPPORT_EMAIL = None # must be setup in the local instances
+
+
 # Default language and timezone
 BABEL_DEFAULT_LANGUAGE = 'en'
 BABEL_DEFAULT_TIMEZONE = 'Europe/Zurich'
@@ -166,3 +170,23 @@ OAUTHCLIENT_REMOTE_APPS = dict(
 
 # Let Invenio Accounts register Flask Security
 ACCOUNTS_REGISTER_BLUEPRINT = True
+
+
+# OAI-PMH
+OAISERVER_RECORD_INDEX = 'records'
+OAISERVER_ID_PREFIX = 'oai:b2share.eudat.eu:b2share_record/'
+OAISERVER_PAGE_SIZE = 25
+OAISERVER_ADMIN_EMAILS = [SUPPORT_EMAIL]
+OAISERVER_REGISTER_RECORD_SIGNALS = False
+OAISERVER_METADATA_FORMATS = {
+    'oai_dc': {
+        'namespace': 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+        'schema': 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
+        'serializer': 'b2share.modules.records.serializers.oaipmh_oai_dc',
+    },
+    'marcxml': {
+        'namespace': 'http://www.loc.gov/MARC21/slim',
+        'schema': 'http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd',
+        'serializer': 'b2share.modules.records.serializers.oaipmh_marc21_v1',
+    },
+}

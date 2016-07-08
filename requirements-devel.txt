@@ -23,3 +23,4 @@
 -e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore
 -e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
 -e git+git://github.com/inveniosoftware/invenio-search.git#egg=invenio-search
+-e git+git://github.com/inveniosoftware/invenio-oaiserver.git#egg=invenio-oaiserver

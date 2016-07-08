@@ -3,7 +3,7 @@
     "community": "$COMMUNITY_ID[RDA]",
     "open_access": true,
     "description": "A document describing the high-level structures of the Research Data Alliance Foundation. This document is separate from the regular governance document, which describes procedures and processes.",
-    "creator": ["Research Data Alliance Council"],
+    "creators": ["Research Data Alliance Council"],
     "resource_type": ["Text"],
     "contact_email": "x@rd-alliance.org",
     "keywords": ["Research Data Alliance", "RDA", "Governance", "Foundation", "RDA Policy"],
