@@ -40,6 +40,27 @@ def register_triggers(app):
     before_record_update.connect(check_record_immutable_fields)
 
 
+# def on_create_record(record):
+#     record_with_pid = assign_pid_and_commit(record)
+#     index_record(record_with_pid)
+
+
+# def assign_pid_and_commit(record):
+#     from .handle import register_pid
+#     from invenio_db import db
+#     from sqlalchemy.orm.attributes import flag_modified
+
+#     with db.session.begin_nested():
+#         record['PID'] = register_pid(record, record.model.id)
+#         record.validate()
+
+#         record.model.json = dict(record)
+#         flag_modified(record.model, 'json')
+#         db.session.merge(record.model)
+
+#     return record
+
+
 def index_record(record):
     """Index the given record."""
     metadata = record.dumps()
@@ -66,4 +87,8 @@ def check_record_immutable_fields(record):
     if previous_md.get('community') != record.get('community'):
         raise AlteredRecordError(errors=[
             FieldError('community', 'The community field cannot be changed.')
+        ])
+    if previous_md.get('PID') != record.get('PID'):
+        raise AlteredRecordError(errors=[
+            FieldError('PID', 'The PID field cannot be changed.')
         ])
