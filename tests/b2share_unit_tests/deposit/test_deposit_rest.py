@@ -114,11 +114,12 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
                 PublicationStates.draft.name,
                 owners=[user.id],
             )
-
+    with app.app_context():
+        deposit = Deposit.get_record(test_deposits[0])
+        with app.test_client() as client:
             expected_metadata['publication_state'] = \
                 PublicationStates.submitted.name
             assert expected_metadata == draft_patch_data['metadata']
-            deposit = Deposit.get_record(test_deposits[0])
             assert (deposit['publication_state']
                     == PublicationStates.submitted.name)
             subtest_self_link(draft_patch_data,
@@ -134,9 +135,9 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
 def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                          login_user):
     """Test record draft publication with HTTP PATCH."""
+    record_data = test_records_data[0]
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
-        record_data = test_records_data[0]
         with app.test_client() as client:
             user = test_users['myuser']
             login_user(user, client)
@@ -159,7 +160,10 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                 PublicationStates.published.name,
                 owners=[user.id],
             )
-            deposit = Deposit.get_record(test_deposits[0])
+
+    with app.app_context():
+        deposit = Deposit.get_record(test_deposits[0])
+        with app.test_client() as client:
             assert expected_metadata == draft_patch_data['metadata']
             assert (deposit['publication_state']
                     == PublicationStates.published.name)
