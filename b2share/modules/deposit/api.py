@@ -27,7 +27,9 @@ import uuid
 from enum import Enum
 
 from flask import url_for
+from invenio_db import db
 from invenio_deposit.api import Deposit as DepositRecord
+from invenio_records_files.models import RecordsBuckets
 from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
@@ -100,7 +102,15 @@ class Deposit(DepositRecord):
             community_id=community_id,
             schema_version_nb=schema.version,
             _external=True))
-        return super(Deposit, cls).create(data, id_=id_)
+        deposit = super(Deposit, cls).create(data, id_=id_)
+
+        # create file bucket
+        bucket = deposit._create_bucket()
+        db.session.add(bucket)
+        db.session.add(RecordsBuckets(
+            record_id=deposit.id, bucket_id=bucket.id
+        ))
+        return deposit
 
     def _prepare_edit(self, record):
         data = super(Deposit, self)._prepare_edit(record)
