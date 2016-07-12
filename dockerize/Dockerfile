@@ -28,7 +28,10 @@ RUN npm install --unsafe-perm && \
     node_modules/webpack/bin/webpack.js -p
 
 WORKDIR /eudat/b2share
-RUN pip install -r requirements.txt
+RUN pip install requirements-builder
+RUN requirements-builder --level=min setup.py > lowest-requirements.txt
+RUN pip install -r lowest-requirements.txt
+RUN pip install -e .
 
 WORKDIR /eudat/b2share/demo
 RUN pip install -e .
