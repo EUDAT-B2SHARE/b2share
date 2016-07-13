@@ -192,6 +192,7 @@ OAISERVER_METADATA_FORMATS = {
 }
 
 
+
 CFG_HANDLE_SYSTEM_BASEURL = 'http://hdl.handle.net'
 CFG_FAIL_ON_MISSING_PID = False
 
@@ -200,3 +201,10 @@ CFG_FAIL_ON_MISSING_PID = False
 # CFG_EPIC_PASSWORD = ''
 # CFG_EPIC_BASEURL = 'https://epic4.storage.surfsara.nl/v2_A/handles/'
 # CFG_EPIC_PREFIX = 0000
+
+
+B2DROP_SERVER = {
+    'host': 'b2drop.fz-juelich.de',
+    'protocol': 'https',
+    'path': '/remote.php/webdav/',
+}
