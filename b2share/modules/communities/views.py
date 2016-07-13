@@ -28,7 +28,8 @@ from __future__ import absolute_import
 
 from functools import wraps
 
-from flask import Blueprint, abort, current_app, make_response, request, jsonify
+from flask import Blueprint, abort, current_app, make_response, request, \
+                  jsonify, url_for
 from invenio_db import db
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_rest.decorators import require_content_types
@@ -103,6 +104,19 @@ def need_community_permission(permission_factory):
     return need_community_permission_builder
 
 
+def _generic_search_result(item_array):
+    self_link = url_for('b2share_communities.communities_list', _external=True)
+    return {
+        'hits': {
+            'hits':item_array,
+            'total':len(item_array)
+        },
+        'links':{
+            'self': self_link,
+        }
+    }
+
+
 class CommunityListResource(ContentNegotiatedMethodView):
 
     view_name = 'communities_list'
@@ -132,9 +146,9 @@ class CommunityListResource(ContentNegotiatedMethodView):
         start = request.args.get('start') or 0
         stop = request.args.get('stop') or 100
         community_list = Community.get_all(start, stop)
-        response = jsonify({
-            'communities': [community_to_dict(c) for c in community_list]
-        })
+        community_dict_list = [community_to_dict(c) for c in community_list]
+        response_dict = _generic_search_result(community_dict_list)
+        response = jsonify(response_dict)
         # TODO: set etag
         return response
 
