@@ -50,7 +50,17 @@ def record_links_factory(pid):
         # FIXME: index the record bucket with the bucket so that we can
         # add the "files" link
         if record.files is not None:
-            links['files'] = url_for('invenio_files_rest.bucket_api',
-                                     bucket_id=record.files.bucket,
-                                     _external=True)
+            links['files'] = url_for(
+                'invenio_files_rest.bucket_api',
+                bucket_id=record.files.bucket,
+                _external=True
+            )
+    if hasattr(g, 'record_hit'):
+        metadata = g.record_hit['_source']
+        if 'files_bucket_id' in metadata['_internal']:
+            links['files'] = url_for(
+                'invenio_files_rest.bucket_api',
+                bucket_id=metadata['_internal']['files_bucket_id'],
+                _external=True
+            )
     return links

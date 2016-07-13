@@ -23,7 +23,6 @@ notifications:
 services:
   - mysql
   - redis
-  - elasticsearch
 
 language: python
 
@@ -31,9 +30,9 @@ cache:
   - pip
 
 env:
-  - REQUIREMENTS=lowest REXTRAS=docs
-  - REQUIREMENTS=release REXTRAS=docs
-  - REQUIREMENTS=devel REXTRAS=docs
+  - REQUIREMENTS=lowest REXTRAS=docs ES_VERSION=2.3.3
+  - REQUIREMENTS=release REXTRAS=docs ES_VERSION=2.3.3
+  - REQUIREMENTS=devel REXTRAS=docs ES_VERSION=2.3.3
 
 python:
   - "3.3"
@@ -43,6 +42,11 @@ python:
 sudo: false
 
 before_install:
+  # Install elasticsearch
+  - mkdir /tmp/elasticsearch
+  - wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  # Start elasticsearch
+  - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp
   - "travis_retry pip install --upgrade pip setuptools py"
   - "travis_retry pip install twine wheel coveralls requirements-builder"
   - "requirements-builder --level=min setup.py > .travis-lowest-requirements.txt"

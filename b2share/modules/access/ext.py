@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
-# Copyright (C) 2015 University of Tuebingen.
+# Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,20 +21,12 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2share records extension"""
+"""B2share access module extension."""
 
-from __future__ import absolute_import, print_function
-
-from invenio_records_rest.utils import PIDConverter
-from invenio_indexer.signals import before_record_index
-
-from .triggers import register_triggers
-from .errors import register_error_handlers
-from .views import create_blueprint
-from .indexer import indexer_receiver
+from .loader import register_permissions_loader
 
 
-class B2ShareRecords(object):
+class B2ShareAccess(object):
     """B2Share Records extension."""
 
     def __init__(self, app=None):
@@ -46,15 +37,8 @@ class B2ShareRecords(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
-        app.extensions['b2share-records'] = self
-        register_triggers(app)
-        register_error_handlers(app)
-        # Register records API blueprints
-        app.register_blueprint(
-            create_blueprint(app.config['B2SHARE_RECORDS_REST_ENDPOINTS'])
-        )
-        before_record_index.connect(indexer_receiver, sender=app)
-        app.url_map.converters['pid'] = PIDConverter
+        app.extensions['b2share-access'] = self
+        register_permissions_loader(app)
 
     def init_config(self, app):
         """Initialize configuration."""

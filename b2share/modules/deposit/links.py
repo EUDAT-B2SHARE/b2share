@@ -52,6 +52,6 @@ def deposit_links_factory(pid):
         # add the "files" link
         if record.files is not None:
             links['files'] = url_for('invenio_files_rest.bucket_api',
-                                     bucket_id=record.files.bucket,
+                                     bucket_id=record.files.bucket.id,
                                      _external=True)
     return links

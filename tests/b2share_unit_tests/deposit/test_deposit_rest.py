@@ -29,7 +29,7 @@ import pytest
 from flask import url_for
 from b2share.modules.deposit.api import PublicationStates, Deposit
 from copy import deepcopy
-from b2share_unit_tests.helpers import subtest_self_link
+from b2share_unit_tests.helpers import subtest_self_link, create_deposit
 from b2share.modules.records.providers import RecordUUIDProvider
 
 
@@ -52,21 +52,28 @@ def build_expected_metadata(record_data, state, owners=None):
 })], indirect=['test_users'])
 def test_deposit_create(app, test_records_data, test_users, login_user):
     """Test record draft creation."""
+    headers = [('Content-Type', 'application/json'),
+               ('Accept', 'application/json')]
+    def create_record(client, record_data):
+        return client.post(
+            url_for('b2share_records_rest.b2share_record_list'),
+            data=json.dumps(record_data),
+            headers=headers
+        )
+    # test creating a deposit with anonymous user
+    with app.app_context():
+        with app.test_client() as client:
+            draft_create_res = create_record(client, test_records_data[0])
+            assert draft_create_res.status_code == 401
+
+    # test creating a deposit with a logged in user
     with app.app_context():
         with app.test_client() as client:
             user = test_users['myuser']
             login_user(user, client)
             # create the deposit
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
             for record_data in test_records_data:
-                record_list_url = (
-                    lambda **kwargs:
-                    url_for('b2share_records_rest.b2share_record_list',
-                            **kwargs))
-                draft_create_res = client.post(record_list_url(),
-                                               data=json.dumps(record_data),
-                                               headers=headers)
+                draft_create_res = create_record(client, record_data)
                 assert draft_create_res.status_code == 201
                 draft_create_data = json.loads(
                     draft_create_res.get_data(as_text=True))
@@ -117,6 +124,8 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
         with app.test_client() as client:
+            user = test_users['myuser']
+            login_user(user, client)
             expected_metadata['publication_state'] = \
                 PublicationStates.submitted.name
             assert expected_metadata == draft_patch_data['metadata']
@@ -164,6 +173,8 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
         with app.test_client() as client:
+            user = test_users['myuser']
+            login_user(user, client)
             assert expected_metadata == draft_patch_data['metadata']
             assert (deposit['publication_state']
                     == PublicationStates.published.name)
@@ -196,3 +207,185 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                 del item['created']
                 del item['updated']
             assert cleaned_draft_data == cleaned_published_data
+
+
+######################
+#  Test permissions  #
+######################
+
+
+def test_deposit_read_permissions(app, test_records_data,
+                                  create_user, login_user, admin):
+    """Test deposit read with HTTP GET."""
+    with app.app_context():
+        creator = create_user('creator')
+        non_creator = create_user('non-creator')
+
+        def test_get(deposit, status, user=None):
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                headers = [('Accept', 'application/json')]
+                request_res = client.get(
+                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                            pid_value=deposit.pid.pid_value),
+                    headers=headers)
+                assert request_res.status_code == status
+
+        # test with anonymous user
+        deposit = create_deposit(test_records_data[0], creator)
+        test_get(deposit, 401)
+        deposit.submit()
+        test_get(deposit, 401)
+        deposit.publish()
+        test_get(deposit, 401)
+
+        deposit = create_deposit(test_records_data[0], creator)
+        test_get(deposit, 403, non_creator)
+        deposit.submit()
+        test_get(deposit, 403, non_creator)
+        deposit.publish()
+        test_get(deposit, 403, non_creator)
+
+        deposit = create_deposit(test_records_data[0], creator)
+        test_get(deposit, 200, creator)
+        deposit.submit()
+        test_get(deposit, 200, creator)
+        deposit.publish()
+        test_get(deposit, 200, creator)
+
+        deposit = create_deposit(test_records_data[0], creator)
+        test_get(deposit, 200, admin)
+        deposit.submit()
+        test_get(deposit, 200, admin)
+        deposit.publish()
+        test_get(deposit, 200, admin)
+
+
+
+def test_deposit_delete_permissions(app, test_records_data,
+                                    create_user, login_user, admin):
+    """Test deposit delete with HTTP DELETE."""
+    with app.app_context():
+        def test_delete(deposit, status, user=None):
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                headers = [('Accept', 'application/json')]
+                request_res = client.delete(
+                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                            pid_value=deposit.pid.pid_value),
+                    headers=headers)
+                assert request_res.status_code == status
+
+        creator = create_user('creator')
+        non_creator = create_user('non-creator')
+        # test with anonymous user
+        deposit = create_deposit(test_records_data[0], creator)
+        test_delete(deposit, 401)
+        deposit.submit()
+        test_delete(deposit, 401)
+        deposit.publish()
+        test_delete(deposit, 401)
+
+        # test with non creator user
+        deposit = create_deposit(test_records_data[0], creator)
+        test_delete(deposit, 403, non_creator)
+        deposit.submit()
+        test_delete(deposit, 403, non_creator)
+        deposit.publish()
+        test_delete(deposit, 403, non_creator)
+
+        # test with creator user
+        deposit = create_deposit(test_records_data[0], creator)
+        test_delete(deposit, 204, creator)
+        deposit = create_deposit(test_records_data[0], creator)
+        deposit.submit()
+        test_delete(deposit, 204, creator)
+        deposit = create_deposit(test_records_data[0], creator)
+        deposit.submit()
+        deposit.publish()
+        test_delete(deposit, 403, creator)
+
+        # test with admin user
+        deposit = create_deposit(test_records_data[0], creator)
+        test_delete(deposit, 204, admin)
+        deposit = create_deposit(test_records_data[0], creator)
+        deposit.submit()
+        test_delete(deposit, 204, admin)
+        deposit = create_deposit(test_records_data[0], creator)
+        deposit.submit()
+        deposit.publish()
+        # FIXME: handle the deletion of published deposits
+        test_delete(deposit, 403, admin)
+
+
+def test_deposit_publish_permissions(app, test_records_data, login_user,
+                                     admin, create_user):
+    """Test deposit publication with HTTP PATCH."""
+    with app.app_context():
+        creator = create_user('creator')
+        non_creator = create_user('non-creator')
+
+        def test_publish(status, user=None):
+            deposit = create_deposit(test_records_data[0], creator)
+            deposit.submit()
+            headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')]
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                request_res = client.patch(
+                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                            pid_value=deposit.pid.pid_value),
+                    data=json.dumps([{
+                        "op": "replace", "path": "/publication_state",
+                        "value": PublicationStates.published.name
+                    },{
+                        "op": "replace", "path": "/title",
+                        "value": 'newtitle'
+                    }]),
+                    headers=headers)
+                assert request_res.status_code == status
+
+        # test with anonymous user
+        test_publish(401)
+        test_publish(403, non_creator)
+        test_publish(200, creator)
+        test_publish(200, admin)
+
+
+def test_deposit_modify_published_permissions(app, test_records_data,
+                                              login_user, admin, create_user):
+    """Test deposit edition after its publication.
+
+    FIXME: This test should evolve when we allow deposit edition.
+    """
+    with app.app_context():
+        creator = create_user('creator')
+        non_creator = create_user('non-creator')
+        deposit = create_deposit(test_records_data[0], creator)
+        deposit.submit()
+        deposit.publish()
+
+        def test_edit(status, user=None):
+            headers = [('Content-Type', 'application/json-patch+json'),
+                        ('Accept', 'application/json')]
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                request_res = client.patch(
+                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                            pid_value=deposit.pid.pid_value),
+                    data=json.dumps([{
+                        "op": "replace", "path": "/publication_state",
+                        "value": PublicationStates.draft.name
+                    }]),
+                    headers=headers)
+                assert request_res.status_code == status
+
+        # test with anonymous user
+        test_edit(401)
+        test_edit(403, non_creator)
+        test_edit(403, creator)
+        test_edit(403, admin)

@@ -38,8 +38,9 @@ class DraftSchemaJSONV1(Schema):
     @pre_dump
     def filter_internal(self, data):
         """Remove internal fields from the record metadata."""
-        data['metadata']['owners'] = data['metadata']['_deposit']['owners']
-        del data['metadata']['_deposit']
+        if '_deposit' in data['metadata']:
+            data['metadata']['owners'] = data['metadata']['_deposit']['owners']
+            del data['metadata']['_deposit']
         if '_files' in data['metadata']:
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
@@ -50,6 +51,8 @@ class DraftSchemaJSONV1(Schema):
             del data['metadata']['_pid']
         if '_oai' in data['metadata']:
             del data['metadata']['_oai']
+        if '_internal' in data['metadata']:
+            del data['metadata']['_internal']
         return data
 
 

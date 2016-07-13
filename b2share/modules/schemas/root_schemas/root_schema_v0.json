@@ -11,11 +11,6 @@
                 "type": "string",
                 "enum": [ "draft", "submitted", "published" ]
             },
-            "owner": {
-                "title": "Owner",
-                "description": "Identifier of the user that owns the record",
-                "type": "string"
-            },
             "_pid": {
                 "title": "Persistent Identifiers",
                 "description": "Array of persistent identifiers pointing to this record",
@@ -132,9 +127,6 @@
             },
 
             "community_specific": {
-                "type": "object"
-            },
-            "_internal": {
                 "type": "object"
             },
             "_deposit": {
