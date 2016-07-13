@@ -24,12 +24,15 @@
 """Test helpers."""
 
 import json
+from copy import deepcopy
 from contextlib import contextmanager
 
 from flask import current_app
 from six import string_types
 from flask_login import login_user, logout_user
 from invenio_accounts.models import User
+from b2share.modules.deposit.api import Deposit
+from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 
 
 def subtest_self_link(response_data, response_headers, client):
@@ -62,3 +65,46 @@ def authenticated_user(userinfo):
             logout_user()
 
 
+def create_deposit(data, creator):
+    """Create a deposit with the given user as creator."""
+    with authenticated_user(creator):
+        deposit = Deposit.create(data=deepcopy(data))
+    return deposit
+
+
+def create_record(data, creator):
+    """Create a deposit with the given user as creator."""
+    deposit = create_deposit(data, creator)
+    with authenticated_user(creator):
+        deposit.submit()
+        deposit.publish()
+    published = deposit.fetch_published()
+    return (deposit, published[0], published[1])  # deposit, pid, record
+
+
+def resolve_record_data(data):
+    """Resolve community and block schema IDs in the given record data."""
+    return json.loads(
+        resolve_block_schema_id(resolve_community_id(json.dumps(data)))
+    )
+
+
+def generate_record_data(title='My Test BBMRI Record', open_access=True,
+                         community='MyTestCommunity',
+                         block_schema='MyTestSchema',
+                         block_schema_content=None):
+    """Generate"""
+    default_block_schema_content = {
+        'study_design': ['Case-control']
+    }
+    data = {
+        'title': title,
+        'community': '$COMMUNITY_ID[{}]'.format(community),
+        'open_access': open_access,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[{}]'.format(block_schema): \
+            default_block_schema_content if block_schema_content is None \
+            else block_schema_content
+        }
+    }
+    return resolve_record_data(data)

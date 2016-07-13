@@ -28,9 +28,16 @@ from __future__ import absolute_import, print_function
 import os
 
 from flask import request
-from invenio_records_rest.utils import deny_all, allow_all
+from invenio_records_rest.utils import deny_all
 from b2share.modules.oauthclient import b2access
-from invenio_search import RecordsSearch
+from b2share.modules.records.search import B2ShareRecordsSearch
+from b2share.modules.records.permissions import (
+    ReadRecordPermission, UpdateRecordPermission, DeleteRecordPermission
+)
+from b2share.modules.deposit.permissions import (
+    CreateDepositPermission, ReadDepositPermission,
+    UpdateDepositPermission, DeleteDepositPermission,
+)
 
 
 SUPPORT_EMAIL = None # must be setup in the local instances
@@ -57,7 +64,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         pid_minter='b2share_deposit',
         pid_fetcher='b2share_record',
         record_class='invenio_records_files.api:Record',
-        search_class=RecordsSearch,
+        search_class=B2ShareRecordsSearch,
         search_index='records',
         search_type='record',
         record_serializers={
@@ -80,10 +87,10 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         default_media_type='application/json',
         list_route='/records/',
         item_route='/records/<pid(b2share_record,record_class="invenio_records_files.api:Record"):pid_value>',
-        create_permission_factory_imp=allow_all,
-        read_permission_factory_imp=allow_all,
-        update_permission_factory_imp=allow_all,
-        delete_permission_factory_imp=allow_all,
+        create_permission_factory_imp=CreateDepositPermission,
+        read_permission_factory_imp=ReadRecordPermission,
+        update_permission_factory_imp=UpdateRecordPermission,
+        delete_permission_factory_imp=DeleteRecordPermission,
     ),
 )
 
@@ -120,10 +127,10 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
             # 'b2share.modules.deposit.loaders:deposit_record_loader'
         },
         item_route='/records/<{0}:pid_value>/draft'.format(DEPOSIT_PID),
-        create_permission_factory_imp=allow_all,
-        read_permission_factory_imp=allow_all,
-        update_permission_factory_imp=allow_all,
-        delete_permission_factory_imp=allow_all,
+        create_permission_factory_imp=deny_all,
+        read_permission_factory_imp=ReadDepositPermission,
+        update_permission_factory_imp=UpdateDepositPermission,
+        delete_permission_factory_imp=DeleteDepositPermission,
     ),
 )
 

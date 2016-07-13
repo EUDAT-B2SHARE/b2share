@@ -39,6 +39,8 @@ from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.query import default_search_factory
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import verify_record_permission
+from b2share.modules.deposit.serializers import json_v1_response as \
+    deposit_serializer
 
 
 def create_blueprint(endpoints):
@@ -163,7 +165,7 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
     # import deposit here in order to avoid dependency loop
     from b2share.modules.deposit.api import Deposit
 
-    list_view = B2shareRecordsListResource.as_view(
+    list_view = B2ShareRecordsListResource.as_view(
         RecordsListResource.view_name.format(endpoint),
         resolver=resolver,
         minter_name=pid_minter,
@@ -171,7 +173,11 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         pid_fetcher=pid_fetcher,
         read_permission_factory=read_permission_factory,
         create_permission_factory=create_permission_factory,
-        record_serializers=record_serializers,
+        # replace the record serializer with deposit serializer as it
+        # is used only when the deposit is created.
+        record_serializers={
+            'application/json': deposit_serializer
+        },
         record_loaders=record_loaders,
         search_serializers=search_serializers,
         search_class=search_class,
@@ -227,7 +233,7 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
     return views
 
 
-class B2shareRecordsListResource(RecordsListResource):
+class B2ShareRecordsListResource(RecordsListResource):
     """B2Share resource for records listing and deposit creation."""
 
     def post(self, **kwargs):
@@ -267,4 +273,3 @@ class B2shareRecordsListResource(RecordsListResource):
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
         response.headers.extend(dict(location=location))
         return response
-
