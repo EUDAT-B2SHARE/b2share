@@ -278,7 +278,7 @@ class ServerCache {
             apiUrls.communities(), null,
             (data) => {
                 let map = OrderedMap();
-                data.communities.forEach(c => { map = map.set(c.id, fromJS(c)); } );
+                data.hits.hits.forEach(c => { map = map.set(c.id, fromJS(c)); } );
                 this.store.setIn(['communities'], map);
             },
             (xhr) => this.store.setIn(['communities'], new Error(xhr)) );
@@ -375,7 +375,10 @@ class ServerCache {
     getCommunities() {
         this.getters.communities.autofetch();
         const communities = this.store.getIn(['communities']);
-        return communities ? List(communities.valueSeq()) : communities;
+        if (!communities || communities instanceof Error) {
+            return communities
+        }
+        return List(communities.valueSeq());
     }
 
     getCommunity(communityIDorName) {
