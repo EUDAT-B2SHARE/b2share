@@ -33,6 +33,7 @@ from setuptools.command.test import test as TestCommand
 install_requires = [
     'dcxml>=0.1.0',
     'dojson>=1.2.1',
+    'httplib2>=0.9.2',
     'invenio-access>=1.0.0a8,<1.1.0',
     'invenio-accounts>=v1.0.0a12,<1.1.0',
     'invenio-base>=1.0.0a12,<1.1.0',

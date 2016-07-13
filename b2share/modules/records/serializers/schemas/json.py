@@ -43,6 +43,10 @@ class DraftSchemaJSONV1(Schema):
         if '_files' in data['metadata']:
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
+            epic_pids = [p for p in data['metadata']['_pid']
+                         if p.get('type') == 'handle_pid']
+            if len(epic_pids) > 0:
+                data['metadata']['PID'] = epic_pids[0].get('value')
             del data['metadata']['_pid']
         if '_oai' in data['metadata']:
             del data['metadata']['_oai']
@@ -50,4 +54,4 @@ class DraftSchemaJSONV1(Schema):
 
 
 class RecordSchemaJSONV1(DraftSchemaJSONV1):
-    """Schema for drafts v1 in JSON."""
+    """Schema for record v1 in JSON."""

@@ -97,6 +97,7 @@ const Record = React.createClass({
         const metadata = record.get('metadata') || Map();
         const description = metadata.get('description') ||"";
         const keywords = metadata.get('keywords') || List();
+        const pid = metadata.get('PID');
         const sr = {marginBottom:0, padding:'0.5em', float:'right'};
         return (
             <div>
@@ -120,6 +121,13 @@ const Record = React.createClass({
                             <span style={{fontWeight:'bold'}}>Keywords: </span>
                             {keywords.map(k => <Link to={{pathname:'/records', query:{query:k}}} key={k}>{k}; </Link>)}
                         </p>
+
+                        {pid ?
+                            <p className="pid">
+                                <span style={{fontWeight:'bold'}}>PID: </span>
+                                <code>{pid}</code>
+                            </p> : false
+                        }
                     </div>
 
                     <div className="col-md-4">

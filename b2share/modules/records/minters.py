@@ -27,12 +27,14 @@ from __future__ import absolute_import, print_function
 
 from datetime import datetime
 
-from flask import current_app
+from flask import current_app, url_for
 
 from invenio_oaiserver.provider import OAIIDProvider
 from invenio_oaiserver.utils import datetime_to_datestamp
 
 from .providers import RecordUUIDProvider
+from .errors import EpicPIDError
+from .b2share_epic import createHandle
 
 
 def b2share_record_uuid_minter(record_uuid, data):
@@ -49,6 +51,7 @@ def b2share_record_uuid_minter(record_uuid, data):
     })
 
     b2share_oaiid_minter(record_uuid, data)
+    b2share_pid_minter(provider.pid, data)
 
     return provider.pid
 
@@ -71,3 +74,29 @@ def b2share_oaiid_minter(record_uuid, data):
         'updated': datetime_to_datestamp(datetime.utcnow()),
     })
     return provider.pid
+
+
+def b2share_pid_minter(local_pid, data):
+    """Mint EPIC PID for published record."""
+    epic_pids = [p for p in data['_pid']
+                 if p.get('type') == 'handle_pid']
+    assert len(epic_pids) == 0
+
+    endpoint = 'b2share_records_rest.b2share_record_item'
+    url = url_for(endpoint, pid_value=local_pid.pid_value, _external=True)
+    url = url.replace('/api/records/', '/records/')
+    throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_PID', True)
+
+    try:
+        pid = createHandle(url)
+        if pid is None:
+            raise EpicPIDError("EPIC PID allocation failed")
+        data['_pid'].append({
+            'value': pid,
+            'type': 'handle_pid',
+        })
+    except EpicPIDError as e:
+        if throw_on_failure:
+            raise e
+        else:
+            current_app.logger.warning(e)
