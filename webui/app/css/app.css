@@ -540,7 +540,26 @@ a.navbar-brand {
   box-shadow: 0 0 16px #F45D00 !important;
 }
 
+.b2droppanel {
+  background-color: white;
+  color: #222;
+  overflow:hidden;
+  width:100%;
+  box-shadow: 0 0 30px #000 !important;
+}
+
 .b2dropzone {
+  background-color: white;
+  border: 3px solid #888;
+  color: #888;
+  border-radius: 8px;
+  overflow:hidden;
+  text-align:center;
+  padding:0.5em;
+  width:100%;
+}
+
+.b2dropbutton {
   filter: grayscale(100%);
   -webkit-filter: grayscale(100%);
   -moz-filter: grayscale(100%);
@@ -548,7 +567,6 @@ a.navbar-brand {
 
   background-color: white;
   border: 3px solid #888;
-  border-radius: 16px;
   color: #888;
   height: 4em;
   border-radius: 8px;
@@ -557,17 +575,17 @@ a.navbar-brand {
   padding:0.5em;
   width:100%;
 }
-.b2dropzone > img {
+.b2dropbutton > img {
   display:inline;
   max-width: 20%;
   width: 50px;
   padding-bottom:1em;
 }
-.b2dropzone > h3 {
+.b2dropbutton > h3 {
   display:inline;
   padding-left:1em;
 }
-.b2dropzone:hover, .b2dropzone:focus {
+.b2dropbutton:hover, .b2dropbutton:focus {
   background-color: #0F4094;
   border: 3px solid #0F4094;
   box-shadow: 0 0 4px #F45D00 !important;
@@ -579,7 +597,6 @@ a.navbar-brand {
 }
 
 .fileList {
-  margin-top: 1em;
   background-color: white;
 }
 

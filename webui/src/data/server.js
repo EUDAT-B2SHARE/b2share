@@ -24,6 +24,10 @@ const apiUrls = {
     user()                            { return `${urlRoot}/api/users/current` },
     userTokens()                      { return `${urlRoot}/api/users/current/tokens` },
 
+    remotes(remote)                   { return `${urlRoot}/api/remotes` + (remote ? `/${remote}` : ``) },
+    remotesJob()                      { return `${urlRoot}/api/remotes/jobs` },
+    b2drop(path_)                     { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
+
     languages()                       { return `${urlRoot}/languages.json` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
@@ -191,9 +195,6 @@ class FilePoster {
             return ;
         }
 
-        const fd = new FormData();
-        fd.append('file', file);
-
         const xhr = new XMLHttpRequest();
         this.xhr = xhr;
         xhr.upload.addEventListener("progress", (e) => {
@@ -215,27 +216,23 @@ class FilePoster {
         };
 
         progressFn('uploading', 0);
-        xhr.send(fd);
+        xhr.send(file);
         return xhr;
     }
-}
 
-class Deleter {
-    constructor() {
-        this.requestSent = false;
-    }
-
-    delete(url, successFn) {
-        if (!this.requestSent) {
-            this.requestSent = true;
-            ajaxDelete({
-                url: url,
-                successFn: successFn,
-                completeFn: () => { this.requestSent = false; },
-            });
+    delete(successFn) {
+        if (this.xhr && this.xhr.abort) {
+            this.xhr.abort();
         }
+        const completeFn = () => {this.xhr = null};
+        ajaxDelete({
+            url: this.url,
+            successFn: (data) => { completeFn(); successFn(data); },
+            completeFn: completeFn,
+        });
     }
 }
+
 
 class ServerCache {
     constructor() {
@@ -357,9 +354,6 @@ class ServerCache {
                 return new FilePoster(fileBucketUrl + '/' + fileName);
             })
         );
-
-        this.deleters = {};
-        this.deleters.file = new Deleter();
     }
 
     getLatestRecords() {
@@ -521,14 +515,10 @@ class ServerCache {
         return this.posters.files.get(draft.get('id')).get(fileObject.name).put(fileObject, progFn);
     }
 
-    deleteFile(draft, fileUUID) {
-        const fileList = draft.get('files') || List();
-        const [fileIndex, file] = fileList.findEntry(f => f.get('uuid') === fileUUID);
-        if (file) {
-            this.deleters.file.delete(file.get('url'), () => {
-                this.getDraftFiles(draft.get('id'), true); // force fetch files
-            });
-        }
+    deleteFile(draft, fileKey) {
+        return this.posters.files.get(draft.get('id')).get(fileKey).delete(() => {
+            this.getDraftFiles(draft.get('id'), true); // force fetch files
+        });
     }
 
     updateRecord(id, metadata, successFn) {
@@ -537,6 +527,48 @@ class ServerCache {
 
     patchRecord(id, patch, successFn) {
         this.posters.draft.get(id).patch(patch, successFn);
+    }
+
+    b2dropInit(username, password, successFn, errorFn) {
+        ajaxPut({
+            url: apiUrls.b2drop(),
+            params: { username, password },
+            successFn,
+            errorFn
+        });
+    }
+
+    b2dropList(path, successFn, errorFn) {
+        ajaxGet({
+            url: apiUrls.b2drop(path),
+            successFn,
+            errorFn,
+        });
+    }
+
+    b2dropCopyFile(draft, b2dropPath, fileName, progressFn) {
+        console.log("copy file to draft", draft.toJS());
+        let fileBucketUrl = draft.getIn(['links', 'files']) ||
+            this.store.getIn(['draftCache', draft.get('id'), 'links', 'files']);
+        if (!fileBucketUrl) {
+            console.error("cannot find fileBucketUrl", draft.toJS());
+            return null;
+        }
+        const successFn = x => {
+            progressFn('done', x);
+            this.getDraftFiles(draft.get('id'), true); // force fetch files
+        }
+        const errorFn = x => progressFn('error', x);
+        progressFn('uploading', 1);
+        ajaxPost({
+            url: apiUrls.remotesJob(),
+            params: {
+                source_remote_url: apiUrls.b2drop(b2dropPath),
+                destination_file_url: fileBucketUrl + '/' + fileName,
+            },
+            successFn,
+            errorFn,
+        });
     }
 
     notify(level, text) {
