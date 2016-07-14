@@ -68,7 +68,21 @@ const NavbarMenu = React.createClass({
 const NavbarSearch = React.createClass({
     // not a pure render, depends on the URL
     getInitialState() {
-        return { q: "" };
+        return {
+            q: "",
+            page: 1,
+            size: 10,
+            sort: 'bestmatch',
+        };
+    },
+
+    componentWillMount() {
+        this.componentWillReceiveProps(this.props);
+    },
+
+    componentWillReceiveProps(newProps) {
+        const location = newProps.location || {};
+        this.setState(location.query || {});
     },
 
     search(event) {
@@ -80,29 +94,8 @@ const NavbarSearch = React.createClass({
         event.preventDefault();
     },
 
-    componentWillMount() {
-        this.componentWillReceiveProps(this.props);
-    },
-
-    componentWillReceiveProps(np) {
-        const location = np.location || {};
-        const { start, stop, sortBy, order, q } = location.query || {};
-        const upstate = {};
-        if (q)  { upstate.q = q; }
-        if (start)  { upstate.start = start; }
-        if (stop)   { upstate.stop  = stop; }
-        if (sortBy) { upstate.sortBy = sortBy; }
-        if (order)  { upstate.order = order; }
-        if (q || start || stop || sortBy || order) {
-            this.setState(upstate);
-        }
-    },
-
-    change(event) {
-        this.setState({q: event.target.value});
-    },
-
     render() {
+        const setStateEvent = ev => this.setState({q: ev.target.value});
         const visibility = this.props.visibility ? "visible" : "hidden";
         return (
             <form onSubmit={this.search} style={{visibility}}>
@@ -113,7 +106,7 @@ const NavbarSearch = React.createClass({
                         </button>
                     </span>
                     <input className="form-control" style={{borderRadius:0}} type="text" name="q"
-                        value={this.state.q} onChange={this.change}
+                        value={this.state.q} onChange={setStateEvent}
                         autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">
