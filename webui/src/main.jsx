@@ -18,7 +18,7 @@ import { RecordRoute  } from './components/record.jsx';
 import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 
 
-const VERSION = '0.9.0';
+import { GIT_COMMIT, VERSION } from './version.js'
 
 // TODO: test file uploads in various browsers
 // TODO: edit records: plugins
@@ -127,7 +127,10 @@ const Footer = React.createClass({
                     </div>
                     <div className="col-xs-12 col-sm-5 col-md-5 text-right">
                         <ul className="list-inline pull-right" style={{marginLeft:20}}>
-                            <li><span style={{color:'#173b93', fontWeight:'500'}}> v.{VERSION}</span></li>
+                            <li title={"git:"+GIT_COMMIT}>
+                                <span style={{color:'#173b93', fontWeight:'500'}}> v.{VERSION}</span>
+                                <code style={{border:'none', backgroundColor:'transparent', color:'gray'}}>git:{GIT_COMMIT}</code>
+                            </li>
                         </ul>
                         <ul className="list-inline pull-right">
                             <li><a href="/help/terms-of-use">Terms of Use</a></li>
