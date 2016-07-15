@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+var WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
     entry: ['./src/main.jsx'],
@@ -16,7 +17,8 @@ module.exports = {
             compressor: {
                 warnings: false
             }
-        })
+        }),
+        new WebpackShellPlugin({onBuildStart:['./make_version_js.sh']})
     ],
     module: {
         loaders: [
