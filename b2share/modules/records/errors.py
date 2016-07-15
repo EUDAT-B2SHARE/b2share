@@ -42,6 +42,10 @@ class AlteredRecordError(B2ShareRecordsError):
        immutable record data."""
 
 
+class EpicPIDError(Exception):
+    """Raise when a record has no community."""
+
+
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(err):

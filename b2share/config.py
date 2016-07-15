@@ -190,3 +190,13 @@ OAISERVER_METADATA_FORMATS = {
         'serializer': 'b2share.modules.records.serializers.oaipmh_marc21_v1',
     },
 }
+
+
+CFG_HANDLE_SYSTEM_BASEURL = 'http://hdl.handle.net'
+CFG_FAIL_ON_MISSING_PID = False
+
+# The following config variables are used to create EPIC PIDs
+# CFG_EPIC_USERNAME = 0000
+# CFG_EPIC_PASSWORD = ''
+# CFG_EPIC_BASEURL = 'https://epic4.storage.surfsara.nl/v2_A/handles/'
+# CFG_EPIC_PREFIX = 0000
