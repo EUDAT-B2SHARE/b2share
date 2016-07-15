@@ -182,6 +182,7 @@ const EditRecord = React.createClass({
         return {
             record: null,
             fileState: 'done',
+            modal: null,
             errors: {},
         };
     },
@@ -202,9 +203,9 @@ const EditRecord = React.createClass({
         }
         return (
             <Files files={files ? files.toJS() : []}
+                record={this.props.record}
                 setState={setState}
-                putFile={serverCache.putFile.bind(serverCache, this.props.record)}
-                deleteFile={serverCache.deleteFile.bind(serverCache, this.props.record)}/>
+                setModal={modal => this.setState({modal})} />
         );
     },
 
@@ -493,12 +494,12 @@ const EditRecord = React.createClass({
     },
 
     getPublishedState() {
-        return this.state.record.getIn(['metadata', 'publication_state']) == 'published';
+        return this.state.record.get('publication_state') == 'published';
     },
 
     setPublishedState(e) {
         const state = e.target.checked ? 'published' : 'draft';
-        const record = this.state.record.setIn(['metadata', 'publication_state'], state);
+        const record = this.state.record.set('publication_state', state);
         this.setState({record});
     },
 
@@ -516,6 +517,11 @@ const EditRecord = React.createClass({
                             <span style={{color:'#aaa'}}>Editing </span>
                             {this.state.record.get('title')}
                         </h2>
+                    </div>
+                </div>
+                <div style={{position:'relative', width:'100%'}}>
+                    <div style={{position:'absolute', width:'100%', zIndex:1}}>
+                        { this.state.modal }
                     </div>
                 </div>
                 <div className="row">
