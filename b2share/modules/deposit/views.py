@@ -1,7 +1,30 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2016 CERN.
+#
+# Invenio is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+# MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 from functools import partial
 
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, g, request
 from invenio_files_rest.errors import InvalidOperationError
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.resolver import Resolver
@@ -11,7 +34,8 @@ from werkzeug.local import LocalProxy
 from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.views import RecordResource
 from invenio_deposit.search import DepositSearch
-from invenio_deposit.api import Deposit as InvenioDeposit
+from b2share.modules.deposit.api import Deposit
+from invenio_indexer.api import RecordIndexer
 
 
 current_jsonschemas = LocalProxy(
@@ -81,7 +105,7 @@ def records_rest_url_rules(endpoint, list_route=None, item_route=None,
         links_factory_imp, default=default_links_factory
     )
     record_class = obj_or_import_string(
-        record_class, default=InvenioDeposit
+        record_class, default=Deposit
     )
     search_class = obj_or_import_string(
         search_class, default=DepositSearch
@@ -99,7 +123,8 @@ def records_rest_url_rules(endpoint, list_route=None, item_route=None,
                         getter=partial(record_class.get_record,
                                        with_deleted=True))
 
-    item_view = RecordResource.as_view(
+    item_view = DepositResource.as_view(
+    # item_view = RecordResource.as_view(
         RecordResource.view_name.format(endpoint),
         resolver=resolver,
         read_permission_factory=read_permission_factory,
@@ -135,3 +160,29 @@ def create_blueprint(endpoints):
             blueprint.add_url_rule(**rule)
 
     return blueprint
+
+
+class DepositResource(RecordResource):
+    """Resource for deposit items."""
+
+    def patch(self, *args, **kwargs):
+        """PATCH the deposit."""
+        pid, record = request.view_args['pid_value'].data
+        result = super(DepositResource, self).patch(*args, **kwargs)
+        self._index_record(record)
+        return result
+
+    def put(self, *args, **kwargs):
+        """PUT the deposit."""
+        pid, record = request.view_args['pid_value'].data
+        result = super(DepositResource, self).patch(*args, **kwargs)
+        self._index_record(record)
+        return result
+
+    def _index_record(self, record):
+        """Index the published record if the deposit is published."""
+        if g.deposit_action == 'publish':
+            _, published_record = record.fetch_published()
+            RecordIndexer(
+                record_to_index=lambda record: ('records', 'record')
+            ).index(published_record)

@@ -47,6 +47,8 @@ from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_search import current_search_client
 from sqlalchemy_utils.functions import create_database, drop_database
+from invenio_access.models import ActionRoles
+from invenio_access.permissions import superuser_access
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -79,6 +81,10 @@ def app(request, tmpdir):
         WTF_CSRF_ENABLED=False,
         SECRET_KEY="CHANGE_ME",
         SECURITY_PASSWORD_SALT='CHANGEME',
+        CELERY_ALWAYS_EAGER=True,
+        CELERY_RESULT_BACKEND="cache",
+        CELERY_CACHE_BACKEND="memory",
+        CELERY_EAGER_PROPAGATES_EXCEPTIONS=True
     )
 
     # update the application with the configuration provided by the test
@@ -117,6 +123,7 @@ def create_user(app):
 
     users_password = '123456'
     accounts = app.extensions['invenio-accounts']
+    security = app.extensions['security']
 
     def create(name):
         email = '{}@example.org'.format(name)
@@ -130,6 +137,23 @@ def create_user(app):
         return UserInfo(email=email, password=users_password, id=user.id)
 
     return create
+
+@pytest.fixture(scope='function')
+def admin(app, create_user):
+    accounts = app.extensions['invenio-accounts']
+    security = app.extensions['security']
+    with app.app_context():
+        user_info = create_user('admin')
+        user = accounts.datastore.get_user(user_info.id)
+        role= security.datastore.find_or_create_role('admin')
+        security.datastore.add_role_to_user(user, role)
+        db.session.add(ActionRoles.allow(
+            superuser_access, role=role
+        ))
+        security.datastore.add_role_to_user(user, role)
+        db.session.commit()
+        return user_info
+
 
 
 @pytest.fixture(scope='function')
@@ -194,6 +218,15 @@ def test_records_data(app, test_communities):
         }
     }, {
         'title': 'New BBMRI dataset',
+        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        "open_access": False,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    }, {
+        'title': 'BBMRI dataset 3',
         'community': '$COMMUNITY_ID[MyTestCommunity]',
         "open_access": True,
         'community_specific': {

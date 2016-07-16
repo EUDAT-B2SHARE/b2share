@@ -29,6 +29,7 @@ import json
 from io import BytesIO
 
 from b2share.modules.deposit.api import PublicationStates
+from invenio_search import current_search
 from flask import url_for
 from invenio_db import db
 
@@ -61,6 +62,8 @@ def test_deposit(app, test_communities, create_user, login_user,
                        ('Accept', 'application/json')]
             patch_headers = [('Content-Type', 'application/json-patch+json'),
                              ('Accept', 'application/json')]
+
+            created_records = {}  # dict of created records
             for record_data in test_records_data:
                 record_list_url = (
                     lambda **kwargs:
@@ -169,3 +172,46 @@ def test_deposit(app, test_communities, create_user, login_user,
                 # test that published record's files match too
                 test_files(client, record_get_data['links']['files'],
                            uploaded_files)
+
+                created_records[record_get_data['id']] = record_get_data
+
+    with app.app_context():
+        with app.test_client() as client:
+            login_user(allowed_user, client)
+            # refresh index to make records searchable
+            current_search._client.indices.refresh()
+
+            # test search  records
+            record_search_res = client.get(
+                url_for('b2share_records_rest.b2share_record_list'),
+                data='',
+                headers=headers)
+            assert record_search_res.status_code == 200
+            record_search_data = json.loads(
+                record_search_res.get_data(as_text=True))
+            # assert the search returns expected records
+            search_records = {rec['id'] : rec for rec in
+                              record_search_data['hits']['hits']}
+            assert search_records == created_records
+
+    with app.app_context():
+        other_user = create_user('other')
+        with app.test_client() as client:
+            # test with a user not owning any records
+            login_user(other_user, client)
+            # test search
+            record_search_res = client.get(
+                url_for('b2share_records_rest.b2share_record_list'),
+                data='',
+                headers=headers)
+            assert record_search_res.status_code == 200
+            record_search_data = json.loads(
+                record_search_res.get_data(as_text=True))
+
+            # check that only open_access records are returned
+            open_access_records = {rec['id']: rec for rec in
+                                   created_records.values()
+                                   if rec['metadata']['open_access'] == True}
+            search_records = {rec['id'] : rec for rec in
+                              record_search_data['hits']['hits']}
+            assert search_records == open_access_records

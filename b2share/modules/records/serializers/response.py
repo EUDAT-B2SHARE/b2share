@@ -44,6 +44,8 @@ def record_responsify(serializer, mimetype):
     bucket_link_tpl = '{0}; rel="' + RECORD_BUCKET_RELATION_TYPE + '"'
 
     def view(pid, record, code=200, headers=None, links_factory=None):
+
+        serializer.serialize(pid, record, links_factory=links_factory)
         response = current_app.response_class(
             serializer.serialize(pid, record, links_factory=links_factory),
             mimetype=mimetype)
@@ -65,6 +67,10 @@ def record_responsify(serializer, mimetype):
 class JSONSerializer(InvenioJSONSerializer):
     def preprocess_record(self, pid, record, links_factory=None):
         g.record = record
-        rec = super(JSONSerializer, self).preprocess_record(
+        return super(JSONSerializer, self).preprocess_record(
             pid, record, links_factory)
-        return rec
+
+    def transform_search_hit(self, pid, record_hit, links_factory=None):
+        g.record_hit = record_hit
+        return super(JSONSerializer, self).transform_search_hit(
+            pid, record_hit, links_factory)

@@ -26,7 +26,7 @@
 import uuid
 from enum import Enum
 
-from flask import url_for
+from flask import url_for, g
 from invenio_db import db
 from invenio_deposit.api import Deposit as DepositRecord
 from invenio_records_files.models import RecordsBuckets
@@ -138,8 +138,13 @@ class Deposit(DepositRecord):
                 # check invenio-deposit status so that we do not loop
                 and self['_deposit']['status'] != 'published'):
             super(Deposit, self).publish()  # publish() already calls commit()
+            # save the action for later indexing
+            if g:
+                g.deposit_action = 'publish'
         else:
             super(Deposit, self).commit()
+            if g:
+                g.deposit_action = 'update-metadata'
         return self
 
     def publish(self, pid=None, id_=None):
