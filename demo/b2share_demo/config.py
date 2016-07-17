@@ -26,6 +26,9 @@
 from __future__ import absolute_import, print_function
 
 
+FILES_REST_DEFAULT_MAX_FILE_SIZE = 100 * 1024 * 1024 # 100 MB for RC1
+
+
 OAUTHCLIENT_REMOTE_APPS = dict(
     #: B2ACCESS Staging instance for the demo
     b2access=dict(
