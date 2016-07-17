@@ -260,14 +260,12 @@ class ServerCache {
         this.getters = {};
 
         this.getters.latestRecords = new Getter(
-            apiUrls.records(),
-            {start:0, stop:10, sortBy:'date', order:'descending'},
+            apiUrls.records(), {sort:"mostrecent"},
             (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)),
             (xhr) => this.store.setIn(['latestRecords'], new Error(xhr)) );
 
         this.getters.searchRecords = new Getter(
-            apiUrls.records(),
-            {query:'', start:0, stop:10, sortBy:'date', order:'descending'},
+            apiUrls.records(), null,
             (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)),
             (xhr) => this.store.setIn(['searchRecords'], new Error(xhr)) );
 
@@ -361,8 +359,12 @@ class ServerCache {
         return this.store.getIn(['latestRecords']);
     }
 
-    searchRecords({query, start, stop, sortBy, order}) {
-        this.getters.searchRecords.fetch(query, start, stop, sortBy, order);
+    searchRecords({q, sort, page, size, community}) {
+        const params = {};
+        if (community) {
+            q = (q || "") + ' community:' + community;
+        }
+        this.getters.searchRecords.fetch({q, sort, page, size});
         return this.store.getIn(['searchRecords']);
     }
 
