@@ -504,6 +504,10 @@ a.navbar-brand {
   border-color: #E5601E;
 }
 
+.rest_api code {
+  white-space: normal;
+}
+
 /*****************************************************************************/
 /* records */
 
