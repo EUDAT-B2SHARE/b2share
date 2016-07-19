@@ -57,7 +57,7 @@ def record_links_factory(pid):
             )
     if hasattr(g, 'record_hit'):
         metadata = g.record_hit['_source']
-        if 'files_bucket_id' in metadata['_internal']:
+        if 'files_bucket_id' in metadata.get('_internal', {}):
             links['files'] = url_for(
                 'invenio_files_rest.bucket_api',
                 bucket_id=metadata['_internal']['files_bucket_id'],
