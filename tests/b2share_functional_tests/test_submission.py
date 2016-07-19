@@ -215,3 +215,15 @@ def test_deposit(app, test_communities, create_user, login_user,
             search_records = {rec['id'] : rec for rec in
                               record_search_data['hits']['hits']}
             assert search_records == open_access_records
+
+            for recid, record_data in created_records.items():
+                # Test record GET permissions
+                record_get_res = client.get(
+                    url_for('b2share_records_rest.b2share_record_item',
+                            pid_value=recid),
+                    headers=headers)
+
+                if recid in open_access_records.keys():
+                    assert record_get_res.status_code == 200
+                else:
+                    assert record_get_res.status_code == 403
