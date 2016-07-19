@@ -21,7 +21,9 @@ ENV B2SHARE_ACCOUNTS_SESSION_REDIS_URL="redis://redis:6379/0"
 ENV B2SHARE_CELERY_RESULT_BACKEND="redis://redis:6379/1"
 ENV B2SHARE_SECRET_KEY="sX5BwQI8cZQmxmM6RfI08zSDm6tPt8Tc"
 ENV B2SHARE_SEARCH_ELASTIC_HOSTS="elasticsearch:9200"
-ENV SSL_CERT_FILE="staging_b2access.pem"
+
+# # only use this for the staging server
+# ENV SSL_CERT_FILE="staging_b2access.pem"
 
 WORKDIR /eudat/b2share/webui
 RUN npm install --unsafe-perm && \
