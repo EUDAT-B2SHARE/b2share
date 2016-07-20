@@ -103,7 +103,9 @@ const Record = React.createClass({
             <div>
                 <div className="row">
                     <div className="col-md-12">
-                        <Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
+                        {   // do not allow record editing, for now
+                            //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
+                        }
                         <h2 className="name">{metadata.get('title')}</h2>
                     </div>
                 </div>

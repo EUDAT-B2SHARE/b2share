@@ -395,7 +395,24 @@ class ServerCache {
 
     getRecord(id) {
         this.getters.record.get(id).fetch();
+        this.fetchRecordFiles(id);
         return this.store.getIn(['recordCache', id]);
+    }
+
+    fetchRecordFiles(id) {
+        const record = this.store.getIn(['recordCache', id]);
+        if (!record || !record.get) {
+            return null;
+        }
+        const files = record.get('files');
+        if (files) {
+            return files;
+        }
+        ajaxGet({
+            url: record.getIn(['links', 'files']),
+            successFn: (data) => this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents)),
+            errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
+        });
     }
 
     getDraft(id) {
@@ -587,6 +604,10 @@ class ServerCache {
 
     notifyWarning(text) {
         this.notify('warning', text);
+    }
+
+    notifySuccess(text) {
+        this.notify('success', text);
     }
 
     notifyInfo(text) {
