@@ -184,6 +184,7 @@ const EditRecord = React.createClass({
             fileState: 'done',
             modal: null,
             errors: {},
+            dirty: false,
         };
     },
 
@@ -254,7 +255,7 @@ const EditRecord = React.createClass({
         } else {
             delete errors[fieldID];
         }
-        this.setState({record:r, errors});
+        this.setState({record:r, errors, dirty:true});
     },
 
     renderScalarField(type, getValue, setValue) {
@@ -487,10 +488,19 @@ const EditRecord = React.createClass({
         const original = this.props.record.get('metadata').toJS();
         const updated = this.state.record.toJS();
         const patch = compare(original, updated);
-        const onUpdate = this.getPublishedState() ?
-            (record) => browserHistory.push(`/records/${record.id}`) :
-            (record) => serverCache.getDraft(record.id);
-        serverCache.patchRecord(this.props.record.get('id'), patch, onUpdate);
+        if (!patch || !patch.length) {
+            this.setState({dirty:false});
+            return;
+        }
+        const onSaveAndPublish = (record) => {
+            browserHistory.push(`/records/${record.id}`);
+        }
+        const onSave = (record) => {
+            serverCache.getDraft(record.id);
+            this.setState({dirty:false});
+        }
+        serverCache.patchRecord(this.props.record.get('id'), patch,
+                    this.getPublishedState() ? onSaveAndPublish : onSave);
     },
 
     getPublishedState() {
@@ -549,8 +559,15 @@ const EditRecord = React.createClass({
                             </label>
                             <p>When the draft is published it will be assigned a PID, making it publicly citable.
                                 But a published record's files can no longer be modified by its owner. </p>
-                            <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateRecord}>
-                                { this.state.publish ? "Update and Publish": "Update Draft"}</button>
+                            {   this.getPublishedState() ?
+                                    <button type="submit" className="btn btn-primary btn-default btn-block btn-danger" onClick={this.updateRecord}>
+                                        Save and Publish </button>
+                                : this.state.dirty ?
+                                    <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateRecord}>
+                                        Save Draft </button>
+                                  : <button type="submit" className="btn btn-default btn-block disabled">
+                                        The draft is up to date </button>
+                            }
                         </div>
                     </div>
                 </div>
