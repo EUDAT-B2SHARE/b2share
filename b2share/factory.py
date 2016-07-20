@@ -116,3 +116,7 @@ def add_routes(app_ui):
     @app_ui.route('/search/<path:path>')
     def serve_search(path):
         return app_ui.send_static_file('index.html')
+
+    @app_ui.route('/languages.json', defaults={'path': ''})
+    def serve_languages(path):
+        return app_ui.send_static_file('languages.json')

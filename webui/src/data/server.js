@@ -510,14 +510,17 @@ class ServerCache {
             ajaxGet({
                 url: apiUrls.languages(),
                 successFn: (data) => {
-                    const langs = data.languages.map(([id, name]) => ({id, name}));
+                    const langs = data.languages.map(([id,name]) => ({"id": id, "name": name}));
                     console.log('got languages: ', langs.length);
                     this.store.setIn(['languages'], langs);
                 },
-                errorFn: (xhr) => this.store.setIn(['languages'], new Error(xhr)),
+                errorFn: (xhr) => {
+                    console.log("Something wrong: " + xhr)
+                    this.store.setIn(['languages'], new Error(xhr));
+                },
             });
         }
-        return langs;
+        return this.store.getIn(['languages']);
     }
 
     createRecord(initialMetadata, successFn) {

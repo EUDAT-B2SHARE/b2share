@@ -17,6 +17,7 @@ import { serverCache, Error } from '../data/server';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
+import { SelectLanguage } from './selectlanguage.jsx';
 
 
 export const NewRecordRoute = React.createClass({
@@ -182,6 +183,7 @@ const EditRecord = React.createClass({
         return {
             record: null,
             fileState: 'done',
+            language: '',
             modal: null,
             errors: {},
             dirty: false,
@@ -326,6 +328,12 @@ const EditRecord = React.createClass({
         );
     },
 
+    handleLanguageCode: function(langValue) {
+        this.setState({
+            language: langValue
+        });
+    },
+
     renderField(blockID, fieldID, fieldSchema, blockSchema) {
         const plugin = null;
         if (!fieldSchema) {
@@ -357,6 +365,21 @@ const EditRecord = React.createClass({
             borderRadius:'4px',
         };
         const isError = this.state.errors.hasOwnProperty(fieldID);
+        if (fieldID == "language_code") {
+             return (
+                <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
+                    <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                        <span style={{float:'right', color:isError?'red':'black'}}>
+                            {fieldSchema.get('title') || fieldID} {type.required ? "*":""}
+                        </span>
+                    </label>
+                    <div className="col-sm-9" >
+                        <SelectLanguage onSelectLanguage={this.handleLanguageCode} defValue={getValue()} /> 
+                    </div>
+                </div>
+            );
+        }                
+
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>

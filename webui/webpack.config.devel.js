@@ -9,10 +9,16 @@ module.exports = {
     plugins: [
         new WebpackShellPlugin({onBuildStart:['./make_version_js.sh']})
     ],
+    resolve: { extensions: ['', '.js', '.jsx', '.json'] },    
     module: {
         loaders: [
             {   test: /\.jsx?$/,
                 loader: 'babel-loader',
+                query: { presets: ['es2015', 'react'] },
+                include: path.join(__dirname, 'src')
+            },
+            {   test: /\.json?$/, 
+                loader: 'json', 
                 query: { presets: ['es2015', 'react'] },
                 include: path.join(__dirname, 'src')
             }
