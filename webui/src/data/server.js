@@ -294,7 +294,8 @@ class ServerCache {
                 console.error("accessing fileBucketUrl before draft fetch", draftID);
                 return null;
             }
-            const placeDataFn = data => this.store.setIn(['draftCache', draftID, 'files'], fromJS(data.contents));
+            const placeDataFn = data =>
+                this.store.setIn(['draftCache', draftID, 'files'], fromJS(data.contents.map(this.fixFile)));
             const errorFn = (xhr) => this.store.setIn(['draftCache', draftID, 'files'], new Error(xhr));
             return new Getter(fileBucketUrl, null, placeDataFn, errorFn);
         });
@@ -354,6 +355,18 @@ class ServerCache {
         );
     }
 
+    fixFile(file) {
+        if (!file.url) {
+            if (file.links && file.links.self) {
+                file.url = file.links.self;
+            } else if (file.key) {
+                file.url = fileBucketUrl + "/" + file.key;
+            }
+        }
+        return file;
+    }
+
+
     getLatestRecords() {
         this.getters.latestRecords.autofetch();
         return this.store.getIn(['latestRecords']);
@@ -410,7 +423,8 @@ class ServerCache {
         }
         ajaxGet({
             url: record.getIn(['links', 'files']),
-            successFn: (data) => this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents)),
+            successFn: (data) =>
+                this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
             errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
         });
     }
@@ -566,7 +580,6 @@ class ServerCache {
     }
 
     b2dropCopyFile(draft, b2dropPath, fileName, progressFn) {
-        console.log("copy file to draft", draft.toJS());
         let fileBucketUrl = draft.getIn(['links', 'files']) ||
             this.store.getIn(['draftCache', draft.get('id'), 'links', 'files']);
         if (!fileBucketUrl) {

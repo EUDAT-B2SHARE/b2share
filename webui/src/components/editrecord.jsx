@@ -11,7 +11,7 @@ import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 momentLocalizer(moment);
 numberLocalizer();
 
-import { Files } from './editfiles.jsx';
+import { EditFiles } from './editfiles.jsx';
 import { keys, pairs } from '../data/misc';
 import { serverCache, Error } from '../data/server';
 import { Wait, Err } from './waiting.jsx';
@@ -189,10 +189,12 @@ const EditRecord = React.createClass({
     },
 
     renderFileBlock() {
-        const setState = fileState => {
+        const setState = (fileState, message) => {
             const errors = this.state.errors;
             if (fileState === 'done') {
                 delete errors.files;
+            } else if (fileState === 'error') {
+                errors.files = message;
             } else {
                 errors.files = 'Waiting for files to finish uploading';
             }
@@ -203,7 +205,7 @@ const EditRecord = React.createClass({
             return <Err err={files}/>;
         }
         return (
-            <Files files={files ? files.toJS() : []}
+            <EditFiles files={files ? files.toJS() : []}
                 record={this.props.record}
                 setState={setState}
                 setModal={modal => this.setState({modal})} />
@@ -411,7 +413,7 @@ const EditRecord = React.createClass({
         return (
             <div style={blockStyle} key={schemaID}>
                 <div className="row">
-                    <h3 className="col-sm-offset-3 col-sm-9" style={{marginBottom:'1em'}}>
+                    <h3 className="col-sm-12" style={{marginBottom:0}}>
                         { schemaID ? schema.get('title') : 'Basic fields' }
                     </h3>
                 </div>
@@ -522,7 +524,7 @@ const EditRecord = React.createClass({
         return (
             <div className="edit-record">
                 <div className="row">
-                    <div className="col-md-12">
+                    <div className="col-xs-12">
                         <h2 className="name">
                             <span style={{color:'#aaa'}}>Editing </span>
                             {this.state.record.get('title')}
@@ -535,10 +537,10 @@ const EditRecord = React.createClass({
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-lg-5 col-md-12">
+                    <div className="col-xs-12">
                         { this.renderFileBlock() }
                     </div>
-                    <div className="col-lg-7 col-md-12">
+                    <div className="col-xs-12">
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
                             { this.renderFieldBlock(null, rootSchema) }
 

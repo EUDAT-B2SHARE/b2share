@@ -2,11 +2,11 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import moment from 'moment';
-import Toggle from 'react-toggle';
 import { serverCache, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait, Err } from './waiting.jsx';
+import { FileRecordHeader, FileRecordRow } from './editfiles.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
@@ -102,7 +102,7 @@ const Record = React.createClass({
         return (
             <div>
                 <div className="row">
-                    <div className="col-md-12">
+                    <div className="col-sm-12">
                         {   // do not allow record editing, for now
                             //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
                         }
@@ -110,7 +110,7 @@ const Record = React.createClass({
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-8">
+                    <div className="col-sm-8 col-md-10">
                         { this.renderCreators(metadata) }
                         { this.renderDates(record) }
 
@@ -132,7 +132,7 @@ const Record = React.createClass({
                         }
                     </div>
 
-                    <div className="col-md-4">
+                    <div className="col-sm-4 col-md-2">
                         <div style={{float:'right', width:'10em'}}>
                         { this.renderSmallCommunity(community) }
                         </div>
@@ -151,7 +151,11 @@ const Record = React.createClass({
         }
 
         if (type.type === 'boolean') {
-            return <label><span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span><Toggle defaultChecked={value} disabled="disabled" /></label>;
+            const markClass = "glyphicon glyphicon-" + (value ? "ok":"remove");
+            const markStyle = {color: value ? "green":"red"};
+            return (
+                <label> <span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span>
+                        <span className={markClass} style={markStyle} aria-hidden="true"/></label>);
         }
 
         return value;
@@ -191,10 +195,10 @@ const Record = React.createClass({
 
         const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em'} : {};
         return (
-            <div style={blockStyle} key={schemaID}>
+            <div style={blockStyle} key={schemaID} className="well">
                 <div className="row">
-                    <h3 className="col-sm-9" style={{marginBottom:'1em'}}>
-                        { schemaID ? schema.get('title') : 'Basic fields' }
+                    <h3 className="col-sm-9" style={{marginTop:0}}>
+                        { schemaID ? schema.get('title') : 'Basic metadata' }
                     </h3>
                 </div>
                 <div className="row">
@@ -218,27 +222,16 @@ const Record = React.createClass({
         if (files instanceof Error) {
             return <Err err={files}/>;
         }
-        const renderFile = file => {
-            return (
-                <dl className="dl-horizontal file" key={file.get('uuid')} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                    <dt>Name</dt><dd><a href={file.get('url')}>{file.get('key')}</a></dd>
-                    <dt>PID</dt><dd>{file.get('PID') || "-"}</dd>
-                    <dt>Media Type</dt><dd>{file.get('mimetype') || "-"}</dd>
-                    <dt>Size</dt><dd>{humanSize(file.get('size'))}</dd>
-                    <dt>Checksum</dt><dd>{file.get('checksum') || "-"}</dd>
-                    <dt>Updated</dt><dd>{moment(file.get('updated')).format('ll')}</dd>
-                </dl>
-            );
-        };
         return (
-            <div>
+            <div className="well">
                 <div className="row">
-                    <h3 className="col-sm-9">
+                    <h3 className="col-sm-9" style={{marginTop:0}}>
                         { 'Files' }
                     </h3>
                 </div>
                 <div className='fileList'>
-                    { files.map(renderFile) }
+                    <FileRecordHeader/>
+                    { files.map(f => <FileRecordRow key={f.get('key')} file={f}/>) }
                 </div>
             </div>
         );
@@ -253,18 +246,23 @@ const Record = React.createClass({
         }
         return (
             <div className="container-fluid">
-                <div className="row">
-                    <div className="col-md-12">
-                        <div className="large-record">
+                <div className="large-record">
+                    <div className="row">
+                        <div className="col-lg-12">
                             {this.renderFixedFields(this.props.record, this.props.community)}
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-lg-6">
+                            { this.renderFileList(files) }
+                        </div>
 
+                        <div className="col-lg-6">
                             { this.renderFieldBlock(null, rootSchema) }
 
                             { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
                                 this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
                               ) : false }
-
-                            { this.renderFileList(files) }
                         </div>
                     </div>
                 </div>
@@ -272,3 +270,4 @@ const Record = React.createClass({
         );
     }
 });
+
