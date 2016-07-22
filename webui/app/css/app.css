@@ -601,22 +601,33 @@ a.navbar-brand {
 }
 
 .fileList {
-  background-color: white;
+  /*background-color: white;*/
 }
 
-.fileList .file {
+.fileList .fileHeader {
   margin: 0.5em 0px;
+  padding: 0.5em 0;
+  border-bottom: 1px solid #ddd;
+}
+.fileList .fileHeader *{
+  font-weight: bold;
+}
+.fileList .file {
   padding: 0.5em 0;
   word-wrap: break-word;
 }
 .fileList .file:nth-child(odd) {
-  background-color: #f8f8f8;
+  background-color: #f4f4f4;
 }
 .fileList .file:nth-child(even) {
-  background-color: #fefefe;
+  background-color: #fafafa;
 }
 .fileList .file:hover {
-  background-color: #eee;
+  background-color: #fff;
+}
+
+.fileList .file .details * {
+  margin-top: 0.25em;
 }
 
 .fileList .file .btn.remove {

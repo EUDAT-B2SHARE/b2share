@@ -88,7 +88,7 @@ export const UserProfile = React.createClass({
 
     render() {
         const user = this.props.user;
-        if (!user || !user.get('name')) {
+        if (!user || !user.get || !user.get('name')) {
             return this.renderNoUser();
         }
         const roles = user.get('roles');
