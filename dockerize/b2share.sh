@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # This file is supposed to live in a docker container
 
 if [ ! -f /eudat/provisioned ]; then

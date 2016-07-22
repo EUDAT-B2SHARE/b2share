@@ -49,6 +49,10 @@ def block_schema_version_self_link(block_schema_version, **kwargs):
         schema_version_nb=block_schema_version.version,
         **kwargs)
 
+def block_schema_version_json_schema_link(block_schema_version, **kwargs):
+    return '{}#/json_schema'.format(
+        block_schema_version_self_link(block_schema_version, **kwargs))
+
 
 def block_schema_version_to_dict(block_schema_version):
     return dict(
@@ -88,7 +92,7 @@ def community_schema_self_link(community_schema, **kwargs):
 
 def community_schema_json_schema_link(community_schema, **kwargs):
     return '{}#/json_schema'.format(
-        community_schema_self_link(community_schema, _external=True))
+        community_schema_self_link(community_schema, **kwargs))
 
 
 def community_schema_to_dict(community_schema):
@@ -97,7 +101,8 @@ def community_schema_to_dict(community_schema):
         version=community_schema.version,
         json_schema=community_schema.build_json_schema(),
         links={
-            'self': community_schema_self_link(community_schema)
+            'self': community_schema_self_link(community_schema,
+                                               _external=True)
         }
     )
 

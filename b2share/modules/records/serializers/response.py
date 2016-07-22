@@ -65,16 +65,10 @@ def record_responsify(serializer, mimetype):
 class JSONSerializer(InvenioJSONSerializer):
     def preprocess_record(self, pid, record, links_factory=None):
         g.record = record
-        try:
-            return super(JSONSerializer, self).preprocess_record(
-                pid, record, links_factory)
-        finally:
-            g.pop('record')
+        return super(JSONSerializer, self).preprocess_record(
+            pid, record, links_factory)
 
     def transform_search_hit(self, pid, record_hit, links_factory=None):
         g.record_hit = record_hit
-        try:
-            return super(JSONSerializer, self).transform_search_hit(
-                pid, record_hit, links_factory)
-        finally:
-            g.pop('record_hit')
+        return super(JSONSerializer, self).transform_search_hit(
+            pid, record_hit, links_factory)

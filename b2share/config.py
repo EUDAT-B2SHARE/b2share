@@ -215,3 +215,7 @@ B2DROP_SERVER = {
     'protocol': 'https',
     'path': '/remote.php/webdav/',
 }
+
+# By default we suppose there is one proxy in front of B2Share
+WSGI_PROXIES = 1
+PREFERRED_URL_SCHEME = 'http'

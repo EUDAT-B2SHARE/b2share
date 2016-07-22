@@ -30,6 +30,7 @@ from flask import Flask
 from invenio_base.app import create_app_factory
 from invenio_config import create_conf_loader
 from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.contrib.fixers import ProxyFix
 
 from . import config
 
@@ -71,9 +72,11 @@ def create_app(**kwargs):
     api.wsgi_app = DispatcherMiddleware(app_ui.wsgi_app, {
         '/api': api.wsgi_app
     })
-
-    ctx = api.app_context()
-    ctx.push()
+    if api.config.get('WSGI_PROXIES'):
+        wsgi_proxies = api.config.get('WSGI_PROXIES')
+        assert(wsgi_proxies > 0)
+        api.wsgi_app = ProxyFix(api.wsgi_app,
+                                num_proxies=api.config['WSGI_PROXIES'])
 
     return api
 
