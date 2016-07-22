@@ -72,9 +72,6 @@ def create_app(**kwargs):
         '/api': api.wsgi_app
     })
 
-    ctx = api.app_context()
-    ctx.push()
-
     return api
 
 
