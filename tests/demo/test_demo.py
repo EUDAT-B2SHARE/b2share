@@ -23,6 +23,7 @@ from functools import partial
 
 import os
 import sys
+from urllib.parse import urlparse
 
 import pytest
 from click.testing import CliRunner
@@ -34,6 +35,12 @@ from b2share.modules.schemas.cli import schemas as schemas_cmd
 from b2share_demo.cli import demo as demo_cmd
 
 
+@pytest.mark.parametrize('app', [({
+    'config': {'PREFERRED_URL_SCHEME': 'https'}
+}), ({
+    'config': {'PREFERRED_URL_SCHEME': 'http'}
+})],
+    indirect=['app'])
 def test_demo_cmd_load(app):
     """Test the `load` CLI command."""
     with app.app_context():
@@ -54,4 +61,6 @@ def test_demo_cmd_load(app):
                             getter=partial(Record.get_record,
                                            with_deleted=True))
         # check that the loaded record exists
-        resolver.resolve('a1c2ef96a1e446fa9bd7a2a46d2242d4')
+        resolved = resolver.resolve('a1c2ef96a1e446fa9bd7a2a46d2242d4')
+        schema = resolved[1]['$schema']
+        assert urlparse(schema).scheme == app.config['PREFERRED_URL_SCHEME']

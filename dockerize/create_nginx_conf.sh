@@ -11,18 +11,15 @@ server {
         server_name $FQDN;
         charset utf-8;
         
-        location /oai2d {
-                proxy_pass http://b2share:5000/oai2d;
+        location /api/oai2d {
+                proxy_pass http://b2share:5000/api/oai2d;
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
 
         location / {
-                proxy_pass https://$FQDN;
-                proxy_set_header Host $FQDN;
-                proxy_set_header X-Real-IP $IP_ADDR;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                return 301 https://$http_host$request_uri;
         }
 
         error_page 500 502 503 504 /50x.html;
@@ -45,6 +42,7 @@ server {
                 proxy_set_header Host $FQDN;
                 proxy_set_header X-Real-IP $IP_ADDR;
                 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto \$scheme;
         }
 
         error_page 500 502 503 504 /50x.html;

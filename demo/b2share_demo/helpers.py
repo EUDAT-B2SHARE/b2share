@@ -31,6 +31,7 @@ import re
 import uuid
 from collections import namedtuple
 from uuid import UUID
+from urllib.parse import urlunsplit
 
 import click
 from flask import current_app
@@ -57,7 +58,14 @@ def load_demo_data(path, verbose=0):
     """
     with db.session.begin_nested():
         user_info = _create_user(verbose)
-        with current_app.test_request_context('/'):
+        # Define the base url used for the request context. This is useful
+        # for generated URLs which will use the provided url "scheme".
+        base_url = urlunsplit((
+            current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+            current_app.config['SERVER_NAME'],
+            current_app.config.get('APPLICATION_ROOT') or '', '', ''
+        ))
+        with current_app.test_request_context('/', base_url=base_url):
             current_app.login_manager.reload_user(user_info['user'])
             communities = _create_communities(path, verbose)
             _create_block_schemas(communities, verbose)
