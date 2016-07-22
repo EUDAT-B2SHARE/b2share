@@ -87,7 +87,8 @@ def resolve_schemas_ref(source):
         block_schema = BlockSchema.get_block_schema(schema_id)
         # FIXME use EPIC links
         return block_schema_version_self_link(
-            block_schema.versions[int(schema_version)]
+            block_schema.versions[int(schema_version)],
+            _external=True
         )
 
     return re.sub(

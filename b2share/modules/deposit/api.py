@@ -97,11 +97,10 @@ class Deposit(DepositRecord):
         except ValueError as e:
             raise InvalidRecordError('Community ID is not a valid UUID.') from e
         schema = CommunitySchema.get_community_schema(community_id)
-        data['$schema'] = '{}#/json_schema'.format(url_for(
-            'b2share_schemas.community_schema_item',
-            community_id=community_id,
-            schema_version_nb=schema.version,
-            _external=True))
+        from b2share.modules.schemas.serializers import \
+            community_schema_json_schema_link
+        data['$schema'] = community_schema_json_schema_link(schema,
+                                                            _external=True)
         deposit = super(Deposit, cls).create(data, id_=id_)
 
         # create file bucket
