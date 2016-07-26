@@ -1,5 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
+import { fromJS } from 'immutable';
 import { serverCache, Error } from '../data/server';
 import { pairs } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
@@ -130,19 +131,23 @@ const Community = React.createClass({
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
+        const rootSchema = this.props.rootSchema;
+        if (!rootSchema) {
+            return <Wait />;
+        }
+        const envelopedRootSchema = fromJS({
+            json_schema: rootSchema,
+        });
         const blockSchemas = this.props.blockSchemas;
         return (
             <div className="community-page">
                 <h1>{community.get('name')}</h1>
 
                 { this.renderCommunity(community) }
-                { blockSchemas ?
-                    <div className="row">
-                        <div className="col-sm-12">
-                            <hr/>
-                            <h3>Schemas</h3>
-                        </div>
-                    </div> : false }
+
+                <div className="row">
+                    { rootSchema ? this.renderSchema(['', envelopedRootSchema]) : false }
+                </div>
                 <div className="row">
                     { blockSchemas ? blockSchemas.map(this.renderSchema) : false}
                 </div>
