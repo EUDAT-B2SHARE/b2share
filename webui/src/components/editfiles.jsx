@@ -9,7 +9,7 @@ import { ReplaceAnimate } from './animate.jsx';
 
 const PT = React.PropTypes;
 
-export const DropZone = React.createClass({
+const LocalDropZone = React.createClass({
     propTypes: {
         onFiles: PT.func.isRequired,
     },
@@ -60,7 +60,7 @@ export const DropZone = React.createClass({
 });
 
 
-export const B2DropZone = React.createClass({
+const B2DropZone = React.createClass({
     propTypes: {
         onFiles: PT.func.isRequired,
     },
@@ -249,7 +249,7 @@ export const B2DropZone = React.createClass({
 });
 
 
-export const Files = React.createClass({
+export const EditFiles = React.createClass({
     propTypes: {
         files: PT.array.isRequired,
         record: PT.object.isRequired,
@@ -276,19 +276,21 @@ export const Files = React.createClass({
         this.setState({files:files});
     },
 
-    handleRemove: function(f) {
+    removeUploadFile: function(f) {
         if (f.xhr) {
             f.xhr.abort();
         }
         const files = this.state.files.filter(x => x !== f);
         if (files.length !== this.state.files.length) {
-            this.setState({files:files});
+            this.setState({files});
             if (!files || !files.length ) {
                 this.props.setState('done');
             }
-        } else if (f.key) {
-            serverCache.deleteFile(this.props.record, f.key);
         }
+    },
+
+    removeRecordFile: function(f) {
+        serverCache.deleteFile(this.props.record, f.key);
     },
 
     transferFileCallback(file, status, param) {
@@ -299,8 +301,15 @@ export const Files = React.createClass({
             this.forceUpdate();
         } else if (status === 'error') {
             const xhr = param;
-            file.error = xhr.statusText;
-            this.props.setState('error', xhr.statusText);
+            file.error = 'Error: ' + xhr.statusError;
+            try {
+                const json = JSON.parse(xhr.responseText);
+                if (json && json.message) {
+                    file.error = 'Error: ' + json.message;
+                }
+            } catch (SyntaxError) {
+            }
+            this.props.setState('error', file.error);
             this.forceUpdate();
         } else if (status === 'done') {
             const files = this.state.files.filter(x => x !== file);
@@ -329,13 +338,114 @@ export const Files = React.createClass({
         }, 1);
     },
 
-    renderProgress: function(f) {
-        const widthPercent = f.progress+'%';
+    renderUploadQueue() {
+        if (!this.state.files.length) {
+            return false;
+        }
+        return(
+            <div className="well" style={{marginTop:'1em'}}>
+                <div className="fileList">
+                    <FileUploadHeader/>
+                    { this.state.files.map(f =>
+                        <FileUploadRow key={f.name} file={f} remove={() => this.removeUploadFile(f)} />) }
+                </div>
+            </div>
+        );
+    },
+
+
+    renderRecordFiles() {
+        if (!this.props.files.length) {
+            return false;
+        }
+        return(
+            <div className="well" style={{marginTop:'1em'}}>
+                <div className="fileList">
+                    <FileRecordHeader/>
+                    { this.props.files.map(f =>
+                        <FileRecordRow key={f.key} file={f} remove={()=>this.removeRecordFile(f)} />) }
+                </div>
+            </div>
+        );
+    },
+
+
+
+    render: function() {
+        this.updateNext();
+        const b2dropZone = <B2DropZone close={e => this.props.setModal(false)}
+                                       onFiles={fs => this.handleAdd(fs, 'b2drop')} />;
+        return (
+            <div>
+                <div className="row" style={{borderBottom:'1px solid #ddd'}}>
+                    <h3 className="col-md-3">
+                        Add files
+                    </h3>
+                    <div className="col-md-9" style={{margin:'1em 0'}}>
+                        <LocalDropZone onFiles={fs => this.handleAdd(fs, 'local')}/>
+                    </div>
+                    <div className="col-md-offset-3 col-md-9" style={{marginBottom:'1em'}}>
+                        <button className='b2dropbutton' onClick={e => this.props.setModal(b2dropZone)}>
+                            <img src="/img/b2drop.png"/>
+                            <h3>Add B2DROP files</h3>
+                        </button>
+                    </div>
+
+                    { !this.state.files.length ? false :
+                        <div className="col-md-offset-3 col-md-9">
+                            { this.renderUploadQueue() }
+                        </div>
+                    }
+                </div>
+
+                { !this.props.files.length ? false :
+                    <div className="row" style={{borderBottom:'1px solid #ddd'}}>
+                        <div className="col-md-3">
+                            <h3> Uploaded files </h3>
+                        </div>
+                        <div className="col-md-9" style={{marginBottom:'1em'}}>
+                            { this.renderRecordFiles() }
+                        </div>
+                    </div>
+                }
+            </div>
+        );
+    },
+});
+
+
+export const FileUploadHeader = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+    render() {
+        return (
+            <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+                <div className="col-sm-6">Name</div>
+                <div className="col-sm-3">Size</div>
+            </div>
+        );
+    }
+});
+
+
+const FileUploadRow = React.createClass({
+    propTypes: {
+        file: PT.object.isRequired,
+        remove: PT.func.isRequired,
+    },
+
+    getInitialState() {
+        return {
+            remove: false,
+        };
+    },
+
+    renderProgress: function(file) {
+        const widthPercent = file.progress+'%';
         return (
             <div className="row" style={{margin:'5px 0px'}}>
                 <div className="col-md-12">
                     <div className="progress" style={{margin:'10px 0', height: 4}}>
-                        <div className="progress-bar" role="progressbar" aria-valuenow={f.progress}
+                        <div className="progress-bar" role="progressbar" aria-valuenow={file.progress}
                              aria-valuemin="0" aria-valuemax="100" style={{width:widthPercent, height:4}} />
                     </div>
                 </div>
@@ -343,79 +453,142 @@ export const Files = React.createClass({
         );
     },
 
-    renderFile: function(f, i) {
+    renderError: function(file) {
         return (
-            <div key={f.name || f.key} className="file">
-                <div className="row" style={{}}>
-                    <div className="col-sm-12">
-                        <dl className="dl-horizontal">
-                            <dt>Name</dt>
-                            <div>
-                                <dd><a href={f.url}>{f.name || f.key}</a></dd>
-                                <button type="button" className="btn btn-sm remove" style={{float:'right'}}
-                                    onClick={()=>{f.remove=true; this.forceUpdate()}}> <i className="glyphicon glyphicon-remove"/>
-                                </button>
-                            </div>
-                            { f.PID ? <div><dt>PID</dt><dd>{f.PID}</dd></div> : false }
-                            { f.mimetype ? <div><dt>Media Type</dt><dd>{f.mimetype}</dd></div> : false }
-                            <dt>Size</dt><dd>{humanSize(f.size)}</dd>
-                            { f.checksum ? <div><dt>Checksum</dt><dd>{f.checksum}</dd></div> : false }
-                            { f.updated ? <div><dt>Updated</dt><dd>{moment(f.updated).format('ll')}</dd></div> : false }
-                        </dl>
-                    </div>
+            <div className="row" style={{margin:'5px 0px'}}>
+                <div className="col-md-12">
+                    <div className="alert alert-danger" style={{width:'100%', marginBottom:0}}> {file.error} </div>
                 </div>
-                { f.remove ?
-                    <div className="row" style={{borderTop:'2px solid white'}}>
-                        <div className="col-sm-10 col-sm-offset-1"> <p style={{textAlign:'center', padding:'1em 0'}}>
-                            {f.progress ? 'Stop uploading and remove this file?' : 'Remove this file?'}
-                            { f.key ? ' This operation will change the record.' : false }
-                        </p> </div>
-                        <div className="col-sm-4 col-sm-offset-2">
-                            <button type="button" className="btn btn-default btn-block btn-sm" onClick={this.handleRemove.bind(this, f)}> Yes </button>
-                        </div>
-                        <div className="col-sm-4">
-                            <button type="button" className="btn btn-default btn-block btn-sm" onClick={()=>{f.remove=false; this.forceUpdate()}}> No </button>
-                        </div>
-                    </div> : false}
-                { f.progress ? this.renderProgress(f) : false }
             </div>
         );
     },
 
-    renderB2DropButton: function() {
-        const b2dropZone = <B2DropZone close={e => this.props.setModal(false)}
-                                       onFiles={fs => this.handleAdd(fs, 'b2drop')} />;
+    render() {
+        let file = this.props.file;
+        file = file.toJS ? file.toJS() : file;
         return (
-            <button className='b2dropbutton' onClick={e => this.props.setModal(b2dropZone)}>
-                <img src="/img/b2drop.png"/>
-                <h3>Add B2DROP files</h3>
-            </button>
+            <div className="file" onClick={e => this.setState({open:!this.state.open})}>
+                <div className="row">
+                    <div className="col-sm-6">
+                        <a style={{marginLeft:'1em'}}>{file.name}</a>
+                    </div>
+                    <div className="col-sm-3">{humanSize(file.size)}</div>
+                    { this.props.remove ?
+                        <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
+                            onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>
+                        </button> : false
+                    }
+                </div>
+                { this.state.remove ?
+                    <FileRemoveDialog file={file}
+                                      remove={this.props.remove}
+                                      cancel={()=>this.setState({remove:false})} />
+                    : false }
+                { file.progress ? this.renderProgress(file) : false }
+                { file.error ? this.renderError(file) : false }
+            </div>
         );
+    },
+});
+
+
+export const FileRecordHeader = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+    render() {
+        return (
+            <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+                <div className="col-sm-6">Name</div>
+                <div className="col-sm-3">Date</div>
+                <div className="col-sm-3">Size</div>
+            </div>
+        );
+    }
+});
+
+
+export const FileRecordRow = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+
+    propTypes: {
+        file: PT.object.isRequired,
+        remove: PT.func,
+    },
+
+    getInitialState() {
+        return {
+            open: false,
+            remove: false,
+        };
+    },
+
+    render() {
+        let file = this.props.file;
+        file = file.toJS ? file.toJS() : file;
+
+        const allowDetails = file.checksum && file.PID;
+        const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
+
+        return (
+            <div className="file" onClick={e => this.setState({open:!this.state.open})}>
+                <div className="row">
+                    <div className="col-sm-6">
+                        <span className={"glyphicon glyphicon-chevron-"+stateMark}
+                            style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
+                        <a style={{display:'inline-block', marginLeft:'0.5em'}}
+                            href={file.url}>{file.key || file.name}</a>
+                    </div>
+                    <div className="col-sm-3">{moment(file.updated).format('ll')}</div>
+                    <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
+                    { this.props.remove ?
+                        <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
+                            onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>
+                        </button> : false
+                    }
+                </div>
+                { allowDetails && this.state.open ?
+                    <div className="details">
+                        <div className="row">
+                            <div className="col-sm-12"><span style={{marginLeft:'3em'}}/>
+                            PID: {file.PID || "-"}</div>
+                        </div>
+                        <div className="row">
+                            <div className="col-sm-12"><span style={{marginLeft:'3em'}}/>
+                            Checksum: {file.checksum || "-"}</div>
+                        </div>
+                    </div> : false }
+                { this.props.remove && this.state.remove ?
+                    <FileRemoveDialog file={file}
+                                      remove={this.props.remove}
+                                      cancel={()=>this.setState({remove:false})} />
+                    : false }
+            </div>
+        );
+    },
+});
+
+
+const FileRemoveDialog = React.createClass({
+    propTypes: {
+        file: PT.object.isRequired,
+        remove: PT.func.isRequired,
+        cancel: PT.func.isRequired,
     },
 
     render: function() {
-        this.updateNext();
+        const file = this.props.file;
         return (
-            <div>
-                { this.props.files.length ?
-                    <div className="row" style={{marginBottom:'1em'}} >
-                        <div className="col-md-12">
-                            <h3> Record files </h3>
-                        </div>
-                    </div> : false }
-                <div className="fileList">
-                    { this.props.files.map(this.renderFile) }
+            <div className="row">
+                <div className="col-sm-10 col-sm-offset-1"> <p style={{textAlign:'center', padding:'1em 0'}}>
+                    { file.progress ? 'Stop uploading and remove this file?' : 'Remove this file?'}
+                    { file.key ? ' This operation will change the record.' : false }
+                </p> </div>
+                <div className="col-sm-4 col-sm-offset-2">
+                    <button type="button" className="btn btn-default btn-block btn-sm"
+                        onClick={this.props.remove}> Yes </button>
                 </div>
-                <div className="row">
-                    <h3 className="col-md-12" style={{marginBottom:'1em'}}>
-                        { this.props.files.length ? 'Add more files' : 'Add files'}
-                    </h3>
-                </div>
-                <DropZone onFiles={fs => this.handleAdd(fs, 'local')}/>
-                <div style={{marginTop:'1em'}}/>
-                { this.renderB2DropButton() }
-                <div className="fileList">
-                    { this.state.files.map(this.renderFile) }
+                <div className="col-sm-4">
+                    <button type="button" className="btn btn-default btn-block btn-sm"
+                        onClick={this.props.cancel}> No </button>
                 </div>
             </div>
         );
