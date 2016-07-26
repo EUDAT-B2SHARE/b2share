@@ -106,10 +106,10 @@ export const Schema = React.createClass({
         const jschema = schema.get('json_schema');
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(jschema);
         return (
-            <div>
+            <div style={{margin:'2em 0'}}>
                 <div className="row">
                     <div className="col-sm-12">
-                        <h4 className="title">{jschema.get('title')}</h4>
+                        <h3 className="title">{jschema.get('title') || "Metadata"}</h3>
                         <p className="description">{jschema.get('description')}</p>
                     </div>
                 </div>

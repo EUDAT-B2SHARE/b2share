@@ -143,7 +143,7 @@
         "additionalProperties": false,
         "b2share": {
             "presentation": {
-                "major": [ "community", "title", "description", "creator", "open_access", "licence", "keywords", "contact_email", "discipline" ],
+                "major": [ "community", "title", "description", "creators", "open_access", "licence", "keywords", "contact_email", "discipline" ],
                 "minor": [ "contributors", "resource_type", "alternate_identifier", "version", "publisher", "language"]
             }
         }
