@@ -33,12 +33,14 @@ from invenio_db import db
 from sqlalchemy.orm.exc import NoResultFound
 
 from b2share.modules.communities import Community
+from b2share.modules.schemas.helpers import validate_json_schema
 
+from jsonpatch import apply_patch
 from .errors import BlockSchemaDoesNotExistError, BlockSchemaIsDeprecated, \
     CommunitySchemaDoesNotExistError, InvalidBlockSchemaError, \
     InvalidJSONSchemaError, InvalidRootSchemaError, \
-    RootSchemaDoesNotExistError
-from .helpers import validate_json_schema
+    RootSchemaDoesNotExistError, InvalidSchemaVersionError,\
+    SchemaVersionExistsError
 
 
 class RootSchema(object):
@@ -169,7 +171,7 @@ class BlockSchema(object):
                 filters.append(BlockSchemaModel.name == name)
 
             return [cls(model) for model in BlockSchemaModel.query.filter(
-                *filters).all()]
+                *filters).order_by(BlockSchemaModel.created).all()]
         except NoResultFound as e:
             raise BlockSchemaDoesNotExistError() from e
 
@@ -194,7 +196,52 @@ class BlockSchema(object):
             raise InvalidBlockSchemaError() from e
         return block_schema
 
-    def create_version(self, json_schema):
+    def update(self, data, clear_fields=False):
+        """Update multiple fields of the schema at the same time.
+        If the update fails, none of the schema's fields are modified.
+        Args:
+            data (dict): it replaces the given values.
+            clear_fields (bool): if True, set not specified fields to None.
+        Returns:
+            :class:`BlockSchema`: self
+        Raises:
+            b2share.modules.schemas.InvalidBlockSchemaError: The
+                schema update failed because the resulting schema is
+                not valid.
+        """
+        try:
+            with db.session.begin_nested():
+                if clear_fields:
+                    for field in ['name']:
+                        setattr(self.model, field, data.get(field, None))
+                else:
+                    for key, value in data.items():
+                        setattr(self.model, key, value)
+                db.session.merge(self.model)
+        except sqlalchemy.exc.IntegrityError as e:
+            raise InvalidBlockSchemaError() from e
+        return self
+
+    def patch(self, patch):
+        """Update the schema's metadata with a json-patch.
+        Args:
+            patch (dict): json-patch which can modify the following fields:
+                name, description, logo.
+        Returns:
+            :class:`BlockSchema`: self
+        Raises:
+            jsonpatch.JsonPatchConflict: the json patch conflicts on the
+                block schema.
+            jsonpatch.InvalidJsonPatch: the json patch is invalid.
+            b2share.modules.block_schemas.errors.InvalidBlockSchemaError: The
+                block schema patch failed because the resulting block schema is
+                not valid.
+        """
+        data = apply_patch({'name': self.model.name}, patch, True)
+        self.update(data)
+        return self
+
+    def create_version(self, json_schema, version_number=None):
         """Create a new version of this schema and release it.
 
         Args:
@@ -224,8 +271,14 @@ class BlockSchema(object):
             ).filter(
                 BlockSchemaVersionModel.block_schema == self.model.id
             ).one().last_version
+
             new_version = (last_version + 1 if last_version is not None
                            else 0)
+            if version_number and new_version < version_number:
+                raise InvalidSchemaVersionError(last_version)
+            elif version_number and new_version > version_number:
+                raise SchemaVersionExistsError(last_version)
+
             model = BlockSchemaVersionModel(
                 block_schema=self.model.id,
                 # we specify the separators in order to avoir whitespaces
@@ -310,6 +363,11 @@ class BlockSchema(object):
                 An iterator on released block schema versions.
         """  # noqa
         return BlockSchemaVersionsIterator(self)
+
+    @property
+    def updated(self):
+        """Retrieve the updated field value of this Block Schema."""
+        return self.model.updated
 
 
 class BlockSchemaVersionsIterator(object):

@@ -171,7 +171,7 @@ class Community(object):
         """Update the community's metadata with a json-patch.
 
         Args:
-            patch (str): json-patch which can modify the following fields:
+            patch (dict): json-patch which can modify the following fields:
                 name, description, logo.
 
         Returns:
