@@ -23,8 +23,8 @@
 
 """B2share access permissions loader."""
 
-from flask.ext.login import current_user
-from flask.ext.principal import identity_loaded
+from flask_login import current_user
+from flask_principal import identity_loaded
 from invenio_access.permissions import ParameterizedActionNeed
 from flask import current_app
 from werkzeug.local import LocalProxy
