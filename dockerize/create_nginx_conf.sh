@@ -37,6 +37,9 @@ server {
         ssl_protocols           TLSv1 TLSv1.1 TLSv1.2;
         ssl_ciphers             HIGH:!aNULL:!MD5;
 
+	client_max_body_size 100m;
+	client_body_timeout 600s;
+
         location / {
                 proxy_pass http://b2share:5000;
                 proxy_set_header Host $FQDN;
