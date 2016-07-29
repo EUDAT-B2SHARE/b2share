@@ -108,3 +108,19 @@ def generate_record_data(title='My Test BBMRI Record', open_access=True,
         }
     }
     return resolve_record_data(data)
+
+
+def create_user_token(userid, name='token', scopes=None):
+    """Create access tokens for a given user.
+
+    Returns:
+        tuple: (access token, authorization header)
+    """
+    if scopes is None:
+        scopes = [s[0] for s in current_oauth2server.scope_choices()]
+    token = Token.create_personal(
+        'other_token', other_user.id,
+        scopes=[s[0] for s in scopes]
+    )
+    return token, [('Authorization',
+                    'Bearer {}'.format(allowed_token.access_token))]
