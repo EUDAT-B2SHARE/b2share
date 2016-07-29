@@ -100,9 +100,8 @@ class UserTokenList(ContentNegotiatedMethodView):
             abort(400)
 
         scopes = current_oauth2server.scope_choices()
-        scopes_str = " ".join([s[0] for s in scopes])
         token = Token.create_personal(
-            token_name, current_user.get_id(), scopes=scopes_str
+            token_name, current_user.get_id(), scopes=[s[0] for s in scopes]
         )
         db.session.commit()
         return token_to_json_serializer(token, show_access_token=True)

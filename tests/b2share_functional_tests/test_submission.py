@@ -28,17 +28,65 @@ from __future__ import absolute_import, print_function
 import json
 from io import BytesIO
 
+import pytest
 from b2share.modules.deposit.api import PublicationStates
 from invenio_search import current_search
-from flask import url_for
+from flask import url_for as flask_url_for
 from invenio_db import db
+from invenio_oauth2server import current_oauth2server
+from invenio_oauth2server.models import Token
 
 
+@pytest.mark.parametrize('authentication', [('user/password'), ('oauth')])
 def test_deposit(app, test_communities, create_user, login_user,
-                 test_records_data):
+                 test_records_data, authentication):
+    """Test record submission with classic login and access token."""
+    with app.app_context():
+        allowed_user = create_user('allowed')
+
+        scopes = current_oauth2server.scope_choices()
+        allowed_token = Token.create_personal(
+            'allowed_token', allowed_user.id,
+            scopes=[s[0] for s in scopes]
+        )
+        # application authentication token header
+        allowed_headers = [('Authorization',
+                            'Bearer {}'.format(allowed_token.access_token))]
+
+        other_user = create_user('other')
+        other_token = Token.create_personal(
+            'other_token', other_user.id,
+            scopes=[s[0] for s in scopes]
+        )
+        # application authentication token header
+        other_headers = [('Authorization',
+                          'Bearer {}'.format(other_token.access_token))]
+
+        db.session.commit()
+
+    if authentication == 'user/password':
+        subtest_deposit(app, test_communities, allowed_user, other_user,
+                        [], [], login_user, test_records_data)
+    else:
+        subtest_deposit(app, test_communities, allowed_user, other_user,
+                        allowed_headers, other_headers, lambda u, c: 42,
+                        test_records_data)
+
+
+def subtest_deposit(app, test_communities, allowed_user, other_user,
+                    allowed_headers, other_headers, login_user,
+                    test_records_data):
+    def url_for(*args, **kwargs):
+        """Generate url using flask.url_for and the current app ctx.
+
+        This is necessary as we don't want to share the same application
+        context across requests.
+        """
+        with app.app_context():
+            return flask_url_for(*args, **kwargs)
 
     def test_files(client, bucket_link, uploaded_files):
-        headers = {'Accept': '*/*'}
+        headers = [('Accept', '*/*')] + allowed_headers
         file_list_res = client.get(bucket_link,
                                    headers=headers)
         assert file_list_res.status_code == 200
@@ -51,16 +99,12 @@ def test_deposit(app, test_communities, create_user, login_user,
             uploaded_content = uploaded_files[draft_file['key']]
             assert draft_file['size'] == len(uploaded_content)
 
-    with app.app_context():
-        allowed_user = create_user('allowed')
-        db.session.commit()
-
     with app.test_client() as client:
         login_user(allowed_user, client)
         headers = [('Content-Type', 'application/json'),
-                    ('Accept', 'application/json')]
+                   ('Accept', 'application/json')] + allowed_headers
         patch_headers = [('Content-Type', 'application/json-patch+json'),
-                            ('Accept', 'application/json')]
+                         ('Accept', 'application/json')] + allowed_headers
 
         created_records = {}  # dict of created records
         for record_data in test_records_data:
@@ -82,7 +126,7 @@ def test_deposit(app, test_communities, create_user, login_user,
 
             for file_key, file_content in uploaded_files.items():
                 # Test file upload
-                headers = {'Accept': '*/*'}
+                headers = [('Accept', '*/*')] + allowed_headers
                 object_url = '{0}/{1}'.format(
                     draft_create_data['links']['files'], file_key)
                 file_put_res = client.put(
@@ -103,7 +147,7 @@ def test_deposit(app, test_communities, create_user, login_user,
 
             # test draft PATCH
             headers = [('Content-Type', 'application/json-patch+json'),
-                        ('Accept', 'application/json')]
+                       ('Accept', 'application/json')] + allowed_headers
             draft_patch_res = client.patch(
                 url_for('b2share_deposit_rest.b2share_deposit_item',
                         pid_value=draft_create_data['id']),
@@ -177,7 +221,8 @@ def test_deposit(app, test_communities, create_user, login_user,
     with app.test_client() as client:
         login_user(allowed_user, client)
         # refresh index to make records searchable
-        current_search._client.indices.refresh()
+        with app.app_context():
+            current_search._client.indices.refresh()
 
         # test search  records
         record_search_res = client.get(
@@ -192,10 +237,8 @@ def test_deposit(app, test_communities, create_user, login_user,
                             record_search_data['hits']['hits']}
         assert search_records == created_records
 
-    with app.app_context():
-        other_user = create_user('other')
-        db.session.commit()
-
+    headers = [('Content-Type', 'application/json'),
+                ('Accept', 'application/json')] + other_headers
     with app.test_client() as client:
         # test with a user not owning any records
         login_user(other_user, client)
