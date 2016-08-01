@@ -24,8 +24,8 @@ B2SHARE
 .. image:: https://img.shields.io/travis/EUDAT-B2SHARE/b2share.svg
         :target: https://travis-ci.org/EUDAT-B2SHARE/b2share
 
-.. image:: https://img.shields.io/coveralls/EUDAT-B2SHARE/b2share.svg
-        :target: https://coveralls.io/r/EUDAT-B2SHARE/b2share
+.. image:: https://coveralls.io/repos/github/EUDAT-B2SHARE/b2share/badge.svg?branch=evolution
+        :target: https://coveralls.io/github/EUDAT-B2SHARE/b2share?branch=evolution
 
 .. image:: https://img.shields.io/github/tag/EUDAT-B2SHARE/b2share.svg
         :target: https://github.com/EUDAT-B2SHARE/b2share/releases
