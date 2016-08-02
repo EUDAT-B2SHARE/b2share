@@ -25,6 +25,8 @@
 
 from __future__ import absolute_import
 
+from invenio_rest.errors import RESTException
+
 
 class B2ShareSchemasError(Exception):
     """Base class for the B2Share Schemas module."""
@@ -130,4 +132,16 @@ class CommunitySchemaIsImmutable(B2ShareSchemasError):
 
 class CommunitySchemaDoesNotExistError(B2ShareSchemasError):
     """Exception raised when a requested Community schema does not exist."""
-    pass
+pass
+
+
+#
+# REST ERRORS
+#
+
+
+class MaxResultWindowRESTError(RESTException):
+    """Maximum number of results passed."""
+
+    code = 400
+    description = 'Maximum number of results have been reached.'

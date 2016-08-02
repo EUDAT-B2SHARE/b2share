@@ -233,10 +233,55 @@ def test_get_schemas(app, test_communities):
                 headers=headers)
             assert res.status_code == 200
             response_data = json.loads(res.get_data(as_text=True))
-            assert isinstance(response_data['schemas'], list)
-            assert len(response_data['schemas']) == 2
-            assert response_data['schemas'][0]['name'] == block_schema_2.name
-            assert response_data['schemas'][1]['name'] == block_schema_3.name
+            assert isinstance(response_data['hits']['hits'], list)
+            assert len(response_data['hits']['hits']) == 2
+            assert response_data['hits']['hits'][0]['name'] == \
+                block_schema_2.name
+            assert response_data['hits']['hits'][1]['name'] == \
+                block_schema_3.name
+
+        with app.test_client() as client:
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            res = client.get(
+                url_for(
+                    'b2share_schemas.block_schema_list',
+                    community_id=community_id2,
+                    page=1,
+                    size=1,
+                ),
+                headers=headers)
+            assert res.status_code == 200
+            response_data = json.loads(res.get_data(as_text=True))
+            assert isinstance(response_data['hits']['hits'], list)
+            assert len(response_data['hits']['hits']) == 1
+
+
+def test_get_schemas_paginated(app, test_communities):
+     with app.app_context():
+        community = Community.create_community('name1nice', 'desc1')
+        community_id = community.id
+        block_schema_1 = BlockSchema.create_block_schema(community_id, 'abc')
+        block_schema_2 = BlockSchema.create_block_schema(community_id, 'abc2')
+        block_schema_3 = BlockSchema.create_block_schema(community_id, 'abc3')
+        with app.test_client() as client:
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            res = client.get(
+                url_for(
+                    'b2share_schemas.block_schema_list',
+                    community_id=community_id,
+                    page=2,
+                    size=1,
+                ),
+                headers=headers)
+            assert res.status_code == 200
+            response_data = json.loads(res.get_data(as_text=True))
+            assert response_data['links']['prev'] == '/schemas?page=1'
+            assert response_data['links']['next'] == '/schemas?page=3'
+            assert response_data['links']['self'] == '/schemas?page=2'
+            assert response_data['hits']['total'] == 3
+            assert response_data['hits']['hits'][0]['name'] == 'abc2'
 
 
 def test_updating_block_schema(app, test_communities):
@@ -244,7 +289,10 @@ def test_updating_block_schema(app, test_communities):
     with app.app_context():
         community = Community.create_community('name1', 'desc1')
         community_id = community.id
-        block_schema = BlockSchema.create_block_schema(community_id, 'original')
+        block_schema = BlockSchema.create_block_schema(
+            community_id,
+            'original'
+        )
         with app.test_client() as client:
             headers = [('Content-Type', 'application/json'),
                        ('Accept', 'application/json')]

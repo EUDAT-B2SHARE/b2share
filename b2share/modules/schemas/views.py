@@ -28,7 +28,7 @@ from __future__ import absolute_import
 
 from functools import wraps
 
-from flask import Blueprint, abort, request, current_app
+from flask import Blueprint, abort, request, current_app, url_for
 from invenio_rest import ContentNegotiatedMethodView
 from b2share.modules.communities.views import pass_community
 from b2share.modules.schemas.errors import InvalidBlockSchemaError, \
@@ -38,7 +38,7 @@ from jsonpatch import JsonPatchConflict, JsonPatchException, \
 
 from .api import BlockSchema, CommunitySchema
 from .errors import BlockSchemaDoesNotExistError, \
-    CommunitySchemaDoesNotExistError
+    CommunitySchemaDoesNotExistError, MaxResultWindowRESTError
 from .serializers import block_schema_version_to_json_serializer, \
     block_schema_to_dict, \
     community_schema_to_json_serializer, \
@@ -121,9 +121,9 @@ class BlockSchemaVersionResource(ContentNegotiatedMethodView):
 
         try:
             schema = block_schema.create_version(
-                                                data['json_schema'],
-                                                int(schema_version_nb)
-                                                )
+                data['json_schema'],
+                int(schema_version_nb)
+            )
         except InvalidSchemaVersionError as e:
             abort(400, str(e))
         except SchemaVersionExistsError as e:
@@ -186,7 +186,7 @@ class CommunitySchemaResource(ContentNegotiatedMethodView):
 class BlockSchemaListResource(ContentNegotiatedMethodView):
     view_name = 'block_schema_list'
 
-    def __init__(self, **kwargs):
+    def __init__(self, max_result_window=None, **kwargs):
         """Constructor."""
         super(BlockSchemaListResource, self).__init__(
             method_serializers={
@@ -200,14 +200,44 @@ class BlockSchemaListResource(ContentNegotiatedMethodView):
             default_media_type='application/json',
             **kwargs
         )
+        self.max_result_window = max_result_window or 10000
 
     def get(self):
         """Get a list of all schemas."""
+        page = request.values.get('page', 1, type=int)
+        size = request.values.get('size', 10, type=int)
+        if page * size >= self.max_result_window:
+            raise MaxResultWindowRESTError()
+
         community_id = request.args['community_id']
-        schemas = BlockSchema.get_all_block_schemas(community_id=community_id)
-        return self.make_response(
-            schemas=schemas,
-            code=200)
+        schemas = BlockSchema.get_all_block_schemas(
+            community_id=community_id)
+        paginated_schemas = self.paginate_schemas(schemas, page, size)
+        result = self.make_response(
+            schemas=paginated_schemas['hits'],
+            links=paginated_schemas['links'],
+            total=BlockSchema.count_all_block_schemas(community_id),
+            code=200,
+        )
+
+        return result
+
+    def paginate_schemas(self, schemas, page_number, page_size):
+        """Returns paginated BlockSchemas."""
+        result_schemas = schemas[(page_number - 1) * page_size:page_number*page_size]
+        endpoint = 'b2share_schemas.block_schema_list'
+        result_links = dict(self=url_for(endpoint, page=page_number))
+        if page_number > 1:
+            result_links['prev'] = url_for(endpoint, page=page_number - 1)
+
+        if page_size * page_number < len(schemas) and \
+                page_size * page_number < self.max_result_window:
+            result_links['next'] = url_for(endpoint, page=page_number + 1)
+
+        return {
+            'hits': result_schemas,
+            'links': result_links,
+        }
 
     def post(self):
         """Create a new schema."""

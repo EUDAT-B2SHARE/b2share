@@ -170,10 +170,27 @@ class BlockSchema(object):
             if name is not None:
                 filters.append(BlockSchemaModel.name == name)
 
-            return [cls(model) for model in BlockSchemaModel.query.filter(
-                *filters).order_by(BlockSchemaModel.created).all()]
+            query = BlockSchemaModel.query.filter(
+                *filters).order_by(BlockSchemaModel.created)
+
+            return [cls(model) for model in query]
         except NoResultFound as e:
             raise BlockSchemaDoesNotExistError() from e
+
+    @classmethod
+    def count_all_block_schemas(cls, community_id):
+        """Count all BlockSchemas.
+
+        Returns:
+            int: Number of BlockSchemas
+        """
+        from .models import BlockSchema as BlockSchemaModel
+
+        filters = []
+        if community_id is not None:
+            filters.append(BlockSchemaModel.community == community_id)
+
+        return BlockSchemaModel.query.filter(*filters).count()
 
     @classmethod
     def create_block_schema(cls, community_id, name, id_=None):
@@ -199,11 +216,14 @@ class BlockSchema(object):
     def update(self, data, clear_fields=False):
         """Update multiple fields of the schema at the same time.
         If the update fails, none of the schema's fields are modified.
+
         Args:
             data (dict): it replaces the given values.
             clear_fields (bool): if True, set not specified fields to None.
+
         Returns:
             :class:`BlockSchema`: self
+
         Raises:
             b2share.modules.schemas.InvalidBlockSchemaError: The
                 schema update failed because the resulting schema is
@@ -224,11 +244,14 @@ class BlockSchema(object):
 
     def patch(self, patch):
         """Update the schema's metadata with a json-patch.
+
         Args:
-            patch (dict): json-patch which can modify the following fields:
+            patch (str): json-patch which can modify the following fields:
                 name, description, logo.
+
         Returns:
             :class:`BlockSchema`: self
+
         Raises:
             jsonpatch.JsonPatchConflict: the json patch conflicts on the
                 block schema.

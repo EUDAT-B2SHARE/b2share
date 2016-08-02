@@ -482,12 +482,17 @@ def test_patch(app):
     """Test BlockSchema.patch()."""
     with app.app_context():
         created_community = Community.create_community(**community_metadata)
-        block_schema = BlockSchema.create_block_schema(created_community.id, 'abc')
+        block_schema = BlockSchema.create_block_schema(
+            created_community.id,
+            'abc'
+        )
         block_schema_id = block_schema.id
         db.session.commit()
 
         retrieved = BlockSchema.get_block_schema(block_schema_id)
-        retrieved.patch([{'op': 'replace', 'path': '/name', 'value': 'patched'}])
+        retrieved.patch(
+            [{'op': 'replace', 'path': '/name', 'value': 'patched'}]
+        )
         db.session.commit()
 
     with app.app_context():
@@ -496,7 +501,9 @@ def test_patch(app):
         assert getattr(patched, 'name') == 'patched'
 
         with pytest.raises(JsonPatchConflict):
-            patched.patch([{'op': 'replace', 'path': '/non_exist_name', 'value': None}])
+            patched.patch(
+                [{'op': 'replace', 'path': '/non_exist_name', 'value': None}]
+            )
         assert getattr(patched, 'name') == 'patched'
 
 
@@ -504,7 +511,10 @@ def test_update(app):
     """Test BlockSchema.update()."""
     with app.app_context():
         created_community = Community.create_community(**community_metadata)
-        block_schema = BlockSchema.create_block_schema(created_community.id, 'abc')
+        block_schema = BlockSchema.create_block_schema(
+            created_community.id,
+            'abc'
+        )
         block_schema_id = block_schema.id
         db.session.commit()
 
