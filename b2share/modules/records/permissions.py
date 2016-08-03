@@ -26,14 +26,9 @@
 from __future__ import absolute_import, print_function
 
 from b2share.modules.access.permissions import OrPermissions
-from flask_principal import UserNeed, ActionNeed, Permission
-from invenio_access.permissions import superuser_access, \
-    ParameterizedActionNeed
+from invenio_access.permissions import superuser_access
 
 from b2share.modules.access.permissions import StrictDynamicPermission
-
-
-# read_open_access_record_need = ActionNeed('read-open-access-record')
 
 
 class RecordPermission(OrPermissions):
@@ -55,31 +50,10 @@ class RecordPermission(OrPermissions):
         """Create additional permission."""
         pass
 
-class ReadRecordPermission(RecordPermission):
-    """Record update permission."""
-
-    def _load_additional_permissions(self):
-        """Create additional permission."""
-        if self.record['open_access']:
-            # allow everybody to see open_access records
-            self.permissions.clear()
-            self.permissions.add(Permission())
-            # needs.add(read_open_access_record_need)
-        else:
-            needs = set()
-            needs.add(ParameterizedActionNeed(
-                'read-closed-access-record', self.record['community'])
-            )
-            needs.add(ParameterizedActionNeed(
-                'read-closed-access-record', None
-            ))
-            for owner_id in self.record['_deposit']['owners']:
-                needs.add(UserNeed(owner_id))
-            self.permissions.add(StrictDynamicPermission(*needs))
-
 
 class UpdateRecordPermission(RecordPermission):
     """Record update permission."""
+
 
 class DeleteRecordPermission(RecordPermission):
     """Record delete permission."""
