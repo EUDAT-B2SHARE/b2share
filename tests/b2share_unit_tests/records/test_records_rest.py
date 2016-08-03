@@ -59,10 +59,14 @@ def test_record_read_permissions(app, test_communities,
                 assert request_res.status_code == status
         # test with anonymous user
         test_get(open_record_pid, 200)
-        test_get(closed_record_pid, 401)
+        test_get(closed_record_pid, 200)
+        # TODO: check that the user cannot access the files of
+        # the closed record
 
         test_get(open_record_pid, 200, non_creator)
-        test_get(closed_record_pid, 403, non_creator)
+        test_get(closed_record_pid, 200, non_creator)
+        # TODO: check that the user cannot access the files of
+        # the closed record
 
         test_get(open_record_pid, 200, creator)
         test_get(closed_record_pid, 200, creator)

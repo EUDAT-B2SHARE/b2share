@@ -237,6 +237,8 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
                             record_search_data['hits']['hits']}
         assert search_records == created_records
 
+    # Check non creator records access
+
     headers = [('Content-Type', 'application/json'),
                 ('Accept', 'application/json')] + other_headers
     with app.test_client() as client:
@@ -251,13 +253,13 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
         record_search_data = json.loads(
             record_search_res.get_data(as_text=True))
 
-        # check that only open_access records are returned
+        # check that all records are returned for non creator too
         open_access_records = {rec['id']: rec for rec in
                                 created_records.values()
                                 if rec['metadata']['open_access'] == True}
         search_records = {rec['id'] : rec for rec in
                             record_search_data['hits']['hits']}
-        assert search_records == open_access_records
+        assert search_records == created_records
 
         for recid, record_data in created_records.items():
             # Test record GET permissions
@@ -265,8 +267,6 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
                 url_for('b2share_records_rest.b2share_record_item',
                         pid_value=recid),
                 headers=headers)
-
-            if recid in open_access_records.keys():
-                assert record_get_res.status_code == 200
-            else:
-                assert record_get_res.status_code == 403
+            # check that non-creator can access the metadata
+            assert record_get_res.status_code == 200
+            # TODO: check that the files are not accessible

@@ -23,9 +23,7 @@
 
 """Records search class and helpers."""
 
-from elasticsearch_dsl.query import Bool, Q
 from invenio_search.api import RecordsSearch
-from flask_security import current_user
 
 
 class B2ShareRecordsSearch(RecordsSearch):
@@ -39,24 +37,3 @@ class B2ShareRecordsSearch(RecordsSearch):
     def __init__(self, **kwargs):
         """Initialize instance."""
         super(B2ShareRecordsSearch, self).__init__(**kwargs)
-        if current_user.is_authenticated:
-            self.query = Q(
-                'bool',
-                must=self.query._proxied,
-                should=[Q(
-                    Bool(filter=[Q('term', open_access=True)])
-                ),
-                Q(
-                    Bool(filter=[Q('term', owners=current_user.id)])
-                )],
-                minimum_should_match=1
-            )
-        else:
-            self.query = Q(
-                'bool',
-                must=self.query._proxied,
-                should=[Q(
-                    Bool(filter=[Q('term', open_access=True)])
-                )],
-                minimum_should_match=1
-            )
