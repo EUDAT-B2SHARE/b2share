@@ -38,8 +38,9 @@ def indexer_receiver(sender, json=None, record=None, index=None,
         json['_created'] = pytz.utc.localize(record.created).isoformat()
         json['_updated'] = pytz.utc.localize(record.updated).isoformat()
         json['owners'] = record['_deposit']['owners']
-        json['_internal'] = {
-            'files_bucket_id': str(record.files.bucket.id),
-        }
+        if record.files:
+            json['_internal'] = {
+                'files_bucket_id': str(record.files.bucket.id),
+            }
     except Exception:
         raise

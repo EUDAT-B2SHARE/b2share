@@ -24,6 +24,7 @@
 """B2Share Deposit API."""
 
 import uuid
+from contextlib import contextmanager
 from enum import Enum
 
 from flask import url_for, g
@@ -79,6 +80,19 @@ class Deposit(DepositRecord):
     def build_deposit_schema(self, record):
         """Convert record schema to a valid deposit schema."""
         return record['$schema']
+
+    @contextmanager
+    def _process_files(self, record_id, data):
+        """Snapshot bucket and add files in record during first publishing.
+
+        This is a temporary fix for data['_files'] not being set when there
+        are no files.
+        Remove this once inveniosoftware/invenio-deposit#107 is fixed.
+        """
+        with super(Deposit, self)._process_files(record_id, data):
+            if not self.files:
+                data['_files'] = []
+            yield data
 
     @classmethod
     def create(cls, data, id_=None):
