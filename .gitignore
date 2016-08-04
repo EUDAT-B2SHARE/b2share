@@ -47,3 +47,5 @@ app_instance/
 webui/app/b2share-bundle.js
 webui/app/b2share-bundle.js.map
 webui/app/lib/
+webui/src/version.js
+dockerize/nginx/b2share.*
