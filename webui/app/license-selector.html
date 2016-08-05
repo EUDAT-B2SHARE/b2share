@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>License Selector</title>
+    <style>
+        .license-selector .ls-modal-close:before {
+            background: none !important;
+        }
+    </style>
+    <link href="vendors/license-selector.css" rel="stylesheet">
+</head>
+<body>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+    <script type="text/javascript" src="vendors/license-selector.js"></script>
+    <script type="text/javascript">
+    $(function() {
+        function selectLicense(license) {
+            window.parent.postMessage(license, window.location.origin);
+        };
+
+        $('<div>')
+            .appendTo('body')
+            .licenseSelector({
+                showLabels : true,
+                onLicenseSelected : selectLicense,
+            })
+            .click();
+        $('section.license-selector')
+            .on('hide.lsmodal', function() { selectLicense(null); });
+    });
+    </script>
+</body>
+</html>

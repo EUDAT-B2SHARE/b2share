@@ -11,12 +11,13 @@ import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 momentLocalizer(moment);
 numberLocalizer();
 
-import { EditFiles } from './editfiles.jsx';
-import { keys, pairs } from '../data/misc';
 import { serverCache, notifications, Error } from '../data/server';
+import { keys, pairs } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
+import { EditFiles } from './editfiles.jsx';
+import { SelectLicense } from './selectlicense.jsx';
 
 
 export const NewRecordRoute = React.createClass({
@@ -328,6 +329,17 @@ const EditRecord = React.createClass({
         );
     },
 
+    renderLicenseField(type, getValue, setValue) {
+        return (
+            <div className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
+                {this.renderScalarField(type, getValue, setValue)}
+                <SelectLicense title="Select License"
+                               onSelect={license => setValue(license.name)}
+                               setModal={modal => this.setState({modal})} />
+            </div>
+        );
+    },
+
     renderField(blockID, fieldID, fieldSchema, blockSchema) {
         const plugin = null;
         if (!fieldSchema) {
@@ -343,6 +355,8 @@ const EditRecord = React.createClass({
         let field = false;
         if (!blockID && fieldID === 'community') {
             field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
+        } else if (!blockID && fieldID === 'licence') {
+            field = this.renderLicenseField(type, getValue, setValue);
         } else if (!type.isArray) {
             field = this.renderScalarField(type, getValue, setValue);
         } else {

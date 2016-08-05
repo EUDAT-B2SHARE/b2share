@@ -80,6 +80,20 @@ if [ ! -d ./b2share ]; then
 	node_modules/webpack/bin/webpack.js -p # pack for production
 fi
 
+cdvirtualenv src
+if [ ! -d ./public-license-selector ]; then
+	echo; echo "### Add public-license-selector"
+	git clone git@github.com:EUDAT-B2SHARE/public-license-selector.git
+
+	echo; echo "### Build public-license-selector"
+	cd public-license-selector
+	npm run build
+
+	echo; echo "### Install public-license-selector"
+	mkdir -p ../b2share/webui/app/vendors
+	cp dist/license-selector.* ../b2share/webui/app/vendors/
+fi
+
 cdvirtualenv src/b2share/devenv
 if [ -n "$REINIT" ]; then
 	echo; echo "### Reinitialize elasticsearch and redis"
