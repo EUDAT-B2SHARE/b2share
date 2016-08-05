@@ -13,7 +13,7 @@ numberLocalizer();
 
 import { EditFiles } from './editfiles.jsx';
 import { keys, pairs } from '../data/misc';
-import { serverCache, Error } from '../data/server';
+import { serverCache, notifications, Error } from '../data/server';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
@@ -86,7 +86,7 @@ export const NewRecordRoute = React.createClass({
     componentWillMount() {
         const user = serverCache.getUser();
         if (!user || !user.get('name')) {
-            serverCache.notifyWarning('Please login. A new record can only be created by logged in users.');
+            notifications.warning('Please login. A new record can only be created by logged in users.');
         }
     },
 

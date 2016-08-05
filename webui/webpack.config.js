@@ -7,18 +7,20 @@ module.exports = {
     devtool: 'source-map',
     output: { path: __dirname+"/app", filename: 'b2share-bundle.js' },
     plugins: [
-        new webpack.optimize.OccurenceOrderPlugin(),
+        new WebpackShellPlugin({onBuildStart:['./make_version_js.sh']}),
         new webpack.DefinePlugin({
             'process.env': {
                 'NODE_ENV': JSON.stringify('production')
             }
         }),
+        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en/), // trim down moment.js
+        new webpack.optimize.OccurenceOrderPlugin(),
+        new webpack.optimize.DedupePlugin(),
         new webpack.optimize.UglifyJsPlugin({
             compressor: {
                 warnings: false
             }
         }),
-        new WebpackShellPlugin({onBuildStart:['./make_version_js.sh']})
     ],
     module: {
         loaders: [
