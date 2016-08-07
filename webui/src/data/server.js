@@ -31,6 +31,9 @@ const apiUrls = {
 
     languages()                       { return `${urlRoot}/suggest/languages.json` },
 
+    abusereports(id)                  { return `${urlRoot}/api/records/${id}/abuserecords` },
+    accessrequestfiles(id)            { return `${urlRoot}/api/records/${id}/accessrequests` },
+
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
             return [];
@@ -233,6 +236,24 @@ class FilePoster {
     }
 }
 
+class CreateEmail { 
+    constructor(url){
+        this.url = url;
+        this.requestSent = false;
+    }
+
+    post(params, successFn){
+        if(!this.requestSent){
+            this.requestSent = true;
+            ajaxPost({
+                url: this.url,
+                params: params,
+                successFn: () => { this.requestSent = false; },
+                completeFn: () => { this.requestSent = false; },
+            });
+        }
+    }
+}
 
 class ServerCache {
     constructor() {
@@ -607,6 +628,19 @@ class ServerCache {
             errorFn,
         });
     }
+
+    reportAbuse(id, data, successFn) { 
+        var string_data = JSON.stringify(data, null, 2);
+        var report = new CreateEmail(apiUrls.abusereports(id));
+        report.post(data, successFn);
+    }    
+
+    requestAccessFile(id, data, successFn) { 
+        // This function will be changed later when we start using Zenodo_accessrequests module
+        var string_data = JSON.stringify(data, null, 2);
+        var request = new CreateEmail(apiUrls.accessrequestfiles(id));
+        request.post(data, successFn);
+    }        
 };
 
 

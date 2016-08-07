@@ -23,9 +23,11 @@
 
 
 import uuid
+import re
 from functools import partial
 
 from flask import Blueprint, abort, request, url_for
+from flask import jsonify, Flask, current_app
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
 from invenio_records_files.api import Record
@@ -41,7 +43,8 @@ from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import verify_record_permission
 from b2share.modules.deposit.serializers import json_v1_response as \
     deposit_serializer
-
+from invenio_mail import InvenioMail
+from flask_mail import Message
 
 def create_blueprint(endpoints):
     """Create Invenio-Records-REST blueprint."""
@@ -201,9 +204,35 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         links_factory=links_factory,
         default_media_type=default_media_type)
 
+    abuse_view = RecordsAbuseResource.as_view(
+        RecordResource.view_name.format('abuserecords'),
+        resolver=resolver,
+        read_permission_factory=read_permission_factory,
+        update_permission_factory=update_permission_factory,
+        delete_permission_factory=delete_permission_factory,
+        serializers=record_serializers,
+        loaders=record_loaders,
+        search_class=search_class,
+        links_factory=links_factory,
+        default_media_type=default_media_type)
+
+    access_view = RequestAccessResource.as_view(
+        RecordResource.view_name.format('accessrequests'),
+        resolver=resolver,
+        read_permission_factory=read_permission_factory,
+        update_permission_factory=update_permission_factory,
+        delete_permission_factory=delete_permission_factory,
+        serializers=record_serializers,
+        loaders=record_loaders,
+        search_class=search_class,
+        links_factory=links_factory,
+        default_media_type=default_media_type)
+
     views = [
         dict(rule=list_route, view_func=list_view),
         dict(rule=item_route, view_func=item_view),
+        dict(rule=item_route + '/abuserecords', view_func=abuse_view),
+        dict(rule=item_route + '/accessrequests', view_func=access_view)
     ]
 
     if suggesters:
@@ -273,3 +302,82 @@ class B2ShareRecordsListResource(RecordsListResource):
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
         response.headers.extend(dict(location=location))
         return response
+
+class RecordsAbuseResource(RecordResource):
+
+    def post(self, **kwargs):
+        for v in ['abusecontent','message','email','copyright','zipcode',\
+                  'phone','illegalcontent','city','noresearch','name',\
+                  'affiliation','address','country']:
+            if v not in request.json:
+                msg = v + ' is required'
+                return jsonify({'Error':msg})
+
+        count = 0
+        for ii in ['noresearch', 'abusecontent', 'copyright', 'illegalcontent']:
+            if request.json[ii]: count += 1
+        if count != 1:
+            return jsonify({'Error':'From \'noresearch\', \'abusecontent\', \'copyright\', \'illegalcontent\' (only) one should be True'})
+
+        FriendlyReason = { 'abusecontent': 'Abuse or Inappropriate content',
+                            'copyright': 'Copyrighted material',
+                            'noresearch': 'No research data',
+                            'illegalcontent': 'Illegal content' }
+        msg_content = """
+            We have received new abuse report!
+            Link: """ + re.sub('/abuserecords\?$','',request.full_path) + """
+            Subject: " Abuse Report for a Record "
+            Reason: """ + [ FriendlyReason[ii] for ii in ['noresearch', 'abusecontent', 'copyright', 'illegalcontent'] if request.json[ii] ][0] + """
+            Message: """ + str(request.json['message']) + """
+            Full Name: """ + str(request.json['name']) + """
+            Affiliation: """ + str(request.json['affiliation']) + """
+            Email: """ + str(request.json['email']) + """
+            Address: """ + str(request.json['address']) + """
+            City: """ + str(request.json['city']) + """
+            Country: """ + str(request.json['country']) + """
+            Postal Code: """ + str(request.json['zipcode']) + """
+            Phone: """ + str(request.json['phone']) + """
+            """
+        support = str(current_app.config.get('SUPPORT_EMAIL'))
+        msg = Message("Abuse Report for a Record", sender=str(request.json['email']),
+                         recipients=[support], body=msg_content)
+        app = Flask('abuseapp')
+        app.config.update(MAIL_SUPPRESS_SEND=True)
+        InvenioMail(app)
+        with app.app_context():
+            app.extensions['mail'].send(msg)
+        return jsonify({'message':'The record is reported.'})
+
+
+class RequestAccessResource(RecordResource):
+
+    def post(self, **kwargs):
+        for v in ['message','email','zipcode','phone','city','name',
+                  'affiliation','address','country']:
+            if v not in request.json:
+                msg = v + ' is required'
+                return jsonify({'Error':msg})
+        msg_content = """
+            You have a request for your data!
+            Link: """ + re.sub('/abuserecords\?$','',request.full_path) + """
+            Subject: " Request Access to Data Files "
+            Message: """ + str(request.json['message']) + """
+            Full Name: """ + str(request.json['name']) + """
+            Affiliation: """ + str(request.json['affiliation']) + """
+            Email: """ + str(request.json['email']) + """
+            Address: """ + str(request.json['address']) + """
+            City: """ + str(request.json['city']) + """
+            Country: """ + str(request.json['country']) + """
+            Postal Code: """ + str(request.json['zipcode']) + """
+            Phone: """ + str(request.json['phone']) + """
+            """
+        support = str(current_app.config.get('SUPPORT_EMAIL'))
+        msg = Message("Request Access to Data Files", sender=str(request.json['email']),
+                         recipients=[support], body=msg_content)
+        app = Flask('accessapp')
+        app.config.update(MAIL_SUPPRESS_SEND=True)
+        InvenioMail(app)
+        with app.app_context():
+            app.extensions['mail'].send(msg)
+        return jsonify( { 'message': 'An email was sent to the record owner.' } )
+
