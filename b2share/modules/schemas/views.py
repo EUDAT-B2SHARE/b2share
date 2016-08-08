@@ -42,7 +42,8 @@ from .errors import BlockSchemaDoesNotExistError, \
 from .serializers import block_schema_version_to_json_serializer, \
     block_schema_to_dict, \
     community_schema_to_json_serializer, \
-    block_schema_to_json_serializer, schemas_list_to_json_serializer
+    block_schema_to_json_serializer, schemas_list_to_json_serializer, \
+    community_schema_list_to_json_serializer
 from invenio_db import db
 from webargs import fields
 from webargs.flaskparser import use_kwargs
@@ -77,8 +78,8 @@ def pass_block_schema_version(f):
         try:
             if schema_version_nb == 'last':
                 block_schema_version = block_schema.versions[
-                                            len(block_schema.versions) - 1
-                                       ]
+                    len(block_schema.versions) - 1
+                ]
             elif schema_version_nb.isdigit():
                 version_nb = int(schema_version_nb)
                 block_schema_version = block_schema.versions[schema_version_nb]
@@ -121,9 +122,9 @@ class BlockSchemaVersionResource(ContentNegotiatedMethodView):
 
         try:
             schema = block_schema.create_version(
-                                                data['json_schema'],
-                                                int(schema_version_nb)
-                                                )
+                data['json_schema'],
+                int(schema_version_nb)
+            )
         except InvalidSchemaVersionError as e:
             abort(400, str(e))
         except SchemaVersionExistsError as e:
@@ -182,6 +183,51 @@ class CommunitySchemaResource(ContentNegotiatedMethodView):
     def get(self, community_schema):
         return community_schema
 
+    def put(self, community_id, schema_version_nb):
+        """Create a new version of the schema."""
+        data = request.get_json()
+        if data is None:
+            return abort(400)
+
+        try:
+            community_schema_version = CommunitySchema.create_version(
+                community_id,
+                data['json_schema'],
+                None,
+                int(schema_version_nb)
+            )
+        except InvalidSchemaVersionError as e:
+            abort(400, str(e))
+        except SchemaVersionExistsError as e:
+            abort(409, str(e))
+        return self.make_response(
+            community_schema=community_schema_version,
+            code=201,
+        )
+
+
+class CommunitySchemaListResource(ContentNegotiatedMethodView):
+    view_name = 'community_schema_list'
+
+    def __init__(self, **kwargs):
+        """Constructor."""
+        super(CommunitySchemaListResource, self).__init__(
+            serializers={
+                'application/json':
+                    community_schema_list_to_json_serializer,
+            },
+            default_media_type='application/json',
+            **kwargs
+        )
+
+    def get(self):
+        """Get a list of all schemas."""
+        community_schemas = CommunitySchema.get_all_community_schemas()
+        return self.make_response(
+            community_schemas=community_schemas,
+            code=200
+        )
+
 
 class BlockSchemaListResource(ContentNegotiatedMethodView):
     view_name = 'block_schema_list'
@@ -207,7 +253,8 @@ class BlockSchemaListResource(ContentNegotiatedMethodView):
         schemas = BlockSchema.get_all_block_schemas(community_id=community_id)
         return self.make_response(
             schemas=schemas,
-            code=200)
+            code=200
+        )
 
     def post(self):
         """Create a new schema."""
@@ -303,3 +350,8 @@ blueprint.add_url_rule(
     '/schemas',
     view_func=BlockSchemaListResource
         .as_view(BlockSchemaListResource.view_name))
+
+blueprint.add_url_rule(
+    '/communities/schemas',
+    view_func=CommunitySchemaListResource
+        .as_view(CommunitySchemaListResource.view_name))

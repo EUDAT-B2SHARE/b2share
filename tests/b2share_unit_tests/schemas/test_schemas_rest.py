@@ -35,6 +35,7 @@ from mock import patch
 from b2share.modules.schemas.api import CommunitySchema, BlockSchema, \
     BlockSchemaVersion
 from b2share.modules.communities.api import Community
+from b2share.modules.schemas.models import CommunitySchemaVersion
 from b2share_unit_tests.helpers import subtest_self_link
 
 
@@ -213,7 +214,7 @@ def test_get_schema_version(app, test_communities):
 
 
 def test_get_schemas(app, test_communities):
-    """"Test getting list of given community's schemas."""
+    """"Test getting list of given community's block schemas."""
     with app.app_context():
         community = Community.create_community('name1', 'desc1')
         community_id = community.id
@@ -258,3 +259,95 @@ def test_updating_block_schema(app, test_communities):
                 }),
                 headers=headers)
             assert res.status_code == 200
+
+
+def test_create_community_schema_version(app, test_communities):
+    """Test creating a new version of the schema."""
+    with app.app_context():
+        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
+        community_schema = CommunitySchema.get_community_schema(community_id)
+        version_schema = {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "name":"abcd"
+        }
+        last_version = community_schema.version
+        with app.test_client() as client:
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            res = client.put(
+                url_for(
+                    'b2share_schemas.community_schema_item',
+                    community_id=community_id,
+                    schema_version_nb=last_version + 1
+                ),
+                data=json.dumps({
+                    'json_schema': json_schema
+                }),
+                headers=headers)
+            assert res.status_code == 201
+
+
+def test_create_community_existing_schema_version(app, test_communities):
+    """Test creating an axisting version of the schema."""
+    with app.app_context():
+        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
+        version_schema = {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "name":"abcd"
+        }
+        community_schema = CommunitySchema.get_community_schema(community_id)
+        last_version = community_schema.version
+        with app.test_client() as client:
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            res = client.put(
+                url_for(
+                    'b2share_schemas.community_schema_item',
+                    community_id=community_id,
+                    schema_version_nb=last_version - 2
+                ),
+                data=json.dumps({
+                    'json_schema': json_schema
+                }),
+                headers=headers)
+            assert res.status_code == 409
+
+
+def test_create_community_invalid_schema_version(app, test_communities):
+    """Test creating an invalid version of the schema."""
+    with app.app_context():
+        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
+        with app.test_client() as client:
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            res = client.put(
+                url_for(
+                    'b2share_schemas.community_schema_item',
+                    community_id=community_id,
+                    schema_version_nb=5
+                ),
+                data=json.dumps({
+                    'json_schema': json_schema
+                }),
+                headers=headers)
+            assert res.status_code == 400
+
+
+def test_get_all_community_schemas(app, test_communities):
+    """Test getting list of all communities' schemas."""
+    with app.app_context():
+        with app.test_client() as client:
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            res = client.get(
+                url_for(
+                    'b2share_schemas.community_schema_list'
+                ),
+                headers=headers)
+        assert res.status_code == 200
+        response_data = json.loads(res.get_data(as_text=True))
+        assert len(response_data['community_schemas']) == \
+            CommunitySchemaVersion.query.count()
