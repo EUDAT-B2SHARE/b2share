@@ -55,7 +55,7 @@ def block_schema_version_json_schema_link(block_schema_version, **kwargs):
 
 
 def block_schema_version_to_dict(block_schema_version):
-    """Serializes block schema version to dict.
+    """Serialize block schema version to dict.
 
     Args:
         block_schema_version
@@ -74,7 +74,7 @@ def block_schema_version_to_dict(block_schema_version):
 
 def block_schema_version_to_json_serializer(block_schema_version, code=200,
                                             headers=None):
-    """Serializes block schema version to json response.
+    """Serialize block schema version to json response.
 
     Args:
         block_schema_version
@@ -141,8 +141,42 @@ def community_schema_to_json_serializer(community_schema, code=200,
     return response
 
 
+def community_schemas_list_to_dict(community_schemas):
+    """Serialize community schemas list to dict.
+
+    Args:
+        schemas: list of Community Schemas.
+
+    Returns:
+        dict: dict with list of Community Schemas.
+     """
+    return dict(
+        community_schemas=list(map(community_schema_to_dict, community_schemas))
+    )
+
+
+def community_schema_list_to_json_serializer(community_schemas, code=200,
+                                             headers=None):
+    """
+    Serialize community schemas list to Response.
+
+    Args:
+        community_schemas: list of Community Schemas.
+        code: http response code.
+        headers: additional http response headers.
+
+    Returns:
+        Response: response from list of CommunitySchemas.
+    """
+    response = jsonify(community_schemas_list_to_dict(community_schemas))
+    response.status_code = code
+    if headers is not None:
+        response.headers.extend(headers)
+    return response
+
+
 def block_schema_to_dict(schema):
-    """Serializes block schema to dict.
+    """Serialize block schema to dict.
 
     Args:
         schema: block schema to serialize into dict.
@@ -157,7 +191,7 @@ def block_schema_to_dict(schema):
 
 
 def block_schema_to_json_serializer(schema, code=200, headers=None):
-    """Serializes block schema to json response.
+    """Serialize block schema to json response.
 
     Args:
         schema: block schema to serialize into json response.
@@ -175,7 +209,7 @@ def block_schema_to_json_serializer(schema, code=200, headers=None):
 
 
 def schemas_list_to_dict(schemas):
-    """Serializes schemas list to dict.
+    """Serialize schemas list to dict.
 
     Args:
         schemas: list of BlockSchemas.
@@ -189,7 +223,7 @@ def schemas_list_to_dict(schemas):
 
 
 def schemas_list_to_json_serializer(schemas, code=200, headers=None):
-    """Serializes schema list to json response.
+    """Serialize schema list to json response.
 
     Args:
         schemas: list of block schemas.
