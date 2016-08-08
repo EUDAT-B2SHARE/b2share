@@ -28,7 +28,7 @@ b2share:
         - elasticsearch
         - redis
     environment:
-        - "B2SHARE_SERVER_NAME=${B2SHARE_SERVER_NAME}:5000"
+        - "B2SHARE_SERVER_NAME=${B2SHARE_SERVER_NAME}"
         - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
         - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
         - "B2SHARE_PREFERRED_URL_SCHEME=https"
