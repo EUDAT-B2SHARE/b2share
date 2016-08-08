@@ -37,10 +37,8 @@ export const HeightAnimate = React.createClass({
     },
 
     onHeight() {
-        if (!this.wrapper) {
-            return;
-        }
-        const h = this.wrapper.clientHeight + (this.props.delta ? this.props.delta:0);
+        const h = + (this.wrapper ? this.wrapper.clientHeight : 0)
+                  + (this.props.delta || 0);
         if (h != this.state.height) {
             this.setState({height: h});
         }

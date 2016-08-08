@@ -5,7 +5,7 @@ const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 import { fromJS } from 'immutable';
 import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 
-import { serverCache } from './data/server';
+import { serverCache, notifications } from './data/server';
 
 import { ReplaceAnimate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs, Notifications } from './components/navbar.jsx';
@@ -53,7 +53,7 @@ const AppFrame = React.createClass({
                     <div className="col-sm-1"/>
                     <div className="col-sm-10">
                         <Breadcrumbs />
-                        <Notifications />
+                        <Notifications dataRef={notifications.store.root}/>
                         <ReplaceAnimate>
                             { this.props.children && React.cloneElement(this.props.children, additionalProps) }
                         </ReplaceAnimate>
@@ -78,9 +78,17 @@ const Frame = React.createClass({
 });
 
 
+function testNewPage(prev, next) {
+    if (prev.location.pathname === next.location.pathname) {
+        return;
+    }
+    notifications.clearAll();
+}
+
+
 const router = (
     <Router history={browserHistory}>
-        <Route path="/" component={AppFrame}>
+        <Route path="/" component={AppFrame} onChange={testNewPage}>
             <IndexRoute component={HomeRoute} />
 
             <Route path="help">

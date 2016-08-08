@@ -61,7 +61,6 @@ const apiUrls = {
 };
 
 
-export const NOTIFICATION_DISPLAY_TIME = 10 * 1000; // 10 seconds
 const GETTER_HYSTERESIS_INTERVAL_MS = 500; // half a second
 
 
@@ -248,14 +247,9 @@ class ServerCache {
             blockSchemas: {}, // map of block schema IDs to versions to schemas
 
             languages: null,
-
-            notifications: {}, // alert level -> { alert text -> x }
         });
 
         this.store.setIn(['communities'], OrderedMap());
-        this.store.setIn(['notifications'], OrderedMap([
-            ['danger', OrderedMap()], ['warning', OrderedMap()], ['info', OrderedMap()]
-        ]));
 
         this.getters = {};
 
@@ -602,28 +596,45 @@ class ServerCache {
             errorFn,
         });
     }
+};
+
+
+class Notifications {
+    constructor() {
+        this.store = new Store({
+            notifications: {}, // alert level -> { alert text -> x }
+        });
+        this.emptyState = OrderedMap([
+            ['danger', OrderedMap()], ['warning', OrderedMap()], ['info', OrderedMap()]
+        ]);
+        this.store.setIn(['notifications'], this.emptyState);
+    }
+
+    getAll() {
+        return this.store.getIn(['notifications']);
+    }
+
+    clearAll() {
+        this.store.setIn(['notifications'], this.emptyState);
+    }
 
     notify(level, text) {
         this.store.setIn(['notifications', level, text], Date.now());
     }
 
-    getNotifications() {
-        return this.store.getIn(['notifications']);
-    }
-
-    notifyDanger(text) {
+    danger(text) {
         this.notify('danger', text);
     }
 
-    notifyWarning(text) {
+    warning(text) {
         this.notify('warning', text);
     }
 
-    notifySuccess(text) {
+    success(text) {
         this.notify('success', text);
     }
 
-    notifyInfo(text) {
+    info(text) {
         this.notify('info', text);
     }
 };
@@ -643,12 +654,8 @@ export class Error {
 }
 
 errorHandler.fn = function(text) {
-    const date = serverCache.store.getIn(['notifications', 'danger', text]);
-    if (!date || date + NOTIFICATION_DISPLAY_TIME < Date.now()) {
-        serverCache.notifyDanger(text);
-        console.log('danger:', text);
-    }
+    notifications.danger(text);
 }
 
 export const serverCache = new ServerCache();
-
+export const notifications = new Notifications();

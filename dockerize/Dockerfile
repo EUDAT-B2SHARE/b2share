@@ -29,6 +29,23 @@ WORKDIR /eudat/b2share/webui
 RUN npm install --unsafe-perm && \
     node_modules/webpack/bin/webpack.js -p
 
+WORKDIR /eudat
+RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git  \
+    && cd public-license-selector                                           \
+    && npm install
+WORKDIR /eudat/public-license-selector
+
+# this next RUN is just a workaround for the old version of node on centos7
+# without it, the npm run build fails when compiling less files
+RUN mv webpack.config.js webpack.config.js.0                                \
+    && echo "require('es6-promise').polyfill();" > webpack.config.js        \
+    && cat webpack.config.js.0 >> webpack.config.js                         \
+    && npm install es6-promise
+
+RUN npm run build                                                           \
+    && mkdir -p ../b2share/webui/app/vendors                                \
+    && cp dist/license-selector.* ../b2share/webui/app/vendors/
+
 WORKDIR /eudat/b2share
 RUN pip install requirements-builder
 RUN requirements-builder --level=min setup.py > lowest-requirements.txt
