@@ -134,6 +134,10 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
     ),
 )
 
+#: Files REST permission factory
+FILES_REST_PERMISSION_FACTORY = \
+    'b2share.modules.files.permissions:files_permission_factory'
+
 RECORDS_REST_DEFAULT_SORT = dict(
     records=dict(
         query='bestmatch',

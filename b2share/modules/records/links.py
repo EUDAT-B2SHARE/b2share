@@ -39,6 +39,15 @@ def http_header_link_regex(relation_type):
         re.escape(relation_type)))
 
 
+def url_for_bucket(bucket_id):
+    """Build the url for the given bucket."""
+    return url_for(
+        'invenio_files_rest.bucket_api',
+        bucket_id=bucket_id,
+        _external=True
+    )
+
+
 def record_links_factory(pid):
     """Factory for record links generation."""
     endpoint = 'b2share_records_rest.{0}_item'.format(pid.pid_type)
@@ -50,17 +59,11 @@ def record_links_factory(pid):
         # FIXME: index the record bucket with the bucket so that we can
         # add the "files" link
         if record.files is not None:
-            links['files'] = url_for(
-                'invenio_files_rest.bucket_api',
-                bucket_id=record.files.bucket,
-                _external=True
-            )
+            links['files'] = url_for_bucket(record.files.bucket)
     if hasattr(g, 'record_hit'):
         metadata = g.record_hit['_source']
         if 'files_bucket_id' in metadata['_internal']:
-            links['files'] = url_for(
-                'invenio_files_rest.bucket_api',
-                bucket_id=metadata['_internal']['files_bucket_id'],
-                _external=True
+            links['files'] = url_for_bucket(
+                metadata['_internal']['files_bucket_id']
             )
     return links
