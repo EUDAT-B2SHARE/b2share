@@ -109,9 +109,9 @@ export const UserProfile = React.createClass({
                         }
                     </div>
                     <div className="row">
-                        <h3>Own records</h3>
+                        <h3>Own data collections</h3>
                         <p><Link to={"/records?q=owners:"+user.get('id')}>
-                            Please click here to view your published records
+                            Please click here to view your published data collections
                             </Link></p>
                     </div>
                     <div className="row">

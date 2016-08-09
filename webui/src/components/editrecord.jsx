@@ -20,7 +20,7 @@ import { EditFiles } from './editfiles.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 
 
-export const NewRecordRoute = React.createClass({
+export const NewCollectionRoute = React.createClass({
     mixins: [React.addons.LinkedStateMixin],
 
     getInitialState() {
@@ -37,19 +37,19 @@ export const NewRecordRoute = React.createClass({
         this.setState({errors: this.state.errors});
     },
 
-    createAndGoToRecord(event) {
+    createAndGoToDataCollection(event) {
         event.preventDefault();
         if (!this.state.title.length) {
-            this.setError('title', "Please add a (temporary) record title");
+            this.setError('title', "Please add a (temporary) data collection title");
             return;
         }
         if (!this.state.community_id) {
             this.setError('community', "Please select a target community");
             return;
         }
-        serverCache.createRecord(
+        serverCache.createDataCollection(
             { community: this.state.community_id, title: this.state.title, open_access: true },
-            record => { browserHistory.push(`/records/${record.id}/edit`); }
+            collection => { browserHistory.push(`/records/${collection.id}/edit`); }
         );
     },
 
@@ -87,7 +87,7 @@ export const NewRecordRoute = React.createClass({
     componentWillMount() {
         const user = serverCache.getUser();
         if (!user || !user.get('name')) {
-            notifications.warning('Please login. A new record can only be created by logged in users.');
+            notifications.warning('Please login. A new data collection can only be created by logged in users.');
         }
     },
 
@@ -108,9 +108,9 @@ export const NewRecordRoute = React.createClass({
             scomm.color = "red";
         }
         return (
-            <div className="new-record">
+            <div className="new-datacollection">
                 <div className="row">
-                    <form className="form-horizontal" onSubmit={this.createAndGoToRecord}>
+                    <form className="form-horizontal" onSubmit={this.createAndGoToDataCollection}>
                         <div className="form-group row">
                             <label htmlFor="title" className="col-sm-3 control-label" style={stitle}>
                                 <span style={{float:'right'}}>Title</span>
@@ -138,7 +138,7 @@ export const NewRecordRoute = React.createClass({
                                 <div className="col-sm-9 col-sm-offset-3">{this.state.errors.community} </div> : false }
                             <div className="col-sm-offset-3 col-sm-9" style={gap}>
                                 <button type="submit" className="btn btn-primary btn-default btn-block">
-                                    Create Draft Record</button>
+                                    Create Draft Data Collection</button>
                             </div>
                         </div>
                     </form>
@@ -149,21 +149,21 @@ export const NewRecordRoute = React.createClass({
 });
 
 
-export const EditRecordRoute = React.createClass({
+export const EditCollectionRoute = React.createClass({
     render() {
         const { id } = this.props.params;
-        const record = serverCache.getDraft(id);
-        if (!record) {
+        const collection = serverCache.getDraft(id);
+        if (!collection) {
             return <Wait/>;
         }
-        if (record instanceof Error) {
-            return <Err err={record}/>;
+        if (collection instanceof Error) {
+            return <Err err={collection}/>;
         }
-        const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
+        const [rootSchema, blockSchemas] = serverCache.getDataCollectionSchemas(collection);
         if (rootSchema instanceof Error) {
             return <Err err={rootSchema}/>;
         }
-        const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+        const community = serverCache.getCommunity(collection.getIn(['metadata', 'community']));
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
@@ -171,17 +171,17 @@ export const EditRecordRoute = React.createClass({
 
         return (
             <ReplaceAnimate>
-                <EditRecord record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
+                <EditDataCollection collection={collection} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
             </ReplaceAnimate>
         );
     }
 });
 
 
-const EditRecord = React.createClass({
+const EditDataCollection = React.createClass({
     getInitialState() {
         return {
-            record: null,
+            collection: null,
             fileState: 'done',
             modal: null,
             errors: {},
@@ -201,13 +201,13 @@ const EditRecord = React.createClass({
             }
             this.setState({fileState, errors});
         }
-        const files = this.props.record.get('files');
+        const files = this.props.collection.get('files');
         if (files instanceof Error) {
             return <Err err={files}/>;
         }
         return (
             <EditFiles files={files ? files.toJS() : []}
-                record={this.props.record}
+                collection={this.props.collection}
                 setState={setState}
                 setModal={modal => this.setState({modal})} />
         );
@@ -220,7 +220,7 @@ const EditRecord = React.createClass({
     },
 
     getValue(blockID, fieldID, type) {
-        const r = this.state.record;
+        const r = this.state.collection;
         if (!r) {
             return null;
         }
@@ -234,7 +234,7 @@ const EditRecord = React.createClass({
     },
 
     setValue(blockID, fieldID, type, value) {
-        let r = this.state.record;
+        let r = this.state.collection;
         if (blockID) {
             if (!r.has('community_specific')) {
                 r = r.set('community_specific', Map());
@@ -258,7 +258,7 @@ const EditRecord = React.createClass({
         } else {
             delete errors[fieldID];
         }
-        this.setState({record:r, errors, dirty:true});
+        this.setState({collection:r, errors, dirty:true});
     },
 
     renderScalarField(type, getValue, setValue) {
@@ -448,9 +448,9 @@ const EditRecord = React.createClass({
     },
 
     componentWillReceiveProps(props) {
-        if (props.record && !this.state.record) {
-            let record = props.record.get('metadata');
-            this.setState({record});
+        if (props.collection && !this.state.collection) {
+            let collection = props.collection.get('metadata');
+            this.setState({collection});
         }
     },
 
@@ -469,7 +469,7 @@ const EditRecord = React.createClass({
             return;
         }
         const errors = {};
-        const r = this.state.record;
+        const r = this.state.collection;
 
         rootSchema.get('properties').entrySeq().forEach(([id, f]) => {
             const type = getType(f, id, rootSchema);
@@ -494,54 +494,54 @@ const EditRecord = React.createClass({
         return errors;
     },
 
-    updateRecord(event) {
+    updateDataCollection(event) {
         event.preventDefault();
         const errors = this.findValidationErrors();
         if (this.state.fileState !== 'done' || pairs(errors).length > 0) {
             this.setState({errors});
             return;
         }
-        const original = this.props.record.get('metadata').toJS();
-        const updated = this.state.record.toJS();
+        const original = this.props.collection.get('metadata').toJS();
+        const updated = this.state.collection.toJS();
         const patch = compare(original, updated);
         if (!patch || !patch.length) {
             this.setState({dirty:false});
             return;
         }
-        const onSaveAndPublish = (record) => {
-            browserHistory.push(`/records/${record.id}`);
+        const onSaveAndPublish = (collection) => {
+            browserHistory.push(`/records/${collection.id}`);
         }
-        const onSave = (record) => {
-            serverCache.getDraft(record.id);
+        const onSave = (collection) => {
+            serverCache.getDraft(collection.id);
             this.setState({dirty:false});
         }
-        serverCache.patchRecord(this.props.record.get('id'), patch,
+        serverCache.patchDataCollection(this.props.collection.get('id'), patch,
                     this.getPublishedState() ? onSaveAndPublish : onSave);
     },
 
     getPublishedState() {
-        return this.state.record.get('publication_state') == 'published';
+        return this.state.collection.get('publication_state') == 'published';
     },
 
     setPublishedState(e) {
         const state = e.target.checked ? 'published' : 'draft';
-        const record = this.state.record.set('publication_state', state);
-        this.setState({record});
+        const collection = this.state.collection.set('publication_state', state);
+        this.setState({collection});
     },
 
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
-        if (!this.state.record || !rootSchema) {
+        if (!this.state.collection || !rootSchema) {
             return <Wait/>;
         }
         return (
-            <div className="edit-record">
+            <div className="edit-datacollection">
                 <div className="row">
                     <div className="col-xs-12">
                         <h2 className="name">
                             <span style={{color:'#aaa'}}>Editing </span>
-                            {this.state.record.get('title')}
+                            {this.state.collection.get('title')}
                         </h2>
                     </div>
                 </div>
@@ -555,7 +555,7 @@ const EditRecord = React.createClass({
                         { this.renderFileBlock() }
                     </div>
                     <div className="col-xs-12">
-                        <form className="form-horizontal" onSubmit={this.updateRecord}>
+                        <form className="form-horizontal" onSubmit={this.updateDataCollection}>
                             { this.renderFieldBlock(null, rootSchema) }
 
                             { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
@@ -574,12 +574,12 @@ const EditRecord = React.createClass({
                                 {" "}Submit draft for publication
                             </label>
                             <p>When the draft is published it will be assigned a PID, making it publicly citable.
-                                But a published record's files can no longer be modified by its owner. </p>
+                                But a published data collection's files can no longer be modified by its owner. </p>
                             {   this.getPublishedState() ?
-                                    <button type="submit" className="btn btn-primary btn-default btn-block btn-danger" onClick={this.updateRecord}>
+                                    <button type="submit" className="btn btn-primary btn-default btn-block btn-danger" onClick={this.updateDataCollection}>
                                         Save and Publish </button>
                                 : this.state.dirty ?
-                                    <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateRecord}>
+                                    <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateDataCollection}>
                                         Save Draft </button>
                                   : <button type="submit" className="btn btn-default btn-block disabled">
                                         The draft is up to date </button>

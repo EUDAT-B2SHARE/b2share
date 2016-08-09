@@ -53,16 +53,16 @@ module.exports = function(props) {
 		<li><p>Variables in the descriptions:</p></li>
 		<li><p>ACCESS_TOKEN - represents an access token created as described above (mandatory)</p></li>
 		<li><p>COMMUNITY_ID - identifier of a user community in B2SHARE (optional)</p></li>
-		<li><p>RECORD_ID - identifier for a specific record, which can be in draft or published state</p></li>
-		<li><p>FILE_BUCKET_ID - identifier for a set of files. Each record has its own file set,
+		<li><p>RECORD_ID - identifier for a specific data collection, which can be in draft or published state</p></li>
+		<li><p>FILE_BUCKET_ID - identifier for a set of files. Each data collection has its own file set,
 			usually found in the links -> files section </p></li>
 		</ul>
 		<p><strong><em>Note</em></strong>:
-			Files in a <strong><em>published record</em></strong> cannot be
-			changed. A user can create a record by first creating a
-			<strong><em>draft record</em></strong>, which is modifiable.
-			Files and metadata can be placed into a draft record, but not into
-			a published record.</p>
+			Files in a <strong><em>published data collection</em></strong> cannot be
+			changed. A user can create a data collection by first creating a
+			<strong><em>draft data collection</em></strong>, which is modifiable.
+			Files and metadata can be placed into a draft data collection, but not into
+			a published data collection.</p>
 
 		<h3>List all the communities</h3>
 		<p>List all the communities, without any filtering.</p>
@@ -74,28 +74,28 @@ module.exports = function(props) {
 		</ul>
 		<p>Example: <code>curl -i http://example.org/api/communities/?access_token=LKR35GP7TF</code></p>
 
-		<h3>List all the records</h3>
-		<p>List all the records, without any filtering.</p>
+		<h3>List all the data collections</h3>
+		<p>List all the data collections, without any filtering.</p>
 		<ul>
 			<li><p>HTTP method: GET</p></li>
 			<li><p>URL path: /api/records</p></li>
 			<li><p>Required parameters: access_token</p></li>
-			<li><p>Returns: the list of records (in JSON format) or an error message.</p></li>
+			<li><p>Returns: the list of data collections (in JSON format) or an error message.</p></li>
 		</ul>
 		<p>Example: <code>curl -i http://example.org/api/records?access_token=LKR35GP7TF</code></p>
 
-		<h3 id="list-records-per-community">List records per community</h3>
+		<h3 id="list-records-per-community">List data collections per community</h3>
 		<p>List all records of a specific community.</p>
 		<ul>
 			<li><p>URL path: /api/records/?q=community:COMMUNITY_ID</p></li>
 			<li><p>HTTP method: GET</p></li>
 			<li><p>Required parameters: access_token</p></li>
-			<li><p>Returns: the list of records (in JSON format) or an error message.</p></li>
+			<li><p>Returns: the list of data collections (in JSON format) or an error message.</p></li>
 		</ul>
 		<p>Example: <code>curl -i http://example.org/api/records/?q=community:e9b9792e-79fb-4b07-b6b4-b9c2bd06d095?access_token=LKR35GP7TF</code></p>
 
-		<h3>List a specific record</h3>
-		<p>List the metadata of the record specified by RECORD_ID</p>
+		<h3>List a specific data collection</h3>
+		<p>List the metadata of the data collection specified by RECORD_ID</p>
 		<ul>
 			<li><p>URL path: /api/record/RECORD_ID</p></li>
 			<li><p>HTTP method: GET</p></li>
@@ -103,26 +103,26 @@ module.exports = function(props) {
 		</ul>
 		<p>Example: <code>curl -i http://example.org/api/records/47077e3c4b9f4852a40709e338ad4620?access_token=LKR35GP7TF</code></p>
 
-		<h3>Create a new draft record</h3>
-		<p>Create a new record, in the draft state.</p>
+		<h3>Create a new draft data collection</h3>
+		<p>Create a new data collection, in the draft state.</p>
 		<ul>
 			<li><p>URL path: /api/records</p></li>
 			<li><p>HTTP method: POST</p></li>
 			<li><p>Required URL parameter: access_token</p></li>
 			<li><p>Required data payload: json object with basic information about the object </p></li>
-			<li><p>Returns: the new draft record contents and location. Please note that
+			<li><p>Returns: the new draft data collection contents and location. Please note that
 				the returned json object contains also the URL of the file bucked used for the record.
-				Also note that the URL of the draft record, needed for setting record metadata,
+				Also note that the URL of the draft data collection, needed for setting data collection metadata,
 				will end in '/drafts/'</p></li>
 		</ul>
 		<p>Example: <code>{'curl -i -H "Content-Type:application/json" \
 			-d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open":true}\' \
 			-X POST http://example.org/api/records/?access_token=LKR35GP7TF'}</code></p>
 
-		<h3>Upload a new file into a draft record</h3>
+		<h3>Upload a new file into a draft data collection</h3>
 		<p>To upload a new file into a draft record object, first you need to identify
 			the file bucket URL. This URL can be found in the information returned when
-			querying a record, in the 'links/files' section of the returned data. </p>
+			querying a data collection, in the 'links/files' section of the returned data. </p>
 		<ul>
 			<li><p>URL path: /api/files/FILE_BUCKET_ID</p></li>
 			<li><p>HTTP Method: POST</p></li>
@@ -142,8 +142,8 @@ module.exports = function(props) {
 		</ul>
 		<p>Example: <code>curl -i http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/?access_token=LKR35GP7TF</code></p>
 
-		<h3>Updating a draft record</h3>
-		<p>This action updates the draft record with new information.</p>
+		<h3>Updating a draft data collection</h3>
+		<p>This action updates the draft data collection with new information.</p>
 		<ul>
 			<li><p>URL path: /api/records/RECORD_ID/</p></li>
 			<li><p>HTTP Method: PATCH</p></li>
@@ -156,11 +156,11 @@ module.exports = function(props) {
 			http://localhost:5000/api/records/968661eb-c071-4e2b-814a-b5aa5ecd1628'}</code></p>
 
 
-		<h3>Publishing a draft record</h3>
-		<p>This action transforms a draft record into a published record, and will make its files immutable.</p>
-		<p>A draft record becomes published if a special metadata field, called 'publication_state' is set to 'published'.
+		<h3>Publishing a draft data collection</h3>
+		<p>This action transforms a draft data collection into a published data collection, and will make its files immutable.</p>
+		<p>A draft data collection becomes published if a special metadata field, called 'publication_state' is set to 'published'.
 			This field can be set using the PATCH call described above.</p>
-		<p>Depending on the domain specification, other fields could be required in order to successfully publish a record.
+		<p>Depending on the domain specification, other fields could be required in order to successfully publish a data collection.
 			The list of all the fields, with their description, multiplicity and controlled vocabulary,
 			is automatically returned to the user in case one of the required fields is missing.</p>
 

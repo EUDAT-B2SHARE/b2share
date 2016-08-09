@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { serverCache, notifications, Error } from '../data/server';
 import { ListAnimate, HeightAnimate } from './animate.jsx';
 import { NavbarUser } from './user.jsx';
-import { searchRecord } from './search.jsx';
+import { searchDataCollection } from './search.jsx';
 
 
 export const Navbar = React.createClass({
@@ -87,7 +87,7 @@ const NavbarSearch = React.createClass({
 
     search(event) {
         event.preventDefault();
-        searchRecord(this.state);
+        searchDataCollection(this.state);
     },
 
     searchHelp(event) {

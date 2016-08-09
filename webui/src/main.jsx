@@ -13,9 +13,9 @@ import { HomeRoute } from './components/home.jsx';
 import { UserRoute } from './components/user.jsx';
 import { Help, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
-import { SearchRecordRoute } from './components/search.jsx';
-import { RecordRoute  } from './components/record.jsx';
-import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
+import { SearchDataCollectionRoute } from './components/search.jsx';
+import { DataCollectionRoute  } from './components/record.jsx';
+import { NewCollectionRoute, EditCollectionRoute  } from './components/editrecord.jsx';
 
 
 import { GIT_COMMIT, VERSION } from './version.js'
@@ -106,11 +106,11 @@ const router = (
             </Route>
 
             <Route path="records" component={Frame} >
-                <IndexRoute component={SearchRecordRoute} />
-                <Route path="new" component={NewRecordRoute}/>
+                <IndexRoute component={SearchDataCollectionRoute} />
+                <Route path="new" component={NewCollectionRoute}/>
                 <Route path=":id" component={Frame} >
-                    <IndexRoute component={RecordRoute} />
-                    <Route path="edit" component={EditRecordRoute}/>
+                    <IndexRoute component={DataCollectionRoute} />
+                    <Route path="edit" component={EditCollectionRoute}/>
                 </Route>
             </Route>
 

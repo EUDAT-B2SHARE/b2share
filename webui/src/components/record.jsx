@@ -10,22 +10,22 @@ import { FileRecordHeader, FileRecordRow } from './editfiles.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
-export const RecordRoute = React.createClass({
+export const DataCollectionRoute = React.createClass({
     render() {
         const { id } = this.props.params;
-        const record = serverCache.getRecord(id);
-        if (record instanceof Error) {
-            return <Err err={record}/>;
+        const collection = serverCache.getDataCollection(id);
+        if (collection instanceof Error) {
+            return <Err err={collection}/>;
         }
-        if (!record) {
+        if (!collection) {
             return <Wait/>;
         }
-        const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
-        const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+        const [rootSchema, blockSchemas] = serverCache.getDataCollectionSchemas(collection);
+        const community = serverCache.getCommunity(collection.getIn(['metadata', 'community']));
 
         return (
             <ReplaceAnimate>
-                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
+                <DataCollection collection={collection} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
             </ReplaceAnimate>
         );
     }
@@ -38,12 +38,12 @@ const excludeFields = {
 };
 
 
-const Record = React.createClass({
+const DataCollection = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    renderDates(record) {
-        const created = moment(record.get('created')).format('ll');
-        const updated = moment(record.get('updated')).format('ll');
+    renderDates(collection) {
+        const created = moment(collection.get('created')).format('ll');
+        const updated = moment(collection.get('updated')).format('ll');
         return (
             <div>
                 <p>
@@ -93,8 +93,8 @@ const Record = React.createClass({
         );
     },
 
-    renderFixedFields(record, community) {
-        const metadata = record.get('metadata') || Map();
+    renderFixedFields(collection, community) {
+        const metadata = collection.get('metadata') || Map();
         const description = metadata.get('description') ||"";
         const keywords = metadata.get('keywords') || List();
         const pid = metadata.get('PID');
@@ -103,8 +103,8 @@ const Record = React.createClass({
             <div>
                 <div className="row">
                     <div className="col-sm-12">
-                        {   // do not allow record editing, for now
-                            //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
+                        {   // do not allow data collection editing, for now
+                            //<Link to={`/records/${collection.get('id')}/edit`} style={sr}>Edit Data Collection</Link>
                         }
                         <h2 className="name">{metadata.get('title')}</h2>
                     </div>
@@ -112,7 +112,7 @@ const Record = React.createClass({
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
                         { this.renderCreators(metadata) }
-                        { this.renderDates(record) }
+                        { this.renderDates(collection) }
 
                         <p className="description">
                             <span style={{fontWeight:'bold'}}>Abstract: </span>
@@ -162,8 +162,8 @@ const Record = React.createClass({
     },
 
     renderField(blockID, fieldID, fieldSchema, blockSchema) {
-        let v = blockID ? this.props.record.getIn(['metadata', 'community_specific', blockID, fieldID]) :
-                            this.props.record.getIn(['metadata', fieldID]);
+        let v = blockID ? this.props.collection.getIn(['metadata', 'community_specific', blockID, fieldID]) :
+                            this.props.collection.getIn(['metadata', fieldID]);
         if (v != undefined && v != null) {
             if (v.toJS){
                 v = v.toJS();
@@ -240,16 +240,16 @@ const Record = React.createClass({
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
-        const files = this.props.record.get('files') || this.props.record.getIn(['metadata', '_files']);
-        if (!this.props.record || !rootSchema) {
+        const files = this.props.collection.get('files') || this.props.collection.getIn(['metadata', '_files']);
+        if (!this.props.collection || !rootSchema) {
             return <Wait/>;
         }
         return (
             <div className="container-fluid">
-                <div className="large-record">
+                <div className="large-datacollection">
                     <div className="row">
                         <div className="col-lg-12">
-                            {this.renderFixedFields(this.props.record, this.props.community)}
+                            {this.renderFixedFields(this.props.collection, this.props.community)}
                         </div>
                     </div>
                     <div className="row">

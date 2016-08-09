@@ -511,21 +511,21 @@ a.navbar-brand {
 /*****************************************************************************/
 /* records */
 
-.large-record {
+.large-datacollection {
   background-color: white;
   padding-bottom:1em;
 }
 
-.edit-record {
+.edit-datacollection {
   background-color: white;
   padding-bottom:1em;
 }
 
-.new-record {
+.new-datacollection {
   margin-top: 2em;
 }
 
-.new-record .submit {
+.new-datacollection .submit {
   margin-top: 2em;
 }
 

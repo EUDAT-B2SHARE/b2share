@@ -1,5 +1,5 @@
 import {fromJS, OrderedMap, List} from 'immutable';
-import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler} from './ajax'
+import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDeflete, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
 
@@ -237,9 +237,9 @@ class ServerCache {
     constructor() {
         this.store = new Store({
 
-            latestRecords: [], // latest records with params
-            searchRecords: [], // searched records view, with params
-            recordCache: {}, // map of record IDs to records
+            latestDataCollections: [], // latest data collections with params
+            searchDataCollections: [], // searched data collections view, with params
+            dataCollectionCache: {}, // map of data collection IDs to data collections
             draftCache: {}, // map of draft IDs to drafts
 
             communities: {}, // ordered map of community IDs to communities
@@ -253,15 +253,15 @@ class ServerCache {
 
         this.getters = {};
 
-        this.getters.latestRecords = new Getter(
+        this.getters.latestDataCollections = new Getter(
             apiUrls.records(), {sort:"mostrecent"},
-            (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)),
-            (xhr) => this.store.setIn(['latestRecords'], new Error(xhr)) );
+            (data) => this.store.setIn(['latestDataCollections'], fromJS(data.hits.hits)),
+            (xhr) => this.store.setIn(['latestDataCollections'], new Error(xhr)) );
 
-        this.getters.searchRecords = new Getter(
+        this.getters.searchDataCollections = new Getter(
             apiUrls.records(), null,
-            (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)),
-            (xhr) => this.store.setIn(['searchRecords'], new Error(xhr)) );
+            (data) => this.store.setIn(['searchDataCollections'], fromJS(data.hits.hits)),
+            (xhr) => this.store.setIn(['searchDataCollections'], new Error(xhr)) );
 
         this.getters.communities = new Getter(
             apiUrls.communities(), null,
@@ -272,10 +272,10 @@ class ServerCache {
             },
             (xhr) => this.store.setIn(['communities'], new Error(xhr)) );
 
-        this.getters.record = new Pool(recordID =>
-            new Getter(apiUrls.record(recordID), null,
-                (data) => this.store.setIn(['recordCache', recordID], fromJS(data)),
-                (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
+        this.getters.datacollection = new Pool(dataCollectionID =>
+            new Getter(apiUrls.record(dataCollectionID), null,
+                (data) => this.store.setIn(['dataCollectionCache', dataCollectionID], fromJS(data)),
+                (xhr) => this.store.setIn(['dataCollectionCache', dataCollectionID], new Error(xhr)) ));
 
         this.getters.draft = new Pool(draftID =>
             new Getter(apiUrls.draft(draftID), null,
@@ -361,18 +361,18 @@ class ServerCache {
     }
 
 
-    getLatestRecords() {
-        this.getters.latestRecords.autofetch();
-        return this.store.getIn(['latestRecords']);
+    getLatestDataCollections() {
+        this.getters.latestDataCollections.autofetch();
+        return this.store.getIn(['latestDataCollections']);
     }
 
-    searchRecords({q, sort, page, size, community}) {
+    searchDataCollections({q, sort, page, size, community}) {
         const params = {};
         if (community) {
             q = (q || "") + ' community:' + community;
         }
-        this.getters.searchRecords.fetch({q, sort, page, size});
-        return this.store.getIn(['searchRecords']);
+        this.getters.searchDataCollections.fetch({q, sort, page, size});
+        return this.store.getIn(['searchDataCollections']);
     }
 
     getCommunities() {
@@ -400,26 +400,26 @@ class ServerCache {
         return c;
     }
 
-    getRecord(id) {
-        this.getters.record.get(id).fetch();
-        this.fetchRecordFiles(id);
-        return this.store.getIn(['recordCache', id]);
+    getDataCollection(id) {
+        this.getters.datacollection.get(id).fetch();
+        this.fetchDataCollectionFiles(id);
+        return this.store.getIn(['dataCollectionCache', id]);
     }
 
-    fetchRecordFiles(id) {
-        const record = this.store.getIn(['recordCache', id]);
-        if (!record || !record.get) {
+    fetchDataCollectionFiles(id) {
+        const dataCollection = this.store.getIn(['dataCollectionCache', id]);
+        if (!dataCollection || !dataCollection.get) {
             return null;
         }
-        const files = record.get('files');
+        const files = dataCollection.get('files');
         if (files) {
             return files;
         }
         ajaxGet({
-            url: record.getIn(['links', 'files']),
+            url: dataCollection.getIn(['links', 'files']),
             successFn: (data) =>
-                this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
-            errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
+                this.store.setIn(['dataCollectionCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
+            errorFn: (xhr) => this.store.setIn(['dataCollectionCache', id, 'files'], new Error(xhr)),
         });
     }
 
@@ -477,11 +477,11 @@ class ServerCache {
         return [rootSchema, blockSchemas];
     }
 
-    getRecordSchemas(record) {
-        if (!record) {
+    getDataCollectionSchemas(dataCollection) {
+        if (!dataCollection) {
             return [];
         }
-        const [communityID, ver] = apiUrls.extractCommunitySchemaInfoFromUrl(record.getIn(['metadata', '$schema']));
+        const [communityID, ver] = apiUrls.extractCommunitySchemaInfoFromUrl(dataCollection.getIn(['metadata', '$schema']));
         return this.getCommunitySchemas(communityID, ver);
     }
 
@@ -528,7 +528,7 @@ class ServerCache {
         return langs;
     }
 
-    createRecord(initialMetadata, successFn) {
+    createDataCollection(initialMetadata, successFn) {
         this.posters.records.post(initialMetadata, successFn);
     }
 
@@ -548,11 +548,11 @@ class ServerCache {
         });
     }
 
-    updateRecord(id, metadata, successFn) {
+    updateDataCollection(id, metadata, successFn) {
         this.posters.draft.get(id).put(metadata, successFn);
     }
 
-    patchRecord(id, patch, successFn) {
+    patchDataCollection(id, patch, successFn) {
         this.posters.draft.get(id).patch(patch, successFn);
     }
 

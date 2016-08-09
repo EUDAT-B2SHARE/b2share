@@ -9,7 +9,7 @@ import { LoginOrRegister } from './user.jsx';
 
 export const HomeRoute = React.createClass({
     render() {
-        const latestRecords = serverCache.getLatestRecords();
+        const latestDataCollections = serverCache.getLatestDataCollections();
         return (
             <div className="container-fluid home-page">
                 <div className="row">
@@ -22,16 +22,16 @@ export const HomeRoute = React.createClass({
                         <hr/>
                         <div className="row">
                             <div className="col-sm-6">
-                                <h3>Create Record</h3>
+                                <h3>Create Data Collection</h3>
                             </div>
                             <div className="col-sm-5">
                                 <Link to={"/records/new"} className="btn btn-primary btn-block" style={{marginTop:'1em'}}>
-                                    Create a new record</Link>
+                                    Create a new Data Collection</Link>
                             </div>
                         </div>
 
                         <hr/>
-                        { latestRecords ? <LatestRecords records={latestRecords} /> : <Wait />}
+                        { latestDataCollections ? <LatestDataCollections records={latestDataCollections} /> : <Wait />}
                     </div>
                 </div>
             </div>
@@ -39,7 +39,7 @@ export const HomeRoute = React.createClass({
     }
 });
 
-const LatestRecords = React.createClass({
+const LatestDataCollections = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     propTypes: {
@@ -86,13 +86,13 @@ const LatestRecords = React.createClass({
         }
         return (
             <div>
-                <h3>Latest Records</h3>
+                <h3>Latest Data Collections</h3>
                 <div className="row">
                     { this.props.records.map(this.renderRecord) }
                 </div>
                 <div className="row">
                     <div className="col-sm-offset-6 col-sm-5" style={{marginTop:'1em', marginBottom:'1em',}}>
-                        <Link to="/records" className="btn btn-default btn-block"> More Records ... </Link>
+                        <Link to="/records" className="btn btn-default btn-block"> More Data Collections ... </Link>
                     </div>
                 </div>
             </div>

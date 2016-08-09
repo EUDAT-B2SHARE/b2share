@@ -8,14 +8,14 @@ import { timestamp2str } from '../data/misc.js'
 import { ReplaceAnimate } from './animate.jsx';
 
 
-export const SearchRecordRoute = React.createClass({
+export const SearchDataCollectionRoute = React.createClass({
     renderResults(params) {
-        const records = serverCache.searchRecords(params);
-        if (records instanceof Error) {
-            return <Err err={records}/>;
+        const collections = serverCache.searchDataCollections(params);
+        if (collections instanceof Error) {
+            return <Err err={collections}/>;
         }
-        return records ?
-            <ReplaceAnimate><RecordList records={records} /></ReplaceAnimate> :
+        return collections ?
+            <ReplaceAnimate><DataCollectionList collections={collections} /></ReplaceAnimate> :
             <Wait/>;
     },
 
@@ -25,7 +25,7 @@ export const SearchRecordRoute = React.createClass({
         const searchParams = location.query || {};
         return (
             <div>
-                <h1>Records</h1>
+                <h1>Data Collections</h1>
                 <Search location={this.props.location} communities={communities}/>
                 { this.renderResults(searchParams) }
             </div>
@@ -34,7 +34,7 @@ export const SearchRecordRoute = React.createClass({
 });
 
 
-export function searchRecord(state) {
+export function searchDataCollection(state) {
     var queryArray = [];
     for (var p in state) {
         if (state.hasOwnProperty(p)) {
@@ -47,7 +47,7 @@ export function searchRecord(state) {
     const query = queryArray.join("&");
     const q_query = query ? ('?'+query) : '';
 
-    // trigger a route reload which will do the new search, see SearchRecordRoute
+    // trigger a route reload which will do the new search, see SearchDataCollectionRoute
     browserHistory.push(`/records/${q_query}`);
 }
 
@@ -74,7 +74,7 @@ const Search = React.createClass({
 
     search(event) {
         event.preventDefault();
-        searchRecord(this.state);
+        searchDataCollection(this.state);
     },
 
     searchHelp(event) {
@@ -93,7 +93,7 @@ const Search = React.createClass({
                     </span>
                     <input className="form-control" style={{borderRadius:0}} type="text" name="q"
                         value={this.state.q} onChange={setStateEvent}
-                        autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
+                        autofocus="autofocus" autoComplete="off" placeholder="Search Data collections for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">
                             <i className="fa fa-search"></i> Search
@@ -119,10 +119,10 @@ const Search = React.createClass({
         const setPageSize = ps => this.setState({size: ps});
 
         return (
-            <form className="form-horizontal" onSubmit={this.updateRecord} style={{marginTop:'1em'}}>
+            <form className="form-horizontal" onSubmit={this.updateDataCollection} style={{marginTop:'1em'}}>
                 <div className="form-group">
                     <label htmlFor='community' className="col-md-2 control-label">
-                        <span style={{float:'right'}}> Show records from: </span>
+                        <span style={{float:'right'}}> Show data collections from: </span>
                     </label>
                     <div id='title' className="col-md-2">
                         <DropdownList data={communities} valueField='id' textField='name'
@@ -157,7 +157,7 @@ const Search = React.createClass({
 });
 
 
-const RecordList = React.createClass({
+const DataCollectionList = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     renderCreators(creators) {
@@ -172,16 +172,16 @@ const RecordList = React.createClass({
         );
     },
 
-    renderRecord(record) {
-        const id = record.get('id');
-        const created = record.get('created');
-        const updated = record.get('updated');
-        const metadata = record.get('metadata') || Map();
+    renderDataCollection(dataCollection) {
+        const id = dataCollection.get('id');
+        const created = dataCollection.get('created');
+        const updated = dataCollection.get('updated');
+        const metadata = dataCollection.get('metadata') || Map();
         const title = metadata.get('title') ||"";
         const description = metadata.get('description') ||"";
         const creators = metadata.get('creator') || List();
         return (
-            <div className="record col-lg-12" key={record.get('id')}>
+            <div className="record col-lg-12" key={dataCollection.get('id')}>
                 <Link to={'/records/'+id}>
                     <p className="name">{title}</p>
                     <p>
@@ -199,7 +199,7 @@ const RecordList = React.createClass({
             <div>
                 <div className="container-fluid">
                     <div className="row">
-                        { this.props.records.map(this.renderRecord) }
+                        { this.props.collections.map(this.renderDataCollection) }
                     </div>
                 </div>
             </div>
