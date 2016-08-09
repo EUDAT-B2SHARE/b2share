@@ -46,6 +46,13 @@ class EpicPIDError(Exception):
     """Raise when a record has no community."""
 
 
+class UnknownRecordType(B2ShareRecordsError):
+    """Error raised when a record type cannot be determined.
+
+    The two main record types are "published record" and "deposit".
+    """
+
+
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(err):

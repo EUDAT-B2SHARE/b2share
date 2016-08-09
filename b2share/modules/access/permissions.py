@@ -27,6 +27,20 @@ from flask_principal import Permission
 from invenio_access.permissions import DynamicPermission
 
 
+AllowAllPermission = type('Allow', (), {
+    'can': lambda self: True,
+    'allows': lambda *args: True,
+})()
+"""Permission that always allow an access."""
+
+
+DenyAllPermission = type('Deny', (), {
+    'can': lambda self: False,
+    'allows': lambda *args: False,
+})()
+"""Permission that always deny an access."""
+
+
 class StrictDynamicPermission(DynamicPermission):
     """Stricter DynamicPermission.
 
@@ -49,8 +63,10 @@ class StrictDynamicPermission(DynamicPermission):
         excludes.update(self.explicit_excludes)
         return excludes
 
+
 class PermissionSet(Permission):
     """Abstract permissions combining multiple permissions."""
+
     def __init__(self, *permissions):
         """A set of set of permissions, all of which must be allow the
         identity to have access.
