@@ -164,13 +164,11 @@ const Record = React.createClass({
     renderField(blockID, fieldID, fieldSchema, blockSchema) {
         let v = blockID ? this.props.record.getIn(['metadata', 'community_specific', blockID, fieldID]) :
                             this.props.record.getIn(['metadata', fieldID]);
-        if (v != undefined && v != null) {
-            if (v.toJS){
-                v = v.toJS();
-            }
-        }
-        if (!v) {
+        if (v === undefined || v === null || v === "") {
             return false;
+        }
+        if (v.toJS) {
+            v = v.toJS();
         }
         const type = getType(fieldSchema, fieldID, blockSchema);
         return (

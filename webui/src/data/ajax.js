@@ -115,7 +115,12 @@ function ajaxWithError(ajaxObject) {
             if (xhr.readyState === 0) {
                 errorHandler.fn("Network error, please check your internet connection");
             } else {
-                errorHandler.fn(`Error: ${xhr.statusText}`);
+                let msg = xhr.statusText;
+                try {
+                    msg = JSON.parse(xhr.responseText).message;
+                } catch (_) {
+                }
+                errorHandler.fn(`Error: ${msg}`);
             }
         };
     }
