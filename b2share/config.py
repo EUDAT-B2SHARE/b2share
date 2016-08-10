@@ -28,11 +28,11 @@ from __future__ import absolute_import, print_function
 import os
 
 from flask import request
-from invenio_records_rest.utils import deny_all
+from invenio_records_rest.utils import deny_all, allow_all
 from b2share.modules.oauthclient import b2access
 from b2share.modules.records.search import B2ShareRecordsSearch
 from b2share.modules.records.permissions import (
-    ReadRecordPermission, UpdateRecordPermission, DeleteRecordPermission
+    UpdateRecordPermission, DeleteRecordPermission
 )
 from b2share.modules.deposit.permissions import (
     CreateDepositPermission, ReadDepositPermission,
@@ -88,7 +88,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         list_route='/records/',
         item_route='/records/<pid(b2share_record,record_class="invenio_records_files.api:Record"):pid_value>',
         create_permission_factory_imp=CreateDepositPermission,
-        read_permission_factory_imp=ReadRecordPermission,
+        read_permission_factory_imp=allow_all,
         update_permission_factory_imp=UpdateRecordPermission,
         delete_permission_factory_imp=DeleteRecordPermission,
     ),
@@ -133,6 +133,10 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
         delete_permission_factory_imp=DeleteDepositPermission,
     ),
 )
+
+#: Files REST permission factory
+FILES_REST_PERMISSION_FACTORY = \
+    'b2share.modules.files.permissions:files_permission_factory'
 
 RECORDS_REST_DEFAULT_SORT = dict(
     records=dict(

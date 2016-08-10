@@ -21,19 +21,37 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Records search class and helpers."""
+"""Record utils."""
 
-from invenio_search.api import RecordsSearch
+from invenio_pidstore.models import PersistentIdentifier
+from invenio_db import db
+
+from .errors import UnknownRecordType
 
 
-class B2ShareRecordsSearch(RecordsSearch):
-    """Search class for records."""
+def _is_record_type(record_id, pid_type):
+    """Verify if a record has a pid of the given type."""
+    pids = PersistentIdentifier.query.filter(
+        PersistentIdentifier.object_uuid == record_id).all()
+    if pids:
+        return pids[0].pid_type == pid_type
+    else:
+        raise UnknownRecordType('No PID found for record {}'.format(record_id))
 
-    class Meta:
-        """Default index and filter for record search."""
 
-        index = 'records'
+def is_publication(record):
+    """Check if a given record is a published record.
 
-    def __init__(self, **kwargs):
-        """Initialize instance."""
-        super(B2ShareRecordsSearch, self).__init__(**kwargs)
+    Returns:
+        bool: True if the record is a published record, else false.
+    """
+    return _is_record_type(record.id, 'b2share_record')
+
+
+def is_deposit(record):
+    """Check if a given record is a deposit record.
+
+    Returns:
+        bool: True if the record is a deposit record, else false.
+    """
+    return _is_record_type(record.id, 'b2share_deposit')

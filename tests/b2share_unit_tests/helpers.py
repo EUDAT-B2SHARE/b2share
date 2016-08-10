@@ -27,12 +27,22 @@ import json
 from copy import deepcopy
 from contextlib import contextmanager
 
-from flask import current_app
-from six import string_types
+from b2share.modules.records.links import url_for_bucket
+from flask import current_app, url_for
+from six import string_types, BytesIO
 from flask_login import login_user, logout_user
 from invenio_accounts.models import User
 from b2share.modules.deposit.api import Deposit
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+
+
+def url_for_file(bucket_id, key):
+    """Build the url for the given file."""
+    return url_for(
+        'invenio_files_rest.object_api',
+        bucket_id=bucket_id, key=key,
+        _external=True
+    )
 
 
 def subtest_self_link(response_data, response_headers, client):
@@ -53,6 +63,89 @@ def subtest_self_link(response_data, response_headers, client):
         assert response_headers['ETag'] == self_response.headers['ETag']
 
 
+def subtest_file_bucket_content(client, bucket, expected_files):
+    """Check that the bucket's content matches the given data."""
+    headers = [('Accept', '*/*')]
+    file_list_res = client.get(url_for_bucket(bucket.id), headers=headers)
+
+    assert file_list_res.status_code == 200
+    file_list_data = json.loads(
+        file_list_res.get_data(as_text=True))
+    assert 'contents' in file_list_data
+    assert len(file_list_data['contents']) == len(expected_files)
+    for draft_file in file_list_data['contents']:
+        assert 'size' in draft_file and 'key' in draft_file
+        expected_content = expected_files[draft_file['key']]
+        assert draft_file['size'] == len(expected_content)
+
+
+def subtest_file_bucket_permissions(client, bucket, access_level=None,
+                                    is_authenticated=False):
+    """Check that a file bucket's permissions match the given access_level."""
+    # Check the test access_level parameter
+    assert access_level in [None, 'read', 'write']
+
+    def test_files_permission(read_status, update_status, delete_status):
+        if bucket.objects:
+            file_url = url_for_file(bucket.id,
+                                    bucket.objects[0].key)
+            # test GET file
+            file_get_res = client.get(file_url,
+                                      headers=headers)
+            assert file_get_res.status_code == read_status
+            # test update file
+            file_update_res = client.put(file_url,
+                                         input_stream=BytesIO(b'updated'),
+                                         headers=headers)
+            assert file_update_res.status_code == update_status
+            # test delete file
+            file_delete_res = client.delete(file_url,
+                                            headers=headers)
+            assert file_delete_res.status_code == delete_status
+
+    headers = [('Accept', '*/*')]
+    # test get bucket
+    file_list_res = client.get(url_for_bucket(bucket.id), headers=headers)
+    if access_level is None:
+        assert file_list_res.status_code == 404
+        test_files_permission(404, 404, 404)
+        return
+
+    # access level is at least 'read'
+    assert file_list_res.status_code == 200
+
+    unauthorized_code = 403 if is_authenticated else 401
+    if access_level == 'read':
+        test_files_permission(200,
+                              # FIXME: This is a bug in invenio-files-rest
+                              # it should be 403/401
+                              404,
+                              unauthorized_code)
+    elif access_level == 'write':
+        test_files_permission(200, 200, 204)
+
+
+def build_expected_metadata(record_data, state, owners=None):
+    """Create the metadata expected for a given record/deposit GET.
+
+    Args:
+        record_data: the data given at the record's creation
+        state: expected state of the record.
+        owners: list of owners' ids
+    """
+    expected_metadata = deepcopy(record_data)
+    expected_metadata['publication_state'] = state
+    expected_metadata['$schema'] = '{}#/json_schema'.format(
+        url_for('b2share_schemas.community_schema_item',
+                community_id=record_data['community'],
+                schema_version_nb=1,
+                _external=True)
+    )
+    if owners is not None:
+        expected_metadata['owners'] = owners
+    return expected_metadata
+
+
 @contextmanager
 def authenticated_user(userinfo):
     """Authentication context manager."""
@@ -65,16 +158,19 @@ def authenticated_user(userinfo):
             logout_user()
 
 
-def create_deposit(data, creator):
+def create_deposit(data, creator, files=None):
     """Create a deposit with the given user as creator."""
     with authenticated_user(creator):
         deposit = Deposit.create(data=deepcopy(data))
+        if files is not None:
+            for key, value in files.items():
+                deposit.files[key] = BytesIO(value)
     return deposit
 
 
-def create_record(data, creator):
+def create_record(data, creator, files=None):
     """Create a deposit with the given user as creator."""
-    deposit = create_deposit(data, creator)
+    deposit = create_deposit(data, creator, files)
     with authenticated_user(creator):
         deposit.submit()
         deposit.publish()

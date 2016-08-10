@@ -21,19 +21,21 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Records search class and helpers."""
+"""Test B2Share record module utils."""
 
-from invenio_search.api import RecordsSearch
+from b2share_unit_tests.helpers import create_deposit
+from b2share.modules.records.utils import is_publication, is_deposit
 
 
-class B2ShareRecordsSearch(RecordsSearch):
-    """Search class for records."""
-
-    class Meta:
-        """Default index and filter for record search."""
-
-        index = 'records'
-
-    def __init__(self, **kwargs):
-        """Initialize instance."""
-        super(B2ShareRecordsSearch, self).__init__(**kwargs)
+def test_records_type_helpers(app, test_records_data, create_user):
+    """Test record util functions retrieving the record type."""
+    with app.app_context():
+        creator = create_user('creator')
+        deposit = create_deposit(test_records_data[0], creator)
+        deposit.submit()
+        deposit.publish()
+        _, record = deposit.fetch_published()
+        assert is_deposit(deposit)
+        assert not is_deposit(record)
+        assert is_publication(record)
+        assert not is_publication(deposit)

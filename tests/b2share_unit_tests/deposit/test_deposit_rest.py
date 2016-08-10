@@ -29,22 +29,13 @@ import pytest
 from flask import url_for
 from b2share.modules.deposit.api import PublicationStates, Deposit
 from copy import deepcopy
-from b2share_unit_tests.helpers import subtest_self_link, create_deposit
+from b2share_unit_tests.helpers import (
+    subtest_self_link, create_deposit, generate_record_data, url_for_file,
+    subtest_file_bucket_content, subtest_file_bucket_permissions,
+    build_expected_metadata,
+)
 from b2share.modules.records.providers import RecordUUIDProvider
-
-
-def build_expected_metadata(record_data, state, owners=None):
-    expected_metadata = deepcopy(record_data)
-    expected_metadata['publication_state'] = state
-    expected_metadata['$schema'] = '{}#/json_schema'.format(
-        url_for('b2share_schemas.community_schema_item',
-                community_id=record_data['community'],
-                schema_version_nb=1,
-                _external=True)
-    )
-    if owners is not None:
-        expected_metadata['owners'] = owners
-    return expected_metadata
+from six import BytesIO
 
 
 @pytest.mark.parametrize('test_users', [({
@@ -209,6 +200,57 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
             assert cleaned_draft_data == cleaned_published_data
 
 
+def test_deposit_files(app, test_communities, create_user, login_user, admin):
+    """Test uploading and reading deposit files."""
+    with app.app_context():
+        creator = create_user('creator')
+        uploaded_files = {
+            'myfile1.dat': b'contents1',
+            'myfile2.dat': b'contents2',
+            'replaced.dat': b'old_content',
+        }
+        test_record_data = generate_record_data()
+        # test with anonymous user
+        deposit = create_deposit(test_record_data, creator, uploaded_files)
+        uploaded_file_name = 'additional.dat'
+        uploaded_file_content = b'additional content'
+        # Test file upload
+        headers = [('Accept', '*/*')]
+        with app.test_client() as client:
+            login_user(creator, client)
+
+            # try uploading a new file
+            file_url = url_for_file(deposit.files.bucket.id, uploaded_file_name)
+            file_put_res = client.put(
+                file_url,
+                input_stream=BytesIO(uploaded_file_content),
+                headers=headers
+            )
+            uploaded_files[uploaded_file_name] = uploaded_file_content
+
+            # try replacing an existing file
+            file_url = url_for_file(deposit.files.bucket.id, 'replaced.dat')
+            file_put_res = client.put(
+                file_url,
+                input_stream=BytesIO(b'new_content'),
+                headers=headers
+            )
+            uploaded_files['replaced.dat'] = b'new_content'
+
+            # try removing a file
+            file_url2 = url_for_file(deposit.files.bucket.id, 'myfile2.dat')
+            file_put_res = client.delete(
+                file_url2,
+                input_stream=BytesIO(uploaded_file_content),
+                headers=headers
+            )
+            del uploaded_files['myfile2.dat']
+
+            # check that the files can be retrieved properly
+            subtest_file_bucket_content(client, deposit.files.bucket,
+                                        uploaded_files)
+
+
 ######################
 #  Test permissions  #
 ######################
@@ -260,7 +302,6 @@ def test_deposit_read_permissions(app, test_records_data,
         test_get(deposit, 200, admin)
         deposit.publish()
         test_get(deposit, 200, admin)
-
 
 
 def test_deposit_delete_permissions(app, test_records_data,
@@ -389,3 +430,55 @@ def test_deposit_modify_published_permissions(app, test_records_data,
         test_edit(403, non_creator)
         test_edit(403, creator)
         test_edit(403, admin)
+
+
+def test_deposit_files_permissions(app, test_communities, create_user,
+                                   login_user, admin):
+    """Test deposit read with HTTP GET."""
+    with app.app_context():
+        creator = create_user('creator')
+        non_creator = create_user('non-creator')
+
+        uploaded_files = {
+            'myfile1.dat': b'contents1',
+            'myfile2.dat': b'contents2'
+        }
+        test_record_data = generate_record_data()
+        def test_files_access(draft_access, submitted_access,
+                              published_access, user=None):
+            def get_file(deposit, file_access):
+                with app.test_client() as client:
+                    if user is not None:
+                        login_user(user, client)
+                    subtest_file_bucket_permissions(
+                        client, deposit.files.bucket,
+                        access_level=file_access,
+                        is_authenticated=user is not None
+                    )
+            deposit = create_deposit(test_record_data, creator, uploaded_files)
+            get_file(deposit, file_access=draft_access)
+
+            deposit = create_deposit(test_record_data, creator, uploaded_files)
+            deposit.submit()
+            get_file(deposit, file_access=submitted_access)
+
+            deposit = create_deposit(test_record_data, creator, uploaded_files)
+            deposit.submit()
+            deposit.publish()
+            get_file(deposit, file_access=published_access)
+
+        # Anonymous user
+        test_files_access(draft_access=None, submitted_access=None,
+                          published_access=None)
+        # Non creator user
+        test_files_access(user=non_creator, draft_access=None,
+                          submitted_access=None,
+                          published_access=None)
+        # Creator
+        test_files_access(user=creator, draft_access='write',
+                          submitted_access='write',
+                          published_access=None)
+        # Admin
+        test_files_access(user=admin, draft_access='write',
+                          submitted_access='write',
+                          published_access=None)
