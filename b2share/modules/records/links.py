@@ -62,7 +62,7 @@ def record_links_factory(pid):
             links['files'] = url_for_bucket(record.files.bucket)
     if hasattr(g, 'record_hit'):
         metadata = g.record_hit['_source']
-        if 'files_bucket_id' in metadata['_internal']:
+        if 'files_bucket_id' in metadata.get('_internal', {}):
             links['files'] = url_for_bucket(
                 metadata['_internal']['files_bucket_id']
             )
