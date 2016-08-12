@@ -422,12 +422,15 @@ class ServerCache {
         if (files) {
             return files;
         }
-        ajaxGet({
-            url: record.getIn(['links', 'files']),
-            successFn: (data) =>
-                this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
-            errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
-        });
+        const url = record.getIn(['links', 'files']);
+        if (url) {
+            ajaxGet({
+                url: url,
+                successFn: (data) =>
+                    this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
+                errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
+            });
+        }
     }
 
     getDraft(id) {
