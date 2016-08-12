@@ -525,14 +525,16 @@ export const FileRecordRow = React.createClass({
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
 
-        const allowDetails = file.checksum && file.PID;
+        const allowDetails = file.checksum || file.epic_pid;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
 
         return (
-            <div className="file" onClick={e => this.setState({open:!this.state.open})}>
-                <div className="row">
+            <div className="file">
+                <div className="row" onClick={e => this.setState({open:!this.state.open})}>
                     <div className="col-sm-6">
                         <span className={"glyphicon glyphicon-chevron-"+stateMark}
+                            style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
+                        <span className={"glyphicon glyphicon-file"}
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <a style={{display:'inline-block', marginLeft:'0.5em'}}
                             href={file.url}>{file.key || file.name}</a>
@@ -547,14 +549,17 @@ export const FileRecordRow = React.createClass({
                 </div>
                 { allowDetails && this.state.open ?
                     <div className="details">
-                        <div className="row">
-                            <div className="col-sm-12"><span style={{marginLeft:'3em'}}/>
-                            PID: {file.PID || "-"}</div>
-                        </div>
-                        <div className="row">
-                            <div className="col-sm-12"><span style={{marginLeft:'3em'}}/>
-                            Checksum: {file.checksum || "-"}</div>
-                        </div>
+                        { file.checksum ? <div className="row">
+                            <div className="col-sm-12"><span style={{marginLeft:'2.5em'}}/>
+                                Checksum:
+                                <span className="checksum" style={{marginLeft:'0.5em'}}>{file.checksum}</span>
+                            </div>
+                        </div> : false }
+                        { file.epic_pid ? <div className="row">
+                            <div className="col-sm-12"><span style={{marginLeft:'2.5em'}}/>
+                                PID: <EpicPid style={{marginLeft:'0.2em'}} pid={file.epic_pid} />
+                            </div>
+                        </div> : false }
                     </div> : false }
                 { this.props.remove && this.state.remove ?
                     <FileRemoveDialog file={file}
@@ -591,6 +596,65 @@ const FileRemoveDialog = React.createClass({
                         onClick={this.props.cancel}> No </button>
                 </div>
             </div>
+        );
+    },
+});
+
+
+export const EpicPid = React.createClass({
+    propTypes: {
+        pid: PT.string.isRequired,
+        style: PT.object,
+    },
+
+    HDL_PREFIX: "http://hdl.handle.net/",
+
+    getInitialState() {
+        return {
+            prefix: "",
+            pid: "",
+        }
+    },
+
+    componentWillMount() {
+        this.componentWillReceiveProps(this.props);
+    },
+
+    componentWillReceiveProps(props) {
+        let prefix = "";
+        let pid = props.pid;
+        if (pid.indexOf(this.HDL_PREFIX) === 0) {
+            prefix = this.HDL_PREFIX;
+            pid = pid.substring(this.HDL_PREFIX.length, pid.length);
+        }
+        this.setState({ prefix, pid });
+    },
+
+    copyToClipboard() {
+        if (!this.pidref) {
+            return;
+        }
+        this.pidref.value = this.state.prefix+this.state.pid;
+        this.pidref.select();
+        document.execCommand('copy');
+        this.pidref.value = this.state.pid;
+    },
+
+    render: function() {
+        const style = {
+            whiteSpace:"nowrap",
+            overflow: "auto",
+            border: "none",
+            padding:0,
+            margin:0,
+            width:"24em",
+            backgroundColor:"transparent",
+        };
+        return (
+            <span style={this.props.style}>
+                <input className="epic_pid" style={style} ref={c => this.pidref = c} defaultValue={this.state.pid} />
+                <span><a className="btn btn-xs btn-default" onClick={this.copyToClipboard}>Copy</a></span>
+            </span>
         );
     },
 });

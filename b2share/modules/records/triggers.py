@@ -26,33 +26,14 @@
 from __future__ import absolute_import, print_function
 
 import pytz
-
 from invenio_records.signals import before_record_update
-
-from invenio_search import current_search_client
 from invenio_rest.errors import FieldError
-
 from .errors import AlteredRecordError
 
 
 def register_triggers(app):
     # TODO(edima): replace this check with explicit permissions
     before_record_update.connect(check_record_immutable_fields)
-
-
-def index_record(record):
-    """Index the given record."""
-    metadata = record.dumps()
-    metadata['_created'] = pytz.utc.localize(record.created).isoformat()
-    metadata['_updated'] = pytz.utc.localize(record.updated).isoformat()
-    current_search_client.index(
-        index='records',
-        doc_type='record',
-        id=record.id,
-        body=metadata,
-        version=record.revision_id,
-        version_type='external_gte',
-    )
 
 
 # TODO(edima): replace this check with explicit permissions

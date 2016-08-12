@@ -24,6 +24,7 @@
 """B2Share Records JSON schemas used for serialization."""
 
 from marshmallow import Schema, fields, pre_dump
+from b2share.modules.access.policies import allow_public_file_metadata
 
 
 class DraftSchemaJSONV1(Schema):
@@ -34,6 +35,7 @@ class DraftSchemaJSONV1(Schema):
     links = fields.Raw()
     created = fields.Str()
     updated = fields.Str()
+    files = fields.Raw()
 
     @pre_dump
     def filter_internal(self, data):
@@ -42,6 +44,8 @@ class DraftSchemaJSONV1(Schema):
             data['metadata']['owners'] = data['metadata']['_deposit']['owners']
             del data['metadata']['_deposit']
         if '_files' in data['metadata']:
+            if allow_public_file_metadata(data['metadata']):
+                data['files'] = data['metadata']['_files']
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
             epic_pids = [p for p in data['metadata']['_pid']
