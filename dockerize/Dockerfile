@@ -1,7 +1,7 @@
 FROM centos:7
 EXPOSE 5000
 
-RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-7.noarch.rpm && \
+RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm && \
     yum -y update && \
     yum -y install wget python34 python34-devel npm supervisor git libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
 
