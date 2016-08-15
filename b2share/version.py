@@ -20,4 +20,4 @@
 """Version number."""
 
 
-__version__ = "2.0.0.rc2"  # FIXME: generate the version number
+__version__ = "2.0.0.rc3"  # FIXME: generate the version number
