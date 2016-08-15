@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export B2SHARE_SERVER_NAME=b2sharebeta
+export B2SHARE_SERVER_NAME=b2share2.localhost
 echo "Important: \$B2SHARE_SERVER_NAME must have the same value as the Host header set in nginx, see b2share.conf for line:"
 echo "'proxy_set_header Host ...'"
 echo ""

@@ -14,6 +14,7 @@ const apiUrls = {
     records()                         { return `${urlRoot}/api/records/` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },
     draft(id)                         { return `${urlRoot}/api/records/${id}/draft` },
+    fileBucket(bucket, key)           { return `${urlRoot}/api/files/${bucket}/${key}` },
 
     communities()                     { return `${urlRoot}/api/communities/` },
     community(id)                     { return `${urlRoot}/api/communities/${id}` },
@@ -274,12 +275,18 @@ class ServerCache {
 
         this.getters.record = new Pool(recordID =>
             new Getter(apiUrls.record(recordID), null,
-                (data) => this.store.setIn(['recordCache', recordID], fromJS(data)),
+                (data) => {
+                    if (data.files) { data.files = data.files.map(this.fixFile); }
+                    return this.store.setIn(['recordCache', recordID], fromJS(data));
+                },
                 (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
 
         this.getters.draft = new Pool(draftID =>
             new Getter(apiUrls.draft(draftID), null,
-                (data) => this.store.setIn(['draftCache', draftID], fromJS(data)),
+                (data) => {
+                    if (data.files) { data.files = data.files.map(this.fixFile); }
+                    return this.store.setIn(['draftCache', draftID], fromJS(data));
+                },
                 (xhr) => this.store.setIn(['draftCache', draftID], new Error(xhr)) ));
 
         this.getters.fileBucket = new Pool(draftID => {
@@ -353,8 +360,8 @@ class ServerCache {
         if (!file.url) {
             if (file.links && file.links.self) {
                 file.url = file.links.self;
-            } else if (file.key) {
-                file.url = fileBucketUrl + "/" + file.key;
+            } else if (file.key && file.bucket) {
+                file.url = apiUrls.fileBucket(file.bucket, file.key);
             }
         }
         return file;
@@ -415,12 +422,15 @@ class ServerCache {
         if (files) {
             return files;
         }
-        ajaxGet({
-            url: record.getIn(['links', 'files']),
-            successFn: (data) =>
-                this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
-            errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
-        });
+        const url = record.getIn(['links', 'files']);
+        if (url) {
+            ajaxGet({
+                url: url,
+                successFn: (data) =>
+                    this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
+                errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
+            });
+        }
     }
 
     getDraft(id) {

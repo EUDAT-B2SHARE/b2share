@@ -122,6 +122,22 @@ a.navbar-brand {
   color: white;
 }
 
+
+.epic_pid {
+  font-size:14px;
+  color: #c73118;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+.checksum {
+  font-family: "Bitstream Vera Sans Mono", Consolas, Courier, monospace;
+  overflow: auto;
+  color: #888;
+  white-space: nowrap;
+}
+
+
 /*****************************************************************************/
 /*** error ***/
 
@@ -615,6 +631,9 @@ a.navbar-brand {
 .fileList .file {
   padding: 0.5em 0;
   word-wrap: break-word;
+}
+.fileList .file .details{
+  overflow-x: auto;
 }
 .fileList .file:nth-child(odd) {
   background-color: #f4f4f4;

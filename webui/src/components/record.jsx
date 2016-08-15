@@ -6,7 +6,7 @@ import { serverCache, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait, Err } from './waiting.jsx';
-import { FileRecordHeader, FileRecordRow } from './editfiles.jsx';
+import { FileRecordHeader, FileRecordRow, EpicPid } from './editfiles.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
@@ -127,7 +127,7 @@ const Record = React.createClass({
                         {pid ?
                             <p className="pid">
                                 <span style={{fontWeight:'bold'}}>PID: </span>
-                                <code>{pid}</code>
+                                <EpicPid style={{marginLeft:'1em'}} pid={pid} />
                             </p> : false
                         }
                     </div>
@@ -214,11 +214,15 @@ const Record = React.createClass({
     },
 
     renderFileList(files) {
-        if (!files || !files.count()) {
-            return false;
-        }
-        if (files instanceof Error) {
-            return <Err err={files}/>;
+        let fileComponent = false;
+        if (!(files && files.count && files.count())) {
+            fileComponent = <div>No files available.</div>;
+        } else {
+            fileComponent =
+                <div className='fileList'>
+                    <FileRecordHeader/>
+                    { files.map(f => <FileRecordRow key={f.get('key')} file={f}/>) }
+                </div>;
         }
         return (
             <div className="well">
@@ -227,10 +231,7 @@ const Record = React.createClass({
                         { 'Files' }
                     </h3>
                 </div>
-                <div className='fileList'>
-                    <FileRecordHeader/>
-                    { files.map(f => <FileRecordRow key={f.get('key')} file={f}/>) }
-                </div>
+                { fileComponent }
             </div>
         );
     },

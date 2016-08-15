@@ -24,6 +24,7 @@
 """Record modification prior to indexing."""
 
 import pytz
+from b2share.modules.access.policies import allow_public_file_metadata
 
 
 def indexer_receiver(sender, json=None, record=None, index=None,
@@ -33,7 +34,9 @@ def indexer_receiver(sender, json=None, record=None, index=None,
         return
     try:
         if '_files' in json:
-            del json['_files']
+            if not allow_public_file_metadata(json):
+                for f in json['_files']:
+                    del f['key']
         del json['_deposit']
         json['_created'] = pytz.utc.localize(record.created).isoformat()
         json['_updated'] = pytz.utc.localize(record.updated).isoformat()

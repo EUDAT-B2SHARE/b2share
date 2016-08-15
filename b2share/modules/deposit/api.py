@@ -92,6 +92,7 @@ class Deposit(DepositRecord):
         with super(Deposit, self)._process_files(record_id, data):
             if not self.files:
                 data['_files'] = []
+            create_file_pids(data)
             yield data
 
     @classmethod
@@ -177,3 +178,26 @@ class Deposit(DepositRecord):
         self['publication_state'] = PublicationStates.submitted.name
         if commit:
             self.commit()
+
+
+def create_file_pids(record_metadata):
+    from flask import current_app
+    from b2share.modules.records.b2share_epic import createHandle
+    from b2share.modules.records.errors import EpicPIDError
+    throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_FILE_PID', False)
+    for f in record_metadata.get('_files'):
+        if f.get('epic_pid'):
+            continue
+        file_url = url_for('invenio_files_rest.object_api',
+                           bucket_id=f.get('bucket'), key=f.get('key'),
+                           _external=True)
+        try:
+            file_pid = createHandle(file_url, checksum=f.get('checksum'))
+            if file_pid is None:
+                raise EpicPIDError("EPIC PID allocation for file failed")
+            f['epic_pid'] = file_pid
+        except EpicPIDError as e:
+            if throw_on_failure:
+                raise e
+            else:
+                current_app.logger.warning(e)

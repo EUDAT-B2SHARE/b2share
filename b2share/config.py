@@ -206,6 +206,7 @@ OAISERVER_METADATA_FORMATS = {
 
 CFG_HANDLE_SYSTEM_BASEURL = 'http://hdl.handle.net'
 CFG_FAIL_ON_MISSING_PID = False
+CFG_FAIL_ON_MISSING_FILE_PID = False
 
 # The following config variables are used to create EPIC PIDs
 # CFG_EPIC_USERNAME = 0000
