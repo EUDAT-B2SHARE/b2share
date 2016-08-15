@@ -4,68 +4,65 @@ B2Share installation
 1. Install B2SHARE for evaluation, using Docker
 -----------------------------------------------
 
-1.1. If running Docker locally
+1.0 Prerequisite: FQDN for nginx
+--------------------------------
+
+B2SHARE runs in a python environment, proxied by default by nginx. Before running B2SHARE a nginx configuration file must be created. The ``create_nginx_conf.sh`` script, located in the ``dockerize`` folder, can be used for this purpose.
+
+.. code-block:: console
+
+    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git
+    $ cd b2share/dockerize
+    $ ./create_nginx_conf.sh
+
+The ``create_nginx_conf.sh`` script will ask for the FQDN (Fully Qualified Domain Name) of the local server. If you are only trying to test B2SHARE, you can use a local domain, e.g. 'b2share2.local'. In this case please add the FQDN value to your hosts file to connect it with the real IP, e.g.: ``192.168.99.100  b2share2.localhost`` if using docker-machine or ``127.0.0.1  b2share2.localhost`` if running Docker locally.
+
+
+1.1 Prerequisite: B2ACCESS configuration
+----------------------------------------
+
+B2SHARE requires B2ACCESS for user management. For this purpose you must create a new B2ACCESS OAuth client, providing as the 'return URL' the address of the local B2SHARE server and the authorization path: https://$FQDN/api/oauth/authorized/b2access/ (where $FQDN must be replaced with the domain name described above). After successfully registering the B2ACCESS account please set the following environment variables with the username and password provided for the B2ACCESS account:
+
+.. code-block:: console
+
+    $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
+    $ export B2ACCESS_SECRET_KEY=...      # the password used for registration
+
+Additional customizations of the B2ACCESS server configuration can be performed after B2SHARE is provisioned (after the b2share.sh script runs ``/usr/bin/b2share demo load_config``). The script creates a configuration file in ``/usr/var/b2share-instance/b2share.cfg``, which can be edited as necessary.
+
+
+1.2. If running Docker locally
 ------------------------------
 
-If you can run docker on the same host (on Linux), go into the ``dockerize`` folder:
+If you can run docker on the same host (on Linux or with Docker for Mac/Windows), go into the ``dockerize`` folder, define the B2SHARE_SERVER_NAME variable to point to the FQDN (see above), define the B2ACCESS application key and secret (see above), and then run ``docker-compose``:
 
 .. code-block:: console
 
-    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
     $ cd b2share/dockerize
-
-and then run ``docker-compose`` as below:
-
-.. code-block:: console
-
-    $ export B2SHARE_SERVER_NAME=localhost
+    $ export B2SHARE_SERVER_NAME=b2share2.localhost
+    $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
+    $ export B2ACCESS_SECRET_KEY=...      # the password used for registration
     $ docker-compose up
 
-After the docker image is built and running, b2share will be available at http://localhost:5000
-
-Logging in with B2ACCESS requires some configuration; please check for more details in the B2ACCESS configuration section below.
+After the docker image is built and running, b2share will be available at https://$B2SHARE_SERVER_NAME
 
 
-1.2. If running Docker with docker-machine and virtualbox
+1.3. If running Docker with docker-machine and virtualbox
 ---------------------------------------------------------
 
-If you can not run docker on the same host but you can use docker-machine and a virtualbox VM (e.g. on OSX), go into the ``dockerize`` folder:
+If you can not run docker on the same host but you can use docker-machine and a virtualbox VM, go into the ``dockerize`` folder and then run the `run_docker` script:
 
 .. code-block:: console
 
-    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
     $ cd b2share/dockerize
-
-and then run the following script:
-
-.. code-block:: console
-
+    $ export B2SHARE_SERVER_NAME=b2share2.localhost
+    $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
+    $ export B2ACCESS_SECRET_KEY=...      # the password used for registration
     $ ./run_docker.sh
 
 The script will try to create a new VM box using docker-machine and virtualbox, and run docker-compose on it.
-After the docker image is built and started, a message will be displayed pointing the URL of the B2SHARE instance.
+After the docker image is built and running, b2share will be available at https://$B2SHARE_SERVER_NAME
 
-Logging in with B2ACCESS requires some configuration; please check for more details in the B2ACCESS configuration section below.
-
-1.3 B2ACCESS configuration
-----------------------------
-
-In order for the users to be able to login using B2ACCESS, an additional configuration step must be performed. The local administrator must create a new
-OAuth client account at https://unity.eudat-aai.fz-juelich.de:8443/home/home, providing as the return URL the address of the local B2SHARE server
-and the authorization path (e.g. http://localhost:5000/api/oauth/authorized/b2access/ for a localhost installation, or
-http://$(docker ip b2sharebeta):5000/api/oauth/authorized/b2access/ for an installation using with docker-machine). After successfully
-registering the B2ACCESS account, the administrator must set the following environment variables with the username and password provided
-for the B2ACCESS account, before starting the service by running ``docker-compose`` or the ``run_docker.sh`` script:
-
-.. code-block:: console
-
-    $ export B2ACCESS_CONSUMER_KEY=...
-    $ export B2ACCESS_SECRET_KEY=...
-    $ docker-compose up # or ./run_docker.sh
-
-Additional customizations of the B2ACCESS server configuration can be performed after the b2share is provisioned (after the b2share.sh script
-runs ``/usr/bin/b2share demo load_config``). The script creates a configuration file in ``/usr/var/b2share-instance/b2share.cfg``, which can be
-edited as necessary.
 
 
 2. Install B2SHARE for development
