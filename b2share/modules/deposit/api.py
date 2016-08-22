@@ -26,6 +26,7 @@
 import uuid
 from contextlib import contextmanager
 from enum import Enum
+from urllib.parse import urlparse, urlunparse
 
 from flask import url_for, g
 from invenio_db import db
@@ -75,11 +76,13 @@ class Deposit(DepositRecord):
     @property
     def record_schema(self):
         """Convert deposit schema to a valid record schema."""
-        return self['$schema']
+        parsed = urlparse(self['$schema'])
+        return urlunparse(parsed._replace(fragment='/json_schema'))
 
     def build_deposit_schema(self, record):
         """Convert record schema to a valid deposit schema."""
-        return record['$schema']
+        parsed = urlparse(record['$schema'])
+        return urlunparse(parsed._replace(fragment='/draft_json_schema'))
 
     @contextmanager
     def _process_files(self, record_id, data):
@@ -113,9 +116,11 @@ class Deposit(DepositRecord):
             raise InvalidRecordError('Community ID is not a valid UUID.') from e
         schema = CommunitySchema.get_community_schema(community_id)
         from b2share.modules.schemas.serializers import \
-            community_schema_json_schema_link
-        data['$schema'] = community_schema_json_schema_link(schema,
-                                                            _external=True)
+            community_schema_draft_json_schema_link
+        data['$schema'] = community_schema_draft_json_schema_link(
+            schema,
+            _external=True
+        )
         deposit = super(Deposit, cls).create(data, id_=id_)
 
         # create file bucket
@@ -124,6 +129,7 @@ class Deposit(DepositRecord):
         db.session.add(RecordsBuckets(
             record_id=deposit.id, bucket_id=bucket.id
         ))
+
         return deposit
 
     def _prepare_edit(self, record):
