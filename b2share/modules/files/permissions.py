@@ -85,9 +85,9 @@ def files_permission_factory(obj, action=None):
         rb = RecordsBuckets.query.filter_by(bucket_id=bucket_id).one_or_none()
         if rb is not None:
             record = Record.get_record(rb.record_id)
-            if is_publication(record):
+            if is_publication(record.model):
                 return PublicationFilesPermission(record, action)
-            elif is_deposit(record):
+            elif is_deposit(record.model):
                 return DepositFilesPermission(record, action)
 
     return DynamicPermission(superuser_access)

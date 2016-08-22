@@ -45,6 +45,7 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
     """Test record draft creation."""
     headers = [('Content-Type', 'application/json'),
                ('Accept', 'application/json')]
+
     def create_record(client, record_data):
         return client.post(
             url_for('b2share_records_rest.b2share_record_list'),
@@ -72,6 +73,7 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
                     record_data,
                     PublicationStates.draft.name,
                     owners=[user.id],
+                    draft=True,
                 )
                 assert expected_metadata == draft_create_data['metadata']
                 subtest_self_link(draft_create_data,
@@ -111,6 +113,7 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
                 record_data,
                 PublicationStates.draft.name,
                 owners=[user.id],
+                draft=True,
             )
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
@@ -159,6 +162,7 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                 record_data,
                 PublicationStates.published.name,
                 owners=[user.id],
+                draft=True,
             )
 
     with app.app_context():
@@ -174,8 +178,13 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                               client)
 
             pid, published = deposit.fetch_published()
-            # check that the published record and the deposit are equal
-            assert dict(**published) == dict(**deposit)
+            # check that the published record and the deposit are equal except
+            # for the schema
+            cleaned_deposit = {f: v for f, v in deposit.items()
+                               if f != '$schema'}
+            cleaned_published = {f: v for f, v in deposit.items()
+                                 if f != '$schema'}
+            assert cleaned_published == cleaned_deposit
             # check "published" link
             assert draft_patch_data['links']['publication'] == \
                 url_for('b2share_records_rest.{0}_item'.format(
@@ -197,6 +206,7 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                 del item['links']
                 del item['created']
                 del item['updated']
+                del item['metadata']['$schema']
             assert cleaned_draft_data == cleaned_published_data
 
 
@@ -382,7 +392,7 @@ def test_deposit_publish_permissions(app, test_records_data, login_user,
                     data=json.dumps([{
                         "op": "replace", "path": "/publication_state",
                         "value": PublicationStates.published.name
-                    },{
+                    }, {
                         "op": "replace", "path": "/title",
                         "value": 'newtitle'
                     }]),
@@ -411,7 +421,7 @@ def test_deposit_modify_published_permissions(app, test_records_data,
 
         def test_edit(status, user=None):
             headers = [('Content-Type', 'application/json-patch+json'),
-                        ('Accept', 'application/json')]
+                       ('Accept', 'application/json')]
             with app.test_client() as client:
                 if user is not None:
                     login_user(user, client)
@@ -444,6 +454,7 @@ def test_deposit_files_permissions(app, test_communities, create_user,
             'myfile2.dat': b'contents2'
         }
         test_record_data = generate_record_data()
+
         def test_files_access(draft_access, submitted_access,
                               published_access, user=None):
             def get_file(deposit, file_access):

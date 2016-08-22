@@ -29,29 +29,19 @@ from invenio_db import db
 from .errors import UnknownRecordType
 
 
-def _is_record_type(record_id, pid_type):
-    """Verify if a record has a pid of the given type."""
-    pids = PersistentIdentifier.query.filter(
-        PersistentIdentifier.object_uuid == record_id).all()
-    if pids:
-        return pids[0].pid_type == pid_type
-    else:
-        raise UnknownRecordType('No PID found for record {}'.format(record_id))
-
-
 def is_publication(record):
     """Check if a given record is a published record.
 
     Returns:
-        bool: True if the record is a published record, else false.
+        bool: True if the record is a published record, else False.
     """
-    return _is_record_type(record.id, 'b2share_record')
+    return record.json['$schema'].endswith('#/json_schema')
 
 
 def is_deposit(record):
     """Check if a given record is a deposit record.
 
     Returns:
-        bool: True if the record is a deposit record, else false.
+        bool: True if the record is a deposit record, else False.
     """
-    return _is_record_type(record.id, 'b2share_deposit')
+    return record.json['$schema'].endswith('#/draft_json_schema')

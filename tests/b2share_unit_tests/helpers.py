@@ -125,7 +125,7 @@ def subtest_file_bucket_permissions(client, bucket, access_level=None,
         test_files_permission(200, 200, 204)
 
 
-def build_expected_metadata(record_data, state, owners=None):
+def build_expected_metadata(record_data, state, owners=None, draft=False):
     """Create the metadata expected for a given record/deposit GET.
 
     Args:
@@ -135,7 +135,8 @@ def build_expected_metadata(record_data, state, owners=None):
     """
     expected_metadata = deepcopy(record_data)
     expected_metadata['publication_state'] = state
-    expected_metadata['$schema'] = '{}#/json_schema'.format(
+    uri_template = '{}#/draft_json_schema' if draft else '{}#/json_schema'
+    expected_metadata['$schema'] = uri_template.format(
         url_for('b2share_schemas.community_schema_item',
                 community_id=record_data['community'],
                 schema_version_nb=1,
