@@ -24,11 +24,12 @@
 """B2Share Schemas exceptions."""
 
 from __future__ import absolute_import
+from doschema.errors import JSONSchemaCompatibilityError
+from invenio_rest.errors import RESTException
 
-
-class B2ShareSchemasError(Exception):
+class B2ShareSchemasError(RESTException):
     """Base class for the B2Share Schemas module."""
-    pass
+    code = 500
 
 
 #
@@ -37,7 +38,8 @@ class B2ShareSchemasError(Exception):
 
 class InvalidJSONSchemaError(B2ShareSchemasError):
     """Exception raised when a JSON Schema is considered as invalid."""
-    pass
+    code = 400
+    description = "The provided JSON Schema is invalid."
 
 
 #
@@ -131,3 +133,25 @@ class CommunitySchemaIsImmutable(B2ShareSchemasError):
 class CommunitySchemaDoesNotExistError(B2ShareSchemasError):
     """Exception raised when a requested Community schema does not exist."""
     pass
+
+
+class BackwardCompatibilityError(B2ShareSchemasError):
+    """Error raised when JSON schema validation fails."""
+
+    code = 400
+
+    def __init__(self, description):
+        """Constructor
+
+        Args:
+            description: error message.
+        """
+        super(BackwardCompatibilityError, self).__init__(
+            description=description
+        )
+
+
+def register_error_handlers(app):
+    @app.errorhandler(JSONSchemaCompatibilityError)
+    def handle_schema_compatibility_error(err):
+        return BackwardCompatibilityError(str(err)).get_response()

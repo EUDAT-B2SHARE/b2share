@@ -55,6 +55,7 @@ install_requires = [
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
     'easywebdav>=1.2.0',
+    'doschema',
 ]
 
 if sys.version_info < (3, 4):

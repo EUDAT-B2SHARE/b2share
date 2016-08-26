@@ -26,10 +26,13 @@ from functools import lru_cache
 from urllib.error import URLError
 from urllib.request import urlopen
 
+from flask import current_app
 from invenio_db import db
 from jsonschema import validate
 import chardet
 import jsonschema
+
+from doschema.validation import JSONSchemaValidator
 
 from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
     RootSchemaAlreadyExistsError
@@ -47,11 +50,18 @@ def resolve_json(url):
     return json_schema
 
 
-def validate_json_schema(json_schema):
-    """Check that a JSON Schema matches its "$schema"."""
-    if '$schema' not in json_schema:
+def validate_json_schema(new_json_schema, prev_schemas):
+    """Check that a JSON Schema matches its "$schema" and is backward
+    compatible.
+
+    Args:
+        new_json_schema: json_schema to be created.
+        prev_schemas: list of previous versions of a schema.
+
+    """
+    if '$schema' not in new_json_schema:
         raise InvalidJSONSchemaError('Missing "$schema" field in JSON Schema')
-    if json_schema['$schema'] != 'http://json-schema.org/draft-04/schema#':
+    if new_json_schema['$schema'] != 'http://json-schema.org/draft-04/schema#':
         # FIXME: later we should accept other json-schema versions too
         # but we have to make sure that the root-schema, block-schema and
         # community-schema are compatible
@@ -59,10 +69,21 @@ def validate_json_schema(json_schema):
             '"$schema" field can only be '
             '"http://json-schema.org/draft-04/schema#"')
     try:
-        super_schema = resolve_json(json_schema['$schema'])
+        super_schema = resolve_json(new_json_schema['$schema'])
+
+        schema_validator = JSONSchemaValidator(
+            resolver_factory=lambda *args,
+            **kwargs: current_app.extensions[
+                'invenio-records'
+            ].ref_resolver_cls.from_schema(new_json_schema)
+        )
+
+        for prev_schema in prev_schemas:
+            schema_validator.validate(json.loads(prev_schema), 'prevs')
+        schema_validator.validate(new_json_schema, 'current schema')
     except URLError as e:
         raise InvalidJSONSchemaError('Invalid "$schema" URL.') from e
-    jsonschema.validate(json_schema, super_schema)
+    jsonschema.validate(new_json_schema, super_schema)
 
 
 def resolve_schemas_ref(source):

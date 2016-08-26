@@ -327,7 +327,7 @@ def test_block_schema_version_errors(app):
 @pytest.mark.parametrize('app', [({'extensions':
                                    [B2ShareCommunities, B2ShareSchemas]})],
                          indirect=['app'])
-def test_community_schema(app, flask_http_responses):
+def test_community_schema(app, flask_http_responses, test_communities):
     """Test valid usage of the CommunitySchema API."""
     with app.app_context():
         new_community = Community.create_community(**communities_metadata[0])
@@ -346,7 +346,7 @@ def test_community_schema(app, flask_http_responses):
         # create root schemas
         root_schemas = [
             RootSchema.create_new_version(
-                version=version,
+                version=version+1,
                 json_schema=root_schemas_json_schemas[version],
             ) for version in range(len(root_schemas_json_schemas))
         ]

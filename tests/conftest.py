@@ -191,6 +191,7 @@ def test_communities(app, tmp_location):
         tmp_location.default = True
         db.session.merge(tmp_location)
         db.session.commit()
+
         # load root schemas
         load_root_schemas()
         # load the demo
