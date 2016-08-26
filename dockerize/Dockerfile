@@ -10,8 +10,8 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python3.4 get-pip.py && \
     pip3 install --upgrade pip
 
-WORKDIR /eudat
-RUN git clone https://github.com/EUDAT-B2SHARE/b2share.git --branch evolution
+# RUN git clone https://github.com/EUDAT-B2SHARE/b2share.git --branch evolution
+# ADD . b2share
 
 ENV LANG=en_US.UTF-8
 ENV DB_NAME="b2share-evolution"
@@ -22,44 +22,71 @@ ENV B2SHARE_CELERY_RESULT_BACKEND="redis://redis:6379/1"
 ENV B2SHARE_SECRET_KEY="sX5BwQI8cZQmxmM6RfI08zSDm6tPt8Tc"
 ENV B2SHARE_SEARCH_ELASTIC_HOSTS="elasticsearch:9200"
 
-# # only use this for the staging server
-# ENV SSL_CERT_FILE="staging_b2access.pem"
-
-WORKDIR /eudat/b2share/webui
-RUN npm install --unsafe-perm && \
-    node_modules/webpack/bin/webpack.js -p
+#
+# Install public-license-selector
+#
 
 WORKDIR /eudat
-RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git  \
-    && cd public-license-selector                                           \
-    && npm install
+RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git
 WORKDIR /eudat/public-license-selector
+RUN npm install
 
 # this next RUN is just a workaround for the old version of node on centos7
 # without it, the npm run build fails when compiling less files
-RUN mv webpack.config.js webpack.config.js.0                                \
-    && echo "require('es6-promise').polyfill();" > webpack.config.js        \
-    && cat webpack.config.js.0 >> webpack.config.js                         \
-    && npm install es6-promise
+RUN mv webpack.config.js webpack.config.js.0
+RUN echo "require('es6-promise').polyfill();" > webpack.config.js
+RUN cat webpack.config.js.0 >> webpack.config.js
+RUN npm install es6-promise
 
-RUN npm run build                                                           \
-    && mkdir -p ../b2share/webui/app/vendors                                \
-    && cp dist/license-selector.* ../b2share/webui/app/vendors/
+RUN npm run build
+
+RUN node_modules/webpack/bin/webpack.js -p
+RUN mkdir -p /eudat/b2share/webui/app/vendors
+RUN cp dist/license-selector.* /eudat/b2share/webui/app/vendors/
+
+#
+# Install B2Share webui module and dependencies
+#
+
+WORKDIR /eudat
+ADD ./webui/package.json b2share/webui/package.json
+ADD ./webui/copy_files.sh b2share/webui/copy_files.sh
+
+WORKDIR /eudat/b2share/webui
+RUN npm install --unsafe-perm
+
+#
+# Install python module and dependencies
+#
 
 WORKDIR /eudat/b2share
+ADD setup.py setup.py
+ADD b2share/version.py b2share/version.py
+
 RUN pip install requirements-builder
 RUN requirements-builder --level=min setup.py > lowest-requirements.txt
 RUN pip install -r lowest-requirements.txt
 RUN pip install -e .
 
 WORKDIR /eudat/b2share/demo
+ADD demo/setup.py setup.py
 RUN pip install -e .
 
-COPY b2share.sh /eudat/
-COPY supervisord.conf /etc/
+#
+# Copy the rest of B2Share files
+#
+
+WORKDIR /eudat/b2share
+ADD webui webui
+WORKDIR /eudat/b2share/webui
+RUN node_modules/webpack/bin/webpack.js -p
+
+WORKDIR /eudat
+ADD . b2share
+COPY dockerize/b2share.sh /eudat/
+COPY dockerize/supervisord.conf /etc/
 
 RUN systemctl disable firewalld
 
 WORKDIR /eudat/b2share
-
 CMD ["/usr/bin/supervisord"]
