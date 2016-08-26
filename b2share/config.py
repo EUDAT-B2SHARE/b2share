@@ -207,7 +207,7 @@ OAISERVER_METADATA_FORMATS = {
 # Celery
 # ======
 #: Default broker (RabbitMQ on locahost).
-# BROKER_URL = "amqp://guest:guest@localhost:5672//"
+BROKER_URL = "amqp://guest:guest@localhost:5672//"
 #: Default Celery result backend.
 CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
 #: Accepted content types for Celery.
