@@ -56,11 +56,11 @@ def jsonresolver_loader(url_map):
         '<int:schema_version_nb>'.format(
             current_app.config.get('APPLICATION_ROOT') or ''),
         endpoint=community_resolver,
-        host=current_app.config['SERVER_NAME']))
+        host=current_app.config['JSONSCHEMAS_HOST']))
 
     url_map.add(Rule(
         '{}/schemas/<string:schema_id>/versions'
         '/<int:schema_version_nb>'.format(
             current_app.config.get('APPLICATION_ROOT') or ''),
         endpoint=block_schema_resolver,
-        host=current_app.config['SERVER_NAME']))
+        host=current_app.config['JSONSCHEMAS_HOST']))

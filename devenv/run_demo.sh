@@ -57,7 +57,6 @@ export B2SHARE_ACCOUNTS_SESSION_REDIS_URL="redis://${DOCKER_IP}:6379/0"
 export B2SHARE_CELERY_RESULT_BACKEND="redis://${DOCKER_IP}:6379/1"
 export B2SHARE_SECRET_KEY=$(base64 /dev/urandom | tr -d '/+' | dd bs=32 count=1 2>/dev/null)
 export B2SHARE_SEARCH_ELASTIC_HOSTS="${DOCKER_IP}:9200"
-export B2SHARE_SERVER_NAME="localhost:5000"
 
 cdvirtualenv src
 if [ ! -d ./b2share ]; then

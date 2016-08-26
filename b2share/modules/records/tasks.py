@@ -44,7 +44,7 @@ def update_expired_embargos():
     logger = current_app.logger
     base_url = urlunsplit((
         current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-        current_app.config['SERVER_NAME'],
+        current_app.config['JSONSCHEMAS_HOST'],
         current_app.config.get('APPLICATION_ROOT') or '', '', ''
     ))
     # The task needs to run in a request context as JSON Schema validation
