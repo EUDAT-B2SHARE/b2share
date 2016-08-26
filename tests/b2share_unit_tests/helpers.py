@@ -34,6 +34,7 @@ from flask_login import login_user, logout_user
 from invenio_accounts.models import User
 from b2share.modules.deposit.api import Deposit
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from invenio_indexer.api import RecordIndexer
 
 
 def url_for_file(bucket_id, key):
@@ -176,6 +177,9 @@ def create_record(data, creator, files=None):
         deposit.submit()
         deposit.publish()
     published = deposit.fetch_published()
+    RecordIndexer(
+        record_to_index=lambda record: ('records', 'record')
+    ).index(published[1])
     return (deposit, published[0], published[1])  # deposit, pid, record
 
 
@@ -189,7 +193,7 @@ def resolve_record_data(data):
 def generate_record_data(title='My Test BBMRI Record', open_access=True,
                          community='MyTestCommunity',
                          block_schema='MyTestSchema',
-                         block_schema_content=None):
+                         block_schema_content=None, **kwargs):
     """Generate"""
     default_block_schema_content = {
         'study_design': ['Case-control']
@@ -204,6 +208,7 @@ def generate_record_data(title='My Test BBMRI Record', open_access=True,
             else block_schema_content
         }
     }
+    data.update(kwargs)
     return resolve_record_data(data)
 
 

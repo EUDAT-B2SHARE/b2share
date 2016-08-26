@@ -25,6 +25,7 @@
 
 import pytz
 from b2share.modules.access.policies import allow_public_file_metadata
+from invenio_records_files.models import RecordsBuckets
 
 
 def indexer_receiver(sender, json=None, record=None, index=None,
@@ -41,9 +42,13 @@ def indexer_receiver(sender, json=None, record=None, index=None,
         json['_created'] = pytz.utc.localize(record.created).isoformat()
         json['_updated'] = pytz.utc.localize(record.updated).isoformat()
         json['owners'] = record['_deposit']['owners']
-        if record.files:
+
+        # insert the bucket id for link generation in search results
+        record_buckets = RecordsBuckets.query.filter(
+            RecordsBuckets.record_id == record.id).all()
+        if record_buckets:
             json['_internal'] = {
-                'files_bucket_id': str(record.files.bucket.id),
+                'files_bucket_id': str(record_buckets[0].bucket_id),
             }
     except Exception:
         raise
