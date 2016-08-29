@@ -36,7 +36,7 @@ from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
 
-from .helpers import load_demo_data
+from .helpers import load_demo_data, download_v1_data, process_v1_file
 from . import config as demo_config
 
 
@@ -93,3 +93,38 @@ def load_config(verbose, force):
     if verbose > 0:
         click.secho('Configuration file "{}" created.'.format(
             instance_config_path), fg='green')
+            
+@demo.command()
+@with_appcontext
+@click.option('-v', '--verbose', count=True)
+@click.option('-d','--download', is_flag=True, default=False)
+@click.argument('token')
+@click.argument('download_directory')
+def import_v1_data(verbose, download, token, download_directory):
+    if verbose:
+        click.secho("Importing data from b2share.eudat.eu to this instance")
+        os.chdir(download_directory)
+        if download:
+            if verbose:
+                click.secho("Cleaning download directory %s" % download_directory)
+                filelist = os.listdir('.')
+                for f in filelist:
+                    os.remove(f)
+                    if verbose:
+                        click.secho("removing - %s" % f)
+            if verbose:
+                click.secho("----------")
+                click.secho("Downloading data into directory %s" % 
+                    download_directory)
+            download_v1_data(token, download_directory)
+        filelist = os.listdir('.')
+        if verbose:
+            click.secho("-----------")
+            click.secho("Processing %d files from %s" % 
+                (len(filelist),download_directory))
+        for f in filelist:
+            process_v1_file(f)
+        
+
+
+        
