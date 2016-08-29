@@ -16,27 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-#
-# In applying this license, CERN does not
-# waive the privileges and immunities granted to it by virtue of its status
-# as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share Communities exceptions."""
+"""Helper functions for B2Share Communities module."""
 
-from __future__ import absolute_import
+from sqlalchemy import func
 
+from .api import Community
+from .errors import CommunityDoesNotExistError
 
-class InvalidCommunityError(Exception):
-    """Exception raised when a community is invalid."""
-    pass
-
-
-class CommunityDoesNotExistError(Exception):
-    """Exception raised when a requested community does not exist."""
-    pass
-
-
-class CommunityDeletedError(Exception):
-    """Exception raised when a requested community is marked as deleted."""
-    pass
-
+def get_community_by_name_or_id(community):
+    result = None
+    try:
+        result = Community.get(id=community)
+    except:
+        try:
+            result = Community.get(name=community)
+        except CommunityDoesNotExistError:
+            pass
+    return result
