@@ -310,7 +310,7 @@ def _process_record(rec):
     #from json donwloaded from b2share_v1 API
     result = None
     #fetch community
-    comms = Community.get_all(name=rec['domain'])
+    comms = Community.get_all(0,1,name=rec['domain'])
     if comms:
         community = comms[0]
         print(community.name, community.id)    
