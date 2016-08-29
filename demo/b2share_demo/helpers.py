@@ -30,6 +30,7 @@ import os
 import re
 import uuid
 from collections import namedtuple
+import requests
 from uuid import UUID
 from urllib.parse import urlunsplit
 
@@ -268,3 +269,49 @@ def resolve_community_id(source):
         community_id_match,
         source
     )
+    
+        
+def download_v1_data(token, target_dir):
+    """
+    Download the data from B2SHARE V1 records using token in to target_dir .
+    """
+    V1_URL_BASE = 'https://b2share.eudat.eu/api/'
+    url = "%srecords" % V1_URL_BASE
+    params_dict = {}
+    params_dict['access_token'] = token
+    params_dict['page_size']=100
+    params_dict['page_offset']=0
+    finished = False
+    counter = 0
+    while not finished:
+        r = requests.get(url, params=params_dict, verify=False)
+        f = open(target_dir+ "/%d.txt" % counter,'w')
+        f.write(r.text)
+        f.close()
+        recs = json.loads(r.text)['records']
+        print("downloaded %d, page %d" % (len(recs), counter))    
+        if len(recs)<100:
+            finished = True
+        counter = counter + 1
+        params_dict['page_offset']=counter
+
+def process_v1_file(filename):
+    """
+    Parse a downloaded file containing records
+    """
+    f = open(filename)
+    recs = json.loads(f.read())['records']
+    f.close()
+    for r in recs:
+        record = _process_record(r)
+
+def _process_record(rec):
+    #rec is dict representing 1 record
+    #from json donwloaded from b2share_v1 API
+    result = None
+    #fetch community
+    comms = Community.get_all(name=rec['domain'])
+    if comms:
+        community = comms[0]
+        print(community.name, community.id)    
+        
