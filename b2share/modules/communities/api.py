@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 University of Tuebingen, CERN
 # Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
@@ -91,12 +91,16 @@ class Community(object):
     @classmethod
     # TODO: change this into a search function, not just a list of communities
     # TODO: a query should be given
-    def get_all(cls, start, stop):
+    def get_all(cls, start=None, stop=None):
         """Searches for matching communities."""
-        start = int(start)
-        stop = int(stop)
         from .models import Community as CommunityMeta
-        metadata = CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+        if (start is None and stop is None):
+            metadata = CommunityMeta.query.order_by(CommunityMeta.created)
+        elif not(start is None) and not(stop is None):
+            metadata = CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+        else:
+            #one of them is None this cannot happen
+            raise ValueError("Neither or both start and stop should be None")
         return [cls(md) for md in metadata]
 
     @classmethod
