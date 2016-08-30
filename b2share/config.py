@@ -245,3 +245,5 @@ B2DROP_SERVER = {
 # By default we suppose there is one proxy in front of B2Share
 WSGI_PROXIES = 1
 PREFERRED_URL_SCHEME = 'http'
+
+FILES_REST_DEFAULT_MAX_FILE_SIZE = 1000 * 1024 * 1024 # 1 GB by default for RC4
