@@ -26,7 +26,7 @@
 from __future__ import absolute_import, print_function
 
 
-FILES_REST_DEFAULT_MAX_FILE_SIZE = 100 * 1024 * 1024 # 100 MB for RC1
+FILES_REST_DEFAULT_MAX_FILE_SIZE = 10000 * 1024 * 1024 # 10 GB for RC4 demo
 
 # Not using staging server for public deployments anymore
 OAUTHCLIENT_REMOTE_APPS = dict(
