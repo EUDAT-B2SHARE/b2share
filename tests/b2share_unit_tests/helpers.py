@@ -34,6 +34,7 @@ from flask_login import login_user, logout_user
 from invenio_accounts.models import User
 from b2share.modules.deposit.api import Deposit
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from invenio_indexer.api import RecordIndexer
 
 
 def url_for_file(bucket_id, key):
@@ -125,7 +126,7 @@ def subtest_file_bucket_permissions(client, bucket, access_level=None,
         test_files_permission(200, 200, 204)
 
 
-def build_expected_metadata(record_data, state, owners=None):
+def build_expected_metadata(record_data, state, owners=None, draft=False):
     """Create the metadata expected for a given record/deposit GET.
 
     Args:
@@ -135,7 +136,8 @@ def build_expected_metadata(record_data, state, owners=None):
     """
     expected_metadata = deepcopy(record_data)
     expected_metadata['publication_state'] = state
-    expected_metadata['$schema'] = '{}#/json_schema'.format(
+    uri_template = '{}#/draft_json_schema' if draft else '{}#/json_schema'
+    expected_metadata['$schema'] = uri_template.format(
         url_for('b2share_schemas.community_schema_item',
                 community_id=record_data['community'],
                 schema_version_nb=1,
@@ -175,6 +177,9 @@ def create_record(data, creator, files=None):
         deposit.submit()
         deposit.publish()
     published = deposit.fetch_published()
+    RecordIndexer(
+        record_to_index=lambda record: ('records', 'record')
+    ).index(published[1])
     return (deposit, published[0], published[1])  # deposit, pid, record
 
 
@@ -188,7 +193,7 @@ def resolve_record_data(data):
 def generate_record_data(title='My Test BBMRI Record', open_access=True,
                          community='MyTestCommunity',
                          block_schema='MyTestSchema',
-                         block_schema_content=None):
+                         block_schema_content=None, **kwargs):
     """Generate"""
     default_block_schema_content = {
         'study_design': ['Case-control']
@@ -203,6 +208,7 @@ def generate_record_data(title='My Test BBMRI Record', open_access=True,
             else block_schema_content
         }
     }
+    data.update(kwargs)
     return resolve_record_data(data)
 
 

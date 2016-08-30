@@ -54,6 +54,7 @@ install_requires = [
     'invenio-rest[cors]>=1.0.0a9,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
+    'invenio-logging>=1.0.0a3',
     'easywebdav>=1.2.0',
 ]
 
@@ -204,6 +205,9 @@ setup(
             '= b2share.modules.records.fetchers:b2share_record_uuid_fetcher',
             'b2share_deposit'
             '= b2share.modules.deposit.fetchers:b2share_deposit_uuid_fetcher',
+        ],
+        'invenio_celery.tasks': [
+            'b2share_records = b2share.modules.records.tasks',
         ],
     },
     extras_require=extras_require,

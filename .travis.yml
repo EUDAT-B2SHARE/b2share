@@ -23,6 +23,7 @@ notifications:
 services:
   - mysql
   - redis
+  - rabbitmq
 
 language: python
 

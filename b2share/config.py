@@ -26,7 +26,9 @@
 from __future__ import absolute_import, print_function
 
 import os
+from datetime import timedelta
 
+from celery.schedules import crontab
 from flask import request
 from invenio_records_rest.utils import deny_all, allow_all
 from b2share.modules.oauthclient import b2access
@@ -202,6 +204,25 @@ OAISERVER_METADATA_FORMATS = {
     },
 }
 
+# Celery
+# ======
+#: Default broker (RabbitMQ on locahost).
+BROKER_URL = "amqp://guest:guest@localhost:5672//"
+#: Default Celery result backend.
+CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+#: Accepted content types for Celery.
+CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
+#: Beat schedule
+CELERYBEAT_SCHEDULE = {
+    'embargo-updater': {
+        'task': 'b2share.modules.records.tasks.update_expired_embargos',
+        'schedule': crontab(minute=2, hour=0),
+    },
+    'indexer': {
+        'task': 'invenio_indexer.tasks.process_bulk_queue',
+        'schedule': timedelta(minutes=5),
+    },
+}
 
 
 CFG_HANDLE_SYSTEM_BASEURL = 'http://hdl.handle.net'
