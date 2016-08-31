@@ -116,7 +116,7 @@ module.exports = function(props) {
 				will end in '/drafts/'</p></li>
 		</ul>
 		<p>Example: <code>{'curl -i -H "Content-Type:application/json" \
-			-d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open":true}\' \
+			-d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true}\' \
 			-X POST http://example.org/api/records/?access_token=LKR35GP7TF'}</code></p>
 
 		<h3>Upload a new file into a draft record</h3>
