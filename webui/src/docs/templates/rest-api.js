@@ -135,12 +135,12 @@ module.exports = function(props) {
 		<h3>List the files uploaded into a record object</h3>
 		<p>List the files uploaded into a record object</p>
 		<ul>
-			<li><p>URL path: /api/files/FILE_BUCKET_ID/</p></li>
+			<li><p>URL path: /api/files/FILE_BUCKET_ID</p></li>
 			<li><p>Http Method: GET</p></li>
 			<li><p>Required parameters: access_token</p></li>
 			<li><p>Returns: information about all the files in the record object</p></li>
 		</ul>
-		<p>Example: <code>curl -i http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/?access_token=LKR35GP7TF</code></p>
+		<p>Example: <code>curl -i http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4?access_token=LKR35GP7TF</code></p>
 
 		<h3>Updating a draft record</h3>
 		<p>This action updates the draft record with new information.</p>
