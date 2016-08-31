@@ -124,13 +124,13 @@ module.exports = function(props) {
 			the file bucket URL. This URL can be found in the information returned when
 			querying a record, in the 'links/files' section of the returned data. </p>
 		<ul>
-			<li><p>URL path: /api/files/FILE_BUCKET_ID</p></li>
-			<li><p>HTTP Method: POST</p></li>
+			<li><p>URL path: /api/files/FILE_BUCKET_ID/FILE_NAME</p></li>
+			<li><p>HTTP Method: PUT</p></li>
 			<li><p>Required input data: the file, sent as direct stream</p></li>
 			<li><p>Required parameters: access_token</p></li>
 			<li><p>Returns: informations about the newly uploaded file</p></li>
 		</ul>
-		<p>Example: <code>curl -i -X POST -d @TestFileToBeUploaded.txt http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/?access_token=LKR35GP7TF</code></p>
+		<p>Example: <code>curl -i -X PUT -d @TestFileToBeUploaded.txt http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/TestFileToBeUploaded.txt?access_token=LKR35GP7TF</code></p>
 
 		<h3>List the files uploaded into a record object</h3>
 		<p>List the files uploaded into a record object</p>
