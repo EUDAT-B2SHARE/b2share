@@ -1,41 +1,52 @@
-# mariadb:
-#     image: mariadb
-#     ports:
-#         - "3306:3306"
-#     environment:
-#         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-#         - MYSQL_USER=b2share_evo
-#         - MYSQL_DATABASE=b2share_evo
-#     volumes:
-#         - /data/db:/var/lib/mysql
+version: '2'
+services:
+    # mariadb:
+    #     image: mariadb
+    #     ports:
+    #         - "3306:3306"
+    #     environment:
+    #         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    #         - MYSQL_USER=b2share_evo
+    #         - MYSQL_DATABASE=b2share_evo
+    #     volumes:
+    #         - /data/db:/var/lib/mysql
+    elasticsearch:
+        image: elasticsearch
+        ports:
+            - "9200:9200"
+            - "9300:9300"
 
-elasticsearch:
-    image: elasticsearch
-    ports:
-        - "9200:9200"
-        - "9300:9300"
+    redis:
+        image: redis
+        ports:
+            - "6379:6379"
 
-redis:
-    image: redis
-    ports:
-        - "6379:6379"
-
-b2share:
-    build: .
-    ports:
-        - "5000:5000"
-    links:
-        - elasticsearch
-        - redis
-    environment:
-        - "B2SHARE_SERVER_NAME=${B2SHARE_SERVER_NAME}"
-        - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
-        - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
-        - "B2SHARE_PREFERRED_URL_SCHEME=https"
-nginx:
-    build: nginx
-    ports:
-        - "80:80"
-        - "443:443"
-    links:
-        - b2share
+    b2share:
+        build:
+            context: ..
+            dockerfile: dockerize/Dockerfile
+        ports:
+            - "5000:5000"
+        links:
+            - elasticsearch
+            - redis
+        environment:
+            - "B2SHARE_JSONSCHEMAS_HOST=${B2SHARE_JSONSCHEMAS_HOST}"
+            - "LOAD_DEMO_CONFIG=${LOAD_DEMO_CONFIG}"
+            - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
+            - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
+            - "B2SHARE_PREFERRED_URL_SCHEME=https"
+    nginx:
+        build: nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        links:
+            - b2share
+    mq:
+        image: rabbitmq:3-management
+        restart: "always"
+        ports:
+            - "15672:15672"
+            - "5672:5672"
+        read_only: true

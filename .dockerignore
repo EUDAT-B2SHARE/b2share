@@ -1,0 +1,7 @@
+.git
+**/*.pyc
+.eggs
+**/*.swp
+**/.DS_Store
+**/*.db
+**/node_modules

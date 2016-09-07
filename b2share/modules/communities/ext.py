@@ -27,6 +27,8 @@ from werkzeug.utils import cached_property
 from . import config
 from .views import blueprint
 
+from .cli import communities as communities_cmd
+
 
 class _B2ShareCommunitiesState(object):
     """B2Share communities extension state."""
@@ -67,6 +69,7 @@ class B2ShareCommunities(object):
         """Flask application initialization."""
         self.init_config(app)
         app.register_blueprint(blueprint)
+        app.cli.add_command(communities_cmd)
         app.extensions['b2share-communities'] = _B2ShareCommunitiesState(app)
 
     def init_config(self, app):

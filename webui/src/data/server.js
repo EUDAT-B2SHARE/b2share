@@ -29,7 +29,7 @@ const apiUrls = {
     remotesJob()                      { return `${urlRoot}/api/remotes/jobs` },
     b2drop(path_)                     { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
 
-    languages()                       { return `${urlRoot}/languages.json` },
+    languages()                       { return `${urlRoot}/suggest/languages.json` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -529,10 +529,11 @@ class ServerCache {
                 url: apiUrls.languages(),
                 successFn: (data) => {
                     const langs = data.languages.map(([id, name]) => ({id, name}));
-                    console.log('got languages: ', langs.length);
                     this.store.setIn(['languages'], langs);
                 },
-                errorFn: (xhr) => this.store.setIn(['languages'], new Error(xhr)),
+                errorFn: (xhr) => {
+                    this.store.setIn(['languages'], new Error(xhr));
+                },                
             });
         }
         return langs;

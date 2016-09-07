@@ -25,7 +25,7 @@
 
 
 from dateutil.parser import parse as dateutil_parse
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def allow_public_file_metadata(record_metadata):
@@ -46,4 +46,4 @@ def is_under_embargo(record_metadata):
         # no embargo date set
         return False
     embargo_date = dateutil_parse(embargo_date_string)
-    return datetime.now() < embargo_date
+    return datetime.now(timezone.utc) < embargo_date

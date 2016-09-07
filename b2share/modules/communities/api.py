@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 University of Tuebingen, CERN
 # Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
@@ -100,7 +100,7 @@ class Community(object):
         metadata = CommunityMeta.query.order_by(CommunityMeta.created)        
         if not(name is None):
             metadata = metadata.filter(CommunityMeta.name.like(name))
-        CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+        metadata = metadata.order_by(CommunityMeta.created).limit(stop)[start:]
         return [cls(md) for md in metadata]
 
     @classmethod
