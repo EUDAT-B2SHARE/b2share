@@ -98,9 +98,11 @@ def load_config(verbose, force):
 @with_appcontext
 @click.option('-v', '--verbose', count=True)
 @click.option('-d','--download', is_flag=True, default=False)
+@click.option('-l','--limit', default=None)
 @click.argument('token')
 @click.argument('download_directory')
-def import_v1_data(verbose, download, token, download_directory):
+def import_v1_data(verbose, download, token,
+         download_directory,limit):
     if verbose:
         click.secho("Importing data from b2share.eudat.eu to this instance")
         os.chdir(download_directory)
@@ -116,14 +118,17 @@ def import_v1_data(verbose, download, token, download_directory):
                 click.secho("----------")
                 click.secho("Downloading data into directory %s" % 
                     download_directory)
-            download_v1_data(token, download_directory)
+            if not(limit is None):
+                limit = int(limit)
+                click.secho("Limiting to %d records for debug purposes" % limit)
+            download_v1_data(token, download_directory, limit)
         filelist = os.listdir('.')
         if verbose:
             click.secho("-----------")
             click.secho("Processing %d files from %s" % 
                 (len(filelist),download_directory))
-        for f in filelist:
-            process_v1_file(f)
+            for f in filelist:
+                process_v1_file(f, download, download_directory)
         
 
 
