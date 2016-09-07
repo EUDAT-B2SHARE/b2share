@@ -31,8 +31,12 @@ import re
 import uuid
 from collections import namedtuple
 import requests
+from six import BytesIO
+import ssl
+import sys, traceback
 from uuid import UUID
 from urllib.parse import urlunsplit
+from urllib.request import urlopen
 
 import click
 from flask import current_app
@@ -199,7 +203,6 @@ def _create_records(path, verbose):
                     record_str = resolve_block_schema_id(record_str)
                     deposit = Deposit.create(json.loads(record_str),
                                              id_=rec_uuid)
-                    from six import BytesIO
                     ObjectVersion.create(deposit.files.bucket, 'myfile',
                         stream=BytesIO(b'mycontent'))
                     deposit.publish()
@@ -271,47 +274,129 @@ def resolve_community_id(source):
     )
     
         
-def download_v1_data(token, target_dir):
+def download_v1_data(token, target_dir, limit=None):
     """
     Download the data from B2SHARE V1 records using token in to target_dir .
     """
     V1_URL_BASE = 'https://b2share.eudat.eu/api/'
     url = "%srecords" % V1_URL_BASE
-    params_dict = {}
-    params_dict['access_token'] = token
-    params_dict['page_size']=100
-    params_dict['page_offset']=0
+    params = {}
+    params['access_token'] = token
+    params['page_size']=100
+    params['page_offset']=0
     finished = False
     counter = 0
+    if not(limit is None) and counter*100 + 100 > limit:
+        params['page_size']= limit
     while not finished:
-        r = requests.get(url, params=params_dict, verify=False)
+        r = requests.get(url, params=params, verify=False)
         f = open(target_dir+ "/%d.txt" % counter,'w')
         f.write(r.text)
         f.close()
-        recs = json.loads(r.text)['records']
-        print("downloaded %d, page %d" % (len(recs), counter))    
+        recs = json.loads(r.text)['records'] 
         if len(recs)<100:
             finished = True
         counter = counter + 1
-        params_dict['page_offset']=counter
+        params['page_offset']=counter
 
-def process_v1_file(filename):
+def process_v1_file(filename, download, download_directory):
     """
     Parse a downloaded file containing records
     """
-    f = open(filename)
-    recs = json.loads(f.read())['records']
+    indexer = RecordIndexer(
+        record_to_index=lambda record: ('records', 'record')
+    )
+    f = open(filename,'r')
+    file_content = f.read()
+    try:
+        recs = json.loads(file_content)['records']
+    except:
+        current_app.logger.error("Not a JSON file %s" % filename)
+        traceback.print_exc()
+        return None
     f.close()
+    recs = [r for r in recs if not(r['domain']=='') ]
     for r in recs:
         record = _process_record(r)
-
+        if record is not None:
+            try:
+                deposit = Deposit.create(record)
+                #add/link the files
+                _process_files(deposit,r, download, download_directory)
+                deposit.publish()
+                pid, record = deposit.fetch_published()
+                # index the record
+                indexer.index(record)
+            except:
+                current_app.logger.warning("Exception in trying to create deposit for %s" % str(record['title']) + str(record['_deposit']['id']))
+                traceback.print_exc()
+    db.session.commit()
+    current_app.logger.debug("Committed %d records to the database" % len(recs))
+            
 def _process_record(rec):
     #rec is dict representing 1 record
     #from json donwloaded from b2share_v1 API
-    result = None
+    result = {}
+    generic_keys = ['title'
+        ,'description'
+        ,'open_access'
+        ,'resource_type'
+        ,'contact_email'
+        ,'contributors'
+        ]
+    for k in generic_keys:
+        result[k] = rec[k]
+    #make keywords unique
+    seen = set()
+    result['keywords'] = \
+        [k for k in rec['keywords'] if k not in seen and not seen.add(k)]
     #fetch community
     comms = Community.get_all(0,1,name=rec['domain'])
+    #TODO match generic and linguistics domains to communities
     if comms:
         community = comms[0]
-        print(community.name, community.id)    
+        result['community']=str(community.id)
+    elif rec['domain']=='generic':
+        community = Community.get(name='EUDAT')
+        result['community']=str(community.id)
+    else:
+        return None
+    if 'PID' in rec.keys():
+        result['alternate_identifier'] = rec['PID']
+    #TODO fetch domain_metadata and translate to community specific metadata
+    #assume the current community specific block schema for metadata format
+    return result
+    
+def _process_files(deposit, r, download, download_dir):
+    if not(r['files']=='RESTRICTED'):
+        for file_dict in r['files']:
+            if download:
+                try:
+                    if 'name' in file_dict.keys():
+                        #only for gangsters - bypass HTTPS verification see
+                        #http://stackoverflow.com/
+                        #questions/27835619/ssl-certificate-verify-failed-error
+                        _save_file(file_dict['url']
+                            , download_dir 
+                            , file_dict['name'])
+                except:
+                    current_app.logger.error("something went wrong when trying to download file %s" % file_dict['name'])    
+            try:
+                f = open(os.path.join(download_dir, file_dict['name']),'r+b')
+                ObjectVersion.create(deposit.files.bucket, file_dict['name'],
+                    stream=BytesIO(f.read()))
+            except:
+                current_app.logger.debug("Something wrong when trying to load %s" % file_dict['name'])
+            
+def _save_file(url, download_dir, filename):
+    gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+    finished = False
+    f = open(os.path.join(download_dir,filename),'wb')
+    u = urlopen(url, context=gcontext)
+    while not finished:
+        try:
+            f.write(u.read())
+            finished = True
+        except IncompleteRead:
+            pass
         
