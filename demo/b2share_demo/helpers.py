@@ -313,7 +313,6 @@ def process_v1_file(filename, download, download_directory):
         recs = json.loads(file_content)['records']
     except:
         current_app.logger.error("Not a JSON file %s" % filename)
-        traceback.print_exc()
         return None
     f.close()
     recs = [r for r in recs if not(r['domain']=='') ]
@@ -328,11 +327,10 @@ def process_v1_file(filename, download, download_directory):
                 pid, record = deposit.fetch_published()
                 # index the record
                 indexer.index(record)
+                db.session.commit()
             except:
                 current_app.logger.warning("Exception in trying to create deposit for %s" % str(record['title']) + str(record['_deposit']['id']))
-                traceback.print_exc()
-    db.session.commit()
-    current_app.logger.debug("Committed %d records to the database" % len(recs))
+         
             
 def _process_record(rec):
     #rec is dict representing 1 record
@@ -359,6 +357,9 @@ def _process_record(rec):
         result['community']=str(community.id)
     elif rec['domain']=='generic':
         community = Community.get(name='EUDAT')
+        result['community']=str(community.id)
+    elif rec['domain']=='linguistics':
+        community = Community.get(name='CLARIN')
         result['community']=str(community.id)
     else:
         return None
@@ -387,17 +388,20 @@ def _process_files(deposit, r, download, download_dir):
                 ObjectVersion.create(deposit.files.bucket, file_dict['name'],
                     stream=BytesIO(f.read()))
             except:
-                current_app.logger.debug("Something wrong when trying to load %s" % file_dict['name'])
+                current_app.logger.error("Something wrong when trying to load %s" % file_dict['name'])
             
 def _save_file(url, download_dir, filename):
+    current_app.logger.debug("Downloading %s" % url)
     gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
     finished = False
     f = open(os.path.join(download_dir,filename),'wb')
     u = urlopen(url, context=gcontext)
+    counter = 0
     while not finished:
         try:
             f.write(u.read())
             finished = True
         except IncompleteRead:
-            pass
+            current_app.logger.debug("IncompleteRead %d" % counter)
+            counter += counter
         
