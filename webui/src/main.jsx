@@ -137,7 +137,9 @@ const Footer = React.createClass({
                         <ul className="list-inline pull-right" style={{marginLeft:20}}>
                             <li title={"git:"+GIT_COMMIT}>
                                 <span style={{color:'#173b93', fontWeight:'500'}}> v.{VERSION}</span>
-                                <code style={{border:'none', backgroundColor:'transparent', color:'gray'}}>git:{GIT_COMMIT}</code>
+                                <code style={{border:'none', backgroundColor:'transparent', color:'gray'}}>
+                                    { GIT_COMMIT ? ("git:"+GIT_COMMIT) : false }
+                                </code>
                             </li>
                         </ul>
                         <ul className="list-inline pull-right">

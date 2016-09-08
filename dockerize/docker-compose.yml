@@ -33,6 +33,7 @@ services:
         environment:
             - "B2SHARE_JSONSCHEMAS_HOST=${B2SHARE_JSONSCHEMAS_HOST}"
             - "LOAD_DEMO_CONFIG=${LOAD_DEMO_CONFIG}"
+            - "GIT_COMMIT=${GIT_COMMIT}"
             - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
             - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
             - "B2SHARE_PREFERRED_URL_SCHEME=https"
