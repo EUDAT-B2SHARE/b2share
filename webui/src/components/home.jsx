@@ -65,7 +65,7 @@ const LatestRecords = React.createClass({
         const metadata = record.get('metadata') || Map();
         const title = metadata.get('title') ||"";
         const description = metadata.get('description') ||"";
-        const creators = metadata.get('creator') || List();
+        const creators = metadata.get('creators') || List();
         return (
             <div className="record col-md-6" key={record.get('id')}>
                 <Link to={'/records/'+id}>
