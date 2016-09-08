@@ -72,6 +72,9 @@ WORKDIR /eudat/b2share/demo
 ADD demo/setup.py setup.py
 RUN pip install -e .
 
+COPY dockerize/b2share.sh /eudat/
+COPY dockerize/supervisord.conf /etc/
+
 #
 # Copy the rest of B2Share files
 #
@@ -79,14 +82,12 @@ RUN pip install -e .
 WORKDIR /eudat/b2share
 ADD webui webui
 WORKDIR /eudat/b2share/webui
+ARG GIT_COMMIT
+ENV GIT_COMMIT="$GIT_COMMIT"
 RUN node_modules/webpack/bin/webpack.js -p
 
 WORKDIR /eudat
 ADD . b2share
-COPY dockerize/b2share.sh /eudat/
-COPY dockerize/supervisord.conf /etc/
-
-RUN systemctl disable firewalld
 
 WORKDIR /eudat/b2share
 CMD ["/usr/bin/supervisord"]
