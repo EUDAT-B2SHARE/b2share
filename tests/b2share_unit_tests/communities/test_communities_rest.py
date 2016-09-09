@@ -32,7 +32,7 @@ import pytest
 from flask import url_for
 from b2share_unit_tests.communities.helpers import community_metadata, \
     community_patch, patched_community_metadata
-from b2share_unit_tests.helpers import subtest_self_link
+from b2share_unit_tests.helpers import subtest_self_link, create_user
 from invenio_db import db
 from mock import patch
 
@@ -50,7 +50,7 @@ community_with_and_without_access_control = pytest.mark.parametrize('app', [({
 
 
 @community_with_and_without_access_control
-def test_valid_create(app, create_user, login_user,
+def test_valid_create(app, login_user,
                       communities_permissions):
     """Test VALID community creation request (POST .../communities/)."""
     with app.app_context():
@@ -99,7 +99,7 @@ def test_valid_create(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_invalid_create(app, create_user, login_user,
+def test_invalid_create(app, login_user,
                         communities_permissions):
     """Test INVALID community creation request (POST .../communities/)."""
     with app.app_context():
@@ -172,7 +172,7 @@ def test_invalid_create(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_valid_get(app, create_user, login_user,
+def test_valid_get(app, login_user,
                    communities_permissions):
     """Test VALID community get request (GET .../communities/<id>)."""
     with app.app_context():
@@ -215,7 +215,7 @@ def test_valid_get(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_invalid_get(app, create_user, login_user,
+def test_invalid_get(app, login_user,
                      communities_permissions):
     """Test INVALID community get request (GET .../communities/<id>)."""
     with app.app_context():
@@ -253,7 +253,7 @@ def test_invalid_get(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_valid_patch(app, create_user, login_user,
+def test_valid_patch(app, login_user,
                      communities_permissions, patch_community_function):
     """Test VALID community patch request (PATCH .../communities/<id>)."""
     with app.app_context():
@@ -293,7 +293,7 @@ def test_valid_patch(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_invalid_patch(app, create_user, login_user,
+def test_invalid_patch(app, login_user,
                        communities_permissions):
     """Test INVALID community patch request (PATCH .../communities/<id>)."""
     with app.app_context():
@@ -361,7 +361,7 @@ def test_invalid_patch(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_valid_put(app, create_user, login_user,
+def test_valid_put(app, login_user,
                    communities_permissions):
     """Test VALID community put request (PUT .../communities/<id>)."""
     with app.app_context():
@@ -407,7 +407,7 @@ def test_valid_put(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_invalid_put(app, create_user, login_user,
+def test_invalid_put(app, login_user,
                      communities_permissions):
     """Test INVALID community put request (PUT .../communities/<id>)."""
     with app.app_context():
@@ -464,7 +464,7 @@ def test_invalid_put(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_valid_delete(app, create_user, login_user,
+def test_valid_delete(app, login_user,
                       communities_permissions):
     """Test VALID community delete request (DELETE .../communities/<id>)."""
     with app.app_context():
@@ -498,7 +498,7 @@ def test_valid_delete(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_invalid_delete(app, create_user, login_user,
+def test_invalid_delete(app, login_user,
                         communities_permissions):
     """Test INVALID community delete request (DELETE .../communities/<id>)."""
     with app.app_context():
@@ -520,7 +520,7 @@ def test_invalid_delete(app, create_user, login_user,
 
 
 @community_with_and_without_access_control
-def test_action_on_deleted(app, create_user, login_user,
+def test_action_on_deleted(app, login_user,
                            communities_permissions):
     """Test getting, deleting and updating a perviously deleted community."""
     with app.app_context():

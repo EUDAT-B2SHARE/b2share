@@ -32,15 +32,12 @@ from copy import deepcopy
 from b2share_unit_tests.helpers import (
     subtest_self_link, create_deposit, generate_record_data, url_for_file,
     subtest_file_bucket_content, subtest_file_bucket_permissions,
-    build_expected_metadata,
+    build_expected_metadata, create_user,
 )
 from b2share.modules.records.providers import RecordUUIDProvider
 from six import BytesIO
 
 
-@pytest.mark.parametrize('test_users', [({
-    'users': ['myuser']
-})], indirect=['test_users'])
 def test_deposit_create(app, test_records_data, test_users, login_user):
     """Test record draft creation."""
     headers = [('Content-Type', 'application/json'),
@@ -61,7 +58,7 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
     # test creating a deposit with a logged in user
     with app.app_context():
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['normal']
             login_user(user, client)
             # create the deposit
             for record_data in test_records_data:
@@ -81,11 +78,6 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
                                   client)
 
 
-@pytest.mark.parametrize('test_users, test_deposits', [({
-    'users': ['myuser']
-}, {
-    'deposits_creator': 'myuser'
-})], indirect=['test_users', 'test_deposits'])
 def test_deposit_submit(app, test_records_data, test_deposits, test_users,
                         login_user):
     """Test record draft submit with HTTP PATCH."""
@@ -93,7 +85,7 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
         deposit = Deposit.get_record(test_deposits[0])
         record_data = test_records_data[0]
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
 
             headers = [('Content-Type', 'application/json-patch+json'),
@@ -118,7 +110,7 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
             expected_metadata['publication_state'] = \
                 PublicationStates.submitted.name
@@ -130,11 +122,6 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
                               client)
 
 
-@pytest.mark.parametrize('test_users, test_deposits', [({
-    'users': ['myuser']
-}, {
-    'deposits_creator': 'myuser'
-})], indirect=['test_users', 'test_deposits'])
 def test_deposit_publish(app, test_records_data, test_deposits, test_users,
                          login_user):
     """Test record draft publication with HTTP PATCH."""
@@ -142,7 +129,7 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
 
             headers = [('Content-Type', 'application/json-patch+json'),
@@ -168,7 +155,7 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
     with app.app_context():
         deposit = Deposit.get_record(test_deposits[0])
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
             assert expected_metadata == draft_patch_data['metadata']
             assert (deposit['publication_state']
@@ -210,9 +197,10 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
             assert cleaned_draft_data == cleaned_published_data
 
 
-def test_deposit_files(app, test_communities, create_user, login_user, admin):
+def test_deposit_files(app, test_communities, login_user, test_users):
     """Test uploading and reading deposit files."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         uploaded_files = {
             'myfile1.dat': b'contents1',
@@ -267,9 +255,10 @@ def test_deposit_files(app, test_communities, create_user, login_user, admin):
 
 
 def test_deposit_read_permissions(app, test_records_data,
-                                  create_user, login_user, admin):
+                                  login_user, test_users):
     """Test deposit read with HTTP GET."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 
@@ -315,9 +304,10 @@ def test_deposit_read_permissions(app, test_records_data,
 
 
 def test_deposit_delete_permissions(app, test_records_data,
-                                    create_user, login_user, admin):
+                                    login_user, test_users):
     """Test deposit delete with HTTP DELETE."""
     with app.app_context():
+        admin = test_users['admin']
         def test_delete(deposit, status, user=None):
             with app.test_client() as client:
                 if user is not None:
@@ -372,9 +362,10 @@ def test_deposit_delete_permissions(app, test_records_data,
 
 
 def test_deposit_publish_permissions(app, test_records_data, login_user,
-                                     admin, create_user):
+                                     test_users):
     """Test deposit publication with HTTP PATCH."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 
@@ -407,12 +398,13 @@ def test_deposit_publish_permissions(app, test_records_data, login_user,
 
 
 def test_deposit_modify_published_permissions(app, test_records_data,
-                                              login_user, admin, create_user):
+                                              login_user, test_users):
     """Test deposit edition after its publication.
 
     FIXME: This test should evolve when we allow deposit edition.
     """
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
         deposit = create_deposit(test_records_data[0], creator)
@@ -442,10 +434,11 @@ def test_deposit_modify_published_permissions(app, test_records_data,
         test_edit(403, admin)
 
 
-def test_deposit_files_permissions(app, test_communities, create_user,
-                                   login_user, admin):
+def test_deposit_files_permissions(app, test_communities, login_user,
+                                   test_users):
     """Test deposit read with HTTP GET."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 

@@ -25,9 +25,9 @@
 
 from b2share_unit_tests.helpers import create_deposit
 from b2share.modules.records.utils import is_publication, is_deposit
+from b2share_unit_tests.helpers import create_user
 
-
-def test_records_type_helpers(app, test_records_data, create_user):
+def test_records_type_helpers(app, test_records_data):
     """Test record util functions retrieving the record type."""
     with app.app_context():
         creator = create_user('creator')

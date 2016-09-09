@@ -31,9 +31,11 @@ from b2share.modules.deposit.api import PublicationStates
 from invenio_search import current_search
 from flask import url_for as flask_url_for
 from invenio_db import db
+from b2share_unit_tests.helpers import create_user
 
 
-def test_make_record_with_no_file_and_search(app, test_communities, create_user, login_user, test_records_data):
+def test_make_record_with_no_file_and_search(app, test_communities,
+                                             login_user, test_records_data):
     '''Test for issue https://github.com/EUDAT-B2SHARE/b2share/issues/1073'''
     def url_for(*args, **kwargs):
         with app.app_context():

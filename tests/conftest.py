@@ -31,18 +31,17 @@ import shutil
 import re
 import tempfile
 import sys
-from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
 
 import pytest
 import responses
-from b2share_unit_tests.helpers import authenticated_user
+from b2share_unit_tests.helpers import authenticated_user, create_user
 from b2share.modules.deposit.api import Deposit
 from b2share.modules.schemas.helpers import load_root_schemas
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from flask_security import url_for_security
-from flask_security.utils import encrypt_password
+from b2share.modules.deposit.api import Deposit
 from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_search import current_search_client
@@ -115,58 +114,33 @@ def app(request, tmpdir):
     return app
 
 
-UserInfo = namedtuple('UserInfo', ['id', 'email', 'password'])
-
-
 @pytest.fixture(scope='function')
-def create_user(app):
-    """Create a user."""
+def test_users(app):
+    """Create test users.
 
-    users_password = '123456'
-    accounts = app.extensions['invenio-accounts']
-    security = app.extensions['security']
+    Created users are named 'normal' and 'admin'.
+    Other fixtures can add other users.
 
-    def create(name):
-        email = '{}@example.org'.format(name)
-        with db.session.begin_nested():
-            user = accounts.datastore.create_user(
-                email=email,
-                password=encrypt_password(users_password),
-                active=True,
-            )
-            db.session.add(user)
-        return UserInfo(email=email, password=users_password, id=user.id)
-
-    return create
-
-@pytest.fixture(scope='function')
-def admin(app, create_user):
+    Returns:
+        (dict) A dict of username->user_info.
+    """
+    result = dict()
     accounts = app.extensions['invenio-accounts']
     security = app.extensions['security']
     with app.app_context():
+        result['normal'] = create_user('normal')
+
         user_info = create_user('admin')
         user = accounts.datastore.get_user(user_info.id)
-        role= security.datastore.find_or_create_role('admin')
+        role = security.datastore.find_or_create_role('admin')
         security.datastore.add_role_to_user(user, role)
         db.session.add(ActionRoles.allow(
             superuser_access, role=role
         ))
         security.datastore.add_role_to_user(user, role)
+        result['admin'] = user_info
         db.session.commit()
-        return user_info
-
-
-
-@pytest.fixture(scope='function')
-def test_users(app, request, create_user):
-    """Create test users."""
-    with app.app_context():
-        if hasattr(request, 'param') and 'users' in request.param:
-            result = {username: create_user(username)
-                      for username in request.param['users']}
-            db.session.commit()
-            return result
-        return {}
+    return result
 
 
 @pytest.fixture(scope='function')
@@ -245,19 +219,15 @@ def test_records_data(app, test_communities):
 
 
 @pytest.fixture(scope='function')
-def test_deposits(app, request, test_records_data, test_users, login_user):
+def test_deposits(app, test_records_data, test_users, login_user):
     """Fixture creating test deposits."""
     with app.app_context():
-        def create_deposits():
-            return [Deposit.create(data=data).id
-                    for data in deepcopy(test_records_data)]
-        creator = None
-        if hasattr(request, 'param') and 'deposits_creator' in request.param:
-            creator = test_users[request.param['deposits_creator']]
-            with authenticated_user(creator):
-                deposits = create_deposits()
-        else:
-            deposits = create_deposits()
+        creator = create_user('deposits_creator')
+        test_users['deposits_creator'] = creator
+
+        with authenticated_user(creator):
+            deposits = [Deposit.create(data=data).id
+                        for data in deepcopy(test_records_data)]
         db.session.commit()
         return deposits
 

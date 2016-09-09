@@ -29,6 +29,7 @@ import json
 from io import BytesIO
 
 import pytest
+from b2share_unit_tests.helpers import create_user
 from b2share.modules.deposit.api import PublicationStates
 from invenio_search import current_search
 from flask import url_for as flask_url_for
@@ -38,7 +39,7 @@ from invenio_oauth2server.models import Token
 
 
 @pytest.mark.parametrize('authentication', [('user/password'), ('oauth')])
-def test_deposit(app, test_communities, create_user, login_user,
+def test_deposit(app, test_communities, login_user,
                  test_records_data, authentication):
     """Test record submission with classic login and access token."""
     with app.app_context():

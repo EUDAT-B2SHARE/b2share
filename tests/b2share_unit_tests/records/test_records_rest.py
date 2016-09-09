@@ -30,7 +30,7 @@ from flask import url_for
 from b2share_unit_tests.helpers import (
     create_record, generate_record_data, url_for_file,
     subtest_file_bucket_content, subtest_file_bucket_permissions,
-    build_expected_metadata, subtest_self_link,
+    build_expected_metadata, subtest_self_link, create_user,
 )
 from b2share.modules.deposit.api import PublicationStates
 from b2share.modules.records.links import url_for_bucket
@@ -39,13 +39,14 @@ from jsonpatch import apply_patch
 
 
 def test_record_content(app, test_communities,
-                        create_user, login_user, admin):
+                        login_user, test_users):
     """Test record read with REST API."""
 
     uploaded_files = {
         'myfile1.dat': b'contents1',
         'myfile2.dat': b'contents2'
     }
+    admin = test_users['admin']
 
     with app.app_context():
         creator = create_user('creator')
@@ -91,13 +92,14 @@ def test_record_content(app, test_communities,
 
 
 def test_record_read_permissions(app, test_communities,
-                                 create_user, login_user, admin):
+                                 login_user, test_users):
     """Test record read with REST API."""
 
     uploaded_files = {
         'myfile1.dat': b'contents1',
         'myfile2.dat': b'contents2'
     }
+    admin = test_users['admin']
 
     with app.app_context():
         creator = create_user('creator')
@@ -159,9 +161,10 @@ def test_record_read_permissions(app, test_communities,
 
 
 def test_modify_metadata_published_record_permissions(app, test_communities,
-                                                      create_user, login_user,
-                                                      admin):
+                                                      login_user, test_users):
     """Test record's metadata modification with REST API."""
+
+    admin = test_users['admin']
     with app.app_context():
         creator = create_user('creator')
         non_creator = create_user('non-creator')

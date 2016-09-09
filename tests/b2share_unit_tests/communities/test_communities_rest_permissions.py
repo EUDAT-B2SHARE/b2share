@@ -32,6 +32,7 @@ from invenio_db import db
 
 from b2share.modules.communities import B2ShareCommunities
 from b2share.modules.communities.models import Community as CommunityModel
+from b2share_unit_tests.helpers import create_user
 
 
 @pytest.mark.parametrize('app', [({
@@ -39,8 +40,7 @@ from b2share.modules.communities.models import Community as CommunityModel
     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': False}
 })],
     indirect=['app'])
-def test_create_access_control(app, create_user, login_user,
-                               communities_permissions):
+def test_create_access_control(app, login_user, communities_permissions):
     """Test community creation with differnet access rights."""
     with app.app_context():
         allowed_user = create_user('allowed')
@@ -91,7 +91,7 @@ def test_create_access_control(app, create_user, login_user,
     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
 })],
     indirect=['app'])
-def test_create_unlogged_disabled_access_control(app, create_user, login_user,
+def test_create_unlogged_disabled_access_control(app, login_user,
                                                  communities_permissions):
     """Test community creation with ACL disabled and unlogged user."""
     with app.app_context():
@@ -110,8 +110,7 @@ def test_create_unlogged_disabled_access_control(app, create_user, login_user,
     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
 })],
     indirect=['app'])
-def test_create_not_allowed_disabled_access_control(app, create_user,
-                                                    login_user,
+def test_create_not_allowed_disabled_access_control(app, login_user,
                                                     communities_permissions):
     """Test community creation with ACL disabled and not allowed user."""
     with app.app_context():
