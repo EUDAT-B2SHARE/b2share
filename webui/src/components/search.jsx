@@ -179,7 +179,7 @@ const RecordList = React.createClass({
         const metadata = record.get('metadata') || Map();
         const title = metadata.get('title') ||"";
         const description = metadata.get('description') ||"";
-        const creators = metadata.get('creator') || List();
+        const creators = metadata.get('creators') || List();
         return (
             <div className="record col-lg-12" key={record.get('id')}>
                 <Link to={'/records/'+id}>

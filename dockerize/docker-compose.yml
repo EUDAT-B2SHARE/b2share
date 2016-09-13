@@ -25,6 +25,8 @@ services:
         build:
             context: ..
             dockerfile: dockerize/Dockerfile
+            args:
+                GIT_COMMIT: ${GIT_COMMIT}
         ports:
             - "5000:5000"
         links:
