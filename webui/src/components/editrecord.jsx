@@ -235,31 +235,22 @@ const EditRecord = React.createClass({
     },
 
     setValue(blockID, fieldID, type, value) {
-        let r = this.state.record;
-        if (blockID) {
-            if (!r.has('community_specific')) {
-                r = r.set('community_specific', Map());
-            }
-            if (!r.hasIn(['community_specific'], blockID)) {
-                r = r.setIn(['community_specific', blockID], Map());
-            }
-        }
-
         if (type.isArray && !Array.isArray(value)) {
             console.error("array expected, instead got:", value);
         }
         if (type.isArray) {
             value = fromJS(value);
         }
-        r = blockID ? r.setIn(['community_specific', blockID, fieldID], value) : r.set(fieldID, value);
-        // console.log('set field ' + blockID +"/"+ fieldID + " to:", value);
+        let record = this.state.record;
+        record = blockID ? record.setIn(['community_specific', blockID, fieldID], value) :
+                           record.set(fieldID, value);
         const errors = this.state.errors;
         if (!this.validField(value, type)) {
             errors[fieldID] = `Please provide a value for the required field ${fieldID}`
         } else {
             delete errors[fieldID];
         }
-        this.setState({record:r, errors, dirty:true});
+        this.setState({record, errors, dirty:true});
     },
 
     renderScalarField(type, getValue, setValue) {
@@ -274,7 +265,9 @@ const EditRecord = React.createClass({
             if (type.enum) {
                 return <DropdownList defaultValue={getValue()} data={type.enum.toJS()} onChange={setValue} />
             } else if (type.format === 'date-time') {
-                return <DateTimePicker defaultValue={moment(getValue()).toDate()}
+                const date = getValue();
+                const initial = (date && date !== "") ? moment(date).toDate() : null;
+                return <DateTimePicker defaultValue={initial}
                         onChange={date => setValue(moment(date).toISOString())} />
             } else if (type.format === 'email') {
                 return <input type="text" className="form-control" placeholder="email@example.com"
@@ -341,6 +334,15 @@ const EditRecord = React.createClass({
         );
     },
 
+    renderEmbargoField(type, getValue, setValue) {
+        const date = getValue();
+        const initial = (date && date !== "") ? moment(date).toDate() : null;
+        return (
+            <DateTimePicker defaultValue={initial} format={"LL"} time={false} finalView={"year"}
+                        onChange={date => setValue(moment(date).toISOString())} />
+        );
+    },
+
     renderField(blockID, fieldID, fieldSchema, blockSchema) {
         const plugin = null;
         if (!fieldSchema) {
@@ -358,6 +360,8 @@ const EditRecord = React.createClass({
             field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
         } else if (!blockID && fieldID === 'licence') {
             field = this.renderLicenseField(type, getValue, setValue);
+        } else if (!blockID && fieldID === 'embargo_date') {
+            field = this.renderEmbargoField(type, getValue, setValue);
         } else if (!type.isArray) {
             field = this.renderScalarField(type, getValue, setValue);
         } else {
@@ -466,7 +470,30 @@ const EditRecord = React.createClass({
     componentWillReceiveProps(props) {
         if (props.record && !this.state.record) {
             let record = props.record.get('metadata');
+            if (!record.has('community_specific')) {
+                record = record.set('community_specific', Map());
+            }
+            record = addEmptyMetadataBlocks(record, props.blockSchemas) || record;
             this.setState({record});
+        } else if (this.state.record && props.blockSchemas) {
+            const record = addEmptyMetadataBlocks(this.state.record, props.blockSchemas);
+            if (record) {
+                this.setState({record});
+            }
+        }
+
+        function addEmptyMetadataBlocks(record, blockSchemas) {
+            if (!blockSchemas || !blockSchemas.length) {
+                return false;
+            }
+            let updated = false;
+            blockSchemas.forEach(([blockID, _]) => {
+                if (!record.get('community_specific').has(blockID)) {
+                    record = record.setIn(['community_specific', blockID], Map());
+                    updated = true;
+                }
+            });
+            return updated ? record : null;
         }
     },
 
