@@ -41,7 +41,7 @@ install_requires = [
     'invenio-config>=1.0.0a1,<1.1.0',
     'invenio-db>=1.0.0a9,<1.1.0',
     'invenio-deposit>=1.0.0a2,<1.1.0',
-    'invenio-files-rest>=1.0.0a7,<1.1.0',
+    'invenio-files-rest>=1.0.0a10,<1.1.0',
     'invenio-mail>=1.0.0a4,<1.1.0',
     'invenio-marc21>=1.0.0a2',
     'invenio-oaiserver>=1.0.0a6,<1.1.0',
@@ -54,6 +54,7 @@ install_requires = [
     'invenio-rest[cors]>=1.0.0a9,<1.1.0',
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
+    'invenio-logging>=1.0.0a3',
     'easywebdav>=1.2.0',
 ]
 
@@ -199,11 +200,17 @@ setup(
         'invenio_base.api_converters': [
             'file_key = b2share.modules.deposit.utils:FileKeyConverter',
         ],
+        'invenio_search.mappings':[
+            'records = b2share.modules.records.mappings'
+        ],
         'invenio_pidstore.fetchers': [
             'b2share_record'
             '= b2share.modules.records.fetchers:b2share_record_uuid_fetcher',
             'b2share_deposit'
             '= b2share.modules.deposit.fetchers:b2share_deposit_uuid_fetcher',
+        ],
+        'invenio_celery.tasks': [
+            'b2share_records = b2share.modules.records.tasks',
         ],
     },
     extras_require=extras_require,
