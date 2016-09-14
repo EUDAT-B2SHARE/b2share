@@ -116,7 +116,7 @@ module.exports = function(props) {
 				will end in '/drafts/'</p></li>
 		</ul>
 		<p>Example: <code>{'curl -i -H "Content-Type:application/json" \
-			-d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open":true}\' \
+			-d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true}\' \
 			-X POST http://example.org/api/records/?access_token=LKR35GP7TF'}</code></p>
 
 		<h3>Upload a new file into a draft record</h3>
@@ -124,23 +124,23 @@ module.exports = function(props) {
 			the file bucket URL. This URL can be found in the information returned when
 			querying a record, in the 'links/files' section of the returned data. </p>
 		<ul>
-			<li><p>URL path: /api/files/FILE_BUCKET_ID</p></li>
-			<li><p>HTTP Method: POST</p></li>
+			<li><p>URL path: /api/files/FILE_BUCKET_ID/FILE_NAME</p></li>
+			<li><p>HTTP Method: PUT</p></li>
 			<li><p>Required input data: the file, sent as direct stream</p></li>
 			<li><p>Required parameters: access_token</p></li>
 			<li><p>Returns: informations about the newly uploaded file</p></li>
 		</ul>
-		<p>Example: <code>curl -i -X POST -d @TestFileToBeUploaded.txt http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/?access_token=LKR35GP7TF</code></p>
+		<p>Example: <code>curl -i -X PUT -d @TestFileToBeUploaded.txt http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/TestFileToBeUploaded.txt?access_token=LKR35GP7TF</code></p>
 
 		<h3>List the files uploaded into a record object</h3>
 		<p>List the files uploaded into a record object</p>
 		<ul>
-			<li><p>URL path: /api/files/FILE_BUCKET_ID/</p></li>
+			<li><p>URL path: /api/files/FILE_BUCKET_ID</p></li>
 			<li><p>Http Method: GET</p></li>
 			<li><p>Required parameters: access_token</p></li>
 			<li><p>Returns: information about all the files in the record object</p></li>
 		</ul>
-		<p>Example: <code>curl -i http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4/?access_token=LKR35GP7TF</code></p>
+		<p>Example: <code>curl -i http://example.org/api/files/4f947e84-4bf7-4087-86ea-442938b9c2b4?access_token=LKR35GP7TF</code></p>
 
 		<h3>Updating a draft record</h3>
 		<p>This action updates the draft record with new information.</p>

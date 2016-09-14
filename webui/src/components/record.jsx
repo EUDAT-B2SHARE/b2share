@@ -60,7 +60,7 @@ const Record = React.createClass({
     },
 
     renderCreators(metadata) {
-        const creators = metadata.get('creator');
+        const creators = metadata.get('creators');
         if (!creators) {
             return false;
         }

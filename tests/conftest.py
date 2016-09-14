@@ -74,6 +74,7 @@ def app(request, tmpdir):
     app = create_api(
         TESTING=True,
         SERVER_NAME='localhost:5000',
+        JSONSCHEMAS_HOST='localhost:5000',
         DEBUG_TB_ENABLED=False,
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
