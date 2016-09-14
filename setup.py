@@ -200,6 +200,9 @@ setup(
         'invenio_base.api_converters': [
             'file_key = b2share.modules.deposit.utils:FileKeyConverter',
         ],
+        'invenio_search.mappings':[
+            'records = b2share.modules.records.mappings'
+        ],
         'invenio_pidstore.fetchers': [
             'b2share_record'
             '= b2share.modules.records.fetchers:b2share_record_uuid_fetcher',
