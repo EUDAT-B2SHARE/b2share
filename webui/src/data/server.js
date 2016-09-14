@@ -477,10 +477,10 @@ class ServerCache {
         // blockRefs must be : { id: {$ref:url} }
 
         if (blockRefs) {
-            blockSchemas = blockRefs.entrySeq().map(
+            blockRefs.entrySeq().forEach(
                 ([id,ref]) => {
                     const ver = apiUrls.extractSchemaVersionFromUrl(ref.get('$ref'));
-                    return [id, this.getBlockSchema(id, ver)];
+                    blockSchemas.push([id, this.getBlockSchema(id, ver)]);
                 }
             );
         }
@@ -533,7 +533,7 @@ class ServerCache {
                 },
                 errorFn: (xhr) => {
                     this.store.setIn(['languages'], new Error(xhr));
-                },                
+                },
             });
         }
         return langs;
