@@ -107,13 +107,12 @@ def import_v1_data(verbose, download, token,
         click.secho("Importing data from b2share.eudat.eu to this instance")
         os.chdir(download_directory)
         if download:
-            if verbose:
-                click.secho("Cleaning download directory %s" % download_directory)
-                filelist = os.listdir('.')
-                for f in filelist:
-                    os.remove(f)
-                    if verbose:
-                        click.secho("removing - %s" % f)
+            filelist = os.listdir('.')
+            if len(filelist)>0:
+                raise click.ClickException("""You set download_dir to %s . 
+                If you want to download files, download_dir should be an empty
+                 directory.\n Please empty directory and try again.""" % 
+                 download_directory)
             if verbose:
                 click.secho("----------")
                 click.secho("Downloading data into directory %s" % 

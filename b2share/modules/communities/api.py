@@ -102,9 +102,7 @@ class Community(object):
         elif not(start is None) and not(stop is None):
             if name is None:
                 metadata = CommunityMeta.query.order_by(
-                    CommunityMeta.created).order_by(
-                        CommunityMeta.created
-                    ).limit(stop)[start:]
+                    CommunityMeta.created).limit(stop)[start:]
             else:
                 metadata = CommunityMeta.query.filter(
                     CommunityMeta.name.like(name)

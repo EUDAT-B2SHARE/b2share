@@ -291,7 +291,8 @@ def download_v1_data(token, target_dir, limit=None):
         params['page_size']= limit
     while not finished:
         r = requests.get(url, params=params, verify=False)
-        f = open(target_dir+ "/%d.txt" % counter,'w')
+        target_file = os.path.join(target_dir, "%d.txt" % counter)
+        f = open(target_file,'w')
         f.write(r.text)
         f.close()
         recs = json.loads(r.text)['records'] 

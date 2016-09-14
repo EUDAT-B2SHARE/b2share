@@ -160,6 +160,3 @@ def load_root_schemas(cli=False, verbose=False):
                 raise
     if cli:
         click.secho('LOADED {} schemas'.format(configs_count), fg='green')
-
-        
-    
