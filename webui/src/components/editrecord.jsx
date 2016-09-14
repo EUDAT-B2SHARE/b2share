@@ -499,7 +499,8 @@ const EditRecord = React.createClass({
             schema.get('properties').entrySeq().forEach(([id, f]) => {
                 const type = getType(f, id, schema);
                 if (!this.validField(r.getIn(['community_specific', blockID, id]), type)) {
-                    errors[id] = `Please provide a valid value for community field "${id}"`;
+                    const fieldName = f.get('title') || id;
+                    errors[id] = `Please provide a valid value for community field "${fieldName}"`;
                 }
             });
         });

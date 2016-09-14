@@ -5,3 +5,4 @@
 **/.DS_Store
 **/*.db
 **/node_modules
+**/b2share-bundle.js*
