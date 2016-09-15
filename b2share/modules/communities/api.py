@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# Copyright (C) 2016 University of Tuebingen, CERN
 # Copyright (C) 2015 University of Tuebingen.
 #
 # B2Share is free software; you can redistribute it and/or
@@ -89,18 +89,17 @@ class Community(object):
             raise CommunityDoesNotExistError(id) from e
 
     @classmethod
-    # TODO: change this into a search function, not just a list of communities
-    # TODO: a query should be given
-    # implemented a like filter on name
-    def get_all(cls, start, stop, name=None):
-        """Searches for matching communities. Name filter works case insensitive and on partial matches (SQL LIKE operator)"""
-        start = int(start)
-        stop = int(stop)
+	    # TODO: a query should be given
+    def get_all(cls, start=None, stop=None):
+        """Searches for matching communities."""
         from .models import Community as CommunityMeta
-        metadata = CommunityMeta.query.order_by(CommunityMeta.created)        
-        if not(name is None):
-            metadata = metadata.filter(CommunityMeta.name.like(name))
-        CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+        if (start is None and stop is None):
+            metadata = CommunityMeta.query.order_by(CommunityMeta.created)
+        elif not(start is None) and not(stop is None):
+            metadata = CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+        else:
+            #one of them is None this cannot happen
+            raise ValueError("Neither or both start and stop should be None")
         return [cls(md) for md in metadata]
 
     @classmethod
