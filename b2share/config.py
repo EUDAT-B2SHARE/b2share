@@ -237,7 +237,7 @@ CFG_FAIL_ON_MISSING_FILE_PID = False
 
 
 B2DROP_SERVER = {
-    'host': 'b2drop.fz-juelich.de',
+    'host': 'b2drop.eudat.eu',
     'protocol': 'https',
     'path': '/remote.php/webdav/',
 }

@@ -1,0 +1,113 @@
+{
+    "mappings" : {
+      "record" : {
+		 "_all":{
+			"type":"string",
+			"index":"analyzed",
+			"analyzer":"english"
+		  },
+        "properties" : {
+          "$schema" : {
+            "type" : "string"
+          },
+          "_created" : {
+            "type" : "date",
+            "format" : "strict_date_optional_time||epoch_millis"
+          },
+          "_files" : {
+            "properties" : {
+              "bucket" : {
+                "type" : "string"
+              },
+              "checksum" : {
+                "type" : "string"
+              },
+              "key" : {
+                "type" : "string"
+              },
+              "size" : {
+                "type" : "long"
+              },
+              "version_id" : {
+                "type" : "string"
+              }
+            }
+          },
+          "_internal" : {
+            "properties" : {
+              "files_bucket_id" : {
+                "type" : "string"
+              }
+            }
+          },
+          "_oai" : {
+            "properties" : {
+              "id" : {
+                "type" : "string"
+              },
+              "updated" : {
+                "type" : "date",
+                "format" : "strict_date_optional_time||epoch_millis"
+              }
+            }
+          },
+          "_pid" : {
+            "properties" : {
+              "type" : {
+                "type" : "string"
+              },
+              "value" : {
+                "type" : "string"
+              }
+            }
+          },
+          "_updated" : {
+            "type" : "date",
+            "format" : "strict_date_optional_time||epoch_millis"
+          },
+          "alternate_identifier" : {
+            "type" : "string"
+          },
+          "community" : {
+            "type" : "string"
+          },
+          "contact_email" : {
+            "type" : "string"
+          },
+          "creators" : {
+            "type" : "string"
+          },
+          "description" : {
+			"index":"analyzed",
+            "type" : "string",
+			"analyzer":"english"
+          },
+          "keywords" : {
+			"index":"analyzed",
+            "type" : "string",
+			"analyzer":"english"
+          },
+          "licence" : {
+            "type" : "string"
+          },
+          "open_access" : {
+            "type" : "boolean"
+          },
+          "owners" : {
+            "type" : "long"
+          },
+          "publication_state" : {
+            "type" : "string"
+          },
+          "resource_type" : {
+            "type" : "string"
+          },
+          "title" : {
+			"index":"analyzed",
+            "type" : "string",
+			"analyzer":"english"
+          }
+        }
+      }
+    }
+  }

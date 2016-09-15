@@ -58,7 +58,7 @@
             },
             "embargo_date": {
                 "title": "Embargo Date",
-                "description": "Date that the embargo will expire.",
+                "description": "The date marking the end of the embargo period. The data stored in the record will become publicly available on the specified date at midnight. The record metadata is always public.",
                 "type": "string",
                 "format": "date-time"
             },
