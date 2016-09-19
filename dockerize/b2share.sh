@@ -6,7 +6,7 @@ if [ ! -f /eudat/provisioned ]; then
     # because it depends on another host: elasticsearch
     /usr/bin/b2share db create
     # FIXME: for now index init is not initializing properly the indices
-    # /usr/bin/b2share index init
+    /usr/bin/b2share index init
     /usr/bin/b2share schemas init
 
     # Load the demo config using staging B2Access Server if requested
