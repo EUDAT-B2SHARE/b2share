@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016 CERN, SurfsSara
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -36,7 +36,7 @@ from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
 
-from .helpers import load_demo_data
+from .helpers import load_demo_data, download_v1_data, process_v1_file
 from . import config as demo_config
 
 
@@ -93,3 +93,38 @@ def load_config(verbose, force):
     if verbose > 0:
         click.secho('Configuration file "{}" created.'.format(
             instance_config_path), fg='green')
+            
+@demo.command()
+@with_appcontext
+@click.option('-v', '--verbose', count=True)
+@click.option('-d','--download', is_flag=True, default=False)
+@click.option('-l','--limit', default=None)
+@click.argument('token')
+@click.argument('download_directory')
+def import_v1_data(verbose, download, token,
+         download_directory,limit):
+    if verbose:
+        click.secho("Importing data from b2share.eudat.eu to this instance")
+        os.chdir(download_directory)
+        if download:
+            filelist = os.listdir('.')
+            if len(filelist)>0:
+                raise click.ClickException("""You set download_dir to %s . 
+                If you want to download files, download_dir should be an empty
+                 directory.\n Please empty directory and try again.""" % 
+                 download_directory)
+            if verbose:
+                click.secho("----------")
+                click.secho("Downloading data into directory %s" % 
+                    download_directory)
+            if not(limit is None):
+                limit = int(limit)
+                click.secho("Limiting to %d records for debug purposes" % limit)
+            download_v1_data(token, download_directory, limit)
+        filelist = os.listdir('.')
+        if verbose:
+            click.secho("-----------")
+            click.secho("Processing %d files from %s" % 
+                (len(filelist),download_directory))
+            for f in filelist:
+                process_v1_file(f, download, download_directory)
