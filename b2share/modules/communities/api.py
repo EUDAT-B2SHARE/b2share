@@ -89,15 +89,24 @@ class Community(object):
             raise CommunityDoesNotExistError(id) from e
 
     @classmethod
-    # TODO: change this into a search function, not just a list of communities
-    # TODO: a query should be given
-    def get_all(cls, start=None, stop=None):
+    def get_all(cls, start=None, stop=None, name=None):
         """Searches for matching communities."""
         from .models import Community as CommunityMeta
         if (start is None and stop is None):
-            metadata = CommunityMeta.query.order_by(CommunityMeta.created)
+            if name is None:
+                metadata = CommunityMeta.query.order_by(CommunityMeta.created)
+            else:
+                metadata =  CommunityMeta.query.filter(
+                    CommunityMeta.name.like(name)
+                    ).order_by(CommunityMeta.created)
         elif not(start is None) and not(stop is None):
-            metadata = CommunityMeta.query.order_by(CommunityMeta.created).limit(stop)[start:]
+            if name is None:
+                metadata = CommunityMeta.query.order_by(
+                    CommunityMeta.created).limit(stop)[start:]
+            else:
+                metadata = CommunityMeta.query.filter(
+                    CommunityMeta.name.like(name)
+                ).order_by(CommunityMeta.created).limit(stop)[start:]
         else:
             #one of them is None this cannot happen
             raise ValueError("Neither or both start and stop should be None")
