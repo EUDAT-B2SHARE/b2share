@@ -1,7 +1,7 @@
 {
-    "name": "MyTestCommunity",
-    "description": "Test community.",
-    "id": "2b884138-898f-4651-bf82-34dea0e0e83f",
+    "name": "MyTestCommunity1",
+    "description": "Test community 1.",
+    "id": "cccccccc-1111-1111-1111-111111111111",
     "logo": "",
     "community_schemas": [
         {
@@ -35,7 +35,7 @@
     ],
     "block_schemas": {
         "MyTestSchema": {
-            "id": "38e12922-a361-49a1-853b-92a6863bfa58",
+            "id": "bbbbbbbb-1111-1111-1111-111111111111",
             "versions": [
                 {
                     "$schema": "http://json-schema.org/draft-04/schema#",

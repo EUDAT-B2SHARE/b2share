@@ -52,6 +52,11 @@ class UnknownRecordType(B2ShareRecordsError):
     The two main record types are "published record" and "deposit".
     """
 
+class AnonymousDepositSearch(B2ShareRecordsError):
+    """Error raised when an anonymous user tries to search for drafts."""
+    code = 401
+    description = 'Only authenticated users can search for drafts.'
+
 
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)

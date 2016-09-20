@@ -47,7 +47,7 @@ def make_record_json():
     record_data = {
         'owner': '',
         'title': 'My Errorneous BBMRI record',
-        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        'community': '$COMMUNITY_ID[MyTestCommunity1]',
         'open_access': True,
         'creator': ['Anonymous'],
         'community_specific': {

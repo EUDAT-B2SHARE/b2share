@@ -38,6 +38,9 @@ from b2share.modules.deposit.api import Deposit
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from invenio_indexer.api import RecordIndexer
 from invenio_db import db
+from flask_principal import ActionNeed
+from invenio_access.models import ActionRoles, ActionUsers
+from invenio_access.permissions import ParameterizedActionNeed
 
 
 def url_for_file(bucket_id, key):
@@ -133,8 +136,12 @@ UserInfo = namedtuple('UserInfo', ['id', 'email', 'password'])
 """Generated user information."""
 
 
-def create_user(name):
+def create_user(name, roles=None, permissions=None):
     """Create a user.
+
+    Args:
+        name (str): user's name.
+        roles (list): roles assigned to this new user.
 
     Returns:
         (UserInfo) created user's information.
@@ -152,7 +159,31 @@ def create_user(name):
             active=True,
         )
         db.session.add(user)
+
+        if roles is not None:
+            for role in roles:
+                security.datastore.add_role_to_user(user, role)
+
+        # permissions of the form [('action name', 'argument'), (...)]
+        if permissions is not None:
+            for action_name, argument in permissions:
+                db.session.add(ActionUsers.allow(
+                    ParameterizedActionNeed(action_name, argument), user=user,
+                ))
+
     return UserInfo(email=email, password=users_password, id=user.id)
+
+
+def create_role(name, permissions=None):
+    """Create a role and assign it the given permission needs."""
+    security = current_app.extensions['security']
+    role = security.datastore.find_or_create_role(name)
+    if permissions is not None:
+        for action_name, argument in permissions:
+            db.session.add(ActionRoles.allow(
+                ParameterizedActionNeed(action_name, argument), role=role
+            ))
+    return role
 
 
 def build_expected_metadata(record_data, state, owners=None, draft=False):
@@ -206,9 +237,7 @@ def create_record(data, creator, files=None):
         deposit.submit()
         deposit.publish()
     published = deposit.fetch_published()
-    RecordIndexer(
-        record_to_index=lambda record: ('records', 'record')
-    ).index(published[1])
+    RecordIndexer().index(published[1])
     return (deposit, published[0], published[1])  # deposit, pid, record
 
 
@@ -220,7 +249,7 @@ def resolve_record_data(data):
 
 
 def generate_record_data(title='My Test BBMRI Record', open_access=True,
-                         community='MyTestCommunity',
+                         community='MyTestCommunity1',
                          block_schema='MyTestSchema',
                          block_schema_content=None, **kwargs):
     """Generate"""

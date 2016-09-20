@@ -56,11 +56,6 @@ class PublicationStates(Enum):
 class Deposit(DepositRecord):
     """B2Share Deposit API."""
 
-    indexer = RecordIndexer(
-        record_to_index=lambda record: ('deposits', 'deposit')
-    )
-    """Deposit indexer."""
-
     published_record_class = Record
     """Record API class used for published records."""
 

@@ -24,16 +24,45 @@
 """Access controls for deposits."""
 
 from copy import deepcopy
+from collections import namedtuple
+from itertools import chain
 
 from jsonpatch import apply_patch, JsonPatchException
 from flask_principal import UserNeed
 from invenio_access.permissions import (
     superuser_access, ParameterizedActionNeed, DynamicPermission
 )
+from invenio_access.models import ActionUsers, ActionRoles
+from invenio_accounts.models import userrole
+
 from flask import request, abort
 from b2share.modules.access.permissions import (OrPermissions, AndPermissions,
                                                 StrictDynamicPermission)
+from invenio_db import db
 
+def list_readable_communities(user_id):
+    result = namedtuple('ReadableCommunities', ['all', 'communities'])(
+        set(), {})
+    roles_needs = db.session.query(ActionRoles).join(
+        userrole, ActionRoles.role_id == userrole.columns['role_id']
+    ).filter(
+        userrole.columns['user_id'] == user_id,
+        ActionRoles.action.like('read-deposit-%')
+    ).all()
+    user_needs = ActionUsers.query.filter(
+        ActionUsers.user_id == user_id,
+        ActionRoles.action.like('read-deposit-%'),
+    ).all()
+
+    for need in chain(roles_needs, user_needs):
+        publication_state = need.action[13:]
+        community_id = need.argument
+        if community_id is None:
+            result.all.add(publication_state)
+        else:
+            result.communities.setdefault(community_id, set()).add(
+                publication_state)
+    return result
 
 class CreateDepositPermission(OrPermissions):
     """Deposit read permission."""

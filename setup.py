@@ -55,6 +55,7 @@ install_requires = [
     'invenio-search>=1.0.0a7,<1.1.0',
     'jsonresolver[jsonschema]>=0.2.1',
     'invenio-logging>=1.0.0a3',
+    'invenio-indexer>=1.0.0a7',
     'easywebdav>=1.2.0',
 ]
 
@@ -201,7 +202,8 @@ setup(
             'file_key = b2share.modules.deposit.utils:FileKeyConverter',
         ],
         'invenio_search.mappings':[
-            'records = b2share.modules.records.mappings'
+            'records = b2share.modules.records.mappings',
+            'deposits = b2share.modules.deposit.mappings',
         ],
         'invenio_pidstore.fetchers': [
             'b2share_record'

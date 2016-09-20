@@ -23,17 +23,73 @@
 
 """Records search class and helpers."""
 
+from elasticsearch_dsl.query import Bool, Q
+from flask import has_request_context, request
 from invenio_search.api import RecordsSearch
+from flask_security import current_user
+from invenio_access.permissions import (
+    superuser_access, ParameterizedActionNeed
+)
+from b2share.modules.access.permissions import StrictDynamicPermission
+from b2share.modules.deposit.permissions import list_readable_communities
 
+from .errors import AnonymousDepositSearch
+
+def _in_draft_request():
+    """Check if the current call is in a draft record request context.
+
+    Returns:
+        boolean: True when this function is called in a draft record request
+                 context, else False.
+    """
+    return has_request_context() and 'drafts' in request.args
 
 class B2ShareRecordsSearch(RecordsSearch):
     """Search class for records."""
 
-    class Meta:
-        """Default index and filter for record search."""
+    class MetaClass(type):
+        @property
+        def index(self):
+            """Find the right index to search in."""
+            if _in_draft_request():
+                return 'deposits'
+            return 'records'
 
-        index = 'records'
+        @property
+        def doc_types(self):
+            """Find the right document type to search for."""
+            if _in_draft_request():
+                return 'deposit'
+            return 'record'
+
+    class Meta(metaclass=MetaClass):
+        """Default index and filter for record search."""
 
     def __init__(self, **kwargs):
         """Initialize instance."""
         super(B2ShareRecordsSearch, self).__init__(**kwargs)
+        if _in_draft_request():
+            if not current_user.is_authenticated:
+                raise AnonymousDepositSearch()
+            # super user can read all deposits
+            if StrictDynamicPermission(superuser_access).can():
+                return
+
+            filters = [Q('term', **{'_deposit.owners': current_user.id})]
+
+            readable_communities = list_readable_communities(current_user.id)
+            for publication_state in readable_communities.all:
+                filters.append(Q('term', publication_state=publication_state))
+            for community, publication_states in readable_communities.communities.items():
+                for publication_state in publication_states:
+                    filters.append(Bool(
+                        must=[Q('term', publication_state=publication_state),
+                              Q('term', community=str(community))],
+                    ))
+
+            # otherwise filter returned deposits
+            self.query = Bool(
+                must=self.query._proxied,
+                should=filters,
+                minimum_should_match=1
+            )

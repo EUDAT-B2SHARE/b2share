@@ -1,0 +1,36 @@
+{
+    "name": "MyTestCommunity2",
+    "description": "Test community.",
+    "id": "cccccccc-2222-2222-2222-222222222222",
+    "logo": "",
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[MyTestSchema]": {
+                        "$ref":
+                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[MyTestSchema]::1]#/json_schema"
+                    }
+                },
+                "additionalProperties": false
+            }
+        }, {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[MyTestSchema]": {
+                        "$ref":
+                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[MyTestSchema]::2]#/json_schema"
+                    }
+                },
+                "additionalProperties": false
+            }
+        }],
+    "block_schemas": {
+    }
+}

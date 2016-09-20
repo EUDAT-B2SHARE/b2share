@@ -183,6 +183,4 @@ class DepositResource(RecordResource):
         """Index the published record if the deposit is published."""
         if g.deposit_action == 'publish':
             _, published_record = record.fetch_published()
-            RecordIndexer(
-                record_to_index=lambda record: ('records', 'record')
-            ).index(published_record)
+            RecordIndexer().index(published_record)

@@ -67,8 +67,6 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         pid_fetcher='b2share_record',
         record_class='invenio_records_files.api:Record',
         search_class=B2ShareRecordsSearch,
-        search_index='records',
-        search_type='record',
         record_serializers={
             'application/json': ('b2share.modules.records.serializers'
                                  ':json_v1_response'),
@@ -107,9 +105,6 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
         pid_minter='b2share_deposit',
         pid_fetcher='b2share_deposit',
         record_class='b2share.modules.deposit.api:Deposit',
-        search_class='b2share.modules.deposit.search:DepositSearch',
-        search_index='deposits',
-        search_type='deposit',
         max_result_window=10000,
         default_media_type='application/json',
         record_serializers={
@@ -135,6 +130,8 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
         delete_permission_factory_imp=DeleteDepositPermission,
     ),
 )
+
+INDEXER_RECORD_TO_INDEX='b2share.modules.records.indexer:record_to_index'
 
 #: Files REST permission factory
 FILES_REST_PERMISSION_FACTORY = \
