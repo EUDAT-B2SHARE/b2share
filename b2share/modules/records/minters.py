@@ -52,6 +52,7 @@ def b2share_record_uuid_minter(record_uuid, data):
 
     b2share_oaiid_minter(record_uuid, data)
     b2share_pid_minter(provider.pid, data)
+    b2share_doi_minter(record_uuid, data)
 
     return provider.pid
 
@@ -76,15 +77,13 @@ def b2share_oaiid_minter(record_uuid, data):
     return provider.pid
 
 
-def b2share_pid_minter(local_pid, data):
+def b2share_pid_minter(record_uuid, data):
     """Mint EPIC PID for published record."""
     epic_pids = [p for p in data['_pid']
-                 if p.get('type') == 'handle_pid']
+                 if p.get('type') == 'ePIC_PID']
     assert len(epic_pids) == 0
 
-    endpoint = 'b2share_records_rest.b2share_record_item'
-    url = url_for(endpoint, pid_value=local_pid.pid_value, _external=True)
-    url = url.replace('/api/records/', '/records/')
+    url = make_record_url(record_uuid)
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_PID', True)
 
     try:
@@ -93,10 +92,50 @@ def b2share_pid_minter(local_pid, data):
             raise EpicPIDError("EPIC PID allocation failed")
         data['_pid'].append({
             'value': pid,
-            'type': 'handle_pid',
+            'type': 'ePIC_PID',
         })
     except EpicPIDError as e:
         if throw_on_failure:
             raise e
         else:
             current_app.logger.warning(e)
+
+
+def b2share_doi_minter(record_uuid, data):
+    from invenio_pidstore.models import PIDStatus, PersistentIdentifier
+    from invenio_pidstore.providers.datacite import DataCiteProvider
+    from .serializers import datacite_v31
+
+    doi = generate_doi(record_uuid)
+    url = make_record_url(record_uuid)
+    throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_DOI', True)
+    try:
+        dcp = DataCiteProvider.create(doi,
+                                      object_type='rec',
+                                      object_uuid=record_uuid,
+                                      status=PIDStatus.RESERVED)
+        doc = datacite_v31.serialize(dcp.pid, data)
+        dcp.register(url=url, doc=doc)
+        data['_pid'].append({
+            'value': doi,
+            'type': 'DOI',
+        })
+    except Exception as e:
+        if throw_on_failure:
+            raise e
+        else:
+            current_app.logger.warning(e)
+
+
+def make_record_url(recid):
+    endpoint = 'b2share_records_rest.b2share_record_item'
+    url = url_for(endpoint, pid_value=recid, _external=True)
+    url = url.replace('/api/records/', '/records/')
+    return url
+
+
+def generate_doi(recid):
+    prefix = current_app.config['PIDSTORE_DATACITE_DOI_PREFIX']
+    doi_format = current_app.config['DOI_IDENTIFIER_FORMAT']
+    local_part = doi_format.format(recid=recid)
+    return '{prefix}/{local_part}'.format(prefix=prefix, local_part=local_part)
