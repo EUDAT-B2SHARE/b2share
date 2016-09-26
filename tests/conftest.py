@@ -31,24 +31,27 @@ import shutil
 import re
 import tempfile
 import sys
-from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
+from collections import namedtuple
 
+from flask_cli import ScriptInfo
 import pytest
 import responses
-from b2share_unit_tests.helpers import authenticated_user
+from b2share_unit_tests.helpers import authenticated_user, create_user
 from b2share.modules.deposit.api import Deposit
 from b2share.modules.schemas.helpers import load_root_schemas
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from flask_security import url_for_security
-from flask_security.utils import encrypt_password
+from b2share.modules.deposit.api import Deposit
 from invenio_db import db
 from invenio_files_rest.models import Location
-from invenio_search import current_search_client
+from invenio_search import current_search_client, current_search
 from sqlalchemy_utils.functions import create_database, drop_database
 from invenio_access.models import ActionRoles
 from invenio_access.permissions import superuser_access
+from invenio_indexer.api import RecordIndexer
+from b2share.modules.communities.models import Community
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -96,14 +99,10 @@ def app(request, tmpdir):
         if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':
             create_database(db.engine.url)
         db.create_all()
-        es_indexes = [
-            B2SHARE_RECORDS_REST_ENDPOINTS['b2share_record']['search_index'],
-            B2SHARE_DEPOSIT_REST_ENDPOINTS['b2share_deposit']['search_index'],
-        ]
-        for es_index in es_indexes:
-            if current_search_client.indices.exists(es_index):
-                current_search_client.indices.delete(es_index)
-                current_search_client.indices.create(es_index)
+        for deleted in current_search.delete(ignore=[404]):
+            pass
+        for created in current_search.create(None):
+            pass
 
     def finalize():
         with app.app_context():
@@ -115,58 +114,36 @@ def app(request, tmpdir):
     return app
 
 
-UserInfo = namedtuple('UserInfo', ['id', 'email', 'password'])
-
-
 @pytest.fixture(scope='function')
-def create_user(app):
-    """Create a user."""
+def test_users(app):
+    """Create test users.
 
-    users_password = '123456'
-    accounts = app.extensions['invenio-accounts']
-    security = app.extensions['security']
+    Created users are named 'normal' and 'admin'.
+    Other fixtures can add other users.
 
-    def create(name):
-        email = '{}@example.org'.format(name)
-        with db.session.begin_nested():
-            user = accounts.datastore.create_user(
-                email=email,
-                password=encrypt_password(users_password),
-                active=True,
-            )
-            db.session.add(user)
-        return UserInfo(email=email, password=users_password, id=user.id)
-
-    return create
-
-@pytest.fixture(scope='function')
-def admin(app, create_user):
+    Returns:
+        (dict) A dict of username->user_info.
+    """
+    result = dict()
     accounts = app.extensions['invenio-accounts']
     security = app.extensions['security']
     with app.app_context():
+        # create a normal user
+        result['normal'] = create_user('normal')
+        # create admin user
         user_info = create_user('admin')
         user = accounts.datastore.get_user(user_info.id)
-        role= security.datastore.find_or_create_role('admin')
-        security.datastore.add_role_to_user(user, role)
+        role = security.datastore.find_or_create_role('admin')
         db.session.add(ActionRoles.allow(
             superuser_access, role=role
         ))
         security.datastore.add_role_to_user(user, role)
+        result['admin'] = user_info
+        # create the user which will create the test deposits
+        creator = create_user('deposits_creator')
+        result['deposits_creator'] = creator
         db.session.commit()
-        return user_info
-
-
-
-@pytest.fixture(scope='function')
-def test_users(app, request, create_user):
-    """Create test users."""
-    with app.app_context():
-        if hasattr(request, 'param') and 'users' in request.param:
-            result = {username: create_user(username)
-                      for username in request.param['users']}
-            db.session.commit()
-            return result
-        return {}
+    return result
 
 
 @pytest.fixture(scope='function')
@@ -199,6 +176,7 @@ def test_communities(app, tmp_location):
             os.path.dirname(os.path.realpath(__file__)),
             'data'), verbose=0)
         db.session.commit()
+        return {com.name: com.id for com in Community.query.all()}
 
 
 @pytest.fixture(scope='function')
@@ -210,7 +188,7 @@ def test_records_data(app, test_communities):
     """
     records_data = [{
         'title': 'My Test BBMRI Record',
-        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        'community': '$COMMUNITY_ID[MyTestCommunity1]',
         "open_access": True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
@@ -219,7 +197,7 @@ def test_records_data(app, test_communities):
         }
     }, {
         'title': 'New BBMRI dataset',
-        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        'community': '$COMMUNITY_ID[MyTestCommunity1]',
         "open_access": False,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
@@ -228,7 +206,37 @@ def test_records_data(app, test_communities):
         }
     }, {
         'title': 'BBMRI dataset 3',
-        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        'community': '$COMMUNITY_ID[MyTestCommunity1]',
+        "open_access": True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    }, {
+        'title': 'BBMRI dataset 4',
+        # community 2
+        'community': '$COMMUNITY_ID[MyTestCommunity2]',
+        "open_access": True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    }, {
+        'title': 'BBMRI dataset 5',
+        # community 2
+        'community': '$COMMUNITY_ID[MyTestCommunity2]',
+        "open_access": True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    }, {
+        'title': 'BBMRI dataset 6',
+        # community 2
+        'community': '$COMMUNITY_ID[MyTestCommunity2]',
         "open_access": True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
@@ -244,22 +252,58 @@ def test_records_data(app, test_communities):
         ]
 
 
+def create_deposits(app, test_records_data, creator):
+    """Create test deposits."""
+    DepositInfo = namedtuple('DepositInfo', ['id', 'data', 'deposit'])
+    with app.app_context():
+        indexer = RecordIndexer()
+
+        with authenticated_user(creator):
+            deposits = [Deposit.create(data=data)
+                        for data in deepcopy(test_records_data)]
+        for deposit in deposits:
+            indexer.index(deposit)
+        db.session.commit()
+        return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
+
+
 @pytest.fixture(scope='function')
-def test_deposits(app, request, test_records_data, test_users, login_user):
+def draft_deposits(app, test_records_data, test_users):
+    """Fixture creating deposits in draft state."""
+    return create_deposits(app, test_records_data,
+                           test_users['deposits_creator'])
+
+
+@pytest.fixture(scope='function')
+def submitted_deposits(app, test_records_data, test_users):
+    """Fixture creating deposits in submitted state."""
+    with app.app_context():
+        deposits = create_deposits(app, test_records_data,
+                                   test_users['deposits_creator'])
+        for dep in deposits:
+            dep.deposit.submit()
+    return deposits
+
+
+@pytest.fixture(scope='function')
+def test_records(app, request, test_records_data, test_users):
     """Fixture creating test deposits."""
     with app.app_context():
-        def create_deposits():
-            return [Deposit.create(data=data).id
-                    for data in deepcopy(test_records_data)]
-        creator = None
-        if hasattr(request, 'param') and 'deposits_creator' in request.param:
-            creator = test_users[request.param['deposits_creator']]
-            with authenticated_user(creator):
-                deposits = create_deposits()
-        else:
-            deposits = create_deposits()
-        db.session.commit()
-        return deposits
+        test_deposits = create_deposits(app, test_records_data,
+                                        test_users['deposits_creator'])
+
+        RecordInfo = namedtuple('DepositInfo', ['deposit_id', 'pid',
+                                                'record_id', 'data'])
+        indexer = RecordIndexer()
+        def publish(deposit):
+            deposit.publish()
+            pid, record = deposit.fetch_published()
+            indexer.index(record)
+            db.session.commit()
+            return RecordInfo(deposit.id, str(pid.pid_value), record.id,
+                              record.dumps())
+        return [publish(deposit_info.deposit)
+                for deposit_info in test_deposits]
 
 
 @pytest.yield_fixture()
@@ -319,3 +363,9 @@ def flask_http_responses(app):
                                       callback=router_callback)
             yield
     yield router
+
+
+@pytest.fixture()
+def script_info(app):
+    """Get ScriptInfo object for testing CLI."""
+    return ScriptInfo(create_app=lambda info: app)

@@ -26,7 +26,8 @@
 from datetime import datetime, timedelta
 
 from b2share_unit_tests.helpers import (
-    create_record, generate_record_data, subtest_file_bucket_permissions
+    create_record, generate_record_data, subtest_file_bucket_permissions,
+    create_user,
 )
 from b2share.modules.records.tasks import update_expired_embargos
 # from invenio_records_files.api import Record
@@ -36,8 +37,7 @@ from invenio_files_rest.models import Bucket
 from invenio_records_files.api import Record
 
 
-def test_update_expired_embargo(app, test_communities, login_user,
-                                create_user):
+def test_update_expired_embargo(app, test_communities, login_user):
     """Test record embargo update."""
 
     uploaded_files = {

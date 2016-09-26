@@ -41,7 +41,7 @@ from b2share_unit_tests.helpers import subtest_self_link
 def test_valid_get(app, test_communities):
     """Test VALID community get request (GET .../communities/<id>)."""
     with app.app_context():
-        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        community_id = str(test_communities['MyTestCommunity1'])
         with app.test_client() as client:
             for version in [0, 1, 'last']:
                 headers = [('Content-Type', 'application/json'),
@@ -76,7 +76,7 @@ def test_valid_get(app, test_communities):
 def test_create_schema(app, test_communities):
     """Test creating a new schema."""
     with app.app_context():
-        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        community_id = str(test_communities['MyTestCommunity1'])
         with app.test_client() as client:
             headers = [('Content-Type', 'application/json'),
                        ('Accept', 'application/json')]
@@ -103,7 +103,7 @@ def test_create_schema(app, test_communities):
 def test_create_schema_version(app, test_communities):
     """Test creating a new version of the schema."""
     with app.app_context():
-        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        community_id = str(test_communities['MyTestCommunity1'])
         json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
         version_schema = {
@@ -132,7 +132,7 @@ def test_create_schema_version(app, test_communities):
 def test_create_existing_schema_version(app, test_communities):
     """Test creating an axisting version of the schema."""
     with app.app_context():
-        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        community_id = str(test_communities['MyTestCommunity1'])
         json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
         version_schema = {
@@ -159,7 +159,7 @@ def test_create_existing_schema_version(app, test_communities):
 def test_create_invalid_schema_version(app, test_communities):
     """Test creating an invalid version of the schema."""
     with app.app_context():
-        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        community_id = str(test_communities['MyTestCommunity1'])
         json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
         with app.test_client() as client:
@@ -181,7 +181,7 @@ def test_create_invalid_schema_version(app, test_communities):
 def test_get_schema_version(app, test_communities):
     """Test getting schema version."""
     with app.app_context():
-        community_id = '2b884138-898f-4651-bf82-34dea0e0e83f'
+        community_id = str(test_communities['MyTestCommunity1'])
         json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
         schema_version1 = block_schema.create_version(json_schema)

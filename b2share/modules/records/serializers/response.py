@@ -32,7 +32,10 @@ from flask import current_app, url_for, g
 from invenio_records_rest.serializers.json import JSONSerializer as \
     InvenioJSONSerializer
 
+from ..search import _in_draft_request
 from ..links import RECORD_BUCKET_RELATION_TYPE
+from b2share.modules.deposit.links import deposit_links_factory
+from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 
 
 def record_responsify(serializer, mimetype):
@@ -72,3 +75,16 @@ class JSONSerializer(InvenioJSONSerializer):
         g.record_hit = record_hit
         return super(JSONSerializer, self).transform_search_hit(
             pid, record_hit, links_factory)
+
+    def serialize_search(self, pid_fetcher, search_result, links=None,
+                         item_links_factory=None):
+            """Serialize a search result.
+            :param pid_fetcher: Persistent identifier fetcher. It is overriden
+                                if the request searches for draft records.
+            """
+            if _in_draft_request():
+                pid_fetcher = b2share_deposit_uuid_fetcher
+                item_links_factory = deposit_links_factory
+            return super(JSONSerializer, self).serialize_search(
+                pid_fetcher=pid_fetcher, search_result=search_result,
+                links=links, item_links_factory=item_links_factory)

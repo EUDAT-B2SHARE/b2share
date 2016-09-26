@@ -1,6 +1,6 @@
 {
     "mappings" : {
-      "record" : {
+      "deposit" : {
 		 "_all":{
 			"type":"string",
 			"index":"analyzed",

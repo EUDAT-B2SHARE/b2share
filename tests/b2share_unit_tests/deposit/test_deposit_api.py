@@ -28,29 +28,29 @@ from b2share.modules.deposit.api import Deposit, PublicationStates
 from jsonschema.exceptions import ValidationError
 
 
-def test_deposit_create(app, test_deposits):
+def test_deposit_create(app, draft_deposits):
     """Test deposit creation."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         assert (deposit['publication_state']
                 == PublicationStates.draft.name)
         assert (deposit['_deposit']['status'] == 'draft')
 
 
-def test_deposit_submit(app, test_deposits):
+def test_deposit_submit(app, draft_deposits):
     """Test deposit submission."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         deposit.submit()
         assert (deposit['publication_state']
                 == PublicationStates.submitted.name)
         assert (deposit['_deposit']['status'] == 'draft')
 
 
-def test_deposit_update_and_submit(app, test_deposits):
+def test_deposit_update_and_submit(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         deposit.update({'publication_state':
                         PublicationStates.submitted.name})
         deposit.commit()
@@ -59,10 +59,10 @@ def test_deposit_update_and_submit(app, test_deposits):
         assert (deposit['_deposit']['status'] == 'draft')
 
 
-def test_deposit_publish(app, test_deposits):
+def test_deposit_publish(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         deposit.submit()
         deposit.publish()
         assert (deposit['publication_state']
@@ -70,10 +70,10 @@ def test_deposit_publish(app, test_deposits):
         assert (deposit['_deposit']['status'] == 'published')
 
 
-def test_deposit_update_and_publish(app, test_deposits):
+def test_deposit_update_and_publish(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         deposit.submit()
         deposit.update({'publication_state':
                         PublicationStates.published.name})
@@ -83,10 +83,10 @@ def test_deposit_update_and_publish(app, test_deposits):
         assert (deposit['_deposit']['status'] == 'published')
 
 
-def test_deposit_update_unknown_publication_state(app, test_deposits):
+def test_deposit_update_unknown_publication_state(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         deposit.update({'publication_state':
                         'invalid_state'})
         with pytest.raises(ValidationError):

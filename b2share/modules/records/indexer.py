@@ -27,6 +27,19 @@ import pytz
 from b2share.modules.access.policies import allow_public_file_metadata
 from invenio_records_files.models import RecordsBuckets
 
+from .utils import is_deposit, is_publication
+
+
+def record_to_index(record):
+    """Route the given record to the right index and document type."""
+    if is_deposit(record.model):
+        return 'deposits-deposits', 'deposit'
+    elif is_publication(record.model):
+        return 'records', 'record'
+    else:
+        raise ValueError('Invalid record. It is neither a deposit'
+                         ' nor a publication')
+
 
 def indexer_receiver(sender, json=None, record=None, index=None,
                      **dummy_kwargs):

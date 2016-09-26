@@ -32,8 +32,8 @@ import pytest
 
 from flask import url_for
 from invenio_db import db
-
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from b2share_unit_tests.helpers import create_user
 
 
 json_headers = [('Content-Type', 'application/json'),
@@ -47,7 +47,7 @@ def make_record_json():
     record_data = {
         'owner': '',
         'title': 'My Errorneous BBMRI record',
-        'community': '$COMMUNITY_ID[MyTestCommunity]',
+        'community': '$COMMUNITY_ID[MyTestCommunity1]',
         'open_access': True,
         'creator': ['Anonymous'],
         'community_specific': {
@@ -67,7 +67,7 @@ record_list_url = (lambda **kwargs:
                            **kwargs))
 
 
-def test_submission_error(app, test_communities, create_user, login_user):
+def test_submission_error(app, test_communities, login_user):
     with app.app_context():
         # FIXME test permissions
         with app.test_client() as client:

@@ -71,8 +71,6 @@ def update_expired_embargos():
             record.commit()
         db.session.commit()
 
-        indexer = RecordIndexer(
-            record_to_index=lambda record: ('records', 'record')
-        )
+        indexer = RecordIndexer()
         indexer.bulk_index(record_ids)
         indexer.process_bulk_queue()

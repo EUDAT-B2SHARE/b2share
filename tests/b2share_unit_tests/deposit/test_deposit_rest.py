@@ -26,21 +26,20 @@
 import json
 
 import pytest
+from invenio_search import current_search_client
 from flask import url_for
 from b2share.modules.deposit.api import PublicationStates, Deposit
 from copy import deepcopy
 from b2share_unit_tests.helpers import (
     subtest_self_link, create_deposit, generate_record_data, url_for_file,
     subtest_file_bucket_content, subtest_file_bucket_permissions,
-    build_expected_metadata,
+    build_expected_metadata, create_user, create_role,
 )
+from invenio_access.models import ActionUsers, ActionRoles
 from b2share.modules.records.providers import RecordUUIDProvider
 from six import BytesIO
 
 
-@pytest.mark.parametrize('test_users', [({
-    'users': ['myuser']
-})], indirect=['test_users'])
 def test_deposit_create(app, test_records_data, test_users, login_user):
     """Test record draft creation."""
     headers = [('Content-Type', 'application/json'),
@@ -61,7 +60,7 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
     # test creating a deposit with a logged in user
     with app.app_context():
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['normal']
             login_user(user, client)
             # create the deposit
             for record_data in test_records_data:
@@ -81,19 +80,14 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
                                   client)
 
 
-@pytest.mark.parametrize('test_users, test_deposits', [({
-    'users': ['myuser']
-}, {
-    'deposits_creator': 'myuser'
-})], indirect=['test_users', 'test_deposits'])
-def test_deposit_submit(app, test_records_data, test_deposits, test_users,
+def test_deposit_submit(app, test_records_data, draft_deposits, test_users,
                         login_user):
     """Test record draft submit with HTTP PATCH."""
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         record_data = test_records_data[0]
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
 
             headers = [('Content-Type', 'application/json-patch+json'),
@@ -116,9 +110,9 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
                 draft=True,
             )
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
             expected_metadata['publication_state'] = \
                 PublicationStates.submitted.name
@@ -130,19 +124,14 @@ def test_deposit_submit(app, test_records_data, test_deposits, test_users,
                               client)
 
 
-@pytest.mark.parametrize('test_users, test_deposits', [({
-    'users': ['myuser']
-}, {
-    'deposits_creator': 'myuser'
-})], indirect=['test_users', 'test_deposits'])
-def test_deposit_publish(app, test_records_data, test_deposits, test_users,
+def test_deposit_publish(app, test_records_data, draft_deposits, test_users,
                          login_user):
     """Test record draft publication with HTTP PATCH."""
     record_data = test_records_data[0]
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
 
             headers = [('Content-Type', 'application/json-patch+json'),
@@ -166,9 +155,9 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
             )
 
     with app.app_context():
-        deposit = Deposit.get_record(test_deposits[0])
+        deposit = Deposit.get_record(draft_deposits[0].id)
         with app.test_client() as client:
-            user = test_users['myuser']
+            user = test_users['deposits_creator']
             login_user(user, client)
             assert expected_metadata == draft_patch_data['metadata']
             assert (deposit['publication_state']
@@ -210,9 +199,10 @@ def test_deposit_publish(app, test_records_data, test_deposits, test_users,
             assert cleaned_draft_data == cleaned_published_data
 
 
-def test_deposit_files(app, test_communities, create_user, login_user, admin):
+def test_deposit_files(app, test_communities, login_user, test_users):
     """Test uploading and reading deposit files."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         uploaded_files = {
             'myfile1.dat': b'contents1',
@@ -267,9 +257,10 @@ def test_deposit_files(app, test_communities, create_user, login_user, admin):
 
 
 def test_deposit_read_permissions(app, test_records_data,
-                                  create_user, login_user, admin):
+                                  login_user, test_users):
     """Test deposit read with HTTP GET."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 
@@ -314,10 +305,81 @@ def test_deposit_read_permissions(app, test_records_data,
         test_get(deposit, 200, admin)
 
 
+def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
+                                    test_users, login_user, test_communities):
+    """Test deposit search permissions."""
+    with app.app_context():
+        # flush the indices so that indexed deposits are searchable
+        current_search_client.indices.flush('*')
+
+        admin = test_users['admin']
+        creator = test_users['deposits_creator']
+        non_creator = create_user('non-creator')
+
+        allowed_role = create_role(
+            'allowed_role',
+            permissions=[('read-deposit-submitted', None),]
+        )
+        user_allowed_by_role = create_user('user-allowed-by-role',
+                                           roles=[allowed_role])
+        user_allowed_by_permission = create_user(
+            'user-allowed-by-permission',
+            permissions=[('read-deposit-submitted',
+                          str(test_communities['MyTestCommunity2']))]
+        )
+
+        search_deposits_url = url_for(
+            'b2share_records_rest.b2share_record_list', drafts=1, size=100)
+        headers = [('Content-Type', 'application/json'),
+                ('Accept', 'application/json')]
+
+        def test_search(status, expected_deposits, user=None):
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                deposit_search_res = client.get(
+                    search_deposits_url,
+                    headers=headers)
+                assert deposit_search_res.status_code == status
+                # test the response data only when the user is allowed to
+                # search for deposits
+                if status != 200:
+                    return
+                deposit_search_data = json.loads(
+                    deposit_search_res.get_data(as_text=True))
+
+                assert deposit_search_data['hits']['total'] == \
+                    len(expected_deposits)
+
+                deposit_pids = [hit['id'] for hit
+                            in deposit_search_data['hits']['hits']]
+                expected_deposit_pids = [dep.id.hex for dep
+                                         in expected_deposits]
+                deposit_pids.sort()
+                expected_deposit_pids.sort()
+                assert deposit_pids == expected_deposit_pids
+
+        test_search(200, draft_deposits + submitted_deposits, creator)
+        test_search(200, draft_deposits + submitted_deposits, admin)
+        test_search(401, [], None)
+        test_search(200, [], non_creator)
+
+        test_search(200, submitted_deposits, user_allowed_by_role)
+
+        # search for submitted records
+        community2_deposits = [dep for dep in submitted_deposits
+                                if dep.data['community'] ==
+                                str(test_communities['MyTestCommunity2'])]
+        test_search(200,
+                    community2_deposits,
+                    user_allowed_by_permission)
+
+
 def test_deposit_delete_permissions(app, test_records_data,
-                                    create_user, login_user, admin):
+                                    login_user, test_users):
     """Test deposit delete with HTTP DELETE."""
     with app.app_context():
+        admin = test_users['admin']
         def test_delete(deposit, status, user=None):
             with app.test_client() as client:
                 if user is not None:
@@ -372,9 +434,10 @@ def test_deposit_delete_permissions(app, test_records_data,
 
 
 def test_deposit_publish_permissions(app, test_records_data, login_user,
-                                     admin, create_user):
+                                     test_users):
     """Test deposit publication with HTTP PATCH."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 
@@ -407,12 +470,13 @@ def test_deposit_publish_permissions(app, test_records_data, login_user,
 
 
 def test_deposit_modify_published_permissions(app, test_records_data,
-                                              login_user, admin, create_user):
+                                              login_user, test_users):
     """Test deposit edition after its publication.
 
     FIXME: This test should evolve when we allow deposit edition.
     """
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
         deposit = create_deposit(test_records_data[0], creator)
@@ -442,10 +506,11 @@ def test_deposit_modify_published_permissions(app, test_records_data,
         test_edit(403, admin)
 
 
-def test_deposit_files_permissions(app, test_communities, create_user,
-                                   login_user, admin):
+def test_deposit_files_permissions(app, test_communities, login_user,
+                                   test_users):
     """Test deposit read with HTTP GET."""
     with app.app_context():
+        admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 
