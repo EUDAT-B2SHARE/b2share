@@ -1,8 +1,10 @@
 B2Share installation
-====================
+********************
+
+
 
 1. Install B2SHARE for evaluation, using Docker
------------------------------------------------
+===============================================
 
 1.0 Prerequisite: clone B2SHARE
 --------------------------------
@@ -11,7 +13,7 @@ Current installation process requires a local clone of B2SHARE.
 
 .. code-block:: console
 
-    $ git clone git@github.com:EUDAT-B2SHARE/b2share.git
+    $ git clone https://github.com/EUDAT-B2SHARE/b2share.git
 
 1.1 Prerequisite: B2ACCESS configuration
 ----------------------------------------
@@ -19,10 +21,12 @@ Current installation process requires a local clone of B2SHARE.
 B2SHARE requires B2ACCESS for user management. For this purpose you must create
 a new B2ACCESS OAuth client, providing as the 'return URL' the address of the
 local B2SHARE server and the authorization path:
-https://$FQDN/api/oauth/authorized/b2access/ (where $FQDN must be replaced with
-the domain of the B2SHARE server). After successfully registering the
-B2ACCESS account please set the following environment variables with the
-username and password provided for the B2ACCESS account:
+``https://$FQDN/api/oauth/authorized/b2access/`` (where $FQDN must be replaced
+with the domain of the B2SHARE server).
+
+After successfully registering the B2ACCESS account please set the following
+environment variables with the username and password provided for the B2ACCESS
+account:
 
 .. code-block:: console
 
@@ -46,16 +50,17 @@ Mac/Windows), go into the ``dockerize`` folder and then run ``docker-compose``:
     $ cd b2share/dockerize
     $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
     $ export B2ACCESS_SECRET_KEY=...      # the password used for registration
-    $ export B2SHARE_JSONSCHEMAS_HOST='<FQDN>'
-    $ # Where <FQDN> is the domain of the B2SHARE server
+    $ export B2SHARE_JSONSCHEMAS_HOST='<FQDN>' # replace <FQDN> with the domain of the B2SHARE server
     $ export LOAD_DEMO_CONFIG=1
     $ docker-compose up
 
 After the docker image is built and running, B2SHARE will be available at
-https://<YOUR DOCKER SERVER>
+https://<FQDN>
+
+
 
 2. Install B2SHARE for development
-----------------------------------
+==================================
 
 Before installing B2Share you will need the following software:
 
@@ -68,7 +73,7 @@ Before installing B2Share you will need the following software:
     $ brew install python --framework --universal
     $ pip install virtualenv virtualenvwrapper
 
-- ``docker``, ``docker-compose``, and ``docker-machine``
+- ``docker`` and ``docker-compose``
 
 If the conditions are satisfied, open one terminal window and download in a
 temporary folder the ``devenv/docker-compose`` and ``devenv/run_demo.sh``
@@ -93,5 +98,9 @@ The script will create a python virtualenv, clone the evolution branch of
 B2SHARE into it, install the necessary python packages, build the web UI and
 start the Flask server in development mode. B2SHARE should be available at
 http://localhost:5000.
+
+Please note that a custom B2ACCESS configuration is also needed, as described
+above. The 'return URL' of the B2ACCESS configuration in this case can be set
+to ``http://localhost:5000/api/oauth/authorized/b2access/``
 
 If working on the web UI, see also: https://github.com/EUDAT-B2SHARE/b2share/wiki/Developer's-corner.

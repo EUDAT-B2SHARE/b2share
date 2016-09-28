@@ -1,8 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link } from 'react-router'
+import { Link } from 'react-router';
 
-var Restapi = require('../docs/templates/rest-api');
-var Termofuse = require('../docs/templates/tou');
+import Restapi from '../docs/rest-api.jsx';
+import Termofuse from '../docs/tou.jsx';
 
 
 export const Help = React.createClass({
