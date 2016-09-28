@@ -30,6 +30,7 @@ const apiUrls = {
     b2drop(path_)                     { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
 
     languages()                       { return `${urlRoot}/suggest/languages.json` },
+    disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -248,6 +249,7 @@ class ServerCache {
             blockSchemas: {}, // map of block schema IDs to versions to schemas
 
             languages: null,
+            disciplines: null,
         });
 
         this.store.setIn(['communities'], OrderedMap());
@@ -272,6 +274,26 @@ class ServerCache {
                 this.store.setIn(['communities'], map);
             },
             (xhr) => this.store.setIn(['communities'], new Error(xhr)) );
+
+        this.getters.languages = new Getter(
+            apiUrls.languages(), null,
+            (data) => {
+                const langs = data.languages.map(([id, name]) => ({id, name}));
+                this.store.setIn(['languages'], langs);
+            },
+            (xhr) => this.store.setIn(['languages'], new Error(xhr)) );
+
+        this.getters.disciplines = new Getter(
+            apiUrls.disciplines(), null,
+            (data) => {
+                const transform = id => {
+                    return {id, name:id};
+                }
+                const disciplines = data.disciplines ?
+                    data.disciplines.map(transform) : null;
+                this.store.setIn(['disciplines'], disciplines);
+            },
+            (xhr) => this.store.setIn(['disciplines'], new Error(xhr)) );
 
         this.getters.record = new Pool(recordID =>
             new Getter(apiUrls.record(recordID), null,
@@ -525,18 +547,17 @@ class ServerCache {
     getLanguages() {
         const langs = this.store.getIn(['languages']);
         if (!langs) {
-            ajaxGet({
-                url: apiUrls.languages(),
-                successFn: (data) => {
-                    const langs = data.languages.map(([id, name]) => ({id, name}));
-                    this.store.setIn(['languages'], langs);
-                },
-                errorFn: (xhr) => {
-                    this.store.setIn(['languages'], new Error(xhr));
-                },
-            });
+            this.getters.languages.autofetch();
         }
         return langs;
+    }
+
+    getDisciplines() {
+        const disciplines = this.store.getIn(['disciplines']);
+        if (!disciplines) {
+            this.getters.disciplines.autofetch();
+        }
+        return disciplines;
     }
 
     createRecord(initialMetadata, successFn) {

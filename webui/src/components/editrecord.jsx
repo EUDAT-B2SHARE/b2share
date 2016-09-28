@@ -18,7 +18,7 @@ import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 import { EditFiles } from './editfiles.jsx';
 import { SelectLicense } from './selectlicense.jsx';
-import { SelectLanguage } from './selectlanguage.jsx';
+import { SelectBig } from './selectbig.jsx';
 
 
 export const NewRecordRoute = React.createClass({
@@ -362,6 +362,15 @@ const EditRecord = React.createClass({
             field = this.renderLicenseField(type, getValue, setValue);
         } else if (!blockID && fieldID === 'embargo_date') {
             field = this.renderEmbargoField(type, getValue, setValue);
+        } else if (!blockID && fieldID === 'language'
+                || blockID && fieldID === 'language_code') {
+            const languages = serverCache.getLanguages();
+            field = (languages instanceof Error) ? <Err err={languages}/> :
+                <SelectBig data={languages} onSelect={setValue} value={getValue()} />;
+        } else if (!blockID && fieldID === 'discipline') {
+            const disciplines = serverCache.getDisciplines();
+            field = (disciplines instanceof Error) ? <Err err={disciplines}/> :
+                <SelectBig data={disciplines} onSelect={setValue} value={getValue()} />;
         } else if (!type.isArray) {
             field = this.renderScalarField(type, getValue, setValue);
         } else {
@@ -378,21 +387,6 @@ const EditRecord = React.createClass({
             borderRadius:'4px',
         };
         const isError = this.state.errors.hasOwnProperty(fieldID);
-        if (fieldID == "language_code" || fieldID == "language" ) {
-             return (
-                <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
-                    <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                        <span style={{float:'right', color:isError?'red':'black'}}>
-                            {fieldSchema.get('title') || fieldID} {type.required ? "*":""}
-                        </span>
-                    </label>
-                    <div className="col-sm-9" >
-                        <SelectLanguage onSelectLanguage={setValue} defValue={getValue()} />
-                    </div>
-                </div>
-            );
-        }
-
         return (
             <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
                 <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
