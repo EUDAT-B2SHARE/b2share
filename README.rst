@@ -39,7 +39,7 @@ B2SHARE is an user-friendly, secure, robust, reliable, and trusted service to sh
 
 B2SHARE is based on `Invenio <http://invenio-software.org/>`_. Invenio enables you to run your own electronic preprint server, your own online library catalogue or a digital document system on the web. It complies with the Open Archive Initiative metadata harvesting protocol and uses `MARC21 <http://www.loc.gov/marc/>`_ as its underlying bibliographic standard.
 
-**Demo site:** https://b2share.eudat.eu/
+**Official site:** https://b2share.eudat.eu/
 
 Development Installation
 ------------------------
