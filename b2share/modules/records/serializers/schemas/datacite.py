@@ -34,7 +34,7 @@ class IdentifierSchema(Schema):
     """Identifier schema."""
 
     def get_doi(self, pids):
-        p = [p['value'] for p in pids if p['type'] == 'DOI']
+        p = [p['value'] for p in pids if p['type'] == 'DOI_RESERVED']
         return str(p[0])
 
     identifier = fields.Method('get_doi')
@@ -105,7 +105,7 @@ class DataCiteSchemaV1(Schema):
     def get_descriptions(self, obj):
         """."""
         items = []
-        desc = obj['metadata']['description']
+        desc = obj['metadata'].get('description')
         if desc:
             items.append({
                 'description': desc,
