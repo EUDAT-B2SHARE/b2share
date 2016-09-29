@@ -205,7 +205,7 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         default_media_type=default_media_type)
 
     abuse_view = RecordsAbuseResource.as_view(
-        RecordResource.view_name.format('abuserecords'),
+        RecordResource.view_name.format('abuse'),
         resolver=resolver,
         read_permission_factory=read_permission_factory,
         update_permission_factory=update_permission_factory,
@@ -231,7 +231,7 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
     views = [
         dict(rule=list_route, view_func=list_view),
         dict(rule=item_route, view_func=item_view),
-        dict(rule=item_route + '/abuserecords', view_func=abuse_view),
+        dict(rule=item_route + '/abuse', view_func=abuse_view),
         dict(rule=item_route + '/accessrequests', view_func=access_view)
     ]
 
@@ -306,28 +306,37 @@ class B2ShareRecordsListResource(RecordsListResource):
 class RecordsAbuseResource(RecordResource):
 
     def post(self, **kwargs):
-        for v in ['abusecontent','message','email','copyright','zipcode',\
-                  'phone','illegalcontent','city','noresearch','name',\
-                  'affiliation','address','country']:
+        for v in ['abusecontent', 'message', 'email', 'copyright', 'zipcode',
+                  'phone', 'illegalcontent', 'city', 'noresearch', 'name',
+                  'affiliation', 'address', 'country']:
             if v not in request.json:
-                msg = v + ' is required'
-                return jsonify({'Error':msg})
+                response = jsonify({'Error': '{} is required'.format(v)})
+                response.status_code = 400
+                return response
 
+        reason_list = ['noresearch', 'abusecontent', 'copyright', 'illegalcontent']
         count = 0
-        for ii in ['noresearch', 'abusecontent', 'copyright', 'illegalcontent']:
-            if request.json[ii]: count += 1
+        for ii in reason_list:
+            if request.json[ii]:
+                count += 1
         if count != 1:
-            return jsonify({'Error':'From \'noresearch\', \'abusecontent\', \'copyright\', \'illegalcontent\' (only) one should be True'})
+            response = jsonify({
+                'Error': 'From \'noresearch\', \'abusecontent\', \'copyright\','
+                         ' \'illegalcontent\' (only) one should be True'
+            })
+            response.status_code = 400
+            return response
 
-        FriendlyReason = { 'abusecontent': 'Abuse or Inappropriate content',
-                            'copyright': 'Copyrighted material',
-                            'noresearch': 'No research data',
-                            'illegalcontent': 'Illegal content' }
+        friendly = {'abusecontent': 'Abuse or Inappropriate content',
+                    'copyright': 'Copyrighted material',
+                    'noresearch': 'No research data',
+                    'illegalcontent': 'Illegal content'}
+        reason = [friendly[ii] for ii in reason_list if request.json[ii]][0]
         msg_content = """
             We have received new abuse report!
-            Link: """ + re.sub('/abuserecords\?$','',request.full_path) + """
+            Link: """ + re.sub(r'/abuse\?$', '', request.full_path) + """
             Subject: " Abuse Report for a Record "
-            Reason: """ + [ FriendlyReason[ii] for ii in ['noresearch', 'abusecontent', 'copyright', 'illegalcontent'] if request.json[ii] ][0] + """
+            Reason: """ + reason + """
             Message: """ + str(request.json['message']) + """
             Full Name: """ + str(request.json['name']) + """
             Affiliation: """ + str(request.json['affiliation']) + """
@@ -339,8 +348,10 @@ class RecordsAbuseResource(RecordResource):
             Phone: """ + str(request.json['phone']) + """
             """
         support = str(current_app.config.get('SUPPORT_EMAIL'))
-        msg = Message("Abuse Report for a Record", sender=str(request.json['email']),
-                         recipients=[support], body=msg_content)
+        msg = Message("Abuse Report for a Record",
+                      sender=str(request.json['email']),
+                      recipients=[support],
+                      body=msg_content)
         app = Flask('abuseapp')
         app.config.update(MAIL_SUPPRESS_SEND=True)
         InvenioMail(app)
@@ -352,14 +363,15 @@ class RecordsAbuseResource(RecordResource):
 class RequestAccessResource(RecordResource):
 
     def post(self, **kwargs):
-        for v in ['message','email','zipcode','phone','city','name',
-                  'affiliation','address','country']:
+        for v in ['message', 'email', 'zipcode', 'phone', 'city', 'name',
+                  'affiliation', 'address', 'country']:
             if v not in request.json:
-                msg = v + ' is required'
-                return jsonify({'Error':msg})
+                response = jsonify({'Error': v + ' is required'})
+                response.status_code = 400
+                return response
         msg_content = """
             You have a request for your data!
-            Link: """ + re.sub('/abuserecords\?$','',request.full_path) + """
+            Link: """ + re.sub(r'/abuserecords\?$', '', request.full_path) + """
             Subject: " Request Access to Data Files "
             Message: """ + str(request.json['message']) + """
             Full Name: """ + str(request.json['name']) + """
@@ -372,12 +384,13 @@ class RequestAccessResource(RecordResource):
             Phone: """ + str(request.json['phone']) + """
             """
         support = str(current_app.config.get('SUPPORT_EMAIL'))
-        msg = Message("Request Access to Data Files", sender=str(request.json['email']),
-                         recipients=[support], body=msg_content)
+        msg = Message("Request Access to Data Files",
+                      sender=str(request.json['email']),
+                      recipients=[support],
+                      body=msg_content)
         app = Flask('accessapp')
         app.config.update(MAIL_SUPPRESS_SEND=True)
         InvenioMail(app)
         with app.app_context():
             app.extensions['mail'].send(msg)
-        return jsonify( { 'message': 'An email was sent to the record owner.' } )
-
+        return jsonify({'message': 'An email was sent to the record owner.'})

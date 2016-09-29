@@ -1,8 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link, browserHistory } from 'react-router'
+import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { DropdownList, NumberPicker } from 'react-widgets';
-import { serverCache, Error } from '../data/server';
+import { serverCache, browser, Error } from '../data/server';
 import { Wait, Err } from './waiting.jsx';
 import { timestamp2str } from '../data/misc.js'
 import { ReplaceAnimate } from './animate.jsx';
@@ -48,7 +48,7 @@ export function searchRecord(state) {
     const q_query = query ? ('?'+query) : '';
 
     // trigger a route reload which will do the new search, see SearchRecordRoute
-    browserHistory.push(`/records/${q_query}`);
+    browser.gotoSearch(q_query);
 }
 
 

@@ -43,7 +43,7 @@ def b2share_record_uuid_minter(record_uuid, data):
         object_type='rec', object_uuid=record_uuid,
         pid_value=data['_deposit']['id']
     )
-    if not '_pid' in data:
+    if '_pid' not in data:
         data['_pid'] = []
     data['_pid'].append({
         'value': provider.pid.pid_value,
@@ -51,7 +51,7 @@ def b2share_record_uuid_minter(record_uuid, data):
     })
 
     b2share_oaiid_minter(record_uuid, data)
-    b2share_pid_minter(provider.pid, data)
+    b2share_pid_minter(record_uuid, data)
     b2share_doi_minter(record_uuid, data)
 
     return provider.pid
@@ -79,8 +79,7 @@ def b2share_oaiid_minter(record_uuid, data):
 
 def b2share_pid_minter(record_uuid, data):
     """Mint EPIC PID for published record."""
-    epic_pids = [p for p in data['_pid']
-                 if p.get('type') == 'ePIC_PID']
+    epic_pids = [p for p in data['_pid'] if p.get('type') == 'ePIC_PID']
     assert len(epic_pids) == 0
 
     url = make_record_url(record_uuid)
@@ -106,8 +105,23 @@ def b2share_doi_minter(record_uuid, data):
     from invenio_pidstore.providers.datacite import DataCiteProvider
     from .serializers import datacite_v31
 
+    def filter_out_reserved_dois(data):
+        ret = [d for d in data['_pid'] if d.get('type') != 'DOI_RESERVED']
+        data['_pid'] = ret
+
+    doi_list = [d for d in data['_pid'] if d.get('type') == 'DOI']
+    if len(doi_list) > 0:
+        return
+
     doi = generate_doi(record_uuid)
     url = make_record_url(record_uuid)
+
+    filter_out_reserved_dois(data)
+    data['_pid'].append({
+        'value': doi,
+        'type': 'DOI_RESERVED',
+    })
+
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_DOI', True)
     try:
         dcp = DataCiteProvider.create(doi,
@@ -116,6 +130,7 @@ def b2share_doi_minter(record_uuid, data):
                                       status=PIDStatus.RESERVED)
         doc = datacite_v31.serialize(dcp.pid, data)
         dcp.register(url=url, doc=doc)
+        filter_out_reserved_dois(data)
         data['_pid'].append({
             'value': doi,
             'type': 'DOI',
@@ -125,6 +140,7 @@ def b2share_doi_minter(record_uuid, data):
             raise e
         else:
             current_app.logger.warning(e)
+
 
 
 def make_record_url(recid):

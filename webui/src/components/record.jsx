@@ -107,10 +107,10 @@ const Record = React.createClass({
                         {   // do not allow record editing, for now
                             //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
                         }
-                        <Link to={`/records/${record.get('id')}/reportabuse`} style={sr}>Report Abuse</Link>
+                        <Link to={`/records/${record.get('id')}/abuse`} style={sr}>Report Abuse</Link>
                         <h2 className="name">{metadata.get('title')}</h2>
                     </div>
-                </div>                                
+                </div>
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
                         { this.renderCreators(metadata) }
@@ -222,12 +222,10 @@ const Record = React.createClass({
     },
 
     renderFileList(files) {
-        let fileComponent = false;
-        var rec_id = this.props.record.get('id');
-   
-        const user = serverCache.getUser();
-        const request_link = (this.props.record.getIn(['metadata', 'open_access']) === false && this.props.record.get('metadata').get('owners').get(0) != user.get('id')) ? <Link to={`/records/${rec_id}/request`} >Send a request to the owner to get the files</Link> : false;
+        const show_accessrequest = (this.props.record.getIn(['metadata', 'open_access']) === false &&
+            this.props.record.getIn(['metadata', 'owners', 0]) != serverCache.getUser().get('id'));
 
+        let fileComponent = false;
         if (!(files && files.count && files.count())) {
             fileComponent = <div>No files available.</div>;
         } else {
@@ -245,7 +243,10 @@ const Record = React.createClass({
                     </h3>
                 </div>
                 { fileComponent }
-                { request_link }
+                { show_accessrequest ?
+                    <Link to={`/records/${this.props.record.get('id')}/accessrequest`}>
+                        Request data access
+                    </Link> : false }
             </div>
         );
     },

@@ -1,5 +1,5 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link, browserHistory } from 'react-router'
+import { Link } from 'react-router'
 import { Map, fromJS } from 'immutable';
 import { compare } from 'fast-json-patch';
 
@@ -11,7 +11,7 @@ import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 momentLocalizer(moment);
 numberLocalizer();
 
-import { serverCache, notifications, Error } from '../data/server';
+import { serverCache, notifications, Error, browser } from '../data/server';
 import { keys, pairs } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
@@ -50,7 +50,7 @@ export const NewRecordRoute = React.createClass({
         }
         serverCache.createRecord(
             { community: this.state.community_id, title: this.state.title, open_access: true },
-            record => { browserHistory.push(`/records/${record.id}/edit`); }
+            record => { browser.gotoEditRecord(record.id); }
         );
     },
 
@@ -547,7 +547,7 @@ const EditRecord = React.createClass({
             return;
         }
         const onSaveAndPublish = (record) => {
-            browserHistory.push(`/records/${record.id}`);
+            browser.gotoRecord(record.id);
         }
         const onSave = (record) => {
             serverCache.getDraft(record.id);
