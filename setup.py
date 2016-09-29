@@ -39,7 +39,7 @@ install_requires = [
     'invenio-base>=1.0.0a12,<1.1.0',
     'invenio-celery>=1.0.0a4,<1.1.0',
     'invenio-config>=1.0.0a1,<1.1.0',
-    'invenio-db>=1.0.0a9,<1.1.0',
+    'invenio-db>=1.0.0b2,<1.1.0',
     'invenio-deposit>=1.0.0a2,<1.1.0',
     'invenio-files-rest>=1.0.0a10,<1.1.0',
     'invenio-mail>=1.0.0a4,<1.1.0',
@@ -57,6 +57,10 @@ install_requires = [
     'invenio-logging>=1.0.0a3',
     'invenio-indexer>=1.0.0a7',
     'easywebdav>=1.2.0',
+
+    # TODO: remove the following temporary fixes:
+    'Flask-WTF==0.12', # Flask-WTF-0.13 seems incompatible with
+    # wtforms-alchemy-0.16.1 and crashes invenio-oauth2server
 ]
 
 if sys.version_info < (3, 4):

@@ -190,6 +190,9 @@ def test_deposit_publish(app, test_records_data, draft_deposits, test_users,
                 as_text=True))
             # we don't want to compare the links and dates
             cleaned_published_data = deepcopy(published_data)
+            # the published record has an extra empty 'files' array
+            assert cleaned_published_data['files'] == []
+            del cleaned_published_data['files']
             cleaned_draft_data = deepcopy(draft_patch_data)
             for item in [cleaned_published_data, cleaned_draft_data]:
                 del item['links']
