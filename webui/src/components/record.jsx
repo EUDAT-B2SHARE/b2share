@@ -6,7 +6,7 @@ import { serverCache, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait, Err } from './waiting.jsx';
-import { FileRecordHeader, FileRecordRow, EpicPid } from './editfiles.jsx';
+import { FileRecordHeader, FileRecordRow, PersistentIdentifier } from './editfiles.jsx';
 import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
 
 
@@ -97,7 +97,8 @@ const Record = React.createClass({
         const metadata = record.get('metadata') || Map();
         const description = metadata.get('description') ||"";
         const keywords = metadata.get('keywords') || List();
-        const pid = metadata.get('PID');
+        const pid = metadata.get('ePIC_PID');
+        const doi = metadata.get('DOI');
         const sr = {marginBottom:0, padding:'0.5em', float:'right'};
         return (
             <div>
@@ -124,10 +125,16 @@ const Record = React.createClass({
                             {keywords.map(k => <Link to={{pathname:'/records', query:{query:k}}} key={k}>{k}; </Link>)}
                         </p>
 
+                        {doi ?
+                            <p className="pid" style={{marginBottom:0}}>
+                                <span style={{fontWeight:'bold'}}>DOI: </span>
+                                <PersistentIdentifier style={{marginLeft:'1em'}} pid={doi} doi={true}/>
+                            </p> : false
+                        }
                         {pid ?
                             <p className="pid">
                                 <span style={{fontWeight:'bold'}}>PID: </span>
-                                <EpicPid style={{marginLeft:'1em'}} pid={pid} />
+                                <PersistentIdentifier style={{marginLeft:'1em'}} pid={pid} />
                             </p> : false
                         }
                     </div>

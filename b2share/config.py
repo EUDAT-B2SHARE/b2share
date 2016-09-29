@@ -222,15 +222,28 @@ CELERYBEAT_SCHEDULE = {
 }
 
 
+# ePIC PID config
+# ===============
+
 CFG_HANDLE_SYSTEM_BASEURL = 'http://hdl.handle.net'
 CFG_FAIL_ON_MISSING_PID = False
 CFG_FAIL_ON_MISSING_FILE_PID = False
 
-# The following config variables are used to create EPIC PIDs
 # CFG_EPIC_USERNAME = 0000
 # CFG_EPIC_PASSWORD = ''
 # CFG_EPIC_BASEURL = 'https://epic4.storage.surfsara.nl/v2_A/handles/'
 # CFG_EPIC_PREFIX = 0000
+
+# DOI config
+# ==========
+
+DOI_IDENTIFIER_FORMAT = 'b2share.{recid}'
+CFG_FAIL_ON_MISSING_DOI = False
+
+PIDSTORE_DATACITE_TESTMODE = False
+PIDSTORE_DATACITE_DOI_PREFIX = "XXXX"
+PIDSTORE_DATACITE_USERNAME = "XXXX"
+PIDSTORE_DATACITE_PASSWORD = "XXXX"
 
 
 B2DROP_SERVER = {

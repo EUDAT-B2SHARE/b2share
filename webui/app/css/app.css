@@ -130,6 +130,13 @@ a.navbar-brand {
   white-space: nowrap;
 }
 
+.doi {
+  font-size:14px;
+  color: #0027ff;
+  overflow: auto;
+  white-space: nowrap;
+}
+
 .checksum {
   font-family: "Bitstream Vera Sans Mono", Consolas, Courier, monospace;
   overflow: auto;

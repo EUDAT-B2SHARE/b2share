@@ -525,7 +525,7 @@ export const FileRecordRow = React.createClass({
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
 
-        const allowDetails = file.checksum || file.epic_pid;
+        const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
 
         return (
@@ -555,9 +555,9 @@ export const FileRecordRow = React.createClass({
                                 <span className="checksum" style={{marginLeft:'0.5em'}}>{file.checksum}</span>
                             </div>
                         </div> : false }
-                        { file.epic_pid ? <div className="row">
+                        { file.ePIC_PID ? <div className="row">
                             <div className="col-sm-12"><span style={{marginLeft:'2.5em'}}/>
-                                PID: <EpicPid style={{marginLeft:'0.2em'}} pid={file.epic_pid} />
+                                PID: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.ePIC_PID} />
                             </div>
                         </div> : false }
                     </div> : false }
@@ -601,9 +601,10 @@ const FileRemoveDialog = React.createClass({
 });
 
 
-export const EpicPid = React.createClass({
+export const PersistentIdentifier = React.createClass({
     propTypes: {
         pid: PT.string.isRequired,
+        doi: PT.bool,
         style: PT.object,
     },
 
@@ -650,9 +651,10 @@ export const EpicPid = React.createClass({
             width:"24em",
             backgroundColor:"transparent",
         };
+        const className = this.props.doi ? "doi" : "epic_pid";
         return (
             <span style={this.props.style}>
-                <input className="epic_pid" style={style} ref={c => this.pidref = c} defaultValue={this.state.pid} />
+                <input className={className} readOnly style={style} ref={c => this.pidref = c} defaultValue={this.state.pid} />
                 <span><a className="btn btn-xs btn-default" onClick={this.copyToClipboard}>Copy</a></span>
             </span>
         );

@@ -31,6 +31,7 @@ from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
 install_requires = [
+    'datacite>=0.2.1',
     'dcxml>=0.1.0',
     'dojson>=1.2.1',
     'httplib2>=0.9.2',
