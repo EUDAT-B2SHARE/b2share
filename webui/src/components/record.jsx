@@ -107,9 +107,10 @@ const Record = React.createClass({
                         {   // do not allow record editing, for now
                             //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
                         }
+                        <Link to={`/records/${record.get('id')}/reportabuse`} style={sr}>Report Abuse</Link>
                         <h2 className="name">{metadata.get('title')}</h2>
                     </div>
-                </div>
+                </div>                                
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
                         { this.renderCreators(metadata) }
@@ -222,6 +223,11 @@ const Record = React.createClass({
 
     renderFileList(files) {
         let fileComponent = false;
+        var rec_id = this.props.record.get('id');
+   
+        const user = serverCache.getUser();
+        const request_link = (this.props.record.getIn(['metadata', 'open_access']) === false && this.props.record.get('metadata').get('owners').get(0) != user.get('id')) ? <Link to={`/records/${rec_id}/request`} >Send a request to the owner to get the files</Link> : false;
+
         if (!(files && files.count && files.count())) {
             fileComponent = <div>No files available.</div>;
         } else {
@@ -239,6 +245,7 @@ const Record = React.createClass({
                     </h3>
                 </div>
                 { fileComponent }
+                { request_link }
             </div>
         );
     },
