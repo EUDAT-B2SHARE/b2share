@@ -35,6 +35,9 @@ const apiUrls = {
     abusereports(id)                  { return `${urlRoot}/api/records/${id}/abuserecords` },
     accessrequestfiles(id)            { return `${urlRoot}/api/records/${id}/accessrequests` },
 
+    abusereports(id)                  { return `${urlRoot}/api/records/${id}/abuserecords` },
+    accessrequestfiles(id)            { return `${urlRoot}/api/records/${id}/accessrequests` },
+
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
             return [];
