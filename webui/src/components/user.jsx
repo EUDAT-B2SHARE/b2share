@@ -1,5 +1,5 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link, browserHistory } from 'react-router'
+import { Link } from 'react-router'
 import { serverCache, Error, loginURL } from '../data/server';
 
 export const LoginOrRegister = React.createClass({

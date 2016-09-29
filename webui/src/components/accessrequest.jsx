@@ -1,7 +1,7 @@
 import React from 'react/lib/ReactWithAddons';
 import { serverCache, notifications, browser } from '../data/server';
 
-export const ReportAbuse = React.createClass({
+export const AccessRequest = React.createClass({
     mixins: [React.addons.LinkedStateMixin],
 
     getInitialState() {
@@ -10,105 +10,56 @@ export const ReportAbuse = React.createClass({
         }
     },
 
-    sendReportAbuse(event) {
-		event.preventDefault();
+    sendRequestAccessFile(event) {
+        event.preventDefault();
         var data = {
-	        abusecontent: this.abusecontent.checked,
-	        copyright: this.copyright.checked,
-	        noresearch: this.noresearch.checked,
-	        illegalcontent: this.illegalcontent.checked,
-
-	        message: this.message.value,
-	        name: this.name.value,
-	        affiliation: this.affiliation.value,
-	        email: this.email.value,
-	        address: this.address.value,
-	        city: this.city.value,
-	        country: this.country.value,
-	        zipcode: this.zipcode.value,
-	        phone: this.phone.value,
+            message: this.message.value,
+            name: this.name.value,
+            affiliation: this.affiliation.value,
+            email: this.email.value,
+            address: this.address.value,
+            city: this.city.value,
+            country: this.country.value,
+            zipcode: this.zipcode.value,
+            phone: this.phone.value,
         };
         this.setState({sending: true});
-        serverCache.reportAbuse(this.props.params.id, data,
+        serverCache.accessRequest(this.props.params.id, data,
             () => {
                 browser.gotoRecord(this.props.params.id);
-                notifications.success("The abuse report has been successfully sent");
+                notifications.success("The access request has been successfully sent");
             },
             () => {
-                notifications.danger("The abuse report could not be sent. " +
+                notifications.danger("The access request could not be sent. " +
                                      "Please try again or consult the site administrator");
                 this.setState({sending:false});
             });
     },
 
-    render: function() {
+   render: function() {
         const gap = {marginTop:'1em', marginBottom:'1em'};
         if (this.state.sending) {
             return (
-                <div><p>Please wait. Your report is currently being sent.</p></div>
+                <div><p>Please wait. Your request is currently being sent.</p></div>
             );
         }
 
         return (
             <div>
-                <h3> Report Abuse or Inappropriate Content </h3>
-                <h5>In case of abuse or inappropriate content is found, please inform site owners via this form. </h5>
-
-                <form className="form-horizontal" onSubmit={this.sendReportAbuse}>
+            	<form className="form-horizontal" onSubmit={this.sendRequestAccessFile}>
                     <div className='row'>
-                        <div className="col-sm-4" >
-                            <label forHtml='full_record_link' >Full link to the record </label>
+                    	<div className="col-sm-4" >
+                        	<label forHtml='full_record_link' >Full link to the record </label>
                         </div>
-                        <div className="col-sm-8" >
-                            <input ref='full_record_link' className="form-control" name='full_record_link' type='text'
+                        <div className="col-sm-6" >
+                        	<input ref='full_record_link' className="form-control" name='full_record_link' type='text'
                                 value={browser.getRecordURL(this.props.params.id)} readOnly="true" size='60' />
-                        </div>
-                    </div>
-
-                    <div className='row'>
-                        <div className="col-sm-offset-1" style={gap}>
-                            Type of abuse
-                        </div>
-                    </div>
-
-                    <div className='row'>
-                        <div className=" col-sm-4" >
-                            <label forHtml='abusecontent'>Abuse or Inappropriate content </label>
-                        </div>
-                        <div className=" col-sm-1" >
-                        <input ref={(ref) => this.abusecontent = ref} name='reason'  type='radio' value='abusecontent'  required />
-                        </div>
-                    </div>
-                    <div className='row'>
-                        <div className=" col-sm-4" >
-                            <label forHtml='copyright'>Copyrighted material </label>
-                        </div>
-                        <div className=" col-sm-1" >
-                            <input ref={(ref) => this.copyright = ref} name='reason' type='radio' value='copyright' />
-                        </div>
-                    </div>
-
-                    <div className='row'>
-                        <div className=" col-sm-4" >
-                            <label forHtml='noresearch'>Not research data </label>
-                        </div>
-                        <div className=" col-sm-1" >
-                            <input ref={(ref) => this.noresearch = ref} name='reason' type='radio' value='noresearch'  />
-                        </div>
-                    </div>
-
-                    <div className='row'>
-                        <div className=" col-sm-4" >
-                            <label forHtml='illegalcontent'>Illegal content </label>
-                        </div>
-                        <div className=" col-sm-1" >
-                            <input ref={(ref) => this.illegalcontent = ref} name='reason' type='radio' value='illegalcontent'  />
-                        </div>
+                    	</div>
                     </div>
 
                     <div className='row' style={gap}>
                         <div className="col-sm-4" >
-                            <label forHtml='message'>Why is the content inappropriate? </label>
+                            <label forHtml='message'>Access request message</label>
                         </div>
                         <div className=" col-sm-8" >
                             <textarea ref={(ref) => this.message = ref}  name='message' className="form-control" type='textarea' rows="4" cols="50"  required/>
@@ -166,7 +117,7 @@ export const ReportAbuse = React.createClass({
                         </div>
                         <div className=" col-sm-8" >
                         <select ref={(ref) => this.country = ref} name='country' className="form-control" defaultValue=""  required >
-                            <option value="">Choose country</option>
+                            <option value=""> Choose country </option>
                             <option value="Afghanistan" >Afghanistan</option>
                             <option value="Albania" >Albania</option>
                             <option value="Algeria" >Algeria</option>

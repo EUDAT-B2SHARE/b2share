@@ -648,7 +648,7 @@ export const PersistentIdentifier = React.createClass({
             border: "none",
             padding:0,
             margin:0,
-            width:"24em",
+            width:"28em",
             backgroundColor:"transparent",
         };
         const className = this.props.doi ? "doi" : "epic_pid";

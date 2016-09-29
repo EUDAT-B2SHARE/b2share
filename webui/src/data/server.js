@@ -2,6 +2,7 @@ import {fromJS, OrderedMap, List} from 'immutable';
 import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler} from './ajax'
 import {Store} from './store'
 import {objEquals, expect} from './misc'
+import {browserHistory} from 'react-router'
 
 const urlRoot = ""; // window.location.origin;
 
@@ -15,6 +16,9 @@ const apiUrls = {
     record(id)                        { return `${urlRoot}/api/records/${id}` },
     draft(id)                         { return `${urlRoot}/api/records/${id}/draft` },
     fileBucket(bucket, key)           { return `${urlRoot}/api/files/${bucket}/${key}` },
+
+    abuse(id)                         { return `${urlRoot}/api/records/${id}/abuse` },
+    accessrequests(id)                { return `${urlRoot}/api/records/${id}/accessrequests` },
 
     communities()                     { return `${urlRoot}/api/communities/` },
     community(id)                     { return `${urlRoot}/api/communities/${id}` },
@@ -31,9 +35,6 @@ const apiUrls = {
 
     languages()                       { return `${urlRoot}/suggest/languages.json` },
     disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
-
-    abusereports(id)                  { return `${urlRoot}/api/records/${id}/abuserecords` },
-    accessrequestfiles(id)            { return `${urlRoot}/api/records/${id}/accessrequests` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -234,25 +235,6 @@ class FilePoster {
             successFn: (data) => { completeFn(); successFn(data); },
             completeFn: completeFn,
         });
-    }
-}
-
-class CreateEmail { 
-    constructor(url){
-        this.url = url;
-        this.requestSent = false;
-    }
-
-    post(params, successFn){
-        if(!this.requestSent){
-            this.requestSent = true;
-            ajaxPost({
-                url: this.url,
-                params: params,
-                successFn: () => { this.requestSent = false; },
-                completeFn: () => { this.requestSent = false; },
-            });
-        }
     }
 }
 
@@ -650,18 +632,25 @@ class ServerCache {
         });
     }
 
-    reportAbuse(id, data, successFn) { 
-        var string_data = JSON.stringify(data, null, 2);
-        var report = new CreateEmail(apiUrls.abusereports(id));
-        report.post(data, successFn);
-    }    
+    reportAbuse(id, data, successFn, errorFn) {
+        console.log('abuse', data);
+        ajaxPost({
+            url: apiUrls.abuse(id),
+            params: data,
+            successFn: successFn,
+            errorFn: errorFn,
+        });
+    }
 
-    requestAccessFile(id, data, successFn) { 
+    accessRequest(id, data, successFn, errorFn) {
         // This function will be changed later when we start using Zenodo_accessrequests module
-        var string_data = JSON.stringify(data, null, 2);
-        var request = new CreateEmail(apiUrls.accessrequestfiles(id));
-        request.post(data, successFn);
-    }        
+        ajaxPost({
+            url: apiUrls.accessrequests(id),
+            params: data,
+            successFn: successFn,
+            errorFn: errorFn,
+        });
+    }
 };
 
 
@@ -724,4 +713,23 @@ errorHandler.fn = function(text) {
 }
 
 export const serverCache = new ServerCache();
+
 export const notifications = new Notifications();
+
+export const browser = {
+    getRecordURL(recordId) {
+        return `${window.location.origin}/records/${recordId}`;
+    },
+
+    gotoSearch(query) {
+        browserHistory.push(`/records/${q_query}`);
+    },
+
+    gotoRecord(recordId) {
+        browserHistory.push(`/records/${recordId}`);
+    },
+
+    gotoEditRecord(recordId) {
+        browserHistory.push(`/records/${recordId}/edit`);
+    },
+}
