@@ -352,11 +352,7 @@ class RecordsAbuseResource(RecordResource):
                       sender=str(request.json['email']),
                       recipients=[support],
                       body=msg_content)
-        app = Flask('abuseapp')
-        app.config.update(MAIL_SUPPRESS_SEND=True)
-        InvenioMail(app)
-        with app.app_context():
-            app.extensions['mail'].send(msg)
+        current_app.extensions['mail'].send(msg)
         return jsonify({'message':'The record is reported.'})
 
 
@@ -388,9 +384,5 @@ class RequestAccessResource(RecordResource):
                       sender=str(request.json['email']),
                       recipients=[support],
                       body=msg_content)
-        app = Flask('accessapp')
-        app.config.update(MAIL_SUPPRESS_SEND=True)
-        InvenioMail(app)
-        with app.app_context():
-            app.extensions['mail'].send(msg)
+        current_app.extensions['mail'].send(msg)
         return jsonify({'message': 'An email was sent to the record owner.'})

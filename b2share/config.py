@@ -43,6 +43,7 @@ from b2share.modules.deposit.permissions import (
 
 
 SUPPORT_EMAIL = None # must be setup in the local instances
+MAIL_SUPPRESS_SEND = True # this should be removed on a real instance
 
 
 # Default language and timezone
