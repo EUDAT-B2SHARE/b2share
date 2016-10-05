@@ -44,11 +44,8 @@ export function searchRecord(state) {
             }
         }
     }
-    const query = queryArray.join("&");
-    const q_query = query ? ('?'+query) : '';
-
     // trigger a route reload which will do the new search, see SearchRecordRoute
-    browser.gotoSearch(q_query);
+    browser.gotoSearch(queryArray);
 }
 
 

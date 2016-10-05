@@ -721,8 +721,8 @@ export const browser = {
         return `${window.location.origin}/records/${recordId}`;
     },
 
-    gotoSearch(query) {
-        browserHistory.push(`/records/${q_query}`);
+    gotoSearch(queryArray) {
+        browserHistory.push(`/records/?${queryArray.join('&')}`);
     },
 
     gotoRecord(recordId) {
