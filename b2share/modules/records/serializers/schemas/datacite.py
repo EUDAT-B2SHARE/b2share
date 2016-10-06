@@ -53,8 +53,7 @@ class AlternateIdentifierSchema(Schema):
 class DataCiteSchemaV1(Schema):
     # --- required
     identifier = fields.Nested(IdentifierSchema, attribute='metadata._pid')
-    creators = fields.List(
-        fields.Function(lambda o: [{'creator':{'creatorName':c}} for c in o['metadata'].get('creators', [])]))
+    creators = fields.Method('get_creators')
     titles = fields.Function(
         lambda o: [{'title':o['metadata'].get('title')}])
 
@@ -80,6 +79,10 @@ class DataCiteSchemaV1(Schema):
     rightsList = fields.List(fields.Function(
         lambda o: {'rights': o['metadata'].get('licence')}))
     descriptions = fields.Method('get_descriptions')
+
+    def get_creators(self, obj):
+        crs = obj['metadata'].get('creators', ['[Unknown]'])
+        return [{'creatorName':c} for c in crs]
 
     def get_publication_year(self, obj):
         # datacite: "The year when the data has been or will be made public"
