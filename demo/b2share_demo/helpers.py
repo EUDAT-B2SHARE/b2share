@@ -273,9 +273,9 @@ def resolve_community_id(source):
         community_id_match,
         source
     )
-    
-        
-def download_v1_data(token, target_dir, limit=None):
+
+
+def download_v1_data(token, target_dir, limit=None, verbose=False):
     """
     Download the data from B2SHARE V1 records using token in to target_dir .
     """
@@ -283,56 +283,86 @@ def download_v1_data(token, target_dir, limit=None):
     url = "%srecords" % V1_URL_BASE
     params = {}
     params['access_token'] = token
-    params['page_size']=100
-    params['page_offset']=0
-    finished = False
+    params['page_size'] = 100
     counter = 0
-    if not(limit is None) and counter*100 + 100 > limit:
-        params['page_size']= limit
-    while not finished:
+    os.chdir(target_dir)
+    while True:
+        params['page_offset'] = counter
         r = requests.get(url, params=params, verify=False)
-        target_file = os.path.join(target_dir, "%d.txt" % counter)
-        f = open(target_file,'w')
-        f.write(r.text)
-        f.close()
-        recs = json.loads(r.text)['records'] 
-        if len(recs)<100:
-            finished = True
-        counter = counter + 1
-        params['page_offset']=counter
+        r.raise_for_status()
+        recs = json.loads(r.text)['records']
+        if len(recs) == 0:
+            return # no more records
+        for record in recs:
+            if record.get('files') == 'RESTRICTED':
+                if verbose:
+                    click.secho('Ignore restricted record {}'.format(record.get('title')),
+                                fg='red')
+            else:
+                counter = counter + 1
+                os.mkdir(str(counter))
+                download_v1_record(str(counter), record, verbose)
+                if counter >= limit:
+                    return # limit reached
 
-def process_v1_file(filename, download, download_directory):
+def download_v1_record(directory, record, verbose=False):
+    if verbose:
+        click.secho('Download open record {} "{}"'.format(
+            directory, record.get('title')))
+    target_file = os.path.join(directory, '___record___.json')
+    with open(target_file, 'w') as f:
+        f.write(json.dumps(record))
+    for index, file_dict in enumerate(record.get('files', [])):
+        if not file_dict.get('name'):
+            click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
+                        fg='red')
+        else:
+            if verbose:
+                click.secho('    Download file "{}"'.format(file_dict.get('name')))
+            filepath = os.path.join(directory, 'file_{}'.format(index))
+            _save_file(file_dict['url'], filepath)
+            if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+                raise Exception("downloaded file size differs, {}".format(filepath))
+
+
+
+def process_v1_record(directory, indexer, verbose=False):
     """
     Parse a downloaded file containing records
     """
-    indexer = RecordIndexer(
-        record_to_index=lambda record: ('records', 'record')
-    )
-    f = open(filename,'r')
-    file_content = f.read()
-    try:
-        recs = json.loads(file_content)['records']
-    except:
-        current_app.logger.error("Not a JSON file %s" % filename)
-        return None
-    f.close()
-    recs = [r for r in recs if not(r['domain']=='') ]
-    for r in recs:
-        record = _process_record(r)
-        if record is not None:
-            try:
-                deposit = Deposit.create(record)
-                #add/link the files
-                _process_files(deposit,r, download, download_directory)
-                deposit.publish()
-                pid, record = deposit.fetch_published()
-                # index the record
-                indexer.index(record)
-                db.session.commit()
-            except:
-                current_app.logger.warning("Exception in trying to create deposit for %s" % str(record['title']) + str(record['_deposit']['id']))
-         
-            
+    with open(os.path.join(directory, '___record___.json'),'r') as f:
+        file_content = f.read()
+    record_json = json.loads(file_content)
+    if not record_json.get('domain'):
+        click.secho('Record {} "{}" has no domain'.format(
+                    directory, record_json.get('title')),
+                    fg='red')
+    if verbose:
+        click.secho('Processing record {} "{}"'.format(
+                    directory, record_json.get('title')))
+    record = _process_record(record_json)
+    if record is not None:
+        deposit = Deposit.create(record)
+        for index, file_dict in enumerate(record.get('files', [])):
+            if not file_dict.get('name'):
+                click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
+                            fg='red')
+            else:
+                if verbose:
+                    click.secho('    Load file "{}"'.format(file_dict.get('name')))
+                filepath = os.path.join(directory, 'file_{}'.format(index))
+                if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+                    raise Exception("downloaded file size differs, {}".format(filepath))
+                with open(filepath, 'r+b') as f:
+                    ObjectVersion.create(deposit.files.bucket, file_dict['name'],
+                                         stream=BytesIO(f.read()))
+        deposit.publish()
+        pid, record = deposit.fetch_published()
+        # index the record
+        indexer.index(record)
+        db.session.commit()
+
+
 def _process_record(rec):
     #rec is dict representing 1 record
     #from json donwloaded from b2share_v1 API
@@ -340,16 +370,12 @@ def _process_record(rec):
     generic_keys = ['title'
         ,'description'
         ,'open_access'
-        ,'resource_type'
         ,'contact_email'
         ,'contributors'
         ]
     for k in generic_keys:
         result[k] = rec[k]
-    #make keywords unique
-    seen = set()
-    result['keywords'] = \
-        [k for k in rec['keywords'] if k not in seen and not seen.add(k)]
+    result['keywords'] = list(set(rec['keywords']))
     #fetch community
     comms = Community.get_all(0,1,name=rec['domain'])
     #TODO match generic and linguistics domains to communities
@@ -366,36 +392,27 @@ def _process_record(rec):
         return None
     if 'PID' in rec.keys():
         result['alternate_identifier'] = rec['PID']
+
+    if 'resource_type' in rec.keys():
+        translate = {
+            'Audio': 'Audiovisual',
+            'Video': 'Audiovisual',
+            'Time-series': 'Dataset',
+            'Text': 'Text',
+            'Image': 'Image',
+            'Other': 'Other',
+        }
+        result['resource_type'] = [translate[r] for r in rec['resource_type']]
     #TODO fetch domain_metadata and translate to community specific metadata
     #assume the current community specific block schema for metadata format
     return result
-    
-def _process_files(deposit, r, download, download_dir):
-    if not(r['files']=='RESTRICTED'):
-        for file_dict in r['files']:
-            if download:
-                try:
-                    if 'name' in file_dict.keys():
-                        #only for gangsters - bypass HTTPS verification see
-                        #http://stackoverflow.com/
-                        #questions/27835619/ssl-certificate-verify-failed-error
-                        _save_file(file_dict['url']
-                            , download_dir 
-                            , file_dict['name'])
-                except:
-                    current_app.logger.error("something went wrong when trying to download file %s" % file_dict['name'])    
-            try:
-                f = open(os.path.join(download_dir, file_dict['name']),'r+b')
-                ObjectVersion.create(deposit.files.bucket, file_dict['name'],
-                    stream=BytesIO(f.read()))
-            except:
-                current_app.logger.error("Something wrong when trying to load %s" % file_dict['name'])
-            
-def _save_file(url, download_dir, filename):
+
+
+def _save_file(url, filename):
     current_app.logger.debug("Downloading %s" % url)
     gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
     finished = False
-    f = open(os.path.join(download_dir,filename),'wb')
+    f = open(filename, 'wb')
     u = urlopen(url, context=gcontext)
     counter = 0
     while not finished:
@@ -405,4 +422,3 @@ def _save_file(url, download_dir, filename):
         except IncompleteRead:
             current_app.logger.debug("IncompleteRead %d" % counter)
             counter += counter
-        
