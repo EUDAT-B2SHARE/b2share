@@ -243,7 +243,7 @@ class ServerCache {
         this.store = new Store({
 
             latestRecords: [], // latest records with params
-            searchRecords: [], // searched records view, with params
+            searchRecords: null, // searched records view, with params
             recordCache: {}, // map of record IDs to records
             draftCache: {}, // map of draft IDs to drafts
 
@@ -266,7 +266,7 @@ class ServerCache {
 
         this.getters.searchRecords = new Getter(
             apiUrls.records(), null,
-            (data) => this.store.setIn(['searchRecords'], fromJS(data.hits.hits)),
+            (data) => this.store.setIn(['searchRecords'], fromJS(data.hits)),
             (xhr) => this.store.setIn(['searchRecords'], new Error(xhr)) );
 
         this.getters.communities = new Getter(
@@ -398,8 +398,7 @@ class ServerCache {
         return this.store.getIn(['latestRecords']);
     }
 
-    searchRecords({q, sort, page, size, community}) {
-        const params = {};
+    searchRecords({q, community, sort, page, size}) {
         if (community) {
             q = (q || "") + ' community:' + community;
         }
@@ -716,13 +715,28 @@ export const serverCache = new ServerCache();
 
 export const notifications = new Notifications();
 
+function encode(obj) {
+    var a = [];
+    for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            const x = obj[p];
+            if (x !== undefined && x !== null && x !== '') {
+                a.push(encodeURIComponent(p) + "=" + encodeURIComponent(x));
+            }
+        }
+    }
+    return a.join('&');
+};
 export const browser = {
     getRecordURL(recordId) {
         return `${window.location.origin}/records/${recordId}`;
     },
 
-    gotoSearch(queryArray) {
-        browserHistory.push(`/records/?${queryArray.join('&')}`);
+    gotoSearch({q, community, sort, page, size}) {
+        console.log("gotoSearch", {q, community, sort, page, size});
+        const queryString = encode({q, community, sort, page, size});
+        // trigger a route reload which will do the new search, see SearchRecordRoute
+        browserHistory.push(`/records/?${queryString}`);
     },
 
     gotoRecord(recordId) {
