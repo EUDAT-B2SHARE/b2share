@@ -387,15 +387,30 @@ const EditRecord = React.createClass({
             borderRadius:'4px',
         };
         const isError = this.state.errors.hasOwnProperty(fieldID);
+        const onfocus = () => { this.setState({showhelp: blockID + "/" + fieldID}); }
+        const onblur = () => { this.setState({showhelp: null}); }
         return (
-            <div className="form-group row" key={fieldID} style={{marginTop:'1em'}} title={fieldSchema.get('description')}>
-                <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                    <span style={{float:'right', color:isError?'red':'black'}}>
-                        {fieldSchema.get('title') || fieldID} {type.required ? "*":""}
-                    </span>
-                </label>
-                <div className="col-sm-9" style={arrstyle}>
-                    {field}
+            <div key={fieldID} style={{marginTop:'1em', marginBottom:'1em', paddingTop:'0.5em', paddingBottom:'0.5em'}}>
+                <div className="form-group row" key={fieldID} style={{marginBottom:'0.5em'}} title={fieldSchema.get('description')}>
+                    <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                        <span style={{float:'right', color:isError?'red':'black'}}>
+                            {fieldSchema.get('title') || fieldID} {type.required ? "*":""}
+                        </span>
+                    </label>
+                    <div className="col-sm-9" style={arrstyle} onFocus={onfocus} onBlur={onblur}>
+                        {field}
+                    </div>
+                </div>
+                <div className="form-group row" style={{marginBottom:0}}>
+                    <div className="col-sm-offset-3 col-sm-9">
+                        <HeightAnimate>
+                            { this.state.showhelp && this.state.showhelp === blockID + "/" + fieldID ?
+                                <div style={{marginLeft:'1em', paddingLeft:'1em', borderLeft: '1px solid #eee'}}>
+                                    <p> {fieldSchema.get('description')} </p>
+                                </div>
+                              : false }
+                        </HeightAnimate>
+                    </div>
                 </div>
             </div>
         );
