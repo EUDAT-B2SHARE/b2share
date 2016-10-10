@@ -1,9 +1,8 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { serverCache, notifications, Error } from '../data/server';
+import { serverCache, browser, notifications, Error } from '../data/server';
 import { ListAnimate, HeightAnimate } from './animate.jsx';
 import { NavbarUser } from './user.jsx';
-import { searchRecord } from './search.jsx';
 
 
 export const Navbar = React.createClass({
@@ -70,9 +69,6 @@ const NavbarSearch = React.createClass({
     getInitialState() {
         return {
             q: "",
-            page: 1,
-            size: 10,
-            sort: 'bestmatch',
         };
     },
 
@@ -87,7 +83,7 @@ const NavbarSearch = React.createClass({
 
     search(event) {
         event.preventDefault();
-        searchRecord(this.state);
+        browser.gotoSearch(this.state);
     },
 
     searchHelp(event) {

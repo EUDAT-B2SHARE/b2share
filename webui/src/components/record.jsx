@@ -123,7 +123,7 @@ const Record = React.createClass({
 
                         <p className="keywords">
                             <span style={{fontWeight:'bold'}}>Keywords: </span>
-                            {keywords.map(k => <Link to={{pathname:'/records', query:{query:k}}} key={k}>{k}; </Link>)}
+                            {keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
                         </p>
 
                         {doi ?

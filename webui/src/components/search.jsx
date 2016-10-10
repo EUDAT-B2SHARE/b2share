@@ -9,44 +9,27 @@ import { ReplaceAnimate } from './animate.jsx';
 
 
 export const SearchRecordRoute = React.createClass({
-    renderResults(params) {
-        const records = serverCache.searchRecords(params);
-        if (records instanceof Error) {
-            return <Err err={records}/>;
-        }
-        return records ?
-            <ReplaceAnimate><RecordList records={records} /></ReplaceAnimate> :
-            <Wait/>;
-    },
-
     render() {
         const communities = serverCache.getCommunities();
         const location = this.props.location || {};
-        const searchParams = location.query || {};
+        const result = serverCache.searchRecords(location.query || {});
+        const numResults = (result && result.get('total')) || 0;
         return (
             <div>
                 <h1>Records</h1>
-                <Search location={this.props.location} communities={communities}/>
-                { this.renderResults(searchParams) }
+                <Search location={location}
+                        communities={communities}
+                        numResults={result && result.get('total') || 0}/>
+                { result instanceof Error ? <Err err={result}/>
+                    : !result ? <Wait/>
+                        : <ReplaceAnimate>
+                                <RecordList records={result.get('hits')}/>
+                          </ReplaceAnimate>
+                }
             </div>
         );
     }
 });
-
-
-export function searchRecord(state) {
-    var queryArray = [];
-    for (var p in state) {
-        if (state.hasOwnProperty(p)) {
-            const q = state[p];
-            if (q !== undefined && q !== null && q !== '') {
-                queryArray.push(encodeURIComponent(p) + "=" + encodeURIComponent(q));
-            }
-        }
-    }
-    // trigger a route reload which will do the new search, see SearchRecordRoute
-    browser.gotoSearch(queryArray);
-}
 
 
 const Search = React.createClass({
@@ -54,9 +37,10 @@ const Search = React.createClass({
     getInitialState() {
         return {
             q: "",
-            page: 1,
-            size: 10,
+            community: "",
             sort: 'bestmatch',
+            page: "1",
+            size: "10",
         };
     },
 
@@ -69,9 +53,18 @@ const Search = React.createClass({
         this.setState(location.query || {});
     },
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.community !== this.state.community
+            || prevState.page !== this.state.page
+            || prevState.size !== this.state.size
+            || prevState.sort !== this.state.sort ) {
+            this.search();
+        }
+    },
+
     search(event) {
-        event.preventDefault();
-        searchRecord(this.state);
+        event ? event.preventDefault() : false;
+        browser.gotoSearch(this.state);
     },
 
     searchHelp(event) {
@@ -101,6 +94,12 @@ const Search = React.createClass({
         );
     },
 
+    order: [
+        { id: 'bestmatch', name:'Best Match' },
+        { id: 'mostrecent', name:'Most Recent' },
+    ],
+    sizes: ["10", "25", "50"],
+
     renderFilters() {
         if (!this.props.communities || this.props.communities instanceof Error) {
             return false;
@@ -109,37 +108,83 @@ const Search = React.createClass({
         const communities = this.props.communities.map(c => ({id: c.get('id'), name:c.get('name')})).toJS();
         communities.unshift({id:'', name:'All communities'});
 
-        const order = [{id:'bestmatch', name:'Best Match'}, {id:'mostrecent', name:'Most Recent'}]
-
         const setCommunityID = c => this.setState({community: c.id});
         const setSort = s => this.setState({sort: s.id});
         const setPageSize = ps => this.setState({size: ps});
 
         return (
-            <form className="form-horizontal" onSubmit={this.updateRecord} style={{marginTop:'1em'}}>
+            <form className="form-horizontal" style={{marginTop:'1em'}}>
                 <div className="form-group">
                     <label htmlFor='community' className="col-md-2 control-label">
                         <span style={{float:'right'}}> Show records from: </span>
                     </label>
                     <div id='title' className="col-md-2">
                         <DropdownList data={communities} valueField='id' textField='name'
-                            defaultValue='' onChange={setCommunityID} />
+                            value={this.state.community} onChange={setCommunityID} />
                     </div>
                     <label htmlFor='sort' className="col-md-2 control-label">
                         <span style={{float:'right'}}> Sort by: </span>
                     </label>
                     <div id='sort' className="col-md-2">
-                        <DropdownList data={order} valueField='id' textField='name'
-                            defaultValue='bestmatch' onChange={setSort} />
+                        <DropdownList data={this.order} valueField='id' textField='name'
+                            value={this.state.sort} onChange={setSort} />
                     </div>
                     <label htmlFor='size' className="col-md-2 control-label">
                         <span style={{float:'right'}}> Page size: </span>
                     </label>
                     <div id='size' className="col-md-2">
-                        <NumberPicker value={this.state.size} onChange={setPageSize}/>
+                        <DropdownList data={this.sizes} value={this.state.size} onChange={setPageSize}/>
                     </div>
                 </div>
             </form>
+        );
+    },
+
+    renderPagination() {
+        const numPages = 5;
+        const p = +this.state.page;
+        const psize = +this.state.size;
+        const maxPage = Math.ceil(this.props.numResults/psize);
+        const start = Math.max(1, p - Math.floor(numPages/2));
+        const stop = Math.min(maxPage, start + numPages - 1);
+
+        const setPage = page => page != p ? this.setState({page: "" + page}) : null;
+        const setPrevPage = p <= 1 ? null : () => setPage(p-1);
+        const setNextPage = maxPage <= p ? null : () => setPage(p+1);
+
+        const lis = [];
+        for (let i = start; i <= stop; i++) {
+            const cn = i == p ? "active" : "";
+            lis.push(<li key={i} className={cn}><a href="#" onClick={()=>setPage(i)}>{i}</a></li>);
+        };
+
+        const indexStart = (p-1) * psize + 1;
+        const indexEnd = Math.min(indexStart + psize - 1, this.props.numResults);
+        const msg = ` ${indexStart} - ${indexEnd} of ${this.props.numResults} results`;
+
+        return (
+            <div>
+                <div style={{padding:'0.5em 0 0 0.5em', display:'inline-block'}}>
+                    <p> { this.props.numResults ? msg : "No results"}</p>
+                </div>
+                <div style={{float:'right'}}>
+                    <nav aria-label="Page navigation">
+                        <ul className="pagination" style={{margin:'0'}}>
+                            <li className={setPrevPage ? "":"disabled"}>
+                                <a href="#" aria-label="Previous" onClick={setPrevPage}>
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            { lis }
+                            <li className={setNextPage ? "":"disabled"}>
+                                <a href="#" aria-label="Next" onClick={setNextPage}>
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         );
     },
 
@@ -148,6 +193,7 @@ const Search = React.createClass({
             <div>
                 { this.renderSearchBar() }
                 { this.renderFilters() }
+                { this.renderPagination() }
             </div>
         );
     }
