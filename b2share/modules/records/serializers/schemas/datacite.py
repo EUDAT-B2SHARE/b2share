@@ -95,18 +95,19 @@ class DataCiteSchemaV1(Schema):
         return {'resourceTypeGeneral': rt}
 
     def get_subjects(self, obj):
+        items = []
         discipline = obj['metadata'].get('discipline')
-        items = [discipline] if discipline else []
+        if discipline:
+            items.append({'subject': discipline})
         for s in obj['metadata'].get('keywords', []):
             items.append({'subject': s})
         return items
 
     def get_contributors(self, obj):
-        return [{'contributor': {'contributorName': c, 'contributorType': 'Other'}}
+        return [{'contributorName': c, 'contributorType': 'Other'}
                 for c in obj['metadata'].get('contributors', [])]
 
     def get_descriptions(self, obj):
-        """."""
         items = []
         desc = obj['metadata'].get('description')
         if desc:

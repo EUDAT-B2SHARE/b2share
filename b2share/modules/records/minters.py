@@ -32,6 +32,8 @@ from flask import current_app, url_for
 from invenio_oaiserver.provider import OAIIDProvider
 from invenio_oaiserver.utils import datetime_to_datestamp
 
+from datacite.errors import DataCiteError
+
 from .providers import RecordUUIDProvider
 from .errors import EpicPIDError
 from .b2share_epic import createHandle
@@ -135,7 +137,7 @@ def b2share_doi_minter(record_uuid, data):
             'value': doi,
             'type': 'DOI',
         })
-    except Exception as e:
+    except DataCiteError as e:
         if throw_on_failure:
             raise e
         else:
