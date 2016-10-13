@@ -41,6 +41,7 @@ from invenio_records_files.api import Record
 from .errors import InvalidDepositDataError, InvalidDepositStateError
 from invenio_records.errors import MissingModelError
 from b2share.modules.records.errors import InvalidRecordError
+from b2share.modules.access.policies import is_under_embargo
 
 
 class PublicationStates(Enum):
@@ -139,6 +140,12 @@ class Deposit(DepositRecord):
         """
         if self.model is None or self.model.json is None:
             raise MissingModelError()
+
+        # automatically make embargoed records private
+        if self.get('embargo_date') and self.get('open_access'):
+            if is_under_embargo(self):
+                self['open_access'] = False
+
         # test invalid state transitions
         if (self['publication_state'] == PublicationStates.submitted.name
                 and self.model.json['publication_state'] !=
