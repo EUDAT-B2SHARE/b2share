@@ -13,17 +13,17 @@
             },
             "_pid": {
                 "title": "Persistent Identifiers",
-                "description": "Array of persistent identifiers pointing to this record",
+                "description": "Array of persistent identifiers pointing to this record.",
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "type": {
-                            "description": "Type of the persistent identifier",
+                            "description": "Type of the persistent identifier.",
                             "type": "string"
                         },
                         "value": {
-                            "description": "Value of the persistent identifier",
+                            "description": "Value of the persistent identifier.",
                             "type": "string"
                         }
                     }
@@ -31,17 +31,17 @@
             },
             "community": {
                 "title": "Community",
-                "description": "Identifier of the community to which the record has been submitted",
+                "description": "The community to which the record has been submitted.",
                 "type": "string"
             },
             "title": {
                 "title": "Title",
-                "description": "The title of the uploaded resource - a name that indicates the content to be expected.",
+                "description": "The title of the uploaded resource: a name that indicates its content.",
                 "type": "string"
             },
             "description": {
                 "title": "Description",
-                "description": "A more elaborate description of the resource. Focus on a description of content making it easy for others to find it and to interpret its relevance quickly.",
+                "description": "A more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
                 "type": "string"
             },
             "creators": {
@@ -53,12 +53,12 @@
             },
             "open_access": {
                 "title": "Open Access",
-                "description": "Indicate whether the resource is open or access is restricted. In case of restricted access the uploaded files will not be public, however the metadata will be.",
+                "description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible. ",
                 "type": "boolean"
             },
             "embargo_date": {
                 "title": "Embargo Date",
-                "description": "The date marking the end of the embargo period. The data stored in the record will become publicly available on the specified date at midnight. Please note that the record metadata is always public.",
+                "description": "The date marking the end of the embargo period. The record will be marked as open access on the specified date at midnight. Please note that the record metadata is always publicly accessible, and only the data files can have private access.",
                 "type": "string",
                 "format": "date-time"
             },
@@ -76,7 +76,7 @@
             },
             "contact_email": {
                 "title": "Contact Email",
-                "description": "Contact email information for this record",
+                "description": "Contact email information for this record.",
                 "type": "string",
                 "format": "email"
             },
@@ -88,7 +88,7 @@
 
             "contributors": {
                 "title": "Contributors",
-                "description": "The list of all other contributors. Mention all persons that were relevant in the creation of the resource.",
+                "description": "The list of all other contributors. Please mention all persons that were relevant in the creation of the resource.",
                 "type": "array",
                 "items": {"type": "string"},
                 "uniqueItems": true
@@ -106,7 +106,7 @@
                 "uniqueItems": true
             },
             "alternate_identifier": {
-                "title": "Alternate identifier",
+                "title": "Alternate identifier.",
                 "description": "Any kind of other reference such as a URN, URI or an ISBN number.",
                 "type": "string"
             },
