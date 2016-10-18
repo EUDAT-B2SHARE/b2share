@@ -106,7 +106,10 @@ def import_v1_data(verbose, download, token,
          download_directory,limit):
     if verbose:
         click.secho("Importing data to the current instance")
-    os.chdir(download_directory)
+    if os.path.isdir(download_directory):
+        os.chdir(download_directory)
+    else:
+        raise click.ClickException("%s does not exist or is not a directory. If you want to import records specify an empty, existing directory." % download_directory)
     if limit and not download:
         raise click.ClickException("Limit can only be set with download")
     if download:

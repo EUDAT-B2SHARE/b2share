@@ -38,6 +38,7 @@ from uuid import UUID
 from urllib.parse import urlunsplit
 from urllib.request import urlopen
 
+
 import click
 from flask import current_app
 
@@ -302,7 +303,7 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
                 counter = counter + 1
                 os.mkdir(str(counter))
                 download_v1_record(str(counter), record, verbose)
-                if counter >= limit:
+                if not(limit is None) and counter >= limit:
                     return # limit reached
 
 def download_v1_record(directory, record, verbose=False):
@@ -343,7 +344,7 @@ def process_v1_record(directory, indexer, verbose=False):
     record = _process_record(record_json)
     if record is not None:
         deposit = Deposit.create(record)
-        for index, file_dict in enumerate(record.get('files', [])):
+        for index, file_dict in enumerate(record_json.get('files', [])):
             if not file_dict.get('name'):
                 click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
                             fg='red')
@@ -402,7 +403,7 @@ def _process_record(rec):
             'Image': 'Image',
             'Other': 'Other',
         }
-        result['resource_type'] = [translate[r] for r in rec['resource_type']]
+        result['resource_type'] = list(set([translate[r] for r in rec['resource_type']]))
     #TODO fetch domain_metadata and translate to community specific metadata
     #assume the current community specific block schema for metadata format
     return result
@@ -419,6 +420,6 @@ def _save_file(url, filename):
         try:
             f.write(u.read())
             finished = True
-        except IncompleteRead:
-            current_app.logger.debug("IncompleteRead %d" % counter)
+        except:
+            current_app.logger.debug("IncompleteRead? %d" % counter)
             counter += counter
