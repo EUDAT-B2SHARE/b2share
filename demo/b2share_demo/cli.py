@@ -35,8 +35,9 @@ from flask_cli import with_appcontext
 from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
+from invenio_indexer.api import RecordIndexer
 
-from .helpers import load_demo_data, download_v1_data, process_v1_file
+from .helpers import load_demo_data, download_v1_data, process_v1_record
 from . import config as demo_config
 
 
@@ -93,7 +94,7 @@ def load_config(verbose, force):
     if verbose > 0:
         click.secho('Configuration file "{}" created.'.format(
             instance_config_path), fg='green')
-            
+
 @demo.command()
 @with_appcontext
 @click.option('-v', '--verbose', count=True)
@@ -104,27 +105,33 @@ def load_config(verbose, force):
 def import_v1_data(verbose, download, token,
          download_directory,limit):
     if verbose:
-        click.secho("Importing data from b2share.eudat.eu to this instance")
+        click.secho("Importing data to the current instance")
+    if os.path.isdir(download_directory):
         os.chdir(download_directory)
-        if download:
-            filelist = os.listdir('.')
-            if len(filelist)>0:
-                raise click.ClickException("""You set download_dir to %s . 
-                If you want to download files, download_dir should be an empty
-                 directory.\n Please empty directory and try again.""" % 
-                 download_directory)
-            if verbose:
-                click.secho("----------")
-                click.secho("Downloading data into directory %s" % 
-                    download_directory)
-            if not(limit is None):
-                limit = int(limit)
-                click.secho("Limiting to %d records for debug purposes" % limit)
-            download_v1_data(token, download_directory, limit)
+    else:
+        raise click.ClickException("%s does not exist or is not a directory. If you want to import records specify an empty, existing directory." % download_directory)
+    if limit and not download:
+        raise click.ClickException("Limit can only be set with download")
+    if download:
         filelist = os.listdir('.')
+        if len(filelist)>0:
+            raise click.ClickException("""You set download_dir to %s .
+            If you want to download files, download_dir should be an empty
+             directory.\n Please empty directory and try again.""" %
+             download_directory)
         if verbose:
-            click.secho("-----------")
-            click.secho("Processing %d files from %s" % 
-                (len(filelist),download_directory))
-            for f in filelist:
-                process_v1_file(f, download, download_directory)
+            click.secho("----------")
+            click.secho("Downloading data into directory %s" %
+                download_directory)
+        if not(limit is None):
+            limit = int(limit)
+            click.secho("Limiting to %d records for debug purposes" % limit)
+        download_v1_data(token, download_directory, limit, verbose)
+    indexer = RecordIndexer(record_to_index=lambda record: ('records', 'record') )
+    dirlist = os.listdir('.')
+    if verbose:
+        click.secho("-----------")
+        click.secho("Processing %d downloaded records" %
+                    (len(dirlist)))
+    for d in dirlist:
+        process_v1_record(d, indexer, verbose)
