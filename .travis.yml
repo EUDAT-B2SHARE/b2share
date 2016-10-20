@@ -31,9 +31,9 @@ cache:
   - pip
 
 env:
-  - REQUIREMENTS=lowest REXTRAS=docs ES_VERSION=2.3.3
-  - REQUIREMENTS=release REXTRAS=docs ES_VERSION=2.3.3
-  - REQUIREMENTS=devel REXTRAS=docs ES_VERSION=2.3.3
+  - REQUIREMENTS=current REXTRAS=all ES_VERSION=2.3.3
+  - REQUIREMENTS=release REXTRAS=all ES_VERSION=2.3.3
+  - REQUIREMENTS=devel REXTRAS=all ES_VERSION=2.3.3
 
 python:
   - "3.3"
@@ -50,16 +50,16 @@ before_install:
   - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp
   - "travis_retry pip install --upgrade pip setuptools py"
   - "travis_retry pip install twine wheel coveralls requirements-builder"
-  - "requirements-builder --level=min setup.py > .travis-lowest-requirements.txt"
-  - "requirements-builder --level=pypi setup.py > .travis-release-requirements.txt"
+  - "requirements-builder --level=pypi setup.py > .travis-current-requirements.txt"
+  - "cp requirements.txt .travis-release-requirements.txt"
   - "requirements-builder --level=dev --req requirements-devel.txt setup.py > .travis-devel-requirements.txt"
 
 install:
   - "travis_retry pip install -r .travis-${REQUIREMENTS}-requirements.txt"
-  - "travis_retry pip install -e .[all]"
+  - "travis_retry pip install -e .[${REXTRAS}]"
   # FIXME demo install should be included in 'all'
   - "travis_retry cd demo"
-  - "travis_retry pip install -e .[all]"
+  - "travis_retry pip install -e ."
   - "travis_retry cd $TRAVIS_BUILD_DIR"
 
 script:
