@@ -1,14 +1,14 @@
 FROM centos:7
 EXPOSE 5000
 
-RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm && \
-    yum -y update && \
-    yum -y install wget python34 python34-devel npm supervisor git libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
+RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+RUN yum -y update
+RUN yum -y install wget gcc-c++ openssl-devel postgresql-devel python34 python34-devel npm supervisor git libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
 
 WORKDIR /tmp
-RUN wget https://bootstrap.pypa.io/get-pip.py && \
-    python3.4 get-pip.py && \
-    pip3 install --upgrade pip
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.4 get-pip.py
+RUN pip3 install --upgrade pip
 
 # RUN git clone https://github.com/EUDAT-B2SHARE/b2share.git --branch evolution
 # ADD . b2share
@@ -62,10 +62,9 @@ RUN npm install --unsafe-perm
 WORKDIR /eudat/b2share
 ADD setup.py setup.py
 ADD b2share/version.py b2share/version.py
+ADD requirements.txt requirements.txt
 
-RUN pip install requirements-builder
-RUN requirements-builder --level=min setup.py > lowest-requirements.txt
-RUN pip install -r lowest-requirements.txt
+RUN pip install -r requirements.txt
 RUN pip install -e .
 
 WORKDIR /eudat/b2share/demo
