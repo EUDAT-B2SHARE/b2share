@@ -25,6 +25,6 @@
 
 from __future__ import absolute_import, print_function
 
-from .factory import create_app
+from b2share.factory import create_app
 
 application = create_app()

@@ -56,6 +56,13 @@ WORKDIR /eudat/b2share/webui
 RUN npm install --unsafe-perm
 
 #
+# UWSGI Config
+#
+
+WORKDIR /eudat
+ADD dockerize/uwsgi/uwsgi.ini b2share/uwsgi/uwsgi.ini
+
+#
 # Install python module and dependencies
 #
 
