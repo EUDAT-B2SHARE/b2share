@@ -410,6 +410,7 @@ def _process_record(rec):
 
 
 def _save_file(url, filename):
+    CHUNK_SIZE = 16 * 1024 * 1024 #download 16MB at a time
     current_app.logger.debug("Downloading %s" % url)
     gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
     finished = False
@@ -418,8 +419,12 @@ def _save_file(url, filename):
     counter = 0
     while not finished:
         try:
-            f.write(u.read())
-            finished = True
+            chunk = u.read(CHUNK_SIZE)
+            if chunk:
+                f.write(chunk)
+            else:
+                finished = True
         except:
             current_app.logger.debug("IncompleteRead? %d" % counter)
             counter += counter
+    f.close()
