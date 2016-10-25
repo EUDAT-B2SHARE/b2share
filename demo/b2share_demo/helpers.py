@@ -379,7 +379,6 @@ def _process_record(rec):
     result['keywords'] = list(set(rec['keywords']))
     #fetch community
     comms = Community.get_all(0,1,name=rec['domain'])
-    #TODO match generic and linguistics domains to communities
     if comms:
         community = comms[0]
         result['community']=str(community.id)
@@ -404,10 +403,20 @@ def _process_record(rec):
             'Other': 'Other',
         }
         result['resource_type'] = list(set([translate[r] for r in rec['resource_type']]))
-    #TODO fetch domain_metadata and translate to community specific metadata
-    #assume the current community specific block schema for metadata format
+    result.update(
+        _match_community_specific_metadata(rec, community)
+    )
+    import pdb; pdb.set_trace()
     return result
 
+def _match_community_specific_metadata(rec, community):
+    cs_md_values_dict = {}
+    result = {}
+    result['community_specific'] = {}
+    resolve_string = "$BLOCK_SCHEMA_ID[%s]" % community.name.lower()
+    block_schema_id = _resolve_block_schema_id(resolve_string)
+    result['community_specific'][block_schema_id] = cs_md_values_dict
+    return result
 
 def _save_file(url, filename):
     CHUNK_SIZE = 16 * 1024 * 1024 #download 16MB at a time
