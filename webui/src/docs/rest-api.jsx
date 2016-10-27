@@ -116,8 +116,10 @@ module.exports = function() {
             visible, so copy it to a safe place. </p>
         <p>The following shell commands will expect that the ACCESS_TOKEN
             environment variable is defined and contains the actual
-            access_token. The command to define this variable is: </p>
-        <Example>export ACCESS_TOKEN='...'</Example>
+            access_token. The command to define this variable looks like this: </p>
+        <Example>export ACCESS_TOKEN='7O28DlvgCatQV0pkS6jLw947tbo123oztkU4dPw6fnqmJ8inOYAi7dYhF0d04'</Example>
+        <p>Please remember to use your actual token instead of the one given
+        	as an example above.</p>
 
 
         <h3>HTTP Requests</h3>
@@ -203,7 +205,7 @@ module.exports = function() {
                     "description": "The big Eudat community. Use this community if no other is suited for you",
                     "id": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
                     "links": {
-                      "self": "https://vm0045.kaj.pouta.csc.fi/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095"
+                      "self": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095"
                     },
                     "logo": "/img/communities/eudat.png",
                     "name": "EUDAT",
@@ -214,7 +216,7 @@ module.exports = function() {
                 "total": 11
               },
               "links": {
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/communities/"
+                "self": "https://trng-b2share.eudat.eu/api/communities/"
               }
             }}
             </Returns>
@@ -234,7 +236,7 @@ module.exports = function() {
             {{
               "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
               "draft_json_schema": {
-                "$ref": "https://vm0045.kaj.pouta.csc.fi/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/json_schema",
+                "$ref": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/json_schema",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "json_schema": {
@@ -243,7 +245,7 @@ module.exports = function() {
                 ]
               },
               "links": {
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0"
+                "self": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0"
               },
               "version": 0
             }}
@@ -284,8 +286,8 @@ module.exports = function() {
                     ],
                     "id": "a1c2ef96a1e446fa9bd7a2a46d2242d4",
                     "links": {
-                      "files": "https://vm0045.kaj.pouta.csc.fi/api/files/473086fc-e125-4389-8483-b8a4f130e181",
-                      "self": "https://vm0045.kaj.pouta.csc.fi/api/records/a1c2ef96a1e446fa9bd7a2a46d2242d4"
+                      "files": "https://trng-b2share.eudat.eu/api/files/473086fc-e125-4389-8483-b8a4f130e181",
+                      "self": "https://trng-b2share.eudat.eu/api/records/a1c2ef96a1e446fa9bd7a2a46d2242d4"
                     },
                     "metadata": {
                       "..." : "..."
@@ -297,8 +299,8 @@ module.exports = function() {
                 "total": 51
               },
               "links": {
-                "next": "https://vm0045.kaj.pouta.csc.fi/api/records/?sort=mostrecent&q=&page=2",
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/records/?sort=mostrecent&q=&page=1"
+                "next": "https://trng-b2share.eudat.eu/api/records/?sort=mostrecent&q=&page=2",
+                "self": "https://trng-b2share.eudat.eu/api/records/?sort=mostrecent&q=&page=1"
               }
             }}
             </Returns>
@@ -329,8 +331,8 @@ module.exports = function() {
                     "created": "2016-10-24T11:29:27.016892+00:00",
                     "id": "f7fddf6f111f4362a9e4661294e2b59e",
                     "links": {
-                      "files": "https://vm0045.kaj.pouta.csc.fi/api/files/90ea3483-2792-4483-9392-7d624b610398",
-                      "self": "https://vm0045.kaj.pouta.csc.fi/api/records/f7fddf6f111f4362a9e4661294e2b59e"
+                      "files": "https://trng-b2share.eudat.eu/api/files/90ea3483-2792-4483-9392-7d624b610398",
+                      "self": "https://trng-b2share.eudat.eu/api/records/f7fddf6f111f4362a9e4661294e2b59e"
                     },
                     "updated": "2016-10-24T11:29:27.016900+00:00",
                     "..." : "..."
@@ -340,8 +342,8 @@ module.exports = function() {
                 "total": 32
               },
               "links": {
-                "next": "https://vm0045.kaj.pouta.csc.fi/api/records/?sort=bestmatch&q=community%3Ae9b9792e-79fb-4b07-b6b4-b9c2bd06d095&size=10&page=2",
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/records/?sort=bestmatch&q=community%3Ae9b9792e-79fb-4b07-b6b4-b9c2bd06d095&size=10&page=1"
+                "next": "https://trng-b2share.eudat.eu/api/records/?sort=bestmatch&q=community%3Ae9b9792e-79fb-4b07-b6b4-b9c2bd06d095&size=10&page=2",
+                "self": "https://trng-b2share.eudat.eu/api/records/?sort=bestmatch&q=community%3Ae9b9792e-79fb-4b07-b6b4-b9c2bd06d095&size=10&page=1"
               }
             }}
             </Returns>
@@ -362,13 +364,13 @@ module.exports = function() {
         <h3>Search drafts</h3>
         <p>Search for all drafts (unpublished records) that are accessible by the requestor. Usually this means own records only.</p>
         <ul>
-            <li><p>URL path: /api/records/?drafts=1</p></li>
+            <li><p>URL path: /api/records/?drafts</p></li>
             <li><p>HTTP method: GET</p></li>
             <li><p>Required parameters: access_token, drafts</p></li>
             <li><p>Returns: the list of matching drafts (in JSON format) or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/records/?drafts=1?access_token=$ACCESS_TOKEN
+            curl https://$HOSTNAME/api/records/?drafts&access_token=$ACCESS_TOKEN
         </Example>
 
         <h3>Get a specific record</h3>
@@ -393,7 +395,7 @@ module.exports = function() {
             <li><p>Returns: the new draft record contents and location. Please note that
                 the returned json object contains also the URL of the file bucket used for the record.
                 Also note that the URL of the draft record, needed for setting record metadata,
-                will end in '/drafts/'</p></li>
+                will end in '/draft/'</p></li>
         </ul>
         <Example>
             {'curl -i -H "Content-Type:application/json" -d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true}\' -X POST https://$HOSTNAME/api/records/?access_token=$ACCESS_TOKEN'}
@@ -402,12 +404,12 @@ module.exports = function() {
               "created": "2016-10-24T12:21:21.697737+00:00",
               "id": "01826ff3e4974415afdb2574a7ea5a91",
               "links": {
-                "files": "https://vm0045.kaj.pouta.csc.fi/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
-                "publication": "https://vm0045.kaj.pouta.csc.fi/api/records/01826ff3e4974415afdb2574a7ea5a91",
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
               },
               "metadata": {
-                "$schema": "https://vm0045.kaj.pouta.csc.fi/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
                 "open_access": true,
                 "owners": [
@@ -468,12 +470,12 @@ module.exports = function() {
               "created": "2016-10-24T12:21:21.697737+00:00",
               "id": "01826ff3e4974415afdb2574a7ea5a91",
               "links": {
-                "files": "https://vm0045.kaj.pouta.csc.fi/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
-                "publication": "https://vm0045.kaj.pouta.csc.fi/api/records/01826ff3e4974415afdb2574a7ea5a91",
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
               },
               "metadata": {
-                "$schema": "https://vm0045.kaj.pouta.csc.fi/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
                 "description": "This record describes...",
                 "open_access": true,
@@ -506,12 +508,12 @@ module.exports = function() {
               "created": "2016-10-24T12:21:21.697737+00:00",
               "id": "01826ff3e4974415afdb2574a7ea5a91",
               "links": {
-                "files": "https://vm0045.kaj.pouta.csc.fi/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
-                "publication": "https://vm0045.kaj.pouta.csc.fi/api/records/01826ff3e4974415afdb2574a7ea5a91",
-                "self": "https://vm0045.kaj.pouta.csc.fi/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
               },
               "metadata": {
-                "$schema": "https://vm0045.kaj.pouta.csc.fi/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "DOI": "10.5072/b2share.cdb15c27-326e-4e95-b812-6b1c6b54c299",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
                 "description": "This record describes...",
