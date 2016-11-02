@@ -3,7 +3,7 @@ EXPOSE 5000
 
 RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
 RUN yum -y update
-RUN yum -y install wget gcc-c++ openssl-devel postgresql-devel python34 python34-devel npm supervisor git libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
+RUN yum -y install wget gcc-c++ openssl-devel postgresql-devel python34 python34-devel npm supervisor git uwsgi  libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
 
 WORKDIR /tmp
 RUN wget https://bootstrap.pypa.io/get-pip.py
