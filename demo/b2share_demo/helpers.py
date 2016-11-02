@@ -26,6 +26,7 @@
 from __future__ import absolute_import, print_function
 
 import json
+from jsonschema.exceptions import ValidationError
 import os
 import re
 import uuid
@@ -42,6 +43,7 @@ from urllib.request import urlopen
 import click
 from flask import current_app
 
+from invenio_accounts.models import User
 from invenio_db import db
 from invenio_files_rest.models import ObjectVersion
 from invenio_indexer.api import RecordIndexer
@@ -55,6 +57,9 @@ from b2share.modules.schemas import BlockSchema, CommunitySchema
 from b2share.modules.schemas.helpers import resolve_schemas_ref
 from b2share.modules.records.providers import RecordUUIDProvider
 
+
+
+
 def load_demo_data(path, verbose=0):
     """Load a demonstration located at the given path.
 
@@ -62,16 +67,16 @@ def load_demo_data(path, verbose=0):
         path (str): path of the directory containing the demonstration data.
         verbose (int): verbosity level.
     """
+    base_url = urlunsplit((
+        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+        # current_app.config['SERVER_NAME'],
+        current_app.config['JSONSCHEMAS_HOST'],
+        current_app.config.get('APPLICATION_ROOT') or '', '', ''
+    ))
     with db.session.begin_nested():
         user_info = _create_user(verbose)
         # Define the base url used for the request context. This is useful
         # for generated URLs which will use the provided url "scheme".
-        base_url = urlunsplit((
-            current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-            # current_app.config['SERVER_NAME'],
-            current_app.config['JSONSCHEMAS_HOST'],
-            current_app.config.get('APPLICATION_ROOT') or '', '', ''
-        ))
         with current_app.test_request_context('/', base_url=base_url):
             current_app.login_manager.reload_user(user_info['user'])
             communities = _create_communities(path, verbose)
@@ -83,15 +88,22 @@ def load_demo_data(path, verbose=0):
 DemoCommunity = namedtuple('DemoCommunity', ['ref', 'config'])
 
 
-def _create_user(verbose):
+def _create_user(verbose, email=None):
     """Create demo user."""
-    if verbose > 0:
+    if verbose:
         click.secho('Creating user', fg='yellow', bold=True)
+
+    if email is None:
+        email = 'firstuser@example.com'
+        name = 'FirstUser'
+    else:
+        name = email
+
 
     user_info = {
         'id': None,
-        'name': 'FirstUser',
-        'email': 'firstuser@example.com',
+        'name': name,
+        'email': email,
         'password': '1234567890',
     }
     from flask_security.utils import encrypt_password
@@ -100,7 +112,6 @@ def _create_user(verbose):
     with db.session.begin_nested():
         user = accounts.datastore.create_user(
             email=user_info.get('email'),
-            password=encrypt_password(user_info.get('password')),
             active=True,
         )
         db.session.add(user)
@@ -286,9 +297,12 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
     params['access_token'] = token
     params['page_size'] = 100
     counter = 0
+    page_counter = 0
     os.chdir(target_dir)
     while True:
-        params['page_offset'] = counter
+        click.secho("Download counter is now: %d" % counter)
+        params['page_offset'] = page_counter
+        click.secho("Params to download: %s" % str(params))
         r = requests.get(url, params=params, verify=False)
         r.raise_for_status()
         recs = json.loads(r.text)['records']
@@ -302,9 +316,11 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
             else:
                 counter = counter + 1
                 os.mkdir(str(counter))
-                download_v1_record(str(counter), record, verbose)
+                download_v1_record(str(counter), record, verbose )
                 if not(limit is None) and counter >= limit:
                     return # limit reached
+        page_counter = page_counter + 1
+        
 
 def download_v1_record(directory, record, verbose=False):
     if verbose:
@@ -322,12 +338,20 @@ def download_v1_record(directory, record, verbose=False):
                 click.secho('    Download file "{}"'.format(file_dict.get('name')))
             filepath = os.path.join(directory, 'file_{}'.format(index))
             _save_file(file_dict['url'], filepath)
-            if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
-                raise Exception("downloaded file size differs, {}".format(filepath))
+            #if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+            #    raise Exception("downloaded file size differs, {}".format(filepath))
 
 
+def get_or_create_user(verbose, email):
+    result_set = User.query.filter(User.email==email)
+    if result_set.count():
+        result = result_set.one()
+    else:
+        user_info = _create_user(verbose, email)
+        result = user_info['user']
+    return result
 
-def process_v1_record(directory, indexer, verbose=False):
+def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
     """
     Parse a downloaded file containing records
     """
@@ -342,27 +366,43 @@ def process_v1_record(directory, indexer, verbose=False):
         click.secho('Processing record {} "{}"'.format(
                     directory, record_json.get('title')))
     record = _process_record(record_json)
-    if record is not None:
-        deposit = Deposit.create(record)
-        for index, file_dict in enumerate(record_json.get('files', [])):
-            if not file_dict.get('name'):
-                click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
-                            fg='red')
+    if record is not None and int(record_json['record_id'])>525:
+        user = get_or_create_user(verbose, record_json['uploaded_by'])
+        with current_app.test_request_context('/', base_url=base_url):
+            current_app.login_manager.reload_user(user)
+            try:        
+                deposit = Deposit.create(record)
+                _create_bucket(deposit, record_json, directory, logfile, verbose)
+                deposit.publish()
+                pid, record = deposit.fetch_published()
+                # index the record
+                indexer.index(record)
+                db.session.commit()
+            except:
+                logfile.write("********************")
+                logfile.write(traceback.format_exc())
+                logfile.write("ERROR in %s" % record_json['record_id'])
+                logfile.write("********************")
+            
+def _create_bucket(deposit, record_json,directory, logfile, verbose):
+    for index, file_dict in enumerate(record_json.get('files', [])):
+        if not file_dict.get('name'):
+            click.secho('    Ignore file with no name "{}"'.format(
+                        file_dict.get('url')),
+                    fg='red')
+        else:
+            if verbose:
+                click.secho('    Load file "{}"'.format(
+                    file_dict.get('name')))
+            filepath = os.path.join(directory, 
+                'file_{}'.format(index))
+            if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+                logfile.write("***** downloaded file size differs, {} ******".format(filepath))
             else:
-                if verbose:
-                    click.secho('    Load file "{}"'.format(file_dict.get('name')))
-                filepath = os.path.join(directory, 'file_{}'.format(index))
-                if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
-                    raise Exception("downloaded file size differs, {}".format(filepath))
                 with open(filepath, 'r+b') as f:
-                    ObjectVersion.create(deposit.files.bucket, file_dict['name'],
-                                         stream=BytesIO(f.read()))
-        deposit.publish()
-        pid, record = deposit.fetch_published()
-        # index the record
-        indexer.index(record)
-        db.session.commit()
-
+                    ObjectVersion.create(deposit.files.bucket, 
+                        file_dict['name'],
+                        stream=BytesIO(f.read()))
 
 def _process_record(rec):
     #rec is dict representing 1 record
@@ -401,20 +441,22 @@ def _process_record(rec):
             'Text': 'Text',
             'Image': 'Image',
             'Other': 'Other',
+            'treebank':'Other',
+            'Time-Series':'Other'
         }
         result['resource_type'] = list(set([translate[r] for r in rec['resource_type']]))
-    result.update(
-        _match_community_specific_metadata(rec, community)
-    )
-    import pdb; pdb.set_trace()
+    if 'domain_metadata' in rec.keys():
+        result.update(
+            _match_community_specific_metadata(rec, community)
+            )
     return result
 
 def _match_community_specific_metadata(rec, community):
-    cs_md_values_dict = {}
+    cs_md_values_dict = rec['domain_metadata']
     result = {}
     result['community_specific'] = {}
     resolve_string = "$BLOCK_SCHEMA_ID[%s]" % community.name.lower()
-    block_schema_id = _resolve_block_schema_id(resolve_string)
+    block_schema_id = resolve_block_schema_id(resolve_string)
     result['community_specific'][block_schema_id] = cs_md_values_dict
     return result
 
@@ -424,8 +466,11 @@ def _save_file(url, filename):
     gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
     finished = False
     f = open(filename, 'wb')
-    u = urlopen(url, context=gcontext)
-    counter = 0
+    try:
+        u = urlopen(url, context=gcontext)
+    except:
+        current_app.logger.error("TIMEOUT trying to download %s" % url)
+        pass
     while not finished:
         try:
             chunk = u.read(CHUNK_SIZE)
@@ -434,6 +479,5 @@ def _save_file(url, filename):
             else:
                 finished = True
         except:
-            current_app.logger.debug("IncompleteRead? %d" % counter)
-            counter += counter
+            finished = True
     f.close()

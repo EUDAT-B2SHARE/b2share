@@ -50,6 +50,7 @@
                                     "OMV:OWL-Full",
                                     "OMV:OWL-Lite",
                                     "OMV:RDF-S",
+									"OWL",
                                     "Prot\u00e9g\u00e9-Frames",
                                     "RRF",
                                     "W3C:OWL_2",
@@ -79,7 +80,8 @@
                                     "OntoStudio",
                                     "KAON",
                                     "PoolParty Thesaurus Server",
-                                    "Other..."
+                                    "Other...",
+									""
                                 ],
                                 "type": "string"
                             },

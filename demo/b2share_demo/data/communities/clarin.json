@@ -46,7 +46,7 @@
                             "type": "array",
                             "items": {
                                 "type": "string",
-                                "enum": ["Text", "Image", "Video", "Audio", "Time-Series", "Other"]
+                                "enum": ["Text", "Image", "Video", "Audio", "Time-Series", "Other","treebank"]
                             },
                             "uniqueItems": true
                         },
