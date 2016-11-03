@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 from invenio_records_rest.utils import PIDConverter
 from invenio_indexer.signals import before_record_index
+from invenio_records_rest import utils
 
 from .triggers import register_triggers
 from .errors import register_error_handlers
@@ -49,10 +50,20 @@ class B2ShareRecords(object):
         app.extensions['b2share-records'] = self
         register_triggers(app)
         register_error_handlers(app)
+
         # Register records API blueprints
-        app.register_blueprint(
-            create_blueprint(app.config['B2SHARE_RECORDS_REST_ENDPOINTS'])
-        )
+        endpoints = app.config['B2SHARE_RECORDS_REST_ENDPOINTS']
+        app.register_blueprint(create_blueprint(endpoints))
+
+        @app.before_first_request
+        def extend_default_endpoint_prefixes():
+            """Fix the endpoint prefixes as ."""
+            endpoint_prefixes = utils.build_default_endpoint_prefixes(endpoints)
+            current_records_rest = app.extensions['invenio-records-rest']
+            current_records_rest.default_endpoint_prefixes.update(
+                endpoint_prefixes
+            )
+
         before_record_index.connect(indexer_receiver, sender=app)
         app.url_map.converters['pid'] = PIDConverter
 
