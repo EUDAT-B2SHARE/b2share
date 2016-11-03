@@ -34,6 +34,10 @@ env:
   - REQUIREMENTS=current REXTRAS=all ES_VERSION=2.3.3
   - REQUIREMENTS=release REXTRAS=all ES_VERSION=2.3.3
   - REQUIREMENTS=devel REXTRAS=all ES_VERSION=2.3.3
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: REQUIREMENTS=devel REXTRAS=all ES_VERSION=2.3.3
 
 python:
   - "3.3"

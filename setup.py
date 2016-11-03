@@ -31,6 +31,7 @@ from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
 install_requires = [
+    'Flask-Login<0.4,>=0.3.0',
     'elasticsearch<3.0.0,>=2.0.0',
     'datacite>=0.2.1',
     'dcxml>=0.1.0',
