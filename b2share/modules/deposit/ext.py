@@ -26,6 +26,7 @@
 from __future__ import absolute_import, print_function
 
 from invenio_records_rest.utils import PIDConverter
+from invenio_records_rest import utils
 
 from .views import create_blueprint
 
@@ -42,10 +43,19 @@ class B2ShareDeposit(object):
         """Flask application initialization."""
         self.init_config(app)
         app.extensions['b2share-deposit'] = self
+
         # Register records API blueprints
-        app.register_blueprint(
-            create_blueprint(app.config['B2SHARE_DEPOSIT_REST_ENDPOINTS'])
-        )
+        endpoints = app.config['B2SHARE_DEPOSIT_REST_ENDPOINTS']
+        app.register_blueprint(create_blueprint(endpoints))
+
+        @app.before_first_request
+        def extend_default_endpoint_prefixes():
+            """Fix the endpoint prefixes as ."""
+            endpoint_prefixes = utils.build_default_endpoint_prefixes(endpoints)
+            current_records_rest = app.extensions['invenio-records-rest']
+            current_records_rest.default_endpoint_prefixes.update(
+                endpoint_prefixes
+            )
 
     def init_config(self, app):
         """Initialize configuration."""
