@@ -632,7 +632,6 @@ class ServerCache {
     }
 
     reportAbuse(id, data, successFn, errorFn) {
-        console.log('abuse', data);
         ajaxPost({
             url: apiUrls.abuse(id),
             params: data,

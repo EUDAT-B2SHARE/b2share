@@ -134,9 +134,9 @@ export const NewRecordRoute = React.createClass({
 
                         <div className="form-group submit row">
                             {this.state.errors.title ?
-                                <div className="col-sm-9 col-sm-offset-3">{this.state.errors.title} </div>: false }
+                                <div id='errortitle' className="col-sm-9 col-sm-offset-3">{this.state.errors.title} </div>: false }
                             {this.state.errors.community ?
-                                <div className="col-sm-9 col-sm-offset-3">{this.state.errors.community} </div> : false }
+                                <div id='errorcommunity' className="col-sm-9 col-sm-offset-3">{this.state.errors.community} </div> : false }
                             <div className="col-sm-offset-3 col-sm-9" style={gap}>
                                 <button type="submit" className="btn btn-primary btn-default btn-block">
                                     Create Draft Record</button>

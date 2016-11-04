@@ -49,3 +49,6 @@ webui/app/b2share-bundle.js.map
 webui/app/lib/
 webui/app/vendors/
 webui/src/version.js
+.watchmanconfig
+npm-debug.log
+webui/__tests__/__snapshots__/
