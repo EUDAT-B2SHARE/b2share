@@ -32,7 +32,9 @@ from setuptools.command.test import test as TestCommand
 
 install_requires = [
     'Flask-Login<0.4,>=0.3.0',
+    'celery>=3.1,<4.0', # TODO Unpin this once compatible with Celery 4.0
     'elasticsearch<3.0.0,>=2.0.0',
+    'elasticsearch-dsl<3.0.0,>=2.0.0',
     'datacite>=0.2.1',
     'dcxml>=0.1.0',
     'dojson>=1.2.1',
