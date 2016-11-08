@@ -24,11 +24,15 @@
 """Community models."""
 
 import uuid
+from itertools import chain
 
 from invenio_db import db
 from sqlalchemy.sql import expression
 from sqlalchemy_utils.models import Timestamp
 from sqlalchemy_utils.types import UUIDType
+from sqlalchemy import event
+from invenio_accounts.models import Role
+from invenio_access.models import ActionRoles
 
 
 class Community(db.Model, Timestamp):
@@ -62,7 +66,65 @@ class Community(db.Model, Timestamp):
     deleted = db.Column(db.Boolean, nullable=False,
                         server_default=expression.false())
 
+    # Publication workflow used in this community
+    publication_workflow = db.Column(db.String(80), nullable=False,
+                                     default='review_and_publish')
+
+    # Restrict record creation
+    restricted_submission = db.Column(db.Boolean, nullable=False,
+                                      server_default=expression.false(),
+                                      default=False)
+
+
+def _communiy_admin_role_name(community):
+    """Generate the name of the given community's admin role."""
+    return 'com:{0}:{1}'.format(community.id.hex, 'admin')
+
+
+def _communiy_member_role_name(community):
+    """Generate the name of the given community's member role."""
+    return 'com:{0}:{1}'.format(community.id.hex, 'member')
+
+
+@event.listens_for(Community, 'after_insert')
+def receive_before_insert(mapper, connection, target):
+    """Create community admin and member roles and add their permissions."""
+    from b2share.modules.deposit.permissions import (
+        create_deposit_need_factory, read_deposit_need_factory,
+    )
+    from b2share.modules.deposit.api import PublicationStates
+
+    admin_role = Role(
+        name=_communiy_admin_role_name(target),
+        description='Admin role of the community "{}"'.format(target.name)
+    )
+    member_role = Role(
+        name=_communiy_member_role_name(target),
+        description='Member role of the community "{}"'.format(target.name)
+    )
+
+    db.session.add(admin_role)
+    db.session.add(member_role)
+    member_needs = [
+        create_deposit_need_factory(str(target.id)),
+    ]
+    admin_needs = [
+        read_deposit_need_factory(
+            community=str(target.id),
+            publication_state=PublicationStates.submitted.name
+        ),
+        read_deposit_need_factory(
+            community=str(target.id),
+            publication_state=PublicationStates.published.name
+        ),
+    ]
+    for need in member_needs:
+        db.session.add(ActionRoles.allow(need, role=member_role))
+    for need in chain (member_needs, admin_needs):
+        db.session.add(ActionRoles.allow(need, role=admin_role))
+
 
 __all__ = (
     'Community',
+    'CommunityRole',
 )
