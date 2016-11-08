@@ -30,6 +30,9 @@ from flask import current_app
 from werkzeug.local import LocalProxy
 from flask_principal import AnonymousIdentity
 
+from .permissions import AuthenticatedNeed
+
+
 current_flask_security = LocalProxy(
     lambda: current_app.extensions['security']
 )
@@ -37,35 +40,21 @@ current_flask_security = LocalProxy(
 
 def _load_permissions_on_identity_loaded(sender, identity):
     """Load the user permissions when his identity is loaded."""
-    # from b2share.modules.records.permissions import \
-    #     read_open_access_record_need
     # if the user is not anonymous
     if current_user.get_id() is not None:
         # Set the identity user object
         identity.user = current_user
-
-        # Add the permission to create draft deposits in any community
+        # Add the need provided to authenticated users
         identity.provides.add(
-            ParameterizedActionNeed('create-deposit-draft', None)
+            AuthenticatedNeed
         )
-        # Add the permission to read open access records
-        # identity.provides.add(
-        #     read_open_access_record_need
-        # )
 
 def _register_anonymous_loader():
     """Register the Anonymous Identity loader."""
-    # from b2share.modules.records.permissions import \
-    #     read_open_access_record_need
 
     def anonymous_idendity_loader():
         identity = AnonymousIdentity()
         # Here we can add configurable permissions to anonymous users.
-
-        # all anonymous users can read open access records
-        # identity.provides.add(
-        #     read_open_access_record_need
-        # )
         return identity
     current_flask_security.principal.identity_loader(anonymous_idendity_loader)
 
