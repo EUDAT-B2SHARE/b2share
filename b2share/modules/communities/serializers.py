@@ -51,6 +51,8 @@ def community_to_dict(community):
         logo=community.logo,
         created=community.created,
         updated=community.updated,
+        publication_workflow=community.publication_workflow,
+        restricted_submission=community.restricted_submission,
         links=dict(
             self=community_self_link(community, _external=True)
         )

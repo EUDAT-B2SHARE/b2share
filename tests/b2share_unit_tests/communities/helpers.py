@@ -34,6 +34,8 @@ community_metadata = {
     'name': 'newcommunity',
     'description': 'A new community',
     'logo': 'http://example.com/logo',
+    'publication_workflow': 'review_and_publish',
+    'restricted_submission': False,
 }
 
 community_patch = [

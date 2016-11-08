@@ -61,6 +61,17 @@ def test_make_record_with_no_file_and_search(app, test_communities,
         draft_create_data = json.loads(
             draft_create_res.get_data(as_text=True))
 
+        # submit the record
+        draft_submit_res = client.patch(
+            url_for('b2share_deposit_rest.b2share_deposit_item',
+                    pid_value=draft_create_data['id']),
+            data=json.dumps([{
+                "op": "replace", "path": "/publication_state",
+                "value": PublicationStates.submitted.name
+            }]),
+            headers=patch_headers)
+        assert draft_submit_res.status_code == 200
+
         # publish record
         draft_publish_res = client.patch(
             url_for('b2share_deposit_rest.b2share_deposit_item',

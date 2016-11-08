@@ -136,7 +136,8 @@ UserInfo = namedtuple('UserInfo', ['id', 'email', 'password'])
 """Generated user information."""
 
 
-def create_user(name, roles=None, permissions=None):
+def create_user(name, roles=None, permissions=None, admin_communities=None,
+                member_communities=None):
     """Create a user.
 
     Args:
@@ -164,12 +165,13 @@ def create_user(name, roles=None, permissions=None):
             for role in roles:
                 security.datastore.add_role_to_user(user, role)
 
-        # permissions of the form [('action name', 'argument'), (...)]
         if permissions is not None:
-            for action_name, argument in permissions:
-                db.session.add(ActionUsers.allow(
-                    ParameterizedActionNeed(action_name, argument), user=user,
-                ))
+            for permission in permissions:
+                # permissions of the form [('action name', 'argument'), (...)]
+                if len(permission) == 2:
+                    permission = ParameterizedActionNeed(permission[0],
+                                                         permission[1])
+                db.session.add(ActionUsers.allow(permission, user=user))
 
     return UserInfo(email=email, password=users_password, id=user.id)
 
@@ -179,10 +181,12 @@ def create_role(name, permissions=None):
     security = current_app.extensions['security']
     role = security.datastore.find_or_create_role(name)
     if permissions is not None:
-        for action_name, argument in permissions:
-            db.session.add(ActionRoles.allow(
-                ParameterizedActionNeed(action_name, argument), role=role
-            ))
+        for permission in permissions:
+            # permissions of the form [('action name', 'argument'), (...)]
+            if len(permission) == 2:
+                permission = ParameterizedActionNeed(permission[0],
+                                                     permission[1])
+            db.session.add(ActionRoles.allow(permission, role=role))
     return role
 
 
