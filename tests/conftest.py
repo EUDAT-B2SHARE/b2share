@@ -80,7 +80,7 @@ def app(request, tmpdir):
         JSONSCHEMAS_HOST='localhost:5000',
         DEBUG_TB_ENABLED=False,
         SQLALCHEMY_DATABASE_URI=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
+            'SQLALCHEMY_DATABASE_URI', 'sqlite://'),
         LOGIN_DISABLED=False,
         WTF_CSRF_ENABLED=False,
         SECRET_KEY="CHANGE_ME",
@@ -255,23 +255,26 @@ def test_records_data(app, test_communities):
 def create_deposits(app, test_records_data, creator):
     """Create test deposits."""
     DepositInfo = namedtuple('DepositInfo', ['id', 'data', 'deposit'])
-    with app.app_context():
-        indexer = RecordIndexer()
+    indexer = RecordIndexer()
 
-        with authenticated_user(creator):
-            deposits = [Deposit.create(data=data)
-                        for data in deepcopy(test_records_data)]
-        for deposit in deposits:
-            indexer.index(deposit)
-        db.session.commit()
-        return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
+    with authenticated_user(creator):
+        deposits = [Deposit.create(data=data)
+                    for data in deepcopy(test_records_data)]
+    for deposit in deposits:
+        indexer.index(deposit)
+        deposit.commit()
+        deposit.commit()
+    return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
 
 
 @pytest.fixture(scope='function')
 def draft_deposits(app, test_records_data, test_users):
     """Fixture creating deposits in draft state."""
-    return create_deposits(app, test_records_data,
-                           test_users['deposits_creator'])
+    with app.app_context():
+        result = create_deposits(app, test_records_data,
+                                 test_users['deposits_creator'])
+        db.session.commit()
+    return result
 
 
 @pytest.fixture(scope='function')
@@ -282,6 +285,7 @@ def submitted_deposits(app, test_records_data, test_users):
                                    test_users['deposits_creator'])
         for dep in deposits:
             dep.deposit.submit()
+        db.session.commit()
     return deposits
 
 
@@ -296,14 +300,16 @@ def test_records(app, request, test_records_data, test_users):
                                                 'record_id', 'data'])
         indexer = RecordIndexer()
         def publish(deposit):
+            deposit.submit()
             deposit.publish()
             pid, record = deposit.fetch_published()
             indexer.index(record)
-            db.session.commit()
             return RecordInfo(deposit.id, str(pid.pid_value), record.id,
                               record.dumps())
-        return [publish(deposit_info.deposit)
-                for deposit_info in test_deposits]
+        result = [publish(deposit_info.deposit)
+                  for deposit_info in test_deposits]
+        db.session.commit()
+        return result
 
 
 @pytest.yield_fixture()

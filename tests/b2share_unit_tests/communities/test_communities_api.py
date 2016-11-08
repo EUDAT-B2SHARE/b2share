@@ -164,7 +164,13 @@ def test_clear_update(app):
         assert updated.updated
         for field, value in updated_community_metadata.items():
             if field not in community_update:
-                assert getattr(updated, field) is None
+                if field == 'publication_workflow':
+                    assert updated.publication_workflow == \
+                        'review_and_publish'
+                elif field == 'restricted_submission':
+                    assert updated.restricted_submission == False
+                else:
+                    assert getattr(updated, field) is None
             else:
                 assert getattr(updated, field) == value
 

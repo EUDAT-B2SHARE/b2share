@@ -25,7 +25,7 @@
 
 import pytest
 from b2share.modules.deposit.api import Deposit, PublicationStates
-from jsonschema.exceptions import ValidationError
+from b2share.modules.communities.errors import InvalidPublicationStateError
 
 
 def test_deposit_create(app, draft_deposits):
@@ -89,5 +89,17 @@ def test_deposit_update_unknown_publication_state(app, draft_deposits):
         deposit = Deposit.get_record(draft_deposits[0].id)
         deposit.update({'publication_state':
                         'invalid_state'})
-        with pytest.raises(ValidationError):
+        with pytest.raises(InvalidPublicationStateError):
             deposit.commit()
+
+
+# def test_direct_publish_workflow(app, draft_deposits, draft_community):
+#     """Test deposit submission with "direct_publish" workflow"""
+#     test_communities
+
+#     with app.app_context():
+#         deposit = Deposit.get_record(draft_deposits[0].id)
+#         deposit.update({'publication_state':
+#                         'invalid_state'})
+#         with pytest.raises(ValidationError):
+#             deposit.commit()
