@@ -23,7 +23,7 @@
 
 """B2Share generic permissions."""
 
-from flask_principal import Permission
+from flask_principal import Permission, Need
 from invenio_access.permissions import DynamicPermission
 
 
@@ -41,11 +41,19 @@ DenyAllPermission = type('Deny', (), {
 """Permission that always deny an access."""
 
 
+AuthenticatedNeed = Need('authenticated', True)
+"""Need provided by any authenticated user."""
+
+
 class StrictDynamicPermission(DynamicPermission):
     """Stricter DynamicPermission.
 
     It adds the given needs to the returned needs instead of using only
     those found in the database.
+    This has two effects:
+        - Identities can also provide aneed without using the database.
+        - The permission is not given even if there are no needs in the
+            database. Thus the action is not allowed by default.
     """
     def __init__(self, *needs):
         self.explicit_excludes = set()
@@ -67,11 +75,12 @@ class StrictDynamicPermission(DynamicPermission):
 class PermissionSet(Permission):
     """Abstract permissions combining multiple permissions."""
 
-    def __init__(self, *permissions):
+    def __init__(self, *permissions, allow_if_no_permissions=False):
         """A set of set of permissions, all of which must be allow the
         identity to have access.
         """
         self.permissions = set(permissions)
+        self.allow_if_no_permissions = allow_if_no_permissions
 
     def allows(self, identity):
         raise NotImplementedError()
@@ -111,7 +120,7 @@ class AndPermissions(PermissionSet):
         for permission in self.permissions:
             if not permission.allows(identity):
                 return False
-        return True
+        return len(self.permissions) > 0 or self.allow_if_no_permissions
 
 
 class OrPermissions(PermissionSet):
@@ -132,4 +141,4 @@ class OrPermissions(PermissionSet):
         for permission in self.permissions:
             if permission.allows(identity):
                 return True
-        return False
+        return len(self.permissions) == 0 and self.allow_if_no_permissions
