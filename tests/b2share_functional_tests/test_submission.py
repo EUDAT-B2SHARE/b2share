@@ -29,7 +29,8 @@ import json
 from io import BytesIO
 
 import pytest
-from b2share_unit_tests.helpers import create_user
+from b2share.modules.communities.api import Community
+from b2share_unit_tests.helpers import create_user, generate_record_data
 from b2share.modules.deposit.api import PublicationStates
 from invenio_search import current_search
 from flask import url_for as flask_url_for
@@ -39,8 +40,7 @@ from invenio_oauth2server.models import Token
 
 
 @pytest.mark.parametrize('authentication', [('user/password'), ('oauth')])
-def test_deposit(app, test_communities, login_user,
-                 test_records_data, authentication):
+def test_deposit(app, test_communities, login_user, authentication):
     """Test record submission with classic login and access token."""
     with app.app_context():
         allowed_user = create_user('allowed')
@@ -63,20 +63,34 @@ def test_deposit(app, test_communities, login_user,
         other_headers = [('Authorization',
                           'Bearer {}'.format(other_token.access_token))]
 
+        community_name = 'MyTestCommunity1'
+        community = Community.get(name=community_name)
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+        com_admin_token = Token.create_personal(
+            'com_admin_token', com_admin.id,
+            scopes=[s[0] for s in scopes]
+        )
+        # application authentication token header
+        com_admin_headers = [('Authorization',
+                              'Bearer {}'.format(com_admin_token.access_token))]
+
+        test_records_data = [generate_record_data(community=community_name)
+                             for idx in range(1,3)]
+
         db.session.commit()
 
     if authentication == 'user/password':
         subtest_deposit(app, test_communities, allowed_user, other_user,
-                        [], [], login_user, test_records_data)
+                        com_admin, [], [], [], login_user, test_records_data)
     else:
         subtest_deposit(app, test_communities, allowed_user, other_user,
-                        allowed_headers, other_headers, lambda u, c: 42,
-                        test_records_data)
+                        com_admin, allowed_headers, other_headers,
+                        com_admin_headers, lambda u, c: 42, test_records_data)
 
 
 def subtest_deposit(app, test_communities, allowed_user, other_user,
-                    allowed_headers, other_headers, login_user,
-                    test_records_data):
+                    com_admin, allowed_headers, other_headers,
+                    com_admin_headers, login_user, test_records_data):
     def url_for(*args, **kwargs):
         """Generate url using flask.url_for and the current app ctx.
 
@@ -100,15 +114,17 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
             uploaded_content = uploaded_files[draft_file['key']]
             assert draft_file['size'] == len(uploaded_content)
 
-    with app.test_client() as client:
-        login_user(allowed_user, client)
-        headers = [('Content-Type', 'application/json'),
-                   ('Accept', 'application/json')] + allowed_headers
-        patch_headers = [('Content-Type', 'application/json-patch+json'),
-                         ('Accept', 'application/json')] + allowed_headers
+    headers = [('Content-Type', 'application/json'),
+                ('Accept', 'application/json')] + allowed_headers
+    patch_headers = [('Content-Type', 'application/json-patch+json'),
+                        ('Accept', 'application/json')] + allowed_headers
+    publish_headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')] + com_admin_headers
 
-        created_records = {}  # dict of created records
-        for record_data in test_records_data:
+    created_records = {}  # dict of created records
+    for record_data in test_records_data:
+        with app.test_client() as client:
+            login_user(allowed_user, client)
             record_list_url = (
                 lambda **kwargs:
                 url_for('b2share_records_rest.b2share_record_list',
@@ -179,6 +195,8 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
                 headers=patch_headers)
             assert draft_submit_res.status_code == 200
 
+        with app.test_client() as client:
+            login_user(com_admin, client)
             # test draft publish
             draft_publish_res = client.patch(
                 url_for('b2share_deposit_rest.b2share_deposit_item',
@@ -187,7 +205,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
                     "op": "replace", "path": "/publication_state",
                     "value": PublicationStates.published.name
                 }]),
-                headers=patch_headers)
+                headers=publish_headers)
 
             assert draft_publish_res.status_code == 200
             draft_publish_data = json.loads(

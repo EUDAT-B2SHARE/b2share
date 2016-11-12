@@ -62,7 +62,6 @@ def subtest_self_link(response_data, response_headers, client):
     headers = [('Accept', 'application/json')]
     self_response = client.get(response_data['links']['self'],
                                headers=headers)
-
     assert self_response.status_code == 200
     self_data = json.loads(self_response.get_data(as_text=True))
     assert self_data == response_data
