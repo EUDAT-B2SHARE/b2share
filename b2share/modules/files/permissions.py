@@ -126,9 +126,20 @@ class DepositFilesPermission(RecordFilesPermission):
             self.permissions.clear()
             self.permissions.add(DenyAllPermission)
         else:
+            from b2share.modules.deposit.permissions import (
+                ReadDepositPermission, UpdateDepositMetadataPermission
+            )
             # all actions are granted to the owner
-            for owner_id in self.record.get('_deposit', {}).get('owners', []):
-                self.permissions.add(Permission(UserNeed(owner_id)))
+            if self.action in {'bucket-read', 'object-read'}:
+                # A user can read the files if he can read the deposit
+                self.permissions.add(
+                    ReadDepositPermission(self.record)
+                )
+            if self.action in {'bucket-update', 'object-delete'}:
+                # A user can modify the files if he can modify the metadata
+                self.permissions.add(
+                    UpdateDepositMetadataPermission(self.record)
+                )
 
 
 class PublicationFilesPermission(RecordFilesPermission):

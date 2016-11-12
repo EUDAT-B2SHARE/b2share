@@ -31,18 +31,26 @@ from b2share.modules.deposit.api import PublicationStates
 from invenio_search import current_search
 from flask import url_for as flask_url_for
 from invenio_db import db
-from b2share_unit_tests.helpers import create_user
+from b2share.modules.communities.api import Community
+from b2share_unit_tests.helpers import (
+    create_user, generate_record_data
+)
 
 
 def test_make_record_with_no_file_and_search(app, test_communities,
-                                             login_user, test_records_data):
+                                             login_user):
     '''Test for issue https://github.com/EUDAT-B2SHARE/b2share/issues/1073'''
     def url_for(*args, **kwargs):
         with app.app_context():
             return flask_url_for(*args, **kwargs)
 
     with app.app_context():
+        community_name = 'MyTestCommunity1'
+        record_data = generate_record_data(community=community_name)
+
         allowed_user = create_user('allowed')
+        community = Community.get(name=community_name)
+        com_admin = create_user('com_admin', roles=[community.admin_role])
         db.session.commit()
 
     with app.test_client() as client:
@@ -51,7 +59,6 @@ def test_make_record_with_no_file_and_search(app, test_communities,
                    ('Accept', 'application/json')]
         patch_headers = [('Content-Type', 'application/json-patch+json'),
                          ('Accept', 'application/json')]
-        record_data = test_records_data[0]
 
         # create record without files
         draft_create_res = client.post(
@@ -72,6 +79,8 @@ def test_make_record_with_no_file_and_search(app, test_communities,
             headers=patch_headers)
         assert draft_submit_res.status_code == 200
 
+    with app.test_client() as client:
+        login_user(com_admin, client)
         # publish record
         draft_publish_res = client.patch(
             url_for('b2share_deposit_rest.b2share_deposit_item',
