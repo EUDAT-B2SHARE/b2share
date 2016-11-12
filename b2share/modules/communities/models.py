@@ -91,6 +91,8 @@ def receive_before_insert(mapper, connection, target):
     """Create community admin and member roles and add their permissions."""
     from b2share.modules.deposit.permissions import (
         create_deposit_need_factory, read_deposit_need_factory,
+        update_deposit_metadata_need_factory,
+        update_deposit_publication_state_need_factory,
     )
     from b2share.modules.deposit.api import PublicationStates
 
@@ -117,6 +119,22 @@ def receive_before_insert(mapper, connection, target):
             community=str(target.id),
             publication_state=PublicationStates.published.name
         ),
+        update_deposit_metadata_need_factory(
+            community=str(target.id),
+            publication_state=PublicationStates.submitted.name
+        ),
+        # permission to publish a submission
+        update_deposit_publication_state_need_factory(
+            community=str(target.id),
+            old_state=PublicationStates.submitted.name,
+            new_state=PublicationStates.published.name
+        ),
+        # permission to ask the owners to fix a submission before resubmitting
+        update_deposit_publication_state_need_factory(
+            community=str(target.id),
+            old_state=PublicationStates.submitted.name,
+            new_state=PublicationStates.draft.name
+        )
     ]
     for need in member_needs:
         db.session.add(ActionRoles.allow(need, role=member_role))
