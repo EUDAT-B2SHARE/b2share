@@ -96,4 +96,4 @@ WORKDIR /eudat
 ADD . b2share
 
 WORKDIR /eudat/b2share
-CMD ["/usr/bin/supervisord"]
+CMD ["/eudat/b2share.sh"]
