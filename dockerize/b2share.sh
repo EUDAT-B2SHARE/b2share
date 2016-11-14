@@ -22,4 +22,4 @@ if [ "${LOAD_DEMO_CONFIG}" = "1" ]; then
     export SSL_CERT_FILE="/eudat/b2share/staging_b2access.pem"
 fi
 
-/usr/bin/b2share run -h 0.0.0.0
+/usr/bin/supervisord
