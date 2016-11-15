@@ -36,7 +36,8 @@ from invenio_oauthclient.handlers import response_token_setter, token_getter, \
 from invenio_oauthclient.proxies import current_oauthclient
 from invenio_oauthclient.signals import account_info_received, \
     account_setup_received
-from invenio_oauthclient.utils import oauth_authenticate, oauth_get_user
+from invenio_oauthclient.utils import oauth_authenticate, oauth_get_user, \
+    oauth_link_external_id
 
 
 REMOTE_APP = dict(
@@ -142,13 +143,11 @@ def authorized_signup_handler(resp, remote, *args, **kwargs):
         account_info_received.send(
             remote, token=token, response=resp, account_info=account_info
         )
-
         user = oauth_get_user(
             remote.consumer_key,
             account_info=account_info,
             access_token=token_getter(remote)[0],
         )
-
         if user is None:
             # Auto sign-up if user not found
             user = oauth_register(account_info)
@@ -185,8 +184,17 @@ def oauth_register(account_info):
     function would fail.
     """
     from flask_security.registerable import register_user
-    email = account_info.get("email")
-    return register_user(email=email, password="")
+    user_data = account_info.get("user")
+    user_data['password'] = ''
+    user = register_user(**user_data)
+    # Create user <-> external id link.
+    oauth_link_external_id(
+        user, dict(
+            id=str(account_info.get('external_id')),
+            method=account_info.get('external_method')
+        )
+    )
+    return user
 
 
 def disconnect_handler(remote, *args, **kwargs):
@@ -225,15 +233,24 @@ def account_info(remote, resp):
         response.close()
         dict_content = json.loads(content.decode('utf-8'))
         if dict_content.get('cn') is None:
-            return dict(email=dict_content.get('email'), nickname=dict_content.get('userName'))
+            username = dict_content.get('userName')
         else:
-            return dict(email=dict_content.get('email'), nickname=dict_content.get('cn'))
+            username = dict_content.get('cn')
+        return dict(
+            user=dict(
+                email=dict_content.get('email'),
+                # Fixme add this once we support user profiles
+                # profile=dict(full_name=username)
+            ),
+            external_id=dict_content.get('unity:persistent'),
+            external_method='B2ACCESS'
+        )
     except http.HTTPError as response:
         content = response.read()
         response.close()
         current_app.logger.warning("Failed to get user info from Unity", exc_info=True)
 
-    return dict(email=None, nickname=None)
+    return {}
 
 
 def account_setup(remote, token, resp):

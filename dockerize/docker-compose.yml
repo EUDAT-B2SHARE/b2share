@@ -11,13 +11,13 @@ services:
     #     volumes:
     #         - /data/db:/var/lib/mysql
     elasticsearch:
-        image: elasticsearch
+        image: elasticsearch:2.2
         ports:
             - "9200:9200"
             - "9300:9300"
 
     redis:
-        image: redis
+        image: redis:3.2
         ports:
             - "6379:6379"
 
@@ -46,7 +46,7 @@ services:
         links:
             - b2share
     mq:
-        image: rabbitmq:3-management
+        image: rabbitmq:3.6-management
         restart: "always"
         ports:
             - "15672:15672"

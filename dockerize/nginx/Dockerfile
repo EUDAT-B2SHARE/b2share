@@ -1,4 +1,4 @@
-FROM nginx
+FROM nginx:1.11
 EXPOSE 80 443
 
 RUN rm /etc/nginx/conf.d/*.conf
