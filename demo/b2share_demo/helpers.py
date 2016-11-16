@@ -366,7 +366,7 @@ def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
         click.secho('Processing record {} "{}"'.format(
                     directory, record_json.get('title')))
     record = _process_record(record_json)
-    if record is not None and int(record_json['record_id'])>525:
+    if record is not None:
         user = get_or_create_user(verbose, record_json['uploaded_by'])
         with current_app.test_request_context('/', base_url=base_url):
             current_app.login_manager.reload_user(user)
@@ -383,6 +383,8 @@ def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
                 logfile.write(traceback.format_exc())
                 logfile.write("ERROR in %s" % record_json['record_id'])
                 logfile.write("********************")
+    if verbose:
+        click.secho("Finished processing {}".format(record['title']))
             
 def _create_bucket(deposit, record_json,directory, logfile, verbose):
     for index, file_dict in enumerate(record_json.get('files', [])):
