@@ -26,6 +26,7 @@
 import uuid
 from contextlib import contextmanager
 from enum import Enum
+from jsonschema import validate
 from urllib.parse import urlparse, urlunparse
 
 from flask import url_for, g
@@ -42,6 +43,7 @@ from .errors import InvalidDepositDataError, InvalidDepositStateError
 from invenio_records.errors import MissingModelError
 from b2share.modules.records.errors import InvalidRecordError
 from b2share.modules.access.policies import is_under_embargo
+from b2share.modules.schemas import BlockSchema #imports from api
 
 
 class PublicationStates(Enum):
@@ -117,6 +119,7 @@ class Deposit(DepositRecord):
             schema,
             _external=True
         )
+                
         deposit = super(Deposit, cls).create(data, id_=id_)
 
         # create file bucket
@@ -154,7 +157,9 @@ class Deposit(DepositRecord):
                 'Cannot submit a deposit in {} state'.format(
                     self.model.json['publication_state'])
             )
-
+            
+        self.validate_community_specific_schemas()
+        
         # publish the deposition if needed
         if (self['publication_state'] == PublicationStates.published.name
                 # check invenio-deposit status so that we do not loop
@@ -170,6 +175,7 @@ class Deposit(DepositRecord):
         return self
 
     def publish(self, pid=None, id_=None):
+        #throws an exception if not valid
         self['publication_state'] = PublicationStates.published.name
         return super(Deposit, self).publish(pid=pid, id_=id_)
 
@@ -186,6 +192,19 @@ class Deposit(DepositRecord):
         self['publication_state'] = PublicationStates.submitted.name
         if commit:
             self.commit()
+            
+    def validate_community_specific_schemas(self):
+        if not 'community_specific' in self.keys():
+            return True
+        community_specific_blocks = self['community_specific']
+        for block_schema_id in community_specific_blocks.keys():
+            block_schema = BlockSchema.get_block_schema(block_schema_id)
+            #to get the last element of an iterator
+            bs_version = max(enumerate(block_schema.versions))[1]
+            schema = {'$schema':bs_version.json_schema}
+            #this will throw an exception if validation fails
+            validate(community_specific_blocks[block_schema_id],schema)
+        return True
 
 
 def create_file_pids(record_metadata):
