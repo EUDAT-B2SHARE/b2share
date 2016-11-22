@@ -220,7 +220,7 @@ const EditRecord = React.createClass({
         this.setState({errors: this.state.errors});
     },
 
-    getValue(blockID, fieldID, type) {
+    getValue(blockID, fieldID) {
         const r = this.state.record;
         if (!r) {
             return null;
@@ -238,12 +238,12 @@ const EditRecord = React.createClass({
         if (type.isArray && !Array.isArray(value)) {
             console.error("array expected, instead got:", value);
         }
-        if (type.isArray) {
+        if (type.isArray && value !== undefined) {
             value = fromJS(value);
         }
+        let path = blockID ? ['community_specific', blockID, fieldID] : [fieldID];
         let record = this.state.record;
-        record = blockID ? record.setIn(['community_specific', blockID, fieldID], value) :
-                           record.set(fieldID, value);
+        record = value !== undefined ? record.setIn(path, value) : record.deleteIn(path);
         const errors = this.state.errors;
         if (!this.validField(value, type)) {
             errors[fieldID] = `Please provide a value for the required field ${fieldID}`
@@ -255,7 +255,13 @@ const EditRecord = React.createClass({
 
     renderScalarField(type, getValue, setValue) {
         if (type.type === 'boolean') {
-            return <Toggle defaultChecked={getValue()} onChange={event => setValue(event.target.checked)} />
+            const value = getValue();
+            return (
+                <div style={{lineHeight:"30px"}}>
+                    <Toggle checked={value} onChange={event => setValue(event.target.checked)}/>
+                    <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
+                </div>
+            );
         } else if (type.type === 'integer') {
             return <NumberPicker defaultValue={getValue()} onChange={setValue} />
         } else if (type.type === 'number') {
@@ -334,12 +340,30 @@ const EditRecord = React.createClass({
         );
     },
 
+    renderOpenAccessField(type, getValue, setValue, disabled) {
+        const value = getValue();
+        return (
+            <div style={{lineHeight:"30px"}}>
+                <Toggle checked={value} onChange={event => setValue(event.target.checked)} disabled={disabled}/>
+                <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
+            </div>
+        );
+    },
+
     renderEmbargoField(type, getValue, setValue) {
         const date = getValue();
         const initial = (date && date !== "") ? moment(date).toDate() : null;
+        const onChange = date => {
+            const m = moment(date);
+            // true if embargo is in the past
+            const access = m.isValid() ? (moment().diff(m) > 0) : true;
+            this.state.record = this.state.record.set('open_access', access);
+            // setValue will call setState
+            setValue(m.isValid() ? m.toISOString() : undefined);
+        };
         return (
-            <DateTimePicker defaultValue={initial} format={"LL"} time={false} finalView={"year"}
-                        onChange={date => setValue(moment(date).toISOString())} />
+            <DateTimePicker format={"LL"} time={false} finalView={"year"}
+                        defaultValue={initial} onChange={onChange} />
         );
     },
 
@@ -352,7 +376,7 @@ const EditRecord = React.createClass({
         if (fieldID === 'description') {
             type.longString = true;
         }
-        const getValue = this.getValue.bind(this, blockID, fieldID, type);
+        const getValue = this.getValue.bind(this, blockID, fieldID);
         const setValue = this.setValue.bind(this, blockID, fieldID, type);
 
         let field = false;
@@ -360,6 +384,10 @@ const EditRecord = React.createClass({
             field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
         } else if (!blockID && fieldID === 'licence') {
             field = this.renderLicenseField(type, getValue, setValue);
+        } else if (!blockID && fieldID === 'open_access') {
+            const embargo = this.getValue(blockID, 'embargo_date');
+            const disabled = embargo && moment(embargo).isValid();
+            field = this.renderOpenAccessField(type, getValue, setValue, disabled);
         } else if (!blockID && fieldID === 'embargo_date') {
             field = this.renderEmbargoField(type, getValue, setValue);
         } else if (!blockID && fieldID === 'language'
