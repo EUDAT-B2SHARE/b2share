@@ -154,16 +154,19 @@ const Record = React.createClass({
         if (type.isArray) {
             const innerType = Object.assign({}, type, {isArray:false});
             value = value.map((v,i) => <span key={i}>{this.renderFieldByType(innerType, v)}; </span>);
-        } else if (type === 'date-time') {
-            value = moment(value).format;
+        } else if (type.type === 'string' && type.format === 'date-time') {
+            value = moment(value).format("LLLL");
         }
 
         if (type.type === 'boolean') {
             const markClass = "glyphicon glyphicon-" + (value ? "ok":"remove");
             const markStyle = {color: value ? "green":"red"};
             return (
-                <label> <span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span>
-                        <span className={markClass} style={markStyle} aria-hidden="true"/></label>);
+                <label>
+                    <span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span>
+                    <span className={markClass} style={markStyle} aria-hidden="true"/>
+                </label>
+            );
         }
 
         return value;
@@ -179,10 +182,11 @@ const Record = React.createClass({
             v = v.toJS();
         }
         const type = getType(fieldSchema, fieldID, blockSchema);
+        const field = this.renderFieldByType(type, v);
         return (
             <div key={fieldID} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
                 <label style={{fontWeight:'bold'}}>{fieldSchema.get('title') || fieldID}: </label>
-                <span> {this.renderFieldByType(type, v)}</span>
+                <span> {field}</span>
             </div>
         );
     },
