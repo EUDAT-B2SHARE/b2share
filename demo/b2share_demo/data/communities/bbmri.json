@@ -3,6 +3,8 @@
     "description": "Biomedical Research.",
     "logo": "/img/communities/bbmri.png",
     "id": "99916f6f-9a2c-4feb-a342-6552ac7f1529",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
     "community_schemas": [
         {
             "root_schema_version": 0,

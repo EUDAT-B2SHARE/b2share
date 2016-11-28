@@ -3,6 +3,8 @@
     "description": "Long-Term Ecosystem Research in Europe",
     "logo": "/img/communities/lter.jpg",
     "id": "d952913c-451e-4b5c-817e-d578dc8a4469",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
     "community_schemas": [
        	 					{
             					"json_schema": {

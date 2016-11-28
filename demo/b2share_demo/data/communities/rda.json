@@ -3,6 +3,8 @@
     "description": "Research Data Alliance",
     "logo": "/img/communities/rda.png",
     "id": "8D963A29-5E19-492B-8CFE-97DA4F54FAD2",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": true,
     "community_schemas": [
         {
             "root_schema_version": 0,
