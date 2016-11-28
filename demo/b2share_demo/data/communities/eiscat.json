@@ -3,6 +3,8 @@
     "description": "Incoherent scatter radar data",
     "id": "b344f92a-cd0e-4e4c-aa09-28b5f95f7e41",
     "name": "EISCAT",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": true,
     "community_schemas": [
         {
             "json_schema": {

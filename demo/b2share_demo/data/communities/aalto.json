@@ -3,6 +3,8 @@
     "description": "Aalto University",
     "id": "c4234f93-da96-4d2f-a2c8-fa83d0775212",
     "logo": "/img/communities/aalto.jpg",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": true,
     "community_schemas": [
         {
             "json_schema": {

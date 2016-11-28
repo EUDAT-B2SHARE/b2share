@@ -3,6 +3,8 @@
     "id": "867c4e67-9227-4b6f-8595-c97d37e9de61",
     "description": "Biodiversity data.",
     "logo": "/img/communities/gbif.png",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
     "community_schemas": [
         {
             "root_schema_version": 0,

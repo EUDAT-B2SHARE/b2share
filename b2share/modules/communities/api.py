@@ -30,12 +30,15 @@ import sqlalchemy
 from invenio_db import db
 from jsonpatch import apply_patch
 from sqlalchemy.orm.exc import NoResultFound
+from invenio_accounts.models import Role
 
 from .errors import CommunityDeletedError, CommunityDoesNotExistError, \
     InvalidCommunityError
 from .signals import after_community_delete, after_community_insert, \
     after_community_update, before_community_delete, before_community_insert, \
     before_community_update
+from .models import Community as CommunityMetadata, _community_admin_role_name, \
+    _community_member_role_name
 
 
 class Community(object):
@@ -70,7 +73,6 @@ class Community(object):
             ValueError: :attr:`id` and :attr:`name` are not set or both are
                     set.
         """
-        from .models import Community as CommunityMetadata
         if not id and not name:
             raise ValueError('"id" or "name" should be set.')
         if id and name:
@@ -91,29 +93,30 @@ class Community(object):
     @classmethod
     def get_all(cls, start=None, stop=None, name=None):
         """Searches for matching communities."""
-        from .models import Community as CommunityMeta
         if (start is None and stop is None):
             if name is None:
-                metadata = CommunityMeta.query.order_by(CommunityMeta.created)
+                metadata = CommunityMetadata.query.order_by(CommunityMetadata.created)
             else:
-                metadata =  CommunityMeta.query.filter(
-                    CommunityMeta.name.like(name)
-                    ).order_by(CommunityMeta.created)
+                metadata =  CommunityMetadata.query.filter(
+                    CommunityMetadata.name.like(name)
+                    ).order_by(CommunityMetadata.created)
         elif not(start is None) and not(stop is None):
             if name is None:
-                metadata = CommunityMeta.query.order_by(
-                    CommunityMeta.created).limit(stop)[start:]
+                metadata = CommunityMetadata.query.order_by(
+                    CommunityMetadata.created).limit(stop)[start:]
             else:
-                metadata = CommunityMeta.query.filter(
-                    CommunityMeta.name.like(name)
-                ).order_by(CommunityMeta.created).limit(stop)[start:]
+                metadata = CommunityMetadata.query.filter(
+                    CommunityMetadata.name.like(name)
+                ).order_by(CommunityMetadata.created).limit(stop)[start:]
         else:
             #one of them is None this cannot happen
             raise ValueError("Neither or both start and stop should be None")
         return [cls(md) for md in metadata]
 
     @classmethod
-    def create_community(cls, name, description, logo=None, id_=None):
+    def create_community(cls, name, description, logo=None, id_=None,
+                         publication_workflow=None,
+                         restricted_submission=False):
         """Create a new Community.
 
         A new community is implicitly associated with a new, empty, schema
@@ -131,14 +134,17 @@ class Community(object):
             b2share.modules.communities.errors.InvalidCommunityError: The
                 community creation failed because the arguments are not valid.
         """
-        from .models import Community as CommunityMetadata
         try:
             with db.session.begin_nested():
                 kwargs = {}
                 if id_ is not None:
                     kwargs['id'] = id_
-                model = CommunityMetadata(name=name, description=description,
-                                          logo=logo, **kwargs)
+                model = CommunityMetadata(name=name,
+                                          description=description,
+                                          logo=logo,
+                                          publication_workflow=publication_workflow,
+                                          restricted_submission=restricted_submission,
+                                          **kwargs)
                 community = cls(model)
                 before_community_insert.send(community)
                 db.session.add(model)
@@ -155,7 +161,8 @@ class Community(object):
         Args:
             data (dict): can have one of those fields: name, description, logo.
                 it replaces the given values.
-            clear_fields (bool): if True, set not specified fields to None.
+            clear_fields (bool): if True, set not specified fields to their
+                default value.
 
         Returns:
             :class:`Community`: self
@@ -171,9 +178,14 @@ class Community(object):
                 if clear_fields:
                     for field in ['name', 'description', 'logo']:
                         setattr(self.model, field, data.get(field, None))
-                else:
-                    for key, value in data.items():
-                        setattr(self.model, key, value)
+                        self.model.publication_workflow = \
+                            'review_and_publish'
+                        self.model.restricted_submission = False
+                # FIXME: what do we do when the publication_workflow is changed?
+                # Do we run the new workflow on all records in order to fix the
+                # their publication_state?
+                for key, value in data.items():
+                    setattr(self.model, key, value)
                 db.session.merge(self.model)
         except sqlalchemy.exc.IntegrityError as e:
             raise InvalidCommunityError() from e
@@ -203,7 +215,9 @@ class Community(object):
         data = apply_patch({
             'name': self.model.name,
             'description': self.model.description,
-            'logo': self.model.logo
+            'logo': self.model.logo,
+            'publication_workflow': self.model.publication_workflow,
+            'restricted_submission': self.model.restricted_submission,
         }, patch, True)
         self.update(data)
         return self
@@ -262,3 +276,25 @@ class Community(object):
     def logo(self):
         """Retrieve community's logo."""
         return self.model.logo
+
+    @property
+    def publication_workflow(self):
+        """Retrieve the name of the publication workflow."""
+        return self.model.publication_workflow
+
+    @property
+    def restricted_submission(self):
+        """Retrieve the deposit creation restriction flag."""
+        return self.model.restricted_submission
+
+    @property
+    def admin_role(self):
+        """Role given to this community's administrators."""
+        return Role.query.filter(
+            Role.name == _community_admin_role_name(self)).one()
+
+    @property
+    def member_role(self):
+        """Role given to this community's members."""
+        return Role.query.filter(
+            Role.name == _community_member_role_name(self)).one()

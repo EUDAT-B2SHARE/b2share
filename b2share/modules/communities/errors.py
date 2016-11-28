@@ -25,6 +25,8 @@
 
 from __future__ import absolute_import
 
+from invenio_rest.errors import RESTException
+
 
 class InvalidCommunityError(Exception):
     """Exception raised when a community is invalid."""
@@ -40,3 +42,9 @@ class CommunityDeletedError(Exception):
     """Exception raised when a requested community is marked as deleted."""
     pass
 
+
+class InvalidPublicationStateError(RESTException):
+    """Exception raised when a deposit is an invalid publication state."""
+
+    code = 400
+    """HTTP Status code."""

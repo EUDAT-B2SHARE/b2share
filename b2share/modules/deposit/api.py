@@ -39,6 +39,8 @@ from invenio_indexer.api import RecordIndexer
 from invenio_records_files.api import Record
 
 from .errors import InvalidDepositDataError, InvalidDepositStateError
+from b2share.modules.communities.api import Community
+from b2share.modules.communities.workflows import publication_workflows
 from invenio_records.errors import MissingModelError
 from b2share.modules.records.errors import InvalidRecordError
 from b2share.modules.access.policies import is_under_embargo
@@ -146,14 +148,9 @@ class Deposit(DepositRecord):
             if is_under_embargo(self):
                 self['open_access'] = False
 
-        # test invalid state transitions
-        if (self['publication_state'] == PublicationStates.submitted.name
-                and self.model.json['publication_state'] !=
-                PublicationStates.draft.name):
-            raise InvalidDepositStateError(
-                'Cannot submit a deposit in {} state'.format(
-                    self.model.json['publication_state'])
-            )
+        community = Community.get(self['community'])
+        workflow = publication_workflows[community.publication_workflow]
+        workflow(self.model, self)
 
         # publish the deposition if needed
         if (self['publication_state'] == PublicationStates.published.name

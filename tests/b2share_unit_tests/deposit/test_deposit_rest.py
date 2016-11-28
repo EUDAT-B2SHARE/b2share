@@ -38,6 +38,10 @@ from b2share_unit_tests.helpers import (
 from invenio_access.models import ActionUsers, ActionRoles
 from b2share.modules.records.providers import RecordUUIDProvider
 from six import BytesIO
+from b2share.modules.deposit.permissions import create_deposit_need_factory, \
+    read_deposit_need_factory
+from b2share.modules.communities.api import Community
+from invenio_db import db
 
 
 def test_deposit_create(app, test_records_data, test_users, login_user):
@@ -124,15 +128,23 @@ def test_deposit_submit(app, test_records_data, draft_deposits, test_users,
                               client)
 
 
-def test_deposit_publish(app, test_records_data, draft_deposits, test_users,
+def test_deposit_publish(app, test_users, test_communities,
                          login_user):
     """Test record draft publication with HTTP PATCH."""
-    record_data = test_records_data[0]
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        community_name = 'MyTestCommunity1'
+        creator = test_users['deposits_creator']
+        record_data = generate_record_data(community=community_name)
+        community = Community.get(name=community_name)
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+
+        deposit = create_deposit(record_data, creator)
+        deposit_id = deposit.id
+        deposit.submit()
+        db.session.commit()
+
         with app.test_client() as client:
-            user = test_users['deposits_creator']
-            login_user(user, client)
+            login_user(com_admin, client)
 
             headers = [('Content-Type', 'application/json-patch+json'),
                        ('Accept', 'application/json')]
@@ -150,15 +162,14 @@ def test_deposit_publish(app, test_records_data, draft_deposits, test_users,
             expected_metadata = build_expected_metadata(
                 record_data,
                 PublicationStates.published.name,
-                owners=[user.id],
+                owners=[creator.id],
                 draft=True,
             )
 
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(deposit_id)
         with app.test_client() as client:
-            user = test_users['deposits_creator']
-            login_user(user, client)
+            login_user(creator, client)
             assert expected_metadata == draft_patch_data['metadata']
             assert (deposit['publication_state']
                     == PublicationStates.published.name)
@@ -259,13 +270,70 @@ def test_deposit_files(app, test_communities, login_user, test_users):
 ######################
 
 
-def test_deposit_read_permissions(app, test_records_data,
-                                  login_user, test_users):
+def test_deposit_create_permission(app, test_users, login_user,
+                                   test_communities):
+    """Test record draft creation."""
+    headers = [('Content-Type', 'application/json'),
+               ('Accept', 'application/json')]
+
+    with app.app_context():
+        community_name = 'MyTestCommunity1'
+        record_data = generate_record_data(community=community_name)
+        community_id = test_communities[community_name]
+        community = Community.get(community_id)
+
+        creator = create_user('creator')
+        need = create_deposit_need_factory(str(community_id))
+        allowed = create_user('allowed', permissions=[need])
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+
+        def restrict_creation(restricted):
+            community.update({'restricted_submission':restricted})
+            db.session.commit()
+
+        def test_creation(expected_code, user=None):
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                draft_create_res = client.post(
+                    url_for('b2share_records_rest.b2share_record_list'),
+                    data=json.dumps(record_data),
+                    headers=headers
+                )
+                assert draft_create_res.status_code == expected_code
+
+        # test creating a deposit with anonymous user
+        restrict_creation(False)
+        test_creation(401)
+        restrict_creation(True)
+        test_creation(401)
+
+        # test creating a deposit with a logged in user
+        restrict_creation(False)
+        test_creation(201, creator)
+        restrict_creation(True)
+        test_creation(403, creator)
+        # test with a use who is allowed
+        test_creation(201, allowed)
+        # test with a community member and admin
+        test_creation(201, com_member)
+        test_creation(201, com_admin)
+
+
+def test_deposit_read_permissions(app, login_user, test_users,
+                                  test_communities):
     """Test deposit read with HTTP GET."""
     with app.app_context():
+        community_name = 'MyTestCommunity1'
+        record_data = generate_record_data(community=community_name)
+        community = Community.get(name=community_name)
+
         admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
 
         def test_get(deposit, status, user=None):
             with app.test_client() as client:
@@ -279,33 +347,47 @@ def test_deposit_read_permissions(app, test_records_data,
                 assert request_res.status_code == status
 
         # test with anonymous user
-        deposit = create_deposit(test_records_data[0], creator)
+        deposit = create_deposit(record_data, creator)
         test_get(deposit, 401)
         deposit.submit()
         test_get(deposit, 401)
         deposit.publish()
         test_get(deposit, 401)
 
-        deposit = create_deposit(test_records_data[0], creator)
+        deposit = create_deposit(record_data, creator)
         test_get(deposit, 403, non_creator)
         deposit.submit()
         test_get(deposit, 403, non_creator)
         deposit.publish()
         test_get(deposit, 403, non_creator)
 
-        deposit = create_deposit(test_records_data[0], creator)
+        deposit = create_deposit(record_data, creator)
         test_get(deposit, 200, creator)
         deposit.submit()
         test_get(deposit, 200, creator)
         deposit.publish()
         test_get(deposit, 200, creator)
 
-        deposit = create_deposit(test_records_data[0], creator)
+        deposit = create_deposit(record_data, creator)
         test_get(deposit, 200, admin)
         deposit.submit()
         test_get(deposit, 200, admin)
         deposit.publish()
         test_get(deposit, 200, admin)
+
+        deposit = create_deposit(record_data, creator)
+        test_get(deposit, 403, com_member)
+        deposit.submit()
+        test_get(deposit, 403, com_member)
+        deposit.publish()
+        test_get(deposit, 403, com_member)
+
+        deposit = create_deposit(record_data, creator)
+        test_get(deposit, 403, com_admin)
+        deposit.submit()
+        test_get(deposit, 200, com_admin)
+        deposit.publish()
+        test_get(deposit, 200, com_admin)
 
 
 def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
@@ -319,17 +401,28 @@ def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
         creator = test_users['deposits_creator']
         non_creator = create_user('non-creator')
 
+        permission_to_read_all_submitted_deposits = read_deposit_need_factory(
+            community=str(test_communities['MyTestCommunity2']),
+            publication_state='submitted',
+        )
         allowed_role = create_role(
             'allowed_role',
-            permissions=[('read-deposit-submitted', None),]
+            permissions=[
+                permission_to_read_all_submitted_deposits
+            ]
         )
         user_allowed_by_role = create_user('user-allowed-by-role',
                                            roles=[allowed_role])
         user_allowed_by_permission = create_user(
             'user-allowed-by-permission',
-            permissions=[('read-deposit-submitted',
-                          str(test_communities['MyTestCommunity2']))]
+            permissions=[
+                permission_to_read_all_submitted_deposits
+            ]
         )
+
+        community = Community.get(test_communities['MyTestCommunity2'])
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
 
         search_deposits_url = url_for(
             'b2share_records_rest.b2share_record_list', drafts=1, size=100)
@@ -367,15 +460,20 @@ def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
         test_search(401, [], None)
         test_search(200, [], non_creator)
 
-        test_search(200, submitted_deposits, user_allowed_by_role)
 
         # search for submitted records
         community2_deposits = [dep for dep in submitted_deposits
                                 if dep.data['community'] ==
                                 str(test_communities['MyTestCommunity2'])]
+        test_search(200, community2_deposits, user_allowed_by_role)
         test_search(200,
                     community2_deposits,
                     user_allowed_by_permission)
+
+        # community admin should have access to all submitted records
+        # in their community
+        test_search(200, [], com_member)
+        test_search(200, community2_deposits, com_admin)
 
 
 def test_deposit_delete_permissions(app, test_records_data,
@@ -436,16 +534,68 @@ def test_deposit_delete_permissions(app, test_records_data,
         test_delete(deposit, 403, admin)
 
 
-def test_deposit_publish_permissions(app, test_records_data, login_user,
-                                     test_users):
+
+def test_deposit_submit_permissions(app, login_user, test_communities,
+                                    test_users):
     """Test deposit publication with HTTP PATCH."""
     with app.app_context():
+        community_name = 'MyTestCommunity1'
+        record_data = generate_record_data(community=community_name)
+
         admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
 
+        community = Community.get(name=community_name)
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+
+        def test_submit(status, user=None):
+            deposit = create_deposit(record_data, creator)
+            headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')]
+            with app.test_client() as client:
+                if user is not None:
+                    login_user(user, client)
+                request_res = client.patch(
+                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                            pid_value=deposit.pid.pid_value),
+                    data=json.dumps([{
+                        "op": "replace", "path": "/publication_state",
+                        "value": PublicationStates.submitted.name
+                    }, {
+                        "op": "replace", "path": "/title",
+                        "value": 'newtitle'
+                    }]),
+                    headers=headers)
+                assert request_res.status_code == status
+
+        # test with anonymous user
+        test_submit(401)
+        test_submit(403, non_creator)
+        test_submit(200, creator)
+        test_submit(200, admin)
+        test_submit(403, com_member)
+        test_submit(403, com_admin)
+
+
+def test_deposit_publish_permissions(app, login_user, test_communities,
+                                     test_users):
+    """Test deposit publication with HTTP PATCH."""
+    with app.app_context():
+        community_name = 'MyTestCommunity1'
+        record_data = generate_record_data(community=community_name)
+
+        admin = test_users['admin']
+        creator = create_user('creator')
+        non_creator = create_user('non-creator')
+
+        community = Community.get(name=community_name)
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+
         def test_publish(status, user=None):
-            deposit = create_deposit(test_records_data[0], creator)
+            deposit = create_deposit(record_data, creator)
             deposit.submit()
             headers = [('Content-Type', 'application/json-patch+json'),
                        ('Accept', 'application/json')]
@@ -468,21 +618,31 @@ def test_deposit_publish_permissions(app, test_records_data, login_user,
         # test with anonymous user
         test_publish(401)
         test_publish(403, non_creator)
-        test_publish(200, creator)
+        test_publish(403, creator)
         test_publish(200, admin)
+        test_publish(403, com_member)
+        test_publish(200, com_admin)
 
 
-def test_deposit_modify_published_permissions(app, test_records_data,
-                                              login_user, test_users):
+def test_deposit_modify_published_permissions(app, login_user, test_communities,
+                                              test_users):
     """Test deposit edition after its publication.
 
     FIXME: This test should evolve when we allow deposit edition.
     """
     with app.app_context():
+        community_name = 'MyTestCommunity1'
+        record_data = generate_record_data(community=community_name)
+
         admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
-        deposit = create_deposit(test_records_data[0], creator)
+
+        community = Community.get(name=community_name)
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+
+        deposit = create_deposit(record_data, creator)
         deposit.submit()
         deposit.publish()
 
@@ -507,21 +667,29 @@ def test_deposit_modify_published_permissions(app, test_records_data,
         test_edit(403, non_creator)
         test_edit(403, creator)
         test_edit(403, admin)
+        test_edit(403, com_member)
+        test_edit(403, com_admin)
 
 
 def test_deposit_files_permissions(app, test_communities, login_user,
                                    test_users):
     """Test deposit read with HTTP GET."""
     with app.app_context():
+        community_name = 'MyTestCommunity1'
+
         admin = test_users['admin']
         creator = create_user('creator')
         non_creator = create_user('non-creator')
+
+        community = Community.get(name=community_name)
+        com_member = create_user('com_member', roles=[community.member_role])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
 
         uploaded_files = {
             'myfile1.dat': b'contents1',
             'myfile2.dat': b'contents2'
         }
-        test_record_data = generate_record_data()
+        test_record_data = generate_record_data(community=community_name)
 
         def test_files_access(draft_access, submitted_access,
                               published_access, user=None):
@@ -559,5 +727,13 @@ def test_deposit_files_permissions(app, test_communities, login_user,
                           published_access=None)
         # Admin
         test_files_access(user=admin, draft_access='write',
+                          submitted_access='write',
+                          published_access=None)
+        # Community member
+        test_files_access(user=com_member, draft_access=None,
+                          submitted_access=None,
+                          published_access=None)
+        # Community admin
+        test_files_access(user=com_admin, draft_access=None,
                           submitted_access='write',
                           published_access=None)

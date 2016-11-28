@@ -54,7 +54,7 @@ I18N_LANGUAGES = [
 
 # FIXME disable authentication by default as B2Access integration is not yet
 # done.
-B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED = True
+B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED = False
 
 # Records
 # =======
@@ -82,6 +82,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
             'application/json-patch+json':
             lambda: request.get_json(force=True),
             'application/json':
+            # FIXME: create a loader so that only allowed fields can be set
             lambda: request.get_json(),
             # 'b2share.modules.deposit.loaders:deposit_record_loader'
         },
@@ -121,6 +122,7 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
             'application/json-patch+json':
             lambda: request.get_json(force=True),
             'application/json':
+            # FIXME: create a loader so that only allowed fields can be set
             lambda: request.get_json(),
             # 'b2share.modules.deposit.loaders:deposit_record_loader'
         },

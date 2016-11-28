@@ -23,9 +23,11 @@
 
 """Access controls for deposits."""
 
+import json
 from copy import deepcopy
 from collections import namedtuple
 from itertools import chain
+from functools import partial
 
 from jsonpatch import apply_patch, JsonPatchException
 from flask_principal import UserNeed
@@ -33,36 +35,95 @@ from invenio_access.permissions import (
     superuser_access, ParameterizedActionNeed, DynamicPermission
 )
 from invenio_access.models import ActionUsers, ActionRoles
+from flask_security import current_user
 from invenio_accounts.models import userrole
 
 from flask import request, abort
-from b2share.modules.access.permissions import (OrPermissions, AndPermissions,
+from b2share.modules.access.permissions import (AuthenticatedNeed,
+                                                OrPermissions, AndPermissions,
                                                 StrictDynamicPermission)
+from b2share.modules.communities.api import Community
 from invenio_db import db
 
+from .api import PublicationStates
+
+
+def _deposit_need_factory(name, **kwargs):
+    if kwargs:
+        for key, value in enumerate(kwargs):
+            if value is None:
+                del kwargs[key]
+
+    if not kwargs:
+        argument = None
+    else:
+        argument = json.dumps(kwargs, separators=(',', ':'), sort_keys=True)
+    return ParameterizedActionNeed(name, argument)
+
+
+def create_deposit_need_factory(community=None, publication_state='draft'):
+    # FIXME: check that the community_id and publication_state exist
+    return _deposit_need_factory('create-deposit',
+                                 community=community,
+                                 publication_state=publication_state)
+
+
+def read_deposit_need_factory(community, publication_state):
+    # FIXME: check that the community_id and publication_state exist
+    return _deposit_need_factory('read-deposit',
+                                 community=community,
+                                 publication_state=publication_state)
+
+
+def update_deposit_publication_state_need_factory(community, old_state,
+                                                  new_state):
+    # FIXME: check that the community_id and publication states exist
+    return _deposit_need_factory('update-deposit-publication-state',
+                                 community=community,
+                                 old_state=old_state,
+                                 new_state=new_state)
+
+
+def update_deposit_metadata_need_factory(community, publication_state):
+    # FIXME: check that the community_id and publication state exist
+    return _deposit_need_factory('update-deposit-metadata',
+                                 community=community,
+                                 publication_state=publication_state)
+
+
+ReadableCommunities = namedtuple('ReadableCommunities', ['all', 'communities'])
+
+
 def list_readable_communities(user_id):
-    result = namedtuple('ReadableCommunities', ['all', 'communities'])(
-        set(), {})
+    """List all communities whose records can be read by the given user.
+
+    Args:
+        user_id: id of the user which has read access to the retured
+        communities.
+
+    Returns:
+        ReadableCommunities: list of communities which can be read by the
+        given user with the publication_states limitation when the access
+        is restricted to some states.
+    """
+    result = ReadableCommunities(set(), {})
     roles_needs = db.session.query(ActionRoles).join(
         userrole, ActionRoles.role_id == userrole.columns['role_id']
     ).filter(
         userrole.columns['user_id'] == user_id,
-        ActionRoles.action.like('read-deposit-%')
+        ActionRoles.action == 'read-deposit',
     ).all()
     user_needs = ActionUsers.query.filter(
         ActionUsers.user_id == user_id,
-        ActionRoles.action.like('read-deposit-%'),
+        ActionUsers.action == 'read-deposit',
     ).all()
 
     for need in chain(roles_needs, user_needs):
-        publication_state = need.action[13:]
-        community_id = need.argument
-        if community_id is None:
-            result.all.add(publication_state)
-        else:
-            result.communities.setdefault(community_id, set()).add(
-                publication_state)
+        argument = json.loads(need.argument)
+        result.communities.setdefault(argument['community'], set()).add(
+            argument['publication_state'])
     return result
+
 
 class CreateDepositPermission(OrPermissions):
     """Deposit read permission."""
@@ -78,16 +139,17 @@ class CreateDepositPermission(OrPermissions):
 
         if record is not None:
             needs = set()
-            needs.add(ParameterizedActionNeed(
-                'create-deposit-{}'.format(
-                    record.get('publication_state', 'draft')),
-                record['community'])
-            )
-            needs.add(ParameterizedActionNeed(
-                'create-deposit-{}'.format(
-                    record.get('publication_state', 'draft')),
-                None)
-            )
+            community = Community.get(record['community'])
+            publication_state = record.get('publication_state', 'draft')
+            if publication_state != 'draft' or community.restricted_submission:
+                needs.add(create_deposit_need_factory())
+                needs.add(create_deposit_need_factory(
+                    community=record['community'],
+                    publication_state=publication_state,
+                ))
+            elif not community.restricted_submission:
+                needs.add(AuthenticatedNeed)
+
             self.permissions.add(StrictDynamicPermission(*needs))
 
     def allows(self, *args, **kwargs):
@@ -127,14 +189,52 @@ class ReadDepositPermission(DepositPermission):
     """Deposit read permission."""
 
     def _load_additional_permissions(self):
-        permission = DynamicPermission()
-        for owner_id in self.deposit['_deposit']['owners']:
-            permission.needs.add(UserNeed(owner_id))
-        permission.needs.add(ParameterizedActionNeed(
-            'read-deposit-{}'.format(self.deposit['publication_state']),
-            self.deposit['community'])
-        )
+        # owners of the deposit are allowed to read the deposit.
+        needs = set(UserNeed(owner_id)
+                 for owner_id in self.deposit['_deposit']['owners'])
+        # add specific permission to read deposits of this community
+        # in this publication state
+        needs.add(read_deposit_need_factory(
+            community=self.deposit['community'],
+            publication_state=self.deposit['publication_state'],
+        ))
+        permission = DynamicPermission(*needs)
         self.permissions.add(permission)
+
+
+class UpdateDepositMetadataPermission(StrictDynamicPermission):
+    """Permissio to update a deposit's metadata fields."""
+
+    def __init__(self, deposit, new_state=None):
+        """Constructor
+
+        Args:
+            deposit (Deposit): deposit which is modified.
+            new_state (str): new publication state of the deposit
+                if applicable.
+        """
+        super(UpdateDepositMetadataPermission, self).__init__()
+        # Owners are allowed to update
+        for owner_id in deposit['_deposit']['owners']:
+            self.explicit_needs.add(UserNeed(owner_id))
+
+        # authorize if the user can modify metadata in the old
+        # publication state
+        self.explicit_needs.add(
+            update_deposit_metadata_need_factory(
+                community=deposit['community'],
+                publication_state=deposit['publication_state']
+            )
+        )
+        # authorize if the user can modify metadata in the new
+        # publication state
+        if new_state != deposit['publication_state']:
+            self.explicit_needs.add(
+                update_deposit_metadata_need_factory(
+                    community=deposit['community'],
+                    publication_state=new_state
+                )
+            )
 
 
 class UpdateDepositPermission(DepositPermission):
@@ -168,36 +268,41 @@ class UpdateDepositPermission(DepositPermission):
         if (new_deposit is not None and new_deposit['publication_state']
                 != self.deposit['publication_state']):
             state_permission = StrictDynamicPermission()
-            # state_permission.needs.add(ParameterizedActionNeed(
-            #     'deposit-publication-state-transition-{0}-{1}'.format(
-            #         self.deposit['publication_state'],
-            #         new_deposit['publication_state'])
-            #     , self.deposit['community'])
-            # )
-            # User can change the state
-            # FIXME: Disable later user pulication when it is not allowed
-            for owner_id in self.deposit['_deposit']['owners']:
-                state_permission.needs.add(UserNeed(owner_id))
+            state_permission.explicit_needs.add(
+                update_deposit_publication_state_need_factory(
+                    community=self.deposit['community'],
+                    old_state=self.deposit['publication_state'],
+                    new_state=new_deposit['publication_state']
+                )
+            )
+            # Owners of a record can always "submit" it.
+            if (self.deposit['publication_state'] ==
+                PublicationStates.draft.name and
+                new_deposit['publication_state'] ==
+                PublicationStates.submitted.name or
+                # Owners have also the right to move the record from submitted
+                # to draft again.
+                self.deposit['publication_state'] ==
+                PublicationStates.submitted.name and
+                new_deposit['publication_state'] ==
+                PublicationStates.draft.name):
+                # Owners are allowed to update
+                for owner_id in self.deposit['_deposit']['owners']:
+                    state_permission.explicit_needs.add(UserNeed(owner_id))
             permissions.append(state_permission)
 
         # Create permission for updating generic metadata fields.
         # Only superadmin can modify published draft.
         if self.deposit['publication_state'] != 'published':
+            new_state = new_deposit['publication_state']
             # Check if any metadata has been changed
             del new_deposit['publication_state']
             original_metadata = deepcopy(self.deposit)
             del original_metadata['publication_state']
             if original_metadata != new_deposit:
-                metadata_permission = StrictDynamicPermission()
-                # Owners are allowed to update
-                for owner_id in self.deposit['_deposit']['owners']:
-                    metadata_permission.needs.add(UserNeed(owner_id))
-                # metadata_permission.needs.add(ParameterizedActionNeed(
-                #     'update-deposit-{}'.format(
-                #         self.deposit['publication_state'])
-                #     , self.deposit['community'])
-                # )
-                permissions.append(metadata_permission)
+                permissions.append(
+                    UpdateDepositMetadataPermission(self.deposit, new_state)
+                )
 
         if len(permissions) > 1:
             self.permissions.add(AndPermissions(*permissions))
@@ -209,13 +314,9 @@ class DeleteDepositPermission(DepositPermission):
     """Deposit delete permission."""
 
     def _load_additional_permissions(self):
-        permission = DynamicPermission()
+        permission = StrictDynamicPermission()
         # owners can delete the deposit if it is not published
         if not 'pid' in self.deposit['_deposit']:
             for owner_id in self.deposit['_deposit']['owners']:
                 permission.needs.add(UserNeed(owner_id))
-        permission.needs.add(ParameterizedActionNeed(
-            'delete-deposit-{}'.format(self.deposit['publication_state']),
-            self.deposit['community'])
-        )
         self.permissions.add(permission)
