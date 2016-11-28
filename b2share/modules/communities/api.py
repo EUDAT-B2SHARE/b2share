@@ -37,8 +37,8 @@ from .errors import CommunityDeletedError, CommunityDoesNotExistError, \
 from .signals import after_community_delete, after_community_insert, \
     after_community_update, before_community_delete, before_community_insert, \
     before_community_update
-from .models import Community as CommunityMetadata, _communiy_admin_role_name, \
-    _communiy_member_role_name
+from .models import Community as CommunityMetadata, _community_admin_role_name, \
+    _community_member_role_name
 
 
 class Community(object):
@@ -95,19 +95,19 @@ class Community(object):
         """Searches for matching communities."""
         if (start is None and stop is None):
             if name is None:
-                metadata = CommunityMeta.query.order_by(CommunityMeta.created)
+                metadata = CommunityMetadata.query.order_by(CommunityMetadata.created)
             else:
-                metadata =  CommunityMeta.query.filter(
-                    CommunityMeta.name.like(name)
-                    ).order_by(CommunityMeta.created)
+                metadata =  CommunityMetadata.query.filter(
+                    CommunityMetadata.name.like(name)
+                    ).order_by(CommunityMetadata.created)
         elif not(start is None) and not(stop is None):
             if name is None:
-                metadata = CommunityMeta.query.order_by(
-                    CommunityMeta.created).limit(stop)[start:]
+                metadata = CommunityMetadata.query.order_by(
+                    CommunityMetadata.created).limit(stop)[start:]
             else:
-                metadata = CommunityMeta.query.filter(
-                    CommunityMeta.name.like(name)
-                ).order_by(CommunityMeta.created).limit(stop)[start:]
+                metadata = CommunityMetadata.query.filter(
+                    CommunityMetadata.name.like(name)
+                ).order_by(CommunityMetadata.created).limit(stop)[start:]
         else:
             #one of them is None this cannot happen
             raise ValueError("Neither or both start and stop should be None")
@@ -139,8 +139,12 @@ class Community(object):
                 kwargs = {}
                 if id_ is not None:
                     kwargs['id'] = id_
-                model = CommunityMetadata(name=name, description=description,
-                                          logo=logo, **kwargs)
+                model = CommunityMetadata(name=name,
+                                          description=description,
+                                          logo=logo,
+                                          publication_workflow=publication_workflow,
+                                          restricted_submission=restricted_submission,
+                                          **kwargs)
                 community = cls(model)
                 before_community_insert.send(community)
                 db.session.add(model)
@@ -213,6 +217,7 @@ class Community(object):
             'description': self.model.description,
             'logo': self.model.logo,
             'publication_workflow': self.model.publication_workflow,
+            'restricted_submission': self.model.restricted_submission,
         }, patch, True)
         self.update(data)
         return self
@@ -286,10 +291,10 @@ class Community(object):
     def admin_role(self):
         """Role given to this community's administrators."""
         return Role.query.filter(
-            Role.name == _communiy_admin_role_name(self)).one()
+            Role.name == _community_admin_role_name(self)).one()
 
     @property
     def member_role(self):
         """Role given to this community's members."""
         return Role.query.filter(
-            Role.name == _communiy_member_role_name(self)).one()
+            Role.name == _community_member_role_name(self)).one()

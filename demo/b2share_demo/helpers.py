@@ -134,10 +134,16 @@ def _create_communities(path, verbose):
                 with open(os.path.join(communities_dir,
                                        filename)) as json_file:
                     json_config = json.loads(json_file.read())
+                    workflow = json_config.get('publication_workflow',
+                                               'review_and_publish')
+                    is_restricted = json_config.get('restricted_submission',
+                                                    False)
                     community = Community.create_community(
                         name=json_config['name'],
                         description=json_config['description'],
                         logo=json_config['logo'],
+                        publication_workflow=workflow,
+                        restricted_submission=is_restricted,
                         id_=UUID(json_config['id']),
                     )
                     if verbose > 1:

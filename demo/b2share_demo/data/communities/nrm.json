@@ -3,6 +3,8 @@
     "description": "Herbarium data.",
     "logo": "/img/communities/nrm.png",
     "name": "NRM",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
     "community_schemas": [
         {
             "root_schema_version": 0,

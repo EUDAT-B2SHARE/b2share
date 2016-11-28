@@ -3,6 +3,8 @@
     "description": "Meteorology and climate data.",
     "name": "DRIHM",
     "logo": "/img/communities/drihm.png",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
     "community_schemas": [
         {
             "json_schema": {

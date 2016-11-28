@@ -65,7 +65,7 @@ def direct_publish_workflow(previous_model, new_deposit):
             raise InvalidPublicationStateError(
                 description='Transition from publication state {0} to {1} is '
                 'not allowed by community\'s workflow {2}'.format(
-                    previous_state, new_state, 'review_and_publish'
+                    previous_state, new_state, 'direct_publish'
                 )
             )
     # Publish automatically when submitted

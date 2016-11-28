@@ -76,12 +76,12 @@ class Community(db.Model, Timestamp):
                                       default=False)
 
 
-def _communiy_admin_role_name(community):
+def _community_admin_role_name(community):
     """Generate the name of the given community's admin role."""
     return 'com:{0}:{1}'.format(community.id.hex, 'admin')
 
 
-def _communiy_member_role_name(community):
+def _community_member_role_name(community):
     """Generate the name of the given community's member role."""
     return 'com:{0}:{1}'.format(community.id.hex, 'member')
 
@@ -97,11 +97,11 @@ def receive_before_insert(mapper, connection, target):
     from b2share.modules.deposit.api import PublicationStates
 
     admin_role = Role(
-        name=_communiy_admin_role_name(target),
+        name=_community_admin_role_name(target),
         description='Admin role of the community "{}"'.format(target.name)
     )
     member_role = Role(
-        name=_communiy_member_role_name(target),
+        name=_community_member_role_name(target),
         description='Member role of the community "{}"'.format(target.name)
     )
 

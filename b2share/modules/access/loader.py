@@ -52,11 +52,11 @@ def _load_permissions_on_identity_loaded(sender, identity):
 def _register_anonymous_loader():
     """Register the Anonymous Identity loader."""
 
-    def anonymous_idendity_loader():
+    def anonymous_identity_loader():
         identity = AnonymousIdentity()
         # Here we can add configurable permissions to anonymous users.
         return identity
-    current_flask_security.principal.identity_loader(anonymous_idendity_loader)
+    current_flask_security.principal.identity_loader(anonymous_identity_loader)
 
 
 def register_permissions_loader(app):
