@@ -180,7 +180,7 @@ module.exports = function() {
                 one HTTP request per file. Use the
                 <a href={`#upload-file`}> Upload file </a> function</li>
             <li>Set the complete metadata and publish the record. Use the
-                <a href={`#publish-draft`}> Publish draft </a> function</li>
+                <a href={`#submit-draft`}> Submit draft for publication </a> function</li>
         </ol>
 
         <h3 id="migration">Migrating to the B2SHARE v2 HTTP API</h3>
@@ -201,7 +201,7 @@ module.exports = function() {
                 instead of the old record URL, see the
                 <a href={`#upload-file`}> Upload file </a> function</li>
             <li>Update the old 'commit' action as described in the
-                <a href={`#publish-draft`}> Publish draft </a> function</li>
+                <a href={`#submit-draft`}> Submit draft for publication </a> function</li>
         </ol>
 
 
@@ -512,19 +512,21 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="publish-draft">Publishing a draft record</h3>
-        <p> This action transforms a draft record into a published record, and
+        <h3 id="submit-draft">Submit a draft record for publication</h3>
+        <p> This action marks the draft record as complete and submits it for
+            publication. Currently B2SHARE automatically publishes all the
+            submitted drafts. Please be advised that publishing the draft
             <strong> will make its files immutable</strong>.</p>
-        <p> A draft record becomes published if a special metadata field, called
-            'publication_state' is set to 'published'. This field can be set
-            using the PATCH call described above.</p>
+        <p> A draft record is submitted for publication if a special metadata
+            field, called 'publication_state' is set to 'submitted'. This field
+            can be set using the PATCH call described above.</p>
         <p> Depending on the domain specification, other fields could be
             required in order to successfully publish a record. In case one of
             the required fields is missing the request fails and an error
             message is returned with further details.</p>
 
         <Example>
-            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/publication_state", "value": "published"}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/publication_state", "value": "submitted"}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
