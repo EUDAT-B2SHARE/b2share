@@ -3,6 +3,8 @@
     "id": "893fad89-dc4a-4f1b-a9ba-4240aa18e12b",
     "name": "EUON",
     "logo": "/img/communities/euon.png",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
     "community_schemas": [
         {
             "json_schema": {

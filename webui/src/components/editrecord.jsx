@@ -569,15 +569,15 @@ const EditRecord = React.createClass({
             this.setState({dirty:false});
         }
         serverCache.patchRecord(this.props.record.get('id'), patch,
-                    this.getPublishedState() ? onSaveAndPublish : onSave);
+                    this.isSubmittedSet() ? onSaveAndPublish : onSave);
     },
 
-    getPublishedState() {
-        return this.state.record.get('publication_state') == 'published';
+    isSubmittedSet() {
+        return this.state.record.get('publication_state') == 'submitted';
     },
 
     setPublishedState(e) {
-        const state = e.target.checked ? 'published' : 'draft';
+        const state = e.target.checked ? 'submitted' : 'draft';
         const record = this.state.record.set('publication_state', state);
         this.setState({record});
     },
@@ -623,12 +623,12 @@ const EditRecord = React.createClass({
                             <div className="col-sm-offset-3 col-sm-6 alert alert-warning" key={id}>{msg} </div>) }
                         <div className="col-sm-offset-3 col-sm-6">
                             <label style={{fontSize:18, fontWeight:'normal'}}>
-                                <input type="checkbox" value={this.getPublishedState} onChange={this.setPublishedState}/>
+                                <input type="checkbox" value={this.isSubmittedSet} onChange={this.setPublishedState}/>
                                 {" "}Submit draft for publication
                             </label>
                             <p>When the draft is published it will be assigned a PID, making it publicly citable.
                                 But a published record's files can no longer be modified by its owner. </p>
-                            {   this.getPublishedState() ?
+                            {   this.isSubmittedSet() ?
                                     <button type="submit" className="btn btn-primary btn-default btn-block btn-danger" onClick={this.updateRecord}>
                                         Save and Publish </button>
                                 : this.state.dirty ?
