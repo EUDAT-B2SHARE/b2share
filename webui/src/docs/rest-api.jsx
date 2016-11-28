@@ -183,6 +183,28 @@ module.exports = function() {
                 <a href={`#publish-draft`}> Publish draft </a> function</li>
         </ol>
 
+        <h3 id="migration">Migrating to the B2SHARE v2 HTTP API</h3>
+        <p> The following changes are needed for a B2SHARE version 1 client using
+            the old HTTP API in order to make it work with B2SHARE version 2
+            for creating and publishing a record: </p>
+        <ol>
+            <li>Identify the unique ID of your target community or communities: see
+                <a href={`#list-all-communities`}> List all communities </a> function
+            </li>
+            <li>Update the URL for creating a new record, from
+                <code>/api/deposition/</code> to <code>/api/records/</code>; see
+                <a href={`#create-draft`}> Create draft record </a> function</li>
+            <li>Update the json structure of the newly created records to match the
+                required JSON schema structure, see the
+                <a href={`#get-community-schema`}> Get community schema </a> function </li>
+            <li>Update the file upload calls, making sure that the file bucket url is used
+                instead of the old record URL, see the
+                <a href={`#upload-file`}> Upload file </a> function</li>
+            <li>Update the old 'commit' action as described in the
+                <a href={`#publish-draft`}> Publish draft </a> function</li>
+        </ol>
+
+
 
         <h2>The HTTP API</h2>
 
