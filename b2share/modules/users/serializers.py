@@ -33,24 +33,24 @@ def _generic_search_result(item_array):
     }
 
 
-def user_to_json_serializer(user, code=200, headers=None):
+def user_to_json_serializer(user, code=200):
     """Build a json flask response using the given data.
     :Returns: A flask response with json data.
     :Returns Type: :py:class:`flask.Response`
     """
     data = {}
     if user.is_authenticated:
+        roles = [{'description': r.description, 'name': r.name}
+                 for r in user.roles]
         data = {
             'id': user.id,
             'name': user.email,
             'email': user.email,
-            'roles': user.roles
+            'roles': roles
         }
 
     response = jsonify(data)
     response.status_code = code
-    if headers is not None:
-        response.headers.extend(headers)
     return response
 
 
@@ -67,8 +67,6 @@ def token_to_dict(token, show_access_token=False):
 def token_to_json_serializer(token, show_access_token=False, code=200, headers=None):
     response = jsonify(token_to_dict(token, show_access_token=show_access_token))
     response.status_code = code
-    if headers is not None:
-        response.headers.extend(headers)
     return response
 
 
@@ -77,6 +75,4 @@ def token_list_to_json_serializer(token_list, code=200, headers=None):
     response = _generic_search_result(token_dict_list)
     response = jsonify(response)
     response.status_code = code
-    if headers is not None:
-        response.headers.extend(headers)
     return response
