@@ -20,7 +20,7 @@
 
 from __future__ import absolute_import
 
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, request, jsonify
 from flask_login import current_user
 from flask_security.decorators import auth_required
 
@@ -104,7 +104,7 @@ class UserTokenList(ContentNegotiatedMethodView):
             token_name, current_user.get_id(), scopes=[s[0] for s in scopes]
         )
         db.session.commit()
-        return token_to_json_serializer(token, show_access_token=True)
+        return token_to_json_serializer(token, show_access_token=True, code=201)
 
 
 class UserToken(ContentNegotiatedMethodView):
@@ -130,7 +130,7 @@ class UserToken(ContentNegotiatedMethodView):
         token = _get_token(token_id)
         db.session.delete(token)
         db.session.commit()
-        return {} # ok
+        return jsonify({}) # ok
 
 
 blueprint.add_url_rule('/current', view_func=CurrentUser.as_view('current_user'))
