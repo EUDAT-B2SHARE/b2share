@@ -36,7 +36,6 @@
                             "type": "string"
                         }
                     },
-                    "required": [ "metadata_url" ],
                     "additionalProperties": false
                 }
             ]
