@@ -104,7 +104,7 @@ export const UserProfile = React.createClass({
                     <div className="row">
                         <h3>Roles</h3>
                         {roles && roles.count() ?
-                            roles.map(r => <li>{r}</li>)
+                            roles.map(r => <li key={r.get('name')}>{r.get('description')}</li>)
                             : <p>You have no assigned roles</p>
                         }
                     </div>
