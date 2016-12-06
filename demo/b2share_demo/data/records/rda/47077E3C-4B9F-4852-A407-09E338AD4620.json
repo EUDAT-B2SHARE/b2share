@@ -1,14 +1,14 @@
 {
-    "title": "RDA Foundation Governance Document",
-    "community": "$COMMUNITY_ID[RDA]",
-    "open_access": true,
-    "description": "A document describing the high-level structures of the Research Data Alliance Foundation. This document is separate from the regular governance document, which describes procedures and processes.",
-    "creators": ["Research Data Alliance Council"],
-    "resource_type": ["Text"],
+    "titles": [{"title":"RDA Foundation Governance Document"}],
+    "descriptions": [{"description":"A document describing the high-level structures of the Research Data Alliance Foundation. This document is separate from the regular governance document, which describes procedures and processes."}],
+    "creators": [{"creator":"Research Data Alliance Council"}],
+    "resource_types": [{"resource_type":"Text"}],
     "contact_email": "x@rd-alliance.org",
-    "keywords": ["Research Data Alliance", "RDA", "Governance", "Foundation", "RDA Policy"],
+    "subjects": [{"subject":"Research Data Alliance"}, {"subject":"RDA"}, {"subject":"Governance"}, {"subject":"Foundation"}, {"subject":"RDA Policy"}],
     "licence": "Creative Commons Attribution (CC-BY)",
-    "alternate_identifier": "10.15497/A675341C-F705-4136-B7C3-B9C14B556186",
+    "alternate_identifiers": [{"alternate_identifier":"10.15497/A675341C-F705-4136-B7C3-B9C14B556186"}],
+    "open_access": true,
+    "community": "$COMMUNITY_ID[RDA]",
     "community_specific": {
         "$BLOCK_SCHEMA_ID[rda]": {
             "coverage": "Official Document",

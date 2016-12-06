@@ -5,62 +5,172 @@
         "type": "object",
         "properties": {
             "$schema": { "type": "string" },
-            "publication_state": {
-                "title": "Publication State",
-                "description": "State of the publication workflow.",
-                "type": "string",
-                "enum": [ "draft", "submitted", "published" ]
-            },
-            "_pid": {
-                "title": "Persistent Identifiers",
-                "description": "Array of persistent identifiers pointing to this record.",
+
+            "creators": {
+                "title": "Creators",
+                "description": "The full name of the creators. The personal name format should be: family, given (e.g.: Smith, John)",
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "type": {
-                            "description": "Type of the persistent identifier.",
-                            "type": "string"
-                        },
-                        "value": {
-                            "description": "Value of the persistent identifier.",
+                        "creator_name": {
                             "type": "string"
                         }
                     }
-                }
-            },
-            "community": {
-                "title": "Community",
-                "description": "The community to which the record has been submitted.",
-                "type": "string"
-            },
-            "title": {
-                "title": "Title",
-                "description": "The title of the uploaded resource: a name that indicates its content.",
-                "type": "string"
-            },
-            "description": {
-                "title": "Description",
-                "description": "A more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
-                "type": "string"
-            },
-            "creators": {
-                "title": "Authors",
-                "description": "The record author(s).",
-                "type": "array",
-                "items": {"type": "string"},
+                },
                 "uniqueItems": true
             },
+            "titles": {
+                "title": "Title",
+                "description": "The title(s) of the uploaded resource, or a name by which the resource is known ",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "minItems":1,
+                "uniqueItems": true
+            },
+
             "open_access": {
                 "title": "Open Access",
                 "description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible. ",
                 "type": "boolean"
             },
-			"publication_date" : {
-				"title" : "Publication Date",
-				"description" : "The date when the data was or will be made publicly available (e.g. 1971-07-13)",
-				"format":"date"
-			},
+            "embargo_date": {
+                "title": "Embargo Date",
+                "description": "The date marking the end of the embargo period. The record will be marked as open access on the specified date at midnight. Please note that the record metadata is always publicly accessible, and only the data files can have private access.",
+
+            "publisher": {
+                "title": "Publisher",
+                "description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
+                "type": "string",
+                "default": "https://b2share.eudat.eu"
+            },
+            "publication_date" : {
+                "title" : "Publication Date",
+                "description" : "The date when the data was or will be made publicly available (e.g. 1971-07-13)",
+                "format":"date"
+            },
+            "publication_year": {
+                "title": "Publication Year",
+                "description": "The year when the data was or will be made publicly available (e.g. 2012). If an embargo period has been in effect, use the date when the embargo period ends.",
+                "type": "string"
+            },
+            "discipline": {
+                "title": "Discipline",
+                "description": "The scientific discipline linked with the resource.",
+                "type": "string"
+            },
+            "subjects": {
+                "title": "Keywords",
+                "description": "A list of subjects, keywords, classification codes, or key phrases describing the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "subject": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "uniqueItems": true
+            },
+            "contributors": {
+                "title": "Contributors",
+                "description": "The list of all other contributors. Please mention all persons that were relevant in the creation of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "contributor_name": {
+                            "type": "string"
+                        },
+                        "contributor_type": {
+                            "enum": ["ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", "HostingInstitution", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", "RelatedPerson", "Researcher", "ResearchGroup", "RightsHolder", "Sponsor", "Supervisor", "WorkPackageLeader", "Other"]
+                        }
+                    }
+                },
+                "uniqueItems": true
+            },
+            "language": {
+                "title": "Language",
+                "description": "The name of the language the document is written in.",
+                "type": "string",
+                "default": "en"
+            },
+            "resource_types": {
+                "title": "Resource Type",
+                "description": "The type(s) of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "resource_type": {
+                            "type": "string"
+                        },
+                        "resource_type_general": {
+                            "enum": ["Audiovisual", "Collection", "Dataset", "Event", "Image", "InteractiveResource", "Model", "PhysicalObject", "Service", "Software", "Sound", "Text", "Workflow", "Other"]
+                        }
+                    }
+                },
+                "uniqueItems": true
+            },
+            "alternate_identifiers": {
+                "title": "Alternate identifiers",
+                "description": "Any kind of other reference such as a URN, URI or an ISBN number.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "alternate_identifier": {
+                            "type": "string"
+                        },
+                        "alternate_identifier_type": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "uniqueItems": true
+            },
+            "descriptions": {
+                "title": "Descriptions",
+                "description": "A more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                            "type": "string"
+                        },
+                        "description_type": {
+                            "enum": ["Abstract", "Methods", "SeriesInformation", "TableOfContents", "TechnicalInfo", "Other"]
+                        }
+                    }
+                },
+                "uniqueItems": true
+            },
+            "version": {
+                "title": "Version",
+                "description": "Denote the version of the resource.",
+                "type": "string"
+            },
+            "contact_email": {
+                "title": "Contact Email",
+                "description": "Contact email information for this record.",
+                "type": "string",
+                "format": "email"
+            },
+
+            "open_access": {
+                "title": "Open Access",
+                "description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible. ",
+                "type": "boolean"
+            },
             "embargo_date": {
                 "title": "Embargo Date",
                 "description": "The date marking the end of the embargo period. The record will be marked as open access on the specified date at midnight. Please note that the record metadata is always publicly accessible, and only the data files can have private access.",
@@ -72,69 +182,28 @@
                 "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
                 "type": "string"
             },
-            "keywords": {
-                "title": "Keywords",
-                "description": "A list of keywords that characterize the content.",
-                "type": "array",
-                "items": {"type": "string"},
-                "uniqueItems": true
-            },
-            "contact_email": {
-                "title": "Contact Email",
-                "description": "Contact email information for this record.",
-                "type": "string",
-                "format": "email"
-            },
-            "discipline": {
-                "title": "Discipline",
-                "description": "The scientific discipline linked with the resource.",
-                "type": "string"
-            },
 
-            "contributors": {
-                "title": "Contributors",
-                "description": "The list of all other contributors. Please mention all persons that were relevant in the creation of the resource.",
-                "type": "array",
-                "items": {"type": "string"},
-                "uniqueItems": true
-            },
-            "resource_type": {
-                "title": "Resource Type",
-                "description": "The type of the resource.",
-                "type": "array",
-                "items": {
-                    "type": "string",
-                    "enum": ["Audiovisual", "Collection", "Dataset", "Event", "Image",
-                        "InteractiveResource", "Model", "PhysicalObject", "Service",
-                        "Software", "Sound", "Text", "Workflow", "Other"]
-                },
-                "uniqueItems": true
-            },
-            "alternate_identifier": {
-                "title": "Alternate identifier.",
-                "description": "Any kind of other reference such as a URN, URI or an ISBN number.",
+            "community": {
+                "title": "Community",
+                "description": "The community to which the record has been submitted.",
                 "type": "string"
-            },
-            "version": {
-                "title": "Version",
-                "description": "Denote the version of the resource.",
-                "type": "string"
-            },
-            "publisher": {
-                "title": "Publisher",
-                "description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
-                "type": "string",
-                "default": "https://b2share.eudat.eu"
-            },
-            "language": {
-                "title": "Language",
-                "description": "The name of the language the document is written in.",
-                "type": "string",
-                "default": "en"
             },
 
             "community_specific": {
                 "type": "object"
+            },
+
+
+            "publication_state": {
+                "title": "Publication State",
+                "description": "State of the publication workflow.",
+                "type": "string",
+                "enum": [ "draft", "submitted", "published" ]
+            },
+
+            "_pid": {
+                "title": "Persistent Identifiers",
+                "description": "Array of persistent identifiers pointing to this record."
             },
             "_deposit": {
                 "type": "object"
@@ -150,8 +219,8 @@
         "additionalProperties": false,
         "b2share": {
             "presentation": {
-                "major": [ "community", "title", "description", "creators", "open_access", "embargo_date", "licence", "keywords", "contact_email", "discipline" ],
-                "minor": [ "contributors", "resource_type", "alternate_identifier", "version", "publisher", "language"]
+                "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "licence", "subjects", "contact_email", "discipline" ],
+                "minor": [ "contributors", "resource_types", "alternate_identifiers", "version", "publisher", "language"]
             }
         }
     }
