@@ -117,12 +117,12 @@ def import_v1_data(verbose, download, token,
     if limit and not download:
         raise click.ClickException("Limit can only be set with download")
     if download:
-        #filelist = os.listdir('.')
-        #if len(filelist)>0:
-        #    raise click.ClickException("""You set download_dir to %s .
-        #    If you want to download files, download_dir should be an empty
-        #     directory.\n Please empty directory and try again.""" %
-        #     download_directory)
+        filelist = os.listdir('.')
+        if len(filelist)>0:
+            raise click.ClickException("""You set download_dir to %s .
+                If you want to download files, download_dir should be an empty
+                 directory.\n Please empty directory and try again.""" %
+                 download_directory)
         if verbose:
             click.secho("----------")
             click.secho("Downloading data into directory %s" %
