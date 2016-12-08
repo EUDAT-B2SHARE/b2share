@@ -56,6 +56,11 @@
                 "description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible. ",
                 "type": "boolean"
             },
+			"publication_date" : {
+				"title" : "Publication Date",
+				"description" : "The date when the data was or will be made publicly available (e.g. 1971-07-13)",
+				"format":"date"
+			},
             "embargo_date": {
                 "title": "Embargo Date",
                 "description": "The date marking the end of the embargo period. The record will be marked as open access on the specified date at midnight. Please note that the record metadata is always publicly accessible, and only the data files can have private access.",
