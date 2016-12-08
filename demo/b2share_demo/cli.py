@@ -25,9 +25,11 @@
 
 from __future__ import absolute_import, print_function
 
+import logging
 import os
 from shutil import rmtree
 import pathlib
+from urllib.parse import urlunsplit
 from shutil import copyfile
 
 import click
@@ -106,6 +108,8 @@ def import_v1_data(verbose, download, token,
          download_directory,limit):
     if verbose:
         click.secho("Importing data to the current instance")
+        logger = logging.getLogger("sqlalchemy.engine")
+        logger.setLevel(logging.ERROR)
     if os.path.isdir(download_directory):
         os.chdir(download_directory)
     else:
@@ -116,9 +120,9 @@ def import_v1_data(verbose, download, token,
         filelist = os.listdir('.')
         if len(filelist)>0:
             raise click.ClickException("""You set download_dir to %s .
-            If you want to download files, download_dir should be an empty
-             directory.\n Please empty directory and try again.""" %
-             download_directory)
+                If you want to download files, download_dir should be an empty
+                 directory.\n Please empty directory and try again.""" %
+                 download_directory)
         if verbose:
             click.secho("----------")
             click.secho("Downloading data into directory %s" %
@@ -133,5 +137,13 @@ def import_v1_data(verbose, download, token,
         click.secho("-----------")
         click.secho("Processing %d downloaded records" %
                     (len(dirlist)))
+    base_url = urlunsplit((
+        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+        # current_app.config['SERVER_NAME'],
+        current_app.config['JSONSCHEMAS_HOST'],
+        current_app.config.get('APPLICATION_ROOT') or '', '', ''
+    ))
+    logfile = open(current_app.config.get('MIGRATION_LOGFILE'),'a')             
     for d in dirlist:
-        process_v1_record(d, indexer, verbose)
+        process_v1_record(d, indexer, base_url, logfile, verbose)
+    logfile.close()

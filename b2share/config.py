@@ -44,7 +44,7 @@ from b2share.modules.deposit.permissions import (
 
 SUPPORT_EMAIL = None # must be setup in the local instances
 MAIL_SUPPRESS_SEND = True # this should be removed on a real instance
-
+MIGRATION_LOGFILE = '/tmp/migration.log' #to log migration exceptions
 
 # Default language and timezone
 BABEL_DEFAULT_LANGUAGE = 'en'
