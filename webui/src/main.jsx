@@ -19,8 +19,6 @@ import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
 import { AccessRequest } from './components/accessrequest.jsx';
 import { ReportAbuse } from './components/reportabuse.jsx';
 
-import { GIT_COMMIT, VERSION } from './version.js'
-
 // TODO: test file uploads in various browsers
 // TODO: edit records: plugins
 // TODO: edit records: open enums (rename enum to options?)
@@ -125,11 +123,27 @@ const router = (
 const Footer = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
+    getInitialState() {
+        return {
+            info: {}
+        }
+    },
+
+    componentWillMount() {
+        serverCache.init(info => this.setState({info}));
+    },
+
     render() {
+        const {site_function, version, git_commit} = this.state.info;
         return  (
             <div className="container">
                 <div className="row">
                     <div className="col-xs-12 col-sm-7 col-md-7">
+                        <p style={{position: 'relative', height:0, margin:0}}>
+                            <span style={{'position':'absolute', bottom:'10px', 'zIndex':'10', color:'red', fontSize:'48px'}}>
+                                { site_function !== 'production' ? (site_function||'') : false }
+                            </span>
+                        </p>
                         <p> <img width="45" height="31" src="/img/flag-ce.jpg" style={{float:'left', marginRight:10}}/>
                             EUDAT receives funding from the European Union’s Horizon 2020 research
                             and innovation programme under grant agreement No. 654065.&nbsp;
@@ -138,10 +152,10 @@ const Footer = React.createClass({
                     </div>
                     <div className="col-xs-12 col-sm-5 col-md-5 text-right">
                         <ul className="list-inline pull-right" style={{marginLeft:20}}>
-                            <li title={"git:"+GIT_COMMIT}>
-                                <span style={{color:'#173b93', fontWeight:'500'}}> v.{VERSION}</span>
+                            <li title={"git:"+git_commit}>
+                                <span style={{color:'#173b93', fontWeight:'500'}}> v.{version||''}</span>
                                 <code style={{border:'none', backgroundColor:'transparent', color:'gray'}}>
-                                    { GIT_COMMIT ? ("git:"+GIT_COMMIT) : false }
+                                    { git_commit ? ("git:"+git_commit) : false }
                                 </code>
                             </li>
                         </ul>

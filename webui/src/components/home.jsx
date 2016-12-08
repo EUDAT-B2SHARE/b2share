@@ -10,14 +10,15 @@ import { LoginOrRegister } from './user.jsx';
 export const HomeRoute = React.createClass({
     render() {
         const latestRecords = serverCache.getLatestRecords();
+        const user = serverCache.getUser();
         return (
             <div className="container-fluid home-page">
                 <div className="row">
                     <div className="col-sm-12">
                         <div style={{margin:'2em 0', textAlign: 'center'}}>
-                            <h3>Store and share your research data</h3>
+                            <h3>Store and publish your research data</h3>
                             <p>Search in public datasets or register as a user to upload and share your data!</p>
-                            <LoginOrRegister/>
+                            { (user && user.get('name')) ? false : <LoginOrRegister/> }
                         </div>
                         <hr/>
                         <div className="row">

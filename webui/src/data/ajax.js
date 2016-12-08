@@ -11,7 +11,7 @@ const starttime = Date.now();
 function timestamp() { return Date.now() - starttime; }
 
 export function ajaxGet({url, params, etag, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxGet:", timestamp(), url, params);
+    console.log("--- ajaxGet:", timestamp(), url, params?params:"");
     const aobj = {
         url: url,
         type: 'json',
@@ -32,7 +32,7 @@ export function ajaxGet({url, params, etag, successFn, errorFn, completeFn}) {
 
 
 export function ajaxPost({url, params, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxPost:", timestamp(), url, params);
+    console.log("--- ajaxPost:", timestamp(), url, params?params:"");
     const aobj = {
         method: 'post',
         url: url,
@@ -51,7 +51,7 @@ export function ajaxPost({url, params, successFn, errorFn, completeFn}) {
 
 
 export function ajaxPut({url, params, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxPut:", timestamp(), url, params);
+    console.log("--- ajaxPut:", timestamp(), url, params?params:"");
     const aobj = {
         method: 'put',
         url: url,
@@ -69,7 +69,7 @@ export function ajaxPut({url, params, successFn, errorFn, completeFn}) {
 }
 
 export function ajaxPatch({url, params, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxPatch:", timestamp(), url, params);
+    console.log("--- ajaxPatch:", timestamp(), url, params?params:"");
     const aobj = {
         method: 'patch',
         url: url,
@@ -88,7 +88,7 @@ export function ajaxPatch({url, params, successFn, errorFn, completeFn}) {
 
 
 export function ajaxDelete({url, params, successFn, errorFn, completeFn}) {
-    console.log("--- ajaxDelete:", timestamp(), url, params);
+    console.log("--- ajaxDelete:", timestamp(), url, params?params:"");
     const aobj = {
         method: 'delete',
         url: url,

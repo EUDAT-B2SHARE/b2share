@@ -9,6 +9,8 @@ const urlRoot = ""; // window.location.origin;
 export const loginURL = `${urlRoot}/api/oauth/login/b2access`;
 
 const apiUrls = {
+    root()                           { return `${urlRoot}/api/` },
+
     users()                           { return `${urlRoot}/api/users/` },
     userLogin()                       { return `${urlRoot}/api/users/login/` },
 
@@ -241,6 +243,10 @@ class FilePoster {
 class ServerCache {
     constructor() {
         this.store = new Store({
+            info: {
+                version: "",
+                site_function: ""
+            },
 
             latestRecords: [], // latest records with params
             searchRecords: null, // searched records view, with params
@@ -392,6 +398,23 @@ class ServerCache {
         return file;
     }
 
+
+    init(successFn) {
+        ajaxGet({
+            url: apiUrls.root(),
+            successFn: (data, linkHeader, etag) => {
+                this.store.setIn(['info'], fromJS({
+                    version: data.version,
+                    site_function: data.site_function
+                }));
+                successFn(this.store.getIn(['info']));
+            },
+        });
+    }
+
+    getInfo() {
+        return this.store.getIn(['info']);
+    }
 
     getLatestRecords() {
         this.getters.latestRecords.autofetch();
@@ -632,7 +655,6 @@ class ServerCache {
     }
 
     reportAbuse(id, data, successFn, errorFn) {
-        console.log('abuse', data);
         ajaxPost({
             url: apiUrls.abuse(id),
             params: data,
