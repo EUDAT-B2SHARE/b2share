@@ -344,8 +344,8 @@ def download_v1_record(directory, record, verbose=False):
                 click.secho('    Download file "{}"'.format(file_dict.get('name')))
             filepath = os.path.join(directory, 'file_{}'.format(index))
             _save_file(file_dict['url'], filepath)
-            #if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
-            #    raise Exception("downloaded file size differs, {}".format(filepath))
+            if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+                raise Exception("downloaded file size differs, {}".format(filepath))
 
 
 def get_or_create_user(verbose, email):
