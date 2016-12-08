@@ -144,6 +144,11 @@ a.navbar-brand {
   white-space: nowrap;
 }
 
+.site-function {
+  color: #F45D00;
+  font-size: 48px;
+  z-index: -10;
+}
 
 /*****************************************************************************/
 /*** error ***/

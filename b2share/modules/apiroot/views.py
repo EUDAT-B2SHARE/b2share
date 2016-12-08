@@ -20,13 +20,10 @@
 from __future__ import absolute_import
 
 from flask import Blueprint, jsonify, current_app
-from flask_login import current_user
 
-# from invenio_db import db
 from invenio_rest import ContentNegotiatedMethodView
 
 from b2share import __version__
-from b2share.modules.users.serializers import user_to_dict
 
 
 blueprint = Blueprint('b2share_apiroot', __name__, url_prefix='/')
@@ -43,7 +40,8 @@ class ApiRoot(ContentNegotiatedMethodView):
     def get(self, **kwargs):
         data = {
             'version': __version__,
-            'site_function':  current_app.config.get('SITE_FUNCTION', ''),
+            'site_function': current_app.config.get('SITE_FUNCTION', ''),
+            'training_site_link': current_app.config.get('TRAINING_SITE_LINK', ''),
         }
         response = jsonify(data)
         return response

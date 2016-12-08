@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { timestamp2str } from '../data/misc.js'
 import { serverCache, Error } from '../data/server';
-import { currentUser } from './user.jsx';
 import { Wait, Err } from './waiting.jsx';
 import { LoginOrRegister } from './user.jsx';
 
@@ -11,6 +10,7 @@ export const HomeRoute = React.createClass({
     render() {
         const latestRecords = serverCache.getLatestRecords();
         const user = serverCache.getUser();
+        const training_site = serverCache.getInfo().get('training_site_link');
         return (
             <div className="container-fluid home-page">
                 <div className="row">
@@ -18,6 +18,9 @@ export const HomeRoute = React.createClass({
                         <div style={{margin:'2em 0', textAlign: 'center'}}>
                             <h3>Store and publish your research data</h3>
                             <p>Search in public datasets or register as a user to upload and share your data!</p>
+                            { training_site ?
+                                <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
+                                : false }
                             { (user && user.get('name')) ? false : <LoginOrRegister/> }
                         </div>
                         <hr/>

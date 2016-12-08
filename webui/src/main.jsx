@@ -124,23 +124,17 @@ const Footer = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     getInitialState() {
-        return {
-            info: {}
-        }
-    },
-
-    componentWillMount() {
-        serverCache.init(info => this.setState({info}));
+        return {}
     },
 
     render() {
-        const {site_function, version, git_commit} = this.state.info;
+        const {site_function, version, git_commit} = this.state.info ? this.state.info.toJS() : {};
         return  (
             <div className="container">
                 <div className="row">
                     <div className="col-xs-12 col-sm-7 col-md-7">
                         <p style={{position: 'relative', height:0, margin:0}}>
-                            <span style={{'position':'absolute', bottom:'10px', 'zIndex':'10', color:'red', fontSize:'48px'}}>
+                            <span className="site-function" style={{'position':'absolute', bottom:'10px'}}>
                                 { site_function !== 'production' ? (site_function||'') : false }
                             </span>
                         </p>
@@ -174,3 +168,4 @@ const Footer = React.createClass({
 
 const footerElement = ReactDOM.render(<Footer />, document.getElementById('footer') );
 const routerElement = ReactDOM.render(router, document.getElementById('page'));
+serverCache.init(info => footerElement.setState({info}));

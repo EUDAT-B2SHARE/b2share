@@ -139,6 +139,9 @@ module.exports = function() {
                 training site. Use this URL for testing.
             </li>
         </ul>
+        <p>Please make sure that you are not using production instances for
+            creating test records or testing the API in general.
+        </p>
         <p>The following shell commands will expect that the HOST environment
             variable is defined and contains the host part of the targeted
             B2SHARE site, e.g.:

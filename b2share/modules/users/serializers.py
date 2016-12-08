@@ -48,6 +48,7 @@ def user_to_dict(user):
             'email': user.email,
             'roles': roles
         }
+    return data
 
 def user_to_json_serializer(user, code=200):
     data = user_to_dict(user)

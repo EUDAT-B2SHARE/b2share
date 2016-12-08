@@ -11,8 +11,9 @@ export const loginURL = `${urlRoot}/api/oauth/login/b2access`;
 const apiUrls = {
     root()                           { return `${urlRoot}/api/` },
 
-    users()                           { return `${urlRoot}/api/users/` },
     userLogin()                       { return `${urlRoot}/api/users/login/` },
+    user()                            { return `${urlRoot}/api/users/current` },
+    userTokens()                      { return `${urlRoot}/api/users/current/tokens` },
 
     records()                         { return `${urlRoot}/api/records/` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },
@@ -27,9 +28,6 @@ const apiUrls = {
     communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
-
-    user()                            { return `${urlRoot}/api/users/current` },
-    userTokens()                      { return `${urlRoot}/api/users/current/tokens` },
 
     remotes(remote)                   { return `${urlRoot}/api/remotes` + (remote ? `/${remote}` : ``) },
     remotesJob()                      { return `${urlRoot}/api/remotes/jobs` },
@@ -245,8 +243,10 @@ class ServerCache {
         this.store = new Store({
             info: {
                 version: "",
-                site_function: ""
+                site_function: "",
+                training_site_link: "",
             },
+            user: null,
 
             latestRecords: [], // latest records with params
             searchRecords: null, // searched records view, with params
@@ -398,22 +398,33 @@ class ServerCache {
         return file;
     }
 
-
+    // info and user can only be set once during a UI view; they will both be
+    // refreshed when the page reloads (including when following hrefs)
+    // user can be: null (uninitialized), {} (anonymous user), or {name,...}
     init(successFn) {
         ajaxGet({
             url: apiUrls.root(),
             successFn: (data, linkHeader, etag) => {
                 this.store.setIn(['info'], fromJS({
                     version: data.version,
-                    site_function: data.site_function
+                    site_function: data.site_function,
+                    training_site_link: data.training_site_link,
                 }));
                 successFn(this.store.getIn(['info']));
             },
+        });
+        ajaxGet({
+            url: apiUrls.user(),
+            successFn: data => this.store.setIn(['user'], fromJS(data)),
         });
     }
 
     getInfo() {
         return this.store.getIn(['info']);
+    }
+
+    getUser() {
+        return this.store.getIn(['user']);
     }
 
     getLatestRecords() {
@@ -540,18 +551,6 @@ class ServerCache {
         }
         const [communityID, ver] = apiUrls.extractCommunitySchemaInfoFromUrl(record.getIn(['metadata', '$schema']));
         return this.getCommunitySchemas(communityID, ver);
-    }
-
-    getUser() {
-        const user = this.store.getIn(['user']);
-        if (user) {
-            return user;
-        }
-        ajaxGet({
-            url: apiUrls.user(),
-            successFn: (data) => this.store.setIn(['user'], fromJS(data)),
-            errorFn: (xhr) => this.store.setIn(['user'], new Error(xhr)),
-        });
     }
 
     getUserTokens(successFn) {

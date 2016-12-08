@@ -93,7 +93,7 @@ export const NewRecordRoute = React.createClass({
     },
 
     render() {
-        const user = serverCache.getUser();
+        const training_site = serverCache.getInfo().get('training_site_link');
         const communities = serverCache.getCommunities();
         if (communities instanceof Error) {
             return <Err err={communities}/>;
@@ -110,6 +110,13 @@ export const NewRecordRoute = React.createClass({
         }
         return (
             <div className="new-record">
+                { training_site ?
+                    <div className="row">
+                        <div className="col-sm-9 col-sm-offset-3">
+                            <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
+                        </div>
+                    </div>
+                    : false }
                 <div className="row">
                     <form className="form-horizontal" onSubmit={this.createAndGoToRecord}>
                         <div className="form-group row">
