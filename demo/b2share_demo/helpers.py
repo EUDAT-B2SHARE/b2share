@@ -421,10 +421,12 @@ def _process_record(rec):
         ,'open_access'
         ,'contact_email'
         ,'contributors'
+        ,'publication_date'
         ]
     for k in generic_keys:
         result[k] = rec[k]
     result['keywords'] = list(set(rec['keywords']))
+    result['creators'] = list(set(rec['creator']))
     #fetch community
     comms = Community.get_all(0,1,name=rec['domain'])
     if comms:
@@ -461,6 +463,25 @@ def _process_record(rec):
 
 def _match_community_specific_metadata(rec, community):
     cs_md_values_dict = rec['domain_metadata']
+    convert_to_array = [
+        'hasOntologyLanguage',
+        'usedOntologyEngineeringTool',
+    ]
+    for key in convert_to_array:
+        if key in cs_md_values_dict.keys():
+            cs_md_values_dict[key] = [
+                cs_md_values_dict[key]
+            ]
+    remove_integer_keys_with_empty_values = [
+        'planned_sampled_individuals',
+        'planned_total_individuals'
+    ]
+    for key in remove_integer_keys_with_empty_values:
+        if key in cs_md_values_dict.keys():
+            if cs_md_values_dict[key] == '':
+                 cs_md_values_dict.pop(key)
+            else:
+                cs_md_values_dict[key] = int(cs_md_values_dict[key])
     result = {}
     result['community_specific'] = {}
     resolve_string = "$BLOCK_SCHEMA_ID[%s]" % community.name.lower()

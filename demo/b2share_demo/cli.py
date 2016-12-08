@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import, print_function
 
+import logging
 import os
 from shutil import rmtree
 import pathlib
@@ -107,6 +108,8 @@ def import_v1_data(verbose, download, token,
          download_directory,limit):
     if verbose:
         click.secho("Importing data to the current instance")
+        logger = logging.getLogger("sqlalchemy.engine")
+        logger.setLevel(logging.ERROR)
     if os.path.isdir(download_directory):
         os.chdir(download_directory)
     else:

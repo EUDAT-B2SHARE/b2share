@@ -41,6 +41,7 @@
                             "type": "array",
                             "items": {
                                 "enum": [
+									"english",
                                     "F-Logic",
                                     "KIF",
                                     "LexGrid-XML",
@@ -54,6 +55,8 @@
                                     "OMV:RDF-S",
 									"OWL",
                                     "Prot\u00e9g\u00e9-Frames",
+									"Prot\u00e9g\u00e9 3.x",
+									"Prot\u00e9g\u00e9 4.3",
                                     "RRF",
                                     "W3C:OWL_2",
                                     "W3C:SKOS",
