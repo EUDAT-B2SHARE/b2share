@@ -45,6 +45,17 @@ div.star:hover {
 }*/
 </style>
 
+  <div id="b2note_well" class="well"
+       style="display:none; position: fixed; right: 0; z-index:1050; -webkit-overflow-scrolling: touch;
+              background-color: #f0ad4e; box-shadow: grey 0px 0px 10px; border-radius: 4px; outline: 0;">
+    <button type="button" class="close" aria-label="Close" onclick="$('#b2note_well').hide();">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <iframe id="b2note_iframe" name="b2note_iframe" src="http://b2note.bsc.es/devel/interface_main.html"
+      style="width:100%; height: 600px; border: 1px solid #ddd" scroll="auto">
+    </iframe>
+  </div>
+
   <div class="page-header">
     {{ format_record(recid, of=of, ln=g.ln)|safe }}
 
@@ -96,7 +107,19 @@ div.star:hover {
                   <td><a href="{{file.get_url()}}">{{ file.get_full_name() }}</a></td>
                   <td>{{ file.md.strftime('%d %b %Y') }}</td>
                   <td>{{ file.size|filesizeformat }}</td>
-                  <td> <span class="pull-right"> <a class="btn" href="{{file.get_full_url(download=True)}}"><i class="icon-download"></i> {{_("Download")}}</a> </span> </td>
+                  <td>
+                    <span class="pull-right"> <a class="btn" href="{{file.get_full_url(download=True)}}"><i class="icon-download"></i> {{_("Download")}}</a> </span>
+                  </td>
+                  <td>
+                    <form id="b2note_form_" action="http://b2note.bsc.es/devel/interface_main.html" method="post" target="b2note_iframe">
+                        <input type="hidden" name="recordurl_tofeed" value="{{'https://b2share.eudat.eu/record/%s'%(recid,)}}" class="field left" readonly="readonly"/>
+                        <input type="hidden" name="pid_tofeed" value="{{record.get('PID')}}" class="field left" readonly="readonly"/>
+                        <input type="hidden" name="subject_tofeed" value="{{file.get_url()}}" class="field left" readonly="readonly"/>
+                        <input type="hidden" name="keywords_tofeed" value="{{dumps(record.get('keywords'))}}" class="field left" readonly="readonly"/>
+                        <input type="submit" class="btn btn-warning" value="Annotate" title="Click to annotate file using B2Note."
+                          onclick=" $('#b2note_well').show(); $('#b2note_form_').submit();"/>
+                    </form>
+                  </td>
                 </tr>
               {%- endfor -%}
             </tbody>
@@ -118,7 +141,6 @@ div.star:hover {
     {%- endif -%}
     </div>
   </div>
-
 
   <div class="col-md-5">
       <div>
