@@ -23,6 +23,7 @@
 
 """B2Share Deposit API."""
 
+import copy
 import uuid
 from contextlib import contextmanager
 from enum import Enum
@@ -32,18 +33,22 @@ from flask import url_for, g
 from invenio_db import db
 from invenio_deposit.api import Deposit as DepositRecord
 from invenio_records_files.models import RecordsBuckets
+from jsonschema.validators import validator_for
+from jsonschema.exceptions import ValidationError
 from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 from invenio_indexer.api import RecordIndexer
 from invenio_records_files.api import Record
 
-from .errors import InvalidDepositDataError, InvalidDepositStateError
+from .errors import InvalidDepositError
 from b2share.modules.communities.api import Community
+from b2share.modules.communities.errors import CommunityDoesNotExistError
 from b2share.modules.communities.workflows import publication_workflows
 from invenio_records.errors import MissingModelError
 from b2share.modules.records.errors import InvalidRecordError
 from b2share.modules.access.policies import is_under_embargo
+from b2share.modules.schemas.errors import CommunitySchemaDoesNotExistError
 
 
 class PublicationStates(Enum):
@@ -101,18 +106,27 @@ class Deposit(DepositRecord):
         """Create a deposit."""
         # check that the status field is not set
         assert 'publication_state' not in data
+        if 'publication_state' in data:
+            raise InvalidDepositError(
+                'Field "publication_state" cannot be set.')
         data['publication_state'] = PublicationStates.draft.name
         # Set record's schema
         if '$schema' in data:
-            raise InvalidDepositDataError('"$schema" field should not be set.')
+            raise InvalidDepositError('"$schema" field should not be set.')
         if 'community' not in data or not data['community']:
-            raise InvalidDepositDataError(
+            raise ValidationError(
                 'Record\s metadata has no community field.')
         try:
             community_id = uuid.UUID(data['community'])
         except ValueError as e:
-            raise InvalidRecordError('Community ID is not a valid UUID.') from e
-        schema = CommunitySchema.get_community_schema(community_id)
+            raise InvalidDepositError(
+                'Community ID is not a valid UUID.') from e
+        try:
+            schema = CommunitySchema.get_community_schema(community_id)
+        except CommunitySchemaDoesNotExistError as e:
+            raise InvalidDepositError(
+                'No schema for community {}.'.format(community_id)) from e
+
         from b2share.modules.schemas.serializers import \
             community_schema_draft_json_schema_link
         data['$schema'] = community_schema_draft_json_schema_link(
@@ -134,6 +148,33 @@ class Deposit(DepositRecord):
         data = super(Deposit, self)._prepare_edit(record)
         data['publication_state'] = PublicationStates.draft.name
 
+    def validate(self, **kwargs):
+        if ('publication_state' in self and
+            self['publication_state'] == PublicationStates.draft.name):
+            if 'community' not in self:
+                raise ValidationError('Missing required field "community"')
+            try:
+                community_id = uuid.UUID(self['community'])
+            except (ValueError, KeyError) as e:
+                raise InvalidDepositError('Community ID is not a valid UUID.') \
+                    from e
+            default_validator = validator_for(
+                CommunitySchema.get_community_schema(community_id).build_json_schema())
+            if 'required' not in default_validator.VALIDATORS:
+                raise NotImplementedError('B2Share does not support schemas '
+                                          'which have no "required" keyword.')
+            DraftDepositValidator = type(
+                'DraftDepositValidator',
+                (default_validator,),
+                dict(VALIDATORS=copy.deepcopy(default_validator.VALIDATORS))
+            )
+            # function ignoring the validation of the given keyword
+            ignore = lambda *args, **kwargs: None
+            DraftDepositValidator.VALIDATORS['required'] = ignore
+            DraftDepositValidator.VALIDATORS['minItems'] = ignore
+            kwargs['validator'] = DraftDepositValidator
+        return super(Deposit, self).validate(**kwargs)
+
     def commit(self):
         """Store changes on current instance in database.
 
@@ -148,9 +189,14 @@ class Deposit(DepositRecord):
             if is_under_embargo(self):
                 self['open_access'] = False
 
-        community = Community.get(self['community'])
-        workflow = publication_workflows[community.publication_workflow]
-        workflow(self.model, self)
+        if 'community' in self:
+            try:
+                community = Community.get(self['community'])
+            except CommunityDoesNotExistError as e:
+                raise InvalidDepositError('Community {} does not exist.'.format(
+                    self['community'])) from e
+            workflow = publication_workflows[community.publication_workflow]
+            workflow(self.model, self)
 
         # publish the deposition if needed
         if (self['publication_state'] == PublicationStates.published.name
@@ -175,11 +221,6 @@ class Deposit(DepositRecord):
 
         For now it immediately publishes the record.
         """
-        if (PublicationStates[self['publication_state']] !=
-                PublicationStates.draft):
-            raise InvalidDepositStateError('Cannot submit a deposit in '
-                                           '{} state'.format(
-                                               self['publication_state']))
         self['publication_state'] = PublicationStates.submitted.name
         if commit:
             self.commit()
