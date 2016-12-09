@@ -45,6 +45,11 @@ After B2SHARE is provisioned (after the b2share.sh script runs
 adding the same parameters (with different values) in the
 ``/usr/var/b2share-instance/b2share.cfg`` file.
 
+The configuration can be also overriden with environment variables when starting
+B2SHARE. The format of the environment variable is
+``B2SHARE_<CONFIGURATION_VARIABLE_NAME>``. Please note that the environment
+variables must be set inside the B2SHARE Docker container.
+
 1.2. Run a B2Share demo with Docker
 -----------------------------------
 
