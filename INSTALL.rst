@@ -33,11 +33,17 @@ account:
     $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
     $ export B2ACCESS_SECRET_KEY=...      # the password used for registration
 
-Additional customizations of the B2ACCESS server configuration can be performed
-after B2SHARE is provisioned (after the b2share.sh script runs
-``/usr/bin/b2share demo load_config``). The script creates a configuration file
-in ``/usr/var/b2share-instance/b2share.cfg``, which can be edited as necessary.
 
+1.2 Prerequisite: configuring B2SHARE
+-------------------------------------
+
+B2SHARE has a long list of configuration parameters, with default values
+available for inspection in the `b2share/config.py` file.
+
+After B2SHARE is provisioned (after the b2share.sh script runs
+``/usr/bin/b2share demo load_config``), local configurations can be created by
+adding the same parameters (with different values) in the
+``/usr/var/b2share-instance/b2share.cfg`` file.
 
 1.2. Run a B2Share demo with Docker
 -----------------------------------

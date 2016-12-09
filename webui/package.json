@@ -5,9 +5,6 @@
   "description": "B2SHARE web user interface",
   "license": "GPL-2.0",
   "repository": "https://github.com/EUDAT-B2SHARE/b2share.git",
-  "scripts": {
-    "postinstall": "./copy_files.sh"
-  },
   "devDependencies": {
     "babel-core": "^6.2.1",
     "babel-loader": "^6.2.0",
@@ -28,8 +25,9 @@
     "pluralize": "^1.2.1",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
+    "react-addons-shallow-compare": "^15.0.1",
     "react-router": "^2.1.1",
-    "react-toggle": "^2.1.0",
+    "react-toggle": "^2.2.0",
     "react-widgets": "^3.2.4",
     "reqwest": "^2.0.5"
   }

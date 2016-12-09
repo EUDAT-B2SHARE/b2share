@@ -90,7 +90,6 @@ class UserTokenList(ContentNegotiatedMethodView):
             is_personal=True,
             is_internal=False,
         ).all()
-        # import ipdb; ipdb.set_trace()
         return token_list_to_json_serializer(token_list)
 
     @auth_required('token', 'session')

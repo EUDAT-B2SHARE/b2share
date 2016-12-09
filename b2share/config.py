@@ -260,3 +260,10 @@ WSGI_PROXIES = 1
 PREFERRED_URL_SCHEME = 'http'
 
 FILES_REST_DEFAULT_MAX_FILE_SIZE = 1000 * 1024 * 1024 # 1 GB by default for RC4
+
+# prominently displayed on the front page, except when set to "production"
+SITE_FUNCTION = 'demo' # set to "production" on production instances
+
+# if the TRAINING_SITE_LINK parameter is not empty, a message will show up
+# on the front page redirecting the testers to this link
+TRAINING_SITE_LINK = "http://trng-b2share.eudat.eu"

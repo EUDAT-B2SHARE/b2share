@@ -33,7 +33,7 @@ def _generic_search_result(item_array):
     }
 
 
-def user_to_json_serializer(user, code=200):
+def user_to_dict(user):
     """Build a json flask response using the given data.
     :Returns: A flask response with json data.
     :Returns Type: :py:class:`flask.Response`
@@ -48,7 +48,10 @@ def user_to_json_serializer(user, code=200):
             'email': user.email,
             'roles': roles
         }
+    return data
 
+def user_to_json_serializer(user, code=200):
+    data = user_to_dict(user)
     response = jsonify(data)
     response.status_code = code
     return response

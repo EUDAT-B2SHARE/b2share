@@ -88,8 +88,6 @@ COPY dockerize/supervisord.conf /etc/
 WORKDIR /eudat/b2share
 ADD webui webui
 WORKDIR /eudat/b2share/webui
-ARG GIT_COMMIT
-ENV GIT_COMMIT="$GIT_COMMIT"
 RUN node_modules/webpack/bin/webpack.js -p
 
 WORKDIR /eudat
