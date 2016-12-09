@@ -37,6 +37,7 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
+    - env: REQUIREMENTS=current REXTRAS=all ES_VERSION=2.3.3
     - env: REQUIREMENTS=devel REXTRAS=all ES_VERSION=2.3.3
 
 python:
