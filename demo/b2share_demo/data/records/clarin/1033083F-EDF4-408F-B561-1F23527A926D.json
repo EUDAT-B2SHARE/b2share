@@ -1,8 +1,17 @@
 {
-    "titles": [{"title":"Časování sloves v bengálštině"}],
-    "descriptions": [{"description":"Description of verbal paradigms in Bengali. The description is written in Czech."}],
-    "creators": [{"creator_name":"Daniel Zeman"}],
-    "resource_types": ["Text"],
+    "titles": [
+        {"title":"Časování sloves v bengálštině"}
+    ],
+    "descriptions": [
+        {"description":"Description of verbal paradigms in Bengali. The description is written in Czech.",
+         "description_type":"Abstract"}
+    ],
+    "creators": [
+        {"creator_name":"Daniel Zeman"}
+    ],
+    "resource_types": [
+        {"resource_type_general": "Text"}
+    ],
     "contact_email": "x@example.com",
     "open_access": true,
     "community": "$COMMUNITY_ID[CLARIN]",

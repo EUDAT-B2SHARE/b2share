@@ -1,11 +1,11 @@
 {
     "mappings" : {
       "record" : {
-		 "_all":{
-			"type":"string",
-			"index":"analyzed",
-			"analyzer":"english"
-		  },
+        "_all":{
+          "type":"string",
+          "index":"analyzed",
+          "analyzer":"english"
+        },
         "properties" : {
           "$schema" : {
             "type" : "string"
@@ -65,28 +65,65 @@
             "type" : "date",
             "format" : "strict_date_optional_time||epoch_millis"
           },
-          "alternate_identifier" : {
-            "type" : "string"
+          "alternate_identifiers" : {
+            "properties" : {
+              "alternate_identifier" : {
+                "type": "string"
+              },
+              "alternate_identifier_type" : {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
           },
           "community" : {
             "type" : "string",
             "index": "not_analyzed"
           },
           "contact_email" : {
-            "type" : "string"
+            "type" : "string",
+            "index": "not_analyzed"
           },
           "creators" : {
-            "type" : "string"
+            "properties" : {
+              "creator_name" : {
+                "type": "string"
+              }
+            }
           },
-          "description" : {
-			"index":"analyzed",
-            "type" : "string",
-			"analyzer":"english"
+          "descriptions" : {
+            "properties" : {
+              "description" : {
+                "index": "analyzed",
+                "type" : "string",
+                "analyzer": "english"
+              },
+              "description_type" : {
+                "index": "not_analyzed",
+                "type" : "string"
+              }
+            }
           },
           "keywords" : {
-			"index":"analyzed",
+            "index": "analyzed",
             "type" : "string",
-			"analyzer":"english"
+            "analyzer": "english"
+          },
+          "contributors" : {
+            "properties" : {
+              "contributor_name" : {
+                "type": "string",
+                "index": "analyzed"
+              },
+              "contributor_type" : {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          },
+          "language" : {
+            "type": "string",
+            "index": "not_analyzed"
           },
           "licence" : {
             "type" : "string"
@@ -101,13 +138,27 @@
             "type" : "string",
             "index": "not_analyzed"
           },
-          "resource_type" : {
-            "type" : "string"
+          "resource_types" : {
+            "properties" : {
+              "resource_type" : {
+                "index": "analyzed",
+                "type" : "string",
+                "analyzer": "english"
+              },
+              "resource_type_general" : {
+                "index": "not_analyzed",
+                "type" : "string"
+              }
+            }
           },
-          "title" : {
-			"index":"analyzed",
-            "type" : "string",
-			"analyzer":"english"
+          "titles" : {
+            "properties" : {
+              "title" : {
+                "index":"analyzed",
+                "type" : "string",
+                "analyzer":"english"
+              }
+            }
           }
         }
       }

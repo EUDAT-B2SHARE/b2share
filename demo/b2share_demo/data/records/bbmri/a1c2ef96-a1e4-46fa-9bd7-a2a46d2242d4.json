@@ -1,8 +1,20 @@
 {
-    "titles": [{"title":"REST paper 2014"}],
-    "descriptions": [{"subject":"REST mediates androgen receptor actions on gene repression and predicts early recurrence of prostate cancer"}],
-    "subjects": [{"subject":"prostate cancer"}, {"subject":"REST"}, {"subject":"TFBS"}, {"subject":"ChiP-seq"}],
-    "resource_types": [{"resource_type":"Text"}],
+    "titles": [
+        {"title":"REST paper 2014"}
+    ],
+    "descriptions": [
+        {"description":"REST mediates androgen receptor actions on gene repression and predicts early recurrence of prostate cancer",
+         "description_type":"Abstract"}
+    ],
+    "resource_types": [
+        {"resource_type_general":"Text" }
+    ],
+    "keywords": [
+        "prostate cancer",
+        "REST",
+        "TFBS",
+        "ChiP-seq"
+    ],
     "contact_email": "x@example.com",
     "open_access": true,
     "community": "$COMMUNITY_ID[BBMRI]",
