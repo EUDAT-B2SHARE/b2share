@@ -125,7 +125,7 @@
             "type": "string",
             "index": "not_analyzed"
           },
-          "licence" : {
+          "license" : {
             "type" : "string"
           },
           "open_access" : {
