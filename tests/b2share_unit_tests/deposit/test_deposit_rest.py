@@ -564,8 +564,8 @@ def test_deposit_submit_permissions(app, login_user, test_communities,
                         "op": "replace", "path": "/publication_state",
                         "value": PublicationStates.submitted.name
                     }, {
-                        "op": "replace", "path": "/title",
-                        "value": 'newtitle'
+                        "op": "replace", "path": "/titles",
+                        "value": [{'title':'newtitle'}]
                     }]),
                     headers=headers)
                 assert request_res.status_code == status
@@ -609,8 +609,8 @@ def test_deposit_publish_permissions(app, login_user, test_communities,
                         "op": "replace", "path": "/publication_state",
                         "value": PublicationStates.published.name
                     }, {
-                        "op": "replace", "path": "/title",
-                        "value": 'newtitle'
+                        "op": "replace", "path": "/titles",
+                        "value": [{'title':'newtitle'}]
                     }]),
                     headers=headers)
                 assert request_res.status_code == status

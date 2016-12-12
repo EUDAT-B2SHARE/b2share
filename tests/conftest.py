@@ -188,57 +188,57 @@ def test_records_data(app, test_communities):
         :list: list of generated record data
     """
     records_data = [{
-        'title': 'My Test BBMRI Record',
+        'titles': [{'title':'My Test BBMRI Record'}],
         'community': '$COMMUNITY_ID[MyTestCommunity1]',
-        "open_access": True,
+        'open_access': True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
             }
         }
     }, {
-        'title': 'New BBMRI dataset',
+        'titles': [{'title':'New BBMRI dataset'}],
         'community': '$COMMUNITY_ID[MyTestCommunity1]',
-        "open_access": False,
+        'open_access': True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
             }
         }
     }, {
-        'title': 'BBMRI dataset 3',
+        'titles': [{'title':'BBMRI dataset 3'}],
         'community': '$COMMUNITY_ID[MyTestCommunity1]',
-        "open_access": True,
+        'open_access': True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
             }
         }
     }, {
-        'title': 'BBMRI dataset 4',
+        'titles': [{'title':'BBMRI dataset 4'}],
         # community 2
         'community': '$COMMUNITY_ID[MyTestCommunity2]',
-        "open_access": True,
+        'open_access': True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
             }
         }
     }, {
-        'title': 'BBMRI dataset 5',
+        'titles': [{'title':'BBMRI dataset 5'}],
         # community 2
         'community': '$COMMUNITY_ID[MyTestCommunity2]',
-        "open_access": True,
+        'open_access': True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
             }
         }
     }, {
-        'title': 'BBMRI dataset 6',
+        'titles': [{'title':'BBMRI dataset 6'}],
         # community 2
         'community': '$COMMUNITY_ID[MyTestCommunity2]',
-        "open_access": True,
+        'open_access': True,
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
@@ -258,7 +258,7 @@ def test_incomplete_records_data(app, test_communities):
     """Create incomplete record data and the corresponding patch."""
     invalid_patches = [[
         # no title
-            { "op": "remove", "path": "/title"}
+            { "op": "remove", "path": "/titles"}
         ], [
         # no study_design
             {
@@ -280,7 +280,7 @@ def test_incomplete_records_data(app, test_communities):
     )
     with app.app_context():
         unresolved_data = {
-            'title': 'My Test BBMRI Record',
+            'titles': [{'title':'My Test BBMRI Record'}],
             'community': '$COMMUNITY_ID[MyTestCommunity1]',
             "open_access": True,
             'community_specific': {

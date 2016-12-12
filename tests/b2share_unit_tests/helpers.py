@@ -260,7 +260,7 @@ def generate_record_data(title='My Test BBMRI Record', open_access=True,
         'study_design': ['Case-control']
     }
     data = {
-        'title': title,
+        'titles': [{'title':title}],
         'community': '$COMMUNITY_ID[{}]'.format(community),
         'open_access': open_access,
         'community_specific': {
