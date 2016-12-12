@@ -189,6 +189,19 @@ def test_records_data(app, test_communities):
     """
     records_data = [{
         'titles': [{'title':'My Test BBMRI Record'}],
+        'descriptions': [{'description':"The long description of My Test BBMRI Record",
+                          'description_type': "Abstract"}],
+        'creators': [{'creator_name': 'Glados, R.'}],
+        'publisher': 'Aperture Science',
+        'publication_date': '2000-12-12',
+        'discipline': '5.14.17.10 → Weapon|Military weapons → Nuclear warfare|Nuclear',
+        'keywords': ['phaser', 'laser', 'maser', 'portal gun'],
+        'contributors': [{'contributor_name': "Turret", "contributor_type": "ContactPerson"}],
+        'language': "eng",
+        'resource_types': [{'resource_type': "Casualities", 'resource_type_general': "Dataset"}],
+        'alternate_identifiers': [{'alternate_identifier': "007",
+                                   'alternate_identifier_type': "Fleming"}],
+        'license': "GNU Public License",
         'community': '$COMMUNITY_ID[MyTestCommunity1]',
         'open_access': True,
         'community_specific': {

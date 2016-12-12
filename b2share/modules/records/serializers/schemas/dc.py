@@ -29,11 +29,15 @@ from marshmallow import Schema, fields, pre_dump
 from flask import url_for
 
 
+def md_getter_as_list(attribute):
+    return lambda record: [record['metadata'].get(attribute)]
+
 def md_getter(attribute):
     return lambda record: record['metadata'].get(attribute, [])
 
-def md_getter_list(attribute):
-    return lambda record: [record['metadata'].get(attribute)]
+def md_subgetter_as_list(attribute, subattribute):
+    return lambda record: [x.get(subattribute) for x in record['metadata'].get(attribute, [])]
+
 
 def record_url(pid_value):
     return url_for('b2share_records_rest.b2share_record_item',
@@ -44,16 +48,17 @@ class RecordSchemaDublinCoreV1(Schema):
 
     identifiers = fields.Method('get_identifiers')
 
-    titles = fields.Function(md_getter_list('title'))
-    creators = fields.Function(md_getter('creators'))
-    descriptions = fields.Function(md_getter_list('description'))
+    titles = fields.Function(md_subgetter_as_list('titles', 'title'))
+    creators = fields.Function(md_subgetter_as_list('creators', 'creator_name'))
+    descriptions = fields.Function(md_subgetter_as_list('descriptions', 'description'))
     subjects = fields.Function(md_getter('keywords'))
-    contributors = fields.Function(md_getter('contributors'))
+    contributors = fields.Function(md_subgetter_as_list('contributors', 'contributor_name'))
+    types = fields.Function(md_subgetter_as_list('resource_types', 'resource_type_general'))
 
     rights = fields.Method('get_rights')
     dates = fields.Method('get_dates')
-    publishers = fields.Function(md_getter_list('publisher'))
-    languages = fields.Function(md_getter_list('language'))
+    publishers = fields.Function(md_getter_as_list('publisher'))
+    languages = fields.Function(md_getter_as_list('language'))
 
     def get_identifiers(self, obj):
         """Get identifiers."""
@@ -84,4 +89,3 @@ class RecordSchemaDublinCoreV1(Schema):
             dates.append('info:eu-repo/date/embargoEnd/{0}'.format(embargo))
 
         return dates
-
