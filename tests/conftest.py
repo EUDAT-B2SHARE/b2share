@@ -38,6 +38,7 @@ from collections import namedtuple
 from flask_cli import ScriptInfo
 import pytest
 import responses
+from jsonpatch import apply_patch
 from b2share_unit_tests.helpers import authenticated_user, create_user
 from b2share.modules.deposit.api import Deposit
 from b2share.modules.schemas.helpers import load_root_schemas
@@ -250,6 +251,54 @@ def test_records_data(app, test_communities):
                 json.dumps(data)))
             ) for data in records_data
         ]
+
+
+@pytest.fixture(scope='function')
+def test_incomplete_records_data(app, test_communities):
+    """Create incomplete record data and the corresponding patch."""
+    invalid_patches = [[
+        # no title
+            { "op": "remove", "path": "/title"}
+        ], [
+        # no study_design
+            {
+                "op": "remove",
+                "path": "/community_specific/"
+                "$BLOCK_SCHEMA_ID[MyTestSchema]/study_design"
+            }
+        ], [
+        # minItems not matched (should be >= 1)
+            {
+                "op": "replace",
+                "path": "/community_specific/"
+                "$BLOCK_SCHEMA_ID[MyTestSchema]/study_design",
+                "value": []
+            }
+    ]]
+    IncompleteRecordData = namedtuple(
+        'IncompleteRecordData', ['complete_data', 'patch', 'incomplete_data']
+    )
+    with app.app_context():
+        unresolved_data = {
+            'title': 'My Test BBMRI Record',
+            'community': '$COMMUNITY_ID[MyTestCommunity1]',
+            "open_access": True,
+            'community_specific': {
+                '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                    'study_design': ['Case-control']
+                }
+            }
+        }
+        data = json.loads(resolve_block_schema_id(resolve_community_id(
+                json.dumps(unresolved_data))))
+        resolved_patches = [
+            json.loads(resolve_block_schema_id(resolve_community_id(
+                json.dumps(data)))
+            ) for data in invalid_patches
+        ]
+        return [IncompleteRecordData(deepcopy(data), patch,
+                                     apply_patch(data, patch))
+                for patch in resolved_patches]
 
 
 def create_deposits(app, test_records_data, creator):

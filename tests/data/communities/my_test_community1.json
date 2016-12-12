@@ -94,7 +94,8 @@
                                 "type": "string",
                                 "enum": ["Case-control", "Cohort", "Cross-sectional", "Longitudinal",
                                     "Twin-study", "Quality control", "Population-based", "Other"]
-                            }
+                            },
+                            "minItems": 1
                         },
                         "sex": {
                             "title": "Sex",
@@ -106,7 +107,8 @@
                             }
                         }
                     },
-                    "additionalProperties": false
+                    "additionalProperties": false,
+                    "required": ["study_design"]
                 }
             ]
         }

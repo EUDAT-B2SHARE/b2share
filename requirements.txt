@@ -52,7 +52,7 @@ elasticsearch==2.4.0
 Flask-Assets==0.12        # via invenio-assets
 Flask-BabelEx==0.9.3      # via invenio-accounts, invenio-deposit, invenio-marc21, invenio-oaiserver, invenio-oauth2server, invenio-oauthclient, invenio-pidstore, invenio-records-rest, invenio-records-ui, invenio-search-ui
 Flask-Breadcrumbs==0.4.0  # via invenio-oauth2server, invenio-oauthclient
-flask-celeryext==0.2.1    # via invenio-celery, invenio-records
+flask-celeryext==0.2.2    # via invenio-celery, invenio-records
 Flask-CLI==0.4.0          # via invenio-records-rest
 Flask-Collect==1.2.2      # via invenio-assets
 Flask-CORS==3.0.2         # via invenio-rest
@@ -96,7 +96,7 @@ invenio-query-parser==0.6.0
 invenio-records-files==1.0.0a7  # via invenio-deposit
 invenio-records-rest==1.0.0a17
 invenio-records-ui==1.0.0a7  # via invenio-deposit, invenio-marc21
-invenio-records==1.0.0a17
+invenio-records==1.0.0b1
 invenio-rest[cors]==1.0.0a10
 invenio-search-ui==1.0.0a5  # via invenio-deposit
 invenio-search==1.0.0a8

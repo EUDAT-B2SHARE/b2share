@@ -40,11 +40,9 @@ def register_triggers(app):
 def check_record_immutable_fields(record):
     """Checks that the previous community and owner fields are preserved"""
     previous_md = record.model.json
-    if previous_md.get('owner') != record.get('owner'):
-        raise AlteredRecordError(errors=[
-            FieldError('owner', 'The owner field cannot be changed.')
-        ])
-    if previous_md.get('community') != record.get('community'):
-        raise AlteredRecordError(errors=[
-            FieldError('community', 'The community field cannot be changed.')
-        ])
+    for field in ['owner', 'community', '$schema']:
+        if previous_md.get(field) != record.get(field):
+            raise AlteredRecordError(errors=[
+                FieldError(field,
+                           'The {} field cannot be changed.'.format(field))
+            ])

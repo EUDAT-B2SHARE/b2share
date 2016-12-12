@@ -24,13 +24,12 @@
 """B2Share Deposit errors."""
 
 
-class B2ShareDepositError(Exception):
+from invenio_rest.errors import RESTValidationError
+
+
+class B2ShareDepositError(RESTValidationError):
     """B2Share Deposit module Exception."""
 
 
-class InvalidDepositDataError(B2ShareDepositError):
-    """Exception raised when the deposit data is invalid."""
-
-
-class InvalidDepositStateError(B2ShareDepositError):
-    """Exception raised when the publication_state transition is invalid."""
+class InvalidDepositError(B2ShareDepositError):
+    """Exception raised when the Deposit is invalid."""

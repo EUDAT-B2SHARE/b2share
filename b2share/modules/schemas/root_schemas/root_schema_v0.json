@@ -146,7 +146,7 @@
                 "type": "array"
             }
         },
-        "required": ["community", "title", "open_access"],
+        "required": ["community", "title", "open_access", "publication_state"],
         "additionalProperties": false,
         "b2share": {
             "presentation": {

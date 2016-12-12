@@ -34,7 +34,8 @@ class B2ShareRecordsError(RESTValidationError):
 
 
 class InvalidRecordError(B2ShareRecordsError):
-    """Raise when a record has no community."""
+    """Raise when a record is invalid."""
+
 
 # TODO(edima): remove this when we have support for permissions
 class AlteredRecordError(B2ShareRecordsError):
