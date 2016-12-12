@@ -173,8 +173,8 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
 
         def test_modify(status, user=None):
             patch = [{
-                "op": "replace", "path": "/title",
-                "value": 'newtitle'
+                "op": "replace", "path": "/titles",
+                "value": [{'title':'newtitle'}]
             }]
             with app.test_client() as client:
                 _, record_pid, record = create_record(record_data, creator)

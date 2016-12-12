@@ -46,10 +46,10 @@ jsonpatch_headers = [('Content-Type', 'application/json-patch+json'),
 def make_record_json():
     record_data = {
         'owner': '',
-        'title': 'My Errorneous BBMRI record',
+        'titles': [{'title':'My Errorneous BBMRI record'}],
         'community': '$COMMUNITY_ID[MyTestCommunity1]',
         'open_access': True,
-        'creator': ['Anonymous'],
+        'creators': [{'creator_name':'Anonymous'}],
         'community_specific': {
             '$BLOCK_SCHEMA_ID[MyTestSchema]': {
                 'study_design': ['Case-control']
@@ -87,13 +87,13 @@ def test_submission_error(app, test_communities, login_user):
 def _test_deposition_error(client, record_json_):
     record_json = deepcopy(record_json_)
     record_json = record_json_.copy()
-    del record_json['title']
+    del record_json['titles']
     record_create_res = client.post(record_list_url(),
                                     data=json.dumps(record_json),
                                     headers=json_headers)
     assert record_create_res.status_code == 400
     error = json.loads(record_create_res.get_data(as_text=True))
-    assert len(error['errors']) == 1 and error['errors'][0]['field'] == 'title'
+    assert len(error['errors']) == 1 and error['errors'][0]['field'] == 'titles'
 
 
 def post_record(client, record_json):
@@ -111,7 +111,7 @@ def _test_patch_error(client, record_url, record_data):
     _test_patch_error_1(client, record_url,
                         [{
                             'op': 'replace',
-                            'path': '/title',
+                            'path': '/titles',
                             'value': True
                         }])
     _test_patch_error_1(client, record_url,
@@ -157,8 +157,8 @@ def _test_put_error(client, record_url, record_data):
     _test_put_error_1(client, record_url, 'invented_field', record_err_data)
 
     record_err_data = deepcopy(record_data['metadata'])
-    del record_err_data['title']
-    _test_put_error_1(client, record_url, 'title', record_err_data)
+    del record_err_data['titles']
+    _test_put_error_1(client, record_url, 'titles', record_err_data)
 
     _test_get_record_returns_original(client, record_url, record_data)
 

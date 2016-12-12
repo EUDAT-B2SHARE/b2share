@@ -168,8 +168,8 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
             draft_patch_res = client.patch(
                 url_for('b2share_deposit_rest.b2share_deposit_item',
                         pid_value=draft_create_data['id']),
-                data=json.dumps([{"op": "replace", "path": "/title", "value":
-                                    "first-patched-title"}]),
+                data=json.dumps([{"op": "replace", "path": "/titles", "value":
+                                    [{"title":"first-patched-title"}]}]),
                 headers=headers)
             assert draft_patch_res.status_code == 200
             draft_patch_data = json.loads(
