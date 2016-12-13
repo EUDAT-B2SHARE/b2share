@@ -420,10 +420,10 @@ def _process_record(rec):
         'open_access'
         ,'contact_email'
         ,'publication_date'
-        ,'licence'
         ]
     for k in generic_keys:
         result[k] = rec[k]
+    result['license'] = rec['licence']
     result['titles'] = []
     result['titles'].append({'title':rec['title']})
     result['descriptions'] = []
