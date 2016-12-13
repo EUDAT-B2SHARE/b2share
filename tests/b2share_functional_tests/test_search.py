@@ -62,7 +62,7 @@ def test_make_record_with_no_file_and_search(app, test_communities,
 
         # create record without files
         draft_create_res = client.post(
-            url_for('b2share_records_rest.b2share_record_list'),
+            url_for('b2share_records_rest.b2rec_list'),
             data=json.dumps(record_data), headers=headers)
         assert draft_create_res.status_code == 201
         draft_create_data = json.loads(
@@ -70,7 +70,7 @@ def test_make_record_with_no_file_and_search(app, test_communities,
 
         # submit the record
         draft_submit_res = client.patch(
-            url_for('b2share_deposit_rest.b2share_deposit_item',
+            url_for('b2share_deposit_rest.b2dep_item',
                     pid_value=draft_create_data['id']),
             data=json.dumps([{
                 "op": "replace", "path": "/publication_state",
@@ -83,7 +83,7 @@ def test_make_record_with_no_file_and_search(app, test_communities,
         login_user(com_admin, client)
         # publish record
         draft_publish_res = client.patch(
-            url_for('b2share_deposit_rest.b2share_deposit_item',
+            url_for('b2share_deposit_rest.b2dep_item',
                     pid_value=draft_create_data['id']),
             data=json.dumps([{
                 "op": "replace", "path": "/publication_state",
@@ -96,7 +96,7 @@ def test_make_record_with_no_file_and_search(app, test_communities,
 
         # get record
         record_get_res = client.get(
-            url_for('b2share_records_rest.b2share_record_item',
+            url_for('b2share_records_rest.b2rec_item',
                     pid_value=draft_publish_data['id']),
             headers=headers)
         assert record_get_res.status_code == 200
@@ -111,7 +111,7 @@ def test_make_record_with_no_file_and_search(app, test_communities,
     with app.test_client() as client:
         # test search, for crashes
         record_search_res = client.get(
-            url_for('b2share_records_rest.b2share_record_list'),
+            url_for('b2share_records_rest.b2rec_list'),
             data='',
             headers=headers)
         assert record_search_res.status_code == 200

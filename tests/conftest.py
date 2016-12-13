@@ -53,6 +53,7 @@ from invenio_access.models import ActionRoles
 from invenio_access.permissions import superuser_access
 from invenio_indexer.api import RecordIndexer
 from b2share.modules.communities.models import Community
+from sqlalchemy.exc import ProgrammingError
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -98,6 +99,10 @@ def app(request, tmpdir):
 
     with app.app_context():
         if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':
+            try:
+                drop_database(db.engine.url)
+            except ProgrammingError:
+                pass
             create_database(db.engine.url)
         db.create_all()
         for deleted in current_search.delete(ignore=[404]):

@@ -199,9 +199,9 @@ setup(
             'b2share_schemas = b2share.modules.schemas.jsonresolver',
         ],
         'invenio_pidstore.minters': [
-            'b2share_record'
+            'b2rec'
             '= b2share.modules.records.minters:b2share_record_uuid_minter',
-            'b2share_deposit'
+            'b2dep'
             '= b2share.modules.deposit.minters:b2share_deposit_uuid_minter',
         ],
         'invenio_base.api_converters': [
@@ -212,9 +212,9 @@ setup(
             'deposits = b2share.modules.deposit.mappings',
         ],
         'invenio_pidstore.fetchers': [
-            'b2share_record'
+            'b2rec'
             '= b2share.modules.records.fetchers:b2share_record_uuid_fetcher',
-            'b2share_deposit'
+            'b2dep'
             '= b2share.modules.deposit.fetchers:b2share_deposit_uuid_fetcher',
         ],
         'invenio_celery.tasks': [

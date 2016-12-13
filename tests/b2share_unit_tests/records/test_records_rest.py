@@ -61,7 +61,7 @@ def test_record_content(app, test_communities,
             login_user(creator, client)
             headers = [('Accept', 'application/json')]
             request_res = client.get(
-                url_for('b2share_records_rest.b2share_record_item',
+                url_for('b2share_records_rest.b2rec_item',
                         pid_value=record_pid.pid_value),
                 headers=headers)
 
@@ -127,7 +127,7 @@ def test_record_read_permissions(app, test_communities,
                     login_user(user, client)
                 headers = [('Accept', 'application/json')]
                 request_res = client.get(
-                    url_for('b2share_records_rest.b2share_record_item',
+                    url_for('b2share_records_rest.b2rec_item',
                             pid_value=pid.pid_value),
                     headers=headers)
 
@@ -184,7 +184,7 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
                 headers = [('Content-Type', 'application/json-patch+json'),
                            ('Accept', 'application/json')]
                 request_res = client.patch(
-                    url_for('b2share_records_rest.b2share_record_item',
+                    url_for('b2share_records_rest.b2rec_item',
                             pid_value=record_pid.pid_value),
                     data=json.dumps(patch),
                     headers=headers)
@@ -197,7 +197,7 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
                 headers = [('Content-Type', 'application/json'),
                            ('Accept', 'application/json')]
                 request_res = client.put(
-                    url_for('b2share_records_rest.b2share_record_item',
+                    url_for('b2share_records_rest.b2rec_item',
                             pid_value=record_pid.pid_value),
                     data=json.dumps(data),
                     headers=headers)

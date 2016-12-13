@@ -33,7 +33,7 @@ from invenio_pidstore.models import PIDStatus
 class DepositUUIDProvider(BaseProvider):
     """Deposit identifier provider."""
 
-    pid_type = 'b2share_deposit'
+    pid_type = 'b2dep'
     """Type of persistent identifier."""
 
     pid_provider = None
