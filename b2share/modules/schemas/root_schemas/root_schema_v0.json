@@ -168,8 +168,8 @@
                 "format": "date-time"
             },
 
-            "licence": {
-                "title": "Licence",
+            "license": {
+                "title": "License",
                 "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
                 "type": "string"
             },
@@ -210,7 +210,7 @@
         "additionalProperties": false,
         "b2share": {
             "presentation": {
-                "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "licence", "subjects", "contact_email", "discipline" ],
+                "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "license", "subjects", "contact_email", "discipline" ],
                 "minor": [ "contributors", "resource_types", "alternate_identifiers", "version", "publisher", "language"]
             }
         }
