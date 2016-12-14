@@ -390,7 +390,7 @@ def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
                 logfile.write("ERROR in %s" % record_json['record_id'])
                 logfile.write("********************")
     if verbose:
-        click.secho("Finished processing {}".format(record['title']))
+        click.secho("Finished processing {}".format(record['titles'][0]['title']))
             
 def _create_bucket(deposit, record_json,directory, logfile, verbose):
     for index, file_dict in enumerate(record_json.get('files', [])):
@@ -416,17 +416,33 @@ def _process_record(rec):
     #rec is dict representing 1 record
     #from json donwloaded from b2share_v1 API
     result = {}
-    generic_keys = ['title'
-        ,'description'
-        ,'open_access'
+    generic_keys = [
+        'open_access'
         ,'contact_email'
-        ,'contributors'
         ,'publication_date'
         ]
     for k in generic_keys:
         result[k] = rec[k]
+    result['license'] = rec['licence']
+    result['titles'] = []
+    result['titles'].append({'title':rec['title']})
+    result['descriptions'] = []
+    element = {}
+    element['description_type'] = 'Abstract'
+    element['description'] = rec['description']
+    result['descriptions'].append(element)
+    result['contributors'] = []
+    contributors = list(set(rec['contributors']))
+    for contributor in contributors:
+        element = {}
+        element['contributor_type'] = "Other"
+        element['contributor_name'] = contributor
+        result['contributors'].append(element)
     result['keywords'] = list(set(rec['keywords']))
-    result['creators'] = list(set(rec['creator']))
+    creators = list(set(rec['creator']))
+    result['creators'] = []
+    for creator in creators:
+        result['creators'].append({'creator_name':creator})
     #fetch community
     comms = Community.get_all(0,1,name=rec['domain'])
     if comms:
@@ -441,8 +457,12 @@ def _process_record(rec):
     else:
         return None
     if 'PID' in rec.keys():
-        result['alternate_identifier'] = rec['PID']
-
+        result['alternate_identifiers'] = [
+            {'alternate_identifier_type':'EPIC_PID',
+            'alternate_identifier': rec['PID']}
+            , {'alternate_identifier_type':'B2SHARE_V1_ID',
+            'alternate_identifier': str(rec['record_id'])}
+        ] 
     if 'resource_type' in rec.keys():
         translate = {
             'Audio': 'Audiovisual',
@@ -452,9 +472,13 @@ def _process_record(rec):
             'Image': 'Image',
             'Other': 'Other',
             'treebank':'Other',
-            'Time-Series':'Other'
+            'Time-Series':'Dataset'
         }
-        result['resource_type'] = list(set([translate[r] for r in rec['resource_type']]))
+        resource_types= list(set([translate[r] for r in rec['resource_type']]))
+        result['resource_types'] = []
+        for rt in resource_types:
+            element = {'resource_type_general':rt}
+            result['resource_types'].append(element)
     if 'domain_metadata' in rec.keys():
         result.update(
             _match_community_specific_metadata(rec, community)
