@@ -326,7 +326,7 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
                 if not(limit is None) and counter >= limit:
                     return # limit reached
         page_counter = page_counter + 1
-        
+
 
 def download_v1_record(directory, record, verbose=False):
     if verbose:
@@ -376,7 +376,7 @@ def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
         user = get_or_create_user(verbose, record_json['uploaded_by'])
         with current_app.test_request_context('/', base_url=base_url):
             current_app.login_manager.reload_user(user)
-            try:        
+            try:
                 deposit = Deposit.create(record)
                 _create_bucket(deposit, record_json, directory, logfile, verbose)
                 deposit.publish()
@@ -391,7 +391,7 @@ def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
                 logfile.write("********************")
     if verbose:
         click.secho("Finished processing {}".format(record['titles'][0]['title']))
-            
+
 def _create_bucket(deposit, record_json,directory, logfile, verbose):
     for index, file_dict in enumerate(record_json.get('files', [])):
         if not file_dict.get('name'):
@@ -402,13 +402,13 @@ def _create_bucket(deposit, record_json,directory, logfile, verbose):
             if verbose:
                 click.secho('    Load file "{}"'.format(
                     file_dict.get('name')))
-            filepath = os.path.join(directory, 
+            filepath = os.path.join(directory,
                 'file_{}'.format(index))
             if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
                 logfile.write("***** downloaded file size differs, {} ******".format(filepath))
             else:
                 with open(filepath, 'r+b') as f:
-                    ObjectVersion.create(deposit.files.bucket, 
+                    ObjectVersion.create(deposit.files.bucket,
                         file_dict['name'],
                         stream=BytesIO(f.read()))
 
@@ -423,7 +423,7 @@ def _process_record(rec):
         ]
     for k in generic_keys:
         result[k] = rec[k]
-    result['license'] = rec['licence']
+    result['license'] = {'license': rec['licence']}
     result['titles'] = []
     result['titles'].append({'title':rec['title']})
     result['descriptions'] = []
@@ -443,6 +443,17 @@ def _process_record(rec):
     result['creators'] = []
     for creator in creators:
         result['creators'].append({'creator_name':creator})
+
+    result['publisher'] = rec.get('publisher', "https://b2share.eudat.eu")
+    if rec.get('discipline'):
+        result['disciplines'] = rec.get('discipline')
+    if rec.get('language'):
+        result['language'] = rec.get('language')
+    if rec.get('version'):
+        result['version'] = rec.get('version')
+    if rec.get('embargo_date'):
+        result['embargo_date'] = rec.get('embargo_date')
+
     #fetch community
     comms = Community.get_all(0,1,name=rec['domain'])
     if comms:
@@ -455,14 +466,15 @@ def _process_record(rec):
         community = Community.get(name='CLARIN')
         result['community']=str(community.id)
     else:
-        return None
+        raise Exception("Community not found for domain: `{}`".format(rec['domain']))
+
     if 'PID' in rec.keys():
         result['alternate_identifiers'] = [
             {'alternate_identifier_type':'ePIC_PID',
             'alternate_identifier': rec['PID']}
             , {'alternate_identifier_type':'B2SHARE_V1_ID',
             'alternate_identifier': str(rec['record_id'])}
-        ] 
+        ]
     if 'resource_type' in rec.keys():
         translate = {
             'Audio': 'Audiovisual',

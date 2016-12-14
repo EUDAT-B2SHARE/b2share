@@ -47,10 +47,14 @@
                 "description" : "The date when the data was or will be made publicly available (e.g. 1971-07-13)",
                 "format":"date"
             },
-            "discipline": {
-                "title": "Discipline",
-                "description": "The scientific discipline linked with the resource.",
-                "type": "string"
+            "disciplines": {
+                "title": "Disciplines",
+                "description": "The scientific disciplines linked with the resource.",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
             },
             "keywords": {
                 "title": "Keywords",
@@ -104,6 +108,7 @@
                     },
                     "required": ["resource_type_general"]
                 },
+                "minItems": 1,
                 "uniqueItems": true
             },
             "alternate_identifiers": {
@@ -171,7 +176,18 @@
             "license": {
                 "title": "License",
                 "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
-                "type": "string"
+                "type": "object",
+                "properties": {
+                    "license": {
+                        "type": "string"
+                    },
+                    "license_uri": {
+                        "title": "URL",
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "required": ["license"]
             },
 
             "community": {

@@ -37,38 +37,61 @@ class RecordSchemaMarcXMLV1(Schema):
 
     def get_id(self, obj):
         pids = obj['metadata'].get('_pid')
-        p = [p['value'] for p in pids if p['type'] == 'b2share_record']
+        p = [p['value'] for p in pids if p['type'] == 'b2rec']
         return str(p[0])
 
     date_and_time_of_latest_transaction = fields.Function(
         lambda o: parse(o['updated']).strftime("%Y%m%d%H%M%S.0"))
 
-    information_relating_to_copyright_status = fields.Function(
-        lambda o: dict(copyright_status='open' if o['metadata']['open_access'] else 'closed'))
-
-    index_term_uncontrolled = fields.Function(
-        lambda o: dict(uncontrolled_term=o['metadata'].get('keywords'))
-    )
-
-    terms_governing_use_and_reproduction_note = fields.Function(
-        lambda o: dict(terms_governing_use_and_reproduction=o['metadata'].get('license')))
-
-    title_statement = fields.Function(
-        lambda o: dict(title=o['metadata'].get('title')))
-
-    other_standard_identifier = fields.Function(
-        lambda o: [dict(standard_number_or_code=o['metadata'].get('alternate_identifier'))])
-
     main_entry_personal_name = fields.Method('get_main_entry_personal_name')
 
     added_entry_personal_name = fields.Method('get_added_entry_personal_name')
 
+    title_statement = fields.Function(
+        lambda o: o['metadata']['titles'][0])
+
+    publication_distribution_imprint = fields.Function(
+        lambda o: dict(name_of_publisher_distributor=o['metadata'].get('publisher'),
+                       date_of_publication_distribution=o['metadata'].get('publication_date')))
+
+    media_type = fields.Function(
+        lambda o: dict(media_type_term=[x['resource_type_general']
+                                        for x in o['metadata'].get('resource_types', [])]))
+
     summary = fields.Function(
-        lambda o: dict(summary=o['metadata'].get('description')))
+        lambda o: [dict(summary=x.get('description'))
+                   for x in o['metadata'].get('descriptions', [])])
+
+    study_program_information_note = fields.Function(
+        lambda o: [dict(program_name=o['metadata'].get('disciplines', []))])
+
+    terms_governing_use_and_reproduction_note = fields.Function(
+        lambda o: dict(terms_governing_use_and_reproduction=
+                       o['metadata'].get('license', {}).get('license'),
+                       uniform_resource_identifier=
+                       o['metadata'].get('license', {}).get('license_uri')))
+
+    information_relating_to_copyright_status = fields.Function(
+        lambda o: dict(copyright_status='open' if o['metadata']['open_access'] else 'closed'))
+
+    language_note = fields.Function(
+        lambda o: [dict(language_note=o['metadata'].get('language'))])
+
+    index_term_uncontrolled = fields.Function(
+        lambda o: [dict(uncontrolled_term=x) for x in o['metadata'].get('keywords', [])])
+
+    other_standard_identifier = fields.Function(
+        lambda o: [dict(standard_number_or_code=x['alternate_identifier'])
+                   for x in o['metadata'].get('alternate_identifiers', [])])
+
+    electronic_location_and_access = fields.Function(
+        lambda o: [dict(uniform_resource_identifier=f['ePIC_PID'],
+                        file_size=str(f['size']),
+                        access_method="HTTP")
+                   if f.get('ePIC_PID') else None
+                   for f in o['metadata'].get('_files', [])])
 
     # Custom fields:
-
-    resource_type = fields.Raw(attribute='metadata.resource_type')
 
     embargo_date = fields.Raw(attribute='metadata.embargo_date')
 
@@ -78,7 +101,7 @@ class RecordSchemaMarcXMLV1(Schema):
     def get_main_entry_personal_name(self, o):
         creators = o['metadata'].get('creators', [])
         if len(creators) > 0:
-            return dict(personal_name=creators[0])
+            return dict(personal_name=creators[0]['creator_name'])
         return dict()
 
 
@@ -88,11 +111,11 @@ class RecordSchemaMarcXMLV1(Schema):
         creators = o['metadata'].get('creators', [])
         if len(creators) > 1:
             for c in creators[1:]:
-                items.append(dict(personal_name=c))
+                items.append(dict(personal_name=c['creator_name']))
 
         contributors = o['metadata'].get('contributors', [])
         for c in contributors:
-            items.append(dict(personal_name=c))
+            items.append(dict(personal_name=c['contributor_name']))
 
         return items
 

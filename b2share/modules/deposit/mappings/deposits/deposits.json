@@ -126,7 +126,14 @@
             "index": "not_analyzed"
           },
           "license" : {
-            "type" : "string"
+            "properties" : {
+              "license" : {
+                "type": "string"
+              },
+              "license_uri" : {
+                "type": "string"
+              }
+            }
           },
           "open_access" : {
             "type" : "boolean"
