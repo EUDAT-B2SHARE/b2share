@@ -69,6 +69,9 @@ basic_fields_meta = {
     'licence':              ('540__a', False),
     'version':              ('250__a', False),
     'alternate_identifier': ('024__a', False),
+    'discipline':           ('526__a', True),
+    'publisher':            ('260__b', False),
+    'language':             ('546__a', False),
 }
 
 
@@ -106,6 +109,26 @@ def get_domain_metadata(domain_class, fieldset, bfo):
     return ret
 
 
+def get_embargo_date(recid):
+    from dateutil import parser
+    from invenio.legacy.bibdocfile.api import BibRecDocs
+    recid = int(recid)
+    rec = BibRecDocs(recid, human_readable=True)
+    embargo_date = None
+    for doc in rec.list_bibdocs():
+        status = doc.get_status().strip()
+        if status.startswith('firerole:'):
+            status = status[len('firerole:'):].split('\n')
+            status = [x for x in status if x]
+            for st in status:
+                if st.startswith('deny until '):
+                    date = st[len('deny until '):].strip('"')
+                    new_date = parser.parse(date)
+                    if not embargo_date or embargo_date < new_date:
+                        embargo_date = new_date
+    return embargo_date
+
+
 def get_record_details(recid, curr_user_email=None):
     from invenio.legacy.bibdocfile.api import BibRecDocs
     try:
@@ -113,6 +136,9 @@ def get_record_details(recid, curr_user_email=None):
     except:
         current_app.logger.error("REST API: Error while building BibRecDocs for record %d" % (recid,))
         return {}
+
+    if recdocs.deleted_p():
+        return None
 
     latest_files = recdocs.list_latest_files()
     if len(latest_files) == 0:
@@ -141,7 +167,7 @@ def get_record_details(recid, curr_user_email=None):
         if fieldname == "open_access":
             open_access = (read_basic_metadata_field_from_marc(bfo, fieldname) == "open")
             ret[fieldname] = open_access
-            if not open_access:
+            if not open_access and not current_user.is_super_admin:
                 if read_basic_metadata_field_from_marc(bfo, "uploaded_by") != curr_user_email:
                     ret['files'] = "RESTRICTED"
         else:
@@ -155,6 +181,11 @@ def get_record_details(recid, curr_user_email=None):
     # add 'domain'
     domain = read_basic_metadata_field_from_marc(bfo, 'domain')
     ret['domain'] = domain
+
+    # add 'embargo_date'
+    embargo_date = get_embargo_date(recid)
+    if embargo_date:
+        ret['embargo_date'] = embargo_date
 
     # add domain-specific metadata fields
     if domain not in metadata_classes():
@@ -228,7 +259,8 @@ class ListRecordsByDomain(B2Resource):
 
         for record_id in record_ids[start : stop]:
             record_details = get_record_details(record_id)
-            record_list.append(record_details)
+            if record_details:
+                record_list.append(record_details)
 
         return jsonify({'records': record_list})
 
@@ -258,7 +290,8 @@ class ListRecords(B2Resource):
 
         for record_id in record_ids[start : stop]:
             record_details = get_record_details(record_id)
-            record_list.append(record_details)
+            if record_details:
+                record_list.append(record_details)
 
         return jsonify({'records': record_list})
 
@@ -269,6 +302,8 @@ class RecordRes(B2Resource):
     """
     def get(self, record_id, **kwargs):
         record_details = get_record_details(record_id)
+        if record_details is None:
+            abort(410, message="This record has been deleted", status=410)
         if not record_details:
             abort(404, message="Record not found", status=404)
         return record_details
