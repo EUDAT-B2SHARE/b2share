@@ -77,7 +77,7 @@ class DataCiteSchemaV1(Schema):
     alternateIdentifiers = fields.List(
         fields.Nested(AlternateIdentifierSchema, attribute='metadata._pid'))
     rightsList = fields.List(fields.Function(
-        lambda o: {'rights': o['metadata'].get('licence')}))
+        lambda o: {'rights': o['metadata'].get('license')}))
     descriptions = fields.Method('get_descriptions')
 
     def get_creators(self, obj):
