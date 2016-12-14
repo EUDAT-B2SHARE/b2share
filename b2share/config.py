@@ -62,10 +62,10 @@ B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED = False
 RECORDS_REST_ENDPOINTS={}
 #: Records REST API endpoints.
 B2SHARE_RECORDS_REST_ENDPOINTS = dict(
-    b2share_record=dict(
-        pid_type='b2share_record',
-        pid_minter='b2share_deposit',
-        pid_fetcher='b2share_record',
+    b2rec=dict(
+        pid_type='b2rec',
+        pid_minter='b2dep',
+        pid_fetcher='b2rec',
         record_class='invenio_records_files.api:Record',
         search_class=B2ShareRecordsSearch,
         record_serializers={
@@ -88,7 +88,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         },
         default_media_type='application/json',
         list_route='/records/',
-        item_route='/records/<pid(b2share_record,record_class="invenio_records_files.api:Record"):pid_value>',
+        item_route='/records/<pid(b2rec,record_class="invenio_records_files.api:Record"):pid_value>',
         create_permission_factory_imp=CreateDepositPermission,
         read_permission_factory_imp=allow_all,
         update_permission_factory_imp=UpdateRecordPermission,
@@ -99,13 +99,13 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
 
 DEPOSIT_REST_ENDPOINTS={}
 #: REST API configuration.
-DEPOSIT_PID = 'pid(b2share_deposit,record_class="b2share.modules.deposit.api:Deposit")'
-DEPOSIT_PID_MINTER='b2share_record'
+DEPOSIT_PID = 'pid(b2dep,record_class="b2share.modules.deposit.api:Deposit")'
+DEPOSIT_PID_MINTER='b2rec'
 B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
-    b2share_deposit=dict(
-        pid_type='b2share_deposit',
-        pid_minter='b2share_deposit',
-        pid_fetcher='b2share_deposit',
+    b2dep=dict(
+        pid_type='b2dep',
+        pid_minter='b2dep',
+        pid_fetcher='b2dep',
         record_class='b2share.modules.deposit.api:Deposit',
         max_result_window=10000,
         default_media_type='application/json',
@@ -187,7 +187,7 @@ ACCOUNTS_REGISTER_BLUEPRINT = True
 
 # OAI-PMH
 OAISERVER_RECORD_INDEX = 'records'
-OAISERVER_ID_PREFIX = 'oai:b2share.eudat.eu:b2share_record/'
+OAISERVER_ID_PREFIX = 'oai:b2share.eudat.eu:b2rec/'
 OAISERVER_PAGE_SIZE = 25
 OAISERVER_ADMIN_EMAILS = [SUPPORT_EMAIL]
 OAISERVER_REGISTER_RECORD_SIGNALS = False

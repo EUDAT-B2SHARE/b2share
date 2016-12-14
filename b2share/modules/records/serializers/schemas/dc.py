@@ -36,7 +36,7 @@ def md_getter_list(attribute):
     return lambda record: [record['metadata'].get(attribute)]
 
 def record_url(pid_value):
-    return url_for('b2share_records_rest.b2share_record_item',
+    return url_for('b2share_records_rest.b2rec_item',
         pid_value=pid_value, _external=True)
 
 class RecordSchemaDublinCoreV1(Schema):

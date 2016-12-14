@@ -63,7 +63,7 @@ def make_record_json():
 
 
 record_list_url = (lambda **kwargs:
-                   url_for('b2share_records_rest.b2share_record_list',
+                   url_for('b2share_records_rest.b2rec_list',
                            **kwargs))
 
 
@@ -102,7 +102,7 @@ def post_record(client, record_json):
                                     headers=json_headers)
     assert record_create_res.status_code == 201
     record_create_data = json.loads(record_create_res.get_data(as_text=True))
-    record_url = url_for('b2share_records_rest.b2share_record_item',
+    record_url = url_for('b2share_records_rest.b2rec_item',
                          pid_value=record_create_data['id'])
     return (record_url, record_create_data)
 

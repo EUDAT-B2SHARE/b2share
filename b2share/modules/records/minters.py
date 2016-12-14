@@ -146,7 +146,7 @@ def b2share_doi_minter(record_uuid, data):
 
 
 def make_record_url(recid):
-    endpoint = 'b2share_records_rest.b2share_record_item'
+    endpoint = 'b2share_records_rest.b2rec_item'
     url = url_for(endpoint, pid_value=recid, _external=True)
     url = url.replace('/api/records/', '/records/')
     return url

@@ -51,7 +51,7 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
 
     def create_record(client, record_data):
         return client.post(
-            url_for('b2share_records_rest.b2share_record_list'),
+            url_for('b2share_records_rest.b2rec_list'),
             data=json.dumps(record_data),
             headers=headers
         )
@@ -97,7 +97,7 @@ def test_deposit_submit(app, test_records_data, draft_deposits, test_users,
             headers = [('Content-Type', 'application/json-patch+json'),
                        ('Accept', 'application/json')]
             draft_patch_res = client.patch(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=deposit.pid.pid_value),
                 data=json.dumps([{
                     "op": "replace", "path": "/publication_state",
@@ -149,7 +149,7 @@ def test_deposit_publish(app, test_users, test_communities,
             headers = [('Content-Type', 'application/json-patch+json'),
                        ('Accept', 'application/json')]
             draft_patch_res = client.patch(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=deposit.pid.pid_value),
                 data=json.dumps([{
                     "op": "replace", "path": "/publication_state",
@@ -297,7 +297,7 @@ def test_deposit_create_permission(app, test_users, login_user,
                 if user is not None:
                     login_user(user, client)
                 draft_create_res = client.post(
-                    url_for('b2share_records_rest.b2share_record_list'),
+                    url_for('b2share_records_rest.b2rec_list'),
                     data=json.dumps(record_data),
                     headers=headers
                 )
@@ -341,7 +341,7 @@ def test_deposit_read_permissions(app, login_user, test_users,
                     login_user(user, client)
                 headers = [('Accept', 'application/json')]
                 request_res = client.get(
-                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                    url_for('b2share_deposit_rest.b2dep_item',
                             pid_value=deposit.pid.pid_value),
                     headers=headers)
                 assert request_res.status_code == status
@@ -425,7 +425,7 @@ def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
         com_admin = create_user('com_admin', roles=[community.admin_role])
 
         search_deposits_url = url_for(
-            'b2share_records_rest.b2share_record_list', drafts=1, size=100)
+            'b2share_records_rest.b2rec_list', drafts=1, size=100)
         headers = [('Content-Type', 'application/json'),
                 ('Accept', 'application/json')]
 
@@ -487,7 +487,7 @@ def test_deposit_delete_permissions(app, test_records_data,
                     login_user(user, client)
                 headers = [('Accept', 'application/json')]
                 request_res = client.delete(
-                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                    url_for('b2share_deposit_rest.b2dep_item',
                             pid_value=deposit.pid.pid_value),
                     headers=headers)
                 assert request_res.status_code == status
@@ -558,7 +558,7 @@ def test_deposit_submit_permissions(app, login_user, test_communities,
                 if user is not None:
                     login_user(user, client)
                 request_res = client.patch(
-                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                    url_for('b2share_deposit_rest.b2dep_item',
                             pid_value=deposit.pid.pid_value),
                     data=json.dumps([{
                         "op": "replace", "path": "/publication_state",
@@ -603,7 +603,7 @@ def test_deposit_publish_permissions(app, login_user, test_communities,
                 if user is not None:
                     login_user(user, client)
                 request_res = client.patch(
-                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                    url_for('b2share_deposit_rest.b2dep_item',
                             pid_value=deposit.pid.pid_value),
                     data=json.dumps([{
                         "op": "replace", "path": "/publication_state",
@@ -653,7 +653,7 @@ def test_deposit_modify_published_permissions(app, login_user, test_communities,
                 if user is not None:
                     login_user(user, client)
                 request_res = client.patch(
-                    url_for('b2share_deposit_rest.b2share_deposit_item',
+                    url_for('b2share_deposit_rest.b2dep_item',
                             pid_value=deposit.pid.pid_value),
                     data=json.dumps([{
                         "op": "replace", "path": "/publication_state",

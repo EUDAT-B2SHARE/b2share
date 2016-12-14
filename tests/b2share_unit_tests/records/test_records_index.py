@@ -65,8 +65,8 @@ def test_record_indexing(app, test_users, test_records, script_info,
         # flush the indices so that indexed records are searchable
         current_search_client.indices.flush('*')
 
-        search_url = url_for('b2share_records_rest.b2share_record_list')
-        search_deposits_url = url_for('b2share_records_rest.b2share_record_list',
+        search_url = url_for('b2share_records_rest.b2rec_list')
+        search_deposits_url = url_for('b2share_records_rest.b2rec_list',
                                       drafts=1)
 
     headers = [('Content-Type', 'application/json'),

@@ -35,7 +35,7 @@ class RecordUUIDProvider(BaseProvider):
     The deposit PID value has to be provided as it is used for the record PID.
     """
 
-    pid_type = 'b2share_record'
+    pid_type = 'b2rec'
     """Type of persistent identifier."""
 
     pid_provider = None

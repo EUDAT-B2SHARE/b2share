@@ -127,7 +127,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
             login_user(allowed_user, client)
             record_list_url = (
                 lambda **kwargs:
-                url_for('b2share_records_rest.b2share_record_list',
+                url_for('b2share_records_rest.b2rec_list',
                         **kwargs))
             draft_create_res = client.post(record_list_url(),
                                             data=json.dumps(record_data),
@@ -166,7 +166,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
             headers = [('Content-Type', 'application/json-patch+json'),
                        ('Accept', 'application/json')] + allowed_headers
             draft_patch_res = client.patch(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=draft_create_data['id']),
                 data=json.dumps([{"op": "replace", "path": "/titles", "value":
                                     [{"title":"first-patched-title"}]}]),
@@ -177,7 +177,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
 
             # Test draft GET
             draft_unpublished_get_res = client.get(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=draft_create_data['id']),
                 headers=headers)
             assert draft_unpublished_get_res.status_code == 200
@@ -186,7 +186,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
 
             # test draft submit
             draft_submit_res = client.patch(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=draft_create_data['id']),
                 data=json.dumps([{
                     "op": "replace", "path": "/publication_state",
@@ -199,7 +199,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
             login_user(com_admin, client)
             # test draft publish
             draft_publish_res = client.patch(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=draft_create_data['id']),
                 data=json.dumps([{
                     "op": "replace", "path": "/publication_state",
@@ -213,7 +213,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
 
             # Test draft GET
             draft_published_get_res = client.get(
-                url_for('b2share_deposit_rest.b2share_deposit_item',
+                url_for('b2share_deposit_rest.b2dep_item',
                         pid_value=draft_create_data['id']),
                 headers=headers)
             assert draft_published_get_res.status_code == 200
@@ -222,7 +222,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
 
             # Test record GET
             record_get_res = client.get(
-                url_for('b2share_records_rest.b2share_record_item',
+                url_for('b2share_records_rest.b2rec_item',
                         pid_value=draft_publish_data['id']),
                 headers=headers)
             assert record_get_res.status_code == 200
@@ -245,7 +245,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
 
         # test search  records
         record_search_res = client.get(
-            url_for('b2share_records_rest.b2share_record_list'),
+            url_for('b2share_records_rest.b2rec_list'),
             data='',
             headers=headers)
         assert record_search_res.status_code == 200
@@ -265,7 +265,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
         login_user(other_user, client)
         # test search
         record_search_res = client.get(
-            url_for('b2share_records_rest.b2share_record_list'),
+            url_for('b2share_records_rest.b2rec_list'),
             data='',
             headers=headers)
         assert record_search_res.status_code == 200
@@ -283,7 +283,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
         for recid, record_data in created_records.items():
             # Test record GET permissions
             record_get_res = client.get(
-                url_for('b2share_records_rest.b2share_record_item',
+                url_for('b2share_records_rest.b2rec_item',
                         pid_value=recid),
                 headers=headers)
             # check that non-creator can access the metadata
