@@ -5,6 +5,9 @@ RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.n
 RUN yum -y update
 RUN yum -y install wget gcc-c++ openssl-devel uwsgi-plugin-python3 postgresql-devel python34 python34-devel npm supervisor git uwsgi  libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
 
+# install locale
+RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
+
 WORKDIR /tmp
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python3.4 get-pip.py
