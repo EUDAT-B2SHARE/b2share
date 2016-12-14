@@ -110,6 +110,7 @@ def get_domain_metadata(domain_class, fieldset, bfo):
 
 
 def get_embargo_date(recid):
+    from datetime import datetime
     from dateutil import parser
     from invenio.legacy.bibdocfile.api import BibRecDocs
     recid = int(recid)
@@ -126,7 +127,9 @@ def get_embargo_date(recid):
                     new_date = parser.parse(date)
                     if not embargo_date or embargo_date < new_date:
                         embargo_date = new_date
-    return embargo_date
+    if embargo_date:
+        return datetime.strftime(embargo_date, '%Y-%m-%d')
+    return None
 
 
 def get_record_details(recid, curr_user_email=None):
