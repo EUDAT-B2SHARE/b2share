@@ -79,12 +79,15 @@
                             "items": {
                                 "enum": [
                                     "Prot\u00e9g\u00e9",
+									"Prot\u00e9g\u00e9 3.x",
                                     "Swoop",
                                     "TopBraid Composer",
                                     "OBO-Edit",
                                     "OntoStudio",
                                     "KAON",
                                     "PoolParty Thesaurus Server",
+									"XPATH2",
+									"Protege 4.3",
                                     "Other...",
 									""
                                 ],
