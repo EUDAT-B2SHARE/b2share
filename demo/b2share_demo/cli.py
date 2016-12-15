@@ -41,8 +41,6 @@ from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_indexer.api import RecordIndexer
 
-from b2share.modules.deposit.api import Deposit
-
 from .helpers import load_demo_data, download_v1_data, process_v1_record
 from . import config as demo_config
 
