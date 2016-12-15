@@ -15,7 +15,7 @@ import { serverCache, notifications, Error, browser } from '../data/server';
 import { keys, pairs } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
-import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
+import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 import { EditFiles } from './editfiles.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 import { SelectBig } from './selectbig.jsx';
@@ -48,10 +48,14 @@ export const NewRecordRoute = React.createClass({
             this.setError('community', "Please select a target community");
             return;
         }
-        serverCache.createRecord(
-            { community: this.state.community_id, title: this.state.title, open_access: true },
-            record => { browser.gotoEditRecord(record.id); }
-        );
+        const json_record = {
+            community: this.state.community_id,
+            titles: [{
+                title: this.state.title,
+            }],
+            open_access: true,
+        }
+        serverCache.createRecord(json_record, record => browser.gotoEditRecord(record.id));
     },
 
     selectCommunity(community_id) {
@@ -541,8 +545,9 @@ const EditRecord = React.createClass({
         }
     },
 
-    validField(value, type) {
-        if (type && type.required) {
+    validField(value, schema) {
+        if (schema && schema.get('isRequired')) {
+            // 0 is fine
             if (value === undefined || value === null || value === "")
                 return false;
         }
@@ -646,9 +651,9 @@ const EditRecord = React.createClass({
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
                             { this.renderFieldBlock(null, rootSchema) }
 
-                            { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
-                                this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
-                              ) : false }
+                            { !blockSchemas ? false :
+                                blockSchemas.map(([id, blockSchema]) =>
+                                    this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'))) }
                         </form>
                     </div>
                 </div>
@@ -696,4 +701,3 @@ function renderSmallCommunity(community, active, onClickFn) {
         </a>
     );
 }
-

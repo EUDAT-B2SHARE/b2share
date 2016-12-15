@@ -16,6 +16,7 @@
                 },
                 "$schema": "http://json-schema.org/draft-04/schema#",
                 "type": "object",
+                "required": ["$BLOCK_SCHEMA_ID[nrm]"],
                 "additionalProperties": false
             }
         }

@@ -18,83 +18,83 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     const majorIDs = presentation ? presentation.get('major') : null;
     const minorIDs = presentation ?  presentation.get('minor') : null;
 
-    let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get('id')]) : []);
-    let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get('id')]) : []);
+    let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get(id)]) : []);
+    let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get(id)]) : []);
 
-    properties.entrySeq().forEach(([id, def]) => {
-        if (majors.has(id)) {
-            majors = majors.set(id, def);
-        } else if (minors.has(id)) {
-            minors = minors.set(id, def);
-        } else if (!except.hasOwnProperty(id)) {
-            majors = majors.set(id, def);
+    properties.entrySeq().forEach(([id, p]) => {
+        if (!majors.has(id) && !minors.has(id) && !except.hasOwnProperty(id)) {
+            majors = majors.set(id, p);
         }
     });
 
     return [majors, minors];
 };
 
-export function getType(property, propertyID, schema) {
-    let ret = null;
-    // console.log(property);
-    const isArray = property.get('type') === 'array';
-    if (!isArray) {
-        ret = {
-            isArray: false,
-            type: property.get('type'),
-            format: property.get('format'),
-            enum: property.get('enum'),
-        }
-    } else {
-        const items = property.get('items');
-        if (items) {
-            const t = getType(items);
-            ret = {
-                isArray: true,
-                type: t.type,
-                format: t.format,
-                enum: t.enum,
-            }
-        }
-    }
-    if (schema && schema.get('required')) {
-        const index = schema.get('required').keyOf(propertyID);
-        if (index !== undefined) {
-            ret.required = true;
-        }
-    }
-    return ret;
-}
-
-
 export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    renderProperty(schema, [id, p]) {
-        const title = p.get('title') || id;
-        const type = getType(p, id, schema);
-        let typeString = type.type;
-        if (type.format) {
-            typeString = " ["+type.format+"]";
+    renderSchema([id, schema]) {
+        const arrayStyle = {
+            marginLeft: '5px',
+            paddingLeft:'10px',
+            borderLeft:'1px solid black',
+            borderRadius:'4px',
+        };
+        const generalStyle = {
+            marginTop: '0.5em',
+            marginBottom: '0.5em',
+            paddingTop: '0.5em',
+            paddingBottom: '0.5em',
+        };
+        const requiredClass = schema.get('isRequired') ? "required property":"";
+        const monoStyle = {fontFamily:'monospace'};
+
+        const type = schema.get('type');
+        const title = schema.get('title');
+        const description = schema.get('description');
+        let inner = null;
+
+        if (type === 'array') {
+            inner = (
+                <ul className="list-unstyled" style={arrayStyle}>
+                    {this.renderSchema([null, schema.get('items')])}
+                </ul>
+            );
+        } else if (type === 'object') {
+            inner = (
+                <ul className="list-unstyled">
+                    { schema.get('properties').entrySeq().map(this.renderSchema) }
+                </ul>
+            );
+        } else if (schema.get('enum')) {
+            const e = schema.get('enum').toJS();
+            inner = (<span style={monoStyle}>enum [{e.join(', ')}]</span>);
+        } else {
+            inner = type;
+            if (schema.get('format')) {
+                inner += " [" + schema.get('format') + "]";
+            }
+            inner = <span style={monoStyle}>{inner}</span>
         }
-        if (type.isArray) {
-            typeString = 'array <'+typeString+'>';
-        }
-        if (type.required) {
-            typeString += ' (required)';
-        }
+
+        const leftcolumn = !id ? false :
+            <div className="col-sm-6">
+                <p className={requiredClass}>
+                    <span style={{fontWeight:'bold'}}>{title}</span>
+                    <span style={{fontFamily:'monospace'}}>
+                        {title?" :: ":""}
+                        {id}
+                        {schema.get('isRequired') ? " (required)":false}
+                    </span>
+                </p>
+                <p> {schema.get('description')} </p>
+            </div>;
+        const rightcolumnsize = leftcolumn ? "col-sm-6" : "col-sm-12";
         return (
-            <div key={id} className="row" style={{marginTop:'1em'}}>
-                <div className="col-sm-3">
-                    <span style={{fontWeight:'bold'}}> {title} </span>
-                </div>
-                <div className="col-sm-3">
-                    <span style={{fontFamily:'monospace'}}> {typeString} </span>
-                </div>
-                <div className="col-sm-6">
-                    {p.get('description')}
-                </div>
-            </div>
+            <li key={id} className="row" style={generalStyle}>
+                {leftcolumn}
+                <div className={rightcolumnsize}> {inner} </div>
+            </li>
         );
     },
 
@@ -113,8 +113,10 @@ export const Schema = React.createClass({
                         <p className="description">{jschema.get('description')}</p>
                     </div>
                 </div>
-                { majors.entrySeq().map(this.renderProperty.bind(this, jschema)) }
-                { minors.entrySeq().map(this.renderProperty.bind(this, jschema)) }
+                <ul className="list-unstyled">
+                    { majors.entrySeq().map(this.renderSchema) }
+                    { minors.entrySeq().map(this.renderSchema) }
+                </ul>
             </div>
         );
     }

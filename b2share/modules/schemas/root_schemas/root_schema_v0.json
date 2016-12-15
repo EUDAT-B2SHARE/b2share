@@ -23,7 +23,7 @@
                 "uniqueItems": true
             },
             "titles": {
-                "title": "Title",
+                "title": "Titles",
                 "description": "The title(s) of the uploaded resource, or a name by which the resource is known.",
                 "type": "array",
                 "items": {
@@ -233,7 +233,7 @@
         "additionalProperties": false,
         "b2share": {
             "presentation": {
-                "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "license", "subjects", "contact_email", "discipline" ],
+                "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "license", "disciplines", "keywords", "contact_email" ],
                 "minor": [ "contributors", "resource_types", "alternate_identifiers", "version", "publisher", "language"]
             }
         }

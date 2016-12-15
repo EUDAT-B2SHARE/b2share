@@ -15,6 +15,7 @@
                         "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[euon]::0]#/json_schema"
                     }
                 },
+                "required": ["$BLOCK_SCHEMA_ID[euon]"],
                 "type": "object"
             },
             "root_schema_version": 0
