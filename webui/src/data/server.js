@@ -1,7 +1,7 @@
 import {fromJS, OrderedMap, List} from 'immutable';
 import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler} from './ajax'
 import {Store} from './store'
-import {objEquals, expect} from './misc'
+import {objEquals, expect, pairs} from './misc'
 import {browserHistory} from 'react-router'
 
 const urlRoot = ""; // window.location.origin;
@@ -238,6 +238,29 @@ class FilePoster {
     }
 }
 
+function processSchema(schema) {
+    if (!schema) {
+        return;
+    }
+    if (schema.allOf) {
+        schema.allOf.forEach(processSchema);
+    } else if (schema.anyOf) {
+        schema.anyOf.forEach(processSchema);
+    } else if (schema.oneOf) {
+        schema.oneOf.forEach(processSchema);
+    } else if (schema.type === 'object') {
+        const required = schema.required || [];
+        required.forEach(id => {
+            if (schema.properties && schema.properties[id]) {
+                schema.properties[id].isRequired = true;
+            }
+        });
+        pairs(schema.properties).forEach(([id, p]) => processSchema(p));
+    } else if (schema.type === 'array') {
+        processSchema(schema.items);
+    }
+}
+
 class ServerCache {
     constructor() {
         this.store = new Store({
@@ -336,6 +359,7 @@ class ServerCache {
             new Pool ( version => {
                 const placeDataFn = (data) => {
                     expect(communityID == data.community);
+                    processSchema(data.json_schema);
                     const ischema = fromJS(data);
                     const updater = (schemas) => {
                         let s = schemas.get(communityID) || fromJS({});
@@ -356,6 +380,7 @@ class ServerCache {
             new Pool(version => {
                 const placeDataFn = (data) => {
                     expect(schemaID == data.id);
+                    processSchema(data.json_schema);
                     const ischema = fromJS(data);
                     const updater = (schemas) => {
                         let s = schemas.get(schemaID) || fromJS({});

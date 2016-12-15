@@ -7,7 +7,7 @@ import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait, Err } from './waiting.jsx';
 import { FileRecordHeader, FileRecordRow, PersistentIdentifier } from './editfiles.jsx';
-import { getSchemaOrderedMajorAndMinorFields, getType } from './schema.jsx';
+import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 
 
 export const RecordRoute = React.createClass({
@@ -32,74 +32,71 @@ export const RecordRoute = React.createClass({
 });
 
 
-const excludeFields = {
-    'title': true, 'description': true, 'keywords': true, 'community': true,
-    'creators': true, 'publication_state': true,
-};
-
-
 const Record = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    renderDates(record) {
-        const created = moment(record.get('created')).format('ll');
-        const updated = moment(record.get('updated')).format('ll');
-        return (
-            <div>
-                <p>
-                    <span style={{color:'#225'}}>{created}</span>
-                </p>
-                { created != updated
-                    ? <p>
-                        <span style={{color:'#aaa'}}>Last updated at </span>
-                        <span style={{color:'#225'}}>{updated}</span>
-                      </p>
-                    : false }
-            </div>
-        );
-    },
-
-    renderCreators(metadata) {
-        const creators = metadata.get('creators');
-        if (!creators) {
-            return false;
-        }
-
-        return (
-            <p>
-                <span style={{color:'black'}}> by </span>
-                { creators && creators.count()
-                    ? creators.map(c => <a className="creator" key={c}> {c}</a>)
-                    : <span style={{color:'black'}}> [Unknown] </span>
-                }
-            </p>
-        );
-    },
-
-    renderSmallCommunity(community) {
-        if (!community) {
-            return false;
-        }
-        if (community instanceof Error) {
-            return <Err err={community}/>;
-        }
-        return (
-            <div key={community.get('id')}>
-                <div className="community-small passive" title={community.get('description')}>
-                    <p className="name">{community.get('name')}</p>
-                    <img className="logo" src={community.get('logo')}/>
-                </div>
-            </div>
-        );
-    },
-
     renderFixedFields(record, community) {
+        function renderTitle(title, i) {
+            return (
+                <h2 key={i} className="name">{title.get('title')}</h2>
+            );
+        }
+        function renderCreator(creator) {
+            const c = creator.get('creator_name');
+            return (
+                <span key={c}> <a className="creator" key={c}>{c}</a>; </span>
+            );
+        }
+        function renderDates(record) {
+            const created = moment(record.get('created')).format('ll');
+            const updated = moment(record.get('updated')).format('ll');
+            return (
+                <div>
+                    <p> <span style={{color:'#225'}}>{created}</span> </p>
+                    { created != updated
+                        ? <p>
+                            <span style={{color:'#aaa'}}>Last updated at </span>
+                            <span style={{color:'#225'}}>{updated}</span>
+                          </p>
+                        : false }
+                </div>
+            );
+        }
+        function renderDescription(description, i) {
+            return (
+                <p className="description" key={i}>
+                    <span style={{fontWeight:'bold'}}>{description.get('description_type')}: </span>
+                    {description.get('description')}
+                </p>
+            );
+        }
+        function renderSmallCommunity(community) {
+            return !community ? false :
+                (community instanceof Error) ? <Err err={community}/> :
+                (
+                    <div key={community.get('id')}>
+                        <div className="community-small passive" title={community.get('description')}>
+                            <p className="name">{community.get('name')}</p>
+                            <img className="logo" src={community.get('logo')}/>
+                        </div>
+                    </div>
+                );
+        }
+        function testget(map, key) {
+            const x = map.get(key);
+            return (x && x.count && x.count()) ? x : null;
+        }
+
         const metadata = record.get('metadata') || Map();
-        const description = metadata.get('description') ||"";
-        const keywords = metadata.get('keywords') || List();
+
+        const descriptions = testget(metadata, 'descriptions');
+        const disciplines = testget(metadata, 'disciplines');
+        const keywords = testget(metadata, 'keywords');
+        const creators = testget(metadata, 'creators');
         const pid = metadata.get('ePIC_PID');
         const doi = metadata.get('DOI');
         const sr = {marginBottom:0, padding:'0.5em', float:'right'};
+
         return (
             <div>
                 <div className="row">
@@ -108,23 +105,35 @@ const Record = React.createClass({
                             //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
                         }
                         <Link to={`/records/${record.get('id')}/abuse`} style={sr}>Report Abuse</Link>
-                        <h2 className="name">{metadata.get('title')}</h2>
+                        { metadata.get('titles').map(renderTitle)}
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
-                        { this.renderCreators(metadata) }
-                        { this.renderDates(record) }
-
-                        <p className="description">
-                            <span style={{fontWeight:'bold'}}>Abstract: </span>
-                            {description}
+                        <p>
+                            <span style={{color:'black'}}> by </span>
+                            { !creators ? <span style={{color:'black'}}> [Unknown] </span> :
+                                creators.map(renderCreator)
+                            }
                         </p>
 
-                        <p className="keywords">
-                            <span style={{fontWeight:'bold'}}>Keywords: </span>
-                            {keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
-                        </p>
+                        { renderDates(record) }
+
+                        { descriptions ? descriptions.map(renderDescription) : false }
+
+                        { !disciplines ? false :
+                            <p className="discipline">
+                                <span style={{fontWeight:'bold'}}>Disciplines: </span>
+                                {disciplines.map(k => <span key={k}>{k}; </span>)}
+                            </p>
+                        }
+
+                        { !keywords ? false :
+                            <p className="keywords">
+                                <span style={{fontWeight:'bold'}}>Keywords: </span>
+                                {keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
+                            </p>
+                        }
 
                         {doi ?
                             <p className="pid" style={{marginBottom:0}}>
@@ -142,7 +151,7 @@ const Record = React.createClass({
 
                     <div className="col-sm-4 col-md-2">
                         <div style={{float:'right', width:'10em'}}>
-                        { this.renderSmallCommunity(community) }
+                            { renderSmallCommunity(community) }
                         </div>
                     </div>
                 </div>
@@ -150,79 +159,9 @@ const Record = React.createClass({
         );
     },
 
-    renderFieldByType(type, value) {
-        if (type.isArray) {
-            const innerType = Object.assign({}, type, {isArray:false});
-            value = value.map((v,i) => <span key={i}>{this.renderFieldByType(innerType, v)}; </span>);
-        } else if (type.type === 'string' && type.format === 'date-time') {
-            value = moment(value).format("LLLL");
-        }
-
-        if (type.type === 'boolean') {
-            const markClass = "glyphicon glyphicon-" + (value ? "ok":"remove");
-            const markStyle = {color: value ? "green":"red"};
-            return (
-                <label>
-                    <span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span>
-                    <span className={markClass} style={markStyle} aria-hidden="true"/>
-                </label>
-            );
-        }
-
-        return value;
-    },
-
-    renderField(blockID, fieldID, fieldSchema, blockSchema) {
-        let v = blockID ? this.props.record.getIn(['metadata', 'community_specific', blockID, fieldID]) :
-                            this.props.record.getIn(['metadata', fieldID]);
-        if (v === undefined || v === null || v === "") {
-            return false;
-        }
-        if (v.toJS) {
-            v = v.toJS();
-        }
-        const type = getType(fieldSchema, fieldID, blockSchema);
-        const field = this.renderFieldByType(type, v);
-        return (
-            <div key={fieldID} style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                <label style={{fontWeight:'bold'}}>{fieldSchema.get('title') || fieldID}: </label>
-                <span> {field}</span>
-            </div>
-        );
-    },
-
-    renderFieldBlock(schemaID, schema) {
-        if (!schema) {
-            return <Wait key={schemaID}/>;
-        }
-
-        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
-
-        const majorFields = majors.entrySeq().map(
-            ([id, f]) => excludeFields[id] ? false : this.renderField(schemaID, id, f, schema));
-        const minorFields = minors.entrySeq().map(
-            ([id, f]) => this.renderField(schemaID, id, f, schema));
-
-        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em'} : {};
-        return (
-            <div style={blockStyle} key={schemaID} className="well">
-                <div className="row">
-                    <h3 className="col-sm-9" style={{marginTop:0}}>
-                        { schemaID ? schema.get('title') : 'Basic metadata' }
-                    </h3>
-                </div>
-                <div className="row">
-                    <div className="col-sm-12">
-                        { majorFields }
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-sm-12">
-                        { minorFields }
-                    </div>
-                </div>
-            </div>
-        );
+    fixedFields: {
+        'community': true, 'titles': true, 'descriptions': true,
+        'creators': true, 'keywords': true, 'disciplines': true, 'publication_state': true,
     },
 
     renderFileList(files) {
@@ -255,6 +194,113 @@ const Record = React.createClass({
         );
     },
 
+    renderField(id, schema, value) {
+        function renderScalar(schema, value) {
+            const type = schema.get('type');
+            if (type === 'string' && schema.get('format') === 'date-time') {
+                value = moment(value).format("LLLL");
+            } else if (type === 'boolean') {
+                const markClass = "glyphicon glyphicon-" + (value ? "ok":"remove");
+                const markStyle = {color: value ? "green":"red"};
+                return (
+                    <label>
+                        <span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span>
+                        <span className={markClass} style={markStyle} aria-hidden="true"/>
+                    </label>
+                );
+            }
+            return value;
+        }
+
+        if (value === undefined || value === null) {
+            return false;
+        }
+        const type = schema.get('type');
+        const title = schema.get('title');
+        let inner = null;
+
+        if (type === 'array') {
+            inner = (
+                <ul className="list-unstyled">
+                    { value.map(v => this.renderField(null, schema.get('items'), v)) }
+                </ul>
+            );
+        } else if (type === 'object') {
+            inner = (
+                <ul className="list-unstyled">
+                    { schema.get('properties').entrySeq().map(
+                        ([pid, pschema]) => this.renderField(pid, pschema, value.get(pid))) }
+                </ul>
+            );
+        } else {
+            inner = <span>{renderScalar(schema, value)}</span>
+        }
+
+        const leftcolumn = !title ? false :
+            <div className="col-sm-4">
+                <span style={{fontWeight:'bold'}}>{title}</span>
+            </div>;
+        const rightcolumnsize = leftcolumn ? "col-sm-8" : "col-sm-12";
+        return (
+            <li key={id} className="row">
+                {leftcolumn}
+                <div className={rightcolumnsize}> {inner} </div>
+            </li>
+        );
+    },
+
+
+    renderFieldBlock(schemaID, schema, excludeFields) {
+        if (!schema) {
+            return <Wait key={schemaID}/>;
+        }
+
+        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
+        const metadata_block = this.props.record.get('metadata');
+        const metadata = !schemaID ? metadata_block : metadata_block.getIn(['community_specific', schemaID]);
+
+        function renderBigField(excludeFields, [pid, pschema], i) {
+            if (excludeFields[pid]) {
+                return false;
+            }
+            const f = this.renderField(pid, pschema, metadata.get(pid));
+            if (!f) {
+                return false;
+            }
+            const style = {
+                marginTop:'0.25em',
+                marginBottom:'0.25em',
+                paddingTop:'0.25em',
+                paddingBottom:'0.25em',
+            };
+            return <div style={style} key={pid}> {f} </div>;
+        }
+        const majorFields = majors.entrySeq().map(renderBigField.bind(this, excludeFields));
+        const minorFields = minors.entrySeq().map(renderBigField.bind(this, excludeFields));
+
+        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em'} : {};
+        blockStyle.overflow = 'scroll';
+        return (
+            <div style={blockStyle} key={schemaID||"_"} className="well">
+                <div className="row">
+                    <h3 className="col-sm-9" style={{marginTop:0}}>
+                        { schemaID ? schema.get('title') : 'Basic metadata' }
+                    </h3>
+                </div>
+                <div className="row">
+                    <ul className="col-sm-12 list-unstyled">
+                        { majorFields }
+                    </ul>
+                </div>
+                <div className="row">
+                    <ul className="col-sm-12 list-unstyled">
+                        { minorFields }
+                    </ul>
+                </div>
+            </div>
+        );
+    },
+
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
@@ -276,11 +322,11 @@ const Record = React.createClass({
                         </div>
 
                         <div className="col-lg-6">
-                            { this.renderFieldBlock(null, rootSchema) }
+                            { this.renderFieldBlock(null, rootSchema, this.fixedFields) }
 
-                            { blockSchemas ? blockSchemas.map(([id, blockSchema]) =>
-                                this.renderFieldBlock(id, blockSchema ? blockSchema.get('json_schema') : null)
-                              ) : false }
+                            { !blockSchemas ? false :
+                                blockSchemas.map(([id, blockSchema]) =>
+                                    this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'), {})) }
                         </div>
                     </div>
                 </div>
@@ -288,4 +334,3 @@ const Record = React.createClass({
         );
     }
 });
-

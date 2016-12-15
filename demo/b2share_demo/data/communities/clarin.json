@@ -17,6 +17,7 @@
                         "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[clarin]::0]#/json_schema"
                     }
                 },
+                "required": ["$BLOCK_SCHEMA_ID[clarin]"],
                 "additionalProperties": false
             }
         }

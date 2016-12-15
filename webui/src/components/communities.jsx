@@ -123,7 +123,6 @@ const Community = React.createClass({
             <div key={schema.get('id')} className="col-sm-12" style={{borderBottom:'1px solid #eee'}}>
                 <Schema schema={schema}/>
             </div>;
-
     },
 
     render() {

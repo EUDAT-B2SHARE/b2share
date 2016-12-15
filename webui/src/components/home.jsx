@@ -17,7 +17,7 @@ export const HomeRoute = React.createClass({
                     <div className="col-sm-12">
                         <div style={{margin:'2em 0', textAlign: 'center'}}>
                             <h3>Store and publish your research data</h3>
-                            <p>Search in public datasets or register as a user to upload and share your data!</p>
+                            <p>Search in public datasets or register as a user to upload and publish your data!</p>
                             { training_site ?
                                 <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
                                 : false }
@@ -57,18 +57,22 @@ const LatestRecords = React.createClass({
         return (
             <span>
                 <span style={{color:'black'}}> by </span>
-                {creators.map(c => <span className="creator" key={c}> {c}</span>)}
+                {creators.map(c => <span className="creator" key={c.get('creator_name')}> {c.get('creator_name')}; </span>)}
             </span>
         );
     },
 
     renderRecord(record) {
+        function first(map, key) {
+            const x = map.get(key);
+            return (x && x.count && x.count()) ? x.get(0) : Map();
+        }
         const id = record.get('id');
         const created = record.get('created');
         const updated = record.get('updated');
         const metadata = record.get('metadata') || Map();
-        const title = metadata.get('title') ||"";
-        const description = metadata.get('description') ||"";
+        const title = first(metadata, 'titles').get('title') || "";
+        const description = first(metadata, 'descriptions').get('description') ||"";
         const creators = metadata.get('creators') || List();
         return (
             <div className="record col-md-6" key={record.get('id')}>

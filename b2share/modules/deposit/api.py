@@ -105,7 +105,6 @@ class Deposit(DepositRecord):
     def create(cls, data, id_=None):
         """Create a deposit."""
         # check that the status field is not set
-        assert 'publication_state' not in data
         if 'publication_state' in data:
             raise InvalidDepositError(
                 'Field "publication_state" cannot be set.')
