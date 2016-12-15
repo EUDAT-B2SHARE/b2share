@@ -467,14 +467,15 @@ def _process_record(rec):
         result['community']=str(community.id)
     else:
         raise Exception("Community not found for domain: `{}`".format(rec['domain']))
-
-    if 'PID' in rec.keys():
-        result['alternate_identifiers'] = [
-            {'alternate_identifier_type':'ePIC_PID',
-            'alternate_identifier': rec['PID']}
-            , {'alternate_identifier_type':'B2SHARE_V1_ID',
+    result['alternate_identifiers'] = [
+         {'alternate_identifier_type':'B2SHARE_V1_ID',
             'alternate_identifier': str(rec['record_id'])}
         ]
+    if 'PID' in rec.keys():
+        result['alternate_identifiers'].append(
+            {'alternate_identifier_type':'ePIC_PID',
+            'alternate_identifier': rec['PID']}
+        )
     if 'resource_type' in rec.keys():
         translate = {
             'Audio': 'Audiovisual',
