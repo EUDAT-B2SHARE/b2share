@@ -25,10 +25,12 @@
 
 from __future__ import absolute_import, print_function
 
+import json
 import logging
 import os
 from shutil import rmtree
 import pathlib
+import requests
 from urllib.parse import urlunsplit
 from shutil import copyfile
 
@@ -38,6 +40,8 @@ from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_indexer.api import RecordIndexer
+
+from b2share.modules.deposit.api import Deposit
 
 from .helpers import load_demo_data, download_v1_data, process_v1_record
 from . import config as demo_config
@@ -147,3 +151,24 @@ def import_v1_data(verbose, download, token,
     for d in dirlist:
         process_v1_record(d, indexer, base_url, logfile, verbose)
     logfile.close()
+    
+@demo.command()
+@with_appcontext
+@click.argument('base_url')
+def generate_pid_migrator(base_url):
+    url = base_url + "api/records"
+    params = {}
+    params['size'] = 1000
+    params['page'] = 1
+    response = requests.get(url,params)
+    recs = json.loads(response.text)['hits']['hits']
+    for rec in recs:
+        url_value = rec['links']['self']
+        alt_ids = rec['alternate_identifiers']
+        epic_url = None
+        for aid in alt_ids:
+            if aid['alternate_identifier_type'] == 'ePIC_PID':
+                epic_url = aid['alternate_identifier']
+        if not(epic_url is None):
+            print("TEST %s %s" % (epic_url, url_value))
+    

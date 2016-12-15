@@ -297,7 +297,7 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
     """
     Download the data from B2SHARE V1 records using token in to target_dir .
     """
-    V1_URL_BASE = 'https://b2share.eudat.eu/api/'
+    V1_URL_BASE = current_app.config.get('V1_URL_BASE')
     url = "%srecords" % V1_URL_BASE
     params = {}
     params['access_token'] = token
@@ -315,7 +315,8 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
         if len(recs) == 0:
             return # no more records
         for record in recs:
-            if record.get('files') == 'RESTRICTED':
+            if (record.get('files') == 'RESTRICTED' or 
+                not(record.get('open_access')) ):
                 if verbose:
                     click.secho('Ignore restricted record {}'.format(record.get('title')),
                                 fg='red')
