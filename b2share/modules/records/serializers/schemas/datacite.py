@@ -47,26 +47,18 @@ class AlternateIdentifierSchema(Schema):
         return str(p[0])
 
     alternateIdentifier = fields.Method('get_pid')
-    alternateIdentifierType = fields.Constant('handle')
+    alternateIdentifierType = fields.Constant('ePIC_PID')
 
 
 class DataCiteSchemaV1(Schema):
     # --- required
     identifier = fields.Nested(IdentifierSchema, attribute='metadata._pid')
+
     creators = fields.Method('get_creators')
-    titles = fields.Function(
-        lambda o: [{'title':o['metadata'].get('title')}])
+    titles = fields.Function(lambda o: o['metadata'].get('titles'))
 
-    # Publisher: The name of the entity that holds, archives, publishes
-    #       prints, distributes, releases, issues, or produces the resource.
-    #       This property will be used to formulate the citation, so consider
-    #       the prominence of the role.
-    #         Examples: World Data Center for Climate (WDCC);
-    #                   GeoForschungsZentrum Potsdam (GFZ);
-    #                   Geological Institute, University of Tokyo
     publisher = fields.Function(
-        lambda o: o['metadata'].get('publisher') or 'https://b2share.eudat.eu')
-
+        lambda o: o['metadata'].get('publisher', 'https://b2share.eudat.eu'))
     publicationYear = fields.Method('get_publication_year')
     resourceType = fields.Method('get_resource_type')
 
@@ -76,43 +68,57 @@ class DataCiteSchemaV1(Schema):
     language = fields.Str(attribute='metadata.language')
     alternateIdentifiers = fields.List(
         fields.Nested(AlternateIdentifierSchema, attribute='metadata._pid'))
-    rightsList = fields.List(fields.Function(
-        lambda o: {'rights': o['metadata'].get('licence')}))
+    rightsList = fields.Method('get_rights')
     descriptions = fields.Method('get_descriptions')
 
     def get_creators(self, obj):
-        crs = obj['metadata'].get('creators', ['[Unknown]'])
-        return [{'creatorName':c} for c in crs]
+        crs = obj['metadata'].get('creators', [{'creator_name':'[Unknown]'}])
+        return [{'creatorName':c['creator_name']} for c in crs]
 
     def get_publication_year(self, obj):
         # datacite: "The year when the data has been or will be made public"
-        date = obj['metadata'].get('embargo_date') or obj['created']
+        m = obj['metadata']
+        date = m.get('publication_date') or m.get('embargo_date') or obj['created']
         return str(arrow.get(date).year)
 
     def get_resource_type(self, obj):
-        rt_list = obj['metadata'].get('resource_type', [])
-        rt = rt_list[0] if (rt_list and rt_list[0]) else "Other"
-        return {'resourceTypeGeneral': rt}
+        rt_list = obj['metadata'].get('resource_types', [])
+        if len(rt_list) == 0:
+            return {'resourceTypeGeneral':'Other'}
+        rt = rt_list[0]
+        ret = {'resourceTypeGeneral': rt['resource_type_general']}
+        if rt.get('resource_type'):
+            ret['resourceType'] = rt['resource_type']
+        return ret
 
     def get_subjects(self, obj):
         items = []
-        discipline = obj['metadata'].get('discipline')
-        if discipline:
-            items.append({'subject': discipline})
+        disciplines = obj['metadata'].get('disciplines', [])
+        for d in disciplines:
+            items.append({'subject': d})
         for s in obj['metadata'].get('keywords', []):
             items.append({'subject': s})
         return items
 
+    def get_rights(self, obj):
+        """Get rights."""
+        open_access = obj['metadata'].get('open_access')
+        access_uri = 'info:eu-repo/semantics/openAccess' if open_access \
+            else 'info:eu-repo/semantics/closedAccess'
+        rights = [{"rightsURI": access_uri,
+                   "rights": 'open'if open_access else 'closed'}]
+        license = obj['metadata'].get('license')
+        if license and 'license_uri' in license:
+            rights.append({"rightsURI": license.get('license_uri'),
+                           "rights": license.get('license')})
+        return rights
+
     def get_contributors(self, obj):
-        return [{'contributorName': c, 'contributorType': 'Other'}
+        return [{'contributorName': c['contributor_name'],
+                 'contributorType': c['contributor_type']}
                 for c in obj['metadata'].get('contributors', [])]
 
     def get_descriptions(self, obj):
-        items = []
-        desc = obj['metadata'].get('description')
-        if desc:
-            items.append({
-                'description': desc,
-                'descriptionType': 'Abstract'
-            })
-        return items
+        return [{'description': d['description'],
+                 'descriptionType': d['description_type']}
+                for d in obj['metadata'].get('descriptions', [])]
