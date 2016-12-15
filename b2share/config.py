@@ -248,6 +248,7 @@ PIDSTORE_DATACITE_DOI_PREFIX = "XXXX"
 PIDSTORE_DATACITE_USERNAME = "XXXX"
 PIDSTORE_DATACITE_PASSWORD = "XXXX"
 
+V1_URL_BASE = 'https://b2share.eudat.eu/api/'
 
 B2DROP_SERVER = {
     'host': 'b2drop.eudat.eu',
