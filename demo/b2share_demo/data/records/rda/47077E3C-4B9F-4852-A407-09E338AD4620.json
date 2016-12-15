@@ -7,7 +7,8 @@
          "description_type":"Abstract"}
     ],
     "creators": [
-        {"creator_name":"Research Data Alliance Council"}
+        {"creator_name":"Research Data Alliance Council"},
+        {"creator_name":"RDA2"}
     ],
     "resource_types": [
         {"resource_type_general":"Text"}
