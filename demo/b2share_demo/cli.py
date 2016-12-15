@@ -163,12 +163,16 @@ def generate_pid_migrator(base_url):
     response = requests.get(url,params)
     recs = json.loads(response.text)['hits']['hits']
     for rec in recs:
-        url_value = rec['links']['self']
-        alt_ids = rec['alternate_identifiers']
-        epic_url = None
-        for aid in alt_ids:
-            if aid['alternate_identifier_type'] == 'ePIC_PID':
-                epic_url = aid['alternate_identifier']
-        if not(epic_url is None):
-            print("TEST %s %s" % (epic_url, url_value))
+        url_value = rec['links']['self'].replace("/api/records","/records")
+        if 'alternate_identifiers' in rec['metadata'].keys():
+            alt_ids = rec['metadata']['alternate_identifiers']
+            epic_url = None
+            for aid in alt_ids:
+                if aid['alternate_identifier_type'] == 'ePIC_PID':
+                    epic_url = aid['alternate_identifier']
+            if not(epic_url is None):
+                curl_comm = "curl -X PUT -v -H 'Accept:application/json'"
+                curl_data = '{"type":"URL","parsed_data":"%s"}' % url_value
+                curl_comm += "--data ='[%s] %s" % (curl_data, epic_url)
+                print(curl_comm)
     
