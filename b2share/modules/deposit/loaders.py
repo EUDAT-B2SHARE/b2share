@@ -21,28 +21,35 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2share records triggers."""
+"""B2Share deposit input loaders."""
 
-from __future__ import absolute_import, print_function
+from flask import abort, request
+from invenio_rest.errors import RESTValidationError, FieldError
 
-import pytz
-from invenio_records.signals import before_record_update
-from invenio_rest.errors import FieldError
-from .errors import AlteredRecordError
+IMMUTABLE_PATHS= {
+    # fields added by the serializer
+    '/owners'
+    '/ePIC_PID'
+    '/DOI',
+    '/files',
+    # real fields
+    '/community',
+    '/$schema',
+    '/_pid',
+    '/_oai',
+    '/_files',
+    '/_deposit',
+}
 
 
-def register_triggers(app):
-    # TODO(edima): replace this check with explicit permissions
-    before_record_update.connect(check_record_immutable_fields)
-
-
-# TODO(edima): replace this check with explicit permissions
-def check_record_immutable_fields(record):
-    """Checks that the previous community and owner fields are preserved"""
-    previous_md = record.model.json
-    for field in ['community', '$schema']:
-        if previous_md.get(field) != record.get(field):
-            raise AlteredRecordError(errors=[
-                FieldError(field,
-                           'The {} field cannot be changed.'.format(field))
-            ])
+def patch_input_loader(record=None):
+    data = request.get_json(force=True)
+    if data is None:
+        abort(400)
+    modified_fields = {cmd['path'] for cmd in data
+                       if 'path' in cmd and 'op' in cmd and cmd['op'] != 'test'}
+    errors = [FieldError(field, 'The field "{}" is immutable.'.format(field))
+              for field in IMMUTABLE_PATHS.intersection(modified_fields)]
+    if len(errors) > 0:
+        raise RESTValidationError(errors=errors)
+    return data
