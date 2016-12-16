@@ -192,8 +192,8 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         item_links_factory=links_factory,
         record_class=Deposit,
     )
-    item_view = RecordResource.as_view(
-        RecordResource.view_name.format(endpoint),
+    item_view = B2ShareRecordResource.as_view(
+        B2ShareRecordResource.view_name.format(endpoint),
         resolver=resolver,
         read_permission_factory=read_permission_factory,
         update_permission_factory=update_permission_factory,
@@ -302,6 +302,15 @@ class B2ShareRecordsListResource(RecordsListResource):
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
         response.headers.extend(dict(location=location))
         return response
+
+
+class B2ShareRecordResource(RecordResource):
+    """B2Share resource for records."""
+
+    def put(*args, **kwargs):
+        """Disable PUT."""
+        abort(405)
+
 
 class RecordsAbuseResource(RecordResource):
 

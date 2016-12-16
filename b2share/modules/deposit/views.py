@@ -24,7 +24,7 @@
 
 from functools import partial
 
-from flask import Blueprint, current_app, g, request
+from flask import abort, Blueprint, current_app, g, request
 from invenio_files_rest.errors import InvalidOperationError
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.resolver import Resolver
@@ -174,10 +174,11 @@ class DepositResource(RecordResource):
 
     def put(self, *args, **kwargs):
         """PUT the deposit."""
-        pid, record = request.view_args['pid_value'].data
-        result = super(DepositResource, self).patch(*args, **kwargs)
-        self._index_record(record)
-        return result
+        abort(405)
+        # pid, record = request.view_args['pid_value'].data
+        # result = super(DepositResource, self).put(*args, **kwargs)
+        # self._index_record(record)
+        # return result
 
     def _index_record(self, record):
         """Index the published record if the deposit is published."""
