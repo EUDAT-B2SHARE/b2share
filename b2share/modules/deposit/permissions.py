@@ -46,6 +46,7 @@ from b2share.modules.communities.api import Community
 from invenio_db import db
 
 from .api import PublicationStates
+from .loaders import patch_input_loader
 
 
 def _deposit_need_factory(name, **kwargs):
@@ -245,24 +246,22 @@ class UpdateDepositPermission(DepositPermission):
         new_deposit = None
         # Check submit/publish actions
         if (request.method == 'PATCH' and
-                request.content_type == 'application/json-patch+json'):
+            request.content_type == 'application/json-patch+json'):
             # FIXME: need some optimization on Invenio side. We are applying
             # the patch twice
-            patch = request.get_json(force=True)
-            if patch is None:
-                abort(400)
+            patch = patch_input_loader(self.deposit)
             new_deposit = deepcopy(self.deposit)
             try:
                 apply_patch(new_deposit, patch, in_place=True)
             except JsonPatchException:
                 abort(400)
-        elif (request.method == 'PUT' and
-                request.content_type == 'application/json'):
-            new_deposit = request.get_json()
-            if new_deposit is None:
-                abort(400)
+        # elif (request.method == 'PUT' and
+        #         request.content_type == 'application/json'):
+            # new_deposit = put_input_loader(self.deposit)
+            # if new_deposit is None:
+            #     abort(400)
         else:
-            return
+            abort(400)
 
         # Create permission for updating the state_field
         if (new_deposit is not None and new_deposit['publication_state']

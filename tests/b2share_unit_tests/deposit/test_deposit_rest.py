@@ -42,6 +42,7 @@ from b2share.modules.deposit.permissions import create_deposit_need_factory, \
     read_deposit_need_factory
 from b2share.modules.communities.api import Community
 from invenio_db import db
+from b2share.modules.deposit.loaders import IMMUTABLE_PATHS
 
 
 def test_deposit_create(app, test_records_data, test_users, login_user):
@@ -82,6 +83,53 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
                 subtest_self_link(draft_create_data,
                                   draft_create_res.headers,
                                   client)
+
+
+def test_deposit_patch_immutable_fields(app, draft_deposits, test_users,
+                                        login_user):
+    """Test invalid modification of record draft with HTTP PATCH."""
+    with app.app_context():
+        deposit = Deposit.get_record(draft_deposits[0].id)
+        with app.test_client() as client:
+            user = test_users['deposits_creator']
+            login_user(user, client)
+
+            headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')]
+
+            for path in IMMUTABLE_PATHS:
+                for command in [
+                    {"op": "replace", "path": path, "value": ""},
+                    {"op": "remove", "path": path},
+                    {"op": "add", "path": path, "value": ""},
+                    {"op": "copy", "from": "/title", "path": path, "value": ""},
+                    {"op": "move", "from": "/title", "path": path, "value": ""},
+                ]:
+                    draft_patch_res = client.patch(
+                        url_for('b2share_deposit_rest.b2dep_item',
+                                pid_value=deposit.pid.pid_value),
+                        data=json.dumps([command]),
+                        headers=headers)
+                    assert draft_patch_res.status_code == 400
+
+
+def test_deposit_put_is_disabled(app, draft_deposits, test_users,
+                                 login_user):
+    """Test invalid modification of record draft with HTTP PUT."""
+    with app.app_context():
+        deposit = Deposit.get_record(draft_deposits[0].id)
+        with app.test_client() as client:
+            user = test_users['deposits_creator']
+            login_user(user, client)
+
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            draft_put_res = client.put(
+                url_for('b2share_deposit_rest.b2dep_item',
+                        pid_value=deposit.pid.pid_value),
+                data='{}',
+                headers=headers)
+            assert draft_put_res.status_code == 405
 
 
 def test_deposit_submit(app, test_records_data, draft_deposits, test_users,

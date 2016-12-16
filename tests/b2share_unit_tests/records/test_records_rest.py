@@ -36,6 +36,8 @@ from b2share.modules.deposit.api import PublicationStates
 from b2share.modules.records.links import url_for_bucket
 from six import BytesIO
 from jsonpatch import apply_patch
+from invenio_records import Record
+from b2share.modules.deposit.loaders import IMMUTABLE_PATHS
 
 
 def test_record_content(app, test_communities,
@@ -85,6 +87,55 @@ def test_record_content(app, test_communities,
             subtest_self_link(request_data,
                               request_res.headers,
                               client)
+
+
+def test_record_patch_immutable_fields(app, test_records, test_users,
+                                        login_user):
+    """Test invalid modification of record draft with HTTP PATCH."""
+    with app.app_context():
+        record = Record.get_record(test_records[0].record_id)
+        with app.test_client() as client:
+            user = test_users['admin']
+            login_user(user, client)
+
+            headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')]
+
+            for path in IMMUTABLE_PATHS:
+                for command in [
+                    {"op": "replace", "path": path, "value": ""},
+                    {"op": "remove", "path": path},
+                    {"op": "add", "path": path, "value": ""},
+                    {"op": "copy", "from": "/title", "path": path, "value": ""},
+                    {"op": "move", "from": "/title", "path": path, "value": ""},
+                ]:
+                    draft_patch_res = client.patch(
+                        url_for('b2share_records_rest.b2rec_item',
+                                pid_value=test_records[0].pid),
+                        data=json.dumps([command]),
+                        headers=headers)
+                    assert draft_patch_res.status_code == 400
+
+
+def test_record_put_is_disabled(app, test_records, test_users,
+                                 login_user):
+    """Test invalid modification of record draft with HTTP PUT."""
+    with app.app_context():
+        record = Record.get_record(test_records[0].record_id)
+        with app.test_client() as client:
+            user = test_users['admin']
+            login_user(user, client)
+
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            draft_put_res = client.put(
+                url_for('b2share_records_rest.b2rec_item',
+                        pid_value=test_records[0].pid),
+                data='{}',
+                headers=headers)
+            assert draft_put_res.status_code == 405
+
+
 
 ######################
 #  Test permissions  #
@@ -190,18 +241,18 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
                     headers=headers)
                 assert request_res.status_code == status
 
-                _, record_pid, record = create_record(record_data, creator)
+                # _, record_pid, record = create_record(record_data, creator)
                 # test putting the document
-                data = dict(record)
-                apply_patch(data, patch)
-                headers = [('Content-Type', 'application/json'),
-                           ('Accept', 'application/json')]
-                request_res = client.put(
-                    url_for('b2share_records_rest.b2rec_item',
-                            pid_value=record_pid.pid_value),
-                    data=json.dumps(data),
-                    headers=headers)
-                assert request_res.status_code == status
+                # data = dict(record)
+                # apply_patch(data, patch)
+                # headers = [('Content-Type', 'application/json'),
+                #            ('Accept', 'application/json')]
+                # request_res = client.put(
+                #     url_for('b2share_records_rest.b2rec_item',
+                #             pid_value=record_pid.pid_value),
+                #     data=json.dumps(data),
+                #     headers=headers)
+                # assert request_res.status_code == status
 
         # test with anonymous user
         test_modify(401)
