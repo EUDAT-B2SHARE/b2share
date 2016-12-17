@@ -99,6 +99,31 @@ def test_deposit_update_unknown_publication_state(app, draft_deposits):
             deposit.commit()
 
 
+def test_deposit_add_unknown_fields(app, draft_deposits):
+    """Test adding unknown fields in deposit. It should fail."""
+    for path in [
+        # all the following paths point to "object" fields in
+        # in the root JSON Schema
+        '/new_field',
+        '/community_specific/new_field',
+        '/creators/0/new_field',
+        '/titles/0/new_field',
+        '/contributors/0/new_field',
+        '/resource_types/0/new_field',
+        '/alternate_identifiers/0/new_field',
+        '/descriptions/0/new_field',
+        '/license/new_field',
+    ]:
+        with app.app_context():
+            deposit = Deposit.get_record(draft_deposits[0].id)
+            deposit = deposit.patch([
+                {'op': 'add', 'path': path, 'value': 'any value'}
+            ])
+            with pytest.raises(ValidationError):
+                deposit.commit()
+
+
+
 def test_deposit_create_with_invalid_community_fails(app,
                                                      test_records_data):
     """Test deposit creation without or with an invalid community fails."""
