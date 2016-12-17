@@ -17,6 +17,7 @@
                             "type": "string"
                         }
                     },
+                    "additionalProperties": false,
                     "required": ["creator_name"]
                 },
                 "uniqueItems": true
@@ -32,6 +33,7 @@
                             "type": "string"
                         }
                     },
+                    "additionalProperties": false,
                     "required": ["title"]
                 },
                 "minItems": 1,
@@ -81,6 +83,7 @@
                             "enum": ["ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", "HostingInstitution", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", "RelatedPerson", "Researcher", "ResearchGroup", "RightsHolder", "Sponsor", "Supervisor", "WorkPackageLeader", "Other"]
                         }
                     },
+                    "additionalProperties": false,
                     "required": ["contributor_name", "contributor_type"]
                 },
                 "uniqueItems": true
@@ -106,6 +109,7 @@
                             "enum": ["Audiovisual", "Collection", "Dataset", "Event", "Image", "InteractiveResource", "Model", "PhysicalObject", "Service", "Software", "Sound", "Text", "Workflow", "Other"]
                         }
                     },
+                    "additionalProperties": false,
                     "required": ["resource_type_general"]
                 },
                 "minItems": 1,
@@ -126,6 +130,7 @@
                             "type": "string"
                         }
                     },
+                    "additionalProperties": false,
                     "required": ["alternate_identifier", "alternate_identifier_type"]
                 },
                 "uniqueItems": true
@@ -145,6 +150,7 @@
                             "enum": ["Abstract", "Methods", "SeriesInformation", "TableOfContents", "TechnicalInfo", "Other"]
                         }
                     },
+                    "additionalProperties": false,
                     "required": ["description", "description_type"]
                 },
                 "uniqueItems": true
@@ -187,6 +193,7 @@
                         "format": "uri"
                     }
                 },
+                "additionalProperties": false,
                 "required": ["license"]
             },
 
@@ -222,7 +229,7 @@
                 "type": "array"
             }
         },
-        "required": ["community", "titles", "open_access", "publication_state"],
+        "required": ["community", "titles", "open_access", "publication_state", "community_specific"],
         "additionalProperties": false,
         "b2share": {
             "presentation": {
