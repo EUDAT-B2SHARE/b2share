@@ -279,6 +279,12 @@ def test_incomplete_records_data(app, test_communities):
         # no title
             { "op": "remove", "path": "/titles"}
         ], [
+        # no community_specific
+            {
+                "op": "remove",
+                "path": "/community_specific"
+            }
+        ], [
         # no study_design
             {
                 "op": "remove",
