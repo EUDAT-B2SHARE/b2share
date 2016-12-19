@@ -423,7 +423,7 @@ module.exports = function() {
                 will end in '/draft/'</p></li>
         </ul>
         <Example>
-            {'curl -i -H "Content-Type:application/json" -d \'{"title":"TestRest", "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true}\' -X POST https://$HOSTNAME/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -i -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true}\' -X POST https://$HOSTNAME/api/records/?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -441,7 +441,11 @@ module.exports = function() {
                   8
                 ],
                 "publication_state": "draft",
-                "title": "TestRest"
+                "titles":[
+                  {
+                    "title":"TestRest"
+                  }
+                ]
               },
               "updated": "2016-10-24T12:21:21.697744+00:00"
             }}
@@ -489,7 +493,7 @@ module.exports = function() {
                 </p> </li>
         </ul>
         <Example>
-            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/description", "value": "This record describes..."}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -502,13 +506,20 @@ module.exports = function() {
               "metadata": {
                 "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
-                "description": "This record describes...",
+                "keywords": [
+                  "keyword1",
+                  "keyword2"
+                ],
                 "open_access": true,
                 "owners": [
                   8
                 ],
                 "publication_state": "draft",
-                "title": "TestRest"
+                "titles": [
+                  {
+                    "title": "TestRest"
+                  }
+                ]
               },
               "updated": "2016-10-24T12:23:59.454951+00:00"
             }}
@@ -543,14 +554,21 @@ module.exports = function() {
                 "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "DOI": "10.5072/b2share.cdb15c27-326e-4e95-b812-6b1c6b54c299",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
-                "description": "This record describes...",
+                "keywords": [
+                  "keyword1",
+                  "keyword2"
+                ],
                 "ePIC_PID": "http://hdl.handle.net/11304/2c473f04-d997-47d9-9bdb-d3d71800f870",
                 "open_access": true,
                 "owners": [
                   8
                 ],
                 "publication_state": "published",
-                "title": "TestRest"
+                "titles": [
+                  {
+                    "title": "TestRest"
+                  }
+                ]
               },
               "updated": "2016-10-24T12:26:51.538025+00:00"
             }}
