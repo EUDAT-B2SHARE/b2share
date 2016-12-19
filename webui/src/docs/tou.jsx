@@ -6,7 +6,7 @@ module.exports = function(props) {
 	  	  <h1>Terms of Use for EUDAT B2SHARE Service</h1>
 	  	  <p>By registering as a EUDAT B2SHARE service user (hereafter “B2SHARE”) you accept the following conditions of use:</p>
 	  	  <ul>
-	  	  	  <li>B2SHARE is made available to researchers and communities in order to share and preserve research data. B2SHARE should not be used for personal, recreational, political or commercial purposes.</li>
+	  	  	  <li>B2SHARE is made available to researchers and communities in order to publish and preserve research data. B2SHARE should not be used for personal, recreational, political or commercial purposes.</li>
 	  	  	  <li>Use of the EUDAT services and resources is at your own risk. There is no guarantee that the B2SHARE service and resources will be available at any time or that it will suit any purpose. EUDAT is not liable to any compensation in case of lost data or loss of service.</li>
 	  	  	  <li>Logged information, including information provided by you for registration purposes, is used for administrative, operational, accounting, monitoring and security purposes only. This information may be disclosed, via secured mechanisms, only for the same purposes and only as far as necessary to other organizations cooperating with EUDAT. Although efforts are made to maintain confidentiality, no guarantees are given.</li>
 	  	  	  <li>All metadata stored in B2SHARE, except private information such as email addresses and phone numbers, must be publicly available.</li>
