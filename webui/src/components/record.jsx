@@ -222,7 +222,7 @@ const Record = React.createClass({
         if (type === 'array') {
             inner = (
                 <ul className="list-unstyled">
-                    { value.map(v => this.renderField(null, schema.get('items'), v)) }
+                    { value.map((v,i) => this.renderField(`#${i}`, schema.get('items'), v)) }
                 </ul>
             );
         } else if (type === 'object') {
@@ -233,7 +233,7 @@ const Record = React.createClass({
                 </ul>
             );
         } else {
-            inner = <span>{renderScalar(schema, value)}</span>
+            inner = <span key={id}>{renderScalar(schema, value)}</span>
         }
 
         const leftcolumn = !title ? false :
