@@ -270,7 +270,7 @@ const EditRecord = React.createClass({
         r = value !== undefined ? r.setIn(path, value) : r.deleteIn(path);
         const errors = this.state.errors;
         const pathstr = path.join('/');
-        if (!this.validField(value, schema)) {
+        if (!this.validField(schema, value)) {
             errors[pathstr] = `Please provide a value for the required field ${pathstr}`
         } else {
             delete errors[pathstr];
@@ -279,53 +279,63 @@ const EditRecord = React.createClass({
     },
 
     renderScalarField(schema, path) {
+        const pathstr = path.join('/');
+        const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
         const type = schema.get('type');
         const value = this.getValue(path);
         const setter = x => this.setValue(schema, path, x);
         if (type === 'boolean') {
             return (
-                <div style={{lineHeight:"30px"}}>
+                <div className={validClass} style={{lineHeight:"30px"}}>
                     <Toggle checked={value} onChange={event => setter(event.target.checked)}/>
                     <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
                 </div>
             );
         } else if (type === 'integer') {
-            return <NumberPicker defaultValue={value} onChange={setter} />
+            return <NumberPicker className={validClass} defaultValue={value} onChange={setter} />
         } else if (type === 'number') {
-            return <NumberPicker defaultValue={value} onChange={setter} />
+            return <NumberPicker className={validClass} defaultValue={value} onChange={setter} />
         } else if (type === 'string') {
             const value_str = ""+(value || "");
             if (schema.get('enum')) {
-                return <DropdownList defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
+                return <DropdownList className={validClass} defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
             } else if (schema.get('format') === 'date-time') {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
-                return <DateTimePicker defaultValue={initial}
+                return <DateTimePicker className={validClass} defaultValue={initial}
                         onChange={date => setter(moment(date).toISOString())} />
             } else if (schema.get('format') === 'email') {
-                return <input type="text" className="form-control" placeholder="email@example.com"
+                return <input type="text" className={"form-control"+ validClass} placeholder="email@example.com"
                         value={value_str} onChange={event => setter(event.target.value)} />
-            } else if (schema.get('longString')) {
-                return <textarea className="form-control" rows={value_str.length > 100 ? 5 : 1}
+            } else if (path[path.length-1] === 'description') {
+                return <textarea className={"form-control"+ validClass} rows={value_str.length > 1000 ? 10 : 5}
                         value={value_str} onChange={event => setter(event.target.value)} />
             } else {
-                return <input type="text" className="form-control"
+                return <input type="text" className={"form-control"+ validClass}
                         value={value_str} onChange={event => setter(event.target.value)} />
             }
         } else if (schema.get('enum')) {
             const value_str = ""+(value || "");
-            return <DropdownList defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
+            return <DropdownList className={"form-control"+ validClass} data={schema.get('enum').toJS()}
+                     defaultValue={value_str} onChange={setter} />
         } else {
             console.error("Cannot render field of schema:", schema.toJS());
         }
     },
 
     renderLicenseField(schema, path) {
+        const onSelect = (license) => {
+            console.assert(path.length >= 1);
+            const licenseData = {
+                'license': license.name,
+                'license_uri': license.url,
+            };
+            this.setValue(schema, path.slice(0, -1), fromJS(licenseData));
+        };
         return (
             <div className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
-                {this.renderScalarField(schema, path)}
-                <SelectLicense title="Select License"
-                               onSelect={license => this.setValue(schema, path, license.name)}
-                               setModal={modal => this.setState({modal})} />
+                { this.renderScalarField(schema, path) }
+                <SelectLicense title="Select License" onSelect={onSelect}
+                    setModal={modal => this.setState({modal})} />
             </div>
         );
     },
@@ -366,7 +376,7 @@ const EditRecord = React.createClass({
         let field = false;
         if (objEquals(path, ['community'])) {
             field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
-        } else if (objEquals(path, ['licence'])) {
+        } else if (objEquals(path, ['license', 'license'])) {
             field = this.renderLicenseField(schema, path);
         } else if (objEquals(path, ['open_access'])) {
             const embargo = this.getValue(schema, newpath('embargo_date'));
@@ -568,13 +578,41 @@ const EditRecord = React.createClass({
         }
     },
 
-    validField(value, schema) {
+    validField(schema, value) {
         if (schema && schema.get('isRequired')) {
             // 0 is fine
             if (value === undefined || value === null || value === "")
                 return false;
         }
         return true;
+    },
+
+    findValidationErrorsRec(errors, schema, path, value) {
+        const isValue = (value !== undefined && value !== null && value !== "");
+        if (schema.get('isRequired') && !isValue) {
+            const pathstr = path.join("/");
+            errors[pathstr] = `Please provide a value for field "${pathstr}"`;
+            return;
+        }
+
+        const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
+        const type = schema.get('type');
+        if (type === 'array') {
+            if (isValue && schema.get('items')) {
+                value.forEach((v, i) =>
+                    this.findValidationErrorsRec(errors, schema.get('items'), newpath(i), v));
+            }
+        } else if (type === 'object') {
+            if (isValue && schema.get('properties')) {
+                schema.get('properties').entrySeq().forEach(([pid, pschema]) =>
+                    this.findValidationErrorsRec(errors, pschema, newpath(pid), value.get(pid)));
+            }
+        } else {
+            if (!this.validField(schema, value)) {
+                const pathstr = path.join("/");
+                errors[pathstr] = `Please provide a valid value for field "${pathstr}"`;
+            }
+        }
     },
 
     findValidationErrors() {
@@ -586,28 +624,11 @@ const EditRecord = React.createClass({
         const errors = {};
         const r = this.state.record;
 
-        const validateRec = (schema, path, value) => {
-            const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
-            const type = schema.get('type');
-            if (type === 'array') {
-                const arrSchema = schema.get('items');
-                value.forEach((v, i) => validateRec(arrSchema, newpath(i), v));
-            } else if (type === 'object') {
-                schema.get('properties').entrySeq().map(([pid, pschema])=>
-                    validateRec(pschema, newpath(pid), value.get(pid)));
-            } else {
-                if (!this.validField(schema, value)) {
-                    const path_str = path.join("/");
-                    errors[path_str] = `Please provide a valid value for field "${path_str}"`;
-                }
-            }
-        };
-
-        validateRec(rootSchema, [], r);
-        blockSchemas.map(([blockID, blockSchema]) => {
+        this.findValidationErrorsRec(errors, rootSchema, [], r);
+        blockSchemas.forEach(([blockID, blockSchema]) => {
             const schema = blockSchema.get('json_schema');
             const path = ['community_specific', blockID];
-            validateRec(schema, path, r.getIn(path));
+            this.findValidationErrorsRec(errors, schema, path, r.getIn(path));
         });
 
         if (this.state.errors.files) {

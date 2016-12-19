@@ -62,7 +62,7 @@ class AnonymousDepositSearch(B2ShareRecordsError):
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(err):
-        field = '/'.join(err.path)
+        field = '/'.join([str(x) for x in err.path])
         if err.validator == 'required' or err.validator == 'additionalProperties':
             try:
                 field = err.message.split('\'')[1]
