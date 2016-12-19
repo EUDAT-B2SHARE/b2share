@@ -379,7 +379,7 @@ const EditRecord = React.createClass({
             field = (languages instanceof Error) ? <Err err={languages}/> :
                 <SelectBig data={languages}
                     onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
-        } else if (path.length === 3 && path[0] === 'disciplines' && path[2] === 'discipline') {
+        } else if (path.length === 2 && path[0] === 'disciplines') {
             const disciplines = serverCache.getDisciplines();
             field = (disciplines instanceof Error) ? <Err err={disciplines}/> :
                 <SelectBig data={disciplines}
@@ -403,17 +403,19 @@ const EditRecord = React.createClass({
                 const v = this.getValue(path);
             }
             field = arrField.map((f, i) =>
-                    <div key={i}>
+                <div className="container-fluid">
+                    <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
-                        <div className={"col-sm-offset-11 col-sm-1"}>
-                            <btn className="btn btn-default" onClick={ev => btnAddRemove(ev, i)}>
+                        <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
+                            <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnAddRemove(ev, i)}>
                                 {i == 0 ?
-                                    <span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/> :
-                                    <span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/>
+                                    <span><span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/> Add </span> :
+                                    <span><span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/> Remove </span>
                                 }
                             </btn>
                         </div>
-                    </div>);
+                    </div>
+                </div> );
         } else if (schema.get('type') === 'object') {
             const props = schema.get('properties');
             field = schema.get('properties').entrySeq().map(([pid, pschema]) =>
@@ -433,8 +435,8 @@ const EditRecord = React.createClass({
         const onblur = () => { this.setState({showhelp: null}); }
         const title = schema.get('title');
         return (
-            <div key={id}>
-                <div className="form-group row" key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
+            <div className="row" key={id}>
+                <div key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
                     {!title ? false :
                         <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                             <span style={{float:'right', color:isError?'red':'black'}}>
@@ -442,10 +444,12 @@ const EditRecord = React.createClass({
                             </span>
                         </label> }
                     <div className={title ? "col-sm-9":"col-sm-12"} style={arrstyle} onFocus={onfocus} onBlur={onblur}>
-                        {field}
+                        <div className="container-fluid" style={{paddingLeft:0, paddingRight:0}}>
+                            {field}
+                        </div>
                     </div>
                 </div>
-                <div className="form-group row" style={{marginBottom:0}}>
+                <div>
                     <div className="col-sm-offset-3 col-sm-9">
                         <HeightAnimate>
                             { this.state.showhelp && objEquals(this.state.showhelp, path) ?

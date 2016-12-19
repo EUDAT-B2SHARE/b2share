@@ -51,6 +51,9 @@ export const SelectBig = React.createClass({
     },
 
     renderField(item) {
+        if (item === undefined || item === null) {
+            return "";
+        }
         if (item.id === item.name) {
             return item.name;
         }
