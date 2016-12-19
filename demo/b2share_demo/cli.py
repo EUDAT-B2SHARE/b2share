@@ -163,6 +163,7 @@ def generate_pid_migrator(base_url):
     epic_base_url = current_app.config.get('CFG_EPIC_BASEURL')
     epic_username = current_app.config.get('CFG_EPIC_USERNAME')
     epic_password = current_app.config.get('CFG_EPIC_PASSWORD')
+    epic_prefix = current_app.config.get('CFG_EPIC_PREFIX')
     for rec in recs:
         url_value = rec['links']['self'].replace("/api/records","/records")
         if 'alternate_identifiers' in rec['metadata'].keys():
@@ -172,7 +173,7 @@ def generate_pid_migrator(base_url):
                 if aid['alternate_identifier_type'] == 'ePIC_PID':
                     handle_url = aid['alternate_identifier']
                     epic_pid = handle_url.rsplit("/",1)[-1]
-                    epic_url = epic_base_url + epic_pid  
+                    epic_url = epic_base_url + epic_prefix + '/' + epic_pid  
             if not(epic_url is None):
                 curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
                 curl_comm += "-u %s:%s " % (epic_username, epic_password)
