@@ -83,7 +83,7 @@ const Search = React.createClass({
                     </span>
                     <input className="form-control" style={{borderRadius:0}} type="text" name="q"
                         value={this.state.q} onChange={setStateEvent}
-                        autofocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
+                        autoFocus="autofocus" autoComplete="off" placeholder="Search records for..."/>
                     <span className="input-group-btn">
                         <button className="btn btn-primary" type="submit">
                             <i className="fa fa-search"></i> Search
@@ -210,21 +210,25 @@ const RecordList = React.createClass({
         return (
             <span>
                 <span style={{color:'black'}}> by </span>
-                {creators.map(c => <span className="creator" key={c}> {c}</span>)}
+                {creators.map(c => <span className="creator" key={c.get('creator_name')}> {c.get('creator_name')}; </span>)}
             </span>
         );
     },
 
     renderRecord(record) {
+        function first(map, key) {
+            const x = map.get(key);
+            return (x && x.count && x.count()) ? x.get(0) : Map();
+        }
         const id = record.get('id');
         const created = record.get('created');
         const updated = record.get('updated');
         const metadata = record.get('metadata') || Map();
-        const title = metadata.get('title') ||"";
-        const description = metadata.get('description') ||"";
+        const title = first(metadata, 'titles').get('title') || "";
+        const description = first(metadata, 'descriptions').get('description') ||"";
         const creators = metadata.get('creators') || List();
         return (
-            <div className="record col-lg-12" key={record.get('id')}>
+            <div className="record col-lg-12" key={id}>
                 <Link to={'/records/'+id}>
                     <p className="name">{title}</p>
                     <p>

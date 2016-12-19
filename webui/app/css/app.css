@@ -25,6 +25,17 @@ footer {
   font-size: 12px;
 }
 
+@media (min-width: 1600px) {
+  .col-xl-6 {
+      width: 50%;
+      float: left;
+      position: relative;
+      min-height: 1px;
+      padding-left: 15px;
+      padding-right: 15px;
+  }
+}
+
 a {
   outline: none!important;
   color: #F45D00;
@@ -503,6 +514,10 @@ a.navbar-brand {
 .community-list-page .community .description {
   margin: 1em 0;
   color: #333;
+}
+
+.required.property {
+  color: #F45D00;
 }
 
 /*****************************************************************************/
