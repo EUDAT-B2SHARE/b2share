@@ -155,7 +155,7 @@ const Footer = React.createClass({
                         </ul>
                         <ul className="list-inline pull-right">
                             <li><a href="/help/terms-of-use">Terms of Use</a></li>
-                            <li><a href="/help/api">Rest API</a></li>
+                            <li><a href="/help/api">HTTP API</a></li>
                             <li><a target="_blank" href="http://eudat.eu/what-eudat">About EUDAT</a></li>
                         </ul>
                     </div>
