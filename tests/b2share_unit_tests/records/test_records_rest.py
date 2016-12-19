@@ -89,6 +89,128 @@ def test_record_content(app, test_communities,
                               client)
 
 
+def test_record_abuse_report(app, test_records, test_users,
+                             login_user):
+    """Test abuse reports send email."""
+    data = dict(
+        message='my message',
+        name='my name',
+        affiliation='my affiliation',
+        email='my@email.com',
+        address='my address',
+        city='my city',
+        country='my country',
+        zipcode='my zipcode',
+        phone='my phone',
+        noresearch=True,
+        abusecontent=False,
+        copyright=False,
+        illegalcontent=False,
+    )
+    with app.app_context():
+        record = Record.get_record(test_records[0].record_id)
+        with app.test_client() as client:
+            user = test_users['normal']
+            login_user(user, client)
+
+            headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')]
+
+            with app.extensions['mail'].record_messages() as outbox:
+                request_res = client.post(
+                    url_for('b2share_records_rest.b2rec_abuse',
+                            pid_value=test_records[0].pid),
+                    data=json.dumps(data),
+                    headers=headers)
+
+                assert request_res.status_code == 200
+                assert len(outbox) == 1
+                email = outbox[0]
+                assert email.recipients == [app.config.get('SUPPORT_EMAIL')]
+                assert "Message: {}".format(data['message']) in email.body
+                assert "Reason: No research data" in email.body
+                assert "Link: {}".format(
+                    url_for('b2share_records_rest.b2rec_item',
+                            pid_value=test_records[0].pid),
+                ) in email.body
+                request_data = json.loads(request_res.get_data(as_text=True))
+                assert request_data == {
+                    'message':'The record is reported.'
+                }
+
+
+def test_record_access_request(app, test_records, test_users,
+                               login_user):
+    """Test access requests send email."""
+    data = dict(
+        message='my message',
+        name='my name',
+        affiliation='my affiliation',
+        email='my@email.com',
+        address='my address',
+        city='my city',
+        country='my country',
+        zipcode='my zipcode',
+        phone='my phone',
+    )
+    with app.app_context():
+        record = Record.get_record(test_records[0].record_id)
+        with app.test_client() as client:
+            user = test_users['normal']
+            login_user(user, client)
+
+            headers = [('Content-Type', 'application/json-patch+json'),
+                       ('Accept', 'application/json')]
+
+            # test with contact_email
+            with app.extensions['mail'].record_messages() as outbox:
+                request_res = client.post(
+                    url_for('b2share_records_rest.b2rec_accessrequests',
+                            pid_value=test_records[0].pid),
+                    data=json.dumps(data),
+                    headers=headers)
+
+                assert request_res.status_code == 200
+                assert len(outbox) == 1
+                email = outbox[0]
+                assert email.recipients == [record['contact_email']]
+                assert "Message: {}".format(data['message']) in email.body
+                assert "Link: {}".format(
+                    url_for('b2share_records_rest.b2rec_item',
+                            pid_value=test_records[0].pid),
+                ) in email.body
+                request_data = json.loads(request_res.get_data(as_text=True))
+                assert request_data == {
+                    'message': 'An email was sent to the record owner.'
+                }
+
+            # test with owners
+            del record['contact_email']
+            record.commit()
+            with app.extensions['mail'].record_messages() as outbox:
+                request_res = client.post(
+                    url_for('b2share_records_rest.b2rec_accessrequests',
+                            pid_value=test_records[0].pid),
+                    data=json.dumps(data),
+                    headers=headers)
+
+                assert request_res.status_code == 200
+                assert len(outbox) == 1
+                email = outbox[0]
+                assert email.recipients == [
+                    test_users['deposits_creator'].email
+                ]
+                assert "Message: {}".format(data['message']) in email.body
+                assert "Link: {}".format(
+                    url_for('b2share_records_rest.b2rec_item',
+                            pid_value=test_records[0].pid),
+                ) in email.body
+                request_data = json.loads(request_res.get_data(as_text=True))
+                assert request_data == {
+                    'message': 'An email was sent to the record owner.'
+                }
+
+
 def test_record_patch_immutable_fields(app, test_records, test_users,
                                         login_user):
     """Test invalid modification of record draft with HTTP PATCH."""

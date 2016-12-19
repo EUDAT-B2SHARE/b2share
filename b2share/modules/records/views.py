@@ -34,7 +34,8 @@ from invenio_records_files.api import Record
 from invenio_rest.errors import RESTValidationError
 from invenio_search import RecordsSearch
 from jsonschema.exceptions import ValidationError
-from invenio_records_rest.views import (RecordsListResource, RecordResource,
+from invenio_records_rest.views import (pass_record,
+                                        RecordsListResource, RecordResource,
                                         RecordsListOptionsResource,
                                         SuggestResource)
 from invenio_records_rest.links import default_links_factory
@@ -45,6 +46,10 @@ from b2share.modules.deposit.serializers import json_v1_response as \
     deposit_serializer
 from invenio_mail import InvenioMail
 from flask_mail import Message
+from invenio_mail.tasks import send_email
+from invenio_rest import ContentNegotiatedMethodView
+from invenio_accounts.models import User
+
 
 def create_blueprint(endpoints):
     """Create Invenio-Records-REST blueprint."""
@@ -205,28 +210,12 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         default_media_type=default_media_type)
 
     abuse_view = RecordsAbuseResource.as_view(
-        RecordResource.view_name.format('abuse'),
-        resolver=resolver,
-        read_permission_factory=read_permission_factory,
-        update_permission_factory=update_permission_factory,
-        delete_permission_factory=delete_permission_factory,
-        serializers=record_serializers,
-        loaders=record_loaders,
-        search_class=search_class,
-        links_factory=links_factory,
-        default_media_type=default_media_type)
+        RecordsAbuseResource.view_name.format(endpoint),
+        resolver=resolver)
 
     access_view = RequestAccessResource.as_view(
-        RecordResource.view_name.format('accessrequests'),
-        resolver=resolver,
-        read_permission_factory=read_permission_factory,
-        update_permission_factory=update_permission_factory,
-        delete_permission_factory=delete_permission_factory,
-        serializers=record_serializers,
-        loaders=record_loaders,
-        search_class=search_class,
-        links_factory=links_factory,
-        default_media_type=default_media_type)
+        RequestAccessResource.view_name.format(endpoint),
+        resolver=resolver)
 
     views = [
         dict(rule=list_route, view_func=list_view),
@@ -312,7 +301,26 @@ class B2ShareRecordResource(RecordResource):
         abort(405)
 
 
-class RecordsAbuseResource(RecordResource):
+class RecordsAbuseResource(ContentNegotiatedMethodView):
+
+    view_name = '{0}_abuse'
+
+    def __init__(self, resolver=None, **kwargs):
+        """Constructor.
+
+        :param resolver: Persistent identifier resolver instance.
+        """
+        default_media_type = 'application/json'
+        super(RecordsAbuseResource, self).__init__(
+            serializers={
+                'application/json': lambda response: jsonify(response)
+            },
+            default_method_media_type={
+                'POST': default_media_type,
+            },
+            default_media_type=default_media_type,
+            **kwargs)
+        self.resolver = resolver
 
     def post(self, **kwargs):
         for v in ['abusecontent', 'message', 'email', 'copyright', 'zipcode',
@@ -357,17 +365,40 @@ class RecordsAbuseResource(RecordResource):
             Phone: """ + str(request.json['phone']) + """
             """
         support = str(current_app.config.get('SUPPORT_EMAIL'))
-        msg = Message("Abuse Report for a Record",
-                      sender=str(request.json['email']),
-                      recipients=[support],
-                      body=msg_content)
-        current_app.extensions['mail'].send(msg)
-        return jsonify({'message':'The record is reported.'})
+        send_email(dict(
+            subject="Abuse Report for a Record",
+            sender=str(request.json['email']),
+            recipients=[support],
+            body=msg_content,
+        ))
+        return self.make_response({
+            'message':'The record is reported.'
+        })
 
 
-class RequestAccessResource(RecordResource):
+class RequestAccessResource(ContentNegotiatedMethodView):
 
-    def post(self, **kwargs):
+    view_name = '{0}_accessrequests'
+
+    def __init__(self, resolver=None, **kwargs):
+        """Constructor.
+
+        :param resolver: Persistent identifier resolver instance.
+        """
+        default_media_type = 'application/json'
+        super(RequestAccessResource, self).__init__(
+            serializers={
+                'application/json': lambda response: jsonify(response)
+            },
+            default_method_media_type={
+                'POST': default_media_type,
+            },
+            default_media_type=default_media_type,
+            **kwargs)
+        self.resolver = resolver
+
+    @pass_record
+    def post(self, pid, record, **kwargs):
         for v in ['message', 'email', 'zipcode', 'phone', 'city', 'name',
                   'affiliation', 'address', 'country']:
             if v not in request.json:
@@ -388,10 +419,18 @@ class RequestAccessResource(RecordResource):
             Postal Code: """ + str(request.json['zipcode']) + """
             Phone: """ + str(request.json['phone']) + """
             """
-        support = str(current_app.config.get('SUPPORT_EMAIL'))
-        msg = Message("Request Access to Data Files",
-                      sender=str(request.json['email']),
-                      recipients=[support],
-                      body=msg_content)
-        current_app.extensions['mail'].send(msg)
-        return jsonify({'message': 'An email was sent to the record owner.'})
+        if 'contact_email' in record:
+            recipients = [record['contact_email']]
+        else:
+            owners = User.query.filter(
+                User.id.in_(record['_deposit']['owners'])).all()
+            recipients = [owner.email for owner in owners]
+        send_email(dict(
+            subject="Request Access to Data Files",
+            sender=str(request.json['email']),
+            recipients=recipients,
+            body=msg_content,
+        ))
+        return self.make_response({
+            'message': 'An email was sent to the record owner.'
+        })

@@ -90,7 +90,8 @@ def app(request, tmpdir):
         CELERY_ALWAYS_EAGER=True,
         CELERY_RESULT_BACKEND="cache",
         CELERY_CACHE_BACKEND="memory",
-        CELERY_EAGER_PROPAGATES_EXCEPTIONS=True
+        CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
+        SUPPORT_EMAIL='support@eudat.eu',
     )
 
     # update the application with the configuration provided by the test
