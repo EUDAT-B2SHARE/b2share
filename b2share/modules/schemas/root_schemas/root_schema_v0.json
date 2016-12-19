@@ -47,6 +47,7 @@
             "publication_date" : {
                 "title" : "Publication Date",
                 "description" : "The date when the data was or will be made publicly available (e.g. 1971-07-13)",
+                "type": "string",
                 "format":"date"
             },
             "disciplines": {

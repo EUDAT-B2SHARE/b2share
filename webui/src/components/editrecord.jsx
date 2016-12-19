@@ -1,6 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { Map, fromJS } from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 import { compare } from 'fast-json-patch';
 
 import Toggle from 'react-toggle';
@@ -12,7 +12,7 @@ momentLocalizer(moment);
 numberLocalizer();
 
 import { serverCache, notifications, Error, browser } from '../data/server';
-import { keys, pairs } from '../data/misc';
+import { keys, pairs, objEquals } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
@@ -231,138 +231,117 @@ const EditRecord = React.createClass({
         this.setState({errors: this.state.errors});
     },
 
-    getValue(blockID, fieldID) {
+    getValue(path) {
         const r = this.state.record;
         if (!r) {
             return null;
         }
-        let v = blockID ? r.getIn(['community_specific', blockID, fieldID]) : r.get(fieldID);
-        if (v != undefined && v != null) {
-            if (v.toJS){
-                v = v.toJS();
-            }
+        let v = r.getIn(path);
+        if (v != undefined && v != null && v.toJS) {
+            v = v.toJS();
         }
         return v;
     },
 
-    setValue(blockID, fieldID, type, value) {
-        if (type.isArray && !Array.isArray(value)) {
-            console.error("array expected, instead got:", value);
+    setValue(schema, path, value) {
+        let r = this.state.record;
+        if (!r) {
+            return null;
         }
-        if (type.isArray && value !== undefined) {
-            value = fromJS(value);
+        for (let i = 0; i < path.length; ++i) {
+            const el = path[i];
+            if (Number.isInteger(el)) {
+                console.assert(i > 0);
+                const subpath = path.slice(0, i);
+                const list = r.getIn(subpath);
+                if (!list) {
+                    r = r.setIn(subpath, List());
+                } else {
+                    console.assert(el < 1000);
+                    while (el >= list.count()) {
+                        const x = Number.isInteger(path[i+1]) ? List() : Map();
+                        const list2 = list.push(x);
+                        r = r.setIn(subpath, list2);
+                    }
+                }
+            }
         }
-        let path = blockID ? ['community_specific', blockID, fieldID] : [fieldID];
-        let record = this.state.record;
-        record = value !== undefined ? record.setIn(path, value) : record.deleteIn(path);
+        console.assert(!Array.isArray(value));
+        r = value !== undefined ? r.setIn(path, value) : r.deleteIn(path);
         const errors = this.state.errors;
-        if (!this.validField(value, type)) {
-            errors[fieldID] = `Please provide a value for the required field ${fieldID}`
+        const pathstr = path.join('/');
+        if (!this.validField(value, schema)) {
+            errors[pathstr] = `Please provide a value for the required field ${pathstr}`
         } else {
-            delete errors[fieldID];
+            delete errors[pathstr];
         }
-        this.setState({record, errors, dirty:true});
+        this.setState({record:r, errors, dirty:true});
     },
 
-    renderScalarField(type, getValue, setValue) {
-        if (type.type === 'boolean') {
-            const value = getValue();
+    renderScalarField(schema, path) {
+        const type = schema.get('type');
+        const value = this.getValue(path);
+        const setter = x => this.setValue(schema, path, x);
+        if (type === 'boolean') {
             return (
                 <div style={{lineHeight:"30px"}}>
-                    <Toggle checked={value} onChange={event => setValue(event.target.checked)}/>
+                    <Toggle checked={value} onChange={event => setter(event.target.checked)}/>
                     <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
                 </div>
             );
-        } else if (type.type === 'integer') {
-            return <NumberPicker defaultValue={getValue()} onChange={setValue} />
-        } else if (type.type === 'number') {
-            return <NumberPicker defaultValue={getValue()} onChange={setValue} />
-        } else if (type.type === 'string') {
-            const value = ""+(getValue() || "");
-            if (type.enum) {
-                return <DropdownList defaultValue={getValue()} data={type.enum.toJS()} onChange={setValue} />
-            } else if (type.format === 'date-time') {
-                const date = getValue();
-                const initial = (date && date !== "") ? moment(date).toDate() : null;
+        } else if (type === 'integer') {
+            return <NumberPicker defaultValue={value} onChange={setter} />
+        } else if (type === 'number') {
+            return <NumberPicker defaultValue={value} onChange={setter} />
+        } else if (type === 'string') {
+            const value_str = ""+(value || "");
+            if (schema.get('enum')) {
+                return <DropdownList defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
+            } else if (schema.get('format') === 'date-time') {
+                const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
                 return <DateTimePicker defaultValue={initial}
-                        onChange={date => setValue(moment(date).toISOString())} />
-            } else if (type.format === 'email') {
+                        onChange={date => setter(moment(date).toISOString())} />
+            } else if (schema.get('format') === 'email') {
                 return <input type="text" className="form-control" placeholder="email@example.com"
-                        value={getValue() || ""} onChange={event => setValue(event.target.value)} />
-            } else if (type.longString) {
-                return <textarea className="form-control" rows={value.length > 100 ? 5 : 1}
-                        value={getValue() || ""} onChange={event => setValue(event.target.value)} />
+                        value={value_str} onChange={event => setter(event.target.value)} />
+            } else if (schema.get('longString')) {
+                return <textarea className="form-control" rows={value_str.length > 100 ? 5 : 1}
+                        value={value_str} onChange={event => setter(event.target.value)} />
             } else {
                 return <input type="text" className="form-control"
-                        value={getValue() || ""} onChange={event => setValue(event.target.value)} />
+                        value={value_str} onChange={event => setter(event.target.value)} />
             }
+        } else if (schema.get('enum')) {
+            const value_str = ""+(value || "");
+            return <DropdownList defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
         } else {
-            console.error("Cannot render field of type:", type);
+            console.error("Cannot render field of schema:", schema.toJS());
         }
     },
 
-    renderArrayField(type, getValue, setValue, _, index) {
-        const getV = () => {
-            const values = getValue();
-            return values ? values[index] : undefined;
-        }
-        const setV = (v) => {
-            const values = getValue() || [];
-            values[index] = v;
-            setValue(values);
-        }
-        const btnOnClick = (ev) => {
-            ev.preventDefault();
-            let values = getValue();
-            if (index === 0) {
-                if (values) {
-                    values.push("");
-                } else {
-                    values=[""];
-                }
-            } else {
-                values.splice(index, 1);
-            }
-            setValue(values);
-        }
-        return (
-            <div id={index} key={index} className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
-                {this.renderScalarField(type, getV, setV)}
-                {index == 0 ?
-                    <a className="input-group-addon" href="#" onClick={btnOnClick}  style={{backgroundColor:'white'}} >
-                        <span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/>
-                    </a> :
-                    <a className="input-group-addon" href="#" onClick={btnOnClick}  style={{backgroundColor:'white'}} >
-                        <span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/>
-                    </a>
-                }
-            </div>
-        );
-    },
-
-    renderLicenseField(type, getValue, setValue) {
+    renderLicenseField(schema, path) {
         return (
             <div className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
-                {this.renderScalarField(type, getValue, setValue)}
+                {this.renderScalarField(schema, path)}
                 <SelectLicense title="Select License"
-                               onSelect={license => setValue(license.name)}
+                               onSelect={license => this.setValue(schema, path, license.name)}
                                setModal={modal => this.setState({modal})} />
             </div>
         );
     },
 
-    renderOpenAccessField(type, getValue, setValue, disabled) {
-        const value = getValue();
+    renderOpenAccessField(schema, path, disabled) {
+        const value = this.getValue(path);
         return (
             <div style={{lineHeight:"30px"}}>
-                <Toggle checked={value} onChange={event => setValue(event.target.checked)} disabled={disabled}/>
+                <Toggle checked={value} onChange={event => this.setValue(schema, path, event.target.checked)} disabled={disabled}/>
                 <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
             </div>
         );
     },
 
-    renderEmbargoField(type, getValue, setValue) {
-        const date = getValue();
+    renderEmbargoField(schema, path) {
+        const date = this.getValue(path);
         const initial = (date && date !== "") ? moment(date).toDate() : null;
         const onChange = date => {
             const m = moment(date);
@@ -370,7 +349,7 @@ const EditRecord = React.createClass({
             const access = m.isValid() ? (moment().diff(m) > 0) : true;
             this.state.record = this.state.record.set('open_access', access);
             // setValue will call setState
-            setValue(m.isValid() ? m.toISOString() : undefined);
+            this.setValue(schema, path, m.isValid() ? m.toISOString() : undefined);
         };
         return (
             <DateTimePicker format={"LL"} time={false} finalView={"year"}
@@ -378,74 +357,100 @@ const EditRecord = React.createClass({
         );
     },
 
-    renderField(blockID, fieldID, fieldSchema, blockSchema) {
-        const plugin = null;
-        if (!fieldSchema) {
+    renderFieldTree(id, schema, path) {
+        if (!schema) {
             return false;
         }
-        const type = getType(fieldSchema, fieldID, blockSchema);
-        if (fieldID === 'description') {
-            type.longString = true;
-        }
-        const getValue = this.getValue.bind(this, blockID, fieldID);
-        const setValue = this.setValue.bind(this, blockID, fieldID, type);
+        const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
 
         let field = false;
-        if (!blockID && fieldID === 'community') {
+        if (objEquals(path, ['community'])) {
             field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
-        } else if (!blockID && fieldID === 'licence') {
-            field = this.renderLicenseField(type, getValue, setValue);
-        } else if (!blockID && fieldID === 'open_access') {
-            const embargo = this.getValue(blockID, 'embargo_date');
+        } else if (objEquals(path, ['licence'])) {
+            field = this.renderLicenseField(schema, path);
+        } else if (objEquals(path, ['open_access'])) {
+            const embargo = this.getValue(schema, newpath('embargo_date'));
             const disabled = embargo && moment(embargo).isValid();
-            field = this.renderOpenAccessField(type, getValue, setValue, disabled);
-        } else if (!blockID && fieldID === 'embargo_date') {
-            field = this.renderEmbargoField(type, getValue, setValue);
-        } else if (!blockID && fieldID === 'language'
-                || blockID && fieldID === 'language_code') {
+            field = this.renderOpenAccessField(schema, path, disabled);
+        } else if (objEquals(path, ['embargo_date'])) {
+            field = this.renderEmbargoField(schema, path);
+        } else if (objEquals(path, ['language']) || objEquals(path, ['language_code'])) {
             const languages = serverCache.getLanguages();
             field = (languages instanceof Error) ? <Err err={languages}/> :
-                <SelectBig data={languages} onSelect={setValue} value={getValue()} />;
-        } else if (!blockID && fieldID === 'discipline') {
+                <SelectBig data={languages}
+                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+        } else if (path.length === 3 && path[0] === 'disciplines' && path[2] === 'discipline') {
             const disciplines = serverCache.getDisciplines();
             field = (disciplines instanceof Error) ? <Err err={disciplines}/> :
-                <SelectBig data={disciplines} onSelect={setValue} value={getValue()} />;
-        } else if (!type.isArray) {
-            field = this.renderScalarField(type, getValue, setValue);
-        } else {
-            let values = getValue() || [""];
-            if (values.length === 0) {
-                values.push("");
+                <SelectBig data={disciplines}
+                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+        } else if (schema.get('type') === 'array') {
+            const arrSchema = schema.get('items');
+            const raw_values = this.getValue(path);
+            const len = (raw_values && raw_values.length) || 1;
+            const arrField = [...Array(len).keys()].map(i =>
+                this.renderFieldTree(id+`[${i}]`, arrSchema, newpath(i)));
+            const btnAddRemove = (ev, pos) => {
+                ev.preventDefault();
+                if (pos === 0) {
+                    const arrType = arrSchema.get('type');
+                    const values = this.getValue(path);
+                    values.push(arrType === 'array' ? List() : arrType === 'object' ? Map() : null);
+                    this.setValue(schema, path, fromJS(values));
+                } else {
+                    this.setValue(schema, newpath(pos), undefined);
+                }
+                const v = this.getValue(path);
             }
-            field = values.map(this.renderArrayField.bind(this, type, getValue, setValue));
+            field = arrField.map((f, i) =>
+                    <div key={i}>
+                        {f}
+                        <div className={"col-sm-offset-11 col-sm-1"}>
+                            <btn className="btn btn-default" onClick={ev => btnAddRemove(ev, i)}>
+                                {i == 0 ?
+                                    <span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/> :
+                                    <span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/>
+                                }
+                            </btn>
+                        </div>
+                    </div>);
+        } else if (schema.get('type') === 'object') {
+            const props = schema.get('properties');
+            field = schema.get('properties').entrySeq().map(([pid, pschema]) =>
+                        this.renderFieldTree(pid, pschema, newpath(pid)));
+        } else {
+            field = this.renderScalarField(schema, path);
         }
 
-        const arrstyle= !type.isArray ? {} : {
+        const arrstyle = schema.get('type') !== 'array' ? {} : {
             paddingLeft:'10px',
             borderLeft:'1px solid black',
             borderRadius:'4px',
         };
-        const isError = this.state.errors.hasOwnProperty(fieldID);
-        const onfocus = () => { this.setState({showhelp: blockID + "/" + fieldID}); }
+        const pathstr = path.join('/');
+        const isError = this.state.errors.hasOwnProperty(pathstr);
+        const onfocus = () => { this.setState({showhelp: path.slice()}); }
         const onblur = () => { this.setState({showhelp: null}); }
+        const title = schema.get('title');
         return (
-            <div key={fieldID} style={{marginTop:'1em', marginBottom:'1em', paddingTop:'0.5em', paddingBottom:'0.5em'}}>
-                <div className="form-group row" key={fieldID} style={{marginBottom:'0.5em'}} title={fieldSchema.get('description')}>
-                    <label htmlFor={fieldID} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                        <span style={{float:'right', color:isError?'red':'black'}}>
-                            {fieldSchema.get('title') || fieldID} {type.required ? "*":""}
-                        </span>
-                    </label>
-                    <div className="col-sm-9" style={arrstyle} onFocus={onfocus} onBlur={onblur}>
+            <div key={id}>
+                <div className="form-group row" key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
+                    {!title ? false :
+                        <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
+                            <span style={{float:'right', color:isError?'red':'black'}}>
+                                {title} {schema.get('isRequired') ? "*":""}
+                            </span>
+                        </label> }
+                    <div className={title ? "col-sm-9":"col-sm-12"} style={arrstyle} onFocus={onfocus} onBlur={onblur}>
                         {field}
                     </div>
                 </div>
                 <div className="form-group row" style={{marginBottom:0}}>
                     <div className="col-sm-offset-3 col-sm-9">
                         <HeightAnimate>
-                            { this.state.showhelp && this.state.showhelp === blockID + "/" + fieldID ?
+                            { this.state.showhelp && objEquals(this.state.showhelp, path) ?
                                 <div style={{marginLeft:'1em', paddingLeft:'1em', borderLeft: '1px solid #eee'}}>
-                                    <p> {fieldSchema.get('description')} </p>
+                                    <p> {schema.get('description')} </p>
                                 </div>
                               : false }
                         </HeightAnimate>
@@ -462,10 +467,24 @@ const EditRecord = React.createClass({
         let open = this.state.folds ? this.state.folds[schemaID||""] : false;
         const plugins = schema.getIn(['b2share', 'plugins']);
 
+        function renderBigFieldTree([pid, pschema]) {
+            const datapath = schemaID ? ['community_specific', schemaID, pid] : [pid];
+            const f = this.renderFieldTree(pid, pschema, datapath);
+            if (!f) {
+                return false;
+            }
+            const style = {
+                marginTop:'0.25em',
+                marginBottom:'0.25em',
+                paddingTop:'0.25em',
+                paddingBottom:'0.25em',
+            };
+            return <div style={style} key={pid}> {f} </div>;
+        }
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
 
-        const majorFields = majors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f, schema));
-        const minorFields = minors.entrySeq().map(([id, f]) => this.renderField(schemaID, id, f, schema));
+        const majorFields = majors.entrySeq().map(renderBigFieldTree.bind(this));
+        const minorFields = minors.entrySeq().map(renderBigFieldTree.bind(this));
 
         const onMoreDetails = e => {
             e.preventDefault();
@@ -563,22 +582,28 @@ const EditRecord = React.createClass({
         const errors = {};
         const r = this.state.record;
 
-        rootSchema.get('properties').entrySeq().forEach(([id, f]) => {
-            const type = getType(f, id, rootSchema);
-            if (!this.validField(r.get(id), type)) {
-                errors[id] = `Please provide a valid value for field "${id}"`;
+        const validateRec = (schema, path, value) => {
+            const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
+            const type = schema.get('type');
+            if (type === 'array') {
+                const arrSchema = schema.get('items');
+                value.forEach((v, i) => validateRec(arrSchema, newpath(i), v));
+            } else if (type === 'object') {
+                schema.get('properties').entrySeq().map(([pid, pschema])=>
+                    validateRec(pschema, newpath(pid), value.get(pid)));
+            } else {
+                if (!this.validField(schema, value)) {
+                    const path_str = path.join("/");
+                    errors[path_str] = `Please provide a valid value for field "${path_str}"`;
+                }
             }
-        });
+        };
 
+        validateRec(rootSchema, [], r);
         blockSchemas.map(([blockID, blockSchema]) => {
             const schema = blockSchema.get('json_schema');
-            schema.get('properties').entrySeq().forEach(([id, f]) => {
-                const type = getType(f, id, schema);
-                if (!this.validField(r.getIn(['community_specific', blockID, id]), type)) {
-                    const fieldName = f.get('title') || id;
-                    errors[id] = `Please provide a valid value for community field "${fieldName}"`;
-                }
-            });
+            const path = ['community_specific', blockID];
+            validateRec(schema, path, r.getIn(path));
         });
 
         if (this.state.errors.files) {
