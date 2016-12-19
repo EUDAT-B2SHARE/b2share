@@ -35,7 +35,7 @@ class IdentifierSchema(Schema):
 
     def get_doi(self, pids):
         p = [p['value'] for p in pids if p['type'] == 'DOI_RESERVED']
-        return str(p[0])
+        return str(p[0]) if p else None
 
     identifier = fields.Method('get_doi')
     identifierType = fields.Constant('DOI')

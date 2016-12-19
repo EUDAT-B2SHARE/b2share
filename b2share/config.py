@@ -240,6 +240,7 @@ CFG_FAIL_ON_MISSING_FILE_PID = False
 # DOI config
 # ==========
 
+AUTOMATICALLY_ASSIGN_DOI = False
 DOI_IDENTIFIER_FORMAT = 'b2share.{recid}'
 CFG_FAIL_ON_MISSING_DOI = False
 

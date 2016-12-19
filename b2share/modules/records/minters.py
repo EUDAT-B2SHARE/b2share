@@ -54,7 +54,8 @@ def b2share_record_uuid_minter(record_uuid, data):
 
     b2share_oaiid_minter(record_uuid, data)
     b2share_pid_minter(record_uuid, data)
-    b2share_doi_minter(record_uuid, data)
+    if current_app.config.get('AUTOMATICALLY_ASSIGN_DOI'):
+        b2share_doi_minter(record_uuid, data)
 
     return provider.pid
 

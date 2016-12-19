@@ -24,6 +24,7 @@
 """Test B2Share record serializers."""
 
 
+import pytest
 from b2share_unit_tests.helpers import (create_record, create_user)
 from b2share.modules.records.serializers import (
     oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31)
@@ -153,6 +154,16 @@ def test_records_serializers_datacite(app, test_records_data):
         def replace_refs(self):
             return self
         record.replace_refs = types.MethodType(replace_refs, record)
+        with pytest.raises(TypeError):
+            # we're missing the DOI id by default
+            doc_str = datacite_v31.serialize(pid=pid, record=record)
+
+        if '_pid' not in record:
+            record['_pid'] = []
+        record['_pid'].append({
+            'value': "doitest/localdoiid",
+            'type': "DOI_RESERVED",
+        })
         doc_str = datacite_v31.serialize(pid=pid, record=record)
         doc = etree.XML(doc_str.encode('utf-8'))
 
