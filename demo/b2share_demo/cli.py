@@ -175,7 +175,7 @@ def generate_pid_migrator(base_url):
                     epic_url = epic_base_url + epic_pid  
             if not(epic_url is None):
                 curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
-                curl_comm += "-d %s:%s " % (epic_username, epic_password)
+                curl_comm += "-u %s:%s " % (epic_username, epic_password)
                 curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
                 curl_comm += "--data ='[%s] %s" % (curl_data, epic_url)
                 print(curl_comm)
