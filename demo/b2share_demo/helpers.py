@@ -293,7 +293,7 @@ def resolve_community_id(source):
     )
 
 
-def download_v1_data(token, target_dir, limit=None, verbose=False):
+def download_v1_data(token, target_dir, logfile, limit=None, verbose=False):
     """
     Download the data from B2SHARE V1 records using token in to target_dir .
     """
@@ -315,23 +315,23 @@ def download_v1_data(token, target_dir, limit=None, verbose=False):
         if len(recs) == 0:
             return # no more records
         for record in recs:
-            if (record.get('files') == 'RESTRICTED' or 
-                not(record.get('open_access')) ):
+            if record.get('files') == 'RESTRICTED':
                 if verbose:
                     click.secho('Ignore restricted record {}'.format(record.get('title')),
                                 fg='red')
             else:
                 counter = counter + 1
                 os.mkdir(str(counter))
-                download_v1_record(str(counter), record, verbose )
+                download_v1_record(str(counter), record,
+                     logfile, verbose )
                 if not(limit is None) and counter >= limit:
                     return # limit reached
         page_counter = page_counter + 1
 
 
-def download_v1_record(directory, record, verbose=False):
+def download_v1_record(directory, record, logfile, verbose=False):
     if verbose:
-        click.secho('Download open record {} "{}"'.format(
+        click.secho('Download record {} "{}"'.format(
             directory, record.get('title')))
     target_file = os.path.join(directory, '___record___.json')
     with open(target_file, 'w') as f:
@@ -340,6 +340,10 @@ def download_v1_record(directory, record, verbose=False):
         if not file_dict.get('name'):
             click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
                         fg='red')
+        elif not(record.get('open_access')):
+            click.secho('    Ignore file for record that has open_access set to false; logging this')
+            logfile.write("*** Files NOT downloaded due to open_access for record %s" % record.get('record_id'))
+            
         else:
             if verbose:
                 click.secho('    Download file "{}"'.format(file_dict.get('name')))

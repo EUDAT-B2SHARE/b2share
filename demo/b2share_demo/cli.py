@@ -112,6 +112,7 @@ def import_v1_data(verbose, download, token,
         click.secho("Importing data to the current instance")
         logger = logging.getLogger("sqlalchemy.engine")
         logger.setLevel(logging.ERROR)
+    logfile = open(current_app.config.get('MIGRATION_LOGFILE'),'a') 
     if os.path.isdir(download_directory):
         os.chdir(download_directory)
     else:
@@ -132,7 +133,7 @@ def import_v1_data(verbose, download, token,
         if not(limit is None):
             limit = int(limit)
             click.secho("Limiting to %d records for debug purposes" % limit)
-        download_v1_data(token, download_directory, limit, verbose)
+        download_v1_data(token, download_directory, logfile, limit, verbose)
     indexer = RecordIndexer(record_to_index=lambda record: ('records', 'record') )
     dirlist = os.listdir('.')
     if verbose:
@@ -144,8 +145,7 @@ def import_v1_data(verbose, download, token,
         # current_app.config['SERVER_NAME'],
         current_app.config['JSONSCHEMAS_HOST'],
         current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))
-    logfile = open(current_app.config.get('MIGRATION_LOGFILE'),'a')             
+    ))            
     for d in dirlist:
         process_v1_record(d, indexer, base_url, logfile, verbose)
     logfile.close()
@@ -160,6 +160,9 @@ def generate_pid_migrator(base_url):
     params['page'] = 1
     response = requests.get(url,params)
     recs = json.loads(response.text)['hits']['hits']
+    epic_base_url = current_app.config.get('CFG_EPIC_BASEURL')
+    epic_username = current_app.config.get('CFG_EPIC_USERNAME')
+    epic_password = current_app.config.get('CFG_EPIC_PASSWORD')
     for rec in recs:
         url_value = rec['links']['self'].replace("/api/records","/records")
         if 'alternate_identifiers' in rec['metadata'].keys():
@@ -167,10 +170,13 @@ def generate_pid_migrator(base_url):
             epic_url = None
             for aid in alt_ids:
                 if aid['alternate_identifier_type'] == 'ePIC_PID':
-                    epic_url = aid['alternate_identifier']
+                    handle_url = aid['alternate_identifier']
+                    epic_pid = handle_url.rsplit("/",1)[-1]
+                    epic_url = epic_base_url + epic_pid  
             if not(epic_url is None):
-                curl_comm = "curl -X PUT -v -H 'Accept:application/json'"
-                curl_data = '{"type":"URL","parsed_data":"%s"}' % url_value
+                curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
+                curl_comm += "-d %s:%s " % (epic_username, epic_password)
+                curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
                 curl_comm += "--data ='[%s] %s" % (curl_data, epic_url)
                 print(curl_comm)
     
