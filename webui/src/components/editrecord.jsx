@@ -320,12 +320,19 @@ const EditRecord = React.createClass({
     },
 
     renderLicenseField(schema, path) {
+        const onSelect = (license) => {
+            console.assert(path.length >= 1);
+            const licenseData = {
+                'license': license.name,
+                'license_uri': license.url,
+            };
+            this.setValue(schema, path.slice(0, -1), fromJS(licenseData));
+        };
         return (
             <div className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
-                {this.renderScalarField(schema, path)}
-                <SelectLicense title="Select License"
-                               onSelect={license => this.setValue(schema, path, license.name)}
-                               setModal={modal => this.setState({modal})} />
+                { this.renderScalarField(schema, path) }
+                <SelectLicense title="Select License" onSelect={onSelect}
+                    setModal={modal => this.setState({modal})} />
             </div>
         );
     },
@@ -366,7 +373,7 @@ const EditRecord = React.createClass({
         let field = false;
         if (objEquals(path, ['community'])) {
             field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
-        } else if (objEquals(path, ['licence'])) {
+        } else if (objEquals(path, ['license', 'license'])) {
             field = this.renderLicenseField(schema, path);
         } else if (objEquals(path, ['open_access'])) {
             const embargo = this.getValue(schema, newpath('embargo_date'));
