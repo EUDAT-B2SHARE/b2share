@@ -80,7 +80,7 @@ def change_status_for_private_doc(doc, uploaded_by):
     old = [x for x in old if x]
     print ("    status: {}".format(old))
 
-    if len(status) == 3 \
+    if len(old) == 3 \
             and 'allow email' in old[0] \
             and 'deny until' in old[1] \
             and 'allow any' in old[2]:
@@ -93,9 +93,9 @@ def change_status_for_private_doc(doc, uploaded_by):
         new_status = 'firerole:' + '\n'.join(new)
         if do_the_update:
             doc.set_status(new_status)
-            print ("    + Fixed firerole for file {}".format(filename))
+            print ("    + Fixed firerole for file {}".format(filename.encode('utf-8')))
         print ("    new status: {}".format(new_status))
-    elif len(status) == 2 \
+    elif len(old) == 2 \
             and 'allow email' in old[0] \
             and 'deny all' in old[1]:
         new = [
@@ -106,10 +106,10 @@ def change_status_for_private_doc(doc, uploaded_by):
         new_status = 'firerole:' + '\n'.join(new)
         if do_the_update:
             doc.set_status(new_status)
-            print ("    + Fixed firerole for file {}".format(filename))
+            print ("    + Fixed firerole for file {}".format(filename.encode('utf-8')))
         print ("    new status: {}".format(new_status))
     else:
-        print ("    ! Unknown firerole for file {}:".format(filename))
+        print ("    ! Unknown firerole for file {}:".format(filename.encode('utf-8')))
 
 
 if __name__ == '__main__':
