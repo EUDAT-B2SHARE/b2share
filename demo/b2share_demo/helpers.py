@@ -343,7 +343,7 @@ def download_v1_record(directory, record, logfile, verbose=False):
         elif not(record.get('open_access')):
             click.secho('    Ignore file for record that has open_access set to false; logging this')
             logfile.write("*** Files NOT downloaded due to open_access for record %s" % record.get('record_id'))
-            
+
         else:
             if verbose:
                 click.secho('    Download file "{}"'.format(file_dict.get('name')))
@@ -501,6 +501,9 @@ def _process_record(rec):
         for rt in resource_types:
             element = {'resource_type_general':rt}
             result['resource_types'].append(element)
+    if not result['resource_types']:
+        result['resource_types'] = [{'resource_type_general': "Other"}]
+    result['community_specific'] = {}
     if 'domain_metadata' in rec.keys():
         result.update(
             _match_community_specific_metadata(rec, community)
