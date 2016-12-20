@@ -340,17 +340,17 @@ def download_v1_record(directory, record, logfile, verbose=False):
         if not file_dict.get('name'):
             click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
                         fg='red')
-        elif not(record.get('open_access')):
-            click.secho('    Ignore file for record that has open_access set to false; logging this')
-            logfile.write("*** Files NOT downloaded due to open_access for record %s" % record.get('record_id'))
-
         else:
             if verbose:
                 click.secho('    Download file "{}"'.format(file_dict.get('name')))
             filepath = os.path.join(directory, 'file_{}'.format(index))
-            _save_file(file_dict['url'], filepath)
+            _save_file(logfile, file_dict['url'], filepath)
             if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
-                raise Exception("downloaded file size differs, {}".format(filepath))
+                logfile.write("********************")
+                logfile.write(traceback.format_exc())
+                logfile.write("ERROR: downloaded file size differs for file {}".format(filepath))
+                logfile.write("        {} instead of {}".format(os.path.getsize(filepath), file_dict.get('size')))
+                logfile.write("********************")
 
 
 def get_or_create_user(verbose, email):
@@ -538,7 +538,7 @@ def _match_community_specific_metadata(rec, community):
     result['community_specific'][block_schema_id] = cs_md_values_dict
     return result
 
-def _save_file(url, filename):
+def _save_file(logfile, url, filename):
     CHUNK_SIZE = 16 * 1024 * 1024 #download 16MB at a time
     current_app.logger.debug("Downloading %s" % url)
     gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
@@ -548,7 +548,11 @@ def _save_file(url, filename):
         u = urlopen(url, context=gcontext)
     except:
         current_app.logger.error("TIMEOUT trying to download %s" % url)
-        pass
+        logfile.write("********************")
+        logfile.write(traceback.format_exc())
+        logfile.write("ERROR: cannot open file URL for download: {}".format(url))
+        logfile.write("********************")
+
     while not finished:
         try:
             chunk = u.read(CHUNK_SIZE)
@@ -557,5 +561,9 @@ def _save_file(url, filename):
             else:
                 finished = True
         except:
+            logfile.write("********************")
+            logfile.write(traceback.format_exc())
+            logfile.write("WARN: exception while reading file: {}".format(url))
+            logfile.write("********************")
             finished = True
     f.close()
