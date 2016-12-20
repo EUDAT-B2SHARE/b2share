@@ -468,10 +468,10 @@ def _process_record(rec):
     if comms:
         community = comms[0]
         result['community']=str(community.id)
-    elif rec['domain']=='generic':
+    elif rec['domain']=='GENERIC':
         community = Community.get(name='EUDAT')
         result['community']=str(community.id)
-    elif rec['domain']=='linguistics':
+    elif rec['domain']=='LINGUISTICS':
         community = Community.get(name='CLARIN')
         result['community']=str(community.id)
     else:
