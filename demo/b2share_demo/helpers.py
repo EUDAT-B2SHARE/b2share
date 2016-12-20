@@ -460,14 +460,18 @@ def _process_record(rec):
         result['embargo_date'] = rec.get('embargo_date')
 
     #fetch community
+    rec['domain'] = rec['domain'].upper()
+    #hardcoded Aalto exception
+    if rec['domain']=='AALTO':
+        rec['domain'] = 'Aalto'
     comms = Community.get_all(0,1,name=rec['domain'])
     if comms:
         community = comms[0]
         result['community']=str(community.id)
-    elif rec['domain']=='generic':
+    elif rec['domain']=='GENERIC':
         community = Community.get(name='EUDAT')
         result['community']=str(community.id)
-    elif rec['domain']=='linguistics':
+    elif rec['domain']=='LINGUISTICS':
         community = Community.get(name='CLARIN')
         result['community']=str(community.id)
     else:
