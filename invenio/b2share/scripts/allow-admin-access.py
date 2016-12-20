@@ -47,8 +47,13 @@ def main():
         print ('Processing record: {0}'.format(recid))
         # print ('record: {0}'.format(record))
 
-        open_access = record.get('542')[0][0][0][1]
-        uploaded_by = record.get('856')[0][0][0][1]
+        try:
+            open_access = record.get('542')[0][0][0][1]
+            uploaded_by = record.get('856')[0][0][0][1]
+        except TypeError as e:
+            print('    ERROR while accessing fields:')
+            print(e)
+            continue
         print ('    Access: {}; Uploaded by: "{}"'.format(open_access, uploaded_by))
         if open_access == 'open':
             continue
@@ -81,9 +86,22 @@ def change_status_for_private_doc(doc, uploaded_by):
             and 'allow any' in old[2]:
         new = [
             old[0],
-            'allow email {}'.format(admin_email),
+            'allow email "{}"'.format(admin_email),
             old[1],
             old[2],
+        ]
+        new_status = 'firerole:' + '\n'.join(new)
+        if do_the_update:
+            doc.set_status(new_status)
+            print ("    + Fixed firerole for file {}".format(filename))
+        print ("    new status: {}".format(new_status))
+    elif len(status) == 2 \
+            and 'allow email' in old[0] \
+            and 'deny all' in old[1]:
+        new = [
+            old[0],
+            'allow email "{}"'.format(admin_email),
+            old[1],
         ]
         new_status = 'firerole:' + '\n'.join(new)
         if do_the_update:
