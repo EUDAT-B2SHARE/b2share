@@ -36,6 +36,9 @@ services:
             - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
             - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
             - "B2SHARE_PREFERRED_URL_SCHEME=https"
+            - "SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}"
+        volumes:
+            - /b2share-data:/usr/var/b2share-instance
     nginx:
         build: nginx
         ports:
