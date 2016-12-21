@@ -5,6 +5,9 @@
   "description": "B2SHARE web user interface",
   "license": "GPL-2.0",
   "repository": "https://github.com/EUDAT-B2SHARE/b2share.git",
+  "scripts": {
+    "postinstall": "./copy_files.sh"
+  },
   "devDependencies": {
     "babel-core": "^6.2.1",
     "babel-loader": "^6.2.0",
