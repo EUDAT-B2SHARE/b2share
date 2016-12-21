@@ -314,7 +314,8 @@ def download_v1_data(token, target_dir, logfile, limit=None):
         for record in recs:
             recid = str(record.get('record_id'))
             click.secho("Download record : %s" % recid)
-            os.mkdir(recid)
+            if not os.path.exists(recid):
+                os.mkdir(recid)
             download_v1_record(recid, record, logfile)
             if (limit is not None) and int(recid) >= limit:
                 return # limit reached
@@ -330,7 +331,8 @@ def download_v1_record(recid, record, logfile):
     for index, file_dict in enumerate(record.get('files', [])):
         click.secho('    Download file "{}"'.format(file_dict.get('name')))
         filepath = os.path.join(directory, 'file_{}'.format(index))
-        _save_file(logfile, file_dict['url'], filepath)
+        if not os.path.exists(filepath) or int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+            _save_file(logfile, file_dict['url'], filepath)
         if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
             logfile.write("\n********************\n")
             logfile.write("\nERROR: downloaded file size differs for file {}\n".format(filepath))

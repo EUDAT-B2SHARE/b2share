@@ -128,9 +128,8 @@ def import_v1_data(verbose, download, token, download_directory,limit):
     if download:
         filelist = os.listdir('.')
         if len(filelist) > 0:
-            raise click.ClickException("""You set download_dir to %s .
-             If you want to download files, download_dir should be an empty
-             directory.\n Please empty directory and try again.""" % download_directory)
+            click.secho("!!! Downloading data into existing directory, "
+                        "overwriting previous data", fg='red')
         click.secho("----------")
         click.secho("Downloading data into directory %s" % download_directory)
         if limit is not None:
