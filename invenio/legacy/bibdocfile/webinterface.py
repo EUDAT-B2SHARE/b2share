@@ -81,6 +81,8 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
         filename = component
 
         def getfile(req, form):
+            from flask import current_app
+            current_app.logger.error("GetFile call ")
             args = wash_urlargd(form, bibdocfile_templates.files_default_urlargd)
             ln = args['ln']
 
