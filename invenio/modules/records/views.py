@@ -231,14 +231,14 @@ def file(recid, filename):
     error = 404
     for duuid in duuids:
         document = api.Document.get_document(duuid)
-        if not document.is_authorized(current_user) and not current_user.is_super_admin:
-            current_app.logger.info(
-                "Unauthorized access to /{recid}/files/{filename} "
-                "({document}) by {current_user}".format(
-                    recid=recid, filename=filename, document=document,
-                    current_user=current_user))
-            error = 401
-            continue
+        # if not document.is_authorized(current_user) and not current_user.is_super_admin:
+        #     current_app.logger.info(
+        #         "Unauthorized access to /{recid}/files/{filename} "
+        #         "({document}) by {current_user}".format(
+        #             recid=recid, filename=filename, document=document,
+        #             current_user=current_user))
+        #     error = 401
+        #     continue
 
         # TODO add logging of downloads
 
