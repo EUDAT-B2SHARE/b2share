@@ -109,7 +109,7 @@
                             "items": {
                                 "type": "string",
                                 "enum": ["Whole blood", "Plasma", "Serum", "Urine", "Saliva",
-                                            "CSF", "DNA", "RNA", "Tissue", "Faeces", "Other"]
+                                            "CSF", "DNA", "RNA", "Tissue", "Faeces", "Other", "cell line"]
                             }
                         }
                     },
