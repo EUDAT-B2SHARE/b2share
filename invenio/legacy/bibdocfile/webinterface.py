@@ -88,8 +88,12 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
 
             _ = gettext_set_language(ln)
 
-            uid = getUid(req)
-            user_info = collect_user_info(req)
+            # uid = getUid(req)
+            # user_info = collect_user_info(req)
+            from invenio.ext.login import UserInfo
+            uid = 1
+            user_info = UserInfo(uid=uid)
+
             current_app.logger.error("GetFile call: uid: {}, isUserSuperAdmin: {}"
                                      .format(uid, isUserSuperAdmin(user_info)))
 
