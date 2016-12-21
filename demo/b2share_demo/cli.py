@@ -100,49 +100,48 @@ def load_config(verbose, force):
         click.secho('Configuration file "{}" created.'.format(
             instance_config_path), fg='green')
 
+
 @demo.command()
 @with_appcontext
 @click.option('-v', '--verbose', count=True)
-@click.option('-d','--download', is_flag=True, default=False)
-@click.option('-l','--limit', default=None)
+@click.option('-d', '--download', is_flag=True, default=False)
+@click.option('-l', '--limit', default=None)
 @click.argument('token')
 @click.argument('download_directory')
-def import_v1_data(verbose, download, token,
-         download_directory,limit):
-    if verbose:
-        click.secho("Importing data to the current instance")
-        logger = logging.getLogger("sqlalchemy.engine")
-        logger.setLevel(logging.ERROR)
+def import_v1_data(verbose, download, token, download_directory,limit):
+    click.secho("Importing data to the current instance")
+    logger = logging.getLogger("sqlalchemy.engine")
+    logger.setLevel(logging.ERROR)
+
     logfile = open(current_app.config.get('MIGRATION_LOGFILE'), 'a')
     logfile.write("\n\n\n~~~ Starting import task download={} limit={}"
                   .format(download, limit))
     if os.path.isdir(download_directory):
         os.chdir(download_directory)
     else:
-        raise click.ClickException("%s does not exist or is not a directory. If you want to import records specify an empty, existing directory." % download_directory)
+        raise click.ClickException("%s does not exist or is not a directory. If you want to import "
+                                   "records specify an empty, existing directory."
+                                   % download_directory)
     if limit and not download:
         raise click.ClickException("Limit can only be set with download")
+
     if download:
         filelist = os.listdir('.')
-        if len(filelist)>0:
+        if len(filelist) > 0:
             raise click.ClickException("""You set download_dir to %s .
-            If you want to download files, download_dir should be an empty
-             directory.\n Please empty directory and try again.""" %
-             download_directory)
-        if verbose:
-            click.secho("----------")
-            click.secho("Downloading data into directory %s" %
-                download_directory)
-        if not(limit is None):
+             If you want to download files, download_dir should be an empty
+             directory.\n Please empty directory and try again.""" % download_directory)
+        click.secho("----------")
+        click.secho("Downloading data into directory %s" % download_directory)
+        if limit is not None:
             limit = int(limit)
             click.secho("Limiting to %d records for debug purposes" % limit)
-        download_v1_data(token, download_directory, logfile, limit, verbose)
-    indexer = RecordIndexer(record_to_index=lambda record: ('records', 'record') )
+        download_v1_data(token, download_directory, logfile, limit)
+    indexer = RecordIndexer(record_to_index=lambda record: ('records', 'record'))
     dirlist = os.listdir('.')
-    if verbose:
-        click.secho("-----------")
-        click.secho("Processing %d downloaded records" %
-                    (len(dirlist)))
+
+    click.secho("-----------")
+    click.secho("Processing %d downloaded records" % (len(dirlist)))
     base_url = urlunsplit((
         current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
         # current_app.config['SERVER_NAME'],
@@ -151,13 +150,13 @@ def import_v1_data(verbose, download, token,
     ))
     for d in dirlist:
         try:
-            process_v1_record(d, indexer, base_url, logfile, verbose)
+            process_v1_record(d, indexer, base_url, logfile)
         except:
-            logfile.write("********************")
-            logfile.write(traceback.format_exc())
-            logfile.write("ERROR: exception while processing record /{}/___record.json___"
+            logfile.write("\n********************")
+            logfile.write("\nERROR: exception while processing record /{}/___record.json___\n"
                           .format(d))
-            logfile.write("********************")
+            logfile.write(traceback.format_exc())
+            logfile.write("\n********************")
 
     logfile.close()
 
@@ -166,28 +165,33 @@ def import_v1_data(verbose, download, token,
 @click.argument('base_url')
 def generate_pid_migrator(base_url):
     url = base_url + "api/records"
-    params = {}
-    params['size'] = 1000
-    params['page'] = 1
-    response = requests.get(url,params)
+    params = {'size': 1000, 'page': 1}
+    response = requests.get(url, params)
     recs = json.loads(response.text)['hits']['hits']
     epic_base_url = current_app.config.get('CFG_EPIC_BASEURL')
     epic_username = current_app.config.get('CFG_EPIC_USERNAME')
     epic_password = current_app.config.get('CFG_EPIC_PASSWORD')
     epic_prefix = current_app.config.get('CFG_EPIC_PREFIX')
     for rec in recs:
-        url_value = rec['links']['self'].replace("/api/records","/records")
+        url_value = rec['links']['self'].replace("/api/records", "/records")
         if 'alternate_identifiers' in rec['metadata'].keys():
             alt_ids = rec['metadata']['alternate_identifiers']
             epic_url = None
             for aid in alt_ids:
                 if aid['alternate_identifier_type'] == 'ePIC_PID':
                     handle_url = aid['alternate_identifier']
-                    epic_pid = handle_url.rsplit("/",1)[-1]
+                    epic_pid = handle_url.rsplit("/", 1)[-1]
                     epic_url = epic_base_url + epic_prefix + '/' + epic_pid
-            if not(epic_url is None):
+            if epic_url is not None:
+                curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
                 curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
                 curl_comm += "-u %s:%s " % (epic_username, epic_password)
-                curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
-                curl_comm += "--data ='[%s] %s" % (curl_data, epic_url)
+                curl_comm += "--data ='[%s]' %s" % (curl_data, epic_url)
                 print(curl_comm)
+
+
+@demo.command()
+@with_appcontext
+def diff_sites():
+    from .migration import main_diff
+    main_diff()
