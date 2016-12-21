@@ -169,6 +169,8 @@ def request_record(f):
                visible_when=visible_collection_tabs('metadata'))
 def metadata(recid, of='hd', ot=None):
     """Display formated record metadata."""
+    current_app.logger.error("Record Access: endpoint of /{recid}"
+                             .format(recid=recid))
     from invenio.legacy.bibrank.downloads_similarity import \
         register_page_view_event
     from invenio.modules.formatter import get_output_format_content_type
@@ -224,13 +226,22 @@ def files(recid):
 @request_record
 def file(recid, filename):
     """Serve attached documents."""
+    current_app.logger.error("Free Access: file endpoint to /{recid}/files/{filename}"
+                             .format(recid=recid, filename=filename))
     from invenio.modules.documents import api
     record = get_record(recid)
+    current_app.logger.error("Free Access: got record")
     duuids = [uuid for (k, uuid) in record.get('_documents', [])
               if k == filename]
     error = 404
+    current_app.logger.error("Free Access: got documents")
     for duuid in duuids:
+        current_app.logger.error("Free Access: got documents")
         document = api.Document.get_document(duuid)
+        current_app.logger.error(
+            "Free Access to /{recid}/files/{filename} ({document}) by {current_user}".format(
+                recid=recid, filename=filename, document=document,
+                current_user=current_user))
         # if not document.is_authorized(current_user) and not current_user.is_super_admin:
         #     current_app.logger.info(
         #         "Unauthorized access to /{recid}/files/{filename} "
@@ -254,6 +265,7 @@ def file(recid, filename):
             return send_file(file_, mimetype='application/octet-stream',
                              attachment_filename=filename)
         return send_file(document['uri'])
+    current_app.logger.error("Free Access: abort {}".format(error))
     abort(error)
 
 
