@@ -90,24 +90,30 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
 
             uid = getUid(req)
             user_info = collect_user_info(req)
+            current_app.logger.error("GetFile call: uid: {}, isUserSuperAdmin: {}"
+                                     .format(uid, isUserSuperAdmin(user_info)))
 
             verbose = args['verbose']
             if verbose >= 1 and not isUserSuperAdmin(user_info):
                 # Only SuperUser can see all the details!
                 verbose = 0
 
+            current_app.logger.error("GetFile call: 2")
             if uid == -1 or CFG_ACCESS_CONTROL_LEVEL_SITE > 1:
                 return page_not_authorized(req, "/%s/%s" % (CFG_SITE_RECORD, self.recid),
                                            navmenuid='submit')
 
+            current_app.logger.error("GetFile call: 3")
             if record_exists(self.recid) < 1:
                 msg = "<p>%s</p>" % _("Requested record does not seem to exist.")
                 return warning_page(msg, req, ln)
 
+            current_app.logger.error("GetFile call: 4")
             if record_empty(self.recid):
                 msg = "<p>%s</p>" % _("Requested record does not seem to have been integrated.")
                 return warning_page(msg, req, ln)
 
+            current_app.logger.error("GetFile call: 5")
             (auth_code, auth_message) = check_user_can_view_record(user_info, self.recid)
             if auth_code and user_info['email'] == 'guest':
                 if webjournal_utils.is_recid_in_released_issue(self.recid):
@@ -128,6 +134,8 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
                                                text = auth_message)
 
             readonly = CFG_ACCESS_CONTROL_LEVEL_SITE == 1
+
+            current_app.logger.error("GetFile call: 6")
 
             # From now on: either the user provided a specific file
             # name (and a possible version), or we return a list of
@@ -151,6 +159,7 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
             version = ''
             warn = ''
 
+            current_app.logger.error("GetFile call: 7")
             if filename:
                 # We know the complete file name, guess which docid it
                 # refers to
@@ -186,6 +195,7 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
                     version = ''
 
             display_hidden = isUserSuperAdmin(user_info)
+            current_app.logger.error("GetFile call: 8")
 
             if version != 'all':
                 # search this filename in the complete list of files
@@ -203,9 +213,12 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
                                 warn += write_warning(_("The format %(x_form)s does not exist for the given version: %(x_vers)s",
                                             x_form=cgi.escape(docformat), x_vers=cgi.escape(str(msg))))
                                 break
+                            current_app.logger.error("GetFile call: 8.1")
                             (auth_code, auth_message) = docfile.is_restricted(user_info)
+                            current_app.logger.error("GetFile call: 8.2 auth_code:{}".format(auth_code))
                             if auth_code != 0 and not is_user_owner_of_record(user_info, self.recid):
                                 if CFG_BIBDOCFILE_ICON_SUBFORMAT_RE.match(get_subformat_from_format(docformat)):
+                                    current_app.logger.error("GetFile call: 8.3")
                                     return stream_restricted_icon(req)
                                 if user_info['email'] == 'guest':
                                     cookie = mail_cookie_create_authorize_action('viewrestrdoc', {'status' : docfile.get_status()})
@@ -214,6 +227,7 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
                                         CFG_SITE_SECURE_URL + user_info['uri']}, {})
                                     redirect_to_url(req, target)
                                 else:
+                                    current_app.logger.error("GetFile call: 8.4")
                                     req.status = apache.HTTP_UNAUTHORIZED
                                     warn += write_warning(_("This file is restricted: ") + str(auth_message))
                                     break
@@ -222,6 +236,7 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
                                 if not readonly:
                                     ip = str(req.remote_ip)
                                     doc.register_download(ip, docfile.get_version(), docformat, uid, self.recid)
+                                current_app.logger.error("GetFile call: 8.5")
                                 try:
                                     return docfile.stream(req, download=is_download)
                                 except InvenioBibDocFileError as msg:
@@ -229,12 +244,14 @@ class WebInterfaceFilesPages(WebInterfaceDirectory):
                                     req.status = apache.HTTP_INTERNAL_SERVER_ERROR
                                     warn += write_warning(_("An error has happened in trying to stream the request file."))
                             else:
+                                current_app.logger.error("GetFile call: 8.6")
                                 req.status = apache.HTTP_UNAUTHORIZED
                                 warn += write_warning(_("The requested file is hidden and can not be accessed."))
 
                         except InvenioBibDocFileError as msg:
                             register_exception(req=req, alert_admin=True)
 
+            current_app.logger.error("GetFile call: 9")
             if docname and docformat and not warn:
                 req.status = apache.HTTP_NOT_FOUND
                 warn += write_warning(_("Requested file does not seem to exist."))
