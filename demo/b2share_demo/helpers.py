@@ -451,7 +451,7 @@ def _process_record(rec):
 
     result['publisher'] = rec.get('publisher', "https://b2share.eudat.eu")
     if rec.get('discipline'):
-        result['disciplines'] = rec.get('discipline')
+        result['disciplines'] = list(set(rec.get('discipline')))
     if rec.get('language'):
         result['language'] = rec.get('language')
     if rec.get('version'):
