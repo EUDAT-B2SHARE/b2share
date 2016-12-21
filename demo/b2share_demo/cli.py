@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 import json
 import logging
 import os
+import traceback
 from shutil import rmtree
 import pathlib
 import requests
@@ -112,7 +113,9 @@ def import_v1_data(verbose, download, token,
         click.secho("Importing data to the current instance")
         logger = logging.getLogger("sqlalchemy.engine")
         logger.setLevel(logging.ERROR)
-    logfile = open(current_app.config.get('MIGRATION_LOGFILE'),'a') 
+    logfile = open(current_app.config.get('MIGRATION_LOGFILE'), 'a')
+    logfile.write("\n\n\n~~~ Starting import task download={} limit={}"
+                  .format(download, limit))
     if os.path.isdir(download_directory):
         os.chdir(download_directory)
     else:
@@ -145,11 +148,19 @@ def import_v1_data(verbose, download, token,
         # current_app.config['SERVER_NAME'],
         current_app.config['JSONSCHEMAS_HOST'],
         current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))            
+    ))
     for d in dirlist:
-        process_v1_record(d, indexer, base_url, logfile, verbose)
+        try:
+            process_v1_record(d, indexer, base_url, logfile, verbose)
+        except:
+            logfile.write("********************")
+            logfile.write(traceback.format_exc())
+            logfile.write("ERROR: exception while processing record /{}/___record.json___"
+                          .format(d))
+            logfile.write("********************")
+
     logfile.close()
-    
+
 @demo.command()
 @with_appcontext
 @click.argument('base_url')
@@ -173,11 +184,10 @@ def generate_pid_migrator(base_url):
                 if aid['alternate_identifier_type'] == 'ePIC_PID':
                     handle_url = aid['alternate_identifier']
                     epic_pid = handle_url.rsplit("/",1)[-1]
-                    epic_url = epic_base_url + epic_prefix + '/' + epic_pid  
+                    epic_url = epic_base_url + epic_prefix + '/' + epic_pid
             if not(epic_url is None):
                 curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
                 curl_comm += "-u %s:%s " % (epic_username, epic_password)
                 curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
                 curl_comm += "--data ='[%s] %s" % (curl_data, epic_url)
                 print(curl_comm)
-    
