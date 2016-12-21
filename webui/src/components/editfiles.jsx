@@ -556,7 +556,7 @@ export const FileRecordRow = React.createClass({
                             </div>
                         </div> : false }
                         { file.ePIC_PID ? <div className="row">
-                            <div className="col-sm-12"><span style={{marginLeft:'2.5em'}}/>
+                            <div className="col-sm-12"><span style={{marginLeft:'2.5em', whiteSpace: 'nowrap'}}/>
                                 PID: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.ePIC_PID} />
                             </div>
                         </div> : false }
