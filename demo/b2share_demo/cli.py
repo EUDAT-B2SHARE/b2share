@@ -180,10 +180,11 @@ def generate_pid_migrator(base_url):
                 if aid['alternate_identifier_type'] == 'ePIC_PID':
                     handle_url = aid['alternate_identifier']
                     epic_pid = handle_url.rsplit("/", 1)[-1]
-                    epic_url = epic_base_url + epic_prefix + '/' + epic_pid
+                    epic_url = epic_base_url + str(epic_prefix) + '/' + str(epic_pid)
             if epic_url is not None:
                 curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
                 curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
+                curl_comm += "-H 'Content-Type:application/json' "
                 curl_comm += "-u '%s:%s' " % (epic_username, epic_password)
                 curl_comm += "--data '[%s]' %s" % (curl_data, epic_url)
                 print(curl_comm)
