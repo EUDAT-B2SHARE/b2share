@@ -237,6 +237,11 @@ CFG_FAIL_ON_MISSING_FILE_PID = False
 # CFG_EPIC_BASEURL = 'https://epic4.storage.surfsara.nl/v2_A/handles/'
 # CFG_EPIC_PREFIX = 0000
 
+# for manual testing purposes, FAKE_EPIC_PID can be set to True
+# in which case a fake epic pid will be generated for records
+# FAKE_EPIC_PID = False
+
+
 # DOI config
 # ==========
 
@@ -248,6 +253,10 @@ PIDSTORE_DATACITE_TESTMODE = False
 PIDSTORE_DATACITE_DOI_PREFIX = "XXXX"
 PIDSTORE_DATACITE_USERNAME = "XXXX"
 PIDSTORE_DATACITE_PASSWORD = "XXXX"
+
+# for manual testing purposes, FAKE_DOI can be set to True
+# in which case a fake DOI will be generated for records
+# FAKE_DOI = False
 
 
 B2DROP_SERVER = {

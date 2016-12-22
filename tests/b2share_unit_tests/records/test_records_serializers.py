@@ -154,16 +154,7 @@ def test_records_serializers_datacite(app, test_records_data):
         def replace_refs(self):
             return self
         record.replace_refs = types.MethodType(replace_refs, record)
-        with pytest.raises(TypeError):
-            # we're missing the DOI id by default
-            doc_str = datacite_v31.serialize(pid=pid, record=record)
 
-        if '_pid' not in record:
-            record['_pid'] = []
-        record['_pid'].append({
-            'value': "doitest/localdoiid",
-            'type': "DOI_RESERVED",
-        })
         doc_str = datacite_v31.serialize(pid=pid, record=record)
         doc = etree.XML(doc_str.encode('utf-8'))
 
