@@ -74,7 +74,7 @@ def load_demo_data(path, verbose=0):
         current_app.config.get('APPLICATION_ROOT') or '', '', ''
     ))
     with db.session.begin_nested():
-        user_info = _create_user(verbose)
+        user_info = _create_user()
         # Define the base url used for the request context. This is useful
         # for generated URLs which will use the provided url "scheme".
         with current_app.test_request_context('/', base_url=base_url):
@@ -88,7 +88,7 @@ def load_demo_data(path, verbose=0):
 DemoCommunity = namedtuple('DemoCommunity', ['ref', 'config'])
 
 
-def _create_user(verbose, email=None):
+def _create_user(email=None):
     """Create demo user."""
     click.secho('Creating user', fg='yellow', bold=True)
 
