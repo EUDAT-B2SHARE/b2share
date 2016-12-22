@@ -165,7 +165,7 @@ def import_v1_data(verbose, download, token, download_directory,limit):
 def generate_pid_migrator(base_url):
     url = base_url + "api/records"
     params = {'size': 1000, 'page': 1}
-    response = requests.get(url, params)
+    response = requests.get(url, params, verify=False)
     recs = json.loads(response.text)['hits']['hits']
     epic_base_url = current_app.config.get('CFG_EPIC_BASEURL')
     epic_username = current_app.config.get('CFG_EPIC_USERNAME')
@@ -184,8 +184,8 @@ def generate_pid_migrator(base_url):
             if epic_url is not None:
                 curl_data = '{"type":"URL","parsed_data":"%s"} ' % url_value
                 curl_comm = "curl -X PUT -v -H 'Accept:application/json' "
-                curl_comm += "-u %s:%s " % (epic_username, epic_password)
-                curl_comm += "--data ='[%s]' %s" % (curl_data, epic_url)
+                curl_comm += "-u '%s:%s' " % (epic_username, epic_password)
+                curl_comm += "--data '[%s]' %s" % (curl_data, epic_url)
                 print(curl_comm)
 
 
