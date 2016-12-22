@@ -90,8 +90,7 @@ DemoCommunity = namedtuple('DemoCommunity', ['ref', 'config'])
 
 def _create_user(verbose, email=None):
     """Create demo user."""
-    if verbose:
-        click.secho('Creating user', fg='yellow', bold=True)
+    click.secho('Creating user', fg='yellow', bold=True)
 
     if email is None:
         email = 'firstuser@example.com'
@@ -293,7 +292,7 @@ def resolve_community_id(source):
     )
 
 
-def download_v1_data(token, target_dir, logfile, limit=None, verbose=False):
+def download_v1_data(token, target_dir, logfile, limit=None):
     """
     Download the data from B2SHARE V1 records using token in to target_dir .
     """
@@ -302,11 +301,9 @@ def download_v1_data(token, target_dir, logfile, limit=None, verbose=False):
     params = {}
     params['access_token'] = token
     params['page_size'] = 100
-    counter = 0
     page_counter = 0
     os.chdir(target_dir)
     while True:
-        click.secho("Download counter is now: %d" % counter)
         params['page_offset'] = page_counter
         click.secho("Params to download: %s" % str(params))
         r = requests.get(url, params=params, verify=False)
@@ -315,117 +312,99 @@ def download_v1_data(token, target_dir, logfile, limit=None, verbose=False):
         if len(recs) == 0:
             return # no more records
         for record in recs:
-            if record.get('files') == 'RESTRICTED':
-                if verbose:
-                    click.secho('Ignore restricted record {}'.format(record.get('title')),
-                                fg='red')
-            else:
-                counter = counter + 1
-                os.mkdir(str(counter))
-                download_v1_record(str(counter), record,
-                     logfile, verbose )
-                if not(limit is None) and counter >= limit:
-                    return # limit reached
+            recid = str(record.get('record_id'))
+            click.secho("Download record : %s" % recid)
+            if not os.path.exists(recid):
+                os.mkdir(recid)
+            download_v1_record(recid, record, logfile)
+            if (limit is not None) and int(recid) >= limit:
+                return # limit reached
         page_counter = page_counter + 1
 
 
-def download_v1_record(directory, record, logfile, verbose=False):
-    if verbose:
-        click.secho('Download record {} "{}"'.format(
-            directory, record.get('title')))
+def download_v1_record(recid, record, logfile):
+    click.secho('Download record {} "{}"'.format(recid, record.get('title')))
+    directory = recid
     target_file = os.path.join(directory, '___record___.json')
     with open(target_file, 'w') as f:
         f.write(json.dumps(record))
     for index, file_dict in enumerate(record.get('files', [])):
-        if not file_dict.get('name'):
-            click.secho('    Ignore file with no name "{}"'.format(file_dict.get('url')),
-                        fg='red')
-        else:
-            if verbose:
-                click.secho('    Download file "{}"'.format(file_dict.get('name')))
-            filepath = os.path.join(directory, 'file_{}'.format(index))
+        click.secho('    Download file "{}"'.format(file_dict.get('name')))
+        filepath = os.path.join(directory, 'file_{}'.format(index))
+        if not os.path.exists(filepath) or int(os.path.getsize(filepath)) != int(file_dict.get('size')):
             _save_file(logfile, file_dict['url'], filepath)
-            if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
-                logfile.write("********************")
-                logfile.write(traceback.format_exc())
-                logfile.write("ERROR: downloaded file size differs for file {}".format(filepath))
-                logfile.write("        {} instead of {}".format(os.path.getsize(filepath), file_dict.get('size')))
-                logfile.write("********************")
+        if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+            logfile.write("\n********************\n")
+            logfile.write("\nERROR: downloaded file size differs for file {}\n".format(filepath))
+            logfile.write("        {} instead of {}\n".format(
+                os.path.getsize(filepath), file_dict.get('size')))
+            logfile.write("\n********************\n")
 
 
-def get_or_create_user(verbose, email):
+def get_or_create_user(email):
     result_set = User.query.filter(User.email==email)
     if result_set.count():
         result = result_set.one()
     else:
-        user_info = _create_user(verbose, email)
+        user_info = _create_user(email)
         result = user_info['user']
     return result
 
-def process_v1_record(directory, indexer, base_url, logfile, verbose=False):
+def process_v1_record(directory, indexer, base_url, logfile):
     """
     Parse a downloaded file containing records
     """
-    with open(os.path.join(directory, '___record___.json'),'r') as f:
+    with open(os.path.join(directory, '___record___.json'), 'r') as f:
         file_content = f.read()
     record_json = json.loads(file_content)
+    recid = str(record_json.get('record_id'))
     if not record_json.get('domain'):
-        click.secho('Record {} "{}" has no domain'.format(
-                    directory, record_json.get('title')),
+        click.secho('Record {} "{}" has no domain, '.format(recid, record_json.get('title')),
                     fg='red')
-    if verbose:
-        click.secho('Processing record {} "{}"'.format(
-                    directory, record_json.get('title')))
+        logfile.write("\n********************\n")
+        logfile.write("\nERROR: record {} has no domain, is in limbo\n".format(recid))
+        logfile.write("\n********************\n")
+    click.secho('Processing record {} "{}"'.format(recid, record_json.get('title')))
     record = _process_record(record_json)
     if record is not None:
-        user = get_or_create_user(verbose, record_json['uploaded_by'])
+        user = get_or_create_user(record_json['uploaded_by'])
         with current_app.test_request_context('/', base_url=base_url):
             current_app.login_manager.reload_user(user)
             try:
                 deposit = Deposit.create(record)
-                _create_bucket(deposit, record_json, directory, logfile, verbose)
+                _create_bucket(deposit, record_json, directory, logfile)
                 deposit.publish()
-                pid, record = deposit.fetch_published()
+                _, record = deposit.fetch_published()
                 # index the record
                 indexer.index(record)
                 db.session.commit()
             except:
-                logfile.write("********************")
+                logfile.write("\n********************")
+                logfile.write("\nERROR while creating record {}\n".format(recid))
                 logfile.write(traceback.format_exc())
-                logfile.write("ERROR in %s" % record_json['record_id'])
-                logfile.write("********************")
-    if verbose:
-        click.secho("Finished processing {}".format(record['titles'][0]['title']))
+                logfile.write("\n********************")
+    click.secho("Finished processing {}".format(record['titles'][0]['title']))
 
-def _create_bucket(deposit, record_json,directory, logfile, verbose):
+
+def _create_bucket(deposit, record_json, directory, logfile):
     for index, file_dict in enumerate(record_json.get('files', [])):
-        if not file_dict.get('name'):
-            click.secho('    Ignore file with no name "{}"'.format(
-                        file_dict.get('url')),
-                    fg='red')
+        click.secho('    Load file "{}"'.format(file_dict.get('name')))
+        filepath = os.path.join(directory, 'file_{}'.format(index))
+        if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
+            logfile.write("\n********************")
+            logfile.write("\nERROR: downloaded file size differs for file {}: {} instead of {}"
+                          .format(filepath, os.path.getsize(filepath), file_dict.get('size')))
+            logfile.write("\n********************")
         else:
-            if verbose:
-                click.secho('    Load file "{}"'.format(
-                    file_dict.get('name')))
-            filepath = os.path.join(directory,
-                'file_{}'.format(index))
-            if int(os.path.getsize(filepath)) != int(file_dict.get('size')):
-                logfile.write("***** downloaded file size differs, {} ******".format(filepath))
-            else:
-                with open(filepath, 'r+b') as f:
-                    ObjectVersion.create(deposit.files.bucket,
-                        file_dict['name'],
-                        stream=BytesIO(f.read()))
+            with open(filepath, 'r+b') as f:
+                ObjectVersion.create(deposit.files.bucket, file_dict['name'],
+                                     stream=BytesIO(f.read()))
 
 def _process_record(rec):
     #rec is dict representing 1 record
     #from json donwloaded from b2share_v1 API
     result = {}
-    generic_keys = [
-        'open_access'
-        ,'contact_email'
-        ,'publication_date'
-        ]
+    generic_keys = ['open_access', 'contact_email', 'publication_date']
     for k in generic_keys:
         result[k] = rec[k]
     result['license'] = {'license': rec['licence']}
@@ -437,21 +416,22 @@ def _process_record(rec):
     element['description'] = rec['description']
     result['descriptions'].append(element)
     result['contributors'] = []
-    contributors = list(set(rec['contributors']))
+    contributors = unique(rec['contributors'])
+    contributors = unique(rec['contributors'])
     for contributor in contributors:
         element = {}
         element['contributor_type'] = "Other"
         element['contributor_name'] = contributor
         result['contributors'].append(element)
-    result['keywords'] = list(set(rec['keywords']))
-    creators = list(set(rec['creator']))
+    result['keywords'] = unique(rec['keywords'])
+    creators = unique(rec['creator'])
     result['creators'] = []
     for creator in creators:
         result['creators'].append({'creator_name':creator})
 
     result['publisher'] = rec.get('publisher', "https://b2share.eudat.eu")
     if rec.get('discipline'):
-        result['disciplines'] = list(set(rec.get('discipline')))
+        result['disciplines'] = unique(rec.get('discipline'))
     if rec.get('language'):
         result['language'] = rec.get('language')
     if rec.get('version'):
@@ -462,29 +442,29 @@ def _process_record(rec):
     #fetch community
     rec['domain'] = rec['domain'].upper()
     #hardcoded Aalto exception
-    if rec['domain']=='AALTO':
+    if rec['domain'] == 'AALTO':
         rec['domain'] = 'Aalto'
-    comms = Community.get_all(0,1,name=rec['domain'])
+    comms = Community.get_all(0, 1, name=rec['domain'])
     if comms:
         community = comms[0]
-        result['community']=str(community.id)
-    elif rec['domain']=='GENERIC':
+        result['community'] = str(community.id)
+    elif rec['domain'] == 'GENERIC':
         community = Community.get(name='EUDAT')
-        result['community']=str(community.id)
-    elif rec['domain']=='LINGUISTICS':
+        result['community'] = str(community.id)
+    elif rec['domain'] == 'LINGUISTICS':
         community = Community.get(name='CLARIN')
-        result['community']=str(community.id)
+        result['community'] = str(community.id)
     else:
         raise Exception("Community not found for domain: `{}`".format(rec['domain']))
-    result['alternate_identifiers'] = [
-         {'alternate_identifier_type':'B2SHARE_V1_ID',
-            'alternate_identifier': str(rec['record_id'])}
-        ]
+    result['alternate_identifiers'] = [{
+        'alternate_identifier_type':'B2SHARE_V1_ID',
+        'alternate_identifier': str(rec['record_id'])
+    }]
     if 'PID' in rec.keys():
-        result['alternate_identifiers'].append(
-            {'alternate_identifier_type':'ePIC_PID',
-            'alternate_identifier': rec['PID']}
-        )
+        result['alternate_identifiers'].append({
+            'alternate_identifier_type':'ePIC_PID',
+            'alternate_identifier': rec['PID']
+        })
     if 'resource_type' in rec.keys():
         translate = {
             'Audio': 'Audiovisual',
@@ -496,7 +476,7 @@ def _process_record(rec):
             'treebank':'Other',
             'Time-Series':'Dataset'
         }
-        resource_types= list(set([translate[r] for r in rec['resource_type']]))
+        resource_types = unique([translate[r] for r in rec['resource_type']])
         result['resource_types'] = []
         for rt in resource_types:
             element = {'resource_type_general':rt}
@@ -528,7 +508,7 @@ def _match_community_specific_metadata(rec, community):
     for key in remove_integer_keys_with_empty_values:
         if key in cs_md_values_dict.keys():
             if cs_md_values_dict[key] == '':
-                 cs_md_values_dict.pop(key)
+                cs_md_values_dict.pop(key)
             else:
                 cs_md_values_dict[key] = int(cs_md_values_dict[key])
     result = {}
@@ -538,7 +518,11 @@ def _match_community_specific_metadata(rec, community):
     result['community_specific'][block_schema_id] = cs_md_values_dict
     return result
 
-def _save_file(logfile, url, filename):
+def _save_file(logfile, old_url, filename):
+    V1_URL_BASE = current_app.config.get('V1_URL_BASE')
+    url1 = old_url.replace('https://b2share.eudat.eu/', V1_URL_BASE)
+    url = url1.replace('/api/record/', '/record/')
+
     CHUNK_SIZE = 16 * 1024 * 1024 #download 16MB at a time
     current_app.logger.debug("Downloading %s" % url)
     gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
@@ -548,10 +532,11 @@ def _save_file(logfile, url, filename):
         u = urlopen(url, context=gcontext)
     except:
         current_app.logger.error("TIMEOUT trying to download %s" % url)
-        logfile.write("********************")
+        logfile.write("\n********************")
+        logfile.write("\nERROR: cannot open file URL for download: {}\n".format(url))
         logfile.write(traceback.format_exc())
-        logfile.write("ERROR: cannot open file URL for download: {}".format(url))
-        logfile.write("********************")
+        logfile.write("\n********************")
+        return
 
     while not finished:
         try:
@@ -561,9 +546,23 @@ def _save_file(logfile, url, filename):
             else:
                 finished = True
         except:
-            logfile.write("********************")
+            logfile.write("\n********************")
+            logfile.write("\nWARN: exception while reading file: {}\n".format(url))
             logfile.write(traceback.format_exc())
-            logfile.write("WARN: exception while reading file: {}".format(url))
-            logfile.write("********************")
+            logfile.write("\n********************")
             finished = True
     f.close()
+
+
+
+def unique(lst):
+    ret = []
+    o = {}
+    for l in lst:
+        if l not in o:
+            ret.append(l)
+            o[l] = True
+    return ret
+
+assert unique([1, 1, 1, "a", 2, 2, "b", 3, "b", "a", 3]) == [1, "a", 2, "b", 3]
+assert unique([1, 2, 1, 1, 3, "a", 2, 2, "b", "b", "a"]) == [1, 2, 3, "a", "b"]
