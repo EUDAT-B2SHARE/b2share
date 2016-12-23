@@ -49,17 +49,17 @@ MAX_PAGE = 8
 def main_diff():
     assert TOKEN_NEW and TOKEN_OLD
     # v2_index = {}
-    v2_index = make_v2_index()
+    v2_index = make_v2_index(TOKEN_NEW)
     for record in search_v1():
         test_record(record, v2_index)
 
 
-def make_v2_index():
+def make_v2_index(v2_access_token):
     click.secho('*** Making v2 index')
     v2_index = {}
     for page in range(1, MAX_PAGE):
         click.secho('    page {}'.format(page))
-        params = {'page': page, 'size': 100, 'access_token': TOKEN_NEW}
+        params = {'page': page, 'size': 100, 'access_token': v2_access_token}
         r = requests.get(URL_SEARCH_NEW, params=params, verify=False)
         r.raise_for_status()
         search = json.loads(r.text)

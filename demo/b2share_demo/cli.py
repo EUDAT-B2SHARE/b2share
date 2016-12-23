@@ -234,6 +234,39 @@ def is_same_url(url1, url2):
         u1.path == u2.path and u1.query == u2.query
 
 
+
+
+@demo.command()
+@with_appcontext
+@click.argument('base_url')
+@click.argument('v1_access_token')
+@click.argument('v2_access_token')
+def extract_alternate_identifiers(base_url, v1_access_token, v2_access_token):
+    from .migration import make_v2_index
+    v2_index = make_v2_index(v2_access_token)
+
+    click.secho('Extracting alternate identifiers from v1 records')
+    params = {'access_token': v1_access_token, 'page_size': 100}
+    for page in range(0, 7):
+        params['page_offset'] = page
+        req = requests.get(urljoin(base_url, '/api/records'), params=params, verify=False)
+        req.raise_for_status()
+        recs = req.json().get('records')
+        for record in recs:
+            recid = str(record.get('record_id'))
+            alternate_identifier = str(record.get('alternate_identifier'))
+            if not alternate_identifier:
+                continue
+            click.secho("alternate_identifier: {}".format(alternate_identifier))
+            click.secho("    domain: {}".format(record.get('domain')))
+            click.secho("    old record ID: {}".format(recid))
+            v2 = v2_index.get(recid)
+            if v2:
+                click.secho("    new record ID: {}".format(v2.get('id')))
+                click.secho("    new record URL: {}".format(v2.get('links', {}).get('self')))
+                click.secho("    new record PID: {}".format(v2.get('metadata', {}).get('ePIC_PID')))
+
+
 @demo.command()
 @with_appcontext
 def diff_sites():
