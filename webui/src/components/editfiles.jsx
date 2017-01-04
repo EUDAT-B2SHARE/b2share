@@ -497,8 +497,7 @@ export const FileRecordHeader = React.createClass({
     render() {
         return (
             <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                <div className="col-sm-6">Name</div>
-                <div className="col-sm-3">Date</div>
+                <div className="col-sm-9">Name</div>
                 <div className="col-sm-3">Size</div>
             </div>
         );
@@ -531,7 +530,7 @@ export const FileRecordRow = React.createClass({
         return (
             <div className="file">
                 <div className="row" onClick={e => this.setState({open:!this.state.open})}>
-                    <div className="col-sm-6">
+                    <div className="col-sm-9">
                         <span className={"glyphicon glyphicon-chevron-"+stateMark}
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <span className={"glyphicon glyphicon-file"}
@@ -539,7 +538,6 @@ export const FileRecordRow = React.createClass({
                         <a style={{display:'inline-block', marginLeft:'0.5em'}}
                             href={file.url}>{file.key || file.name}</a>
                     </div>
-                    <div className="col-sm-3">{moment(file.updated).format('ll')}</div>
                     <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
                     { this.props.remove ?
                         <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
