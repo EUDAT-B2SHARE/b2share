@@ -41,6 +41,7 @@ from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_indexer.api import RecordIndexer
+from invenio_records.api import Record
 
 from .helpers import load_demo_data, download_v1_data, process_v1_record
 from . import config as demo_config
@@ -233,6 +234,50 @@ def is_same_url(url1, url2):
     return u1.scheme == u2.scheme and u1.netloc == u2.netloc and \
         u1.path == u2.path and u1.query == u2.query
 
+
+@demo.command()
+@with_appcontext
+@click.option('-u', '--update', is_flag=True, default=False)
+@click.argument('base_url')
+def swap_pids(update, base_url):
+    """ Fix the invalid creation of new ePIC_PIDs for migrated files. Swaps with the old b2share v1 PID that we stored in alternate_identifiers and puts the wrongly created ePIC_PID in alternate_identifiers. Note this creates a new version of the invenio record (at the time of writing we do not show the latest version of invenio record objects)
+    """
+    record_search = requests.get(urljoin(base_url, "api/records"),
+                                 {'size': 1000, 'page': 1},
+                                 verify=False)
+    records = record_search.json()['hits']['hits']
+    for rec in records:
+        inv_record = Record.get_record(rec['id'])
+        aids = None
+        if 'alternate_identifiers' in inv_record.keys():
+            aids = inv_record['alternate_identifiers']
+            found = False
+            for aid in aids:
+                if aid['alternate_identifier_type']=='ePIC_PID':
+                    new_pid = aid['alternate_identifier']
+                    _pid = inv_record['_pid']
+                    for pid in _pid:
+                        if pid['type']=='ePIC_PID':
+                            old_pid = pid['value']
+                            found = True
+            if not found:
+                error_msg = """***** ERROR - this record does not have ePIC_PID 
+                    in alternate_identifiers"""
+                print(error_msg)
+                print(inv_record['titles'])
+                print(rec['id'])
+                print("********")
+            else:
+                print("SWAPPING %s %s" % (old_pid, new_pid))
+                for pid in inv_record['_pid']:
+                    if pid['type']=='ePIC_PID':
+                        pid['value']=new_pid
+                for aid in inv_record['alternate_identifiers']:
+                    if aid['alternate_identifier_type']=='ePIC_PID':
+                        aid['alternate_identifier']=old_pid
+                inv_record.commit()
+                db.session.commit()
+        
 
 @demo.command()
 @with_appcontext
