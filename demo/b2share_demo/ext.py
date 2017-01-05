@@ -22,6 +22,7 @@
 from __future__ import absolute_import, print_function
 
 from .cli import demo as demo_cmd
+from .migration_cli import migrate as migrate_cmd
 
 
 class B2ShareDemo(object):
@@ -37,6 +38,7 @@ class B2ShareDemo(object):
         self.init_config(app)
         app.extensions['b2share-demo'] = self
         app.cli.add_command(demo_cmd)
+        app.cli.add_command(migrate_cmd)
 
     def init_config(self, app):
         """Initialize configuration."""
