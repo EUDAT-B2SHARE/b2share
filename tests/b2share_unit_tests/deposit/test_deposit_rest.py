@@ -78,6 +78,8 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
                     PublicationStates.draft.name,
                     owners=[user.id],
                     draft=True,
+                    PID=draft_create_data['metadata'].get('ePIC_PID'),
+                    DOI=draft_create_data['metadata'].get('DOI'),
                 )
                 assert expected_metadata == draft_create_data['metadata']
                 subtest_self_link(draft_create_data,
@@ -212,6 +214,8 @@ def test_deposit_publish(app, test_users, test_communities,
                 PublicationStates.published.name,
                 owners=[creator.id],
                 draft=True,
+                PID=draft_patch_data['metadata'].get('ePIC_PID'),
+                DOI=draft_patch_data['metadata'].get('DOI'),
             )
 
     with app.app_context():

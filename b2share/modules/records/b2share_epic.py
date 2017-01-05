@@ -68,12 +68,21 @@ def createHandle(location, checksum=None, suffix=''):
 
     current_app.logger.debug("EPIC PID json: " + new_handle_json)
 
-    try:
-        response, content = http.request(
-            uri, method='POST', headers=hdrs, body=new_handle_json)
-    except Exception as e:
-        current_app.logger.debug(e)
-        raise EpicPIDError("EPIC PID Exception") from e
+    if current_app.config.get('TESTING', False) or current_app.config.get('FAKE_EPIC_PID', False):
+        # special case for unit/functional testing: it's useful to get a PID,
+        # which otherwise will not get allocated due to missing credentials;
+        # this also speeds up testing just a bit, by avoiding HTTP requests
+        uuid = location.split('/')[-1] # record id
+        fake_pid_url = 'http://example.com/epic/handle/0000/{}'.format(uuid)
+        class FakeResponse(dict):
+            status=201
+        response = FakeResponse(location=fake_pid_url)
+    else:
+        try:
+            response, content = http.request(
+                uri, method='POST', headers=hdrs, body=new_handle_json)
+        except Exception as e:
+            raise EpicPIDError("EPIC PID Exception") from e
 
     current_app.logger.debug("EPIC PID Request completed")
 

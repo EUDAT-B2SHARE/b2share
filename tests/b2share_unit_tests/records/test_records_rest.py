@@ -77,6 +77,8 @@ def test_record_content(app, test_communities,
                 record_data,
                 PublicationStates.published.name,
                 owners=[creator.id],
+                PID=request_data['metadata'].get('ePIC_PID'),
+                DOI=request_data['metadata'].get('DOI'),
             )
             assert request_data['metadata'] == expected_metadata
 

@@ -41,61 +41,61 @@ from .b2share_epic import createHandle
 
 def b2share_record_uuid_minter(record_uuid, data):
     """Use record's UUID as unique identifier."""
-    provider = RecordUUIDProvider.create(
-        object_type='rec', object_uuid=record_uuid,
+    rec_pid = RecordUUIDProvider.create(
+        object_type='rec',
+        object_uuid=record_uuid,
         pid_value=data['_deposit']['id']
-    )
+    ).pid
     if '_pid' not in data:
         data['_pid'] = []
     data['_pid'].append({
-        'value': provider.pid.pid_value,
-        'type': provider.pid.pid_type,
+        'value': rec_pid.pid_value,
+        'type': rec_pid.pid_type,
     })
 
-    b2share_oaiid_minter(record_uuid, data)
-    b2share_pid_minter(record_uuid, data)
-    if current_app.config.get('AUTOMATICALLY_ASSIGN_DOI'):
-        b2share_doi_minter(record_uuid, data)
+    b2share_oaiid_minter(rec_pid, data)
+    b2share_pid_minter(rec_pid, data)
+    if current_app.config.get('TESTING', False) or current_app.config.get('FAKE_DOI', False):
+        b2share_doi_minter(rec_pid, data, fake_it=True)
+    elif current_app.config.get('AUTOMATICALLY_ASSIGN_DOI'):
+        b2share_doi_minter(rec_pid, data)
 
-    return provider.pid
+    return rec_pid
 
 
-def b2share_oaiid_minter(record_uuid, data):
+def b2share_oaiid_minter(rec_pid, data):
     """Mint record identifiers."""
-    pid_value = data.get('_oai', {}).get('id')
-    if pid_value is None:
-        assert '_deposit' in data and 'id' in data['_deposit']
-        id_ = str(data['_deposit']['id'])
-        pid_value = current_app.config.get('OAISERVER_ID_PREFIX', '') + id_
+    oai_pid_value = data.get('_oai', {}).get('id')
+    if oai_pid_value is None:
+        oai_prefix = current_app.config.get('OAISERVER_ID_PREFIX', 'oai:')
+        oai_pid_value = str(oai_prefix) + str(rec_pid.pid_value)
     provider = OAIIDProvider.create(
-        object_type='rec', object_uuid=record_uuid,
-        pid_value=str(pid_value)
+        object_type='rec',
+        object_uuid=rec_pid.object_uuid,
+        pid_value=oai_pid_value
     )
     data.setdefault('_oai', {})
     data['_oai'].update({
-        'id': provider.pid.pid_value,
+        'id': rec_pid.pid_value,
         'sets': [],
         'updated': datetime_to_datestamp(datetime.utcnow()),
     })
     return provider.pid
 
 
-def b2share_pid_minter(record_uuid, data):
+def b2share_pid_minter(rec_pid, data):
     """Mint EPIC PID for published record."""
     epic_pids = [p for p in data['_pid'] if p.get('type') == 'ePIC_PID']
     assert len(epic_pids) == 0
 
-    url = make_record_url(record_uuid)
+    url = make_record_url(rec_pid.pid_value)
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_PID', True)
 
     try:
         pid = createHandle(url)
         if pid is None:
             raise EpicPIDError("EPIC PID allocation failed")
-        data['_pid'].append({
-            'value': pid,
-            'type': 'ePIC_PID',
-        })
+        data['_pid'].append({'value': pid, 'type': 'ePIC_PID'})
     except EpicPIDError as e:
         if throw_on_failure:
             raise e
@@ -103,47 +103,46 @@ def b2share_pid_minter(record_uuid, data):
             current_app.logger.warning(e)
 
 
-def b2share_doi_minter(record_uuid, data):
+def b2share_doi_minter(rec_pid, data, fake_it=False):
     from invenio_pidstore.models import PIDStatus, PersistentIdentifier
     from invenio_pidstore.providers.datacite import DataCiteProvider
     from .serializers import datacite_v31
 
-    def filter_out_reserved_dois(data):
-        ret = [d for d in data['_pid'] if d.get('type') != 'DOI_RESERVED']
-        data['_pid'] = ret
+    def select_doi(metadata, status):
+        doi_list = [DataCiteProvider.get(d.get('value'))
+                    for d in metadata['_pid']
+                    if d.get('type') == 'DOI']
+        return [d for d in doi_list
+                if d and d.pid and d.pid.status == status]
 
-    doi_list = [d for d in data['_pid'] if d.get('type') == 'DOI']
-    if len(doi_list) > 0:
-        return
+    if select_doi(data, PIDStatus.REGISTERED):
+        return # DOI already allocated
 
-    doi = generate_doi(record_uuid)
-    url = make_record_url(record_uuid)
+    url = make_record_url(rec_pid.pid_value)
 
-    filter_out_reserved_dois(data)
-    data['_pid'].append({
-        'value': doi,
-        'type': 'DOI_RESERVED',
-    })
+    reserved_doi = select_doi(data, PIDStatus.RESERVED)
+    if reserved_doi:
+        doi = reserved_doi[0]
+    else:
+        doi_id = generate_doi(rec_pid.pid_value)
+        doi = DataCiteProvider.create(doi_id,
+                                      object_type='rec',
+                                      object_uuid=rec_pid.object_uuid,
+                                      status=PIDStatus.RESERVED)
+        data['_pid'].append({'value': doi_id, 'type': 'DOI'})
 
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_DOI', True)
     try:
-        dcp = DataCiteProvider.create(doi,
-                                      object_type='rec',
-                                      object_uuid=record_uuid,
-                                      status=PIDStatus.RESERVED)
-        doc = datacite_v31.serialize(dcp.pid, data)
-        dcp.register(url=url, doc=doc)
-        filter_out_reserved_dois(data)
-        data['_pid'].append({
-            'value': doi,
-            'type': 'DOI',
-        })
+        doc = datacite_v31.serialize(doi.pid, data)
+        if fake_it: # don't actually register DOI, just pretend to do so
+            doi.pid.register()
+        else:
+            doi.register(url=url, doc=doc)
     except DataCiteError as e:
         if throw_on_failure:
             raise e
         else:
             current_app.logger.warning(e)
-
 
 
 def make_record_url(recid):

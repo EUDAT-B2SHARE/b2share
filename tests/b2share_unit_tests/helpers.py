@@ -189,7 +189,8 @@ def create_role(name, permissions=None):
     return role
 
 
-def build_expected_metadata(record_data, state, owners=None, draft=False):
+def build_expected_metadata(record_data, state, owners=None, draft=False,
+                            PID=None, DOI=None):
     """Create the metadata expected for a given record/deposit GET.
 
     Args:
@@ -208,6 +209,10 @@ def build_expected_metadata(record_data, state, owners=None, draft=False):
     )
     if owners is not None:
         expected_metadata['owners'] = owners
+    if PID is not None:
+        expected_metadata['ePIC_PID'] = PID
+    if DOI is not None:
+        expected_metadata['DOI'] = DOI
     return expected_metadata
 
 
