@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2017 CERN, SurfsSara
+# Copyright (C) 2016 CERN, SurfsSara
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -41,7 +41,6 @@ from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_indexer.api import RecordIndexer
-from invenio_records.api import Record
 
 from .helpers import load_demo_data, download_v1_data, process_v1_record
 from . import config as demo_config
@@ -234,9 +233,6 @@ def is_same_url(url1, url2):
     return u1.scheme == u2.scheme and u1.netloc == u2.netloc and \
         u1.path == u2.path and u1.query == u2.query
 
-
-
-        
 
 @demo.command()
 @with_appcontext
