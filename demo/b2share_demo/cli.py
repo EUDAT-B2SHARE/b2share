@@ -45,6 +45,9 @@ from invenio_indexer.api import RecordIndexer
 from .helpers import load_demo_data, download_v1_data, process_v1_record
 from . import config as demo_config
 
+from .migration import main_diff, make_v2_index
+
+
 
 @click.group(chain=True)
 def demo():
@@ -242,7 +245,6 @@ def is_same_url(url1, url2):
 @click.argument('v1_access_token')
 @click.argument('v2_access_token')
 def extract_alternate_identifiers(base_url, v1_access_token, v2_access_token):
-    from .migration import make_v2_index
     v2_index = make_v2_index(v2_access_token)
 
     click.secho('Extracting alternate identifiers from v1 records')
@@ -270,5 +272,4 @@ def extract_alternate_identifiers(base_url, v1_access_token, v2_access_token):
 @demo.command()
 @with_appcontext
 def diff_sites():
-    from .migration import main_diff
     main_diff()
