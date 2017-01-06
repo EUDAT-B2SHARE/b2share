@@ -26,14 +26,23 @@
 from __future__ import absolute_import, print_function
 
 import pytz
-from invenio_records.signals import before_record_update
+from invenio_indexer.tasks import delete_record, index_record
+from invenio_records.signals import (
+    after_record_insert, after_record_update, before_record_delete,
+    before_record_update,
+)
+from invenio_indexer.api import RecordIndexer
 from invenio_rest.errors import FieldError
 from .errors import AlteredRecordError
+from .indexer import is_publication
 
 
 def register_triggers(app):
     # TODO(edima): replace this check with explicit permissions
     before_record_update.connect(check_record_immutable_fields)
+    before_record_delete.connect(unindex_record_trigger)
+    after_record_update.connect(index_record_trigger)
+    after_record_insert.connect(index_record_trigger)
 
 
 # TODO(edima): replace this check with explicit permissions
@@ -46,3 +55,22 @@ def check_record_immutable_fields(record):
                 FieldError(field,
                            'The {} field cannot be changed.'.format(field))
             ])
+
+
+def index_record_trigger(record):
+    """Index the given record if it is a publication."""
+    if is_publication(record.model):
+        index_record(record.id)
+
+
+# indexer userd for all synchronous tasks. Example: unindexing records.
+_indexer = RecordIndexer()
+
+
+def unindex_record_trigger(record):
+    """Unindex the given record if it is a publication."""
+    if is_publication(record.model):
+        # The indexer requires that the record still exists in the database
+        # when it is removed from the search index. Thus we have to unindex it
+        # synchonously.
+        _indexer.delete(record)

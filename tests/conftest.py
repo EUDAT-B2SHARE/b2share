@@ -51,7 +51,6 @@ from invenio_search import current_search_client, current_search
 from sqlalchemy_utils.functions import create_database, drop_database
 from invenio_access.models import ActionRoles
 from invenio_access.permissions import superuser_access
-from invenio_indexer.api import RecordIndexer
 from b2share.modules.communities.models import Community
 from sqlalchemy.exc import ProgrammingError
 
@@ -330,13 +329,11 @@ def test_incomplete_records_data(app, test_communities):
 def create_deposits(app, test_records_data, creator):
     """Create test deposits."""
     DepositInfo = namedtuple('DepositInfo', ['id', 'data', 'deposit'])
-    indexer = RecordIndexer()
 
     with authenticated_user(creator):
         deposits = [Deposit.create(data=data)
                     for data in deepcopy(test_records_data)]
     for deposit in deposits:
-        indexer.index(deposit)
         deposit.commit()
         deposit.commit()
     return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
@@ -373,12 +370,10 @@ def test_records(app, request, test_records_data, test_users):
 
         RecordInfo = namedtuple('DepositInfo', ['deposit_id', 'pid',
                                                 'record_id', 'data'])
-        indexer = RecordIndexer()
         def publish(deposit):
             deposit.submit()
             deposit.publish()
             pid, record = deposit.fetch_published()
-            indexer.index(record)
             return RecordInfo(deposit.id, str(pid.pid_value), record.id,
                               record.dumps())
         result = [publish(deposit_info.deposit)
