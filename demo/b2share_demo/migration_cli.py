@@ -40,8 +40,8 @@ from invenio_db import db
 from invenio_indexer.api import RecordIndexer
 from invenio_records.api import Record
 
-from .helpers import download_v1_data, process_v1_record
-from .migration import main_diff, make_v2_index
+from .migration import (download_v1_data, process_v1_record, main_diff,
+                        make_v2_index, records_endpoint, directly_list_v2_record_ids)
 
 
 @click.group()
@@ -187,21 +187,27 @@ def is_same_url(url1, url2):
 
 @migrate.command()
 @with_appcontext
-@click.option('-u', '--update', is_flag=True, default=False)
-@click.argument('base_url')
-def swap_pids(update, base_url):
+def diff_sites():
+    main_diff()
+
+
+@migrate.command()
+@with_appcontext
+def swap_pids():
     """ Fix the invalid creation of new ePIC_PIDs for migrated files. Swaps
     with the old b2share v1 PID that we stored in alternate_identifiers and
     puts the wrongly created ePIC_PID in alternate_identifiers. Note this
     creates a new version of the invenio record (at the time of writing we do
     not show the latest version of invenio record objects)
     """
-    record_search = requests.get(urljoin(base_url, "api/records"),
-                                 {'size': 1000, 'page': 1},
-                                 verify=False)
-    records = record_search.json()['hits']['hits']
-    for rec in records:
-        inv_record = Record.get_record(rec['id'])
+    for search_record in directly_list_v2_record_ids():
+        recid = search_record.get('_id')
+        inv_record = Record.get_record(recid)
+        if inv_record.revision_id >= 1:
+            print ("Skipping record {}: too many revisions ({}), "
+                   "may have been already updated".format(
+                    recid, inv_record.revision_id))
+            continue
         aids = None
         if 'alternate_identifiers' in inv_record.keys():
             aids = inv_record['alternate_identifiers']
@@ -226,7 +232,7 @@ def swap_pids(update, base_url):
                     B2SHARE_V1_ID in alternate_identifiers"""
                 print(error_msg)
                 print(inv_record['titles'])
-                print(rec['id'])
+                print(recid)
                 print("********")
             else:
                 print("SWAPPING %s %s" % (old_pid, new_pid))
@@ -244,18 +250,19 @@ def swap_pids(update, base_url):
 
 @migrate.command()
 @with_appcontext
-@click.argument('base_url')
+@click.argument('v1_api_url')
 @click.argument('v1_access_token')
+@click.argument('v2_api_url')
 @click.argument('v2_access_token')
-def extract_alternate_identifiers(base_url, v1_access_token, v2_access_token):
+def extract_alternate_identifiers(v1_api_url, v1_access_token, v2_api_url, v2_access_token):
     """Extracting alternate identifiers from v1 records"""
-    v2_index = make_v2_index(v2_access_token)
+    v2_index = make_v2_index(v2_api_url, v2_access_token)
 
     click.secho('Extracting alternate identifiers from v1 records')
     params = {'access_token': v1_access_token, 'page_size': 100}
     for page in range(0, 7):
         params['page_offset'] = page
-        req = requests.get(urljoin(base_url, '/api/records'), params=params, verify=False)
+        req = requests.get(records_endpoint(v1_api_url), params=params, verify=False)
         req.raise_for_status()
         recs = req.json().get('records')
         for record in recs:
@@ -275,5 +282,54 @@ def extract_alternate_identifiers(base_url, v1_access_token, v2_access_token):
 
 @migrate.command()
 @with_appcontext
-def diff_sites():
-    main_diff()
+@click.argument('v1_api_url')
+@click.argument('v1_access_token')
+# @click.argument('v2_api_url')
+def add_missing_alternate_identifiers(v1_api_url, v1_access_token):
+    """Add missing alternate identifiers from v1 records to the published v2
+       records in the current instance"""
+    v2_index = make_v2_index(None, None) # make index of current site
+    # v2_index = make_v2_index(v2_api_url, None)
+
+    click.secho('Adding missing alternate identifiers from v1 records')
+    params = {'access_token': v1_access_token, 'page_size': 100}
+    for page in range(0, 7):
+        params['page_offset'] = page
+        req = requests.get(records_endpoint(v1_api_url), params=params, verify=False)
+        req.raise_for_status()
+        for v1_record in req.json().get('records'):
+            v1_recid = str(v1_record.get('record_id'))
+            alternate_identifier = str(v1_record.get('alternate_identifier', '')).strip()
+            if not alternate_identifier:
+                continue
+            ai_type = guess_alternate_identifier_type(alternate_identifier)
+            click.secho("alternate_identifier: {}"
+                        "\n\told id: {}\n\taltid type: {}".format(
+                            alternate_identifier, v1_recid, ai_type))
+
+            v2_recid = v2_index.get(v1_recid).get('id')
+            record = Record.get_record(v2_recid)
+            # record = v2_index.get(v1_recid).get('metadata')
+            exists = [ai for ai in record.get('alternate_identifiers', [])
+                      if ai.get('alternate_identifier') == alternate_identifier]
+            if exists:
+                click.secho("\talready present in record: {}".format(v2_recid))
+            else:
+                ais = record.get('alternate_identifiers', [])
+                ais.append({'alternate_identifier': alternate_identifier,
+                            'alternate_identifier_type': ai_type})
+                record['alternate_identifiers'] = ais
+                record.commit()
+                click.secho("\tupdated new record: {}".format(v2_recid))
+        db.session.commit()
+
+
+def guess_alternate_identifier_type(aid):
+    for x in ['http://dx.doi.org/', 'http://doi.org/', 'doi.org', 'dx.doi.org', 'doi.', '10.']:
+        if aid.startswith(x):
+            return 'DOI'
+    if aid.startswith('URN:'):
+        return 'URN'
+    if aid.startswith('http://') or aid.startswith('https://'):
+        return 'URL'
+    return 'Other'
