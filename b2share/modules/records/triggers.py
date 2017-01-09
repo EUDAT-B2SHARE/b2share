@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
+# Copyright (C) 2017 CERN.
 # Copyright (C) 2016 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
@@ -60,11 +61,9 @@ def check_record_immutable_fields(record):
 def index_record_trigger(record):
     """Index the given record if it is a publication."""
     if is_publication(record.model):
-        index_record(record.id)
-
-
-# indexer userd for all synchronous tasks. Example: unindexing records.
-_indexer = RecordIndexer()
+        # index the record synchronously as an asynchronous task will not
+        # find the record if it runs before this transaction's commit.
+        RecordIndexer().index(record)
 
 
 def unindex_record_trigger(record):
@@ -73,4 +72,4 @@ def unindex_record_trigger(record):
         # The indexer requires that the record still exists in the database
         # when it is removed from the search index. Thus we have to unindex it
         # synchonously.
-        _indexer.delete(record)
+        RecordIndexer().delete(record)
