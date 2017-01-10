@@ -10,6 +10,10 @@ import { FileRecordHeader, FileRecordRow, PersistentIdentifier } from './editfil
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 
 
+const B2NoteUrl = "https://b2note.bsc.es/devel/interface_main.html";
+const PT = React.PropTypes;
+
+
 export const RecordRoute = React.createClass({
     render() {
         const { id } = this.props.params;
@@ -22,11 +26,44 @@ export const RecordRoute = React.createClass({
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+        const showB2Note = serverCache.getInfo().get('show_b2note');
 
         return (
             <ReplaceAnimate>
-                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
+                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} showB2Note={showB2Note}/>
             </ReplaceAnimate>
+        );
+    }
+});
+
+
+const B2NoteWidget = React.createClass({
+    mixins: [React.addons.PureRenderMixin],
+    propTypes: {
+        record: PT.object.isRequired,
+        file: PT.object.isRequired,
+        showB2NoteWindow: PT.func.isRequired,
+    },
+
+    handleSubmit(e) {
+        e.stopPropagation();
+        this.props.showB2NoteWindow();
+    },
+
+    render() {
+        let file = this.props.file;
+        file = file.toJS ? file.toJS() : file;
+        let record = this.props.record;
+        record = record.toJS ? record.toJS() : record;
+        const record_url = (record.links.self||"").replace('/api/records/', '/records/');
+        return (
+            <form id="b2note_form_" action={B2NoteUrl} method="post" target="b2note_iframe" onSubmit={this.handleSubmit}>
+                <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="pid_tofeed" value={record.metadata.ePIC_PID} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="subject_tofeed" value={file.url} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="keywords_tofeed" value={record.metadata.keywords} className="field left" readOnly="readonly"/>
+                <input type="submit" className="btn btn-sm btn-default" value="Annotate in B2Note" title="Click to annotate file using B2Note."/>
+            </form>
         );
     }
 });
@@ -34,6 +71,11 @@ export const RecordRoute = React.createClass({
 
 const Record = React.createClass({
     mixins: [React.addons.PureRenderMixin],
+    getInitialState() {
+        return {
+            showB2NoteWindow: false,
+        };
+    },
 
     renderFixedFields(record, community) {
         function renderTitle(title, i) {
@@ -164,7 +206,7 @@ const Record = React.createClass({
         'creators': true, 'keywords': true, 'disciplines': true, 'publication_state': true,
     },
 
-    renderFileList(files) {
+    renderFileList(files, showB2Note) {
         const show_accessrequest = (this.props.record.getIn(['metadata', 'open_access']) === false &&
             this.props.record.getIn(['metadata', 'owners', 0]) != serverCache.getUser().get('id'));
 
@@ -172,10 +214,18 @@ const Record = React.createClass({
         if (!(files && files.count && files.count())) {
             fileComponent = <div>No files available.</div>;
         } else {
+            const fileRecordRowFn = f => {
+                let b2noteWidget = false;
+                if (showB2Note) {
+                    const showB2NoteWindow = e => this.setState({showB2NoteWindow: true});
+                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={showB2NoteWindow}/>;
+                }
+                return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget}/>
+            }
             fileComponent =
                 <div className='fileList'>
                     <FileRecordHeader/>
-                    { files.map(f => <FileRecordRow key={f.get('key')} file={f}/>) }
+                    { files.map(fileRecordRowFn) }
                 </div>;
         }
         return (
@@ -241,10 +291,17 @@ const Record = React.createClass({
                 <span style={{fontWeight:'bold'}}>{title}</span>
             </div>;
         const rightcolumnsize = leftcolumn ? "col-sm-8" : "col-sm-12";
+        const style = {marginBottom:'0.25em'};
+        if (type === 'object') {
+            style.borderLeft = '1px solid #ccc';
+            style.borderRadius = '4px';
+            style.marginBottom = '0.5em';
+        }
+
         return (
             <li key={id} className="row">
                 {leftcolumn}
-                <div className={rightcolumnsize}> {inner} </div>
+                <div className={rightcolumnsize} style={style}> {inner} </div>
             </li>
         );
     },
@@ -305,8 +362,22 @@ const Record = React.createClass({
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
         const files = this.props.record.get('files') || this.props.record.getIn(['metadata', '_files']);
+
         if (!this.props.record || !rootSchema) {
             return <Wait/>;
+        }
+
+        const showB2Note = serverCache.getInfo().get('show_b2note');
+        const B2NoteWellStyle = {
+            position: 'fixed',
+            right: 0,
+            zIndex: 1050,
+            boxShadow: 'black 0px 0px 32px',
+            borderRadius: '4px',
+            outline: 0,
+        };
+        if (!this.state.showB2NoteWindow) {
+            B2NoteWellStyle.display = 'none';
         }
         return (
             <div className="container-fluid">
@@ -318,7 +389,7 @@ const Record = React.createClass({
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
-                            { this.renderFileList(files) }
+                            { this.renderFileList(files, this.props.showB2Note) }
                         </div>
 
                         <div className="col-lg-6">
@@ -328,6 +399,16 @@ const Record = React.createClass({
                                 blockSchemas.map(([id, blockSchema]) =>
                                     this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'), {})) }
                         </div>
+
+                        {showB2Note ?
+                            <div className="well" style={B2NoteWellStyle}>
+                                <button type="button" className="close" aria-label="Close" onClick={e => this.setState({showB2NoteWindow:false})}>
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <iframe id="b2note_iframe" name="b2note_iframe" src="https://b2note.bsc.es/devel/interface_main.html"
+                                        style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
+                            </div> : false
+                        }
                     </div>
                 </div>
             </div>

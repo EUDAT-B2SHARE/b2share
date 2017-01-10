@@ -676,10 +676,6 @@ a.navbar-brand {
   background-color: #fff;
 }
 
-.fileList .file .details * {
-  margin-top: 0.25em;
-}
-
 .fileList .file .btn.remove {
   float: right;
   color: #F45D00;
