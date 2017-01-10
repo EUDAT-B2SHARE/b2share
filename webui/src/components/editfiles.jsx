@@ -511,6 +511,7 @@ export const FileRecordRow = React.createClass({
     propTypes: {
         file: PT.object.isRequired,
         remove: PT.func,
+        b2noteWidget: PT.object,
     },
 
     getInitialState() {
@@ -554,10 +555,16 @@ export const FileRecordRow = React.createClass({
                             </div>
                         </div> : false }
                         { file.ePIC_PID ? <div className="row">
-                            <div className="col-sm-12"><span style={{marginLeft:'2.5em', whiteSpace: 'nowrap'}}/>
+                            <div className="col-sm-12">
+                                <div style={{marginLeft:'2.5em', whiteSpace: 'nowrap'}}>
                                 PID: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.ePIC_PID} />
+                                </div>
                             </div>
                         </div> : false }
+                        { this.props.b2noteWidget ?
+                            <div className="col-sm-12" style={{paddingLeft:'2.5em'}}>
+                                { this.props.b2noteWidget }
+                            </div> : false }
                     </div> : false }
                 { this.props.remove && this.state.remove ?
                     <FileRemoveDialog file={file}
@@ -646,7 +653,7 @@ export const PersistentIdentifier = React.createClass({
             border: "none",
             padding:0,
             margin:0,
-            width:"28em",
+            width:"26em",
             backgroundColor:"transparent",
         };
         const className = this.props.doi ? "doi" : "epic_pid";

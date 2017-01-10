@@ -268,6 +268,7 @@ class ServerCache {
                 version: "",
                 site_function: "",
                 training_site_link: "",
+                show_b2note: false,
             },
             user: null,
 
@@ -434,6 +435,7 @@ class ServerCache {
                     version: data.version,
                     site_function: data.site_function,
                     training_site_link: data.training_site_link,
+                    show_b2note: data.site_function != 'production',
                 }));
                 successFn(this.store.getIn(['info']));
             },
