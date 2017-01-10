@@ -376,7 +376,7 @@ def make_v2_index(v2_api_url, v2_access_token):
                         if v2_api_url else directly_list_v2_record_ids()
     for record in records_generator:
         # click.secho('    record {}'.format(record.get('id')))
-        md = record.get('metadata', record)
+        md = record.get('metadata') or record.get('_source')
         old_id = one_or_none(
             [x.get('alternate_identifier')
              for x in md.get('alternate_identifiers', {})

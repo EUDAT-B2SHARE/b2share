@@ -307,7 +307,11 @@ def add_missing_alternate_identifiers(v1_api_url, v1_access_token):
                         "\n\told id: {}\n\taltid type: {}".format(
                             alternate_identifier, v1_recid, ai_type))
 
-            v2_recid = v2_index.get(v1_recid).get('id')
+            if not v2_index.get(v1_recid):
+                click.secho("\tcannot find recid {}".format(v1_recid), fg='red')
+                continue
+            record_search = v2_index.get(v1_recid)
+            v2_recid = record_search.get('id') or record_search.get('_id')
             record = Record.get_record(v2_recid)
             # record = v2_index.get(v1_recid).get('metadata')
             exists = [ai for ai in record.get('alternate_identifiers', [])
@@ -316,8 +320,9 @@ def add_missing_alternate_identifiers(v1_api_url, v1_access_token):
                 click.secho("\talready present in record: {}".format(v2_recid))
             else:
                 ais = record.get('alternate_identifiers', [])
-                ais.append({'alternate_identifier': alternate_identifier,
-                            'alternate_identifier_type': ai_type})
+                new_ai = {'alternate_identifier': alternate_identifier,
+                          'alternate_identifier_type': ai_type}
+                ais.insert(0, new_ai)
                 record['alternate_identifiers'] = ais
                 record.commit()
                 click.secho("\tupdated new record: {}".format(v2_recid))
