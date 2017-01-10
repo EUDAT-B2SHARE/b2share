@@ -241,10 +241,17 @@ const Record = React.createClass({
                 <span style={{fontWeight:'bold'}}>{title}</span>
             </div>;
         const rightcolumnsize = leftcolumn ? "col-sm-8" : "col-sm-12";
+        const style = {marginBottom:'0.25em'};
+        if (type === 'object') {
+            style.borderLeft = '1px solid #ccc';
+            style.borderRadius = '4px';
+            style.marginBottom = '0.5em';
+        }
+
         return (
             <li key={id} className="row">
                 {leftcolumn}
-                <div className={rightcolumnsize}> {inner} </div>
+                <div className={rightcolumnsize} style={style}> {inner} </div>
             </li>
         );
     },
