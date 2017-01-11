@@ -156,7 +156,7 @@ RECORDS_REST_SORT_OPTIONS = dict(
             order=1,
         ),
         mostrecent=dict(
-            fields=['_created'],
+            fields=['-_created'],
             title='Most recent',
             default_order='desc',
             order=2,
