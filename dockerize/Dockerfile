@@ -1,7 +1,7 @@
 FROM centos:7
 EXPOSE 5000
 
-RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
 RUN yum -y update
 RUN yum -y install wget gcc-c++ openssl-devel uwsgi-plugin-python3 postgresql-devel python34 python34-devel npm supervisor git uwsgi  libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
 
