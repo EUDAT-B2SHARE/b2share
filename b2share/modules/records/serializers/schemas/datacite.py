@@ -58,7 +58,7 @@ class DataCiteSchemaV1(Schema):
     titles = fields.Function(lambda o: o['metadata'].get('titles'))
 
     publisher = fields.Function(
-        lambda o: o['metadata'].get('publisher', 'https://b2share.eudat.eu'))
+        lambda o: o['metadata'].get('publisher', "").strip() or 'https://b2share.eudat.eu')
     publicationYear = fields.Method('get_publication_year')
     resourceType = fields.Method('get_resource_type')
 
@@ -72,7 +72,7 @@ class DataCiteSchemaV1(Schema):
     descriptions = fields.Method('get_descriptions')
 
     def get_creators(self, obj):
-        crs = obj['metadata'].get('creators', [{'creator_name':'[Unknown]'}])
+        crs = obj['metadata'].get('creators') or [{'creator_name':'[Unknown]'}]
         return [{'creatorName':c['creator_name']} for c in crs]
 
     def get_publication_year(self, obj):
