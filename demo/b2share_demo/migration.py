@@ -29,16 +29,18 @@ import json
 import os
 import traceback
 import ssl
-from flask import current_app
 from pprint import pprint
+from flask import current_app
 import click
 import requests
 from six import BytesIO
 from urllib.parse import urljoin
 
+from invenio_db import db
 from invenio_search.api import RecordsSearch
 from invenio_accounts.models import User
 from invenio_files_rest.models import ObjectVersion
+from b2share.modules.deposit.api import Deposit
 from b2share.modules.communities import Community
 
 from .helpers import resolve_block_schema_id, _create_user
@@ -340,7 +342,6 @@ def main_diff(v1_api_url, v1_access_token, v2_api_url, v2_access_token):
 
 
 def directly_list_v2_record_ids():
-    from pprint import pprint
     size = 100
     page = 1
     while True:
@@ -393,11 +394,10 @@ def make_v2_index(v2_api_url, v2_access_token):
 
 
 def search_v1(v1_api_url, v1_access_token):
-    click.secho('*** Diffing')
     for page in range(0, MAX_PAGE-1):
-        click.secho('Page {}'.format(page))
+        click.secho('Search v1 page {}'.format(page))
         params = {'page_offset': page, 'page_size': 100, 'access_token': v1_access_token}
-        r = requests.get(v1_api_url, params=params, verify=False)
+        r = requests.get(records_endpoint(v1_api_url), params=params, verify=False)
         r.raise_for_status()
         search = json.loads(r.text).get('records')
         if len(search) == 0:
@@ -408,17 +408,18 @@ def search_v1(v1_api_url, v1_access_token):
 
 def test_record(old_record, v2_index):
     recid = str(old_record.get('record_id'))
-    click.secho('Test record {}'.format(recid))
-
-    if not old_record.get('domain'):
-        click.secho('    Record has no domain', fg='red')
 
     if not v2_index.get(recid):
-        click.secho('    Record not migrated to v2', fg='red')
+        click.secho('Record {} not migrated to v2'.format(recid), fg='red')
         return
 
     new_record = v2_index.get(recid)
-    new_md = new_record.get('metadata')
+    new_recid = new_record.get('id') or new_record.get('_id')
+    click.secho('Diff record {} {}'.format(recid, new_recid))
+    if not old_record.get('domain'):
+        click.secho('    Record has no domain', fg='red')
+
+    new_md = new_record.get('metadata') or new_record.get('_source')
     conv_record = _process_record(old_record)
 
     for key in ['alternate_identifiers', 'community', 'community_specific', 'contact_email',
@@ -426,14 +427,19 @@ def test_record(old_record, v2_index):
                 'open_access', 'publication_date', 'publisher', 'resource_types', 'titles']:
         old_entry = conv_record.get(key)
         new_entry = new_md.get(key)
-        if old_entry != new_entry:
+        if old_entry != new_entry and key != 'alternate_identifiers':
             try:
                 if set(old_entry) == set(new_entry):
                     click.secho('   "{}" items have different order'.format(key), fg='red')
             except:
                 click.secho('   "{}" items differ or have different order'.format(key), fg='red')
-                # pprint(old_entry)
-                # pprint(new_entry)
+                print ("----")
+                print ("v1: ")
+                pprint(old_entry)
+                print ("v2: ")
+                pprint(new_entry)
+                print ("----")
+    open_access = conv_record.get('open_access')
 
     for oldfile in old_record.get('files', []):
         if not oldfile.get('name'):
@@ -444,6 +450,8 @@ def test_record(old_record, v2_index):
             if not newfile:
                 click.secho('    File missing in new record "{}"'.format(oldfile.get('name')),
                             fg='red')
+                if not open_access:
+                    click.secho('        [object is private]')
             elif int(newfile.get('size')) != int(oldfile.get('size')):
                 click.secho('    Different file sizes for "{}": old={} != new={}'
                             .format(oldfile.get('name'), oldfile.get('size'), newfile.get('size')),
