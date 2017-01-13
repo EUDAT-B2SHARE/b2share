@@ -33,15 +33,17 @@ from .errors import RemoteError
 
 
 class B2DropClient(object):
-    def __init__(self, host, protocol, path, username, password):
+    def __init__(self, host, protocol='http', path='/', port=0,
+                 username=None, password=None):
         self.host = host # 'b2drop.fz-juelich.de'
         self.protocol = protocol # 'https'
+        self.port = port
         if not path.endswith('/'):
             path += '/'
         self.path = path # '/remote.php/webdav/'
         self.rpath = self.path + '.'
         self.client = easywebdav.connect(self.host, \
-            protocol=self.protocol, path=self.path, \
+            port=port, protocol=self.protocol, path=self.path, \
             username=username, password=password)
 
     def list(self, remote_path="/"):
