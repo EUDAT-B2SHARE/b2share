@@ -109,7 +109,7 @@ export const NewRecordRoute = React.createClass({
             scomm.color = "red";
         }
         return (
-            <div className="new-record">
+            <div id="new-record" className="new-record">
                 <div className="row">
                     <form className="form-horizontal" onSubmit={this.createAndGoToRecord}>
                         <div className="form-group row">
