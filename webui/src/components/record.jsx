@@ -105,9 +105,11 @@ const Record = React.createClass({
             );
         }
         function renderDescription(description, i) {
+            const dt = description.get('description_type');
+            const descriptionType = (dt == 'Other') ? 'Description' : dt;
             return (
                 <p className="description" key={i}>
-                    <span style={{fontWeight:'bold'}}>{description.get('description_type')}: </span>
+                    <span style={{fontWeight:'bold'}}>{descriptionType}: </span>
                     {description.get('description')}
                 </p>
             );
