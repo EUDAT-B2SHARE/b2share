@@ -30,6 +30,11 @@ import json
 import arrow
 from marshmallow import Schema, fields
 
+
+datacite_v3_description_types = set([
+    "Abstract", "Methods", "SeriesInformation", "TableOfContents"])
+
+
 class IdentifierSchema(Schema):
     """Identifier schema."""
 
@@ -120,5 +125,8 @@ class DataCiteSchemaV1(Schema):
 
     def get_descriptions(self, obj):
         return [{'description': d['description'],
-                 'descriptionType': d['description_type']}
+                 'descriptionType': d['description_type']
+                                    if d['description_type'] in datacite_v3_description_types
+                                    else "Other"}
                 for d in obj['metadata'].get('descriptions', [])]
+
