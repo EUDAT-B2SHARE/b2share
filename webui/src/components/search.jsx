@@ -38,7 +38,7 @@ const Search = React.createClass({
         return {
             q: "",
             community: "",
-            sort: 'bestmatch',
+            sort: 'mostrecent',
             page: "1",
             size: "10",
         };
