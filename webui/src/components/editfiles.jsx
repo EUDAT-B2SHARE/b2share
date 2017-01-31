@@ -613,7 +613,10 @@ export const PersistentIdentifier = React.createClass({
         style: PT.object,
     },
 
-    HDL_PREFIX: "http://hdl.handle.net/",
+    KNOWN_PREFIXES: [
+        "http://hdl.handle.net/",
+        "http://doi.org/"
+    ],
 
     getInitialState() {
         return {
@@ -629,9 +632,12 @@ export const PersistentIdentifier = React.createClass({
     componentWillReceiveProps(props) {
         let prefix = "";
         let pid = props.pid;
-        if (pid.indexOf(this.HDL_PREFIX) === 0) {
-            prefix = this.HDL_PREFIX;
-            pid = pid.substring(this.HDL_PREFIX.length, pid.length);
+        for (const p of this.KNOWN_PREFIXES) {
+            if (pid.indexOf(p) === 0) {
+                prefix = p;
+                pid = pid.substring(p.length, pid.length);
+                break;
+            }
         }
         this.setState({ prefix, pid });
     },
