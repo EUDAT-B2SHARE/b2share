@@ -19,152 +19,47 @@ import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 import { EditFiles } from './editfiles.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 import { SelectBig } from './selectbig.jsx';
+import { renderSmallCommunity } from './common.jsx';
 
 
-export const NewRecordRoute = React.createClass({
-    mixins: [React.addons.LinkedStateMixin],
-
-    getInitialState() {
-        return {
-            community_id: null,
-            title: "",
-            errors: {},
-        }
-    },
-
-    setError(id, msg) {
-        const err = this.state.errors;
-        err[id] = msg;
-        this.setState({errors: this.state.errors});
-    },
-
-    createAndGoToRecord(event) {
-        event.preventDefault();
-        if (!this.state.title.length) {
-            this.setError('title', "Please add a (temporary) record title");
-            return;
-        }
-        if (!this.state.community_id) {
-            this.setError('community', "Please select a target community");
-            return;
-        }
-        const json_record = {
-            community: this.state.community_id,
-            titles: [{
-                title: this.state.title,
-            }],
-            open_access: true,
-        }
-        serverCache.createRecord(json_record, record => browser.gotoEditRecord(record.id));
-    },
-
-    selectCommunity(community_id) {
-        this.setState({community_id: community_id});
-    },
-
-    renderCommunity(community) {
-        const cid = community.get('id');
-        const active = cid === this.state.community_id;
-        return (
-            <div className="col-lg-2 col-sm-3 col-xs-6" key={community.get('id')}>
-                { renderSmallCommunity(community, active, this.selectCommunity.bind(this, cid)) }
-            </div>
-        );
-    },
-
-    renderCommunityList(communities) {
-        if (!communities) {
-            return <Wait/>;
-        }
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    { communities.map(this.renderCommunity) }
-                </div>
-            </div>
-        );
-    },
-
-    onTitleChange(event) {
-        this.setState({title:event.target.value});
-    },
-
-    componentWillMount() {
-        const user = serverCache.getUser();
-        if (!user || !user.get('name')) {
-            notifications.warning('Please login. A new record can only be created by logged in users.');
-        }
-    },
-
-    render() {
-        const training_site = serverCache.getInfo().get('training_site_link');
-        const communities = serverCache.getCommunities();
-        if (communities instanceof Error) {
-            return <Err err={communities}/>;
-        }
-        const gap = {marginTop:'1em'};
-        const biggap = {marginTop:'2em'};
-        const stitle = {marginTop:'1em'};
-        if (this.state.errors.title) {
-            stitle.color = "red";
-        }
-        const scomm = {marginTop:'1em'};
-        if (this.state.errors.community) {
-            scomm.color = "red";
-        }
-        return (
-            <div className="new-record">
-                { training_site ?
-                    <div className="row">
-                        <div className="col-sm-9 col-sm-offset-3">
-                            <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
-                        </div>
-                    </div>
-                    : false }
-                <div className="row">
-                    <form className="form-horizontal" onSubmit={this.createAndGoToRecord}>
-                        <div className="form-group row">
-                            <label htmlFor="title" className="col-sm-3 control-label" style={stitle}>
-                                <span style={{float:'right'}}>Title</span>
-                            </label>
-                            <div className="col-sm-9" style={gap}>
-                                <input type="text" className="form-control" id='title'
-                                    style={{fontSize:24, height:48}}
-                                    value={this.state.title} onChange={this.onTitleChange} />
-                            </div>
-                        </div>
-
-                        <div className="form-group row">
-                            <label htmlFor="community" className="col-sm-3 control-label" style={scomm}>
-                                <span style={{float:'right'}}>Community</span>
-                            </label>
-                            <div className="col-sm-9">
-                                {this.renderCommunityList(communities)}
-                            </div>
-                        </div>
-
-                        <div className="form-group submit row">
-                            {this.state.errors.title ?
-                                <div className="col-sm-9 col-sm-offset-3">{this.state.errors.title} </div>: false }
-                            {this.state.errors.community ?
-                                <div className="col-sm-9 col-sm-offset-3">{this.state.errors.community} </div> : false }
-                            <div className="col-sm-offset-3 col-sm-9" style={gap}>
-                                <button type="submit" className="btn btn-primary btn-default btn-block">
-                                    Create Draft Record</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        );
-    }
-});
+const invalidFieldMessage = field => `Please provide a correct value for field: ${field}`;
 
 
 export const EditRecordRoute = React.createClass({
-    render() {
+    isDraft: false,
+
+    getRecordOrDraft() {
         const { id } = this.props.params;
-        const record = serverCache.getDraft(id);
+        let record = serverCache.getRecord(id);
+        if (record instanceof Error && record.code == 404) {
+            const draft = serverCache.getDraft(id);
+            serverCache.getDraftFiles(id);
+            this.isDraft = true;
+            return draft;
+        }
+        return record;
+    },
+
+    refreshCache() {
+        const { id } = this.props.params;
+        if (this.isDraft) {
+            serverCache.getDraft(id);
+        } else {
+            serverCache.getRecord(id);
+        }
+    },
+
+    patchRecordOrDraft(patch, onSuccessFn) {
+        const { id } = this.props.params;
+        if (this.isDraft) {
+            serverCache.patchDraft(id, patch, onSuccessFn);
+        } else {
+            serverCache.patchRecord(id, patch, onSuccessFn);
+        }
+    },
+
+    render() {
+        const record = this.getRecordOrDraft();
         if (!record) {
             return <Wait/>;
         }
@@ -179,11 +74,14 @@ export const EditRecordRoute = React.createClass({
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
-        serverCache.getDraftFiles(id);
 
         return (
             <ReplaceAnimate>
-                <EditRecord record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas}/>
+                <EditRecord record={record} community={community}
+                            rootSchema={rootSchema} blockSchemas={blockSchemas}
+                            refreshCache={this.refreshCache}
+                            patchFn={this.patchRecordOrDraft}
+                            isDraft={this.isDraft} />
             </ReplaceAnimate>
         );
     }
@@ -198,6 +96,7 @@ const EditRecord = React.createClass({
             modal: null,
             errors: {},
             dirty: false,
+            waitingForServer: false,
         };
     },
 
@@ -271,7 +170,7 @@ const EditRecord = React.createClass({
         const errors = this.state.errors;
         const pathstr = path.join('/');
         if (!this.validField(schema, value)) {
-            errors[pathstr] = `Please provide a value for the required field ${pathstr}`
+            errors[pathstr] = invalidFieldMessage(pathstr);
         } else {
             delete errors[pathstr];
         }
@@ -375,7 +274,7 @@ const EditRecord = React.createClass({
 
         let field = false;
         if (objEquals(path, ['community'])) {
-            field = this.props.community ? renderSmallCommunity(this.props.community, false) : <Wait/>
+            field = this.props.community ? renderSmallCommunity(this.props.community) : <Wait/>
         } else if (objEquals(path, ['license', 'license'])) {
             field = this.renderLicenseField(schema, path);
         } else if (objEquals(path, ['open_access'])) {
@@ -591,7 +490,7 @@ const EditRecord = React.createClass({
         const isValue = (value !== undefined && value !== null && value !== "");
         if (schema.get('isRequired') && !isValue) {
             const pathstr = path.join("/");
-            errors[pathstr] = `Please provide a value for field "${pathstr}"`;
+            errors[pathstr] = invalidFieldMessage(pathstr);
             return;
         }
 
@@ -610,7 +509,7 @@ const EditRecord = React.createClass({
         } else {
             if (!this.validField(schema, value)) {
                 const pathstr = path.join("/");
-                errors[pathstr] = `Please provide a valid value for field "${pathstr}"`;
+                errors[pathstr] = invalidFieldMessage(pathstr);
             }
         }
     },
@@ -651,18 +550,20 @@ const EditRecord = React.createClass({
             this.setState({dirty:false});
             return;
         }
-        const onSaveAndPublish = (record) => {
-            browser.gotoRecord(record.id);
+        const afterPatch = (record) => {
+            if (this.props.isDraft && !this.isForPublication()) {
+                this.props.refreshCache();
+                this.setState({dirty:false, waitingForServer: false});
+            } else {
+                browser.gotoRecord(record.id);
+            }
         }
-        const onSave = (record) => {
-            serverCache.getDraft(record.id);
-            this.setState({dirty:false});
-        }
-        serverCache.patchRecord(this.props.record.get('id'), patch,
-                    this.isSubmittedSet() ? onSaveAndPublish : onSave);
+
+        this.setState({waitingForServer: true});
+        this.props.patchFn(patch, afterPatch);
     },
 
-    isSubmittedSet() {
+    isForPublication() {
         return this.state.record.get('publication_state') == 'submitted';
     },
 
@@ -672,18 +573,52 @@ const EditRecord = React.createClass({
         this.setState({record});
     },
 
+    renderUpdateRecordForm() {
+        const klass = this.state.waitingForServer ? 'disabled' :
+                      this.state.dirty ? 'btn-primary' : 'disabled';
+        const text = this.state.waitingForServer ? "Updating record, please wait...":
+                     this.state.dirty ? "Update record" : "The record is up to date";
+        return (
+            <div className="col-sm-offset-3 col-sm-9">
+                <p>This record is already published. Any changes you make will be directly visible to other people.</p>
+                <button type="submit" className={"btn btn-default btn-block "+klass} onClick={this.updateRecord}>{text}</button>
+            </div>
+        );
+    },
+
+    renderSubmitDraftForm() {
+        const klass = this.state.waitingForServer ? 'disabled' :
+                      this.isForPublication() ? 'btn-primary btn-danger' :
+                      this.state.dirty ? 'btn-primary' : 'disabled';
+        const text = this.state.waitingForServer ? "Updating record, please wait..." :
+                      this.isForPublication() ? 'Save and Publish' :
+                      this.state.dirty ? 'Save Draft' : 'The draft is up to date';
+        return (
+            <div className="col-sm-offset-3 col-sm-9">
+                <label style={{fontSize:18, fontWeight:'normal'}}>
+                    <input type="checkbox" value={this.isForPublication} onChange={this.setPublishedState}/>
+                    {" "}Submit draft for publication
+                </label>
+                <p>When the draft is published it will be assigned a PID, making it publicly citable.
+                    But a published record's files can no longer be modified by its owner. </p>
+                <button type="submit" className={"btn btn-default btn-block "+klass} onClick={this.updateRecord}>{text}</button>
+            </div>
+        );
+    },
+
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
         if (!this.state.record || !rootSchema) {
             return <Wait/>;
         }
+        const editTitle = "Editing " + (this.props.isDraft ? "draft" : "record");
         return (
             <div className="edit-record">
                 <div className="row">
                     <div className="col-xs-12">
                         <h2 className="name">
-                            <span style={{color:'#aaa'}}>Editing </span>
+                            <span style={{color:'#aaa'}}>{editTitle}</span>
                             {this.state.record.get('title')}
                         </h2>
                     </div>
@@ -695,7 +630,7 @@ const EditRecord = React.createClass({
                 </div>
                 <div className="row">
                     <div className="col-xs-12">
-                        { this.renderFileBlock() }
+                        { this.props.isDraft ? this.renderFileBlock() : false }
                     </div>
                     <div className="col-xs-12">
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
@@ -708,46 +643,13 @@ const EditRecord = React.createClass({
                     </div>
                 </div>
                 <div className="row">
-                    <div className="form-group submit row" style={{marginTop:'2em', marginBottom:'2em', paddingTop:'2em', borderTop:'1px solid #eee'}}>
+                    <div className="form-group submit row" style={{margin:'2em 0', paddingTop:'2em', borderTop:'1px solid #eee'}}>
                         {pairs(this.state.errors).map( ([id, msg]) =>
-                            <div className="col-sm-offset-3 col-sm-6 alert alert-warning" key={id}>{msg} </div>) }
-                        <div className="col-sm-offset-3 col-sm-6">
-                            <label style={{fontSize:18, fontWeight:'normal'}}>
-                                <input type="checkbox" value={this.isSubmittedSet} onChange={this.setPublishedState}/>
-                                {" "}Submit draft for publication
-                            </label>
-                            <p>When the draft is published it will be assigned a PID, making it publicly citable.
-                                But a published record's files can no longer be modified by its owner. </p>
-                            {   this.isSubmittedSet() ?
-                                    <button type="submit" className="btn btn-primary btn-default btn-block btn-danger" onClick={this.updateRecord}>
-                                        Save and Publish </button>
-                                : this.state.dirty ?
-                                    <button type="submit" className="btn btn-primary btn-default btn-block" onClick={this.updateRecord}>
-                                        Save Draft </button>
-                                  : <button type="submit" className="btn btn-default btn-block disabled">
-                                        The draft is up to date </button>
-                            }
-                        </div>
+                            <div className="col-sm-offset-3 col-sm-9 alert alert-warning" key={id}>{msg} </div>) }
+                        { this.props.isDraft ? this.renderSubmitDraftForm() : this.renderUpdateRecordForm() }
                     </div>
                 </div>
             </div>
         );
     }
 });
-
-///////////////////////////////////////////////////////////////////////////////
-
-function renderSmallCommunity(community, active, onClickFn) {
-    const activeClass = active ? " active": " inactive";
-    if (!community || community instanceof Error) {
-        return false;
-    }
-    return (
-        <a href="#" key={community.get('id')}
-                className={"community-small" + activeClass} title={community.get('description')}
-                onClick={onClickFn ? onClickFn : ()=>{}}>
-            <p className="name">{community.get('name')}</p>
-            <img className="logo" src={community.get('logo')}/>
-        </a>
-    );
-}

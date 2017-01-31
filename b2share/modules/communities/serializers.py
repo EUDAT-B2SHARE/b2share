@@ -55,7 +55,11 @@ def community_to_dict(community):
         restricted_submission=community.restricted_submission,
         links=dict(
             self=community_self_link(community, _external=True)
-        )
+        ),
+        roles=dict(
+            admin=community.admin_role.name,
+            member=community.member_role.name
+        ),
     )
 
 

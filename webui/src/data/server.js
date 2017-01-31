@@ -401,6 +401,7 @@ class ServerCache {
         this.posters = {};
         this.posters.records = new Poster(apiUrls.records());
         this.posters.draft = new Pool(draftID => new Poster(apiUrls.draft(draftID)));
+        this.posters.record = new Pool(recordID => new Poster(apiUrls.record(recordID)));
         this.posters.files = new Pool(draftID =>
             new Pool(fileName => {
                 const fileBucketUrl = this.store.getIn(['draftCache', draftID, 'links', 'files']);
@@ -631,12 +632,20 @@ class ServerCache {
         });
     }
 
-    updateRecord(id, metadata, successFn) {
+    updateDraft(id, metadata, successFn) {
         this.posters.draft.get(id).put(metadata, successFn);
     }
 
-    patchRecord(id, patch, successFn) {
+    patchDraft(id, patch, successFn) {
         this.posters.draft.get(id).patch(patch, successFn);
+    }
+
+    updateRecord(id, metadata, successFn) {
+        this.posters.record.get(id).put(metadata, successFn);
+    }
+
+    patchRecord(id, patch, successFn) {
+        this.posters.record.get(id).patch(patch, successFn);
     }
 
     b2dropInit(username, password, successFn, errorFn) {

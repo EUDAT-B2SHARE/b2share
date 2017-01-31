@@ -139,16 +139,11 @@ const Record = React.createClass({
         const creators = testget(metadata, 'creators');
         const pid = metadata.get('ePIC_PID');
         const doi = metadata.get('DOI');
-        const sr = {marginBottom:0, padding:'0.5em', float:'right'};
 
         return (
             <div>
                 <div className="row">
                     <div className="col-sm-12">
-                        {   // do not allow record editing, for now
-                            //<Link to={`/records/${record.get('id')}/edit`} style={sr}>Edit Record</Link>
-                        }
-                        <Link to={`/records/${record.get('id')}/abuse`} style={sr}>Report Abuse</Link>
                         { metadata.get('titles').map(renderTitle)}
                     </div>
                 </div>
@@ -209,8 +204,8 @@ const Record = React.createClass({
     },
 
     renderFileList(files, showB2Note) {
-        const show_accessrequest = (this.props.record.getIn(['metadata', 'open_access']) === false &&
-            this.props.record.getIn(['metadata', 'owners', 0]) != serverCache.getUser().get('id'));
+        const openAccess = this.props.record.getIn(['metadata', 'open_access']);
+        const showAccessRequest = (!openAccess && !isRecordOwner(this.props.record));
 
         let fileComponent = false;
         if (!(files && files.count && files.count())) {
@@ -238,7 +233,7 @@ const Record = React.createClass({
                     </h3>
                 </div>
                 { fileComponent }
-                { show_accessrequest ?
+                { showAccessRequest ?
                     <Link to={`/records/${this.props.record.get('id')}/accessrequest`}>
                         Request data access
                     </Link> : false }
@@ -369,6 +364,7 @@ const Record = React.createClass({
             return <Wait/>;
         }
 
+        const recordID = this.props.record.get('id');
         const showB2Note = serverCache.getInfo().get('show_b2note');
         const B2NoteWellStyle = {
             position: 'fixed',
@@ -381,6 +377,10 @@ const Record = React.createClass({
         if (!this.state.showB2NoteWindow) {
             B2NoteWellStyle.display = 'none';
         }
+        const actionLinkStyle = {
+            margin: '0 0.5em',
+            float:'right',
+        };
         return (
             <div className="container-fluid">
                 <div className="large-record">
@@ -388,6 +388,15 @@ const Record = React.createClass({
                         <div className="col-lg-12">
                             {this.renderFixedFields(this.props.record, this.props.community)}
                         </div>
+                        {showB2Note ?
+                            <div className="well" style={B2NoteWellStyle}>
+                                <button type="button" className="close" aria-label="Close" onClick={e => this.setState({showB2NoteWindow:false})}>
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <iframe id="b2note_iframe" name="b2note_iframe" src="https://b2note.bsc.es/devel/interface_main.html"
+                                        style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
+                            </div> : false
+                        }
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
@@ -401,19 +410,55 @@ const Record = React.createClass({
                                 blockSchemas.map(([id, blockSchema]) =>
                                     this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'), {})) }
                         </div>
-
-                        {showB2Note ?
-                            <div className="well" style={B2NoteWellStyle}>
-                                <button type="button" className="close" aria-label="Close" onClick={e => this.setState({showB2NoteWindow:false})}>
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                                <iframe id="b2note_iframe" name="b2note_iframe" src="https://b2note.bsc.es/devel/interface_main.html"
-                                        style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
-                            </div> : false
-                        }
                     </div>
+
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <div>
+                                <Link to={`/records/${recordID}/abuse`} className="btn btn-default"
+                                    style={Object.assign({}, actionLinkStyle, {color: '#d43f3a'})}>Report Abuse</Link>
+                                { canEditRecord(this.props.record) ?
+                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning"
+                                        style={actionLinkStyle}>Edit Record</Link> : false
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{borderBottom: '1px solid #eee', paddingBottom:'1em'}}/>
                 </div>
             </div>
         );
     }
 });
+
+
+function canEditRecord(record) {
+    if (isRecordOwner(record)) {
+        return true;
+    }
+    if (isCommunityAdmin(record.getIn(['metadata', 'community']))) {
+        return true;
+    }
+    return false;
+}
+
+function isRecordOwner(record) {
+    const userId = serverCache.getUser().get('id');
+    if (userId === undefined || userId === null) {
+        return false;
+    }
+    return record.hasIn(['metadata', 'owners', userId]);
+}
+
+function isCommunityAdmin(communityId) {
+    const roles = serverCache.getUser().get('roles');
+    if (!roles) {
+        return false;
+    }
+    const community = serverCache.getCommunity(communityId);
+    if (community && community.hasIn(['roles', 'admin'])) {
+        const communityAdminRoleName = community.getIn(['roles', 'admin']);
+        return roles.find(r => r.get('name') === communityAdminRoleName);
+    }
+    return false
+}
