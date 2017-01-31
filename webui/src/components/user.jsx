@@ -1,6 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
-import { serverCache, Error, loginURL } from '../data/server';
+import { serverCache, Error, loginURL, notifications } from '../data/server';
 
 export const LoginOrRegister = React.createClass({
     mixins: [React.addons.PureRenderMixin],
@@ -142,11 +142,16 @@ const TokenList = React.createClass({
 
     newToken(e) {
         e.preventDefault();
-        serverCache.newUserToken(this.state.name, token => {
-            const tokenList = this.state.tokenList;
-            tokenList.push(token);
-            this.setState({token, tokenList})
-        });
+        if (!this.state.name) {
+            notifications.danger('Please choose a name for the new token');
+        } else {
+            notifications.clearAll();
+            serverCache.newUserToken(this.state.name, token => {
+                const tokenList = this.state.tokenList;
+                tokenList.push(token);
+                this.setState({token, tokenList})
+            });
+        }
     },
 
     renderToken(t) {
@@ -157,12 +162,14 @@ const TokenList = React.createClass({
     render() {
         return (
             <div>
-                <div>
-                    <p>Active tokens:</p>
-                    <ul className="list-group">
-                        { this.state.tokenList.map(this.renderToken) }
-                    </ul>
-                </div>
+                {this.state.tokenList.length ?
+                    <div>
+                        <p>Active tokens:</p>
+                            <ul className="list-group">
+                                { this.state.tokenList.map(this.renderToken) }
+                            </ul>
+                    </div> : <div><p> You have no active tokens </p></div>
+                }
 
                 {this.state.token ?
                     <div className="alert alert-success">
