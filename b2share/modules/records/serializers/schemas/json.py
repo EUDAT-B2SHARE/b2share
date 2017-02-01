@@ -27,6 +27,9 @@ from marshmallow import Schema, fields, pre_dump
 from b2share.modules.access.policies import allow_public_file_metadata
 
 
+DOI_URL_PREFIX = 'http://doi.org/'
+
+
 class DraftSchemaJSONV1(Schema):
     """Schema for records v1 in JSON."""
 
@@ -55,7 +58,7 @@ class DraftSchemaJSONV1(Schema):
             if len(epic_pids) > 0:
                 data['metadata']['ePIC_PID'] = epic_pids[0].get('value')
             if len(dois) > 0:
-                data['metadata']['DOI'] = dois[0].get('value')
+                data['metadata']['DOI'] = DOI_URL_PREFIX + dois[0].get('value')
             del data['metadata']['_pid']
         if '_oai' in data['metadata']:
             del data['metadata']['_oai']
