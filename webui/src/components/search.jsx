@@ -11,7 +11,8 @@ import { ReplaceAnimate } from './animate.jsx';
 export const SearchRecordRoute = React.createClass({
     render() {
         const communities = serverCache.getCommunities();
-        const location = this.props.location || {};
+        const location = this.props.location || {};        
+        const drafts = (location.query.drafts == 1) ? 1 : "";
         const result = serverCache.searchRecords(location.query || {});
         const numResults = (result && result.get('total')) || 0;
         return (
@@ -23,7 +24,7 @@ export const SearchRecordRoute = React.createClass({
                 { result instanceof Error ? <Err err={result}/>
                     : !result ? <Wait/>
                         : <ReplaceAnimate>
-                                <RecordList records={result.get('hits')}/>
+                                <RecordList records={result.get('hits')} drafts={drafts} />
                           </ReplaceAnimate>
                 }
             </div>
@@ -41,6 +42,7 @@ const Search = React.createClass({
             sort: 'mostrecent',
             page: "1",
             size: "10",
+            drafts: "",
         };
     },
 
@@ -227,9 +229,10 @@ const RecordList = React.createClass({
         const title = first(metadata, 'titles').get('title') || "";
         const description = first(metadata, 'descriptions').get('description') ||"";
         const creators = metadata.get('creators') || List();
+        const edit = (this.props.drafts == 1) ? "/edit" : ""
         return (
             <div className="record col-lg-12" key={id}>
-                <Link to={'/records/'+id}>
+                <Link to={'/records/'+id+edit}> 
                     <p className="name">{title}</p>
                     <p>
                         <span className="date">{timestamp2str(created)}</span>

@@ -111,9 +111,15 @@ export const UserProfile = React.createClass({
                     <div className="row">
                         <h3>Own records</h3>
                         <p><Link to={"/records?q=owners:"+user.get('id')}>
-                            Please click here to view your published records
+                            List of your published records
                             </Link></p>
                     </div>
+                    <div className="row">
+                        <h3>Own drafts</h3>
+                            <p><Link to={"/records?drafts=1&q=publication_state:draft&owners:"+user.get('id')}>
+                                List of your draft records
+                            </Link></p>
+                    </div>                    
                     <div className="row">
                         <h3>API Tokens</h3>
                         <TokenList />
