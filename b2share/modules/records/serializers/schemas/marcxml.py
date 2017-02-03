@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import, print_function
 
+from itertools import chain
 from marshmallow import Schema, fields, post_dump
 from dateutil.parser import parse
 from flask import current_app
@@ -39,6 +40,8 @@ class RecordSchemaMarcXMLV1(Schema):
         pids = obj['metadata'].get('_pid')
         p = [p['value'] for p in pids if p['type'] == 'b2rec']
         return str(p[0])
+
+    other_standard_identifier = fields.Method('get_other_standard_identifier')
 
     date_and_time_of_latest_transaction = fields.Function(
         lambda o: parse(o['updated']).strftime("%Y%m%d%H%M%S.0"))
@@ -80,9 +83,6 @@ class RecordSchemaMarcXMLV1(Schema):
     index_term_uncontrolled = fields.Function(
         lambda o: [dict(uncontrolled_term=x) for x in o['metadata'].get('keywords', [])])
 
-    other_standard_identifier = fields.Function(
-        lambda o: [dict(standard_number_or_code=x['alternate_identifier'])
-                   for x in o['metadata'].get('alternate_identifiers', [])])
 
     electronic_location_and_access = fields.Function(
         lambda o: [dict(uniform_resource_identifier=f['ePIC_PID'],
@@ -96,6 +96,14 @@ class RecordSchemaMarcXMLV1(Schema):
     embargo_date = fields.Raw(attribute='metadata.embargo_date')
 
     _oai = fields.Raw(attribute='metadata._oai')
+
+
+    def get_other_standard_identifier(self, o):
+        pids = [p['value'] for p in o['metadata']['_pid']
+                if p['type'] in {'ePIC_PID', 'DOI'}]
+        alt_ids = [x['alternate_identifier']
+                   for x in o['metadata'].get('alternate_identifiers', [])]
+        return [dict(standard_number_or_code=x) for x in chain(pids, alt_ids)]
 
 
     def get_main_entry_personal_name(self, o):
