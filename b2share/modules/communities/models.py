@@ -95,6 +95,9 @@ def receive_before_insert(mapper, connection, target):
         update_deposit_publication_state_need_factory,
     )
     from b2share.modules.deposit.api import PublicationStates
+    from b2share.modules.records.permissions import (
+        update_record_metadata_need_factory,
+    )
 
     admin_role = Role(
         name=_community_admin_role_name(target),
@@ -134,7 +137,11 @@ def receive_before_insert(mapper, connection, target):
             community=str(target.id),
             old_state=PublicationStates.submitted.name,
             new_state=PublicationStates.draft.name
-        )
+        ),
+        # permission to update the metadata of a published record
+        update_record_metadata_need_factory(
+            community=str(target.id),
+        ),
     ]
     for need in member_needs:
         db.session.add(ActionRoles.allow(need, role=member_role))

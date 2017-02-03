@@ -46,7 +46,7 @@ from b2share.modules.communities.api import Community
 from invenio_db import db
 
 from .api import PublicationStates
-from .loaders import patch_input_loader
+from .loaders import deposit_patch_input_loader
 
 
 def _deposit_need_factory(name, **kwargs):
@@ -204,7 +204,7 @@ class ReadDepositPermission(DepositPermission):
 
 
 class UpdateDepositMetadataPermission(StrictDynamicPermission):
-    """Permissio to update a deposit's metadata fields."""
+    """Permission to update a deposit's metadata fields."""
 
     def __init__(self, deposit, new_state=None):
         """Constructor
@@ -249,7 +249,7 @@ class UpdateDepositPermission(DepositPermission):
             request.content_type == 'application/json-patch+json'):
             # FIXME: need some optimization on Invenio side. We are applying
             # the patch twice
-            patch = patch_input_loader(self.deposit)
+            patch = deposit_patch_input_loader(self.deposit)
             new_deposit = deepcopy(self.deposit)
             try:
                 apply_patch(new_deposit, patch, in_place=True)
@@ -275,16 +275,12 @@ class UpdateDepositPermission(DepositPermission):
                 )
             )
             # Owners of a record can always "submit" it.
-            if (self.deposit['publication_state'] ==
-                PublicationStates.draft.name and
-                new_deposit['publication_state'] ==
-                PublicationStates.submitted.name or
+            if (self.deposit['publication_state'] == PublicationStates.draft.name and
+                new_deposit['publication_state'] == PublicationStates.submitted.name or
                 # Owners have also the right to move the record from submitted
                 # to draft again.
-                self.deposit['publication_state'] ==
-                PublicationStates.submitted.name and
-                new_deposit['publication_state'] ==
-                PublicationStates.draft.name):
+                self.deposit['publication_state'] == PublicationStates.submitted.name and
+                new_deposit['publication_state'] == PublicationStates.draft.name):
                 # Owners are allowed to update
                 for owner_id in self.deposit['_deposit']['owners']:
                     state_permission.explicit_needs.add(UserNeed(owner_id))

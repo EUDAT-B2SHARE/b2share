@@ -40,7 +40,9 @@ from b2share.modules.deposit.permissions import (
     CreateDepositPermission, ReadDepositPermission,
     UpdateDepositPermission, DeleteDepositPermission,
 )
-from b2share.modules.deposit.loaders import patch_input_loader
+from b2share.modules.deposit.loaders import deposit_patch_input_loader
+from b2share.modules.records.loaders import record_patch_input_loader
+
 
 
 SUPPORT_EMAIL = None # must be setup in the local instances
@@ -80,7 +82,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         links_factory_imp=('b2share.modules.records.links'
                            ':record_links_factory'),
         record_loaders={
-            'application/json-patch+json': patch_input_loader,
+            'application/json-patch+json': record_patch_input_loader,
             'application/json':
             # FIXME: create a loader so that only allowed fields can be set
             lambda: request.get_json(),
@@ -119,7 +121,7 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
         },
         links_factory_imp='b2share.modules.deposit.links:deposit_links_factory',
         record_loaders={
-            'application/json-patch+json': patch_input_loader,
+            'application/json-patch+json': deposit_patch_input_loader,
             'application/json':
             lambda: request.get_json(),
             # FIXME: create a loader so that only allowed fields can be set

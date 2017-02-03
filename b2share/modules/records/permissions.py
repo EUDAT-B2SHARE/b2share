@@ -25,10 +25,36 @@
 
 from __future__ import absolute_import, print_function
 
-from b2share.modules.access.permissions import OrPermissions
-from invenio_access.permissions import superuser_access
+import json
+from jsonpatch import apply_patch, JsonPatchException
+from copy import deepcopy
+from flask import request, abort
+from flask_principal import UserNeed
 
-from b2share.modules.access.permissions import StrictDynamicPermission
+from invenio_access.permissions import (
+    superuser_access, ParameterizedActionNeed, DynamicPermission
+)
+from b2share.modules.access.permissions import (
+    StrictDynamicPermission, OrPermissions
+)
+from .loaders import record_patch_input_loader
+
+
+def _record_need_factory(name, **kwargs):
+    if kwargs:
+        for key, value in enumerate(kwargs):
+            if value is None:
+                del kwargs[key]
+
+    if not kwargs:
+        argument = None
+    else:
+        argument = json.dumps(kwargs, separators=(',', ':'), sort_keys=True)
+    return ParameterizedActionNeed(name, argument)
+
+
+def update_record_metadata_need_factory(community):
+    return _record_need_factory('update-record-metadata', community=community)
 
 
 class RecordPermission(OrPermissions):
@@ -51,8 +77,58 @@ class RecordPermission(OrPermissions):
         pass
 
 
+class UpdateRecordMetadataPermission(StrictDynamicPermission):
+    """Permission to update a record's metadata fields."""
+
+    def __init__(self, record):
+        """Constructor
+
+        Args:
+            record (Record): record which is modified.
+        """
+        super(UpdateRecordMetadataPermission, self).__init__()
+        # Owners are allowed to update
+        for owner_id in record['_deposit']['owners']:
+            self.explicit_needs.add(UserNeed(owner_id))
+
+        # authorize if the user can modify metadata in the old
+        # publication state
+        self.explicit_needs.add(
+            update_record_metadata_need_factory(
+                community=record['community'],
+            )
+        )
+
+
 class UpdateRecordPermission(RecordPermission):
     """Record update permission."""
+    def _load_additional_permissions(self):
+        permissions = []
+        new_record = None
+        # Check submit/publish actions
+        if (request.method == 'PATCH' and
+            request.content_type == 'application/json-patch+json'):
+            # FIXME: optimise on Invenio side. We are applying the patch twice
+            # see also the UpdateDepositPermission
+            patch = record_patch_input_loader(self.record)
+            new_record = deepcopy(self.record)
+            try:
+                apply_patch(new_record, patch, in_place=True)
+            except JsonPatchException:
+                abort(400)
+        else:
+            abort(400)
+
+        # Create permission for updating generic metadata fields.
+        # Only superadmin can modify published draft.
+        permissions.append(
+            UpdateRecordMetadataPermission(self.record)
+        )
+
+        if len(permissions) > 1:
+            self.permissions.add(AndPermissions(*permissions))
+        elif len(permissions) == 1:
+            self.permissions.add(permissions[0])
 
 
 class DeleteRecordPermission(RecordPermission):

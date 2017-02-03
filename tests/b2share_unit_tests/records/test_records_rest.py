@@ -32,6 +32,7 @@ from b2share_unit_tests.helpers import (
     subtest_file_bucket_content, subtest_file_bucket_permissions,
     build_expected_metadata, subtest_self_link, create_user,
 )
+from b2share.modules.communities.api import Community
 from b2share.modules.deposit.api import PublicationStates
 from b2share.modules.records.links import url_for_bucket
 from six import BytesIO
@@ -343,8 +344,10 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
     with app.app_context():
         creator = create_user('creator')
         non_creator = create_user('non-creator')
-
         record_data = generate_record_data(open_access=True)
+        community = Community.get(id=record_data['community'])
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+        com_member = create_user('com_member', roles=[community.member_role])
 
         def test_modify(status, user=None):
             patch = [{
@@ -381,5 +384,7 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
         # test with anonymous user
         test_modify(401)
         test_modify(403, non_creator)
-        test_modify(403, creator)
+        test_modify(200, creator)
+        test_modify(403, com_member)
+        test_modify(200, com_admin)
         test_modify(200, admin)
