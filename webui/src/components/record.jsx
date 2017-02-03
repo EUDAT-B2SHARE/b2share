@@ -56,11 +56,12 @@ const B2NoteWidget = React.createClass({
         let record = this.props.record;
         record = record.toJS ? record.toJS() : record;
         const record_url = (record.links.self||"").replace('/api/records/', '/records/');
+        const file_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
         return (
             <form id="b2note_form_" action={B2NoteUrl} method="post" target="b2note_iframe" onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="pid_tofeed" value={record.metadata.ePIC_PID} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="subject_tofeed" value={file.url} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="subject_tofeed" value={file_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="keywords_tofeed" value={record.metadata.keywords} className="field left" readOnly="readonly"/>
                 <input type="submit" className="btn btn-sm btn-default" value="Annotate in B2Note" title="Click to annotate file using B2Note."/>
             </form>
@@ -367,7 +368,7 @@ const Record = React.createClass({
         const recordID = this.props.record.get('id');
         const showB2Note = serverCache.getInfo().get('show_b2note');
         const B2NoteWellStyle = {
-            position: 'fixed',
+            position: 'absolute',
             right: 0,
             zIndex: 1050,
             boxShadow: 'black 0px 0px 32px',
@@ -447,7 +448,7 @@ function isRecordOwner(record) {
     if (userId === undefined || userId === null) {
         return false;
     }
-    return record.hasIn(['metadata', 'owners', userId]);
+    return record.getIn(['metadata', 'owners']).indexOf(userId) >= 0;
 }
 
 function isCommunityAdmin(communityId) {
