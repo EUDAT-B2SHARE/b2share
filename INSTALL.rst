@@ -50,7 +50,7 @@ B2SHARE. The format of the environment variable is
 ``B2SHARE_<CONFIGURATION_VARIABLE_NAME>``. Please note that the environment
 variables must be set inside the B2SHARE Docker container.
 
-1.2. Run a B2Share demo with Docker
+1.3. Run a B2Share demo with Docker
 -----------------------------------
 
 If you can run docker on the same host (on Linux or with Docker for
@@ -68,6 +68,15 @@ Mac/Windows), go into the ``dockerize`` folder and then run ``docker-compose``:
 After the docker image is built and running, B2SHARE will be available at
 https://<FQDN>
 
+1.4. Integration with other services
+------------------------------------
+
+The records metadata in your local instance of B2SHARE can be harvested by
+various other repositories by using the included endpoint for the OAI-PMH
+protocol. For the records to be visible in B2FIND, please create a ticket in
+the B2FIND support queue (``https://eudat.eu/support-
+request?service=B2FIND``), by describing your instance and specifying the
+OAI-PMH url (``http://<FQDN>/oai2d``)
 
 
 2. Install B2SHARE for development
