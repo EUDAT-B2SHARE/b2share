@@ -21,18 +21,14 @@
 
 .. include:: ../README.rst
 
-Additional Notes
-----------------
-
-Notes on how to contribute, legal information and changes are here for the
-interested.
-
 .. toctree::
    :maxdepth: 1
 
+   administration
    contributing
    changes
    license
    authors
 .. toctree::
    :maxdepth: 2
+

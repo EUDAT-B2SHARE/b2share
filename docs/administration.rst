@@ -1,0 +1,94 @@
+.. This file is part of EUDAT B2Share.
+   Copyright (C) 2017, CERN, University of Tübingen.
+
+   B2Share is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+
+   B2Share is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with B2Share; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+   In applying this license, CERN does not
+   waive the privileges and immunities granted to it by virtue of its status
+   as an Intergovernmental Organization or submit itself to any jurisdiction.
+
+
+Administration
+==============
+
+SuperAdministrator
+------------------
+
+The superadministrator right allows a particular user to run any B2SHARE
+operation. Please be careful in assigning it.
+
+All operations below will try to identify the user based on the email address.
+The user must have logged in into B2SHARE at least once, otherwise the email
+address will not be found in the database.
+
+**Add superadministrator rights**:
+
+.. code-block:: console
+
+    $ b2share access allow -e <email_address_of_user> superuser-access
+
+**Revoke superadministrator rights**:
+
+.. code-block:: console
+
+    $ b2share access remove -e <email_address_of_user> superuser-access
+
+**List existing rights**:
+
+.. code-block:: console
+
+    $ b2share access show -e <email_address_of_user>
+
+
+Community Admin
+---------------
+
+Each B2SHARE record is assigned to a community. A community administrator has
+certain special rights, like the right to edit a published record's metadata
+and the right to add members to the community.
+
+To **assign the community administrator role for a user**, do the following:
+
+1. Find the unique ID of the community, using the HTTP API, by going to
+https://YOUR_B2SHARE/api/communities (for example, the community id can be
+``8d963a295e19492b8cfe97da4f54fad2``). The administrator role for this
+community will be ``com:COMMUNITY_ID:admin`` (please use the actual community
+id between colons).
+
+2. Run the following b2share command:
+
+.. code-block:: console
+
+    $ b2share roles add <email_address_of_user> com:COMMUNITY_ID:admin
+
+
+Fine-grained access controls
+----------------------------
+
+Warning: Please only run the following commands if instructed to do so by a B2SHARE representative:
+
+1. Allow the community administrator role to update record metadata (this is
+enabled by default when a community is created):
+
+.. code-block:: console
+
+    $ b2share access allow -r com:COMMUNITY_ID:admin update-record-metadata -a '{"community":"COMMUNITY_ID_WITH_DASHES"}'
+
+For example:
+
+.. code-block:: console
+
+    $ b2share access allow -r com:8d963a295e19492b8cfe97da4f54fad2:admin update-record-metadata -a '{"community":"8d963a29-5e19-492b-8cfe-97da4f54fad2"}'
+

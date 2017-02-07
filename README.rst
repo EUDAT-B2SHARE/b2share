@@ -33,7 +33,7 @@ B2SHARE
 .. image:: https://img.shields.io/github/license/EUDAT-B2SHARE/b2share.svg
         :target: https://github.com/EUDAT-B2SHARE/b2share/blob/master/LICENSE
 
-B2SHARE is an user-friendly, secure, robust, reliable, and trusted service to share and store your **research data**. B2SHARE is able to add value to your research data via (domain tailored) metadata, and assigning Persistent Identifiers `PIDs <http://www.pidconsortium.eu/>`_ to ensure long-lasting access and references. B2SHARE is one of the B2 services developed via `EUDAT <http://www.eudat.eu/>`_.
+B2SHARE is an user-friendly, secure, robust, reliable, and trusted service to share and publish your **research data**. B2SHARE is able to add value to your research data via (domain tailored) metadata, and assigning Persistent Identifiers `PIDs <http://www.pidconsortium.eu/>`_ to ensure long-lasting access and references. B2SHARE is one of the B2 services developed via `EUDAT <http://www.eudat.eu/>`_.
 
 **Deposit and release your data** via the generic interface, or select a community extension including domain-specific metadata fields. **Share your data** with others in a safe and trusted environment. **Scientific communities** are able to brand templates, and use their own collections with specific metadata.
 
