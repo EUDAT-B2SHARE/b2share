@@ -92,6 +92,14 @@ def update_deposit_metadata_need_factory(community, publication_state):
                                  publication_state=publication_state)
 
 
+# actions to be registered by invenio_actions, see setup.py
+create_deposit_need = create_deposit_need_factory()
+read_deposit_need = read_deposit_need_factory(None, None)
+update_deposit_publication_state_need = update_deposit_publication_state_need_factory(
+    None, None, None)
+update_deposit_metadata_need = update_deposit_metadata_need_factory(None, None)
+
+
 ReadableCommunities = namedtuple('ReadableCommunities', ['all', 'communities'])
 
 
@@ -315,3 +323,6 @@ class DeleteDepositPermission(DepositPermission):
             for owner_id in self.deposit['_deposit']['owners']:
                 permission.needs.add(UserNeed(owner_id))
         self.permissions.add(permission)
+
+
+

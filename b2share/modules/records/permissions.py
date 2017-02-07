@@ -57,6 +57,10 @@ def update_record_metadata_need_factory(community):
     return _record_need_factory('update-record-metadata', community=community)
 
 
+# actions to be registered by invenio_actions, see setup.py
+update_record_metadata_need = update_record_metadata_need_factory(None)
+
+
 class RecordPermission(OrPermissions):
     """Generic record permission."""
 
