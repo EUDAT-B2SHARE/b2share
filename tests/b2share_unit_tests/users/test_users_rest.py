@@ -68,6 +68,7 @@ def test_users_get(app, test_users, login_user):
                 'id': user_with_role.id,
                 'name': user_with_role.email,
                 'roles': [{
+                    'id': some_role.id,
                     'description': some_role.description,
                     'name': some_role.name,
                 }]

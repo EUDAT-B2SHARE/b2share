@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2017 CERN, University of Tübingen.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,39 +21,17 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share deposit input loaders."""
+"""B2Share record input loaders."""
 
-from flask import abort, request
-from invenio_rest.errors import RESTValidationError, FieldError
-
-IMMUTABLE_PATHS = {
-    # fields added by the serializer
-    '/owners',
-    '/ePIC_PID',
-    '/DOI',
-    '/files',
-    # real fields
-    '/community',
-    '/$schema',
-    '/_pid',
-    '/_oai',
-    '/_files',
-    '/_deposit',
-}
+from b2share.modules.deposit.loaders import (
+    IMMUTABLE_PATHS as DEPOSIT_IMMUTABLE_PATHS,
+    check_patch_input_loader
+)
 
 
-def check_patch_input_loader(record, immutable_paths):
-    data = request.get_json(force=True)
-    if data is None:
-        abort(400)
-    modified_fields = {cmd['path'] for cmd in data
-                       if 'path' in cmd and 'op' in cmd and cmd['op'] != 'test'}
-    errors = [FieldError(field, 'The field "{}" is immutable.'.format(field))
-              for field in immutable_paths.intersection(modified_fields)]
-    if len(errors) > 0:
-        raise RESTValidationError(errors=errors)
-    return data
+IMMUTABLE_PATHS = DEPOSIT_IMMUTABLE_PATHS.union({
+    '/publication_state', # immutable for a published record
+})
 
-
-def deposit_patch_input_loader(record=None):
+def record_patch_input_loader(record=None):
     return check_patch_input_loader(record, IMMUTABLE_PATHS)

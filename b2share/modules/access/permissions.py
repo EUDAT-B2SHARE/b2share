@@ -51,7 +51,7 @@ class StrictDynamicPermission(DynamicPermission):
     It adds the given needs to the returned needs instead of using only
     those found in the database.
     This has two effects:
-        - Identities can also provide aneed without using the database.
+        - Identities can also provide a need without using the database.
         - The permission is not given even if there are no needs in the
             database. Thus the action is not allowed by default.
     """

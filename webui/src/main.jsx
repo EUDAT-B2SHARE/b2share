@@ -15,7 +15,8 @@ import { Help, TermsOfUse, RestApi, SearchHelp } from './components/help.jsx';
 import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
 import { SearchRecordRoute } from './components/search.jsx';
 import { RecordRoute  } from './components/record.jsx';
-import { NewRecordRoute, EditRecordRoute  } from './components/editrecord.jsx';
+import { NewRecordRoute  } from './components/newrecord.jsx';
+import { EditRecordRoute  } from './components/editrecord.jsx';
 import { AccessRequest } from './components/accessrequest.jsx';
 import { ReportAbuse } from './components/reportabuse.jsx';
 

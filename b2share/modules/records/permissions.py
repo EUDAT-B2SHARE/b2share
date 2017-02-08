@@ -25,35 +25,48 @@
 
 from __future__ import absolute_import, print_function
 
-from b2share.modules.access.permissions import OrPermissions
-from invenio_access.permissions import superuser_access
+import json
+from flask_principal import UserNeed
 
+from invenio_access.permissions import ParameterizedActionNeed
 from b2share.modules.access.permissions import StrictDynamicPermission
 
 
-class RecordPermission(OrPermissions):
-    """Generic record permission."""
+def _record_need_factory(name, **kwargs):
+    if kwargs:
+        for key, value in enumerate(kwargs):
+            if value is None:
+                del kwargs[key]
 
-    def __init__(self, record):
-        """Constructor.
-
-        Args:
-            record: record to which access is requested.
-        """
-        super(RecordPermission, self).__init__()
-        # superuser can always do everything
-        self.permissions.add(StrictDynamicPermission(superuser_access))
-        self.record = record
-        self._load_additional_permissions()
-
-    def _load_additional_permissions(self):
-        """Create additional permission."""
-        pass
+    if not kwargs:
+        argument = None
+    else:
+        argument = json.dumps(kwargs, separators=(',', ':'), sort_keys=True)
+    return ParameterizedActionNeed(name, argument)
 
 
-class UpdateRecordPermission(RecordPermission):
+def update_record_metadata_need_factory(community):
+    return _record_need_factory('update-record-metadata', community=community)
+
+
+# actions to be registered by invenio_actions, see setup.py
+update_record_metadata_need = update_record_metadata_need_factory(None)
+
+
+class UpdateRecordPermission(StrictDynamicPermission):
     """Record update permission."""
+    def __init__(self, record):
+        super(UpdateRecordPermission, self).__init__()
+        # Owners are allowed to update
+        for owner_id in record['_deposit']['owners']:
+            self.explicit_needs.add(UserNeed(owner_id))
 
+        # authorize depending on the community
+        self.explicit_needs.add(
+            update_record_metadata_need_factory(
+                community=record['community'],
+            )
+        )
 
-class DeleteRecordPermission(RecordPermission):
+class DeleteRecordPermission(StrictDynamicPermission):
     """Record delete permission."""

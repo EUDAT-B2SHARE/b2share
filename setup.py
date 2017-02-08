@@ -220,6 +220,18 @@ setup(
         'invenio_celery.tasks': [
             'b2share_records = b2share.modules.records.tasks',
         ],
+        'invenio_access.actions': [
+            'create_deposit_need = '
+            'b2share.modules.deposit.permissions:create_deposit_need',
+            'read_deposit_need = '
+            'b2share.modules.deposit.permissions:read_deposit_need',
+            'update_deposit_publication_state_need = '
+            'b2share.modules.deposit.permissions:update_deposit_publication_state_need',
+            'update_deposit_metadata_need = '
+            'b2share.modules.deposit.permissions:update_deposit_metadata_need',
+            'update_record_metadata_need = '
+            'b2share.modules.records.permissions:update_record_metadata_need',
+        ],
     },
     extras_require=extras_require,
     install_requires=install_requires,

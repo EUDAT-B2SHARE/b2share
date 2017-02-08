@@ -40,7 +40,7 @@ def user_to_dict(user):
     """
     data = {}
     if user.is_authenticated:
-        roles = [{'description': r.description, 'name': r.name}
+        roles = [{'id': r.id, 'description': r.description, 'name': r.name}
                  for r in user.roles]
         data = {
             'id': user.id,
