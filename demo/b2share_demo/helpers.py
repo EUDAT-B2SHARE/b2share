@@ -49,6 +49,7 @@ from invenio_files_rest.models import ObjectVersion
 from invenio_indexer.api import RecordIndexer
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_records_files.api import Record
+from invenio_records.models import RecordMetadata
 from b2share.modules.deposit.api import Deposit
 from b2share.modules.deposit.providers import DepositUUIDProvider
 
@@ -56,6 +57,7 @@ from b2share.modules.communities import Community
 from b2share.modules.schemas import BlockSchema, CommunitySchema
 from b2share.modules.schemas.helpers import resolve_schemas_ref
 from b2share.modules.records.providers import RecordUUIDProvider
+from b2share.modules.records.utils import is_publication
 
 
 
@@ -291,3 +293,11 @@ def resolve_community_id(source):
         source
     )
 
+
+def list_db_published_records():
+    """A generator for all the records in the current instance"""
+    query = RecordMetadata.query.filter(RecordMetadata.json != None)
+    for obj in query.all():
+        record = Record(obj.json, model=obj)
+        if is_publication(record.model):
+            yield record
