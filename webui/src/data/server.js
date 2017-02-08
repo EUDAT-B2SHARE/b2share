@@ -459,11 +459,11 @@ class ServerCache {
         return this.store.getIn(['latestRecords']);
     }
 
-    searchRecords({q, community, sort, page, size}) {
+    searchRecords({q, community, sort, page, size, drafts}) {
         if (community) {
             q = (q || "") + ' community:' + community;
         }
-        this.getters.searchRecords.fetch({q, sort, page, size});
+        (drafts == 1) ? this.getters.searchRecords.fetch({q, sort, page, size, drafts}) : this.getters.searchRecords.fetch({q, sort, page, size});
         return this.store.getIn(['searchRecords']);
     }
 
