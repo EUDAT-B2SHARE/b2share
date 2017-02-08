@@ -458,8 +458,8 @@ function isCommunityAdmin(communityId) {
     }
     const community = serverCache.getCommunity(communityId);
     if (community && community.hasIn(['roles', 'admin'])) {
-        const communityAdminRoleName = community.getIn(['roles', 'admin']);
-        return roles.find(r => r.get('name') === communityAdminRoleName);
+        const communityAdminRoleId = community.getIn(['roles', 'admin', 'id']);
+        return roles.find(r => r.get('id') === communityAdminRoleId);
     }
     return false
 }

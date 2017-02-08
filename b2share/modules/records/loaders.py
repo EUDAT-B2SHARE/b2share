@@ -29,11 +29,9 @@ from b2share.modules.deposit.loaders import (
 )
 
 
-IMMUTABLE_PATHS = {
+IMMUTABLE_PATHS = DEPOSIT_IMMUTABLE_PATHS.union({
     '/publication_state', # immutable for a published record
-}
-IMMUTABLE_PATHS.update(DEPOSIT_IMMUTABLE_PATHS)
-
+})
 
 def record_patch_input_loader(record=None):
     return check_patch_input_loader(record, IMMUTABLE_PATHS)

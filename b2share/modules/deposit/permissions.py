@@ -323,6 +323,3 @@ class DeleteDepositPermission(DepositPermission):
             for owner_id in self.deposit['_deposit']['owners']:
                 permission.needs.add(UserNeed(owner_id))
         self.permissions.add(permission)
-
-
-
