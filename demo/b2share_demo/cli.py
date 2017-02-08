@@ -35,8 +35,7 @@ from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
 
-from .helpers import load_demo_data, list_db_published_records
-from .doi_helpers import check_record_doi
+from .helpers import load_demo_data
 from . import config as demo_config
 
 
@@ -93,13 +92,3 @@ def load_config(verbose, force):
     if verbose > 0:
         click.secho('Configuration file "{}" created.'.format(
             instance_config_path), fg='green')
-
-
-@demo.command()
-@with_appcontext
-@click.option('-u', '--update', is_flag=True, default=False)
-def check_dois(update):
-    """ Checks that all DOIs of records in the current instance are registered.
-    """
-    for record in list_db_published_records():
-        check_record_doi(record, update)
