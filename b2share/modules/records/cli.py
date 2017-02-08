@@ -21,17 +21,37 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share doi helpers."""
+"""B2Share cli commands for records."""
+
 
 from __future__ import absolute_import, print_function
 
 import click
+from flask_cli import with_appcontext
 
 from invenio_db import db
 from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.datacite import DataCiteProvider
+
 from b2share.modules.records.serializers import datacite_v31
 from b2share.modules.records.minters import make_record_url
+from b2share.modules.communities.api import Community
+from .utils import list_db_published_records
+
+
+@click.group()
+def b2records():
+    """B2SHARE Records commands."""
+
+
+@b2records.command()
+@with_appcontext
+@click.option('-u', '--update', is_flag=True, default=False)
+def check_dois(update):
+    """ Checks that all DOIs of records in the current instance are registered.
+    """
+    for record in list_db_published_records():
+        check_record_doi(record, update)
 
 
 def check_record_doi(record, update=False):

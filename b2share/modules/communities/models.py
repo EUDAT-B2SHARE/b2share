@@ -33,6 +33,7 @@ from sqlalchemy_utils.types import UUIDType
 from sqlalchemy import event
 from invenio_accounts.models import Role
 from invenio_access.models import ActionRoles
+from invenio_oaiserver.models import OAISet
 
 
 class Community(db.Model, Timestamp):
@@ -147,6 +148,9 @@ def receive_before_insert(mapper, connection, target):
         db.session.add(ActionRoles.allow(need, role=member_role))
     for need in chain (member_needs, admin_needs):
         db.session.add(ActionRoles.allow(need, role=admin_role))
+
+    oaiset = OAISet(spec=str(target.id), name=target.name, description=target.description)
+    db.session.add(oaiset)
 
 
 __all__ = (
