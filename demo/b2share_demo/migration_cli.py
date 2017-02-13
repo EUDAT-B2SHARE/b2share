@@ -44,6 +44,7 @@ from .migration import (download_v1_data, process_v1_record, main_diff,
                         make_v2_index, records_endpoint, directly_list_v2_record_ids)
 
 
+
 @click.group()
 def migrate():
     """Migration commands. WARNING csc only."""
@@ -186,9 +187,13 @@ def is_same_url(url1, url2):
 
 
 @migrate.command()
+@click.argument('v1_api_url')
+@click.argument('v1_access_token')
+@click.argument('v2_api_url')
+@click.argument('v2_access_token')
 @with_appcontext
-def diff_sites():
-    main_diff()
+def diff_sites(v1_api_url, v1_access_token, v2_api_url, v2_access_token):
+    main_diff(v1_api_url, v1_access_token, v2_api_url, v2_access_token)
 
 
 @migrate.command()
