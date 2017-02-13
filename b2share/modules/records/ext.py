@@ -34,6 +34,7 @@ from .triggers import register_triggers
 from .errors import register_error_handlers
 from .views import create_blueprint
 from .indexer import indexer_receiver
+from .cli import b2records
 
 
 class B2ShareRecords(object):
@@ -47,6 +48,7 @@ class B2ShareRecords(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
+        app.cli.add_command(b2records)
         app.extensions['b2share-records'] = self
         register_triggers(app)
         register_error_handlers(app)
