@@ -62,9 +62,12 @@ class RecordSchemaDublinCoreV1(Schema):
 
     def get_identifiers(self, obj):
         """Get identifiers."""
-        items = [record_url(p['value'])
+        items = [p['value']
                  for p in obj['metadata'].get('_pid', {})
-                 if p['type'] == 'b2rec']
+                 if p['type'] in {'ePIC_PID', 'DOI'}]
+        items.extend([record_url(p['value'])
+                      for p in obj['metadata'].get('_pid', {})
+                      if p['type'] == 'b2rec'])
         oai = obj['metadata'].get('_oai', {}).get('id')
         if oai:
             items.append(oai)
