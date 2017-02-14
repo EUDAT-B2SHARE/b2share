@@ -48,3 +48,10 @@ class InvalidPublicationStateError(RESTException):
 
     code = 400
     """HTTP Status code."""
+
+
+class NotACommunityRoleError(RESTException):
+    """Exception raised a role does not belong to a community."""
+
+    code = 400
+    description = 'This role doesn\'t belong to any community.'

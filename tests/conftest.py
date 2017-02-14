@@ -52,7 +52,9 @@ from sqlalchemy_utils.functions import create_database, drop_database
 from invenio_access.models import ActionRoles
 from invenio_access.permissions import superuser_access
 from b2share.modules.communities.models import Community
+from b2share.modules.communities.api import Community as CommunityAPI
 from sqlalchemy.exc import ProgrammingError
+from invenio_accounts.models import Role
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -153,6 +155,18 @@ def test_users(app):
 
 
 @pytest.fixture(scope='function')
+def custom_role(app):
+    with app.app_context():
+        role = Role(
+            name='some_custom_role',
+            description='Some custom role.'
+        )
+        db.session.add(role)
+        db.session.commit()
+        return role.id
+
+
+@pytest.fixture(scope='function')
 def login_user(app):
     """Login a user."""
 
@@ -183,6 +197,25 @@ def test_communities(app, tmp_location):
             'data'), verbose=0)
         db.session.commit()
         return {com.name: com.id for com in Community.query.all()}
+
+
+@pytest.fixture(scope='function')
+def test_community(app, test_communities):
+    """Initialize member and admin of a community."""
+    CommunityRef = namedtuple('CommunityRef',[
+        'name', 'id', 'admin_role_id', 'member_role_id', 'admin', 'member'
+    ])
+    with app.app_context():
+        community_name = 'MyTestCommunity1'
+        community = CommunityAPI.get(name=community_name)
+        admin_role_id = community.admin_role.id
+        member_role_id = community.member_role.id
+        com_admin = create_user('com_admin', roles=[community.admin_role])
+        com_member = create_user('com_member', roles=[community.member_role])
+        db.session.commit()
+        return CommunityRef(community_name, community.id,
+                            admin_role_id, member_role_id,
+                            com_admin, com_member)
 
 
 @pytest.fixture(scope='function')

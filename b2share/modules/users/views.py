@@ -37,7 +37,7 @@ from .serializers import (user_to_json_serializer,
 blueprint = Blueprint(
     'b2share_users',
     __name__,
-    url_prefix='/users'
+    url_prefix='/user'
 )
 
 
@@ -132,6 +132,6 @@ class UserToken(ContentNegotiatedMethodView):
         return jsonify({}) # ok
 
 
-blueprint.add_url_rule('/current', view_func=CurrentUser.as_view('current_user'))
-blueprint.add_url_rule('/current/tokens', view_func=UserTokenList.as_view('user_token_list'))
-blueprint.add_url_rule('/current/tokens/<token_id>', view_func=UserToken.as_view('user_token_item'))
+blueprint.add_url_rule('/', view_func=CurrentUser.as_view('current_user'))
+blueprint.add_url_rule('/tokens', view_func=UserTokenList.as_view('user_token_list'))
+blueprint.add_url_rule('/tokens/<token_id>', view_func=UserToken.as_view('user_token_item'))

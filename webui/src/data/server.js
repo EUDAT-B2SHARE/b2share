@@ -11,9 +11,8 @@ export const loginURL = `${urlRoot}/api/oauth/login/b2access`;
 const apiUrls = {
     root()                           { return `${urlRoot}/api/` },
 
-    userLogin()                       { return `${urlRoot}/api/users/login/` },
-    user()                            { return `${urlRoot}/api/users/current` },
-    userTokens()                      { return `${urlRoot}/api/users/current/tokens` },
+    user()                            { return `${urlRoot}/api/user` },
+    userTokens()                      { return `${urlRoot}/api/user/tokens` },
 
     records()                         { return `${urlRoot}/api/records/` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },

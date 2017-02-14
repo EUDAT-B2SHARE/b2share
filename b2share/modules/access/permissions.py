@@ -23,8 +23,12 @@
 
 """B2Share generic permissions."""
 
+import json
+
 from flask_principal import Permission, Need
-from invenio_access.permissions import DynamicPermission
+from invenio_access.permissions import (
+    DynamicPermission, ParameterizedActionNeed,
+)
 
 
 AllowAllPermission = type('Allow', (), {
@@ -41,9 +45,28 @@ DenyAllPermission = type('Deny', (), {
 """Permission that always deny an access."""
 
 
+def admin_only(*args, **kwargs):
+    """Return permission that allows access to super-admin only.
+
+    :returns: a permission allowing only super-admin.
+    """
+    return StrictDynamicPermission()
+"""Permission allowing only access to super administrator."""
+
+
 AuthenticatedNeed = Need('authenticated', True)
 """Need provided by any authenticated user."""
 
+
+def authenticated_only(*args, **kwargs):
+    """Return a permission allowing access to admin and authenticated users.
+
+    :returns: a permission allowing only super-admin.
+    """
+    return StrictDynamicPermission(AuthenticatedNeed)
+"""Permission allowing only access to super administrator
+   and authenticated users.
+"""
 
 class StrictDynamicPermission(DynamicPermission):
     """Stricter DynamicPermission.
@@ -142,3 +165,21 @@ class OrPermissions(PermissionSet):
             if permission.allows(identity):
                 return True
         return len(self.permissions) == 0 and self.allow_if_no_permissions
+
+
+def generic_need_factory(name, **kwargs):
+    """Generic need factory using a JSON object as argument.
+
+    Args:
+        **kwargs: keywords which will be used in the JSON parameter.
+    """
+    if kwargs:
+        for key, value in enumerate(kwargs):
+            if value is None:
+                del kwargs[key]
+
+    if not kwargs:
+        argument = None
+    else:
+        argument = json.dumps(kwargs, separators=(',', ':'), sort_keys=True)
+    return ParameterizedActionNeed(name, argument)

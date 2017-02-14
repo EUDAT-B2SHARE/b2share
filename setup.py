@@ -41,6 +41,7 @@ install_requires = [
     'httplib2>=0.9.2',
     'invenio-access>=1.0.0a11,<1.1.0',
     'invenio-accounts>=1.0.0b1,<1.1.0',
+    'invenio-accounts-rest>=1.0.0a2,<1.1.0',
     'invenio-base>=1.0.0a14,<1.1.0',
     'invenio-celery>=1.0.0b1,<1.1.0',
     'invenio-config>=1.0.0b2,<1.1.0',

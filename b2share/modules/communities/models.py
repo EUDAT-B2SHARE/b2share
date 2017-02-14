@@ -99,7 +99,9 @@ def receive_before_insert(mapper, connection, target):
     from b2share.modules.records.permissions import (
         update_record_metadata_need_factory,
     )
-
+    from b2share.modules.users.permissions import (
+        assign_role_need_factory, search_accounts_need,
+    )
     admin_role = Role(
         name=_community_admin_role_name(target),
         description='Admin role of the community "{}"'.format(target.name)
@@ -143,6 +145,10 @@ def receive_before_insert(mapper, connection, target):
         update_record_metadata_need_factory(
             community=str(target.id),
         ),
+        # allow to assign any role owned by this community
+        assign_role_need_factory(community=target.id),
+        # allow to list users' accounts
+        search_accounts_need,
     ]
     for need in member_needs:
         db.session.add(ActionRoles.allow(need, role=member_role))

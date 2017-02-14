@@ -71,6 +71,7 @@ idna==2.1                 # via cryptography
 infinity==1.4             # via intervals
 intervals==0.8.0          # via wtforms-components
 invenio-access==1.0.0a11
+invenio-accounts-rest==1.0.0a2
 invenio-accounts==1.0.0b1
 invenio-assets==1.0.0b4   # via invenio-deposit
 invenio-base==1.0.0a14
