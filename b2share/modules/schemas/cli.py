@@ -333,5 +333,6 @@ def set_schema(community, json_file):
     comm_schema_json['properties'][str(block_schema.id)]['$ref'] = \
         block_schema_version_url
     new_cs = community_schema.create_version(comm.id, comm_schema_json)
+    db.session.commit()
     click.secho(new_cs.community_schema)
     click.secho("Succesfully processed new metadata schema")
