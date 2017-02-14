@@ -332,15 +332,20 @@ class ServerCache {
             new Getter(apiUrls.record(recordID), null,
                 (data) => {
                     if (data.files) { data.files = data.files.map(this.fixFile); }
-                    return this.store.setIn(['recordCache', recordID], fromJS(data));
+                    this.store.setIn(['recordCache', recordID], fromJS(data));
                 },
                 (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
 
         this.getters.draft = new Pool(draftID =>
             new Getter(apiUrls.draft(draftID), null,
                 (data) => {
-                    if (data.files) { data.files = data.files.map(this.fixFile); }
-                    return this.store.setIn(['draftCache', draftID], fromJS(data));
+                    let files = this.store.getIn(['draftCache', draftID, 'files']);
+                    if (data.files) {
+                        files = fromJS(data.files.map(this.fixFile));
+                    }
+                    this.store.setIn(['draftCache', draftID], fromJS(data));
+                    this.store.setIn(['draftCache', draftID, 'files'], files);
+                    this.getters.fileBucket.get(draftID).fetch();
                 },
                 (xhr) => this.store.setIn(['draftCache', draftID], new Error(xhr)) ));
 

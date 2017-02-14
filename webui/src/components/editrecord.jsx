@@ -30,12 +30,13 @@ export const EditRecordRoute = React.createClass({
 
     getRecordOrDraft() {
         const { id } = this.props.params;
-        let record = serverCache.getRecord(id);
+        if (this.isDraft) {
+            return serverCache.getDraft(id);
+        }
+        const record = serverCache.getRecord(id);
         if (record instanceof Error && record.code == 404) {
-            const draft = serverCache.getDraft(id);
-            serverCache.getDraftFiles(id);
             this.isDraft = true;
-            return draft;
+            return serverCache.getDraft(id);
         }
         return record;
     },
@@ -312,7 +313,7 @@ const EditRecord = React.createClass({
                 const v = this.getValue(path);
             }
             field = arrField.map((f, i) =>
-                <div className="container-fluid">
+                <div className="container-fluid" key={id}>
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
                         <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
