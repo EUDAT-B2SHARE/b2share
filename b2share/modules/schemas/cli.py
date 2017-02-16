@@ -37,10 +37,12 @@ from flask_cli import with_appcontext
 
 from invenio_db import db
 
+from .errors import CommunitySchemaDoesNotExistError
 from .errors import RootSchemaAlreadyExistsError, BlockSchemaDoesNotExistError
 from .helpers import load_root_schemas, resolve_schemas_ref
 from .validate import validate_metadata_schema
 from .api import BlockSchema, CommunitySchema
+from .serializers import block_schema_version_self_link
 
 from b2share.modules.communities.api import Community, CommunityDoesNotExistError
 from b2share.modules.communities.cli import communities
@@ -294,10 +296,6 @@ def set_schema(community, json_file):
     if not comm:
         raise click.BadParameter("There is no community by this name or ID: %s" 
             % community)
-    community_schema = CommunitySchema.get_community_schema(comm.id)
-    if not community_schema:
-        raise click.ClickException("""Community %s does not have a community 
-            schema""" % comm.name)
     if not os.path.isfile(json_file):
         raise click.ClickException("%s does not exist on the filesystem" % 
         json_file)
@@ -307,16 +305,26 @@ def set_schema(community, json_file):
         schema_dict = json.load(f)
     except json.decoder.JSONDecodeError:
         raise click.ClickException("%s is not valid JSON" % json_file)
+    f.close()
     try:
         validate_metadata_schema(schema_dict)
     except:
         raise click.ClickException("""%s is not a valid metadata schema for 
         EUDAT community metadata format""" % json_file)
     #create new block version schema
+    try:
+        community_schema = CommunitySchema.get_community_schema(comm.id)
+        _update_community_schema(comm, community_schema, schema_dict)
+    except CommunitySchemaDoesNotExistError:
+        _create_community_schema(comm, schema_dict)
+    db.session.commit()
+    click.secho("Succesfully processed new metadata schema")
+
+def _update_community_schema(community, community_schema, schema_dict):
     comm_schema_json = json.loads(community_schema.community_schema)
     if not('properties' in comm_schema_json.keys()):
         raise click.ClickException("""Invalid community schema 
-            for community %s""" % comm.name)
+            for community %s""" % community.name)
     if not(len(comm_schema_json['properties'])==1):
         raise click.ClickException("""Multiple block schemas not supported.""")
     block_schema_id = comm_schema_json['properties'].popitem()[0]
@@ -332,7 +340,20 @@ def set_schema(community, json_file):
     comm_schema_json['properties'][str(block_schema.id)] = {}
     comm_schema_json['properties'][str(block_schema.id)]['$ref'] = \
         block_schema_version_url
-    new_cs = community_schema.create_version(comm.id, comm_schema_json)
-    db.session.commit()
-    click.secho(new_cs.community_schema)
-    click.secho("Succesfully processed new metadata schema")
+    new_cs = community_schema.create_version(community.id, comm_schema_json)
+
+def _create_community_schema(community, schema_dict):
+    community_schema = {'$schema':'http://json-schema.org/draft-04/schema#',
+            'properties':[""]}
+    block_schema = BlockSchema.create_block_schema(community.id, community.name)
+    bs_version = block_schema.create_version(schema_dict)
+    schema_link = block_schema_version_self_link(bs_version)
+    community_schema["properties"] = {}
+    community_schema["properties"][str(block_schema.id)] = {}
+    community_schema["properties"][str(block_schema.id)]["$ref"] = schema_link
+    community_schema["type"] = "object"
+    community_schema["additionalProperties"] = False
+    community_schema["required"] = [str(block_schema.id)]
+    click.secho(json.dumps(community_schema))
+    CommunitySchema.create_version(community.id, community_schema)
+    
