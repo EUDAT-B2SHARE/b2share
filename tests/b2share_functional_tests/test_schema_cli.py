@@ -18,14 +18,13 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Test B2Share demonstration module."""
-
-import json
+import test
 import pytest
 from click.testing import CliRunner
 from flask_cli import ScriptInfo
 
 from b2share.modules.schemas.cli import schemas as schemas_cmd
-from tests.b2share_unit_tests.schemas.data import block_schemas_json_schemas
+from data.testschema import test_schema
 
 @pytest.mark.parametrize('app', [({
     'config': {'PREFERRED_URL_SCHEME': 'https'}
@@ -39,14 +38,13 @@ def test_set_schema_cmd(app, test_communities):
     with app.app_context():
         runner = CliRunner()
         script_info = ScriptInfo(create_app=lambda info: app)
-        pytest.set_trace()
+        comm_name = test_communities.popitem()[0]
+        print(test_schema)
         # Run 'set schema' command
         with runner.isolated_filesystem():
             f = open("schema.json","w")
-            schema = block_schemas_json_schemas[0][0]
-            f.write(json.dumps(schema))
+            f.write(json.dumps(json.loads(test_schema)))
             f.close()
-            #result = runner.invoke(schemas_cmd, ['set_schema','Aalto','schema.json'], obj=script_info)
-            result = runner.invoke(schemas_cmd, ['block_schemas_list'], obj=script_info)
+            result = runner.invoke(schemas_cmd, ['set_schema',comm_name,'schema.json'], obj=script_info)
             print(result)
             assert result.exit_code == 0
