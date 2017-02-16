@@ -565,8 +565,9 @@ class CommunitySchema(object):
                     if root_schema_version is None:
                         # there is no schema yet, the community is new.
                         # Use the last RootSchema.
-                        root_schema_version = RootSchema.query.order_by(
-                            RootSchema.released.desc()).limit(1).one().id
+                        from .models import RootSchemaVersion
+                        root_schema_version = RootSchemaVersion.query.order_by(
+                            RootSchemaVersion.version).limit(1).one().version
                     new_version = 0
 
                 model = CommunitySchemaVersion(
