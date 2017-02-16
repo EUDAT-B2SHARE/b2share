@@ -73,6 +73,25 @@ id between colons).
 
     $ b2share roles add <email_address_of_user> com:COMMUNITY_ID:admin
 
+CLI for community mgt
+---------------------
+1. Create a community 
+.. code-block:: console
+    $ b2share communities create NAME DESCRIPTION FILE
+
+File can be some webformat logo.
+
+2. Create a schema (look in demo/b2share_demo/data/communities for inspiration)
+   $ b2share communities set_schema COMMUNITY SCHEMAFILE
+   
+Note: you can also look in tests/b2share_functional_tests/data/testschema.py
+Note: you can also do
+.. code-block:: console
+  $ b2share schemas block_schema list    #to obtain ID
+  $ b2share schemas block_schema_version_generate_json BLOCK_SCHEMA_ID 
+
+The last command generates a schema that you can adapt according to the rules of json_schema.
+
 
 Fine-grained access controls
 ----------------------------
