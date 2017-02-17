@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 import os
 from datetime import timedelta
 
+from b2share.modules.access.permissions import admin_only, authenticated_only
 from celery.schedules import crontab
 from flask import request
 from invenio_records_rest.utils import deny_all, allow_all
@@ -42,7 +43,9 @@ from b2share.modules.deposit.permissions import (
 )
 from b2share.modules.deposit.loaders import deposit_patch_input_loader
 from b2share.modules.records.loaders import record_patch_input_loader
-
+from b2share.modules.users.loaders import (
+    account_json_loader, account_json_patch_loader,
+)
 
 
 SUPPORT_EMAIL = None # must be setup in the local instances
@@ -186,6 +189,39 @@ OAUTHCLIENT_REMOTE_APPS = dict(
 # Let Invenio Accounts register Flask Security
 ACCOUNTS_REGISTER_BLUEPRINT = True
 
+
+ACCOUNTS_REST_ASSIGN_ROLE_PERMISSION_FACTORY = \
+    'b2share.modules.users.permissions:RoleAssignPermission'
+ACCOUNTS_REST_UNASSIGN_ROLE_PERMISSION_FACTORY = \
+    'b2share.modules.users.permissions:RoleAssignPermission'
+ACCOUNTS_REST_READ_ROLE_PERMISSION_FACTORY = authenticated_only
+ACCOUNTS_REST_READ_ROLES_LIST_PERMISSION_FACTORY = authenticated_only
+
+ACCOUNTS_REST_UPDATE_ROLE_PERMISSION_FACTORY = admin_only
+ACCOUNTS_REST_DELETE_ROLE_PERMISSION_FACTORY = admin_only
+ACCOUNTS_REST_CREATE_ROLE_PERMISSION_FACTORY = admin_only
+
+# permission to list/search users
+ACCOUNTS_REST_READ_USERS_LIST_PERMISSION_FACTORY = \
+    'b2share.modules.users.permissions:AccountSearchPermission'
+
+# permission to read user properties
+ACCOUNTS_REST_READ_USER_PROPERTIES_PERMISSION_FACTORY = \
+    'b2share.modules.users.permissions:AccountReadPermission'
+
+# permission to update user properties
+ACCOUNTS_REST_UPDATE_USER_PROPERTIES_PERMISSION_FACTORY = \
+    'b2share.modules.users.permissions:AccountUpdatePermission'
+
+# permission to list a user's roles
+ACCOUNTS_REST_READ_USER_ROLES_LIST_PERMISSION_FACTORY = authenticated_only
+
+ACCOUNTS_REST_ACCOUNT_LOADERS = dict(
+    PATCH={
+        'application/json': account_json_loader,
+        'application/json-patch+json': account_json_patch_loader,
+    }
+)
 
 # OAI-PMH
 OAISERVER_RECORD_INDEX = 'records'

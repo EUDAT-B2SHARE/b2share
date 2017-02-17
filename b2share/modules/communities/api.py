@@ -27,6 +27,8 @@
 from __future__ import absolute_import
 
 import sqlalchemy
+import uuid
+
 from invenio_db import db
 from jsonpatch import apply_patch
 from sqlalchemy.orm.exc import NoResultFound
@@ -298,3 +300,47 @@ class Community(object):
         """Role given to this community's members."""
         return Role.query.filter(
             Role.name == _community_member_role_name(self)).one()
+
+
+def is_community_role(role):
+    """Test if a given role belongs to a community.
+
+    Returns:
+        (bool) True if the role belongs to a community
+    """
+    return len(role.name) > 4 and role.name[:4] == 'com:'
+
+
+def is_community_admin_role(role):
+    """Test if a given role is a community admin role.
+
+    Returns:
+        (bool) True if the role is a community admin role.
+    """
+    name_split = role.name.split(':')
+    return is_community_role(role) and len(name_split) == 3 and \
+        name_split[2] == 'admin'
+
+
+def is_community_member_role(role):
+    """Test if a given role is a community member role.
+
+    Returns:
+        (bool) True if the role is a community member role.
+    """
+    name_split = role.name.split(':')
+    return is_community_role(role) and len(name_split) == 3 and \
+        name_split[2] == 'member'
+
+
+def get_role_community_id(role):
+    """Get role's community id.
+
+    Returns:
+        uuid: community's id.
+    """
+    name_split = role.name.split(':')
+    if is_community_role(role) and len(name_split) == 3:
+        return uuid.UUID(name_split[1])
+    else:
+        raise NotACommunityRoleError()

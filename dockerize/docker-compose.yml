@@ -11,7 +11,7 @@ services:
     #     volumes:
     #         - /data/db:/var/lib/mysql
     elasticsearch:
-        image: elasticsearch:2.2
+        build: elasticsearch
         ports:
             - "9200:9200"
             - "9300:9300"

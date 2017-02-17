@@ -51,6 +51,8 @@ before_install:
   # Install elasticsearch
   - mkdir /tmp/elasticsearch
   - wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  # install the mapper-attachments plugin
+  - yes | /tmp/elasticsearch/bin/plugin install --verbose mapper-attachments
   # Start elasticsearch
   - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp
   - "travis_retry pip install --upgrade pip setuptools py"
