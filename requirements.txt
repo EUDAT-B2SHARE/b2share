@@ -45,7 +45,7 @@ dojson==1.2.1
 easywebdav==1.2.0
 elasticsearch-dsl==2.1.0
 elasticsearch==2.4.0
-Flask-Alembic==2.0.1      # via invenio-db
+flask-alembic==2.0.1      # via invenio-db
 flask-assets==0.12        # via invenio-assets
 flask-babelex==0.9.3      # via invenio-accounts, invenio-deposit, invenio-marc21, invenio-oaiserver, invenio-oauth2server, invenio-oauthclient, invenio-pidstore, invenio-records-rest, invenio-records-ui, invenio-search-ui
 flask-breadcrumbs==0.4.0  # via invenio-oauth2server, invenio-oauthclient
@@ -71,14 +71,14 @@ idna==2.1                 # via cryptography
 infinity==1.4             # via intervals
 intervals==0.8.0          # via wtforms-components
 invenio-access==1.0.0a11
-invenio-accounts-rest==1.0.0a2
+invenio-accounts-rest==1.0.0a3
 invenio-accounts==1.0.0b1
-invenio-assets==1.0.0b4   # via invenio-deposit
+invenio-assets==1.0.0b6   # via invenio-deposit
 invenio-base==1.0.0a14
 invenio-celery==1.0.0b1
 invenio-config==1.0.0b2
 invenio-db[versioning]==1.0.0b3
-invenio-deposit==1.0.0a7
+invenio-deposit==1.0.0a8
 invenio-files-rest==1.0.0a14
 invenio-indexer==1.0.0a9
 invenio-jsonschemas==1.0.0a3  # via invenio-deposit, invenio-marc21
@@ -108,7 +108,7 @@ jsonschema==2.5.1         # via datacite, invenio-records, jsonresolver
 kombu==3.0.37             # via celery
 limits==1.2.0             # via flask-limiter
 lxml==3.6.4               # via datacite, dcxml, dojson, invenio-oaiserver
-Mako==1.0.6               # via alembic
+mako==1.0.6               # via alembic
 markupsafe==0.23          # via jinja2, mako
 marshmallow==2.10.3       # via invenio-oaiserver, invenio-records-rest, webargs
 msgpack-python==0.4.8     # via invenio-celery
