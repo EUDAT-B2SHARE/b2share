@@ -58,11 +58,12 @@ def create(verbose, name, description, logo):
     if len(description) > 1024:
         raise click.BadParameter("""DESCRIPTION parameter is longer than the
         1024 character maximum""")
-    if not isfile(os.path.join(os.environ.get('B2SHARE_UI_PATH'),
+    if not isfile(os.path.join(os.environ.get('B2SHARE_UI_PATH', 'webui/app'),
                                'img/communities', logo)):
         raise click.BadParameter(""""LOGO should be the filename of an
          image file existing in the B2SHARE_UI_PATH/img/communities/ directory.
          """)
+
     logo = os.path.join('/img/communities', logo)
     try:
         Community.get(name=name)
@@ -126,3 +127,11 @@ def edit(verbose, id, name, description, logo, clear_fields):
                (updated_community.id, updated_community.name,
                 updated_community.description, updated_community.logo))
 
+
+@communities.command()
+@with_appcontext
+@click.argument('community')
+@click.argument('json_file')
+def set_schema(community, json_file):
+    from b2share.modules.schemas.cli import update_or_set_community_schema
+    update_or_set_community_schema(community, json_file)

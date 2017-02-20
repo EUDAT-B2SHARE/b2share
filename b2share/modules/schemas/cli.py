@@ -26,31 +26,23 @@
 
 from __future__ import absolute_import
 
-import click
 import json
-from jsonschema import validate
 import os
 from uuid import UUID
-
-from flask import url_for
+import click
 from flask_cli import with_appcontext
 
 from invenio_db import db
 
 from .errors import CommunitySchemaDoesNotExistError
 from .errors import RootSchemaAlreadyExistsError, BlockSchemaDoesNotExistError
-from .helpers import load_root_schemas, resolve_schemas_ref
+from .helpers import load_root_schemas
 from .validate import validate_metadata_schema
 from .api import BlockSchema, CommunitySchema
-from .serializers import block_schema_version_self_link
+from .serializers import block_schema_version_json_schema_link
 
-from b2share.modules.communities.api import Community, CommunityDoesNotExistError
-from b2share.modules.communities.cli import communities
+from b2share.modules.communities.api import Community
 from b2share.modules.communities.helpers import get_community_by_name_or_id
-
-from b2share.modules.communities.api import Community, CommunityDoesNotExistError
-from b2share.modules.communities.cli import communities
-
 
 
 @click.group()
@@ -68,38 +60,40 @@ def init(verbose):
     except RootSchemaAlreadyExistsError as e:
         raise click.ClickException(str(e))
 
-            
+
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
+@click.option('-v', '--verbose', is_flag=True, default=False)
 @click.argument('community')
 @click.argument('name')
 def block_schema_add(verbose, community, name):
-    """Adds a block schema to the database. Community is the ID or NAME of the 
-    maintaining community for this block schema. Name is the name as displayed 
+    """Adds a block schema to the database. Community is the ID or NAME of the
+    maintaining community for this block schema. Name is the name as displayed
     in block_schema_list command."""
     if verbose:
-        click.secho("""Creating block schema with name %s to be maintained by 
+        click.secho("""Creating block schema with name %s to be maintained by
         community %s""" % (name, community))
     comm = get_community_by_name_or_id(community)
     if not comm:
-        raise click.BadParameter("There is no community by this name or ID: %s" 
-        % community)
-    if len(name)>255:
-        raise click.BadParameter("""NAME parameter is longer than the 255 
+        raise click.BadParameter("There is no community by this name or ID: %s"
+                                 % community)
+    if len(name) > 255:
+        raise click.BadParameter("""NAME parameter is longer than the 255
         character maximum""")
     block_schema = BlockSchema.create_block_schema(comm.id, name)
     db.session.commit()
     if verbose:
-        click.secho("Created block schema with name %s and id %s" % 
-            (name, block_schema.id))
+        click.secho("Created block schema with name %s and id %s" %
+                    (name, block_schema.id))
+
 
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
-@click.option('-c','--community', help='show only block schemas filtered by maintaining community id or name')
+@click.option('-v', '--verbose', is_flag=True, default=False)
+@click.option('-c', '--community',
+              help='show only block schemas filtered by maintaining community id or name')
 def block_schema_list(verbose, community):
-    """Lists all block schemas for this b2share instance (filtered for a 
+    """Lists all block schemas for this b2share instance (filtered for a
     community)."""
     comm = None
     if community:
@@ -113,41 +107,43 @@ def block_schema_list(verbose, community):
         block_schemas = \
         BlockSchema.get_all_block_schemas(community_id=community_id)
     except BlockSchemaDoesNotExistError:
-         raise click.ClickException("""No block schemas found, community 
-             parameter was: %s""" % community)
+        raise click.ClickException("""No block schemas found, community
+            parameter was: %s""" % community)
     click.secho("""BLOCK SCHEMA
          ID\t\t\t\tNAME\t\tMAINTAINER\tDEPRECATED\t#VERSIONS""")
     for bs in block_schemas:
         bs_comm = Community.get(id=bs.community)
-        click.secho("%s\t%s\t%s\t%s\t\t%d" % 
-            (bs.id,bs.name[0:15].ljust(15), 
-                bs_comm.name[0:15].ljust(15), 
-                bs.deprecated, 
-                len(bs.versions)  
-            ))
-        
+        click.secho("%s\t%s\t%s\t%s\t\t%d" % (
+            bs.id,
+            bs.name[0:15].ljust(15),
+            bs_comm.name[0:15].ljust(15),
+            bs.deprecated,
+            len(bs.versions)
+        ))
+
+
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
-@click.option('-n','--name',help='set the name of the community')
-@click.option('-c','--community',
-    help='set the maintaining community by name or id')
-@click.option('-d','--deprecated',
-    help='(un)set deprecated bit, 1 is deprecated, 0 is not deprecated')
+@click.option('-v', '--verbose', is_flag=True, default=False)
+@click.option('-n', '--name', help='set the name of the community')
+@click.option('-c', '--community',
+              help='set the maintaining community by name or id')
+@click.option('-d', '--deprecated',
+              help='(un)set deprecated bit, 1 is deprecated, 0 is not deprecated')
 @click.argument('block_schema_id')
 def block_schema_edit(verbose, name, community, deprecated, block_schema_id):
     try:
-        val = UUID(block_schema_id, version=4)
+        UUID(block_schema_id, version=4)
     except ValueError:
         raise click.BadParameter("""BLOCK_SCHEMA_ID is not a valid UUID
-         (hexadecimal numbers and dashes e.g. 
+         (hexadecimal numbers and dashes e.g.
          fa52bec3-a847-4602-8af5-b8d41a5215bc )""")
     try:
         block_schema = BlockSchema.get_block_schema(schema_id=block_schema_id)
     except BlockSchemaDoesNotExistError:
         raise click.BadParameter("No block_schema with id %s" % block_schema_id)
     if not(name or community or deprecated):
-        raise click.ClickException("""Noting to edit - at least one of name, 
+        raise click.ClickException("""Noting to edit - at least one of name,
         community or deprecated must be provided.""")
     data = {}
     if name:
@@ -157,90 +153,100 @@ def block_schema_edit(verbose, name, community, deprecated, block_schema_id):
         if comm:
             data['community'] = comm.id
         else:
-            click.secho("""Community not changed : no community exists with 
+            click.secho("""Community not changed : no community exists with
             name or id: %s""" % community)
     if deprecated:
-        if not type(deprecated)==bool:
+        if type(deprecated) != bool:
             raise click.BadParameter("""Deprecated should be True or False
              starting with a capital""")
         data['deprecated'] = deprecated
     block_schema.update(data)
     db.session.commit()
-        
+
+
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
+@click.option('-v', '--verbose', is_flag=True, default=False)
 @click.argument('block_schema_id')
 @click.argument('json_file')
 def block_schema_create_version(verbose, block_schema_id, json_file):
-    """Assign a json-schema file conforming to the EUDAT block-schema part of 
-    the root-schema that defines metadata format for this block schema. Upon 
-    success, this creates a new version, the old versions are maintained and 
+    """Assign a json-schema file conforming to the EUDAT block-schema part of
+    the root-schema that defines metadata format for this block schema. Upon
+    success, this creates a new version, the old versions are maintained and
     can be obtained by block_schema_list_versions subcommand."""
     try:
-        val = UUID(block_schema_id, version=4)
+        UUID(block_schema_id, version=4)
     except ValueError:
-        raise click.BadParameter("""BLOCK_SCHEMA_ID is not a valid UUID 
-        (hexadecimal numbers and dashes e.g. 
+        raise click.BadParameter("""BLOCK_SCHEMA_ID is not a valid UUID
+        (hexadecimal numbers and dashes e.g.
         fa52bec3-a847-4602-8af5-b8d41a5215bc )""")
+
     try:
         block_schema = BlockSchema.get_block_schema(schema_id=block_schema_id)
     except BlockSchemaDoesNotExistError:
         raise click.BadParameter("No block_schema with id %s" % block_schema_id)
+
     if not os.path.isfile(json_file):
-        raise click.ClickException("%s does not exist on the filesystem" % 
-        json_file)
-    f = open(json_file,'r')
+        raise click.ClickException("%s does not exist on the filesystem" %
+                                   json_file)
+
     schema_dict = {}
-    try:
-        schema_dict = json.load(f)
-    except json.decoder.JSONDecodeError:
-        raise click.ClickException("%s is not valid JSON" % json_file)
+    with open(json_file, 'r') as f:
+        try:
+            schema_dict = json.load(f)
+        except ValueError: # json decode error is subclass of ValueError
+            raise click.ClickException("%s is not valid JSON" % json_file)
+
     try:
         validate_metadata_schema(schema_dict)
-    except:
-        raise click.ClickException("""%s is not a valid metadata schema for 
-        EUDAT community metadata format""" % json_file)
+    except Exception as e:
+        print("schema validation error:", e)
+        raise click.ClickException("""%s is not a valid metadata schema for
+        a B2SHARE community""" % json_file)
+
     block_schema_version = block_schema.create_version(schema_dict)
     db.session.commit()
-    click.secho("Block schema version %d created for block schema %s" % 
-        (block_schema_version.version, block_schema.name))
+    click.secho("Block schema version %d created for block schema %s" %
+                (block_schema_version.version, block_schema.name))
+
 
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
+@click.option('-v', '--verbose', is_flag=True, default=False)
 @click.argument('block_schema_id')
 def block_schema_list_versions(verbose, block_schema_id):
-    """show the version number and release date of the versions of a block 
+    """show the version number and release date of the versions of a block
         schema."""
     try:
-        val = UUID(block_schema_id, version=4)
+        UUID(block_schema_id, version=4)
     except ValueError:
         raise click.BadParameter("""BLOCK_SCHEMA_ID is not a valid UUID
-         (hexadecimal numbers and dashes e.g. 
+         (hexadecimal numbers and dashes e.g.
          fa52bec3-a847-4602-8af5-b8d41a5215bc )""")
     try:
         block_schema = BlockSchema.get_block_schema(schema_id=block_schema_id)
     except BlockSchemaDoesNotExistError:
         raise click.BadParameter("No block_schema with id %s" % block_schema_id)
-    click.secho("BLOCK SCHEMA VERSIONS FOR community %s, block schema %s" % 
-        (Community.get(id=block_schema.community).name, block_schema.name))
+    click.secho("BLOCK SCHEMA VERSIONS FOR community %s, block schema %s" % (
+        Community.get(id=block_schema.community).name, block_schema.name))
     click.secho("Version no.\tRelease date")
     for bl_schema_version in block_schema.versions:
-        click.secho("%s\t%s" % (bl_schema_version.version, 
+        click.secho("%s\t%s" % (
+            bl_schema_version.version,
             bl_schema_version.released))
+
 
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
+@click.option('-v', '--verbose', is_flag=True, default=False)
 @click.argument('block_schema_id')
 @click.option('--version')
 def block_schema_version_generate_json(verbose, block_schema_id, version=None):
     """print json_schema of a particular block schema version."""
     try:
-        val = UUID(block_schema_id, version=4)
+        UUID(block_schema_id, version=4)
     except ValueError:
-        raise click.BadParameter("""BLOCK_SCHEMA_ID is not a valid UUID 
+        raise click.BadParameter("""BLOCK_SCHEMA_ID is not a valid UUID
         (hexadecimal numbers and dashes e.g.
         fa52bec3-a847-4602-8af5-b8d41a5215bc )""")
     try:
@@ -248,69 +254,80 @@ def block_schema_version_generate_json(verbose, block_schema_id, version=None):
     except BlockSchemaDoesNotExistError:
         raise click.BadParameter("No block_schema with id %s" % block_schema_id)
     result = ""
-    if version:
-        result = block_schema.versions[version].json_schema 
+    if version is None or version == 'last':
+        result = block_schema.versions[len(block_schema.versions)-1].json_schema
     else:
-        result = block_schema.versions[
-            len(block_schema.versions)-1].json_schema
+        result = block_schema.versions[version].json_schema
     result = json.loads(result)
     result = json.dumps(result, indent=4)
     click.secho(result)
 
+
 @schemas.command()
 @with_appcontext
-@click.option('-v','--verbose', is_flag=True, default=False)
+@click.option('-v', '--verbose', is_flag=True, default=False)
 @click.argument('community')
 @click.option('--version')
 def community_schema_list_block_schema_versions(verbose, community, version=None):
-    """Show the block schema versions in the community schema element of a 
+    """Show the block schema versions in the community schema element of a
         specific community"""
     comm = get_community_by_name_or_id(community)
     if not comm:
-        raise click.BadParameter("There is no community by this name or ID: %s" 
-            % community)
+        raise click.BadParameter("There is no community by this name or ID: %s"%
+                                 community)
     community_schema = CommunitySchema.get_community_schema(comm.id, version)
     if not community_schema:
-        raise click.ClickException("""Community %s does not have a community 
+        raise click.ClickException("""Community %s does not have a community
             schema""" % comm.name)
     community_schema_dict = json.loads(community_schema.community_schema)
     props = community_schema_dict['properties']
-    click.secho("""The following block schema versions are listed for community 
-        %s, community schema version %s""" % (comm.name, "latest %d" % 
-            community_schema.version if not version else version))
+    click.secho("""The following block schema versions are listed for community
+        %s, community schema version %s""" % (
+            comm.name,
+            "latest %d" % community_schema.version if not version else version))
     for key in props:
-        click.secho("Block schema: %s, version url: %s" % (key, 
-            props[key]['$ref']))
-    
-@communities.command()
-@with_appcontext
-@click.argument('community')
-@click.argument('json_file')
-def set_schema(community, json_file):
-    """Update the schema for a community.
-    community is the ID or NAME of the community that you want to set the 
-    schema-part that represents the community-specific metadata format for.
-    For an example of such format, execute 
-    b2share communities example_community_schema_part"""
+        click.secho("Block schema: %s, version url: %s" % (
+            key, props[key]['$ref']))
+
+
+
+# this function should be called from the communities' cli module
+def update_or_set_community_schema(community, json_file):
+    """Updates or sets the schema for a community.
+
+    The complete schema of a community contains a copy of the root metadata
+    schema and a set of community-specific metadata block schemas. Currently
+    we assume there's only one allowed metadata block schema for a community,
+    and this command creates it or makes a new version for it.
+
+    - community is the ID or NAME of the community to be updated.
+    - json_file is a file path to the json-schema file describing the
+    community-specific block schema.
+
+    See also `b2share schemas block_schema_version_generate_json`"""
+
     comm = get_community_by_name_or_id(community)
     if not comm:
-        raise click.BadParameter("There is no community by this name or ID: %s" 
-            % community)
+        raise click.BadParameter("There is no community by this name or ID: %s" %
+                                 community)
     if not os.path.isfile(json_file):
-        raise click.ClickException("%s does not exist on the filesystem" % 
-        json_file)
-    f = open(json_file,'r')
+        raise click.ClickException("%s does not exist on the filesystem" %
+                                   json_file)
+
     schema_dict = {}
-    try:
-        schema_dict = json.load(f)
-    except json.decoder.JSONDecodeError:
-        raise click.ClickException("%s is not valid JSON" % json_file)
-    f.close()
+    with open(json_file, 'r') as f:
+        try:
+            schema_dict = json.load(f)
+        except ValueError:
+            raise click.ClickException("%s is not valid JSON" % json_file)
+
     try:
         validate_metadata_schema(schema_dict)
-    except:
-        raise click.ClickException("""%s is not a valid metadata schema for 
-        EUDAT community metadata format""" % json_file)
+    except Exception as e:
+        print("schema validation error:", e)
+        raise click.ClickException("""%s is not a valid metadata schema for
+        a B2SHARE community""" % json_file)
+
     #create new block version schema
     try:
         community_schema = CommunitySchema.get_community_schema(comm.id)
@@ -318,42 +335,46 @@ def set_schema(community, json_file):
     except CommunitySchemaDoesNotExistError:
         _create_community_schema(comm, schema_dict)
     db.session.commit()
-    click.secho("Succesfully processed new metadata schema")
+    click.secho("Succesfully processed new metadata schema", fg='green')
+
 
 def _update_community_schema(community, community_schema, schema_dict):
     comm_schema_json = json.loads(community_schema.community_schema)
-    if not('properties' in comm_schema_json.keys()):
-        raise click.ClickException("""Invalid community schema 
+    if 'properties' not in comm_schema_json.keys():
+        raise click.ClickException("""Invalid community schema
             for community %s""" % community.name)
-    if not(len(comm_schema_json['properties'])==1):
+
+    if len(comm_schema_json['properties']) > 1:
         raise click.ClickException("""Multiple block schemas not supported.""")
+
     block_schema_id = comm_schema_json['properties'].popitem()[0]
-    block_schema = BlockSchema.get_block_schema(block_schema_id)
-    if block_schema is None:
-        raise ClickException("""CommunitySchema refers to block schema with id: %s . This schema does not exist""" % block_schema_id)
+    try:
+        block_schema = BlockSchema.get_block_schema(block_schema_id)
+    except BlockSchemaDoesNotExistError:
+        raise click.ClickException("""CommunitySchema refers to block schema with id: %s.
+            This schema does not exist""" % block_schema_id)
     new_block_schema_version = block_schema.create_version(schema_dict)
-    block_schema_version_url= url_for(
-        'b2share_schemas.block_schema_versions_item',
-        schema_id = block_schema.id,
-        schema_version_nb = new_block_schema_version.version )
-    block_schema_version_url = block_schema_version_url + '#/json_schema'
-    comm_schema_json['properties'][str(block_schema.id)] = {}
-    comm_schema_json['properties'][str(block_schema.id)]['$ref'] = \
-        block_schema_version_url
-    new_cs = community_schema.create_version(community.id, comm_schema_json)
+    block_schema_version_url = block_schema_version_json_schema_link(new_block_schema_version)
+    comm_schema_json['properties'][str(block_schema.id)] = {
+        '$ref': block_schema_version_url,
+    }
+    return CommunitySchema.create_version(community.id, comm_schema_json)
+
 
 def _create_community_schema(community, schema_dict):
-    community_schema = {'$schema':'http://json-schema.org/draft-04/schema#',
-            'properties':[""]}
     block_schema = BlockSchema.create_block_schema(community.id, community.name)
-    bs_version = block_schema.create_version(schema_dict)
-    schema_link = block_schema_version_self_link(bs_version)
-    community_schema["properties"] = {}
-    community_schema["properties"][str(block_schema.id)] = {}
-    community_schema["properties"][str(block_schema.id)]["$ref"] = schema_link
-    community_schema["type"] = "object"
-    community_schema["additionalProperties"] = False
-    community_schema["required"] = [str(block_schema.id)]
+    block_schema_version = block_schema.create_version(schema_dict)
+    block_schema_version_url = block_schema_version_json_schema_link(block_schema_version)
+    community_schema = {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'properties': {
+            str(block_schema.id): {
+                '$ref': block_schema_version_url,
+            }
+        },
+        'type': "object",
+        'additionalProperties': False,
+        'required': [str(block_schema.id)],
+    }
     click.secho(json.dumps(community_schema))
-    CommunitySchema.create_version(community.id, community_schema)
-    
+    return CommunitySchema.create_version(community.id, community_schema)
