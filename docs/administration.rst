@@ -52,6 +52,44 @@ address will not be found in the database.
     $ b2share access show -e <email_address_of_user>
 
 
+Communities
+-----------
+
+B2SHARE has special command-line interface (CLI) commands to create and edit
+communities.
+
+To **list all communities**, run:
+
+.. code-block:: console
+
+    $ b2share communities list
+
+To **create a community**, make sure that B2SHARE_UI_PATH is defined in your
+environment and points to the b2share ``.../webui/app`` folder, and
+then run:
+
+.. code-block:: console
+
+    $ b2share communities create <name> <description> <logo_file_name>
+
+The <logo_file_name> parameter must be the filename of an image file, already
+located in the ``$B2SHARE_UI_PATH/img/communities/`` directory.
+
+To **edit a community**, use the ``b2share communities edit`` command, with
+the necessary arguments. For more information run:
+
+.. code-block:: console
+
+    $ b2share communities edit --help
+
+After a community name or description is updated, please make sure to also run
+the following command, which synchronizes the list of communities with the
+OAI-PMH declared sets:
+
+.. code-block:: console
+
+    $ b2share oai update_sets
+
 Community Admin
 ---------------
 
