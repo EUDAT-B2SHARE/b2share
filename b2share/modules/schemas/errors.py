@@ -25,11 +25,18 @@
 
 from __future__ import absolute_import
 
+from doschema.errors import JSONSchemaCompatibilityError
+from invenio_rest.errors import FieldError, RESTException
 
-class B2ShareSchemasError(Exception):
+
+class B2ShareSchemasError(RESTException):
     """Base class for the B2Share Schemas module."""
-    pass
 
+    def __init__(self, description=None):
+        """Constructor"""
+        super(B2ShareSchemasError, self).__init__()
+        if description is not None:
+            self.description = description
 
 #
 # JSON SCHEMA ERRORS
@@ -37,8 +44,7 @@ class B2ShareSchemasError(Exception):
 
 class InvalidJSONSchemaError(B2ShareSchemasError):
     """Exception raised when a JSON Schema is considered as invalid."""
-    pass
-
+    code = 400
 
 #
 # ROOT SCHEMA ERRORS
@@ -46,17 +52,17 @@ class InvalidJSONSchemaError(B2ShareSchemasError):
 
 class RootSchemaDoesNotExistError(B2ShareSchemasError):
     """Exception raised when a requested root schema does not exist."""
-    pass
+    code = 404
 
 
 class RootSchemaAlreadyExistsError(B2ShareSchemasError):
     """A new root schema conflicts with an existing one."""
-    pass
+    code = 400
 
 
 class InvalidRootSchemaError(B2ShareSchemasError):
     """Exception raised when a root schema is invalid."""
-    pass
+    code = 400
 
 
 #
@@ -65,22 +71,22 @@ class InvalidRootSchemaError(B2ShareSchemasError):
 
 class InvalidBlockSchemaError(B2ShareSchemasError):
     """Exception raised when a block schema is invalid."""
-    pass
+    code = 400
 
 
 class BlockSchemaDoesNotExistError(B2ShareSchemasError):
     """Exception raised when a requested block schema does not exist."""
-    pass
+    code = 404
 
 
 class BlockSchemaIsDeprecated(B2ShareSchemasError):
     """Exception raised while trying to add a new version to a deprecated block schema."""  # noqa
-    pass
+    code = 400
 
 
 class BlockSchemaVersionIsReleased(B2ShareSchemasError):
     """Exception raised while trying to modify a released block schema."""
-    pass
+    code = 400
 
 
 #
@@ -93,6 +99,7 @@ class InvalidSchemaVersionError(B2ShareSchemasError):
     MESSAGE = """Version number is invalid. Provided version number should
                 follow the last existing version number, which currently
                 is {0}."""
+    code = 400
 
     def __init__(self, last_version):
         """Constructor."""
@@ -109,6 +116,7 @@ class SchemaVersionExistsError(B2ShareSchemasError):
     MESSAGE = """Version number already exists. Provided version number should
                 follow the last existing version number, which currently
                 is {0}."""
+    code = 400
 
     def __init__(self, last_version):
         """Constructor."""
@@ -125,9 +133,24 @@ class SchemaVersionExistsError(B2ShareSchemasError):
 
 class CommunitySchemaIsImmutable(B2ShareSchemasError):
     """Exception raised when a released Community schema is edited."""
-    pass
+    code = 400
 
 
 class CommunitySchemaDoesNotExistError(B2ShareSchemasError):
     """Exception raised when a requested Community schema does not exist."""
-    pass
+    code = 404
+
+
+#
+# Backward Incompatible JSON Schema.
+#
+
+class BackwardIncompatibleJSONSchemaError(B2ShareSchemasError):
+    """Exception raised when a JSON Schema is backward incompatible."""
+    code = 400
+
+
+def register_error_handlers(app):
+    @app.errorhandler(JSONSchemaCompatibilityError)
+    def handle_schema_compatibility_error(err):
+        return BackwardIncompatibleJSONSchemaError(str(err)).get_response()

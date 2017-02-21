@@ -24,6 +24,7 @@ from __future__ import absolute_import, print_function
 
 from .cli import schemas as schemas_cmd
 from .views import blueprint
+from .errors import register_error_handlers
 
 
 class B2ShareSchemas(object):
@@ -40,6 +41,7 @@ class B2ShareSchemas(object):
         app.register_blueprint(blueprint)
         app.cli.add_command(schemas_cmd)
         app.extensions['b2share-schemas'] = self
+        register_error_handlers(app)
 
     def init_config(self, app):
         """Initialize configuration."""
