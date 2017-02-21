@@ -1,6 +1,7 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { serverCache, Error, loginURL, notifications } from '../data/server';
+import { CommunityAdmin } from './community_admin.jsx'
 
 export const LoginOrRegister = React.createClass({
     mixins: [React.addons.PureRenderMixin],
@@ -70,7 +71,7 @@ export const UserRoute = React.createClass({
 
 
 export const UserProfile = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
+    mixins: [React.addons.LinkedStateMixin], 
 
     renderNoUser() {
         return (
@@ -86,16 +87,32 @@ export const UserProfile = React.createClass({
         );
     },
 
+    createLink(communitiesList, name){
+        return <Link to={`/communities/${communitiesList[name.replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]}/admin`}>(admin page)</Link>
+    },
+
+    listRoles(roles, communitiesList){
+        return roles.map(r => 
+            <li key={r.get('name')}>
+                {r.get('description')}  
+                {r.get('name').includes(':admin')? this.createLink(communitiesList, r.get('name')) : ""} 
+            </li>)
+    },
+
     render() {
         const user = this.props.user;
         if (!user || !user.get || !user.get('name')) {
             return this.renderNoUser();
         }
         const roles = user.get('roles');
+        const communitiesListTemp = serverCache.getCommunities();
+        var communitiesList = communitiesListTemp.reduce(function(map, community){
+            map[community.get('id').replace(new RegExp("-",'g'),"")] = community.get('name');
+            return map;
+        });
         return (
             <div>
                 <h1>User Profile</h1>
-
                 <div className="container-fluid">
                     <div className="row">
                         <p><span style={{fontWeight:'bold'}}>Name:</span> {user.get('name')}</p>
@@ -103,10 +120,7 @@ export const UserProfile = React.createClass({
                     </div>
                     <div className="row">
                         <h3>Roles</h3>
-                        {roles && roles.count() ?
-                            roles.map(r => <li key={r.get('name')}>{r.get('description')}</li>)
-                            : <p>You have no assigned roles</p>
-                        }
+                        {roles && roles.count() && typeof(communitiesList) !== "undefined" ? this.listRoles(roles, communitiesList) : <p>You have no assigned roles</p>}
                     </div>
                     <div className="row">
                         <h3>Own records</h3>
@@ -161,7 +175,6 @@ const TokenList = React.createClass({
     },
 
     renderToken(t) {
-        console.log(t);
         return <li className="list-group-item" key={t.id}>{t.name}</li>;
     },
 

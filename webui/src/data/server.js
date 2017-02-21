@@ -9,10 +9,14 @@ const urlRoot = ""; // window.location.origin;
 export const loginURL = `${urlRoot}/api/oauth/login/b2access`;
 
 const apiUrls = {
-    root()                           { return `${urlRoot}/api/` },
+    root()                            { return `${urlRoot}/api/` },
 
     user()                            { return `${urlRoot}/api/user` },
     userTokens()                      { return `${urlRoot}/api/user/tokens` },
+
+    users(queryString)                { return `${urlRoot}/api/users` + (queryString ? `?q=${queryString}` : ``) }, 
+    userListWithRole(id)              { return `${urlRoot}/api/roles/${id}/users` },
+    userWithRole(roleid, userid)      { return `${urlRoot}/api/roles/${roleid}/users/${userid}` },
 
     records()                         { return `${urlRoot}/api/records/` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },
@@ -23,7 +27,6 @@ const apiUrls = {
     accessrequests(id)                { return `${urlRoot}/api/records/${id}/accessrequests` },
 
     communities()                     { return `${urlRoot}/api/communities/` },
-    community(id)                     { return `${urlRoot}/api/communities/${id}` },
     communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
@@ -285,11 +288,21 @@ class ServerCache {
 
             languages: null,
             disciplines: null,
+
+            communityUsers: {}, // list of users belong to a specific community
         });
 
         this.store.setIn(['communities'], OrderedMap());
 
         this.getters = {};
+
+        this.getters.communityUsers = new Pool(roleid => new Getter(
+        	apiUrls.userListWithRole(roleid), null, 
+            (users) => {
+            	this.store.setIn(['communityUsers', roleid], fromJS(users.hits.hits));
+            }, 
+            null,
+        ));
 
         this.getters.latestRecords = new Getter(
             apiUrls.records(), {sort:"mostrecent"},
@@ -706,12 +719,69 @@ class ServerCache {
     }
 
     accessRequest(id, data, successFn, errorFn) {
-        // This function will be changed later when we start using Zenodo_accessrequests module
+        // TODO: This function will be changed later when we start using Zenodo_accessrequests module
         ajaxPost({
             url: apiUrls.accessrequests(id),
             params: data,
             successFn: successFn,
             errorFn: errorFn,
+        });
+    }
+
+
+    // List users with a specific role
+    getCommunityUsers(roleid){
+        this.getters.communityUsers.get(roleid).autofetch(); 
+        if(this.store.getIn(['communityUsers']).size > 0){
+            return this.store.getIn(['communityUsers', roleid]);
+        }
+    	return {};
+    }
+
+    // Assign a role to the user by email 
+    registerUserRole(email, roleid, successFn, errorFn){
+        ajaxGet({
+            url: apiUrls.users(email),
+            successFn: (user) => { 
+                    if(user.hits.hits[0]){
+                        ajaxPut({
+                            url: apiUrls.userWithRole( roleid , fromJS(user.hits.hits[0].id) ),
+                            successFn: ()=> {
+                                        this.getters.communityUsers.get(roleid).autofetch();
+                                        ajaxGet({
+                                            url: apiUrls.user(),
+                                            successFn: data => this.store.setIn(['user'], fromJS(data)),
+                                        });
+                                        notifications.success("The new role was assigned to the user");
+                            },
+                            errorFn: () => {
+                                    notifications.danger("User not found");
+                                },
+                        });
+                    }
+                    else{
+                        notifications.danger("User not found");
+                    }
+                },
+            errorFn: errorFn,
+        });
+    }
+
+    // Unassign a role from a user
+    deleteRoleOfUser(roleid, userid){
+        ajaxDelete({        
+            url: apiUrls.userWithRole(roleid, userid),
+            successFn: () => {
+                this.getters.communityUsers.get(roleid).autofetch();
+                ajaxGet({
+                    url: apiUrls.user(),
+                    successFn: data => this.store.setIn(['user'], fromJS(data)),
+                });
+                notifications.success("The role was removed");
+            },
+            errorFn: () => {
+                notifications.danger("An error occured while trying to the role");
+            },
         });
     }
 };
