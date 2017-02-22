@@ -61,8 +61,9 @@ Mac/Windows), go into the ``dockerize`` folder and then run ``docker-compose``:
     $ cd b2share/dockerize
     $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
     $ export B2ACCESS_SECRET_KEY=...      # the password used for registration
-    $ export B2SHARE_JSONSCHEMAS_HOST='<FQDN>' # replace <FQDN> with the domain of the B2SHARE server
-    $ export LOAD_DEMO_CONFIG=1
+    $ export B2SHARE_JSONSCHEMAS_HOST='<FQDN>'   # replace <FQDN> with the domain of the B2SHARE server
+    $ export LOAD_DEMO_CONFIG=1                  # use a demo-specific configuration file
+    $ export LOAD_DEMO_COMMUNITIES_AND_RECORDS=1 # load some communities and records for demonstration
     $ docker-compose up
 
 After the docker image is built and running, B2SHARE will be available at

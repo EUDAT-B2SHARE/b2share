@@ -13,8 +13,10 @@ if [ ! -f /eudat/provisioned ]; then
     if [ "${LOAD_DEMO_CONFIG}" = "1" ]; then
         /usr/bin/b2share demo load_config
     fi
+    if [ "${LOAD_DEMO_COMMUNITIES_AND_RECORDS}" = "1" ]; then
+        /usr/bin/b2share demo load_data
+    fi
 
-    /usr/bin/b2share demo load_data
     touch /eudat/provisioned
 fi
 
