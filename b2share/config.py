@@ -32,7 +32,7 @@ from b2share.modules.access.permissions import admin_only, authenticated_only
 from celery.schedules import crontab
 from flask import request
 from invenio_records_rest.utils import deny_all, allow_all
-from b2share.modules.oauthclient import b2access
+from b2share.modules.oauthclient.b2access import make_b2access_remote_app
 from b2share.modules.records.search import B2ShareRecordsSearch
 from b2share.modules.records.permissions import (
     UpdateRecordPermission, DeleteRecordPermission
@@ -182,8 +182,12 @@ B2ACCESS_APP_CREDENTIALS = dict(
 )
 
 
+B2ACCESS_BASE_URL = 'https://b2access.eudat.eu:8443/'
+if os.environ.get("USE_STAGING_B2ACCESS"):
+    B2ACCESS_BASE_URL = 'https://unity.eudat-aai.fz-juelich.de:8443/'
+
 OAUTHCLIENT_REMOTE_APPS = dict(
-    b2access=b2access.REMOTE_APP,
+    b2access=make_b2access_remote_app(B2ACCESS_BASE_URL)
 )
 
 # Don't let Invenio Accounts register Flask Security
@@ -307,7 +311,11 @@ B2DROP_SERVER = {
 WSGI_PROXIES = 1
 PREFERRED_URL_SCHEME = 'http'
 
-FILES_REST_DEFAULT_MAX_FILE_SIZE = 1000 * 1024 * 1024 # 1 GB by default for RC4
+FILES_REST_DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024 # 10 GB per file
+"""Maximum file size for the files in a record"""
+
+FILES_REST_DEFAULT_QUOTA_SIZE = 20 * 1024 * 1024 * 1024 # 20 GB per record
+"""Quota size for the files in a record"""
 
 # prominently displayed on the front page, except when set to "production"
 # and also returned by the REST API when querying http://<HOSTNAME>/api

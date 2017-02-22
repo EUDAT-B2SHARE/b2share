@@ -1,15 +1,26 @@
 version: '2'
 services:
-    # mariadb:
-    #     image: mariadb
-    #     ports:
-    #         - "3306:3306"
-    #     environment:
-    #         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    #         - MYSQL_USER=b2share_evo
-    #         - MYSQL_DATABASE=b2share_evo
-    #     volumes:
-    #         - /data/db:/var/lib/mysql
+    b2share:
+        build:
+            context: ..
+            dockerfile: dockerize/Dockerfile
+        environment:
+            - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
+            - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
+            - "USE_STAGING_B2ACCESS=${USE_STAGING_B2ACCESS}"
+            - "B2SHARE_SECRET_KEY=${B2SHARE_SECRET_KEY}"
+            - "B2SHARE_JSONSCHEMAS_HOST=${B2SHARE_JSONSCHEMAS_HOST}"
+            - "INIT_DB_AND_INDEX=${INIT_DB_AND_INDEX}"
+            - "LOAD_DEMO_COMMUNITIES_AND_RECORDS=${LOAD_DEMO_COMMUNITIES_AND_RECORDS}"
+            - "B2SHARE_PREFERRED_URL_SCHEME=https"
+        volumes:
+            - /b2share-data:/usr/var/b2share-instance
+        ports:
+            - "5000:5000"
+        links:
+            - elasticsearch
+            - redis
+
     elasticsearch:
         build: elasticsearch
         ports:
@@ -21,32 +32,16 @@ services:
         ports:
             - "6379:6379"
 
-    b2share:
-        build:
-            context: ..
-            dockerfile: dockerize/Dockerfile
-        ports:
-            - "5000:5000"
-        links:
-            - elasticsearch
-            - redis
-        environment:
-            - "B2SHARE_JSONSCHEMAS_HOST=${B2SHARE_JSONSCHEMAS_HOST}"
-            - "LOAD_DEMO_CONFIG=${LOAD_DEMO_CONFIG}"
-            - "LOAD_DEMO_COMMUNITIES_AND_RECORDS=${LOAD_DEMO_COMMUNITIES_AND_RECORDS}"
-            - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
-            - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
-            - "B2SHARE_PREFERRED_URL_SCHEME=https"
-            - "SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}"
-        volumes:
-            - /b2share-data:/usr/var/b2share-instance
     nginx:
         build: nginx
         ports:
             - "80:80"
             - "443:443"
+        # volumes:
+        #     - /b2share-etc/ssl:/etc/ssl/
         links:
             - b2share
+
     mq:
         image: rabbitmq:3.6-management
         restart: "always"

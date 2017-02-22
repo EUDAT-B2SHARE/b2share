@@ -25,6 +25,7 @@
 
 import base64
 
+from urllib.parse import urljoin
 from flask import abort, current_app, redirect, request, \
     session, url_for
 from flask_oauthlib.client import OAuthException, OAuthRemoteApp, \
@@ -40,30 +41,35 @@ from invenio_oauthclient.utils import oauth_authenticate, oauth_get_user, \
     oauth_link_external_id
 
 
-REMOTE_APP = dict(
-    title='B2Access',
-    description='EUDAT B2Access authentication.',
-    icon='',
-    authorized_handler='b2share.modules.oauthclient.b2access:authorized_signup_handler',
-    disconnect_handler='b2share.modules.oauthclient.b2access:disconnect_handler',
-    signup_handler=dict(
-        info='b2share.modules.oauthclient.b2access:account_info',
-        setup='b2share.modules.oauthclient.b2access:account_setup',
-        view='b2share.modules.oauthclient.b2access:signup_handler',
-    ),
-    remote_app='b2share.modules.oauthclient.b2access:B2AccessOAuthRemoteApp',
-    params=dict(
-        request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
-        base_url='https://b2access.eudat.eu:8443/',
-        request_token_url=None,
-        access_token_url='https://b2access.eudat.eu:8443/oauth2/token',
-        access_token_method='POST',
-        authorize_url='https://b2access.eudat.eu:8443/oauth2-as/oauth2-authz',
-        app_key='B2ACCESS_APP_CREDENTIALS',
-    ),
-    tokeninfo_url='https://b2access.eudat.eu:8443/oauth2/tokeninfo',
-    userinfo_url='https://b2access.eudat.eu:8443/oauth2/userinfo',
-)
+def make_b2access_remote_app(base_url):
+    access_token_url = urljoin(base_url, 'oauth2/token')
+    authorize_url = urljoin(base_url, 'oauth2-as/oauth2-authz')
+    tokeninfo_url = urljoin(base_url, 'oauth2/tokeninfo')
+    userinfo_url = urljoin(base_url, 'oauth2/userinfo')
+    return dict(
+        title='B2Access',
+        description='EUDAT B2Access authentication.',
+        icon='',
+        authorized_handler='b2share.modules.oauthclient.b2access:authorized_signup_handler',
+        disconnect_handler='b2share.modules.oauthclient.b2access:disconnect_handler',
+        signup_handler=dict(
+            info='b2share.modules.oauthclient.b2access:account_info',
+            setup='b2share.modules.oauthclient.b2access:account_setup',
+            view='b2share.modules.oauthclient.b2access:signup_handler',
+        ),
+        remote_app='b2share.modules.oauthclient.b2access:B2AccessOAuthRemoteApp',
+        params=dict(
+            request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
+            base_url=base_url,
+            request_token_url=None,
+            access_token_url=access_token_url,
+            access_token_method='POST',
+            authorize_url=authorize_url,
+            app_key='B2ACCESS_APP_CREDENTIALS',
+        ),
+        tokeninfo_url=tokeninfo_url,
+        userinfo_url=userinfo_url,
+    )
 
 
 class B2AccessOAuthRemoteApp(OAuthRemoteApp):
