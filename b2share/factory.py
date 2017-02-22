@@ -78,6 +78,8 @@ def create_app(**kwargs):
         api.wsgi_app = ProxyFix(api.wsgi_app,
                                 num_proxies=api.config['WSGI_PROXIES'])
 
+    check_configuration(api.config, api.logger)
+
     return api
 
 
@@ -116,3 +118,56 @@ def add_routes(app_ui):
     @app_ui.route('/search/<path:path>')
     def serve_search(path):
         return app_ui.send_static_file('index.html')
+
+
+def check_configuration(config, logger):
+    errors_found = False
+    def error(msg):
+        nonlocal errors_found
+        errors_found = True
+        logger.error(msg)
+
+    def check(var_name):
+        if not config.get(var_name):
+            error("Configuration variable expected: {}".format(var_name))
+
+    check('SQLALCHEMY_DATABASE_URI')
+
+    check('JSONSCHEMAS_HOST')
+    check('PREFERRED_URL_SCHEME')
+
+    check('B2ACCESS_APP_CREDENTIALS')
+    if not config['B2ACCESS_APP_CREDENTIALS'].get('consumer_key'):
+        error("Environment variable not defined: B2ACCESS_CONSUMER_KEY")
+    if not config['B2ACCESS_APP_CREDENTIALS'].get('consumer_secret'):
+        error("Environment variable not defined: B2ACCESS_SECRET_KEY")
+
+    site_function = config.get('SITE_FUNCTION')
+    if site_function and site_function != 'demo':
+        if config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
+            error("SQLALCHEMY_DATABASE_URI cannot use sqlite database for a non-demo instance")
+
+        check('SUPPORT_MAIL')
+
+    if site_function and site_function == 'production':
+        if config['MAIL_SUPPRESS_SEND']:
+            error("MAIL_SUPPRESS_SEND must be set to False for a production instance")
+
+        if config['FAKE_EPIC_PID']:
+            error("FAKE_EPIC_PID must be set to False for a production instance")
+
+        if config['FAKE_DOI']:
+            error("FAKE_DOI must be set to False for a production instance")
+
+        if not (config['CFG_EPIC_USERNAME'] and config['CFG_EPIC_PASSWORD'] and
+                config['CFG_EPIC_BASEURL'] and config['CFG_EPIC_PREFIX']):
+            logger.warning("Configuration variables for PID allocation are missing")
+
+        if not (config['PIDSTORE_DATACITE_DOI_PREFIX'] and
+                config['PIDSTORE_DATACITE_USERNAME'] and
+                config['PIDSTORE_DATACITE_PASSWORD']):
+            logger.warning("Configuration variables for DOI allocation are missing")
+
+    if errors_found:
+        print("Configuration errors found, exiting")
+        sys.exit(1)
