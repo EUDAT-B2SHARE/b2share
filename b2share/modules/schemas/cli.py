@@ -32,14 +32,17 @@ from jsonschema import validate
 import os
 from uuid import UUID
 
+from flask import url_for
 from flask_cli import with_appcontext
 
 from invenio_db import db
 
+from .errors import CommunitySchemaDoesNotExistError
 from .errors import RootSchemaAlreadyExistsError, BlockSchemaDoesNotExistError
 from .helpers import load_root_schemas, resolve_schemas_ref
 from .validate import validate_metadata_schema
 from .api import BlockSchema, CommunitySchema
+from .serializers import block_schema_version_self_link
 
 from b2share.modules.communities.api import Community, CommunityDoesNotExistError
 from b2share.modules.communities.cli import communities
@@ -244,11 +247,15 @@ def block_schema_version_generate_json(verbose, block_schema_id, version=None):
         block_schema = BlockSchema.get_block_schema(schema_id=block_schema_id)
     except BlockSchemaDoesNotExistError:
         raise click.BadParameter("No block_schema with id %s" % block_schema_id)
+    result = ""
     if version:
-        click.secho( block_schema.versions[version].json_schema )
+        result = block_schema.versions[version].json_schema 
     else:
-        click.secho(        
-            block_schema.versions[len(block_schema.versions)-1].json_schema)
+        result = block_schema.versions[
+            len(block_schema.versions)-1].json_schema
+    result = json.loads(result)
+    result = json.dumps(result, indent=4)
+    click.secho(result)
 
 @schemas.command()
 @with_appcontext
@@ -274,4 +281,79 @@ def community_schema_list_block_schema_versions(verbose, community, version=None
     for key in props:
         click.secho("Block schema: %s, version url: %s" % (key, 
             props[key]['$ref']))
+    
+@communities.command()
+@with_appcontext
+@click.argument('community')
+@click.argument('json_file')
+def set_schema(community, json_file):
+    """Update the schema for a community.
+    community is the ID or NAME of the community that you want to set the 
+    schema-part that represents the community-specific metadata format for.
+    For an example of such format, execute 
+    b2share communities example_community_schema_part"""
+    comm = get_community_by_name_or_id(community)
+    if not comm:
+        raise click.BadParameter("There is no community by this name or ID: %s" 
+            % community)
+    if not os.path.isfile(json_file):
+        raise click.ClickException("%s does not exist on the filesystem" % 
+        json_file)
+    f = open(json_file,'r')
+    schema_dict = {}
+    try:
+        schema_dict = json.load(f)
+    except json.decoder.JSONDecodeError:
+        raise click.ClickException("%s is not valid JSON" % json_file)
+    f.close()
+    try:
+        validate_metadata_schema(schema_dict)
+    except:
+        raise click.ClickException("""%s is not a valid metadata schema for 
+        EUDAT community metadata format""" % json_file)
+    #create new block version schema
+    try:
+        community_schema = CommunitySchema.get_community_schema(comm.id)
+        _update_community_schema(comm, community_schema, schema_dict)
+    except CommunitySchemaDoesNotExistError:
+        _create_community_schema(comm, schema_dict)
+    db.session.commit()
+    click.secho("Succesfully processed new metadata schema")
+
+def _update_community_schema(community, community_schema, schema_dict):
+    comm_schema_json = json.loads(community_schema.community_schema)
+    if not('properties' in comm_schema_json.keys()):
+        raise click.ClickException("""Invalid community schema 
+            for community %s""" % community.name)
+    if not(len(comm_schema_json['properties'])==1):
+        raise click.ClickException("""Multiple block schemas not supported.""")
+    block_schema_id = comm_schema_json['properties'].popitem()[0]
+    block_schema = BlockSchema.get_block_schema(block_schema_id)
+    if block_schema is None:
+        raise ClickException("""CommunitySchema refers to block schema with id: %s . This schema does not exist""" % block_schema_id)
+    new_block_schema_version = block_schema.create_version(schema_dict)
+    block_schema_version_url= url_for(
+        'b2share_schemas.block_schema_versions_item',
+        schema_id = block_schema.id,
+        schema_version_nb = new_block_schema_version.version )
+    block_schema_version_url = block_schema_version_url + '#/json_schema'
+    comm_schema_json['properties'][str(block_schema.id)] = {}
+    comm_schema_json['properties'][str(block_schema.id)]['$ref'] = \
+        block_schema_version_url
+    new_cs = community_schema.create_version(community.id, comm_schema_json)
+
+def _create_community_schema(community, schema_dict):
+    community_schema = {'$schema':'http://json-schema.org/draft-04/schema#',
+            'properties':[""]}
+    block_schema = BlockSchema.create_block_schema(community.id, community.name)
+    bs_version = block_schema.create_version(schema_dict)
+    schema_link = block_schema_version_self_link(bs_version)
+    community_schema["properties"] = {}
+    community_schema["properties"][str(block_schema.id)] = {}
+    community_schema["properties"][str(block_schema.id)]["$ref"] = schema_link
+    community_schema["type"] = "object"
+    community_schema["additionalProperties"] = False
+    community_schema["required"] = [str(block_schema.id)]
+    click.secho(json.dumps(community_schema))
+    CommunitySchema.create_version(community.id, community_schema)
     
