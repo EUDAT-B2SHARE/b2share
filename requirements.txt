@@ -33,8 +33,8 @@ binaryornot==0.4.0        # via cookiecutter
 blinker==1.4              # via flask-mail, flask-principal, invenio-oauthclient, invenio-records
 celery==3.1.24
 cffi==1.8.3               # via cryptography
-chardet==2.3.0            # via binaryornot
-click==6.6                # via cookiecutter, dojson, flask, flask-cli
+chardet==2.3.0            # via binaryornot, doschema
+click==6.6                # via cookiecutter, dojson, doschema, flask, flask-cli
 cookiecutter==1.4.0       # via invenio-base
 cryptography==1.5.2       # via invenio-accounts, invenio-oauthclient, sqlalchemy-utils
 datacite==0.2.2
@@ -42,6 +42,7 @@ dcxml==0.1.0
 decorator==4.0.10         # via validators
 dictdiffer==0.6.0         # via invenio-deposit
 dojson==1.2.1
+doschema==1.0.0a1
 easywebdav==1.2.0
 elasticsearch-dsl==2.1.0
 elasticsearch==2.4.0
@@ -104,7 +105,7 @@ jsonpatch==1.14           # via invenio-records
 jsonpointer==1.10         # via jsonpatch
 jsonref==0.1              # via invenio-records
 jsonresolver[jsonschema]==0.2.1
-jsonschema==2.5.1         # via datacite, invenio-records, jsonresolver
+jsonschema==2.5.1         # via datacite, doschema, invenio-records, jsonresolver
 kombu==3.0.37             # via celery
 limits==1.2.0             # via flask-limiter
 lxml==3.6.4               # via datacite, dcxml, dojson, invenio-oaiserver

@@ -80,7 +80,13 @@ class RootSchema(object):
         if not isinstance(json_schema, dict):
             raise InvalidJSONSchemaError('json_schema must be a dict')
 
-        validate_json_schema(json_schema)
+        previous_root_schemas = _fetch_all_query_pages(
+            RootSchemaVersion.query.filter(
+                RootSchemaVersion.version < version
+            ).order_by(RootSchemaVersion.version.asc())
+        )
+        prev_schemas = map(lambda x: x.json_schema, previous_root_schemas)
+        validate_json_schema(json_schema, prev_schemas)
 
         with db.session.begin_nested():
             # Force the given version to follow the previous one.
@@ -262,7 +268,17 @@ class BlockSchema(object):
             raise BlockSchemaIsDeprecated()
         if not isinstance(json_schema, dict):
             raise InvalidJSONSchemaError('json_schema must be a dict')
-        validate_json_schema(json_schema)
+
+        previous_block_schema_versions = _fetch_all_query_pages(
+            BlockSchemaVersionModel.query.filter(
+                BlockSchemaVersionModel.block_schema == self.model.id,
+                # BlockSchemaVersionModel.version < version_number
+            ).order_by(BlockSchemaVersionModel.version.asc())
+        )
+        prev_schemas = map(lambda x: x.json_schema,
+                           previous_block_schema_versions)
+
+        validate_json_schema(json_schema, prev_schemas)
         # FIXME: validate the json-schema
         with db.session.begin_nested():
             last_version = db.session.query(
@@ -529,20 +545,23 @@ class CommunitySchema(object):
         """
         from .models import CommunitySchemaVersion
 
-        validate_json_schema(community_schema)
+        previous_community_schemas = _fetch_all_query_pages(
+            CommunitySchemaVersion.query.filter(
+                CommunitySchemaVersion.community == community_id
+            ).order_by(CommunitySchemaVersion.version.asc())
+        )
+        prev_schemas = map(lambda x: x.community_schema,
+                           previous_community_schemas)
+        validate_json_schema(community_schema, prev_schemas)
         try:
             with db.session.begin_nested():
-                try:
-                    last_schema = CommunitySchemaVersion.query.filter(
-                        CommunitySchemaVersion.community == community_id
-                    ).order_by(
-                        CommunitySchemaVersion.version.desc()
-                    ).limit(1).one()
+                if len(previous_community_schemas) > 0:
+                    last_schema = previous_community_schemas[-1]
 
                     new_version = last_schema.version + 1
                     if root_schema_version is None:
                         root_schema_version = last_schema.root_schema
-                except NoResultFound:
+                else:
                     if root_schema_version is None:
                         # there is no schema yet, the community is new.
                         # Use the last RootSchema.
@@ -605,3 +624,15 @@ class CommunitySchema(object):
     def community_schema(self):
         """Retrieve the community specific JSON Schema."""
         return self.model.community_schema
+
+
+def _fetch_all_query_pages(query, per_page=500):
+    """Paginate query results and return an iterable object."""
+    result = []
+    iterator = query.paginate(page=1, per_page=500, error_out=False)
+    while True:
+        result.extend(iterator.items)
+        if not iterator.has_next:
+            break
+        iterator = iterator.next(error_out=False)
+    return result

@@ -63,6 +63,32 @@ root_schemas_json_schemas = [{
     'additionalProperties': False,
 }]
 
+
+backward_incompatible_root_schemas_json_schemas = [{
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'properties': {
+        'authors': {
+            'type': 'object',
+            'properties': {
+                'name': {'type': 'string'}
+            }
+        }
+    },
+    'additionalProperties': False,
+}, {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'properties': {
+        'files': {
+            'type': 'array',
+            'items': {'type': 'number'}
+        }
+    },
+    'additionalProperties': False,
+}]
+"""Schemas which are not backward compatible with root_schemas_json_schemas"""
+
 block_schemas_json_schemas = [[
     {
         '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -93,3 +119,24 @@ block_schemas_json_schemas = [[
         'additionalProperties': False,
     },
 ]]
+
+
+backward_incompatible_block_schemas_json_schemas = [
+    {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'type': 'object',
+        'properties': {
+            'experiment_nb': {'type': 'string'},
+        },
+        'additionalProperties': False,
+    },
+    {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'type': 'object',
+        'properties': {
+            'experiment_date': {'type': 'object'},
+        },
+        'additionalProperties': False,
+    },
+
+]

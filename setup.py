@@ -63,6 +63,7 @@ install_requires = [
     'invenio-logging>=1.0.0a3',
     'invenio-indexer>=1.0.0a9',
     'easywebdav>=1.2.0',
+    'doschema>=1.0.0a1',
 ]
 
 if sys.version_info < (3, 4):
