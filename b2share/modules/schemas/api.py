@@ -550,35 +550,38 @@ class CommunitySchema(object):
                 CommunitySchemaVersion.community == community_id
             ).order_by(CommunitySchemaVersion.version.asc())
         )
+
         prev_schemas = map(lambda x: x.community_schema,
                            previous_community_schemas)
         validate_json_schema(community_schema, prev_schemas)
-        try:
-            with db.session.begin_nested():
-                if len(previous_community_schemas) > 0:
-                    last_schema = previous_community_schemas[-1]
 
-                    new_version = last_schema.version + 1
-                    if root_schema_version is None:
-                        root_schema_version = last_schema.root_schema
-                else:
-                    if root_schema_version is None:
-                        # there is no schema yet, the community is new.
-                        # Use the last RootSchema.
-                        root_schema_version = RootSchema.query.order_by(
-                            RootSchema.released.desc()).limit(1).one().id
-                    new_version = 0
+        with db.session.begin_nested():
+            if len(previous_community_schemas) > 0:
+                last_schema = previous_community_schemas[-1]
 
-                model = CommunitySchemaVersion(
-                    community=community_id,
-                    root_schema=root_schema_version,
-                    community_schema=json.dumps(community_schema,
-                                                # avoid default whitespaces
-                                                separators=(',', ':')),
-                    version=new_version)
-                db.session.add(model)
-        except NoResultFound as e:
-            raise CommunitySchemaDoesNotExistError(id) from e
+                new_version = last_schema.version + 1
+                if root_schema_version is None:
+                    root_schema_version = last_schema.root_schema
+            else:
+                if root_schema_version is None:
+                    # there is no schema yet, the community is new.
+                    # Use the last RootSchema.
+                    from .models import RootSchemaVersion
+                    try:
+                        root_schema_version = RootSchemaVersion.query.order_by(
+                            RootSchemaVersion.version).limit(1).one().version
+                    except NoResultFound as e:
+                        raise RootSchemaDoesNotExistError from e
+                new_version = 0
+
+            model = CommunitySchemaVersion(
+                community=community_id,
+                root_schema=root_schema_version,
+                community_schema=json.dumps(community_schema,
+                                            # avoid default whitespaces
+                                            separators=(',', ':')),
+                version=new_version)
+            db.session.add(model)
         return cls(model)
 
     def build_json_schema(self):
