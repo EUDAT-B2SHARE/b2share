@@ -21,42 +21,82 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Demonstration configuration."""
+"""Demonstration configuration, to be changed by the site administrator"""
 
 from __future__ import absolute_import, print_function
 
 
+SITE_FUNCTION = 'demo' # set to "production" on production instances
+# it is prominently displayed on the front page, except when set to "production"
+# and also returned by the REST API when querying http://<HOSTNAME>/api
+
+
+# Change this parameter to use an external database, e.g.:
+# SQLALCHEMY_DATABASE_URI = "postgresql://db_username:db_password@db_host/db_name"
+
+
+# email notifications
+# ===================
+
+SUPPORT_EMAIL = None      # must be setup in the local instances
+# (e.g. 'b2share-admin@b2share.eudat.eu')
+
+MAIL_SUPPRESS_SEND = True # this should be set to False on a real instance
+
+OAISERVER_ADMIN_EMAILS = [SUPPORT_EMAIL]
+# this will make the SUPPORT_EMAIL show up on the oai-pmh identify page
+# if this is undesirable, set it to [], or to ['some_other_email@example.com']
+
+
+
+# file and record quotas
+# ======================
+
 FILES_REST_DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024 # 10 GB per file
 """Maximum file size for the files in a record"""
-FILES_REST_DEFAULT_QUOTA_SIZE    = 20 * 1024 * 1024 * 1024 # 20 GB per record
+
+FILES_REST_DEFAULT_QUOTA_SIZE = 20 * 1024 * 1024 * 1024 # 20 GB per record
 """Quota size for the files in a record"""
 
 
-# Not using staging server for public deployments anymore
-OAUTHCLIENT_REMOTE_APPS = dict(
-    #: B2ACCESS Staging instance for the demo
-    b2access=dict(
-        title='B2Access',
-        description='EUDAT B2Access authentication.',
-        icon='',
-        authorized_handler='b2share.modules.oauthclient.b2access:authorized_signup_handler',
-        disconnect_handler='b2share.modules.oauthclient.b2access:disconnect_handler',
-        signup_handler=dict(
-            info='b2share.modules.oauthclient.b2access:account_info',
-            setup='b2share.modules.oauthclient.b2access:account_setup',
-            view='b2share.modules.oauthclient.b2access:signup_handler',
-        ),
-        remote_app='b2share.modules.oauthclient.b2access:B2AccessOAuthRemoteApp',
-        params=dict(
-            request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
-            base_url='https://unity.eudat-aai.fz-juelich.de:8443/',
-            request_token_url=None,
-            access_token_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2/token',
-            access_token_method='POST',
-            authorize_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz',
-            app_key='B2ACCESS_APP_CREDENTIALS',
-        ),
-        tokeninfo_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2/tokeninfo',
-        userinfo_url='https://unity.eudat-aai.fz-juelich.de:8443/oauth2/userinfo',
-    )
-)
+
+# ePIC PID config
+# ===============
+
+CFG_FAIL_ON_MISSING_PID = False
+CFG_FAIL_ON_MISSING_FILE_PID = False
+
+# CFG_EPIC_USERNAME = 0000
+# CFG_EPIC_PASSWORD = ''
+# CFG_EPIC_BASEURL = 'https://epic4.storage.surfsara.nl/v2_A/handles/'
+# CFG_EPIC_PREFIX = 0000
+
+# for manual testing purposes, FAKE_EPIC_PID can be set to True
+# in which case a fake epic pid will be generated for records
+# FAKE_EPIC_PID = False
+
+
+
+# DOI config
+# ==========
+
+AUTOMATICALLY_ASSIGN_DOI = False # change to True to have DOIs allocated on publish
+CFG_FAIL_ON_MISSING_DOI = False
+
+PIDSTORE_DATACITE_TESTMODE = False
+PIDSTORE_DATACITE_DOI_PREFIX = "XXXX"
+PIDSTORE_DATACITE_USERNAME = "XXXX"
+PIDSTORE_DATACITE_PASSWORD = "XXXX"
+
+# for manual testing purposes, FAKE_DOI can be set to True
+# in which case a fake DOI will be generated for records
+# FAKE_DOI = False
+
+
+
+# Other
+# ==========
+
+# if the TRAINING_SITE_LINK parameter is not empty, a message will show up
+# on the front page redirecting the testers to this link
+TRAINING_SITE_LINK = ""

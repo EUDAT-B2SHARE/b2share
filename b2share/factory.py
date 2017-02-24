@@ -131,6 +131,9 @@ def check_configuration(config, logger):
         if not config.get(var_name):
             error("Configuration variable expected: {}".format(var_name))
 
+    if not os.environ.get('B2SHARE_SECRET_KEY'):
+        error("Environment variable not defined: B2SHARE_SECRET_KEY")
+
     check('SQLALCHEMY_DATABASE_URI')
 
     check('JSONSCHEMAS_HOST')
