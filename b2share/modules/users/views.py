@@ -28,6 +28,7 @@ from invenio_db import db
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_oauth2server import current_oauth2server
 from invenio_oauth2server.models import Token
+from flask_security.views import logout
 
 from .serializers import (user_to_json_serializer,
                           token_to_json_serializer,
@@ -135,3 +136,5 @@ class UserToken(ContentNegotiatedMethodView):
 blueprint.add_url_rule('/', view_func=CurrentUser.as_view('current_user'))
 blueprint.add_url_rule('/tokens', view_func=UserTokenList.as_view('user_token_list'))
 blueprint.add_url_rule('/tokens/<token_id>', view_func=UserToken.as_view('user_token_item'))
+# register the flask_security logout endpoint
+blueprint.route('/logout/', endpoint='logout')(logout)

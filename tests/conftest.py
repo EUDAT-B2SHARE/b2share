@@ -88,6 +88,8 @@ def app(request, tmpdir):
         WTF_CSRF_ENABLED=False,
         SECRET_KEY="CHANGE_ME",
         SECURITY_PASSWORD_SALT='CHANGEME',
+        # register flask_security endpoints for testing purpose.
+        ACCOUNTS_REGISTER_BLUEPRINT = True,
         CELERY_ALWAYS_EAGER=True,
         CELERY_RESULT_BACKEND="cache",
         CELERY_CACHE_BACKEND="memory",
