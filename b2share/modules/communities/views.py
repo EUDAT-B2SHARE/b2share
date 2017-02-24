@@ -152,46 +152,46 @@ class CommunityListResource(ContentNegotiatedMethodView):
         # TODO: set etag
         return response
 
-    def post(self):
-        """Create a new community."""
-        if request.content_type != 'application/json':
-            abort(415)
-        data = request.get_json()
-        if data is None:
-            return abort(400)
-        # check user permissions
-        if (not current_communities.rest_access_control_disabled and
-                not communities_create_all_permission.can()):
-            from flask_login import current_user
-            if not current_user.is_authenticated:
-                abort(401)
-            abort(403)
+    # def post(self):
+    #     """Create a new community."""
+    #     if request.content_type != 'application/json':
+    #         abort(415)
+    #     data = request.get_json()
+    #     if data is None:
+    #         return abort(400)
+    #     # check user permissions
+    #     if (not current_communities.rest_access_control_disabled and
+    #             not communities_create_all_permission.can()):
+    #         from flask_login import current_user
+    #         if not current_user.is_authenticated:
+    #             abort(401)
+    #         abort(403)
 
-        try:
-            community = Community.create_community(**data)
-            response = self.make_response(
-                community=community,
-                code=201,
-            )
-            # set the header's Location field.
-            response.headers['Location'] = community_self_link(community)
-            db.session.commit()
-            return response
-        except InvalidCommunityError as e1:
-            try:
-                db.session.rollback()
-            except Exception as e2:
-                raise e2 from e1
-            abort(400)
-        except Exception as e1:
-            try:
-                db.session.rollback()
-            except Exception as e2:
-                raise e2 from e1
-            if isinstance(e1, HTTPException):
-                raise e1
-            current_app.logger.exception('Failed to create record.')
-            abort(500)
+    #     try:
+    #         community = Community.create_community(**data)
+    #         response = self.make_response(
+    #             community=community,
+    #             code=201,
+    #         )
+    #         # set the header's Location field.
+    #         response.headers['Location'] = community_self_link(community)
+    #         db.session.commit()
+    #         return response
+    #     except InvalidCommunityError as e1:
+    #         try:
+    #             db.session.rollback()
+    #         except Exception as e2:
+    #             raise e2 from e1
+    #         abort(400)
+    #     except Exception as e1:
+    #         try:
+    #             db.session.rollback()
+    #         except Exception as e2:
+    #             raise e2 from e1
+    #         if isinstance(e1, HTTPException):
+    #             raise e1
+    #         current_app.logger.exception('Failed to create record.')
+    #         abort(500)
 
 
 class CommunityResource(ContentNegotiatedMethodView):
@@ -216,23 +216,23 @@ class CommunityResource(ContentNegotiatedMethodView):
             default_media_type='application/json',
             **kwargs)
 
-    @pass_community
-    @need_community_permission(delete_permission_factory)
-    def delete(self, community, **kwargs):
-        """Delete a community."""
-        # check the ETAG
-        self.check_etag(str(community.updated))
-        try:
-            community.delete()
-            db.session.commit()
-        except Exception as e1:
-            current_app.logger.exception('Failed to create record.')
-            try:
-                db.session.rollback()
-            except Exception as e2:
-                raise e2 from e1
-            abort(500)
-        return '', 204
+    # @pass_community
+    # @need_community_permission(delete_permission_factory)
+    # def delete(self, community, **kwargs):
+    #     """Delete a community."""
+    #     # check the ETAG
+    #     self.check_etag(str(community.updated))
+    #     try:
+    #         community.delete()
+    #         db.session.commit()
+    #     except Exception as e1:
+    #         current_app.logger.exception('Failed to create record.')
+    #         try:
+    #             db.session.rollback()
+    #         except Exception as e2:
+    #             raise e2 from e1
+    #         abort(500)
+    #     return '', 204
 
     @pass_community
     @need_community_permission(read_permission_factory)
@@ -242,64 +242,64 @@ class CommunityResource(ContentNegotiatedMethodView):
         self.check_etag(str(community.updated))
         return community
 
-    @require_content_types('application/json-patch+json', 'application/json')
-    @pass_community
-    @need_community_permission(update_permission_factory)
-    def patch(self, community, **kwargs):
-        """Patch a community."""
-        # check the ETAG
-        self.check_etag(str(community.updated))
+    # @require_content_types('application/json-patch+json', 'application/json')
+    # @pass_community
+    # @need_community_permission(update_permission_factory)
+    # def patch(self, community, **kwargs):
+    #     """Patch a community."""
+    #     # check the ETAG
+    #     self.check_etag(str(community.updated))
 
-        data = request.get_json(force=True)
-        if data is None:
-            abort(400)
-        try:
-            if 'application/json' == request.content_type:
-                community.update(data)
-            else:
-                community = community.patch(data)
-            db.session.commit()
-            return community
-        except (JsonPatchConflict):
-            abort(409)
-        except (JsonPatchException, InvalidJsonPatch):
-            abort(400)
-        except InvalidCommunityError:
-            db.session.rollback()
-            abort(400)
-        except Exception as e1:
-            current_app.logger.exception('Failed to patch record.')
-            try:
-                db.session.rollback()
-            except Exception as e2:
-                raise e2 from e1
-            abort(500)
+    #     data = request.get_json(force=True)
+    #     if data is None:
+    #         abort(400)
+    #     try:
+    #         if 'application/json' == request.content_type:
+    #             community.update(data)
+    #         else:
+    #             community = community.patch(data)
+    #         db.session.commit()
+    #         return community
+    #     except (JsonPatchConflict):
+    #         abort(409)
+    #     except (JsonPatchException, InvalidJsonPatch):
+    #         abort(400)
+    #     except InvalidCommunityError:
+    #         db.session.rollback()
+    #         abort(400)
+    #     except Exception as e1:
+    #         current_app.logger.exception('Failed to patch record.')
+    #         try:
+    #             db.session.rollback()
+    #         except Exception as e2:
+    #             raise e2 from e1
+    #         abort(500)
 
-    @require_content_types('application/json')
-    @pass_community
-    @need_community_permission(update_permission_factory)
-    def put(self, community, **kwargs):
-        """Put a community."""
-        # check the ETAG
-        self.check_etag(str(community.updated))
+    # @require_content_types('application/json')
+    # @pass_community
+    # @need_community_permission(update_permission_factory)
+    # def put(self, community, **kwargs):
+    #     """Put a community."""
+    #     # check the ETAG
+    #     self.check_etag(str(community.updated))
 
-        data = request.get_json(force=True)
-        if data is None:
-            abort(400)
-        try:
-            community.update(data, clear_fields=True)
-            db.session.commit()
-            return community
-        except InvalidCommunityError:
-            db.session.rollback()
-            abort(400)
-        except Exception as e1:
-            current_app.logger.exception('Failed to patch record.')
-            try:
-                db.session.rollback()
-            except Exception as e2:
-                raise e2 from e1
-            abort(500)
+    #     data = request.get_json(force=True)
+    #     if data is None:
+    #         abort(400)
+    #     try:
+    #         community.update(data, clear_fields=True)
+    #         db.session.commit()
+    #         return community
+    #     except InvalidCommunityError:
+    #         db.session.rollback()
+    #         abort(400)
+    #     except Exception as e1:
+    #         current_app.logger.exception('Failed to patch record.')
+    #         try:
+    #             db.session.rollback()
+    #         except Exception as e2:
+    #             raise e2 from e1
+    #         abort(500)
 
 blueprint.add_url_rule('/',
                        view_func=CommunityListResource

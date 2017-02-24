@@ -73,101 +73,104 @@ def test_valid_get_community_schema(app, test_communities):
             # check that the returned self link returns the same data
             subtest_self_link(response_data, res.headers, client)
 
-
-def test_create_block_schema(app, test_communities):
-    """Test creating a new schema."""
-    with app.app_context():
-        community_id = str(test_communities['MyTestCommunity1'])
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(
-                url_for(
-                    'b2share_schemas.block_schema_list'
-                ),
-                data=json.dumps({
-                    'name': 'abc',
-                    'community_id': community_id,
-                }),
-                headers=headers)
-            assert res.status_code == 201
-            response_data = json.loads(res.get_data(as_text=True))
-            assert response_data['name'] == BlockSchema.get_block_schema(
-                                                response_data['schema_id']
-                                            ).name
-            assert str(
-                BlockSchema.get_block_schema(response_data['schema_id'])
-                    .community
-            ) == community_id
-
-
-def test_create_block_schema_version(app, test_communities):
-    """Test creating a new version of the schema."""
-    with app.app_context():
-        community_id = str(test_communities['MyTestCommunity1'])
-        json_schema = block_schemas_json_schemas[0][0]
-        block_schema = BlockSchema.create_block_schema(community_id, 'abc')
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(
-                url_for(
-                    'b2share_schemas.block_schema_versions_item',
-                    schema_id=str(block_schema.id),
-                    schema_version_nb=0
-                ),
-                data=json.dumps({
-                    'json_schema': json_schema
-                }),
-                headers=headers)
-            assert res.status_code == 201
-            response_data = json.loads(res.get_data(as_text=True))
-            assert response_data['json_schema'] == json_schema
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# def test_create_block_schema(app, test_communities):
+#     """Test creating a new schema."""
+#     with app.app_context():
+#         community_id = str(test_communities['MyTestCommunity1'])
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(
+#                 url_for(
+#                     'b2share_schemas.block_schema_list'
+#                 ),
+#                 data=json.dumps({
+#                     'name': 'abc',
+#                     'community_id': community_id,
+#                 }),
+#                 headers=headers)
+#             assert res.status_code == 201
+#             response_data = json.loads(res.get_data(as_text=True))
+#             assert response_data['name'] == BlockSchema.get_block_schema(
+#                                                 response_data['schema_id']
+#                                             ).name
+#             assert str(
+#                 BlockSchema.get_block_schema(response_data['schema_id'])
+#                     .community
+#             ) == community_id
 
 
-def test_create_existing_block_schema_version(app, test_communities):
-    """Test creating an axisting version of the schema."""
-    with app.app_context():
-        community_id = str(test_communities['MyTestCommunity1'])
-        json_schema = block_schemas_json_schemas[0][0]
-        block_schema = BlockSchema.create_block_schema(community_id, 'abc')
-        all_versions = block_schema.versions
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(
-                url_for(
-                    'b2share_schemas.block_schema_versions_item',
-                    schema_id=str(block_schema.id),
-                    schema_version_nb=len(all_versions) - 1
-                ),
-                data=json.dumps({
-                    'json_schema': json_schema
-                }),
-                headers=headers)
-            assert res.status_code == 409
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# def test_create_block_schema_version(app, test_communities):
+#     """Test creating a new version of the schema."""
+#     with app.app_context():
+#         community_id = str(test_communities['MyTestCommunity1'])
+#         json_schema = block_schemas_json_schemas[0][0]
+#         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(
+#                 url_for(
+#                     'b2share_schemas.block_schema_versions_item',
+#                     schema_id=str(block_schema.id),
+#                     schema_version_nb=0
+#                 ),
+#                 data=json.dumps({
+#                     'json_schema': json_schema
+#                 }),
+#                 headers=headers)
+#             assert res.status_code == 201
+#             response_data = json.loads(res.get_data(as_text=True))
+#             assert response_data['json_schema'] == json_schema
 
 
-def test_create_invalid_block_schema_version(app, test_communities):
-    """Test creating an invalid version of the schema."""
-    with app.app_context():
-        community_id = str(test_communities['MyTestCommunity1'])
-        json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
-        block_schema = BlockSchema.create_block_schema(community_id, 'abc')
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(
-                url_for(
-                    'b2share_schemas.block_schema_versions_item',
-                    schema_id=str(block_schema.id),
-                    schema_version_nb=5
-                ),
-                data=json.dumps({
-                    'json_schema': json_schema
-                }),
-                headers=headers)
-            assert res.status_code == 400
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# def test_create_existing_block_schema_version(app, test_communities):
+#     """Test creating an axisting version of the schema."""
+#     with app.app_context():
+#         community_id = str(test_communities['MyTestCommunity1'])
+#         json_schema = block_schemas_json_schemas[0][0]
+#         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
+#         all_versions = block_schema.versions
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(
+#                 url_for(
+#                     'b2share_schemas.block_schema_versions_item',
+#                     schema_id=str(block_schema.id),
+#                     schema_version_nb=len(all_versions) - 1
+#                 ),
+#                 data=json.dumps({
+#                     'json_schema': json_schema
+#                 }),
+#                 headers=headers)
+#             assert res.status_code == 409
+
+
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# def test_create_invalid_block_schema_version(app, test_communities):
+#     """Test creating an invalid version of the schema."""
+#     with app.app_context():
+#         community_id = str(test_communities['MyTestCommunity1'])
+#         json_schema = {"$schema": "http://json-schema.org/draft-04/schema#"}
+#         block_schema = BlockSchema.create_block_schema(community_id, 'abc')
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(
+#                 url_for(
+#                     'b2share_schemas.block_schema_versions_item',
+#                     schema_id=str(block_schema.id),
+#                     schema_version_nb=5
+#                 ),
+#                 data=json.dumps({
+#                     'json_schema': json_schema
+#                 }),
+#                 headers=headers)
+#             assert res.status_code == 400
 
 
 def test_get_block_schema_version(app, test_communities):
@@ -231,22 +234,23 @@ def test_get_block_schemas(app, test_communities):
             assert response_data['schemas'][1]['name'] == block_schema_3.name
 
 
-def test_updating_block_schema(app, test_communities):
-    """Test updating a block schema."""
-    with app.app_context():
-        community = Community.create_community('name1', 'desc1')
-        community_id = community.id
-        block_schema = BlockSchema.create_block_schema(community_id, 'original')
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.patch(
-                url_for(
-                    'b2share_schemas.block_schema_item',
-                    schema_id=block_schema.id
-                ),
-                data=json.dumps({
-                    'name': 'abc'
-                }),
-                headers=headers)
-            assert res.status_code == 200
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# def test_updating_block_schema(app, test_communities):
+#     """Test updating a block schema."""
+#     with app.app_context():
+#         community = Community.create_community('name1', 'desc1')
+#         community_id = community.id
+#         block_schema = BlockSchema.create_block_schema(community_id, 'original')
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.patch(
+#                 url_for(
+#                     'b2share_schemas.block_schema_item',
+#                     schema_id=block_schema.id
+#                 ),
+#                 data=json.dumps({
+#                     'name': 'abc'
+#                 }),
+#                 headers=headers)
+#             assert res.status_code == 200

@@ -35,97 +35,100 @@ from b2share.modules.communities.models import Community as CommunityModel
 from b2share_unit_tests.helpers import create_user
 
 
-@pytest.mark.parametrize('app', [({
-    'extensions': [B2ShareCommunities],
-    'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': False}
-})],
-    indirect=['app'])
-def test_create_access_control(app, login_user, communities_permissions):
-    """Test community creation with differnet access rights."""
-    with app.app_context():
-        allowed_user = create_user('allowed')
-        not_allowed_user = create_user('not allowed')
-        communities_permissions(allowed_user.id).create_permission(True)
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @pytest.mark.parametrize('app', [({
+#     'extensions': [B2ShareCommunities],
+#     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': False}
+# })],
+#     indirect=['app'])
+# def test_create_access_control(app, login_user, communities_permissions):
+#     """Test community creation with differnet access rights."""
+#     with app.app_context():
+#         allowed_user = create_user('allowed')
+#         not_allowed_user = create_user('not allowed')
+#         communities_permissions(allowed_user.id).create_permission(True)
+#         db.session.commit()
 
-    # test without login
-    with app.app_context():
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 401
-        assert len(CommunityModel.query.all()) == 0
+#     # test without login
+#     with app.app_context():
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 401
+#         assert len(CommunityModel.query.all()) == 0
 
-    # test not allowed user
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(not_allowed_user, client)
+#     # test not allowed user
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(not_allowed_user, client)
 
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 403
-        assert len(CommunityModel.query.all()) == 0
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 403
+#         assert len(CommunityModel.query.all()) == 0
 
-    # test allowed user
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
+#     # test allowed user
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
 
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 201
-        assert len(CommunityModel.query.all()) == 1
-
-
-@pytest.mark.parametrize('app', [({
-    'extensions': [B2ShareCommunities],
-    'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
-})],
-    indirect=['app'])
-def test_create_unlogged_disabled_access_control(app, login_user,
-                                                 communities_permissions):
-    """Test community creation with ACL disabled and unlogged user."""
-    with app.app_context():
-        with app.test_client() as client:
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 201
-        assert len(CommunityModel.query.all()) == 1
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 201
+#         assert len(CommunityModel.query.all()) == 1
 
 
-@pytest.mark.parametrize('app', [({
-    'extensions': [B2ShareCommunities],
-    'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
-})],
-    indirect=['app'])
-def test_create_not_allowed_disabled_access_control(app, login_user,
-                                                    communities_permissions):
-    """Test community creation with ACL disabled and not allowed user."""
-    with app.app_context():
-        not_allowed_user = create_user('not allowed')
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @pytest.mark.parametrize('app', [({
+#     'extensions': [B2ShareCommunities],
+#     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
+# })],
+#     indirect=['app'])
+# def test_create_unlogged_disabled_access_control(app, login_user,
+#                                                  communities_permissions):
+#     """Test community creation with ACL disabled and unlogged user."""
+#     with app.app_context():
+#         with app.test_client() as client:
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 201
+#         assert len(CommunityModel.query.all()) == 1
 
-    # test not allowed user
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(not_allowed_user, client)
 
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 201
-        assert len(CommunityModel.query.all()) == 1
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @pytest.mark.parametrize('app', [({
+#     'extensions': [B2ShareCommunities],
+#     'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
+# })],
+#     indirect=['app'])
+# def test_create_not_allowed_disabled_access_control(app, login_user,
+#                                                     communities_permissions):
+#     """Test community creation with ACL disabled and not allowed user."""
+#     with app.app_context():
+#         not_allowed_user = create_user('not allowed')
+#         db.session.commit()
+
+#     # test not allowed user
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(not_allowed_user, client)
+
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 201
+#         assert len(CommunityModel.query.all()) == 1

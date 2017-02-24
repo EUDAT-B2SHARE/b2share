@@ -49,126 +49,128 @@ community_with_and_without_access_control = pytest.mark.parametrize('app', [({
     indirect=['app'])
 
 
-@community_with_and_without_access_control
-def test_valid_create(app, login_user,
-                      communities_permissions):
-    """Test VALID community creation request (POST .../communities/)."""
-    with app.app_context():
-        allowed_user = create_user('allowed')
-        communities_permissions(allowed_user.id).create_permission(True)
-        communities_permissions(allowed_user.id).read_permission(True)
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_valid_create(app, login_user,
+#                       communities_permissions):
+#     """Test VALID community creation request (POST .../communities/)."""
+#     with app.app_context():
+#         allowed_user = create_user('allowed')
+#         communities_permissions(allowed_user.id).create_permission(True)
+#         communities_permissions(allowed_user.id).read_permission(True)
+#         db.session.commit()
 
-    with app.test_client() as client:
-        with app.app_context():
-            login_user(allowed_user, client)
+#     with app.test_client() as client:
+#         with app.app_context():
+#             login_user(allowed_user, client)
 
-            headers = [('Content-Type', 'application/json'),
-                        ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list',
-                                      _external=False),
-                                data=json.dumps(community_metadata),
-                                headers=headers)
-            assert res.status_code == 201
-            # check that the returned community matches the given data
-            response_data = json.loads(res.get_data(as_text=True))
-            for field, value in community_metadata.items():
-                assert response_data[field] == value
+#             headers = [('Content-Type', 'application/json'),
+#                         ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list',
+#                                       _external=False),
+#                                 data=json.dumps(community_metadata),
+#                                 headers=headers)
+#             assert res.status_code == 201
+#             # check that the returned community matches the given data
+#             response_data = json.loads(res.get_data(as_text=True))
+#             for field, value in community_metadata.items():
+#                 assert response_data[field] == value
 
-            # check that an internal community returned id and that it contains
-            # the same data
-            assert 'id' in response_data.keys()
-            assert response_data['id'] == str(Community.get(
-                name=community_metadata['name']).id)
-            headers = res.headers
-            community_id = response_data['id']
+#             # check that an internal community returned id and that it contains
+#             # the same data
+#             assert 'id' in response_data.keys()
+#             assert response_data['id'] == str(Community.get(
+#                 name=community_metadata['name']).id)
+#             headers = res.headers
+#             community_id = response_data['id']
 
-    with app.app_context():
-        communities_permissions(
-            allowed_user.id).read_permission(True, community_id)
-        db.session.commit()
+#     with app.app_context():
+#         communities_permissions(
+#             allowed_user.id).read_permission(True, community_id)
+#         db.session.commit()
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # check that the returned self link returns the same data
-            subtest_self_link(response_data, headers, client)
-            assert headers['Location'] == response_data['links']['self']
-        # check that one community has been created
-        assert len(CommunityModel.query.all()) == 1
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # check that the returned self link returns the same data
+#             subtest_self_link(response_data, headers, client)
+#             assert headers['Location'] == response_data['links']['self']
+#         # check that one community has been created
+#         assert len(CommunityModel.query.all()) == 1
 
 
-@community_with_and_without_access_control
-def test_invalid_create(app, login_user,
-                        communities_permissions):
-    """Test INVALID community creation request (POST .../communities/)."""
-    with app.app_context():
-        allowed_user = create_user('allowed')
-        communities_permissions(allowed_user.id).create_permission(True)
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_invalid_create(app, login_user,
+#                         communities_permissions):
+#     """Test INVALID community creation request (POST .../communities/)."""
+#     with app.app_context():
+#         allowed_user = create_user('allowed')
+#         communities_permissions(allowed_user.id).create_permission(True)
+#         db.session.commit()
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # check that creating with non accepted format will return 406
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'video/mp4')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 406
-        # check that no community has been created
-        assert len(CommunityModel.query.all()) == 0
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # check that creating with non accepted format will return 406
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'video/mp4')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 406
+#         # check that no community has been created
+#         assert len(CommunityModel.query.all()) == 0
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # Check that creating with non-json Content-Type will return 400
-            headers = [('Content-Type', 'video/mp4'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data=json.dumps(community_metadata),
-                              headers=headers)
-            assert res.status_code == 415
-        # check that no community has been created
-        assert len(CommunityModel.query.all()) == 0
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # Check that creating with non-json Content-Type will return 400
+#             headers = [('Content-Type', 'video/mp4'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data=json.dumps(community_metadata),
+#                               headers=headers)
+#             assert res.status_code == 415
+#         # check that no community has been created
+#         assert len(CommunityModel.query.all()) == 0
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # check that creating with invalid json will return 400
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              data='{fdssfd',
-                              headers=headers)
-            assert res.status_code == 400
-        # check that no community has been created
-        assert len(CommunityModel.query.all()) == 0
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # check that creating with invalid json will return 400
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               data='{fdssfd',
+#                               headers=headers)
+#             assert res.status_code == 400
+#         # check that no community has been created
+#         assert len(CommunityModel.query.all()) == 0
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # check that creating with no content will return 400
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.post(url_for('b2share_communities.communities_list'),
-                              headers=headers)
-            assert res.status_code == 400
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # check that creating with no content will return 400
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.post(url_for('b2share_communities.communities_list'),
+#                               headers=headers)
+#             assert res.status_code == 400
 
-            # Bad internal error:
-            with patch('b2share.modules.communities.views.db.session.commit') \
-                    as mock:
-                mock.side_effect = Exception()
+#             # Bad internal error:
+#             with patch('b2share.modules.communities.views.db.session.commit') \
+#                     as mock:
+#                 mock.side_effect = Exception()
 
-                headers = [('Content-Type', 'application/json'),
-                           ('Accept', 'application/json')]
-                res = client.post(url_for('b2share_communities.communities_list'),
-                                  data=json.dumps(community_metadata),
-                                  headers=headers)
-                assert res.status_code == 500
-        # check that no community has been created
-        assert len(CommunityModel.query.all()) == 0
+#                 headers = [('Content-Type', 'application/json'),
+#                            ('Accept', 'application/json')]
+#                 res = client.post(url_for('b2share_communities.communities_list'),
+#                                   data=json.dumps(community_metadata),
+#                                   headers=headers)
+#                 assert res.status_code == 500
+#         # check that no community has been created
+#         assert len(CommunityModel.query.all()) == 0
 
 
 @community_with_and_without_access_control
@@ -252,273 +254,280 @@ def test_invalid_get(app, login_user,
             assert res.status_code == 406
 
 
-@community_with_and_without_access_control
-def test_valid_patch(app, login_user,
-                     communities_permissions, patch_community_function):
-    """Test VALID community patch request (PATCH .../communities/<id>)."""
-    with app.app_context():
-        # create community
-        created_community = Community.create_community(**community_metadata)
-        community_id = created_community.id
-        # create allowed user
-        allowed_user = create_user('allowed')
-        communities_permissions(
-            allowed_user.id).update_permission(True, community_id)
-        communities_permissions(
-            allowed_user.id).read_permission(True, community_id)
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_valid_patch(app, login_user,
+#                      communities_permissions, patch_community_function):
+#     """Test VALID community patch request (PATCH .../communities/<id>)."""
+#     with app.app_context():
+#         # create community
+#         created_community = Community.create_community(**community_metadata)
+#         community_id = created_community.id
+#         # create allowed user
+#         allowed_user = create_user('allowed')
+#         communities_permissions(
+#             allowed_user.id).update_permission(True, community_id)
+#         communities_permissions(
+#             allowed_user.id).read_permission(True, community_id)
+#         db.session.commit()
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            res = patch_community_function(community_id, client)
-            assert res.status_code == 200
-            # check that the returned community matches the given data
-            response_data = json.loads(res.get_data(as_text=True))
-            for field, value in patched_community_metadata.items():
-                assert response_data[field] == value
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             res = patch_community_function(community_id, client)
+#             assert res.status_code == 200
+#             # check that the returned community matches the given data
+#             response_data = json.loads(res.get_data(as_text=True))
+#             for field, value in patched_community_metadata.items():
+#                 assert response_data[field] == value
 
-            # check that an internal community returned id and that it contains
-            # the same data
-            assert 'id' in response_data.keys()
-            assert response_data['id'] == str(Community.get(
-                name=patched_community_metadata['name']).id)
-            headers = res.headers
+#             # check that an internal community returned id and that it contains
+#             # the same data
+#             assert 'id' in response_data.keys()
+#             assert response_data['id'] == str(Community.get(
+#                 name=patched_community_metadata['name']).id)
+#             headers = res.headers
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # check that the returned self link returns the same data
-            subtest_self_link(response_data, headers, client)
-
-
-@community_with_and_without_access_control
-def test_invalid_patch(app, login_user,
-                       communities_permissions):
-    """Test INVALID community patch request (PATCH .../communities/<id>)."""
-    with app.app_context():
-        # create user allowed to update all records
-        allowed_user = create_user('allowed')
-        communities_permissions(
-            allowed_user.id).update_permission(True, None)
-        db.session.commit()
-
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            unknown_uuid = uuid.uuid4()
-            # check that PATCH with non existing id will return 404
-            headers = [('Content-Type', 'application/json-patch+json'),
-                       ('Accept', 'application/json')]
-            res = client.patch(url_for('b2share_communities.communities_item',
-                                       community_id=unknown_uuid),
-                               data=json.dumps(community_patch),
-                               headers=headers)
-            assert res.status_code == 404
-
-            # create community
-            created_community = Community.create_community(
-                **community_metadata)
-            community_id = created_community.id
-            db.session.commit()
-
-            # check that PATCH with non accepted format will return 406
-            headers = [('Content-Type', 'application/json-patch+json'),
-                       ('Accept', 'video/mp4')]
-            res = client.patch(url_for('b2share_communities.communities_item',
-                                       community_id=community_id),
-                               data=json.dumps(community_patch),
-                               headers=headers)
-            assert res.status_code == 406
-
-            # check that PATCH with non-json Content-Type will return 415
-            headers = [('Content-Type', 'video/mp4'),
-                       ('Accept', 'application/json')]
-            res = client.patch(url_for('b2share_communities.communities_item',
-                                       community_id=community_id),
-                               data=json.dumps(community_patch),
-                               headers=headers)
-            assert res.status_code == 415
-
-            # check that PATCH with invalid json-patch will return 400
-            headers = [('Content-Type', 'application/json-patch+json'),
-                       ('Accept', 'application/json')]
-            res = client.patch(url_for('b2share_communities.communities_item',
-                                       community_id=community_id),
-                               data=json.dumps([
-                                   {'invalid': 'json-patch'}
-                               ]),
-                               headers=headers)
-            assert res.status_code == 400
-
-            # check that PATCH with invalid json will return 400
-            headers = [('Content-Type', 'application/json-patch+json'),
-                       ('Accept', 'application/json')]
-            res = client.patch(url_for('b2share_communities.communities_item',
-                                       community_id=community_id),
-                               data='{sdfsdf',
-                               headers=headers)
-            assert res.status_code == 400
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # check that the returned self link returns the same data
+#             subtest_self_link(response_data, headers, client)
 
 
-@community_with_and_without_access_control
-def test_valid_put(app, login_user,
-                   communities_permissions):
-    """Test VALID community put request (PUT .../communities/<id>)."""
-    with app.app_context():
-        # create community
-        created_community = Community.create_community(**community_metadata)
-        community_id = created_community.id
-        # create allowed user
-        allowed_user = create_user('allowed')
-        communities_permissions(
-            allowed_user.id).update_permission(True, community_id)
-        communities_permissions(
-            allowed_user.id).read_permission(True, community_id)
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_invalid_patch(app, login_user,
+#                        communities_permissions):
+#     """Test INVALID community patch request (PATCH .../communities/<id>)."""
+#     with app.app_context():
+#         # create user allowed to update all records
+#         allowed_user = create_user('allowed')
+#         communities_permissions(
+#             allowed_user.id).update_permission(True, None)
+#         db.session.commit()
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             unknown_uuid = uuid.uuid4()
+#             # check that PATCH with non existing id will return 404
+#             headers = [('Content-Type', 'application/json-patch+json'),
+#                        ('Accept', 'application/json')]
+#             res = client.patch(url_for('b2share_communities.communities_item',
+#                                        community_id=unknown_uuid),
+#                                data=json.dumps(community_patch),
+#                                headers=headers)
+#             assert res.status_code == 404
 
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(url_for('b2share_communities.communities_item',
-                                     community_id=community_id),
-                             data=json.dumps(patched_community_metadata),
-                             headers=headers)
-            assert res.status_code == 200
-            # check that the returned community matches the given data
-            response_data = json.loads(res.get_data(as_text=True))
-            for field, value in patched_community_metadata.items():
-                assert response_data[field] == value
+#             # create community
+#             created_community = Community.create_community(
+#                 **community_metadata)
+#             community_id = created_community.id
+#             db.session.commit()
 
-            # check that an internal community returned id and that it contains
-            # the same data
-            assert 'id' in response_data.keys()
-            assert response_data['id'] == str(Community.get(
-                name=patched_community_metadata['name']).id)
-            headers = res.headers
+#             # check that PATCH with non accepted format will return 406
+#             headers = [('Content-Type', 'application/json-patch+json'),
+#                        ('Accept', 'video/mp4')]
+#             res = client.patch(url_for('b2share_communities.communities_item',
+#                                        community_id=community_id),
+#                                data=json.dumps(community_patch),
+#                                headers=headers)
+#             assert res.status_code == 406
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            # check that the returned self link returns the same data
-            subtest_self_link(response_data, headers, client)
+#             # check that PATCH with non-json Content-Type will return 415
+#             headers = [('Content-Type', 'video/mp4'),
+#                        ('Accept', 'application/json')]
+#             res = client.patch(url_for('b2share_communities.communities_item',
+#                                        community_id=community_id),
+#                                data=json.dumps(community_patch),
+#                                headers=headers)
+#             assert res.status_code == 415
 
+#             # check that PATCH with invalid json-patch will return 400
+#             headers = [('Content-Type', 'application/json-patch+json'),
+#                        ('Accept', 'application/json')]
+#             res = client.patch(url_for('b2share_communities.communities_item',
+#                                        community_id=community_id),
+#                                data=json.dumps([
+#                                    {'invalid': 'json-patch'}
+#                                ]),
+#                                headers=headers)
+#             assert res.status_code == 400
 
-@community_with_and_without_access_control
-def test_invalid_put(app, login_user,
-                     communities_permissions):
-    """Test INVALID community put request (PUT .../communities/<id>)."""
-    with app.app_context():
-        # create allowed user
-        allowed_user = create_user('allowed')
-        communities_permissions(
-            allowed_user.id).update_permission(True, None)
-        db.session.commit()
-
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            unknown_uuid = uuid.uuid4()
-            # check that PUT with non existing id will return 404
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(url_for('b2share_communities.communities_item',
-                                     community_id=unknown_uuid),
-                             data=json.dumps(patched_community_metadata),
-                             headers=headers)
-            assert res.status_code == 404
-
-            # create community
-            created_community = Community.create_community(
-                **community_metadata)
-            community_id = created_community.id
-            db.session.commit()
-
-            # check that PUT with non accepted format will return 406
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'video/mp4')]
-            res = client.put(url_for('b2share_communities.communities_item',
-                                     community_id=community_id),
-                             data=json.dumps(patched_community_metadata),
-                             headers=headers)
-            assert res.status_code == 406
-
-            # check that PUT with non-json Content-Type will return 415
-            headers = [('Content-Type', 'video/mp4'),
-                       ('Accept', 'application/json')]
-            res = client.put(url_for('b2share_communities.communities_item',
-                                     community_id=community_id),
-                             data=json.dumps(patched_community_metadata),
-                             headers=headers)
-            assert res.status_code == 415
-
-            # check that PUT with invalid json will return 400
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(url_for('b2share_communities.communities_item',
-                                     community_id=community_id),
-                             data='{invalid-json',
-                             headers=headers)
-            assert res.status_code == 400
+#             # check that PATCH with invalid json will return 400
+#             headers = [('Content-Type', 'application/json-patch+json'),
+#                        ('Accept', 'application/json')]
+#             res = client.patch(url_for('b2share_communities.communities_item',
+#                                        community_id=community_id),
+#                                data='{sdfsdf',
+#                                headers=headers)
+#             assert res.status_code == 400
 
 
-@community_with_and_without_access_control
-def test_valid_delete(app, login_user,
-                      communities_permissions):
-    """Test VALID community delete request (DELETE .../communities/<id>)."""
-    with app.app_context():
-        # create community
-        created_community = Community.create_community(**community_metadata)
-        community_id = created_community.id
-        # create allowed user
-        allowed_user = create_user('allowed')
-        communities_permissions(
-            allowed_user.id).delete_permission(True, community_id)
-        db.session.commit()
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_valid_put(app, login_user,
+#                    communities_permissions):
+#     """Test VALID community put request (PUT .../communities/<id>)."""
+#     with app.app_context():
+#         # create community
+#         created_community = Community.create_community(**community_metadata)
+#         community_id = created_community.id
+#         # create allowed user
+#         allowed_user = create_user('allowed')
+#         communities_permissions(
+#             allowed_user.id).update_permission(True, community_id)
+#         communities_permissions(
+#             allowed_user.id).read_permission(True, community_id)
+#         db.session.commit()
 
-    with app.app_context():
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.delete(url_for('b2share_communities.communities_item',
-                                        community_id=community_id),
-                                headers=headers)
-            assert res.status_code == 204
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
 
-    with app.app_context():
-        # check database state
-        with pytest.raises(CommunityDeletedError):
-            Community.get(community_id)
-        community = Community.get(community_id, with_deleted=True)
-        assert community.deleted
-        # check that one community has been created
-        assert len(CommunityModel.query.all()) == 1
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(url_for('b2share_communities.communities_item',
+#                                      community_id=community_id),
+#                              data=json.dumps(patched_community_metadata),
+#                              headers=headers)
+#             assert res.status_code == 200
+#             # check that the returned community matches the given data
+#             response_data = json.loads(res.get_data(as_text=True))
+#             for field, value in patched_community_metadata.items():
+#                 assert response_data[field] == value
 
+#             # check that an internal community returned id and that it contains
+#             # the same data
+#             assert 'id' in response_data.keys()
+#             assert response_data['id'] == str(Community.get(
+#                 name=patched_community_metadata['name']).id)
+#             headers = res.headers
 
-@community_with_and_without_access_control
-def test_invalid_delete(app, login_user,
-                        communities_permissions):
-    """Test INVALID community delete request (DELETE .../communities/<id>)."""
-    with app.app_context():
-        # create allowed user
-        allowed_user = create_user('allowed')
-        communities_permissions(
-            allowed_user.id).delete_permission(True, None)
-        db.session.commit()
-
-        with app.test_client() as client:
-            login_user(allowed_user, client)
-            unknown_uuid = uuid.uuid4()
-            # check that GET with non existing id will return 404
-            headers = [('Accept', 'application/json')]
-            res = client.delete(url_for('b2share_communities.communities_item',
-                                        community_id=unknown_uuid),
-                                headers=headers)
-            assert res.status_code == 404
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             # check that the returned self link returns the same data
+#             subtest_self_link(response_data, headers, client)
 
 
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_invalid_put(app, login_user,
+#                      communities_permissions):
+#     """Test INVALID community put request (PUT .../communities/<id>)."""
+#     with app.app_context():
+#         # create allowed user
+#         allowed_user = create_user('allowed')
+#         communities_permissions(
+#             allowed_user.id).update_permission(True, None)
+#         db.session.commit()
+
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             unknown_uuid = uuid.uuid4()
+#             # check that PUT with non existing id will return 404
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(url_for('b2share_communities.communities_item',
+#                                      community_id=unknown_uuid),
+#                              data=json.dumps(patched_community_metadata),
+#                              headers=headers)
+#             assert res.status_code == 404
+
+#             # create community
+#             created_community = Community.create_community(
+#                 **community_metadata)
+#             community_id = created_community.id
+#             db.session.commit()
+
+#             # check that PUT with non accepted format will return 406
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'video/mp4')]
+#             res = client.put(url_for('b2share_communities.communities_item',
+#                                      community_id=community_id),
+#                              data=json.dumps(patched_community_metadata),
+#                              headers=headers)
+#             assert res.status_code == 406
+
+#             # check that PUT with non-json Content-Type will return 415
+#             headers = [('Content-Type', 'video/mp4'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(url_for('b2share_communities.communities_item',
+#                                      community_id=community_id),
+#                              data=json.dumps(patched_community_metadata),
+#                              headers=headers)
+#             assert res.status_code == 415
+
+#             # check that PUT with invalid json will return 400
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(url_for('b2share_communities.communities_item',
+#                                      community_id=community_id),
+#                              data='{invalid-json',
+#                              headers=headers)
+#             assert res.status_code == 400
+
+
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_valid_delete(app, login_user,
+#                       communities_permissions):
+#     """Test VALID community delete request (DELETE .../communities/<id>)."""
+#     with app.app_context():
+#         # create community
+#         created_community = Community.create_community(**community_metadata)
+#         community_id = created_community.id
+#         # create allowed user
+#         allowed_user = create_user('allowed')
+#         communities_permissions(
+#             allowed_user.id).delete_permission(True, community_id)
+#         db.session.commit()
+
+#     with app.app_context():
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.delete(url_for('b2share_communities.communities_item',
+#                                         community_id=community_id),
+#                                 headers=headers)
+#             assert res.status_code == 204
+
+#     with app.app_context():
+#         # check database state
+#         with pytest.raises(CommunityDeletedError):
+#             Community.get(community_id)
+#         community = Community.get(community_id, with_deleted=True)
+#         assert community.deleted
+#         # check that one community has been created
+#         assert len(CommunityModel.query.all()) == 1
+
+
+# FIXME: Test is disabled for V2 as it is not used by the UI
+# @community_with_and_without_access_control
+# def test_invalid_delete(app, login_user,
+#                         communities_permissions):
+#     """Test INVALID community delete request (DELETE .../communities/<id>)."""
+#     with app.app_context():
+#         # create allowed user
+#         allowed_user = create_user('allowed')
+#         communities_permissions(
+#             allowed_user.id).delete_permission(True, None)
+#         db.session.commit()
+
+#         with app.test_client() as client:
+#             login_user(allowed_user, client)
+#             unknown_uuid = uuid.uuid4()
+#             # check that GET with non existing id will return 404
+#             headers = [('Accept', 'application/json')]
+#             res = client.delete(url_for('b2share_communities.communities_item',
+#                                         community_id=unknown_uuid),
+#                                 headers=headers)
+#             assert res.status_code == 404
+
+
+# FIXME: Test is disabled for V2 as it is not used by the UI
 @community_with_and_without_access_control
 def test_action_on_deleted(app, login_user,
                            communities_permissions):
@@ -545,13 +554,13 @@ def test_action_on_deleted(app, login_user,
         Community.get(community_id).delete()
         with app.test_client() as client:
             login_user(allowed_user, client)
-            # try DELETE
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.delete(url_for('b2share_communities.communities_item',
-                                        community_id=community_id),
-                                headers=headers)
-            assert_410_gone_result(res)
+#             # try DELETE
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.delete(url_for('b2share_communities.communities_item',
+#                                         community_id=community_id),
+#                                 headers=headers)
+#             assert_410_gone_result(res)
             # try GET
             headers = [('Content-Type', 'application/json'),
                        ('Accept', 'application/json')]
@@ -559,22 +568,22 @@ def test_action_on_deleted(app, login_user,
                                      community_id=community_id),
                              headers=headers)
             assert_410_gone_result(res)
-            # try PUT
-            headers = [('Content-Type', 'application/json'),
-                       ('Accept', 'application/json')]
-            res = client.put(url_for('b2share_communities.communities_item',
-                                     community_id=community_id),
-                             data=json.dumps(patched_community_metadata),
-                             headers=headers)
-            assert_410_gone_result(res)
-            # try PATCH
-            headers = [('Content-Type', 'application/json-patch+json'),
-                       ('Accept', 'application/json')]
-            res = client.patch(url_for('b2share_communities.communities_item',
-                                       community_id=community_id),
-                               data=json.dumps(community_patch),
-                               headers=headers)
-            assert_410_gone_result(res)
+#             # try PUT
+#             headers = [('Content-Type', 'application/json'),
+#                        ('Accept', 'application/json')]
+#             res = client.put(url_for('b2share_communities.communities_item',
+#                                      community_id=community_id),
+#                              data=json.dumps(patched_community_metadata),
+#                              headers=headers)
+#             assert_410_gone_result(res)
+#             # try PATCH
+#             headers = [('Content-Type', 'application/json-patch+json'),
+#                        ('Accept', 'application/json')]
+#             res = client.patch(url_for('b2share_communities.communities_item',
+#                                        community_id=community_id),
+#                                data=json.dumps(community_patch),
+#                                headers=headers)
+#             assert_410_gone_result(res)
 
     # check that the record exist and is marked as deleted
     with app.app_context():
