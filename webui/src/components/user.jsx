@@ -48,7 +48,7 @@ export const NavbarUser = React.createClass({
                 <ul className="dropdown-menu pull-right" role="menu">
                     <li><Link to="/user"> <i className="fa fa-info"></i> Profile </Link></li>
                     <li className="divider"></li>
-                    <li><a href="/api/logout/"> <i className="glyphicon glyphicon-log-out"></i> Logout </a></li>
+                    <li><a href="/api/user/logout/"> <i className="glyphicon glyphicon-log-out"></i> Logout </a></li>
                 </ul>
             </li>
         );

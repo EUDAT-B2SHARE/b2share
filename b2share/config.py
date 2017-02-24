@@ -186,8 +186,8 @@ OAUTHCLIENT_REMOTE_APPS = dict(
     b2access=b2access.REMOTE_APP,
 )
 
-# Let Invenio Accounts register Flask Security
-ACCOUNTS_REGISTER_BLUEPRINT = True
+# Don't let Invenio Accounts register Flask Security
+ACCOUNTS_REGISTER_BLUEPRINT = False
 
 
 ACCOUNTS_REST_ASSIGN_ROLE_PERMISSION_FACTORY = \
