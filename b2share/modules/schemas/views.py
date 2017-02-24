@@ -111,27 +111,27 @@ class BlockSchemaVersionResource(ContentNegotiatedMethodView):
         self.check_etag(str(block_schema_version.released))
         return block_schema_version
 
-    def put(self, schema_id, schema_version_nb):
-        """Create a new version of the schema."""
-        block_schema = BlockSchema.get_block_schema(schema_id)
+    # def put(self, schema_id, schema_version_nb):
+    #     """Create a new version of the schema."""
+    #     block_schema = BlockSchema.get_block_schema(schema_id)
 
-        data = request.get_json()
-        if data is None:
-            return abort(400)
+    #     data = request.get_json()
+    #     if data is None:
+    #         return abort(400)
 
-        try:
-            schema = block_schema.create_version(
-                                                data['json_schema'],
-                                                int(schema_version_nb)
-                                                )
-        except InvalidSchemaVersionError as e:
-            abort(400, str(e))
-        except SchemaVersionExistsError as e:
-            abort(409, str(e))
-        return self.make_response(
-            block_schema_version=schema,
-            code=201,
-        )
+    #     try:
+    #         schema = block_schema.create_version(
+    #                                             data['json_schema'],
+    #                                             int(schema_version_nb)
+    #                                             )
+    #     except InvalidSchemaVersionError as e:
+    #         abort(400, str(e))
+    #     except SchemaVersionExistsError as e:
+    #         abort(409, str(e))
+    #     return self.make_response(
+    #         block_schema_version=schema,
+    #         code=201,
+    #     )
 
 
 def pass_community_schema(f):
@@ -209,19 +209,19 @@ class BlockSchemaListResource(ContentNegotiatedMethodView):
             schemas=schemas,
             code=200)
 
-    def post(self):
-        """Create a new schema."""
-        if request.content_type != 'application/json':
-            abort(415)
-        data = request.get_json()
-        if data is None:
-            return abort(400)
+    # def post(self):
+    #     """Create a new schema."""
+    #     if request.content_type != 'application/json':
+    #         abort(415)
+    #     data = request.get_json()
+    #     if data is None:
+    #         return abort(400)
 
-        schema = BlockSchema.create_block_schema(**data)
-        return self.make_response(
-            schema=schema,
-            code=201,
-        )
+    #     schema = BlockSchema.create_block_schema(**data)
+    #     return self.make_response(
+    #         schema=schema,
+    #         code=201,
+    #     )
 
 
 class BlockSchemaResource(ContentNegotiatedMethodView):
@@ -247,39 +247,39 @@ class BlockSchemaResource(ContentNegotiatedMethodView):
             code=200
         )
 
-    def patch(self, schema_id):
-        """Patch a schema."""
-        data = request.get_json(force=True)
-        if data is None:
-            abort(400)
+    # def patch(self, schema_id):
+    #     """Patch a schema."""
+    #     data = request.get_json(force=True)
+    #     if data is None:
+    #         abort(400)
 
-        block_schema = BlockSchema.get_block_schema(schema_id)
-        self.check_etag(str(block_schema.updated))
+    #     block_schema = BlockSchema.get_block_schema(schema_id)
+    #     self.check_etag(str(block_schema.updated))
 
-        try:
-            if 'application/json' == request.content_type:
-                block_schema.update(data)
-            else:
-                block_schema = block_schema.patch(data)
-            db.session.commit()
-            return self.make_response(
-                schema=block_schema,
-                code=200
-            )
-        except (JsonPatchConflict):
-            abort(409)
-        except (JsonPatchException):
-            abort(400)
-        except InvalidBlockSchemaError:
-            db.session.rollback()
-            abort(400)
-        except Exception as e1:
-            current_app.logger.exception('Failed to patch record.')
-            try:
-                db.session.rollback()
-            except Exception as e2:
-                raise e2 from e1
-            abort(500)
+    #     try:
+    #         if 'application/json' == request.content_type:
+    #             block_schema.update(data)
+    #         else:
+    #             block_schema = block_schema.patch(data)
+    #         db.session.commit()
+    #         return self.make_response(
+    #             schema=block_schema,
+    #             code=200
+    #         )
+    #     except (JsonPatchConflict):
+    #         abort(409)
+    #     except (JsonPatchException):
+    #         abort(400)
+    #     except InvalidBlockSchemaError:
+    #         db.session.rollback()
+    #         abort(400)
+    #     except Exception as e1:
+    #         current_app.logger.exception('Failed to patch record.')
+    #         try:
+    #             db.session.rollback()
+    #         except Exception as e2:
+    #             raise e2 from e1
+    #         abort(500)
 
 
 blueprint.add_url_rule(
