@@ -246,6 +246,10 @@ OAISERVER_METADATA_FORMATS = {
     },
 }
 
+# Cache
+# =====
+CACHE_TYPE='redis'
+
 # Celery
 # ======
 #: Default broker (RabbitMQ on locahost).

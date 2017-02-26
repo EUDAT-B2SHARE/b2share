@@ -1,5 +1,16 @@
 version: '2'
 services:
+    postgres:
+        image: postgres:9.6.2
+        environment:
+            - "POSTGRES_PASSWORD=${B2SHARE_POSTGRESQL_PASSWORD}"
+            - "POSTGRES_USER=${B2SHARE_POSTGRESQL_USER}"
+            - "PGDATA=/var/lib/postgresql/data"
+        volumes:
+            - "${B2SHARE_DATADIR}/postgres-data:/var/lib/postgresql/data"
+        ports:
+            - "5432"
+
     b2share:
         build:
             context: ..
@@ -13,24 +24,36 @@ services:
             - "INIT_DB_AND_INDEX=${INIT_DB_AND_INDEX}"
             - "LOAD_DEMO_COMMUNITIES_AND_RECORDS=${LOAD_DEMO_COMMUNITIES_AND_RECORDS}"
             - "B2SHARE_PREFERRED_URL_SCHEME=https"
+            - "B2SHARE_SQLALCHEMY_DATABASE_URI='postgresql+psycopg2://${B2SHARE_POSTGRESQL_USER}:${B2SHARE_POSTGRESQL_PASSWORD}@postgres:5432/${B2SHARE_POSTGRESQL_DBNAME}'"
+            - "B2SHARE_CACHE_REDIS_HOST='redis'"
+            - "B2SHARE_CACHE_REDIS_URL='redis://redis:6379/0'"
+            - "B2SHARE_ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'"
+            - "B2SHARE_BROKER_URL='amqp://guest:guest@mq:5672//'"
+            - "B2SHARE_CELERY_RESULT_BACKEND='redis://redis:6379/2'"
+            - "B2SHARE_SEARCH_ELASTIC_HOSTS='elasticsearch'"
         volumes:
-            - /b2share-data:/usr/var/b2share-instance
+            - "${B2SHARE_DATADIR}/b2share-data:/usr/var/b2share-instance"
         ports:
-            - "5000:5000"
+            - "5000"
         links:
             - elasticsearch
             - redis
+            - postgres
 
     elasticsearch:
         build: elasticsearch
         ports:
-            - "9200:9200"
-            - "9300:9300"
+            - "9200"
+            - "9300"
+        volumes:
+            - "${B2SHARE_DATADIR}/elasticsearch-data:/usr/share/elasticsearch/data"
 
     redis:
         image: redis:3.2
         ports:
-            - "6379:6379"
+            - "6379"
+        volumes:
+            - "${B2SHARE_DATADIR}/redis-data:/data"
 
     nginx:
         build: nginx
@@ -38,7 +61,7 @@ services:
             - "80:80"
             - "443:443"
         # volumes:
-        #     - /b2share-etc/ssl:/etc/ssl/
+        #     - "${B2SHARE_DATADIR}/nginx-data/ssl:/etc/ssl/"
         links:
             - b2share
 
@@ -46,6 +69,12 @@ services:
         image: rabbitmq:3.6-management
         restart: "always"
         ports:
-            - "15672:15672"
-            - "5672:5672"
+            - "15672"
+            - "5672"
         read_only: true
+        volumes:
+            - "${B2SHARE_DATADIR}/rabbitmq-data:/var/lib/rabbitmq"
+        entrypoint:
+            - "rabbitmq-server"
+            - "--hostname"
+            - "b2share-redis"

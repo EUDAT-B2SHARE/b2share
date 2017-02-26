@@ -30,9 +30,42 @@ SITE_FUNCTION = 'demo' # set to "production" on production instances
 # it is prominently displayed on the front page, except when set to "production"
 # and also returned by the REST API when querying http://<HOSTNAME>/api
 
-
-# Change this parameter to use an external database, e.g.:
+#: In order to modify this variable B2SHARE_SQLALCHEMY_DATABASE_URI
+#: needs to be removed from docker-compose.yml
+#: Change this parameter to use an external database, e.g.:
 # SQLALCHEMY_DATABASE_URI = "postgresql://db_username:db_password@db_host/db_name"
+
+# Cache
+# =====
+#: In order to modify this variable B2SHARE_CACHE_REDIS_HOST
+#: needs to be removed from docker-compose.yml
+# CACHE_REDIS_HOST='redis'
+
+#: In order to modify this variable B2SHARE_CACHE_REDIS_URL
+#: needs to be removed from docker-compose.yml
+# CACHE_REDIS_URL='redis://redis:6379/0'
+
+# Session
+# =======
+#: In order to modify this variable B2SHARE_ACCOUNTS_SESSION_REDIS_URL
+#: needs to be removed from docker-compose.yml
+# ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'
+
+# Celery
+# ======
+#: In order to modify this variable B2SHARE_BROKER_URL needs to be
+#: removed from docker-compose.yml
+# BROKER_URL='amqp://guest:guest@mq:5672//'
+
+#: In order to modify this variable B2SHARE_CELERY_RESULT_BACKEND needs to be
+#: removed from docker-compose.yml
+# CELERY_RESULT_BACKEND='redis://redis:6379/2'
+
+# Elasticsearch
+# =============
+#: In order to modify this variable B2SHARE_SEARCH_ELASTIC_HOSTS needs to be
+#: removed from docker-compose.yml
+# SEARCH_ELASTIC_HOSTS=['elasticsearch']
 
 
 # email notifications

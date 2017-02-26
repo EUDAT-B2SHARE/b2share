@@ -21,7 +21,7 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-
+psycopg2==2.6.2
 alembic==0.8.10           # via flask-alembic
 amqp==1.4.9               # via kombu
 anyjson==0.3.3            # via kombu
