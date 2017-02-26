@@ -324,3 +324,14 @@ SITE_FUNCTION = 'demo' # set to "production" on production instances
 # if the TRAINING_SITE_LINK parameter is not empty, a message will show up
 # on the front page redirecting the testers to this link
 TRAINING_SITE_LINK = ""
+
+
+# Flask-Security
+# ==============
+#: As we use B2Access, don't ask users to confirm their accounts.
+SECURITY_CONFIRMABLE=False
+#: Don't send emails when users register
+SECURITY_SEND_REGISTER_EMAIL=False
+#: There is no password so don't send password change emails
+SECURITY_SEND_PASSWORD_CHANGE_EMAIL=False
+SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL=False
