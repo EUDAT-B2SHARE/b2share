@@ -6,6 +6,9 @@ if [ ! -f /usr/var/b2share-instance/provisioned ]; then
     # if a config file already exists, continue
     /usr/bin/b2share demo load_config || true
 
+    # wait for all the services to start
+    # FIXME: we should have some shell code to check that instead of a sleep.
+    sleep 30
     if [ "${INIT_DB_AND_INDEX}" = "1" ]; then
         /usr/bin/b2share index queue init
         /usr/bin/b2share db init

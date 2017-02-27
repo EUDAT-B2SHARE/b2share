@@ -118,6 +118,7 @@ folder and run ``docker-compose``, e.g.:
     $ export B2ACCESS_SECRET_KEY=...             # the password used for registration
     $ export B2SHARE_SECRET_KEY=...              # a secret string used for encrypting user sessions
     $ export B2SHARE_JSONSCHEMAS_HOST='<FQDN>'   # replace <FQDN> with the domain of the B2SHARE server
+    $ export B2SHARE_POSTGRESQL_DBNAME=...       # name of the postgresql database used by b2share
     $ export B2SHARE_POSTGRESQL_PASSWORD=...     # password used by b2share when accessing the postgresql database
     $ export B2SHARE_POSTGRESQL_USER=...         # username used by b2share when accessing the postgresql database (default=b2share)
     $ export B2SHARE_DATADIR='<PATH>'            # path on the host which will be mounted and contain all b2share related data, including postgresql, elasticsearch, redis, rabbitmq, nginx and b2share itself.
