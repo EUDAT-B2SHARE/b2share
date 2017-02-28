@@ -116,7 +116,7 @@ export const UserProfile = React.createClass({
                     </div>
                     <div className="row">
                         <h3>Own drafts</h3>
-                            <p><Link to={"/records?drafts=1&q=publication_state:draft&owners:"+user.get('id')}>
+                            <p><Link to={"/records?drafts=1&q=publication_state%3Adraft"}>
                                 List of your draft records
                             </Link></p>
                     </div>                    

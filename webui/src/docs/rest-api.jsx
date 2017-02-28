@@ -578,6 +578,60 @@ module.exports = function() {
             </Returns>
         </Example>
 
+        <h3 id="report-abuse">Report a record as an abuse record</h3>
+        <p> If there is anything wrong with the record users can report it as an abuse record.
+            An email will be send to the related admin and it will be followed up. There are 4 different
+            reasons listed on the report abuse form and the reporter should choose one of:</p>
+            <ol>
+                <li><p>Abuse or Inappropriate content</p></li>
+                <li><p>Copyrighted material</p></li>
+                <li><p>Not research data</p></li>
+                <li><p>Illegal content</p></li>
+            </ol>
+
+            <p>The reporter can also send a message to explain more about the problem. It is possible for an anonymous
+               user to send the report and authentication is not required. </p>
+            <p>Report an abuse record.</p>
+            <ul>
+                <li><p>HTTP method: POST</p></li>
+                <li><p>URL path: /api/records/$RECORD_ID/abuse</p></li>
+                <li><p>Required data payload: json object with information about reporter and the reason</p></li>
+                <li><p>Optional parameters: access_token</p></li>
+                <li><p>Returns: a messgae that an email was sent and the record is reported</p></li>
+            </ul>
+
+
+        <Example>
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is s not research data...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$HOSTNAME/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            <Returns>
+                {{
+                  "message": "The record is reported."
+                }}
+            </Returns>
+        </Example>
+
+        <h3 id="access-request">Send a request to get access to restricted data in a record</h3>
+        <p> For the records with restricted access to data, a user (either authenticated or anonymous) can
+            send a request to the record owner and ask for it. </p>
+            <p>Send request to access closed data.</p>
+            <ul>
+                <li><p>HTTP method: POST</p></li>
+                <li><p>URL path: /api/records/$RECORD_ID/accessrequests</p></li>
+                <li><p>Required data payload: json object with information about who is sending the request</p></li>
+                <li><p>Optional parameters: access_token</p></li>
+                <li><p>Returns: a message that an email was sent </p></li>
+            </ul>
+
+
+        <Example>
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"explain the request...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$HOSTNAME/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            <Returns>
+                {{
+                    "message": "An email was sent to the record owner."
+                }}
+            </Returns>
+        </Example>
+
         <h3>Responses</h3>
         <p>All response bodies are JSON encoded (UTF-8 encoded).</p>
         <p>{'A record is represented as a JSON object: \u007B "field1": value, … \u007D '}</p>
