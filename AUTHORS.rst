@@ -1,4 +1,5 @@
 .. This file is part of EUDAT B2Share.
+   Copyright (C) 2017, CERN.
    Copyright (C) 2016, CERN.
 
    B2Share is free software; you can redistribute it and/or
@@ -22,19 +23,21 @@
 Authors
 =======
 
+- Adrian Mouat (KTH)
 - Carl Johan Håkansson (KTH)
+- Dennis Blommensteijn (SURFsara)
 - Emanuel Dima (EKUT)
-- Nicolas Harraudeau (CERN)
-- Sarah Berenji Ardestani (KTH)
-- Lassi Lehtinen (CSC)
-- Pietari Hyvärinen (CSC)
-- Urpo Kaila (CSC)
 - Hilary Hanahoe (TRUST)
-- Klára Pešková (CUNI)
 - Huw Morris (STFC)
+- Ilja Livenson (KTH)
+- Klára Pešková (CUNI)
+- Kristian Niininen (CSC)
+- Lassi Lehtinen (CSC)
 - Mikael Karlsson (CSC)
 - Martin Philipp Hellmich (CERN)
-- Dennis Blommensteijn (SURFsara)
-- Adrian Mouat (KTH)
-- Ilja Livenson (KTH)
+- Nicolas Harraudeau (CERN)
 - Pavel Straňák (CUNI)
+- Pietari Hyvärinen (CSC)
+- Sarah Berenji Ardestani (KTH)
+- Thijs Cobben (SURFsara)
+- Urpo Kaila (CSC)
