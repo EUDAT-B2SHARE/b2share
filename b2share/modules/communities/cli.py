@@ -41,6 +41,28 @@ def communities():
     """communities management commands."""
 
 
+def _validate_community_parameters(name=None, description=None, logo=None):
+    """Validate community parameters and update them if needed."""
+    if name is not None and len(name) > 255:
+        raise click.BadParameter(""""NAME parameter is longer than the 255
+        character maximum""")
+    if description is not None and len(description) > 1024:
+        raise click.BadParameter("""DESCRIPTION parameter is longer than the
+        1024 character maximum""")
+
+    if logo is not None:
+        webui_path = os.environ.get('B2SHARE_UI_PATH', 'webui/app')
+        img_path = os.path.abspath(os.path.join(webui_path, 'img/communities'))
+        if not os.path.isabs(logo):
+            logo = os.path.join(img_path, logo)
+        if not logo.startswith(img_path) or not isfile(logo):
+            raise click.BadParameter(""""LOGO should be the filename of an
+            image file existing in the B2SHARE_UI_PATH/img/communities/
+            directory.""")
+        logo = '/' + os.path.relpath(logo, webui_path)
+    return (name, description, logo)
+
+
 @communities.command()
 @with_appcontext
 @click.option('-v', '--verbose', is_flag=True, default=False)
@@ -52,19 +74,8 @@ def create(verbose, name, description, logo):
      Description is a text of maximally 1024 characters enclosed in
     parentheses. The logo parameter should be a valid path to a logo file
     relative to B2SHARE_UI_PATH/img/communities directory """
-    if len(name) > 255:
-        raise click.BadParameter(""""NAME parameter is longer than the 255
-        character maximum""")
-    if len(description) > 1024:
-        raise click.BadParameter("""DESCRIPTION parameter is longer than the
-        1024 character maximum""")
-    if not isfile(os.path.join(os.environ.get('B2SHARE_UI_PATH', 'webui/app'),
-                               'img/communities', logo)):
-        raise click.BadParameter(""""LOGO should be the filename of an
-         image file existing in the B2SHARE_UI_PATH/img/communities/ directory.
-         """)
-
-    logo = os.path.join('/img/communities', logo)
+    name, description, logo = _validate_community_parameters(name, description,
+                                                             logo)
     try:
         Community.get(name=name)
         #if it does not yield the CommunityDoesNotExistError then:
@@ -106,6 +117,9 @@ def edit(verbose, id, name, description, logo, clear_fields):
     if not(name or description or logo):
         raise click.ClickException("""At least one of name, description or
         id must be specified""")
+
+    name, description, logo = _validate_community_parameters(name, description,
+                                                             logo)
     data = {}
     if name:
         if name != community.name:
