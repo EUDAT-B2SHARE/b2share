@@ -341,26 +341,35 @@ def update_or_set_community_schema(community, json_file):
 
 
 def _update_community_schema(community, community_schema, schema_dict):
-    comm_schema_json = json.loads(community_schema.community_schema)
-    if 'properties' not in comm_schema_json.keys():
-        raise click.ClickException("""Invalid community schema
-            for community %s""" % community.name)
+    base_url = urlunsplit((
+        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+        current_app.config['JSONSCHEMAS_HOST'],
+        current_app.config.get('APPLICATION_ROOT') or '', '', ''
+    ))
+    with current_app.test_request_context('/', base_url=base_url):
+        comm_schema_json = json.loads(community_schema.community_schema)
+        if 'properties' not in comm_schema_json.keys():
+            raise click.ClickException("""Invalid community schema
+                for community %s""" % community.name)
 
-    if len(comm_schema_json['properties']) > 1:
-        raise click.ClickException("""Multiple block schemas not supported.""")
+        if len(comm_schema_json['properties']) > 1:
+            raise click.ClickException("""Multiple block schemas not supported.""")
 
-    block_schema_id = comm_schema_json['properties'].popitem()[0]
-    try:
-        block_schema = BlockSchema.get_block_schema(block_schema_id)
-    except BlockSchemaDoesNotExistError:
-        raise click.ClickException("""CommunitySchema refers to block schema with id: %s.
-            This schema does not exist""" % block_schema_id)
-    new_block_schema_version = block_schema.create_version(schema_dict)
-    block_schema_version_url = block_schema_version_json_schema_link(new_block_schema_version)
-    comm_schema_json['properties'][str(block_schema.id)] = {
-        '$ref': block_schema_version_url,
-    }
-    return CommunitySchema.create_version(community.id, comm_schema_json)
+        block_schema_id = comm_schema_json['properties'].popitem()[0]
+        try:
+            block_schema = BlockSchema.get_block_schema(block_schema_id)
+        except BlockSchemaDoesNotExistError:
+            raise click.ClickException("""CommunitySchema refers to block
+                schema with id: %s. This schema does not
+                exist""" % block_schema_id)
+        new_block_schema_version = block_schema.create_version(schema_dict)
+        block_schema_version_url = block_schema_version_json_schema_link(
+            new_block_schema_version, _external=True
+        )
+        comm_schema_json['properties'][str(block_schema.id)] = {
+            '$ref': block_schema_version_url,
+        }
+        return CommunitySchema.create_version(community.id, comm_schema_json)
 
 
 def _create_community_schema(community, schema_dict):
