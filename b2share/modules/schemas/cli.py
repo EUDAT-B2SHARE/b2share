@@ -32,7 +32,9 @@ from uuid import UUID
 import click
 from flask_cli import with_appcontext
 
+from flask import current_app
 from invenio_db import db
+from urllib.parse import urlunsplit
 
 from .errors import CommunitySchemaDoesNotExistError
 from .errors import RootSchemaAlreadyExistsError, BlockSchemaDoesNotExistError
@@ -362,19 +364,30 @@ def _update_community_schema(community, community_schema, schema_dict):
 
 
 def _create_community_schema(community, schema_dict):
-    block_schema = BlockSchema.create_block_schema(community.id, community.name)
-    block_schema_version = block_schema.create_version(schema_dict)
-    block_schema_version_url = block_schema_version_json_schema_link(block_schema_version)
-    community_schema = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'properties': {
-            str(block_schema.id): {
-                '$ref': block_schema_version_url,
-            }
-        },
-        'type': "object",
-        'additionalProperties': False,
-        'required': [str(block_schema.id)],
-    }
-    click.secho(json.dumps(community_schema))
-    return CommunitySchema.create_version(community.id, community_schema)
+    base_url = urlunsplit((
+        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+        current_app.config['JSONSCHEMAS_HOST'],
+        current_app.config.get('APPLICATION_ROOT') or '', '', ''
+    ))
+    with current_app.test_request_context('/', base_url=base_url):
+        block_schema = BlockSchema.create_block_schema(
+            community.id, community.name
+        )
+        block_schema_version = block_schema.create_version(schema_dict)
+        block_schema_version_url = block_schema_version_json_schema_link(
+            block_schema_version, _external=True
+        )
+        community_schema = {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'properties': {
+                str(block_schema.id): {
+                    '$ref': block_schema_version_url,
+                }
+            },
+            'type': "object",
+            'additionalProperties': False,
+            'required': [str(block_schema.id)],
+        }
+        click.secho(json.dumps(community_schema, indent=4))
+        result = CommunitySchema.create_version(community.id, community_schema)
+    return result
