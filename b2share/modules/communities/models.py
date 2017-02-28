@@ -69,7 +69,7 @@ class Community(db.Model, Timestamp):
 
     # Publication workflow used in this community
     publication_workflow = db.Column(db.String(80), nullable=False,
-                                     default='review_and_publish')
+                                     default='direct_publish')
 
     # Restrict record creation
     restricted_submission = db.Column(db.Boolean, nullable=False,
