@@ -21,6 +21,9 @@ if [ ! -f /usr/var/b2share-instance/provisioned ]; then
 
     if [ "${LOAD_DEMO_COMMUNITIES_AND_RECORDS}" = "1" ]; then
         /usr/bin/b2share demo load_data
+    elif [ "${INIT_DB_AND_INDEX}" = "1" ]; then
+        # add default location
+        /usr/bin/b2share files add-location 'local' file:///usr/var/b2share-instance/files --default
     fi
 
     touch /usr/var/b2share-instance/provisioned
