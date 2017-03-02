@@ -8,8 +8,8 @@ services:
             - "PGDATA=/var/lib/postgresql/data"
         volumes:
             - "${B2SHARE_DATADIR}/postgres-data:/var/lib/postgresql/data"
-        ports:
-            - "5432"
+#        ports:
+#            - "5432"
 
     b2share:
         build:
@@ -33,8 +33,8 @@ services:
             - "B2SHARE_SEARCH_ELASTIC_HOSTS='elasticsearch'"
         volumes:
             - "${B2SHARE_DATADIR}/b2share-data:/usr/var/b2share-instance"
-        ports:
-            - "5000"
+#        ports:
+#            - "5000"
         links:
             - elasticsearch
             - redis
@@ -42,16 +42,16 @@ services:
 
     elasticsearch:
         build: elasticsearch
-        ports:
-            - "9200"
-            - "9300"
+#        ports:
+#            - "9200"
+#            - "9300"
         volumes:
             - "${B2SHARE_DATADIR}/elasticsearch-data:/usr/share/elasticsearch/data"
 
     redis:
         image: redis:3.2-alpine
-        ports:
-            - "6379"
+#        ports:
+#            - "6379"
         volumes:
             - "${B2SHARE_DATADIR}/redis-data:/data"
 
@@ -69,9 +69,9 @@ services:
         hostname: b2share-redis
         image: rabbitmq:3.6-management-alpine
         restart: "always"
-        ports:
-            - "15672"
-            - "5672"
+#        ports:
+#            - "15672"
+#            - "5672"
 #        read_only: true
         volumes:
             - "${B2SHARE_DATADIR}/rabbitmq-data:/var/lib/rabbitmq"
