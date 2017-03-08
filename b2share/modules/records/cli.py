@@ -36,6 +36,7 @@ from invenio_pidstore.providers.datacite import DataCiteProvider
 from b2share.modules.records.serializers import datacite_v31
 from b2share.modules.records.minters import make_record_url
 from b2share.modules.communities.api import Community
+from b2share.modules.records.tasks import update_expired_embargos
 from .utils import list_db_published_records
 
 
@@ -52,6 +53,14 @@ def check_dois(update):
     """
     for record in list_db_published_records():
         check_record_doi(record, update)
+
+
+@b2records.command()
+@with_appcontext
+def update_expired_embargoes():
+    """Updates all records with expired embargoes to open access."""
+    update_expired_embargos.delay()
+    click.secho('Expiring embargoes...', fg='green')
 
 
 def check_record_doi(record, update=False):

@@ -23,6 +23,7 @@
 
 """Celery background tasks."""
 
+import pytest
 from datetime import datetime, timedelta
 
 from b2share_unit_tests.helpers import (
@@ -35,9 +36,13 @@ from invenio_db import db
 from invenio_search import current_search
 from invenio_files_rest.models import Bucket
 from invenio_records_files.api import Record
+from click.testing import CliRunner
+from b2share.modules.records.cli import b2records
+from flask_cli import ScriptInfo
 
 
-def test_update_expired_embargo(app, test_communities, login_user):
+@pytest.mark.parametrize('cli_cmd', [True, False])
+def test_update_expired_embargo(app, test_communities, login_user, cli_cmd):
     """Test record embargo update."""
 
     uploaded_files = {
@@ -68,6 +73,7 @@ def test_update_expired_embargo(app, test_communities, login_user):
             closed_record_data, creator, files=uploaded_files
         )
         closed_record_id = closed_record.id
+
         db.session.commit()
         # refresh index to make records searchable
         current_search._client.indices.refresh()
@@ -91,7 +97,14 @@ def test_update_expired_embargo(app, test_communities, login_user):
     check_embargo(closed_record_id, is_embargoed=True)
 
     with app.app_context():
-        update_expired_embargos.delay()
+        if not cli_cmd:
+            update_expired_embargos.delay()
+        else:
+            script_info = ScriptInfo(create_app=lambda info: app)
+            runner = CliRunner()
+            result = runner.invoke(b2records, ['update_expired_embargoes'], obj=script_info)
+            assert result.exit_code == 0
+
         # refresh index to make records searchable
         current_search._client.indices.refresh()
 
