@@ -36,6 +36,7 @@ Authors
 - Mikael Karlsson (CSC)
 - Martin Philipp Hellmich (CERN)
 - Nicolas Harraudeau (CERN)
+- Paulina Lach (CERN)
 - Pavel Straňák (CUNI)
 - Pietari Hyvärinen (CSC)
 - Sarah Berenji Ardestani (KTH)
