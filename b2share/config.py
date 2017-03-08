@@ -261,7 +261,7 @@ CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 #: Beat schedule
 CELERYBEAT_SCHEDULE = {
     'embargo-updater': {
-        'task': 'b2share.modules.records.tasks.update_expired_embargos',
+        'task': 'b2share.modules.records.tasks.update_expired_embargoes',
         'schedule': crontab(minute=2, hour=0),
     },
     'indexer': {
