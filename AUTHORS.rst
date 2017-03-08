@@ -26,6 +26,7 @@ Authors
 - Adrian Mouat (KTH)
 - Carl Johan Håkansson (KTH)
 - Dennis Blommensteijn (SURFsara)
+- Dinos Kousidis (CERN)
 - Emanuel Dima (EKUT)
 - Hilary Hanahoe (TRUST)
 - Huw Morris (STFC)

@@ -39,7 +39,7 @@ from .search import B2ShareRecordsSearch
 
 
 @shared_task(ignore_result=True)
-def update_expired_embargos():
+def update_expired_embargoes():
     """Release expired embargoes every midnight."""
     logger = current_app.logger
     base_url = urlunsplit((
