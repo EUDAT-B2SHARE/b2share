@@ -80,9 +80,9 @@ const Record = React.createClass({
 
     renderFixedFields(record, community) {
         function renderTitle(title, i) {
-            return (
-                <h2 key={i} className="name">{title.get('title')}</h2>
-            );
+            return i === 0 ?
+                <h2 key={i} className="name">{title.get('title')}</h2> :
+                <h3 key={i} className="name">{title.get('title')}</h3>
         }
         function renderCreator(creator) {
             const c = creator.get('creator_name');
