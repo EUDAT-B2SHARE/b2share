@@ -295,25 +295,25 @@ const EditRecord = React.createClass({
                 <SelectBig data={disciplines}
                     onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
         } else if (schema.get('type') === 'array') {
-            const arrSchema = schema.get('items');
+            const itemSchema = schema.get('items');
             const raw_values = this.getValue(path);
             const len = (raw_values && raw_values.length) || 1;
             const arrField = [...Array(len).keys()].map(i =>
-                this.renderFieldTree(id+`[${i}]`, arrSchema, newpath(i)));
+                this.renderFieldTree(id+`[${i}]`, itemSchema, newpath(i)));
             const btnAddRemove = (ev, pos) => {
                 ev.preventDefault();
                 if (pos === 0) {
-                    const arrType = arrSchema.get('type');
-                    const values = this.getValue(path);
-                    values.push(arrType === 'array' ? List() : arrType === 'object' ? Map() : null);
-                    this.setValue(schema, path, fromJS(values));
+                    const itemType = itemSchema.get('type');
+                    const values = this.state.record.getIn(path) || List();
+                    const newItem = itemType === 'array' ? List() : itemType === 'object' ? Map() : null;
+                    const newValues = values.push(newItem);
+                    this.setValue(schema, path, newValues);
                 } else {
                     this.setValue(schema, newpath(pos), undefined);
                 }
-                const v = this.getValue(path);
             }
             field = arrField.map((f, i) =>
-                <div className="container-fluid" key={id}>
+                <div className="container-fluid" key={id+`[${i}]`}>
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
                         <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
