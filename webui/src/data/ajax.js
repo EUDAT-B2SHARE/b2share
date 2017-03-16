@@ -104,25 +104,30 @@ export function ajaxDelete({url, params, successFn, errorFn, completeFn}) {
 }
 
 
+export function onAjaxError(xhr) {
+    console.error("ajax error, xhr: ", xhr);
+    if (!xhr) {
+        errorHandler.fn("Unexpected error");
+        return;
+    }
+    if (xhr.readyState === 0) {
+        errorHandler.fn("Network error, please check your internet connection");
+    } else if (xhr.status === 0) {
+        errorHandler.fn("Error: cannot connect to server");
+    } else {
+        let msg = xhr.statusText;
+        try {
+            msg = JSON.parse(xhr.responseText).message;
+        } catch (_) {
+        }
+        errorHandler.fn(`Error: ${msg}`);
+    }
+};
+
+
 function ajaxWithError(ajaxObject) {
     if (!ajaxObject.error) {
-        ajaxObject.error = function(xhr) {
-            console.error("ajax error, xhr: ", xhr);
-            if (!xhr) {
-                errorHandler.fn("Unexpected error");
-                return;
-            }
-            if (xhr.readyState === 0) {
-                errorHandler.fn("Network error, please check your internet connection");
-            } else {
-                let msg = xhr.statusText;
-                try {
-                    msg = JSON.parse(xhr.responseText).message;
-                } catch (_) {
-                }
-                errorHandler.fn(`Error: ${msg}`);
-            }
-        };
+        ajaxObject.error = onAjaxError;
     }
 
     ajaxWithToken(ajaxObject);

@@ -12,6 +12,7 @@ momentLocalizer(moment);
 numberLocalizer();
 
 import { serverCache, notifications, Error, browser } from '../data/server';
+import { onAjaxError } from '../data/ajax';
 import { keys, pairs, objEquals } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
@@ -50,12 +51,12 @@ export const EditRecordRoute = React.createClass({
         }
     },
 
-    patchRecordOrDraft(patch, onSuccessFn) {
+    patchRecordOrDraft(patch, onSuccessFn, onErrorFn) {
         const { id } = this.props.params;
         if (this.isDraft) {
-            serverCache.patchDraft(id, patch, onSuccessFn);
+            serverCache.patchDraft(id, patch, onSuccessFn, onErrorFn);
         } else {
-            serverCache.patchRecord(id, patch, onSuccessFn);
+            serverCache.patchRecord(id, patch, onSuccessFn, onErrorFn);
         }
     },
 
@@ -306,7 +307,11 @@ const EditRecord = React.createClass({
                     const itemType = itemSchema.get('type');
                     const values = this.state.record.getIn(path) || List();
                     const newItem = itemType === 'array' ? List() : itemType === 'object' ? Map() : null;
-                    const newValues = values.push(newItem);
+                    let newValues = values.push(newItem);
+                    if (newValues.count() == 1) {
+                        // added value starting from an empty container; 2 values needed
+                        newValues = newValues.push(newItem);
+                    }
                     this.setValue(schema, path, newValues);
                 } else {
                     this.setValue(schema, newpath(pos), undefined);
@@ -555,13 +560,25 @@ const EditRecord = React.createClass({
             if (this.props.isDraft && !this.isForPublication()) {
                 this.props.refreshCache();
                 this.setState({dirty:false, waitingForServer: false});
+                notifications.clearAll();
             } else {
                 browser.gotoRecord(record.id);
             }
         }
+        const onError = (xhr) => {
+            this.setState({waitingForServer: false});
+            onAjaxError(xhr);
+            try {
+                const errors = JSON.parse(xhr.responseText).errors;
+                errors.map(err => {
+                    notifications.warning(`Error in field '${err.field}': ${err.message}`);
+                });
+            } catch (_) {
+            }
+        }
 
         this.setState({waitingForServer: true});
-        this.props.patchFn(patch, afterPatch);
+        this.props.patchFn(patch, afterPatch, onError);
     },
 
     isForPublication() {
