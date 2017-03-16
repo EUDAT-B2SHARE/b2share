@@ -1,11 +1,13 @@
-# mysql:
-#     image: mysql
-#     ports:
-#         - "3306:3306"
-#     environment:
-#         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-#         - MYSQL_USER=b2share_evo
-#         - MYSQL_DATABASE=b2share_evo
+postgres:
+        image: postgres:9.6.2
+        environment:
+            - "POSTGRES_PASSWORD=${B2SHARE_POSTGRESQL_PASSWORD}"
+            - "POSTGRES_USER=${B2SHARE_POSTGRESQL_USER}"
+            - "PGDATA=/var/lib/postgresql/data"
+        volumes:
+            - "${B2SHARE_DATADIR}/postgres-data:/var/lib/postgresql/data"
+        ports:
+            - "5432:5432"
 
 elasticsearch:
     build: ../dockerize/elasticsearch 
