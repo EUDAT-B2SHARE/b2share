@@ -333,20 +333,6 @@ def update_or_set_community_schema(community, json_file):
     #create new block version schema
     try:
         community_schema = CommunitySchema.get_community_schema(comm.id)
-        _update_community_schema(comm, community_schema, schema_dict)
-    except CommunitySchemaDoesNotExistError:
-        _create_community_schema(comm, schema_dict)
-    db.session.commit()
-    click.secho("Succesfully processed new metadata schema", fg='green')
-
-
-def _update_community_schema(community, community_schema, schema_dict):
-    base_url = urlunsplit((
-        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-        current_app.config['JSONSCHEMAS_HOST'],
-        current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))
-    with current_app.test_request_context('/', base_url=base_url):
         comm_schema_json = json.loads(community_schema.community_schema)
         if 'properties' not in comm_schema_json.keys():
             raise click.ClickException("""Invalid community schema
@@ -354,7 +340,24 @@ def _update_community_schema(community, community_schema, schema_dict):
 
         if len(comm_schema_json['properties']) > 1:
             raise click.ClickException("""Multiple block schemas not supported.""")
+        #we can by configuration also have a community schema that does not refer to a blockschema
+        if len (comm_schema_json['properties']) == 0:
+            _create_community_schema(comm, schema_dict)
+        else:
+            _update_community_schema(comm, comm_schema_json, schema_dict)
+    except CommunitySchemaDoesNotExistError:
+        _create_community_schema(comm, schema_dict)
+    db.session.commit()
+    click.secho("Succesfully processed new metadata schema", fg='green')
 
+
+def _update_community_schema(community, comm_schema_json, schema_dict):
+    base_url = urlunsplit((
+        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+        current_app.config['JSONSCHEMAS_HOST'],
+        current_app.config.get('APPLICATION_ROOT') or '', '', ''
+    ))
+    with current_app.test_request_context('/', base_url=base_url):
         block_schema_id = comm_schema_json['properties'].popitem()[0]
         try:
             block_schema = BlockSchema.get_block_schema(block_schema_id)
