@@ -52,5 +52,5 @@ mysql:
   environment:
     - MYSQL_DATABASE=invenio
     - MYSQL_USER=invenio
-    - MYSQL_PASSWORD=my123p$ss
+    - MYSQL_PASSWORD=my123pss
     - MYSQL_ROOT_PASSWORD=mysecretpassword
