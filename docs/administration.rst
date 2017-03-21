@@ -114,7 +114,9 @@ id between colons).
 CLI for community mgt
 ---------------------
 1. Create a community 
+
 .. code-block:: console
+
     $ b2share communities create NAME DESCRIPTION FILE
 
 File can be some webformat logo.
@@ -124,7 +126,9 @@ File can be some webformat logo.
    
 Note: you can also look in tests/b2share_functional_tests/data/testschema.py
 Note: you can also do
+
 .. code-block:: console
+
   $ b2share schemas block_schema list    #to obtain ID
   $ b2share schemas block_schema_version_generate_json BLOCK_SCHEMA_ID 
 
