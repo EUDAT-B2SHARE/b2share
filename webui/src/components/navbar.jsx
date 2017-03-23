@@ -159,9 +159,17 @@ export const Breadcrumbs = React.createClass({
 
 
 export const Notifications = React.createClass({
+    olDomElement: null,
+
     componentWillMount() {
         notifications.store.onChange = () => {
             this.forceUpdate();
+            if (this.olDomElement && notifications.isNotEmpty()) {
+                this.olDomElement.scrollIntoView({
+                    block: "start",
+                    behavior: "smooth",
+                });
+            }
         }
     },
 
@@ -185,7 +193,7 @@ export const Notifications = React.createClass({
         const levels = notifications.getAll();
         const nonEmpty = levels.find(texts => texts.size > 0);
         return (
-            <ol className="list-unstyled">
+            <ol className="list-unstyled" ref={(x)=>{this.olDomElement=x}}>
                 <HeightAnimate>
                     { nonEmpty ?
                         <ListAnimate>

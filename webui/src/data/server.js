@@ -150,37 +150,40 @@ class Poster {
         this.requestSent = false;
     }
 
-    post(params, successFn) {
+    post(params, successFn, errorFn) {
         if (!this.requestSent) {
             this.requestSent = true;
             ajaxPost({
                 url: this.url,
                 params: params,
                 successFn: successFn,
+                errorFn: errorFn,
                 completeFn: () => { this.requestSent = false; },
             });
         }
     }
 
-    put(params, successFn) {
+    put(params, successFn, errorFn) {
         if (!this.requestSent) {
             this.requestSent = true;
             ajaxPut({
                 url: this.url,
                 params: params,
                 successFn: successFn,
+                errorFn: errorFn,
                 completeFn: () => { this.requestSent = false; },
             });
         }
     }
 
-    patch(params, successFn) {
+    patch(params, successFn, errorFn) {
         if (!this.requestSent) {
             this.requestSent = true;
             ajaxPatch({
                 url: this.url,
                 params: params,
                 successFn: successFn,
+                errorFn: errorFn,
                 completeFn: () => { this.requestSent = false; },
             });
         }
@@ -640,16 +643,16 @@ class ServerCache {
         this.posters.draft.get(id).put(metadata, successFn);
     }
 
-    patchDraft(id, patch, successFn) {
-        this.posters.draft.get(id).patch(patch, successFn);
+    patchDraft(id, patch, successFn, errorFn) {
+        this.posters.draft.get(id).patch(patch, successFn, errorFn);
     }
 
     updateRecord(id, metadata, successFn) {
         this.posters.record.get(id).put(metadata, successFn);
     }
 
-    patchRecord(id, patch, successFn) {
-        this.posters.record.get(id).patch(patch, successFn);
+    patchRecord(id, patch, successFn, errorFn) {
+        this.posters.record.get(id).patch(patch, successFn, errorFn);
     }
 
     b2dropInit(username, password, successFn, errorFn) {
@@ -727,6 +730,11 @@ class Notifications {
 
     getAll() {
         return this.store.getIn(['notifications']);
+    }
+
+    isNotEmpty() {
+        const n = this.store.getIn(['notifications']);
+        return n.get('danger').count() || n.get('warning').count() || n.get('info').count();
     }
 
     clearAll() {
