@@ -150,16 +150,16 @@ def check_configuration(config, logger):
         if config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
             error("SQLALCHEMY_DATABASE_URI cannot use sqlite database for a non-demo instance")
 
-        check('SUPPORT_MAIL')
+        check('SUPPORT_EMAIL')
 
     if site_function and site_function == 'production':
         if config['MAIL_SUPPRESS_SEND']:
             error("MAIL_SUPPRESS_SEND must be set to False for a production instance")
 
-        if config['FAKE_EPIC_PID']:
+        if config.get('FAKE_EPIC_PID'):
             error("FAKE_EPIC_PID must be set to False for a production instance")
 
-        if config['FAKE_DOI']:
+        if config.get('FAKE_DOI'):
             error("FAKE_DOI must be set to False for a production instance")
 
         if not (config['CFG_EPIC_USERNAME'] and config['CFG_EPIC_PASSWORD'] and
