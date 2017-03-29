@@ -63,7 +63,7 @@ configurations = [({'config': {'PREFERRED_URL_SCHEME': 'https'}}),
                   ({'config': {'PREFERRED_URL_SCHEME': 'http'}})]
 
 @pytest.mark.parametrize('app', configurations, indirect=['app'])
-def _test_existing_community_set_schema_cmd(app, test_communities):
+def test_existing_community_set_schema_cmd(app, test_communities):
     """Test the `schemas set_schema` CLI command."""
     with app.app_context():
         runner = CliRunner()
