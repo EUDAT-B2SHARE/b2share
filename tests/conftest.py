@@ -67,12 +67,12 @@ sys.path.append(
 sys.path.append(os.path.dirname(__file__))
 
 
-@pytest.fixture(scope='function')
-def app(request, tmpdir):
-    """Flask application fixture."""
+@pytest.yield_fixture(scope='session')
+def base_app():
+    """Base uninitialized flask application fixture."""
     from b2share.factory import create_api
 
-    instance_path = tmpdir.mkdir('instance_dir').strpath
+    instance_path = tempfile.mkdtemp()
     os.environ.update(
         B2SHARE_INSTANCE_PATH=os.environ.get(
             'INSTANCE_PATH', instance_path),
@@ -95,33 +95,38 @@ def app(request, tmpdir):
         CELERY_CACHE_BACKEND="memory",
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
         SUPPORT_EMAIL='support@eudat.eu',
+        PREFERRED_URL_SCHEME='https',
     )
+    yield app
+    shutil.rmtree(instance_path)
 
-    # update the application with the configuration provided by the test
-    if hasattr(request, 'param') and 'config' in request.param:
-        app.config.update(**request.param['config'])
 
-    with app.app_context():
-        if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':
-            try:
-                drop_database(db.engine.url)
-            except ProgrammingError:
-                pass
-            create_database(db.engine.url)
+@pytest.fixture(scope='function')
+def app(request, base_app):
+    """Initialized application fixture."""
+    with base_app.app_context():
+        try:
+            drop_database(db.engine.url)
+        except ProgrammingError:
+            pass
+        create_database(db.engine.url)
         db.create_all()
+        # reset elasticsearch
         for deleted in current_search.delete(ignore=[404]):
             pass
         for created in current_search.create(None):
             pass
 
     def finalize():
-        with app.app_context():
-            db.drop_all()
-            if app.config['SQLALCHEMY_DATABASE_URI'] != 'sqlite://':
-                drop_database(db.engine.url)
-
+        with base_app.app_context():
+            db.session.remove()
+            drop_database(db.engine.url)
+            # Dispose the engine in order to close all connections. This is
+            # needed for sqlite in memory databases.
+            db.engine.dispose()
     request.addfinalizer(finalize)
-    return app
+
+    return base_app
 
 
 @pytest.fixture(scope='function')
@@ -465,7 +470,7 @@ def flask_http_responses(app):
                 as rsps:
             for rule in app.url_map.iter_rules():
                 url_regexp = re.compile(
-                    'http://' +
+                    'https://' +
                     app.config.get('SERVER_NAME') +
                     (app.config.get('APPLICATION_ROOT') or '') +
                     re.sub(r'<[^>]+>', '\S+', rule.rule))

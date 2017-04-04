@@ -40,14 +40,6 @@ from b2share.modules.communities import Community
 from b2share.modules.communities.errors import CommunityDeletedError
 from b2share.modules.communities.models import Community as CommunityModel
 
-# Decorator running a community test with and without access control enabled
-community_with_and_without_access_control = pytest.mark.parametrize('app', [({
-    'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': True}
-}), ({
-    'config': {'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED': False}
-})],
-    indirect=['app'])
-
 
 # FIXME: Test is disabled for V2 as it is not used by the UI
 # @community_with_and_without_access_control
@@ -173,7 +165,6 @@ community_with_and_without_access_control = pytest.mark.parametrize('app', [({
 #         assert len(CommunityModel.query.all()) == 0
 
 
-@community_with_and_without_access_control
 def test_valid_get(app, login_user,
                    communities_permissions):
     """Test VALID community get request (GET .../communities/<id>)."""
@@ -216,7 +207,6 @@ def test_valid_get(app, login_user,
             subtest_self_link(response_data, headers, client)
 
 
-@community_with_and_without_access_control
 def test_invalid_get(app, login_user,
                      communities_permissions):
     """Test INVALID community get request (GET .../communities/<id>)."""
@@ -528,7 +518,6 @@ def test_invalid_get(app, login_user,
 
 
 # FIXME: Test is disabled for V2 as it is not used by the UI
-@community_with_and_without_access_control
 def test_action_on_deleted(app, login_user,
                            communities_permissions):
     """Test getting, deleting and updating a perviously deleted community."""

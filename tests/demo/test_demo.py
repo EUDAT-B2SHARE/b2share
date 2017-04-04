@@ -35,12 +35,6 @@ from b2share.modules.schemas.cli import schemas as schemas_cmd
 from b2share_demo.cli import demo as demo_cmd
 
 
-@pytest.mark.parametrize('app', [({
-    'config': {'PREFERRED_URL_SCHEME': 'https'}
-}), ({
-    'config': {'PREFERRED_URL_SCHEME': 'http'}
-})],
-    indirect=['app'])
 def test_demo_cmd_load(app):
     """Test the `load` CLI command."""
     with app.app_context():

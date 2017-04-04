@@ -45,44 +45,36 @@ def communities_permissions(app):
             with db.session.begin_nested():
                 user = accounts.datastore.get_user(self.user_id)
                 # only add the access rights if the access control is enabled
-                if not app.extensions[
-                        'b2share-communities'].rest_access_control_disabled:
-                    db.session.add(ActionUsers(
-                        action=communities_create_all.value, argument=None,
-                        user=user, exclude=not allow))
+                db.session.add(ActionUsers(
+                    action=communities_create_all.value, argument=None,
+                    user=user, exclude=not allow))
 
         def read_permission(self, allow, community_id=None):
             with db.session.begin_nested():
                 user = accounts.datastore.get_user(self.user_id)
                 # only add the access rights if the access control is enabled
-                if not app.extensions[
-                        'b2share-communities'].rest_access_control_disabled:
-                    db.session.add(ActionUsers(
-                        action=communities_read_all.value,
-                        argument=str(community_id),
-                        user=user, exclude=not allow))
+                db.session.add(ActionUsers(
+                    action=communities_read_all.value,
+                    argument=str(community_id),
+                    user=user, exclude=not allow))
 
         def update_permission(self, allow, community_id=None):
             with db.session.begin_nested():
                 user = accounts.datastore.get_user(self.user_id)
                 # only add the access rights if the access control is enabled
-                if not app.extensions[
-                        'b2share-communities'].rest_access_control_disabled:
-                    db.session.add(ActionUsers(
-                        action=communities_update_all.value,
-                        argument=str(community_id),
-                        user=user, exclude=not allow))
+                db.session.add(ActionUsers(
+                    action=communities_update_all.value,
+                    argument=str(community_id),
+                    user=user, exclude=not allow))
 
         def delete_permission(self, allow, community_id=None):
             with db.session.begin_nested():
                 user = accounts.datastore.get_user(self.user_id)
                 # only add the access rights if the access control is enabled
-                if not app.extensions[
-                        'b2share-communities'].rest_access_control_disabled:
-                    db.session.add(ActionUsers(
-                        action=communities_delete_all.value,
-                        argument=str(community_id),
-                        user=user, exclude=not allow))
+                db.session.add(ActionUsers(
+                    action=communities_delete_all.value,
+                    argument=str(community_id),
+                    user=user, exclude=not allow))
 
     return UserPermissionsFactory
 

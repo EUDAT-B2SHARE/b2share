@@ -50,9 +50,7 @@ from b2share_unit_tests.schemas.data import (
     backward_incompatible_block_schemas_json_schemas
 )
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
+
 def test_root_schema(app):
     """Test valid usage of the RootSchema API."""
     with app.app_context():
@@ -74,9 +72,6 @@ def test_root_schema(app):
             version += 1
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_root_schemas_backward_compatibility(app):
     """Test non backward compatible root schemas."""
     with app.app_context():
@@ -102,9 +97,6 @@ def test_root_schemas_backward_compatibility(app):
             RootSchema.get_root_schema(len(root_schemas_json_schemas) + 1)
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_root_schema_errors(app):
     """Test invalid usage of the RootSchema API."""
     with app.app_context():
@@ -170,9 +162,6 @@ def test_root_schema_errors(app):
             RootSchema.get_root_schema(42)
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_block_schemas(app):
     """Test valid usage of the BlockSchema API."""
     with app.app_context():
@@ -201,9 +190,6 @@ def test_block_schemas(app):
         assert retrieved_block_schema.name == new_name
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_block_schema_errors(app):
     """Test invalid usage of the BlockSchema API."""
     with app.app_context():
@@ -250,9 +236,6 @@ def test_block_schema_errors(app):
             db.session.commit()
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_block_schemas_versions(app):
     """Test valid usage of the BlockSchemaVersion API."""
     with app.app_context():
@@ -320,9 +303,6 @@ def test_block_schemas_versions(app):
             )
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_block_schemas_versions_backward_compatibility(app):
     """Test non backward compatible root schemas."""
     with app.app_context():
@@ -362,9 +342,6 @@ def test_block_schemas_versions_backward_compatibility(app):
             len(block_schemas_json_schemas[0])
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_block_schema_version_errors(app):
     """Test invalid usage of the BlockSchemaVersion API."""
     with app.app_context():
@@ -397,9 +374,6 @@ def test_block_schema_version_errors(app):
         assert len(block_schema.versions) == 0
 
 
-@pytest.mark.parametrize('app', [({'extensions':
-                                   [B2ShareCommunities, B2ShareSchemas]})],
-                         indirect=['app'])
 def test_community_schema(app, flask_http_responses):
     """Test valid usage of the CommunitySchema API."""
     with app.app_context():

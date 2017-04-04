@@ -59,10 +59,6 @@ test_schema = {
     "required": ["test_field1"]
 }
 
-configurations = [({'config': {'PREFERRED_URL_SCHEME': 'https'}}),
-                  ({'config': {'PREFERRED_URL_SCHEME': 'http'}})]
-
-@pytest.mark.parametrize('app', configurations, indirect=['app'])
 def test_existing_community_set_schema_cmd(app, test_communities):
     """Test the `schemas set_schema` CLI command."""
     with app.app_context():
@@ -88,7 +84,6 @@ def test_existing_community_set_schema_cmd(app, test_communities):
             assert result.exit_code == 0
 
 
-@pytest.mark.parametrize('app', configurations, indirect=['app'])
 def test_new_community_set_schema_cmd(app, login_user, tmp_location):
     """Test adding a community and setting its schema using CLI commands."""
     with app.app_context():
