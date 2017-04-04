@@ -28,10 +28,12 @@ from __future__ import absolute_import, print_function
 
 import click
 from flask_cli import with_appcontext
+import requests
 
 from invenio_db import db
 from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.datacite import DataCiteProvider
+from invenio_records_files.api import Record
 
 from b2share.modules.records.serializers import datacite_v31
 from b2share.modules.records.minters import make_record_url
@@ -48,20 +50,29 @@ def b2records():
 
 @b2records.command()
 @with_appcontext
-@click.option('-u', '--update', is_flag=True, default=False)
-def check_dois(update):
-    """ Checks that all DOIs of records in the current instance are registered.
-    """
-    for record in list_db_published_records():
-        check_record_doi(record, update)
-
-
-@b2records.command()
-@with_appcontext
 def update_expired_embargoes():
     """Updates all records with expired embargoes to open access."""
     update_expired_embargoes_task.delay()
     click.secho('Expiring embargoes...', fg='green')
+
+
+@b2records.command()
+@with_appcontext
+@click.option('-r', '--record', default=None)
+@click.option('-a', '--allrecords', is_flag=True, default=False)
+@click.option('-u', '--update', is_flag=True, default=False)
+def check_dois(record, allrecords, update):
+    """ Checks that DOIs of records in the current instance are registered.
+    """
+    if record:
+        record = Record.get_record(record)
+        check_record_doi(record, update)
+    elif allrecords:
+        click.secho('checking DOI for all records')
+        for record in list_db_published_records():
+            check_record_doi(record, update)
+    else:
+        raise click.ClickException('Either -r or -a option must be selected')
 
 
 def check_record_doi(record, update=False):
@@ -72,16 +83,39 @@ def check_record_doi(record, update=False):
                 for d in record['_pid']
                 if d.get('type') == 'DOI']
     for doi in doi_list:
+        if _datacite_doi_reference(doi.pid.pid_value) is None:
+            if doi.pid.status == PIDStatus.REGISTERED:
+                # the doi is not truly registered with datacite
+                click.secho('    {}: not registered with datacite'.format(
+                    doi.pid.pid_value))
+                doi.pid.status = PIDStatus.RESERVED
+
         click.secho('    {}: {}'.format(doi.pid.pid_value, doi.pid.status))
         if doi.pid.status != PIDStatus.RESERVED:
             continue
 
         # RESERVED but not REGISTERED
         if update:
+            recid = record.get('_deposit', {}).get('id')
             url = make_record_url(recid)
             doc = datacite_v31.serialize(doi.pid, record)
-            doi.register(url=url, doc=doc)
+            _datacite_register_doi(doi, url, doc)
             db.session.commit()
             click.secho('    registered just now', fg='green', bold=True)
         else:
             click.secho('    not registered', fg='red', bold=True)
+
+
+def _datacite_doi_reference(doi_value):
+    url = "http://doi.org/" + doi_value
+    res = requests.get(url, allow_redirects=False)
+    if res.status_code < 200 or res.status_code >= 400:
+        click.secho('    doi.org returned code {} for {}'.format(
+            res.status_code, doi_value))
+        return None
+    return res.headers['Location']
+
+
+
+def _datacite_register_doi(doi, url, doc):
+    doi.register(url=url, doc=doc)
