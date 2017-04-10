@@ -19,6 +19,7 @@ import { NewRecordRoute  } from './components/newrecord.jsx';
 import { EditRecordRoute  } from './components/editrecord.jsx';
 import { AccessRequest } from './components/accessrequest.jsx';
 import { ReportAbuse } from './components/reportabuse.jsx';
+import { CommunityAdmin } from './components/community_admin.jsx'
 
 // TODO: test file uploads in various browsers
 // TODO: edit records: plugins
@@ -102,7 +103,11 @@ const router = (
 
             <Route path="communities" component={Frame} >
                 <IndexRoute component={CommunityListRoute} />
-                <Route path=":id" component={CommunityRoute} />
+                <Route path=":id" component={Frame} >
+                    <IndexRoute component={CommunityRoute} />
+                    <Route path="admin" component={CommunityAdmin} />
+                </Route>
+
             </Route>
 
             <Route path="records" component={Frame} >
@@ -113,6 +118,7 @@ const router = (
                     <Route path="edit" component={EditRecordRoute}/>
                     <Route path="accessrequest" component={AccessRequest}/>
                     <Route path="abuse" component={ReportAbuse}/>
+
                 </Route>
             </Route>
 
