@@ -109,8 +109,8 @@ def is_record_editable(recid):
 
     (domain, owner_email, is_private, admin_can_edit_published_record) = _get_record_info(recid)
 
-    # if private record, allow owner of the record
-    if is_private and current_user['email'] == owner_email:
+    # allow owner of the record edit it
+    if current_user['email'] == owner_email:
         return True
 
     # the user's groups are not updated unless we call reload()
