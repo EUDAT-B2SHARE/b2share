@@ -84,6 +84,8 @@ tests_require = [
     'Flask-Testing',
     'mock',
     'responses>=0.5.1',
+    'wsgidav>=2.1.0',
+    'cherrypy>=8.8.0',
 ]
 
 extras_require = {
