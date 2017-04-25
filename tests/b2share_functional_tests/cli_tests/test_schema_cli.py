@@ -26,9 +26,9 @@ import pytest
 from click.testing import CliRunner
 from flask_cli import ScriptInfo
 from flask import url_for
-
 from invenio_db import db
 from invenio_files_rest.models import Location
+import traceback
 
 from b2share.modules.communities.api import Community
 from b2share.modules.communities.cli import communities as communities_cmd
@@ -210,12 +210,26 @@ def test_create_block_schema(app, test_communities):
                 'cccccccc-1111-1111-1111-111111111111',
                 'Block Schema Name'], 
             obj=script_info)
-        print("TC")
-        print(result.output)
-        try:
-            json.loads("bla die bla")
-        except:
-            assert False
+        assert result.exit_code == 0
+        result = runner.invoke(schemas_cmd, [
+                'block_schema_list'
+            ],
+            obj=script_info)
+        assert(result.output.find("Block Schema Na") > 0)
+
+def test_set_schema(app, test_communities):
+    """Test set_schema command"""
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app = lambda info: app)
+        result = runner.invoke(schemas_cmd, [
+            'set_schema',
+            'cccccccc-1111-1111-1111-111111111111',
+        ])
+        file = open("testcom.json")
+        content = file.read()
+        print(content)
+        assert False
         
         
         
