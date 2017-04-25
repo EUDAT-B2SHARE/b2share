@@ -8,7 +8,7 @@
 #         - MYSQL_DATABASE=b2share_evo
 
 elasticsearch:
-    image: elasticsearch
+    build: ../dockerize/elasticsearch
     ports:
         - "9200:9200"
         - "9300:9300"
