@@ -39,21 +39,6 @@ class _B2ShareCommunitiesState(object):
             app: the Flask application.
         """
         self.app = app
-        self._rest_access_control_disabled = None
-
-    @cached_property
-    def rest_access_control_disabled(self):
-        """Load the REST API access control disabling flag from app config.
-
-        Returns:
-            bool: True if B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED is
-                set to True in the application configuration, else False.
-        """
-        if self._rest_access_control_disabled is None:
-            self._rest_access_control_disabled = self.app.config.get(
-                'B2SHARE_COMMUNITIES_REST_ACCESS_CONTROL_DISABLED')
-        return (self._rest_access_control_disabled if
-                self._rest_access_control_disabled is not None else False)
 
 
 class B2ShareCommunities(object):

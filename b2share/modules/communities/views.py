@@ -97,8 +97,7 @@ def need_community_permission(permission_factory):
         @wraps(f)
         def need_community_permission_decorator(self, community, *args,
                                                 **kwargs):
-            if not current_communities.rest_access_control_disabled:
-                verify_community_permission(permission_factory, community)
+            verify_community_permission(permission_factory, community)
             return f(self, community=community, *args, **kwargs)
         return need_community_permission_decorator
     return need_community_permission_builder
