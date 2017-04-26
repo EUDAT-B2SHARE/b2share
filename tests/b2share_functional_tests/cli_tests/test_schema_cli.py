@@ -26,9 +26,9 @@ import pytest
 from click.testing import CliRunner
 from flask_cli import ScriptInfo
 from flask import url_for
-
 from invenio_db import db
 from invenio_files_rest.models import Location
+import traceback
 
 from b2share.modules.communities.api import Community
 from b2share.modules.communities.cli import communities as communities_cmd
@@ -59,6 +59,10 @@ test_schema = {
     "required": ["test_field1"]
 }
 
+configurations = [({'config': {'PREFERRED_URL_SCHEME': 'https'}}),
+                  ({'config': {'PREFERRED_URL_SCHEME': 'http'}})]
+
+@pytest.mark.parametrize('app', configurations, indirect=['app'])
 def test_existing_community_set_schema_cmd(app, test_communities):
     """Test the `schemas set_schema` CLI command."""
     with app.app_context():
@@ -84,6 +88,7 @@ def test_existing_community_set_schema_cmd(app, test_communities):
             assert result.exit_code == 0
 
 
+@pytest.mark.parametrize('app', configurations, indirect=['app'])
 def test_new_community_set_schema_cmd(app, login_user, tmp_location):
     """Test adding a community and setting its schema using CLI commands."""
     with app.app_context():
@@ -173,3 +178,41 @@ def test_new_community_set_schema_cmd(app, login_user, tmp_location):
                 }]),
                 headers=headers)
             assert draft_submit_res.status_code == 200
+
+def test_schemas_group(app, test_communities):
+    """Test the `schemas` CLI command group."""
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info: app)
+        # Run 'schemas' command
+        result = runner.invoke(schemas_cmd, [], obj=script_info)
+        assert result.exit_code == 0
+
+def test_block_schema_list(app):
+    """Test the b2share schemas block_schema_list command"""
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info: app)
+        # Run 'schemas' command
+        result = runner.invoke(schemas_cmd, ["block_schema_list"], obj=script_info)
+        assert result.exit_code == 0
+        test_string = result.output[len(result.output)-10:len(result.output)-1]
+        assert test_string == '#VERSIONS' #no block schemas present empty header
+        
+def test_create_block_schema(app, test_communities):
+    """Test creation of a block schema"""
+    #happy flow
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info: app)
+        result = runner.invoke(schemas_cmd, [
+                'block_schema_add',
+                'cccccccc-1111-1111-1111-111111111111',
+                'Block Schema Name'], 
+            obj=script_info)
+        assert result.exit_code == 0
+        result = runner.invoke(schemas_cmd, [
+                'block_schema_list'
+            ],
+            obj=script_info)
+        assert(result.output.find("Block Schema Na") > 0)
