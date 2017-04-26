@@ -8,7 +8,7 @@ services:
             - "PGDATA=/var/lib/postgresql/data"
         volumes:
             - "${B2SHARE_DATADIR}/postgres-data:/var/lib/postgresql/data"
-        ports:
+        expose:
             - "5432"
 
     b2share:
@@ -28,12 +28,12 @@ services:
             - "B2SHARE_CACHE_REDIS_HOST='redis'"
             - "B2SHARE_CACHE_REDIS_URL='redis://redis:6379/0'"
             - "B2SHARE_ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'"
-            - "B2SHARE_BROKER_URL='amqp://guest:guest@mq:5672//'"
+            - "B2SHARE_BROKER_URL='amqp://${B2SHARE_RABBITMQ_USER}:${B2SHARE_RABBITMQ_PASS}@mq:5672/'"
             - "B2SHARE_CELERY_RESULT_BACKEND='redis://redis:6379/2'"
             - "B2SHARE_SEARCH_ELASTIC_HOSTS='elasticsearch'"
         volumes:
             - "${B2SHARE_DATADIR}/b2share-data:/usr/var/b2share-instance"
-        ports:
+        expose:
             - "5000"
         links:
             - elasticsearch
@@ -42,15 +42,15 @@ services:
 
     elasticsearch:
         build: elasticsearch
-        ports:
+        expose:
             - "9200"
             - "9300"
         volumes:
             - "${B2SHARE_DATADIR}/elasticsearch-data:/usr/share/elasticsearch/data"
 
     redis:
-        image: redis:3.2
-        ports:
+        image: redis:3.2-alpine
+        expose:
             - "6379"
         volumes:
             - "${B2SHARE_DATADIR}/redis-data:/data"
@@ -66,15 +66,14 @@ services:
             - b2share
 
     mq:
-        image: rabbitmq:3.6-management
+        hostname: b2share-redis
+        image: rabbitmq:3.6-management-alpine
         restart: "always"
-        ports:
+        environment:
+            - "RABBITMQ_DEFAULT_USER=${B2SHARE_RABBITMQ_USER}"
+            - "RABBITMQ_DEFAULT_PASS=${B2SHARE_RABBITMQ_PASS}"
+        expose:
             - "15672"
             - "5672"
-        read_only: true
         volumes:
             - "${B2SHARE_DATADIR}/rabbitmq-data:/var/lib/rabbitmq"
-        entrypoint:
-            - "rabbitmq-server"
-            - "--hostname"
-            - "b2share-redis"
