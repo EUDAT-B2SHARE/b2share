@@ -28,7 +28,7 @@ services:
             - "B2SHARE_CACHE_REDIS_HOST='redis'"
             - "B2SHARE_CACHE_REDIS_URL='redis://redis:6379/0'"
             - "B2SHARE_ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'"
-            - "B2SHARE_BROKER_URL='amqp://guest:guest@mq:5672//'"
+            - "B2SHARE_BROKER_URL='amqp://${B2SHARE_RABBITMQ_USER}:${B2SHARE_RABBITMQ_PASS}@mq:5672/'"
             - "B2SHARE_CELERY_RESULT_BACKEND='redis://redis:6379/2'"
             - "B2SHARE_SEARCH_ELASTIC_HOSTS='elasticsearch'"
         volumes:
@@ -68,13 +68,12 @@ services:
     mq:
         image: rabbitmq:3.6-management
         restart: "always"
+        environment:
+            - "RABBITMQ_DEFAULT_USER=${B2SHARE_RABBITMQ_USER}"
+            - "RABBITMQ_DEFAULT_PASS=${B2SHARE_RABBITMQ_PASS}"
         ports:
             - "15672"
             - "5672"
         read_only: true
         volumes:
             - "${B2SHARE_DATADIR}/rabbitmq-data:/var/lib/rabbitmq"
-        entrypoint:
-            - "rabbitmq-server"
-            - "--hostname"
-            - "b2share-redis"
