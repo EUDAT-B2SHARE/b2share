@@ -225,10 +225,9 @@ def test_set_schema(app, test_communities):
         result = runner.invoke(schemas_cmd, [
             'set_schema',
             'cccccccc-1111-1111-1111-111111111111',
+            'testcom.json'
         ])
-        file = open("testcom.json")
-        content = file.read()
-        print(content)
+        print(result)
         assert False
         
         
