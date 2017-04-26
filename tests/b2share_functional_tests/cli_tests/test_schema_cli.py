@@ -216,9 +216,3 @@ def test_create_block_schema(app, test_communities):
             ],
             obj=script_info)
         assert(result.output.find("Block Schema Na") > 0)
-       
-        
-
-        
-        
-        
