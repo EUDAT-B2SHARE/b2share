@@ -216,19 +216,9 @@ def test_create_block_schema(app, test_communities):
             ],
             obj=script_info)
         assert(result.output.find("Block Schema Na") > 0)
+       
+        
 
-def test_set_schema(app, test_communities):
-    """Test set_schema command"""
-    with app.app_context():
-        runner = CliRunner()
-        script_info = ScriptInfo(create_app = lambda info: app)
-        result = runner.invoke(schemas_cmd, [
-            'set_schema',
-            'cccccccc-1111-1111-1111-111111111111',
-            'testcom.json'
-        ])
-        print(result)
-        assert False
         
         
         
