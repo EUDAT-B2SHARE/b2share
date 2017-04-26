@@ -19,13 +19,10 @@ export const Help = React.createClass({
                     <div className="col-sm-6">
                         <ul className="list-group">
                             <li className="list-group-item">
-                                <Link to="http://www.eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE</Link>
+                                <Link to="https://www.eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE</Link>
                             </li>
                             <li className="list-group-item">
-                                <Link to="http://www.eudat.eu/services/userdoc/b2share" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
-                            </li>
-                            <li className="list-group-item">
-                                <Link to="/help/search"><i className="fa fa-search"></i> Search</Link>
+                                <Link to="https://eudat.eu/services/userdoc/b2share-usage" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
                             </li>
                             <li className="list-group-item">
                                 <Link to="/help/terms-of-use"><i className="fa fa-question-circle"></i> Term-Of-Use</Link>
