@@ -173,3 +173,43 @@ def test_new_community_set_schema_cmd(app, login_user, tmp_location):
                 }]),
                 headers=headers)
             assert draft_submit_res.status_code == 200
+
+def test_schemas_group(app, test_communities):
+    """Test the `schemas` CLI command group."""
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info: app)
+        # Run 'schemas' command
+        result = runner.invoke(schemas_cmd, [], obj=script_info)
+        assert result.exit_code == 0
+
+def test_block_schema_list(app):
+    """Test the b2share schemas block_schema_list command"""
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info: app)
+        # Run 'schemas' command
+        result = runner.invoke(schemas_cmd, ["block_schema_list"], obj=script_info)
+        assert result.exit_code == 0
+        test_string = result.output[len(result.output)-10:len(result.output)-1]
+        assert test_string == '#VERSIONS' #no block schemas present empty header
+
+def test_create_block_schema(app, test_communities):
+    """Test creation of a block schema"""
+    #happy flow
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info: app)
+        result = runner.invoke(schemas_cmd, [
+                'block_schema_add',
+                'cccccccc-1111-1111-1111-111111111111',
+                'Block Schema Name'],
+            obj=script_info)
+        assert result.exit_code == 0
+        result = runner.invoke(schemas_cmd, [
+                'block_schema_list'
+            ],
+            obj=script_info)
+        # search only for "Block Schema Na", as the rest of the string is cut
+        # by the pretty printer (multiple columns)
+        assert(result.output.find("Block Schema Na") > 0)
