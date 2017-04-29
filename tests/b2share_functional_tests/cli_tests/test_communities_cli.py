@@ -70,7 +70,6 @@ def test_create_community2(app, test_communities):
             ["create"],
             obj=script_info)
         assert result.exit_code != 0
-        
 
 def test_edit_community(app, test_communities):
     with app.app_context():
@@ -99,5 +98,4 @@ def test_edit_community2(app, test_communities):
                 "NEW_NAME2"],
             obj=script_info)
         assert result.exit_code != 0
-    
 
