@@ -24,6 +24,7 @@
 """Test helpers."""
 
 import json
+import os
 from copy import deepcopy
 from contextlib import contextmanager
 from collections import namedtuple
@@ -292,3 +293,36 @@ def create_user_token(userid, name='token', scopes=None):
     )
     return token, [('Authorization',
                     'Bearer {}'.format(allowed_token.access_token))]
+
+
+def db_create_v2_0_1():
+    """Create the db as it is in v2.0.1 from an sql script."""
+    # As pytest is messing up tests pkg_resource we can't use it here
+    path = os.path.join(os.path.dirname(__file__),
+                        'b2share_db_create.sql')
+    with open(path) as stream:
+        script_str = stream.read().strip()
+        try:
+            conn = db.engine.connect()
+            with conn.begin() as trans:
+                conn.execute(script_str)
+                trans.commit()
+        finally:
+            conn.close()
+
+
+def create_alembic_version_table():
+    """Create alembic_version table."""
+    alembic = current_app.extensions['invenio-db'].alembic
+    if not alembic.migration_context._has_version_table():
+        alembic.migration_context._ensure_version_table()
+        for head in alembic.script_directory.revision_map._real_heads:
+            alembic.migration_context.stamp(alembic.script_directory, head)
+
+
+def remove_alembic_version_table():
+    """Remove alembic_version table."""
+    if db.engine.dialect.has_table(db.engine, 'alembic_version'):
+        alembic_version = db.Table('alembic_version', db.metadata,
+                                   autoload_with=db.engine)
+        alembic_version.drop(bind=db.engine)

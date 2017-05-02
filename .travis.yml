@@ -17,13 +17,18 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+dist: trusty
+
 notifications:
   email: false
 
 services:
-  - mysql
+  - postgresql
   - redis
   - rabbitmq
+
+addons:
+  postgresql: "9.6"
 
 language: python
 
@@ -31,8 +36,8 @@ cache:
   - pip
 
 env:
+  - REQUIREMENTS=release SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://localhost:5432/b2sharedb REXTRAS=all ES_VERSION=2.3.3
   - REQUIREMENTS=current REXTRAS=all ES_VERSION=2.3.3
-  - REQUIREMENTS=release REXTRAS=all ES_VERSION=2.3.3
   - REQUIREMENTS=devel REXTRAS=all ES_VERSION=2.3.3
 matrix:
   fast_finish: true

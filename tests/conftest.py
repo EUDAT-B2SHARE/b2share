@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2016 University of Tuebingen, CERN.
@@ -26,6 +25,7 @@
 from __future__ import absolute_import, print_function
 
 import json
+import logging
 import os
 import shutil
 import re
@@ -55,6 +55,7 @@ from b2share.modules.communities.models import Community
 from b2share.modules.communities.api import Community as CommunityAPI
 from sqlalchemy.exc import ProgrammingError
 from invenio_accounts.models import Role
+from b2share.modules.upgrade.api import alembic_stamp
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -83,13 +84,14 @@ def base_app():
         JSONSCHEMAS_HOST='localhost:5000',
         DEBUG_TB_ENABLED=False,
         SQLALCHEMY_DATABASE_URI=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', 'sqlite://'),
+            'SQLALCHEMY_DATABASE_URI',
+            'postgresql+psycopg2://postgres@localhost:5432/b2sharedb'),
         LOGIN_DISABLED=False,
         WTF_CSRF_ENABLED=False,
         SECRET_KEY="CHANGE_ME",
         SECURITY_PASSWORD_SALT='CHANGEME',
         # register flask_security endpoints for testing purpose.
-        ACCOUNTS_REGISTER_BLUEPRINT = True,
+        ACCOUNTS_REGISTER_BLUEPRINT=True,
         CELERY_ALWAYS_EAGER=True,
         CELERY_RESULT_BACKEND="cache",
         CELERY_CACHE_BACKEND="memory",
@@ -97,25 +99,28 @@ def base_app():
         SUPPORT_EMAIL='support@eudat.eu',
         PREFERRED_URL_SCHEME='https',
     )
+
+    # Disable most of alembic logging.
+    logging.getLogger('alembic').setLevel(logging.CRITICAL)
     yield app
     shutil.rmtree(instance_path)
 
 
-@pytest.fixture(scope='function')
-def app(request, base_app):
-    """Initialized application fixture."""
+@pytest.yield_fixture(scope='function')
+def clean_app(request, base_app):
+    """Application with database and elasticsearch cleaned."""
     with base_app.app_context():
         try:
+            db.session.remove()
             drop_database(db.engine.url)
         except ProgrammingError:
             pass
         create_database(db.engine.url)
-        db.create_all()
         # reset elasticsearch
         for deleted in current_search.delete(ignore=[404]):
             pass
-        for created in current_search.create(None):
-            pass
+
+    yield base_app
 
     def finalize():
         with base_app.app_context():
@@ -127,6 +132,21 @@ def app(request, base_app):
     request.addfinalizer(finalize)
 
     return base_app
+
+
+@pytest.fixture(scope='function')
+def app(request, clean_app):
+    """Application with database tables created."""
+    with clean_app.app_context():
+        ext = clean_app.extensions['invenio-db']
+        db.metadata.create_all(db.session.connection())
+        alembic_stamp('heads')
+        db.session.commit()
+        for created in current_search.create(None):
+            pass
+        # Note that we do not create the Migration just to simplify things.
+
+    return clean_app
 
 
 @pytest.fixture(scope='function')

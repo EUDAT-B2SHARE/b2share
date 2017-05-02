@@ -224,3 +224,13 @@ If you go the record webpage you should now see the `410` error message.
 
 Note that we didn't delete the deposit. Everything is kept in the database
 and can be reverted if need be. The files are not removed either.
+
+
+Upgrade B2SHARE
+---------------
+
+From version 2.0.2 on B2SHARE can be upgraded by running
+
+.. code-block:: console
+
+    $ b2share upgrade run
