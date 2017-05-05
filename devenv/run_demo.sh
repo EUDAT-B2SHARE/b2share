@@ -21,7 +21,7 @@ fi
 
 source /usr/local/bin/virtualenvwrapper.sh
 
-export VIRTUALENV_NAME='b2share-evolution'
+export VIRTUALENV_NAME='b2share'
 export DB_NAME='b2share-evolution'
 
 if [ "$1" = "--reinit" ]; then
@@ -61,7 +61,7 @@ export B2SHARE_SEARCH_ELASTIC_HOSTS="${DOCKER_IP}:9200"
 cdvirtualenv src
 if [ ! -d ./b2share ]; then
 	echo; echo "### Clone b2share"
-	git clone git@github.com:EUDAT-B2SHARE/b2share.git --branch evolution
+	git clone git@github.com:EUDAT-B2SHARE/b2share.git
 
 	echo; echo "### pip install b2share"
 	cdvirtualenv src/b2share
