@@ -229,8 +229,8 @@ files:
 
     $ mdir develop-b2share
     $ cd develop-b2share
-    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/evolution/devenv/docker-compose.yml
-    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/evolution/devenv/run_demo.sh
+    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/master/devenv/docker-compose.yml
+    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/master/devenv/run_demo.sh
 
 
 Then start the ``run_demo.sh`` script:
@@ -240,7 +240,7 @@ Then start the ``run_demo.sh`` script:
     $ chmod +x ./run_demo.sh
     $ ./run_demo.sh
 
-The script will create a python virtualenv, clone the evolution branch of
+The script will create a python virtualenv, clone the master branch of
 B2SHARE into it, install the necessary python packages, build the web UI and
 start the Flask server in development mode. B2SHARE should be available at
 http://localhost:5000.
