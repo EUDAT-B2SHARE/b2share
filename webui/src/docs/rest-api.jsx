@@ -468,6 +468,18 @@ module.exports = function() {
             curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' -d @TestFileToBeUploaded.txt https://$HOSTNAME/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
         </Example>
 
+        <h3 id="delete-file">Delete file from draft record</h3>
+        <p>Send a DELETE request to the file's URL, which is the same URL used for uploading.</p>
+        <ul>
+            <li><p>URL path: /api/files/FILE_BUCKET_ID/FILE_NAME</p></li>
+            <li><p>HTTP Method: DELETE</p></li>
+            <li><p>Required parameters: access_token</p></li>
+            <li><p>Returns: no content</p></li>
+        </ul>
+        <Example>
+            curl -X DELETE -H 'Accept:application/json' https://$HOSTNAME/api/files/$FILE_BUCKET_ID/FileToBeRemoved.txt?access_token=$ACCESS_TOKEN
+        </Example>
+
         <h3>List the files uploaded into a record object</h3>
         <p>List the files uploaded into a record object</p>
         <ul>
