@@ -7,14 +7,20 @@ B2Share installation
 ===============================================
 
 
-1.0. Prerequisite: clone B2SHARE
---------------------------------
+1.0. Prerequisite: clone `dockerize`
+------------------------------------
 
-Current installation process requires a local clone of B2SHARE.
+The B2SHARE Docker image can be used as is and is available on Docker Hub as
+`eudatb2share/b2share`. However, a full B2SHARE installation requires many
+different services (e.g. elasticsearch, postgresql, redis, rabbitmq), thus we
+provide a standard deployment procedure that creates a demonstration
+environment. The next steps will describe how to use this deployment.
+
+First clone the dockerize repository:
 
 .. code-block:: console
 
-    $ git clone https://github.com/EUDAT-B2SHARE/b2share.git
+    $ git clone https://github.com/EUDAT-B2SHARE/dockerize.git
 
 
 1.1. Prerequisite: B2ACCESS configuration
@@ -106,12 +112,12 @@ the mounted folder:
 1.4. Run B2Share with Docker
 ----------------------------
 
-After all the configuration parameters have been set go into the ``dockerize``
-folder and run ``docker-compose``, e.g.:
+After all the configuration parameters have been set go into the recently
+downloaded ``dockerize`` folder and run ``docker-compose``, e.g.:
 
 .. code-block:: console
 
-    $ cd b2share/dockerize
+    $ cd dockerize
 
     ## mandatory environment variables
     $ export B2ACCESS_CONSUMER_KEY=...           # the username used for registration
@@ -174,7 +180,7 @@ all previously persisted data if you want to start from scratch.
 In order to remove all persisted data one can just delete the directory pointed
 by ``$B2SHARE_DATADIR``. All containers must be stopped before removing the
 directory.
-Remember to delete the containers too.
+Remember to also delete the containers.
 
 
 2. Running the service in production
@@ -220,6 +226,8 @@ Before installing B2Share you will need the following software:
     $ pip install virtualenv virtualenvwrapper
 
 - ``docker`` and ``docker-compose``
+
+On macOS we recommend using Docker for Mac.
 
 If the conditions are satisfied, open one terminal window and download in a
 temporary folder the ``devenv/docker-compose`` and ``devenv/run_demo.sh``
