@@ -494,7 +494,7 @@ module.exports = function() {
                 </p> </li>
         </ul>
         <Example>
-            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"]}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
