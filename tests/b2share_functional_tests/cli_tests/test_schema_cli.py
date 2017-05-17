@@ -24,7 +24,7 @@ import os
 import json
 import pytest
 from click.testing import CliRunner
-from flask_cli import ScriptInfo
+from flask.cli import ScriptInfo
 from flask import url_for
 
 from invenio_db import db

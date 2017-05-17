@@ -27,7 +27,7 @@ from urllib.parse import urlparse
 
 import pytest
 from click.testing import CliRunner
-from flask_cli import ScriptInfo
+from flask.cli import ScriptInfo
 from invenio_pidstore.resolver import Resolver
 from invenio_records import Record
 

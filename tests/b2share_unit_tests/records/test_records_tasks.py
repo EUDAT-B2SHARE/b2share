@@ -38,7 +38,7 @@ from invenio_files_rest.models import Bucket
 from invenio_records_files.api import Record
 from click.testing import CliRunner
 from b2share.modules.records.cli import b2records
-from flask_cli import ScriptInfo
+from flask.cli import ScriptInfo
 
 
 @pytest.mark.parametrize('cli_cmd', [True, False])

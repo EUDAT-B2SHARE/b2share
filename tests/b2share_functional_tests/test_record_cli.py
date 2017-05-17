@@ -22,7 +22,7 @@ from __future__ import absolute_import, print_function
 
 from unittest.mock import patch, DEFAULT
 from click.testing import CliRunner
-from flask_cli import ScriptInfo
+from flask.cli import ScriptInfo
 
 import b2share.modules.records.cli as records_cli
 
