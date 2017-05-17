@@ -24,7 +24,7 @@ import os
 import json
 import pytest
 from click.testing import CliRunner
-from flask_cli import ScriptInfo
+from flask.cli import ScriptInfo
 
 from b2share.modules.communities.cli import communities as communities_cmd
 from b2share.modules.communities.helpers import get_community_by_name_or_id

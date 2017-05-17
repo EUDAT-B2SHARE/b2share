@@ -29,7 +29,7 @@ import os
 from os.path import isfile
 
 import click
-from flask_cli import with_appcontext
+from flask.cli import with_appcontext
 
 from invenio_db import db
 

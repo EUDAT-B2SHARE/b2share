@@ -35,7 +35,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 from collections import namedtuple
 
-from flask_cli import ScriptInfo
+from flask.cli import ScriptInfo
 import pytest
 import responses
 from jsonpatch import apply_patch

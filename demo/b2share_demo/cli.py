@@ -30,7 +30,7 @@ from shutil import rmtree, copyfile
 import pathlib
 
 import click
-from flask_cli import with_appcontext
+from flask.cli import with_appcontext
 from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
