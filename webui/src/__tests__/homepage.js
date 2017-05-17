@@ -14,7 +14,7 @@ if (!user || !pass || !email) {
 }
 
 var nightmare = Nightmare({
-    show: true,
+    // show: true,
     switches: {
         'ignore-certificate-errors': true,
     },
@@ -25,20 +25,20 @@ function step(msg) {
 }
 
 async function assertPageContains(page, text) {
-    let body = await page.evaluate(()=>document.body.textContent).end();
-    expect(body).toContain(text);
+    let body = await page.evaluate(()=>document.body.textContent);
+    await expect(body).toContain(text);
 }
 
 async function assertElementText(page, selector, text) {
     const fn = (selector) => {
         document.querySelector(selector).innerText
     };
-    let elementText = await page.evaluate(fn).end();
-    expect(elementText == text);
+    let elementText = await page.evaluate(fn, selector);
+    await expect(elementText == text);
 }
 
 describe('Smoke test', function () {
-    let page = nightmare.goto('https://localhost/');
+    let page = nightmare.goto('https://b2share.local/');
 
     test('well formed homepage', async function () {
         step("test homepage title")
@@ -52,34 +52,32 @@ describe('Smoke test', function () {
     });
 
     test('user can login', async function () {
-        step("click on Login")
+        step("click on Login");
         await page.click('#header-navbar-collapse > .user > li > a');
 
-        step("check if redirected to B2ACCESS")
+        step("check if redirected to B2ACCESS");
         await expect(page.url() == B2ACCESS_AUTH_URL);
 
-        step("check if we are on B2ACCESS unity auth page")
+        step("check if we are on B2ACCESS unity auth page");
         await page.wait('#AuthenticationUI\\.username');
         await assertPageContains(page, "Login to UNITY OAuth2 Authorization Server");
 
-        step("authenticate")
+        step("authenticate with user1");
         await page.type('#AuthenticationUI\\.username', user)
-            .type('#WebPasswordRetrieval\\.password', pass)
-            .click('#AuthenticationUI\\.authnenticateButton');
+                  .type('#WebPasswordRetrieval\\.password', pass)
+                  .click('#AuthenticationUI\\.authnenticateButton')
+                  .wait('#IdpButtonsBar\\.confirmButton')
+                  .click('#IdpButtonsBar\\.confirmButton');
 
-        step("check if we are on B2ACCESS unity confirmation page")
-        await assertPageContains(page, "A remote client has requested your authorization");
-
-        step("confirm")
-        await page.click('#IdpButtonsBar\\.confirmButton');
-
-        step("check if we are back to B2SHARE")
+        step("check if we are back to B2SHARE");
         expect(page.title() == 'B2SHARE');
 
-        step("wait for menu")
+        step("wait for menu");
         await page.wait('#header-navbar-collapse a');
 
-        step("check that the test user is logged in")
+        step("check that the test user is logged in");
         await assertElementText(page, '#header-navbar-collapse > .user > li > a', email);
+
+        await page.end();
     });
 })
