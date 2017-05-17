@@ -30,7 +30,7 @@ import json
 import os
 from uuid import UUID
 import click
-from flask_cli import with_appcontext
+from flask.cli import with_appcontext
 
 from flask import current_app
 from invenio_db import db

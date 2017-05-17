@@ -34,7 +34,7 @@ import traceback
 from urllib.parse import urlunsplit, urljoin, urlsplit
 
 import click
-from flask_cli import with_appcontext
+from flask.cli import with_appcontext
 from flask import current_app
 from invenio_db import db
 from invenio_indexer.api import RecordIndexer

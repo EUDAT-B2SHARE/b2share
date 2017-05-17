@@ -31,7 +31,7 @@ import sys
 
 from sqlalchemy import exists, or_
 import click
-from flask_cli import with_appcontext
+from flask.cli import with_appcontext
 from invenio_db import db
 from invenio_files_rest.models import Location
 
