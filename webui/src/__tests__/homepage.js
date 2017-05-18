@@ -2,6 +2,7 @@ import Nightmare from 'nightmare'
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL=20*1000;
 
+const B2SHARE_URL = "https://b2share.local/"
 const B2ACCESS_AUTH_URL = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz-web-entry"
 
 const user = process.env.AUTOTEST_USER;
@@ -23,6 +24,11 @@ var nightmare = Nightmare({
 function step(msg) {
     console.log(msg, "...")
 }
+function print_obj(o) {
+    for (var p in o) {
+        console.log(p)
+    }
+}
 
 async function assertPageContains(page, text) {
     let body = await page.evaluate(()=>document.body.textContent);
@@ -34,15 +40,15 @@ async function assertElementText(page, selector, text) {
         document.querySelector(selector).innerText
     };
     let elementText = await page.evaluate(fn, selector);
-    await expect(elementText == text);
+    return expect(elementText == text);
 }
 
 describe('Smoke test', function () {
-    let page = nightmare.goto('https://b2share.local/');
-
     test('well formed homepage', async function () {
-        step("test homepage title")
-        expect(page.title() == 'B2SHARE');
+        let page = nightmare.goto(B2SHARE_URL);
+
+        step("test homepage title");
+        expect(await page.title() == 'B2SHARE');
 
         step("wait for menu")
         await page.wait('#header-navbar-collapse a');
@@ -50,10 +56,15 @@ describe('Smoke test', function () {
         step("wait for records")
         await page.wait('#page .home-page .record a');
     });
+});
 
+describe('Smoke test2', function () {
     test('user can login', async function () {
+        let page = nightmare.goto(B2SHARE_URL);
+
         step("click on Login");
-        await page.click('#header-navbar-collapse > .user > li > a');
+        await page.wait('#header-navbar-collapse > .user > li > a')
+                  .click('#header-navbar-collapse > .user > li > a');
 
         step("check if redirected to B2ACCESS");
         await expect(page.url() == B2ACCESS_AUTH_URL);
@@ -77,7 +88,5 @@ describe('Smoke test', function () {
 
         step("check that the test user is logged in");
         await assertElementText(page, '#header-navbar-collapse > .user > li > a', email);
-
-        await page.end();
     });
-})
+});
