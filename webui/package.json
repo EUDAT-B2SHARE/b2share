@@ -9,6 +9,9 @@
     "postinstall": "./copy_files.sh",
     "test": "jest"
   },
+  "jest": {
+    "modulePathIgnorePatterns": ["common.js"]
+  },
   "devDependencies": {
     "babel-core": "^6.2.1",
     "babel-jest": "^20.0.0",
