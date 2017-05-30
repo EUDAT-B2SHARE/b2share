@@ -124,6 +124,20 @@ def test_deposit_add_unknown_fields(app, draft_deposits):
 
 
 
+def test_deposit_create_with_invalid_fields_fails(app, test_records_data):
+    """Test deposit creation without or with an invalid field fails."""
+    data = test_records_data[0]
+    with app.app_context():
+        data['publication_state'] = 'published'
+        with pytest.raises(InvalidDepositError):
+            deposit = Deposit.create(deepcopy(data))
+
+    with app.app_context():
+        data['$schema'] = '__garbage__'
+        with pytest.raises(InvalidDepositError):
+            deposit = Deposit.create(deepcopy(data))
+
+
 def test_deposit_create_with_invalid_community_fails(app,
                                                      test_records_data):
     """Test deposit creation without or with an invalid community fails."""
