@@ -490,7 +490,7 @@ const EditRecord = React.createClass({
     validField(schema, value) {
         if (schema && schema.get('isRequired')) {
             // 0 is fine
-            if (value === undefined || value === null || value === "")
+            if (value === undefined || value === null || (""+value).trim() === "")
                 return false;
         }
         return true;

@@ -200,7 +200,7 @@ class Deposit(DepositRecord):
         # publish the deposition if needed
         if (self['publication_state'] == PublicationStates.published.name
                 # check invenio-deposit status so that we do not loop
-                and self['_deposit']['status'] != 'published'):
+                and self['_deposit']['status'] != PublicationStates.published.name):
             super(Deposit, self).publish()  # publish() already calls commit()
             # save the action for later indexing
             if g:
@@ -211,9 +211,9 @@ class Deposit(DepositRecord):
                 g.deposit_action = 'update-metadata'
         return self
 
-    def publish(self, pid=None, id_=None):
+    def publish(self):
         self['publication_state'] = PublicationStates.published.name
-        return super(Deposit, self).publish(pid=pid, id_=id_)
+        return self.commit() # calls super(Deposit, self).publish()
 
     def submit(self, commit=True):
         """Submit a record for review.

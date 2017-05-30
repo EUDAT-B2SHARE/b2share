@@ -24,6 +24,7 @@
 """B2share records errors."""
 
 
+import uuid
 from jsonschema.exceptions import ValidationError
 
 from invenio_rest.errors import RESTValidationError, FieldError
@@ -62,12 +63,28 @@ class AnonymousDepositSearch(B2ShareRecordsError):
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(err):
-        field = '/'.join([str(x) for x in err.path])
+        fieldpath = '/'.join([str(x) for x in err.path])
+        message = err.message
+        field = None
         if err.validator == 'required' or err.validator == 'additionalProperties':
             try:
                 field = err.message.split('\'')[1]
+                fieldpath = (fieldpath + '/' if fieldpath else '') + field
             except IndexError:
                 pass # ignore
+        if err.validator == 'required' and len(err.path) == 1 and \
+                err.path[0] == 'community_specific' and is_valid_uuid(field):
+            message = 'The "community_specific" metadata object must contain '\
+                      'an object named "{}" containing the '\
+                      'community-specific metadata fields'.format(field)
         return InvalidRecordError(errors=[
-            FieldError(field, err.message)
+            FieldError(fieldpath, message)
         ])
+
+
+def is_valid_uuid(argument):
+    try:
+        uuid.UUID(argument)
+        return True
+    except Exception:
+        return False
