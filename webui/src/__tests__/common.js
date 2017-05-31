@@ -1,6 +1,6 @@
 import Nightmare from 'nightmare';
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL=20*1000;
+jasmine.DEFAULT_TIMEOUT_INTERVAL=60*1000;
 
 export const nightmareConfig = {
     // show: true,
@@ -9,7 +9,7 @@ export const nightmareConfig = {
     },
 };
 
-export const B2ACCESS_AUTH_URL = "https://unity.eudat-aai.fz-juelich.de:8443/oauth2-as/oauth2-authz-web-entry";
+export const B2ACCESS_AUTH_URL = "https://unity.eudat-aai.fz-juelich.de/oauth2-as/oauth2-authz-web-entry";
 
 export const B2SHARE_URL = process.env.B2SHARE_URL || process.env.B2SHARE_JSONSCHEMAS_HOST;
 export const USER_NAME = process.env.AUTOTEST_USER;
@@ -24,25 +24,47 @@ if (!USER_NAME || !USER_PASS || !USER_EMAIL) {
     console.log("username or password or email environment variables not defined!");
 }
 
-export function step(msg) {
-    console.log(msg, "...");
+export async function getBodyText() {
+    return document.body.innerText.trim();
 }
 
-export function print_obj(o) {
-    for (var p in o) {
-        console.log(p);
+export async function getElementText(selector) {
+    return document.querySelector(selector).innerText.trim();
+}
+
+export async function getElementsJoinedText(selector) {
+    const ret = [];
+    for (var el in document.querySelectorAll(selector)) {
+        ret.push(el.innerText.trim());
     }
+    return ret.join("\n")
 }
 
-export async function assertPageContains(page, text) {
-    let body = await page.evaluate(()=>document.body.textContent);
-    await expect(body).toContain(text);
-}
+export async function login(page) {
+    console.log("login started");
+    expect(page).toBeInstanceOf(Nightmare);
 
-export async function assertElementText(page, selector, text) {
-    const fn = (selector) => {
-        document.querySelector(selector).innerText
-    };
-    let elementText = await page.evaluate(fn, selector);
-    return expect(elementText == text);
+    await page.wait('#header-navbar-collapse > .user > li > a')
+            .click('#header-navbar-collapse > .user > li > a');
+
+    const url = await page.url();
+    expect(url).toEqual(B2ACCESS_AUTH_URL);
+
+    await page.wait('#AuthenticationUI\\.username');
+    const body = await page.evaluate(getBodyText);
+    expect(body).toContain("Login to UNITY OAuth2 Authorization Server");
+
+    await page.type('#AuthenticationUI\\.username', USER_NAME)
+            .type('#WebPasswordRetrieval\\.password', USER_PASS)
+            .click('#AuthenticationUI\\.authnenticateButton')
+            .wait('#IdpButtonsBar\\.confirmButton')
+            .click('#IdpButtonsBar\\.confirmButton')
+            .wait('#header-navbar-collapse > .user > li > a');
+
+    expect(await page.title()).toEqual('B2SHARE');
+
+    const emailText = await page.evaluate(getElementText, '#header-navbar-collapse > .user > li > a');
+    expect(emailText).toEqual(USER_EMAIL);
+
+    console.log("login succeeded");
 }
