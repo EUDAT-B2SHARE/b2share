@@ -10,7 +10,9 @@
     "test": "jest"
   },
   "jest": {
-    "modulePathIgnorePatterns": ["common.js"]
+    "modulePathIgnorePatterns": [
+      "common.js"
+    ]
   },
   "devDependencies": {
     "babel-core": "^6.2.1",
@@ -37,8 +39,8 @@
     "moment": "^2.13.0",
     "pluralize": "^1.2.1",
     "react": "^15.5.0",
-    "react-dom": "^15.5.0",
     "react-addons-shallow-compare": "^15.5.0",
+    "react-dom": "^15.5.0",
     "react-router": "^2.1.1",
     "react-toggle": "^2.2.0",
     "react-widgets": "^3.2.4",

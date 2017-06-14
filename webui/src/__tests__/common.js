@@ -41,8 +41,31 @@ export async function assertPageContains(page, text) {
 
 export async function assertElementText(page, selector, text) {
     const fn = (selector) => {
-        document.querySelector(selector).innerText
+        document.querySelectorAll(selector).innerText
     };
     let elementText = await page.evaluate(fn, selector);
-    return expect(elementText == text);
+    await expect(elementText == text);
+}
+
+export async function login(page) {
+    await page.wait('#header-navbar-collapse > .user > li > a')
+                .click('#header-navbar-collapse > .user > li > a');
+
+    await expect(page.url() == B2ACCESS_AUTH_URL);
+
+    await page.wait('#AuthenticationUI\\.username');
+    await assertPageContains(page, "Login to UNITY OAuth2 Authorization Server");
+
+    await page.type('#AuthenticationUI\\.username', USER_NAME)
+                .type('#WebPasswordRetrieval\\.password', USER_PASS)
+                .click('#AuthenticationUI\\.authnenticateButton')
+                .wait('#IdpButtonsBar\\.confirmButton')
+                .click('#IdpButtonsBar\\.confirmButton');
+              
+    await expect(await page.title() == 'B2SHARE');
+
+    await page.wait('#header-navbar-collapse a');
+
+    await assertElementText(page, '#header-navbar-collapse > .user > li > a', USER_EMAIL);
+    // await page.end();
 }
