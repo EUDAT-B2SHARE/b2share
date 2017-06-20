@@ -14,7 +14,7 @@ const apiUrls = {
     user()                            { return `${urlRoot}/api/user` },
     userTokens()                      { return `${urlRoot}/api/user/tokens` },
 
-    users(queryString)                { return `${urlRoot}/api/users` + (queryString ? `?q=${queryString}` : ``) }, 
+    users(queryString)                { return `${urlRoot}/api/users` + (queryString ? `?q=${queryString}` : ``) },
     userListWithRole(id)              { return `${urlRoot}/api/roles/${id}/users` },
     userWithRole(roleid, userid)      { return `${urlRoot}/api/roles/${roleid}/users/${userid}` },
 
@@ -274,6 +274,7 @@ class ServerCache {
                 site_function: "",
                 training_site_link: "",
                 show_b2note: false,
+                b2access_registration_link: "",
             },
             user: null,
 
@@ -297,10 +298,10 @@ class ServerCache {
         this.getters = {};
 
         this.getters.communityUsers = new Pool(roleid => new Getter(
-        	apiUrls.userListWithRole(roleid), null, 
+        	apiUrls.userListWithRole(roleid), null,
             (users) => {
             	this.store.setIn(['communityUsers', roleid], fromJS(users.hits.hits));
-            }, 
+            },
             null,
         ));
 
@@ -457,6 +458,7 @@ class ServerCache {
                     site_function: data.site_function,
                     training_site_link: data.training_site_link,
                     show_b2note: data.site_function != 'production',
+                    b2access_registration_link: data.b2access_registration_link,
                 }));
                 successFn(this.store.getIn(['info']));
             },
@@ -731,18 +733,18 @@ class ServerCache {
 
     // List users with a specific role
     getCommunityUsers(roleid){
-        this.getters.communityUsers.get(roleid).autofetch(); 
+        this.getters.communityUsers.get(roleid).autofetch();
         if(this.store.getIn(['communityUsers']).size > 0){
             return this.store.getIn(['communityUsers', roleid]);
         }
     	return {};
     }
 
-    // Assign a role to the user by email 
+    // Assign a role to the user by email
     registerUserRole(email, roleid, successFn, errorFn){
         ajaxGet({
             url: apiUrls.users(email),
-            successFn: (user) => { 
+            successFn: (user) => {
                     if(user.hits.hits[0]){
                         ajaxPut({
                             url: apiUrls.userWithRole( roleid , fromJS(user.hits.hits[0].id) ),
@@ -769,7 +771,7 @@ class ServerCache {
 
     // Unassign a role from a user
     deleteRoleOfUser(roleid, userid){
-        ajaxDelete({        
+        ajaxDelete({
             url: apiUrls.userWithRole(roleid, userid),
             successFn: () => {
                 this.getters.communityUsers.get(roleid).autofetch();

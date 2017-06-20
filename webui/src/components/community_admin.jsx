@@ -1,35 +1,34 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 import { DropdownList, Multiselect } from 'react-widgets';
-import { serverCache, notifications , browser , Error, loginURL} from '../data/server';
 import { fromJS, OrderedMap, Map } from 'immutable';
+import { serverCache, notifications , browser , Error, loginURL} from '../data/server';
+import { LoginOrRegister } from './user.jsx';
 import { Wait, Err } from './waiting.jsx';
-import Immutable from 'immutable';
 
 export const CommunityAdmin = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
     // Assign a role to a user
     handleChange(roles, email, selectedRole){
         var searchedUser = {};
         if(email && selectedRole ){
-             serverCache.registerUserRole(email, roles[selectedRole], 
+             serverCache.registerUserRole(email, roles[selectedRole],
                     () => {
                         notifications.success("The new role was added to the user");
                     },
                     () => {
                         notifications.danger("An error occured while trying to add the new role to the user.");
-                    }    
+                    }
                 );
         }
     },
 
     renderNoUser() {
+        const b2access = serverCache.getInfo().get('b2access_registration_link');
         return (
             <div>
                 <div className="container-fluid">
                     <div className="row">
-                        No authenticated user found. Please <LoginOrRegister/>.
+                        No authenticated user found. Please <LoginOrRegister b2access_registration_link={b2access}/>.
                     </div>
                 </div>
             </div>
@@ -38,7 +37,7 @@ export const CommunityAdmin = React.createClass({
 
     render() {
         const current_user = serverCache.getUser();
-        const communityName = this.props.params.id; 
+        const communityName = this.props.params.id;
         const community = serverCache.getCommunity(communityName);
 
         if (!current_user || !current_user.get || !current_user.get('name')) {
@@ -61,10 +60,10 @@ export const CommunityAdmin = React.createClass({
             users[roles[key]] = serverCache.getCommunityUsers(roles[key]);
         }
 
-        var mergedUsers = {}; 
-        Object.keys(users).forEach(role => { 
+        var mergedUsers = {};
+        Object.keys(users).forEach(role => {
             if(typeof(users[role]) !== "undefined" && Object.keys(users[role]).length > 0 ){
-                users[role].forEach(user => { 
+                users[role].forEach(user => {
                     if( !mergedUsers[user.getIn(['id'])] ){
                         mergedUsers[user.getIn(['id'])] = {"active":user.getIn(["active"]), "email": user.getIn(["email"]), "roles":[]};
                     }
@@ -83,16 +82,6 @@ export const CommunityAdmin = React.createClass({
                     <AddUser roles={roles} handleChange={this.handleChange} />
                 </div>
             </div>
-        );
-    }
-});
-
-
-export const LoginOrRegister = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-    render() {
-        return (
-            <a href={loginURL}>Login <span style={{color:"black"}}>or</span> Register</a>
         );
     }
 });
@@ -145,12 +134,12 @@ export const UserRow = React.createClass({
                 <div className="row well">
                     <div className="col-sm-4">{this.props.userEmail}</div>
                     <div className="col-sm-2">{showRolesName}</div>
-                    <div className="col-sm-6"><EditRoles roles={this.props.roles} 
-                                                        defRoleName={this.props.userRoleName} 
-                                                        defRoleID={this.props.userRoleID} 
+                    <div className="col-sm-6"><EditRoles roles={this.props.roles}
+                                                        defRoleName={this.props.userRoleName}
+                                                        defRoleID={this.props.userRoleID}
                                                         userEmail={this.props.userEmail}
                                                         userID={this.props.userID}/ ></div>
-                </div> 
+                </div>
             </div>
         );
     }
@@ -158,7 +147,7 @@ export const UserRow = React.createClass({
 
 export const EditRoles = React.createClass({
     getInitialState() {
-        return { 
+        return {
             edit: false,
             currentAssignedRole: null,
         };
@@ -233,7 +222,7 @@ export const EditRoles = React.createClass({
                         <button type="submit" className="btn btn-primary btn-default btn-block" onClick={toggle}> { edit ? 'Save' : 'Edit'} </button>
                     </div>
                     <div className="col-sm-8">
-                        <Multiselect open={edit} 
+                        <Multiselect open={edit}
                                     readOnly={!edit}
                                     data={rolesList}
                                     value={this.state.currentAssignedRole}
@@ -280,16 +269,16 @@ export const AddUser = React.createClass({
                     <div className="row">
                         <div className="col-sm-6">
                             <label >New user email address:</label>
-                            <input ref={(ref) => this.email = ref} 
-                                    name='email' 
-                                    className="form-control" 
-                                    type='email' 
+                            <input ref={(ref) => this.email = ref}
+                                    name='email'
+                                    className="form-control"
+                                    type='email'
                                     onChange={this.onChange}  required />
                         </div>
                         <div className="col-sm-4">
                             <label >Choose a role for new user:</label>
-                            <DropdownList data={rolesList} 
-                                            onChange={selectedRole => this.setState({ selectedRole })} /> 
+                            <DropdownList data={rolesList}
+                                            onChange={selectedRole => this.setState({ selectedRole })} />
                         </div>
                         <div className="col-sm-2">
                             <label ></label>

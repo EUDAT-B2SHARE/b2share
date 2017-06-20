@@ -10,7 +10,9 @@ export const HomeRoute = React.createClass({
     render() {
         const latestRecords = serverCache.getLatestRecords();
         const user = serverCache.getUser();
-        const training_site = serverCache.getInfo().get('training_site_link');
+        const info = serverCache.getInfo();
+        const b2access = info.get('b2access_registration_link');
+        const training_site = info.get('training_site_link');
         return (
             <div className="container-fluid home-page">
                 <div className="row">
@@ -21,7 +23,7 @@ export const HomeRoute = React.createClass({
                             { training_site ?
                                 <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
                                 : false }
-                            { (user && user.get('name')) ? false : <LoginOrRegister/> }
+                            { (user && user.get('name')) ? false : <LoginOrRegister b2access_registration_link={b2access}/> }
                         </div>
                         <hr/>
                         <div className="row">

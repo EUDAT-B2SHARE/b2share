@@ -69,6 +69,7 @@ def make_b2access_remote_app(base_url):
         ),
         tokeninfo_url=tokeninfo_url,
         userinfo_url=userinfo_url,
+        registration_url=base_url,
     )
 
 

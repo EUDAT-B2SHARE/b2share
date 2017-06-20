@@ -38,10 +38,13 @@ class ApiRoot(ContentNegotiatedMethodView):
             default_media_type='application/json', *args, **kwargs)
 
     def get(self, **kwargs):
+        b2access = current_app.config.get('OAUTHCLIENT_REMOTE_APPS', {}).get(
+            'b2access', {})
         data = {
             'version': __version__,
             'site_function': current_app.config.get('SITE_FUNCTION', ''),
             'training_site_link': current_app.config.get('TRAINING_SITE_LINK', ''),
+            'b2access_registration_link': b2access.get('registration_url'),
         }
         response = jsonify(data)
         return response

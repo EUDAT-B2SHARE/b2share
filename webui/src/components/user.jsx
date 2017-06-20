@@ -3,11 +3,20 @@ import { Link } from 'react-router'
 import { serverCache, Error, loginURL, notifications } from '../data/server';
 import { CommunityAdmin } from './community_admin.jsx'
 
+const PT = React.PropTypes;
+
 export const LoginOrRegister = React.createClass({
     mixins: [React.addons.PureRenderMixin],
+    propTypes: {
+        b2access_registration_link: React.PropTypes.string.isRequired,
+    },
     render() {
         return (
-            <a href={loginURL}>Login <span style={{color:"black"}}>or</span> Register</a>
+            <span>
+                <a href={loginURL}> Login </a>
+                or
+                <a href={this.props.b2access_registration_link}> Register </a>
+            </span>
         );
     }
 });
@@ -71,16 +80,17 @@ export const UserRoute = React.createClass({
 
 
 export const UserProfile = React.createClass({
-    mixins: [React.addons.LinkedStateMixin], 
+    mixins: [React.addons.LinkedStateMixin],
 
     renderNoUser() {
+        const b2access = serverCache.getInfo().get('b2access_registration_link');
         return (
             <div>
                 <h1>User Profile</h1>
 
                 <div className="container-fluid">
                     <div className="row">
-                        No authenticated user found. Please <LoginOrRegister/>.
+                        No authenticated user found. Please <LoginOrRegister b2access_registration_link={b2access}/>.
                     </div>
                 </div>
             </div>
@@ -92,10 +102,10 @@ export const UserProfile = React.createClass({
     },
 
     listRoles(roles, communitiesList){
-        return roles.map(r => 
+        return roles.map(r =>
             <li key={r.get('name')}>
-                {r.get('description')}  
-                {r.get('name').includes(':admin')? this.createLink(communitiesList, r.get('name')) : ""} 
+                {r.get('description')}
+                {r.get('name').includes(':admin')? this.createLink(communitiesList, r.get('name')) : ""}
             </li>)
     },
 
@@ -133,7 +143,7 @@ export const UserProfile = React.createClass({
                             <p><Link to={"/records?drafts=1&q=publication_state%3Adraft"}>
                                 List of your draft records
                             </Link></p>
-                    </div>                    
+                    </div>
                     <div className="row">
                         <h3>API Tokens</h3>
                         <TokenList />
