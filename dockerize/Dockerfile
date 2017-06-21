@@ -13,9 +13,6 @@ RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python3.4 get-pip.py
 RUN pip3 install --upgrade pip
 
-# RUN git clone https://github.com/EUDAT-B2SHARE/b2share.git --branch evolution
-# ADD . b2share
-
 ENV LANG=en_US.UTF-8
 ENV DB_NAME="b2share-evolution"
 ENV B2SHARE_UI_PATH="/eudat/b2share/webui/app"
@@ -62,7 +59,7 @@ RUN npm install --unsafe-perm
 #
 
 WORKDIR /eudat
-ADD dockerize/uwsgi/uwsgi.ini b2share/uwsgi/uwsgi.ini
+ADD dockerize/uwsgi.ini b2share/uwsgi/uwsgi.ini
 
 #
 # Install python module and dependencies
