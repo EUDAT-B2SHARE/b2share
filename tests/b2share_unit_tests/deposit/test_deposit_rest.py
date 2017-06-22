@@ -177,6 +177,44 @@ def test_deposit_submit(app, test_records_data, draft_deposits, test_users,
                               draft_patch_res.headers,
                               client)
 
+def test_deposit_submit_errors(app, test_records_data, draft_deposits,
+                               test_users, login_user):
+    """Test deposit submission errors for incomplete metadata."""
+    def test_missing_field(field):
+        with app.app_context():
+            deposit = Deposit.get_record(draft_deposits[0].id)
+            with app.test_client() as client:
+                user = test_users['deposits_creator']
+                login_user(user, client)
+
+                headers = [('Content-Type', 'application/json-patch+json'),
+                           ('Accept', 'application/json')]
+                draft_patch_res = client.patch(
+                    url_for('b2share_deposit_rest.b2dep_item',
+                            pid_value=deposit.pid.pid_value),
+                    data=json.dumps([{
+                        "op": "remove", "path": '/'+field,
+                        }, {
+                        "op": "replace", "path": "/publication_state",
+                        "value": PublicationStates.submitted.name
+                    }]),
+                    headers=headers)
+                assert draft_patch_res.status_code == 400
+                draft_patch_error = json.loads(
+                    draft_patch_res.get_data(as_text=True))
+                assert draft_patch_error['message'] == "Validation error."
+                assert draft_patch_error['errors'][0]['field'] == field
+                return draft_patch_error['errors'][0]['message']
+
+    test_missing_field("titles")
+    test_missing_field("open_access")
+    test_missing_field("community_specific")
+    community_specific_object = test_records_data[0]['community_specific']
+    metadata_block_uuid = next(iter(community_specific_object))
+    msg = test_missing_field("community_specific/"+metadata_block_uuid)
+    expected_fragment = '"community_specific" metadata object must contain '\
+                        'an object named "{}"'.format(metadata_block_uuid)
+    assert expected_fragment in msg
 
 def test_deposit_publish(app, test_users, test_communities,
                          login_user):

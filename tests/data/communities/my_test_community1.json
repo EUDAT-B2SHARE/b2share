@@ -15,7 +15,8 @@
                         "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[MyTestSchema]::0]#/json_schema"
                     }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "required": ["$BLOCK_SCHEMA_ID[MyTestSchema]"]
             }
         },
         {
@@ -29,7 +30,8 @@
                         "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[MyTestSchema]::2]#/json_schema"
                     }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "required": ["$BLOCK_SCHEMA_ID[MyTestSchema]"]
             }
         }
     ],
