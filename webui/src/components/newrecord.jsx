@@ -24,7 +24,7 @@ export const NewRecordRoute = React.createClass({
 
     createAndGoToRecord(event) {
         event.preventDefault();
-        if (!this.state.title.length) {
+        if (!this.state.title.length || !this.state.title.trim()) {
             this.setError('title', "Please add a (temporary) record title");
             return;
         }
@@ -35,7 +35,7 @@ export const NewRecordRoute = React.createClass({
         const json_record = {
             community: this.state.community_id,
             titles: [{
-                title: this.state.title,
+                title: this.state.title.trim(),
             }],
             open_access: true,
         }
