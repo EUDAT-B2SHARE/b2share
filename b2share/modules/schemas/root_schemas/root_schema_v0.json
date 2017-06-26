@@ -189,7 +189,7 @@
                         "type": "string"
                     },
                     "license_uri": {
-                        "title": "URL",
+                        "title": "License URL",
                         "type": "string",
                         "format": "uri"
                     }
