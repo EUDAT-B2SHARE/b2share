@@ -1,3 +1,11 @@
+
+
+-----------------------------------------------
+--- Create an empty B2SHARE 2.0.1 database ----
+-----------------------------------------------
+
+--- NOTES: This script was created with B2SHARE 2.0.1 database dump
+
 --
 -- PostgreSQL database dump
 --

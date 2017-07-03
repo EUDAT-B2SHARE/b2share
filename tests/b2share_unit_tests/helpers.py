@@ -25,6 +25,7 @@
 
 import json
 import os
+import uuid
 from copy import deepcopy
 from contextlib import contextmanager
 from collections import namedtuple
@@ -37,11 +38,14 @@ from flask_login import login_user, logout_user
 from invenio_accounts.models import User
 from b2share.modules.deposit.api import Deposit
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from b2share.modules.deposit.api import PublicationStates
+from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from invenio_indexer.api import RecordIndexer
 from invenio_db import db
 from flask_principal import ActionNeed
 from invenio_access.models import ActionRoles, ActionUsers
 from invenio_access.permissions import ParameterizedActionNeed
+from invenio_pidstore.models import PersistentIdentifier
 
 
 def url_for_file(bucket_id, key):
@@ -229,14 +233,25 @@ def authenticated_user(userinfo):
             logout_user()
 
 
-def create_deposit(data, creator, files=None):
+def create_deposit(data, creator=None, files=None, version_of=None):
     """Create a deposit with the given user as creator."""
-    with authenticated_user(creator):
-        deposit = Deposit.create(data=deepcopy(data))
+
+    def create(data):
+        data = deepcopy(data)
+        record_uuid = uuid.uuid4()
+        # Create persistent identifier
+        b2share_deposit_uuid_minter(record_uuid, data=data)
+        deposit = Deposit.create(data=data, id_=record_uuid,
+                                 version_of=version_of)
         if files is not None:
             for key, value in files.items():
                 deposit.files[key] = BytesIO(value)
-    return deposit
+        return deposit
+    if creator is not None:
+        with authenticated_user(creator):
+            return create(data)
+    else:
+        return create(data)
 
 
 def create_record(data, creator, files=None):
@@ -295,11 +310,7 @@ def create_user_token(userid, name='token', scopes=None):
                     'Bearer {}'.format(allowed_token.access_token))]
 
 
-def db_create_v2_0_1():
-    """Create the db as it is in v2.0.1 from an sql script."""
-    # As pytest is messing up tests pkg_resource we can't use it here
-    path = os.path.join(os.path.dirname(__file__),
-                        'b2share_db_create.sql')
+def _run_sql_script(path):
     with open(path) as stream:
         script_str = stream.read().strip()
         try:
@@ -309,6 +320,16 @@ def db_create_v2_0_1():
                 trans.commit()
         finally:
             conn.close()
+
+
+def db_create_v2_0_1(load_data=True):
+    """Create the db as it is in v2.0.1 from an sql script."""
+    # As pytest is messing up tests pkg_resource we can't use it here
+    _run_sql_script(os.path.join(os.path.dirname(__file__),
+                                 'b2share_db_create.sql'))
+    if load_data:
+        _run_sql_script(os.path.join(os.path.dirname(__file__),
+                                     'b2share_db_load_data.sql'))
 
 
 def create_alembic_version_table():
@@ -326,3 +347,13 @@ def remove_alembic_version_table():
         alembic_version = db.Table('alembic_version', db.metadata,
                                    autoload_with=db.engine)
         alembic_version.drop(bind=db.engine)
+
+
+def pid_of(record):
+    """Retrieve the pid of a record."""
+    assert record['publication_state'] == PublicationStates.published.name
+    pids = [p for p in record['_pid'] if p['type'] == 'b2rec']
+    assert len(pids) == 1
+    pid = PersistentIdentifier.get(pid_type=pids[0]['type'],
+                                   pid_value=pids[0]['value'])
+    return pid, pid.pid_value

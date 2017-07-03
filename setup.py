@@ -53,8 +53,9 @@ install_requires = [
     'invenio-marc21>=1.0.0a3',
     'invenio-oaiserver>=1.0.0a9,<1.1.0',
     'invenio-oauthclient>=1.0.0a13,<1.1.0',
-    'invenio-oauth2server>=1.0.0a13,<1.1.0',
+    'invenio-oauth2server>=1.0.0a14,<1.1.0',
     'invenio-pidstore>=v1.0.0b1,<1.1.0',
+    'invenio-pidrelations>=v1.0.0a4,<1.1.0',
     'invenio-query-parser>=0.6.0,<1.1.0',
     'invenio-records>=1.0.0b1,<1.1.0',
     'invenio-records-rest>=1.0.0a17,<1.1.0',
@@ -189,6 +190,7 @@ setup(
             'invenio_oauth2server = invenio_oauth2server:InvenioOAuth2Server',
             'invenio_mail = invenio_mail:InvenioMail',
             'invenio_oaiserver = invenio_oaiserver:InvenioOAIServer',
+            'invenio_pidrelations = invenio_pidrelations:InvenioPIDRelations',
         ],
         'invenio_base.api_blueprints': [
             'invenio_oauthclient = invenio_oauthclient.views.client:blueprint',

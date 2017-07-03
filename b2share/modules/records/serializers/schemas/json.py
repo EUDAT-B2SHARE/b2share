@@ -51,6 +51,7 @@ class DraftSchemaJSONV1(Schema):
                 data['files'] = data['metadata']['_files']
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
+            # move PIDs to metadata top level
             epic_pids = [p for p in data['metadata']['_pid']
                          if p.get('type') == 'ePIC_PID']
             dois = [p for p in data['metadata']['_pid']
@@ -59,6 +60,12 @@ class DraftSchemaJSONV1(Schema):
                 data['metadata']['ePIC_PID'] = epic_pids[0].get('value')
             if len(dois) > 0:
                 data['metadata']['DOI'] = DOI_URL_PREFIX + dois[0].get('value')
+
+            # add parent version pid
+            # data['metadata']['parent_id'] = next(
+            #     pid['value'] for pid in data['metadata']['_pid']
+            #     if pid['type'] == RecordUUIDProvider.parent_pid_type
+            # )
             del data['metadata']['_pid']
         if '_oai' in data['metadata']:
             del data['metadata']['_oai']

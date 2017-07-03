@@ -1,12 +1,14 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
+import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
 import moment from 'moment';
-import { serverCache, Error } from '../data/server';
+import { serverCache, browser, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait, Err } from './waiting.jsx';
 import { FileRecordHeader, FileRecordRow, PersistentIdentifier } from './editfiles.jsx';
+import { Versions } from './versions.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 
 
@@ -127,6 +129,7 @@ const Record = React.createClass({
                     </div>
                 );
         }
+
         function testget(map, key) {
             const x = map.get(key);
             return (x && x.count && x.count()) ? x : null;
@@ -143,11 +146,14 @@ const Record = React.createClass({
 
         return (
             <div>
+                <Versions recordID={record.get('id')} versions={record.get('versions')}/>
+
                 <div className="row">
                     <div className="col-sm-12">
                         { metadata.get('titles').map(renderTitle)}
                     </div>
                 </div>
+
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
                         <p>
@@ -359,13 +365,20 @@ const Record = React.createClass({
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
-        const files = this.props.record.get('files') || this.props.record.getIn(['metadata', '_files']);
-
-        if (!this.props.record || !rootSchema) {
+        const record = this.props.record;
+        if (!record || !rootSchema) {
             return <Wait/>;
         }
 
-        const recordID = this.props.record.get('id');
+        const recordID = record.get('id');
+        const files = record.get('files') || record.getIn(['metadata', '_files']);
+
+        const isLatestVersion = !record.has('versions') || recordID == record.getIn(['versions', 0, 'id']);
+        function onNewVersion (e) {
+            serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
+        }
+
+
         const showB2Note = serverCache.getInfo().get('show_b2note');
         const B2NoteWellStyle = {
             position: 'absolute',
@@ -378,16 +391,12 @@ const Record = React.createClass({
         if (!this.state.showB2NoteWindow) {
             B2NoteWellStyle.display = 'none';
         }
-        const actionLinkStyle = {
-            margin: '0 0.5em',
-            float:'right',
-        };
         return (
             <div className="container-fluid">
                 <div className="large-record">
                     <div className="row">
                         <div className="col-lg-12">
-                            {this.renderFixedFields(this.props.record, this.props.community)}
+                            {this.renderFixedFields(record, this.props.community)}
                         </div>
                         {showB2Note ?
                             <div className="well" style={B2NoteWellStyle}>
@@ -417,10 +426,16 @@ const Record = React.createClass({
                         <div className="col-lg-12">
                             <div>
                                 <Link to={`/records/${recordID}/abuse`} className="btn btn-default"
-                                    style={Object.assign({}, actionLinkStyle, {color: '#d43f3a'})}>Report Abuse</Link>
-                                { canEditRecord(this.props.record) ?
-                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning"
-                                        style={actionLinkStyle}>Edit Record</Link> : false
+                                    style={{margin: '0 0.5em', float:'right', color: '#d43f3a'}}>Report Abuse</Link>
+                                { canEditRecord(record) ?
+                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                        Edit Metadata</Link>
+                                    : false
+                                }
+                                { isRecordOwner(record) && isLatestVersion ?
+                                    <Link onClick={onNewVersion} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                        Create New Version</Link>
+                                    : false
                                 }
                             </div>
                         </div>
@@ -444,6 +459,9 @@ function canEditRecord(record) {
 }
 
 function isRecordOwner(record) {
+    if (!serverCache.getUser()) {
+        return false;
+    }
     const userId = serverCache.getUser().get('id');
     if (userId === undefined || userId === null) {
         return false;
@@ -452,6 +470,9 @@ function isRecordOwner(record) {
 }
 
 function isCommunityAdmin(communityId) {
+    if (!serverCache.getUser()) {
+        return false;
+    }
     const roles = serverCache.getUser().get('roles');
     if (!roles) {
         return false;

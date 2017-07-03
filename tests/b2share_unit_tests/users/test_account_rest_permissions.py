@@ -28,6 +28,8 @@ import json
 from invenio_db import db
 from flask import url_for
 from invenio_accounts.models import User
+from invenio_oauth2server.models import Token
+from invenio_oauth2server import current_oauth2server
 from b2share_unit_tests.helpers import create_user
 
 
@@ -35,11 +37,19 @@ def test_accounts_search_permission(app, test_users, test_community,
                                     login_user):
     """Test permission of listing user accounts."""
     def account_search(user, expected_code):
+        headers = [('Content-Type', 'application/json'),
+                   ('Accept', 'application/json')]
         with app.app_context():
             url = url_for('invenio_accounts_rest.users_list')
-
-        headers = [('Content-Type', 'application/json'),
-                    ('Accept', 'application/json')]
+            if user:
+                scopes = current_oauth2server.scope_choices()
+                allowed_token = Token.create_personal(
+                    'allowed_token', user.id,
+                    scopes=[s[0] for s in scopes]
+                )
+                # application authentication token header
+                headers.append(('Authorization',
+                                'Bearer {}'.format(allowed_token.access_token)))
 
         with app.test_client() as client:
             if user is not None:

@@ -134,10 +134,10 @@ def list_readable_communities(user_id):
     return result
 
 
-class CreateDepositPermission(OrPermissions):
-    """Deposit read permission."""
+class CreateDepositPermission(AndPermissions):
+    """Deposit create permission."""
 
-    def __init__(self, record=None):
+    def __init__(self, record=None, previous_record=None):
         """Constructor.
 
         Args:
@@ -145,7 +145,6 @@ class CreateDepositPermission(OrPermissions):
         """
         super(CreateDepositPermission, self).__init__()
         self.record = record
-
         if record is not None:
             needs = set()
             community = Community.get(record['community'])
@@ -160,6 +159,14 @@ class CreateDepositPermission(OrPermissions):
                 needs.add(AuthenticatedNeed)
 
             self.permissions.add(StrictDynamicPermission(*needs))
+            if previous_record:
+                # we allow only the owner of a record to
+                # create a new version of it.
+                needs = set()
+                for owner_id in previous_record['_deposit']['owners']:
+                    needs.add(UserNeed(owner_id))
+                self.permissions.add(StrictDynamicPermission(*needs))
+
 
     def allows(self, *args, **kwargs):
         # allowed if the data is not loaded yet
@@ -320,6 +327,8 @@ class DeleteDepositPermission(DepositPermission):
         permission = StrictDynamicPermission()
         # owners can delete the deposit if it is not published
         if not 'pid' in self.deposit['_deposit']:
+            needs = set()
             for owner_id in self.deposit['_deposit']['owners']:
-                permission.needs.add(UserNeed(owner_id))
+                needs.add(UserNeed(owner_id))
+                self.permissions.add(StrictDynamicPermission(*needs))
         self.permissions.add(permission)

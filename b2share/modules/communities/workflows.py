@@ -27,8 +27,6 @@ from .errors import InvalidPublicationStateError
 
 def review_and_publish_workflow(previous_model, new_deposit):
     """Workflow publishing the deposits on submission."""
-    # import ipdb
-    # ipdb.set_trace()
     from b2share.modules.deposit.api import PublicationStates
     new_state = new_deposit['publication_state']
     previous_state = previous_model.json['publication_state']

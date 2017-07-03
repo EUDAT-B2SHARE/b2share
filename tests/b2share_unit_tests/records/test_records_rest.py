@@ -487,7 +487,7 @@ def test_delete_record(app, test_users, test_communities, login_user,
     test_delete(401)  # anonymous user
     test_delete(403, creator)
     test_delete(403, non_creator)
-    test_delete(200, admin)
+    test_delete(204, admin)
 
     test_access()  # anonymous user
     test_access(creator)

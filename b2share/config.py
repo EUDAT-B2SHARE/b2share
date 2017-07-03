@@ -68,7 +68,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         pid_type='b2rec',
         pid_minter='b2dep',
         pid_fetcher='b2rec',
-        record_class='invenio_records_files.api:Record',
+        record_class='b2share.modules.records.api:B2ShareRecord',
         search_class=B2ShareRecordsSearch,
         record_serializers={
             'application/json': ('b2share.modules.records.serializers'
@@ -89,7 +89,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         },
         default_media_type='application/json',
         list_route='/records/',
-        item_route='/records/<pid(b2rec,record_class="invenio_records_files.api:Record"):pid_value>',
+        item_route='/records/<pid(b2rec,record_class="b2share.modules.records.api:B2ShareRecord"):pid_value>',
         create_permission_factory_imp=CreateDepositPermission,
         read_permission_factory_imp=allow_all,
         update_permission_factory_imp=UpdateRecordPermission,

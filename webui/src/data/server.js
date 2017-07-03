@@ -20,6 +20,7 @@ const apiUrls = {
     userWithRole(roleid, userid)      { return `${urlRoot}/api/roles/${roleid}/users/${userid}` },
 
     records()                         { return `${urlRoot}/api/records/` },
+    recordsVersion(versionOf)         { return `${urlRoot}/api/records/?version_of=${versionOf}` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },
     draft(id)                         { return `${urlRoot}/api/records/${id}/draft` },
     fileBucket(bucket, key)           { return `${urlRoot}/api/files/${bucket}/${key}` },
@@ -139,6 +140,7 @@ class Pool {
         this.newFn = newFn;
         this.pool = {};
     }
+
     get(x) {
         let r = this.pool[x];
         if (!r) {
@@ -146,6 +148,10 @@ class Pool {
             this.pool[x] = r;
         }
         return r;
+    }
+
+    clear(){
+        this.pool = {};
     }
 }
 
@@ -302,11 +308,11 @@ class ServerCache {
         this.getters = {};
 
         this.getters.tokens = new Getter(
-            apiUrls.userTokens(), null, 
+            apiUrls.userTokens(), null,
             (data) => {
                 var tokens = data.hits.hits.map(c =>  { return c })
                 this.store.setIn(['tokens'], tokens);
-            }, 
+            },
             (xhr) => this.store.setIn(['tokens'], new Error(xhr)) );
 
         this.getters.communityUsers = new Pool(roleid => new Getter(
@@ -314,8 +320,7 @@ class ServerCache {
             (users) => {
             	this.store.setIn(['communityUsers', roleid], fromJS(users.hits.hits));
             },
-            null,
-        ));
+            null ));
 
         this.getters.latestRecords = new Getter(
             apiUrls.records(), {sort:"mostrecent"},
@@ -356,11 +361,30 @@ class ServerCache {
             },
             (xhr) => this.store.setIn(['disciplines'], new Error(xhr)) );
 
+        function retrieveVersions(store, links, cachePath) {
+            const versionsLink = links && links.versions;
+            if (!versionsLink) {
+                return
+            }
+            store.setIn(cachePath, null);
+            ajaxGet({
+                url: versionsLink,
+                successFn: (data) => {
+                    const v = data.versions.map((item, index) => {
+                        item.index = index;
+                        return item;
+                    });
+                    store.setIn(cachePath, fromJS(v).reverse());
+                },
+            });
+        }
+
         this.getters.record = new Pool(recordID =>
             new Getter(apiUrls.record(recordID), null,
                 (data) => {
                     if (data.files) { data.files = data.files.map(this.fixFile); }
                     this.store.setIn(['recordCache', recordID], fromJS(data));
+                    retrieveVersions(this.store, data.links, ['recordCache', recordID, 'versions']);
                 },
                 (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
 
@@ -374,6 +398,7 @@ class ServerCache {
                     this.store.setIn(['draftCache', draftID], fromJS(data));
                     this.store.setIn(['draftCache', draftID, 'files'], files);
                     this.getters.fileBucket.get(draftID).fetch();
+                    retrieveVersions(this.store, data.links, ['draftCache', draftID, 'versions']);
                 },
                 (xhr) => this.store.setIn(['draftCache', draftID], new Error(xhr)) ));
 
@@ -659,6 +684,24 @@ class ServerCache {
         this.posters.records.post(initialMetadata, successFn);
     }
 
+    createRecordVersion(versionOfRecord, successFn) {
+        ajaxPost({
+            url: apiUrls.recordsVersion(versionOfRecord.get('id')),
+            successFn: response => successFn(response.id),
+            errorFn: (xhr) => {
+                if (xhr.responseText) {
+                    const json = JSON.parse(xhr.responseText);
+                    if (json.goto_draft) {
+                        notifications.info("A draft already exists for this record.")
+                        successFn(json.goto_draft);
+                    }
+                } else {
+                    onAjaxError(xhr);
+                }
+            }
+        });
+    }
+
     putFile(draft, fileObject, progressFn) {
         const progFn = (status, param) => {
             if (status === 'done') {
@@ -908,6 +951,7 @@ function encode(obj) {
     }
     return a.join('&');
 };
+
 export const browser = {
     getRecordURL(recordId) {
         return `${window.location.origin}/records/${recordId}`;

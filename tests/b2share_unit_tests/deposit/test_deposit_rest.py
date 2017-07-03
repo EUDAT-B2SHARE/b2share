@@ -31,8 +31,8 @@ from flask import url_for
 from b2share.modules.deposit.api import PublicationStates, Deposit
 from copy import deepcopy
 from b2share_unit_tests.helpers import (
-    subtest_self_link, create_deposit, generate_record_data, url_for_file,
-    subtest_file_bucket_content, subtest_file_bucket_permissions,
+    subtest_self_link, create_deposit, create_record, generate_record_data,
+    url_for_file, subtest_file_bucket_content, subtest_file_bucket_permissions,
     build_expected_metadata, create_user, create_role,
 )
 from invenio_access.models import ActionUsers, ActionRoles
@@ -43,6 +43,7 @@ from b2share.modules.deposit.permissions import create_deposit_need_factory, \
 from b2share.modules.communities.api import Community
 from invenio_db import db
 from b2share.modules.deposit.loaders import IMMUTABLE_PATHS
+
 
 
 def test_deposit_create(app, test_records_data, test_users, login_user):
@@ -91,7 +92,7 @@ def test_deposit_patch_immutable_fields(app, draft_deposits, test_users,
                                         login_user):
     """Test invalid modification of record draft with HTTP PATCH."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         with app.test_client() as client:
             user = test_users['deposits_creator']
             login_user(user, client)
@@ -119,7 +120,7 @@ def test_deposit_put_is_disabled(app, draft_deposits, test_users,
                                  login_user):
     """Test invalid modification of record draft with HTTP PUT."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         with app.test_client() as client:
             user = test_users['deposits_creator']
             login_user(user, client)
@@ -138,7 +139,7 @@ def test_deposit_submit(app, test_records_data, draft_deposits, test_users,
                         login_user):
     """Test record draft submit with HTTP PATCH."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         record_data = test_records_data[0]
         with app.test_client() as client:
             user = test_users['deposits_creator']
@@ -164,7 +165,7 @@ def test_deposit_submit(app, test_records_data, draft_deposits, test_users,
                 draft=True,
             )
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         with app.test_client() as client:
             user = test_users['deposits_creator']
             login_user(user, client)
@@ -182,7 +183,7 @@ def test_deposit_submit_errors(app, test_records_data, draft_deposits,
     """Test deposit submission errors for incomplete metadata."""
     def test_missing_field(field):
         with app.app_context():
-            deposit = Deposit.get_record(draft_deposits[0].id)
+            deposit = Deposit.get_record(draft_deposits[0].deposit_id)
             with app.test_client() as client:
                 user = test_users['deposits_creator']
                 login_user(user, client)
@@ -377,17 +378,19 @@ def test_deposit_create_permission(app, test_users, login_user,
         allowed = create_user('allowed', permissions=[need])
         com_member = create_user('com_member', roles=[community.member_role])
         com_admin = create_user('com_admin', roles=[community.admin_role])
+        deposit, pid, record = create_record(record_data, creator)
 
         def restrict_creation(restricted):
             community.update({'restricted_submission':restricted})
             db.session.commit()
 
-        def test_creation(expected_code, user=None):
+        def test_creation(expected_code, user=None, version_of=None):
             with app.test_client() as client:
                 if user is not None:
                     login_user(user, client)
                 draft_create_res = client.post(
-                    url_for('b2share_records_rest.b2rec_list'),
+                    url_for('b2share_records_rest.b2rec_list',
+                            version_of=version_of),
                     data=json.dumps(record_data),
                     headers=headers
                 )
@@ -409,6 +412,14 @@ def test_deposit_create_permission(app, test_users, login_user,
         # test with a community member and admin
         test_creation(201, com_member)
         test_creation(201, com_admin)
+
+        # test creating a new version
+        test_creation(401, None, version_of=pid.pid_value)
+        test_creation(403, com_member, version_of=pid.pid_value)
+        restrict_creation(True)
+        test_creation(403, creator, version_of=pid.pid_value)
+        restrict_creation(False)
+        test_creation(201, creator, version_of=pid.pid_value)
 
 
 def test_deposit_read_permissions(app, login_user, test_users,
@@ -539,12 +550,11 @@ def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
 
                 deposit_pids = [hit['id'] for hit
                             in deposit_search_data['hits']['hits']]
-                expected_deposit_pids = [dep.id.hex for dep
+                expected_deposit_pids = [dep.deposit_id.hex for dep
                                          in expected_deposits]
                 deposit_pids.sort()
                 expected_deposit_pids.sort()
                 assert deposit_pids == expected_deposit_pids
-
         test_search(200, draft_deposits + submitted_deposits, creator)
         test_search(200, draft_deposits + submitted_deposits, admin)
         test_search(401, [], None)
@@ -620,8 +630,7 @@ def test_deposit_delete_permissions(app, test_records_data,
         deposit = create_deposit(test_records_data[0], creator)
         deposit.submit()
         deposit.publish()
-        # FIXME: handle the deletion of published deposits
-        test_delete(deposit, 403, admin)
+        test_delete(deposit, 204, admin)
 
 
 

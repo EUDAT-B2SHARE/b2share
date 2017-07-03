@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import, print_function
 
+import uuid
 from invenio_pidstore.providers.base import BaseProvider
 from invenio_pidstore.models import PIDStatus
 
@@ -32,11 +33,25 @@ from invenio_pidstore.models import PIDStatus
 class RecordUUIDProvider(BaseProvider):
     """Record identifier provider.
 
-    The deposit PID value has to be provided as it is used for the record PID.
+    This PID provider is used for both published records and Parent Version
+    PID. The same provider is used for both in order to redirect from parent to
+    last version PID via the REST API.
+
+    If the PID is for a published record, its value should match the
+    value of the deposit PID.
     """
 
     pid_type = 'b2rec'
     """Type of persistent identifier."""
+
+    parent_pid_type = 'vb2rec'
+    """Type used when minting the versioning parent pid in the record.
+
+    The parent PIDs are used for versioning. They are still registered as
+    'b2rec' PIDs in order to show them on the same endpoint as regular records
+    /api/records/PID. Each version record is minted with its parent PID. See
+    versioning documentation for more details.
+    """
 
     pid_provider = None
     """Provider name.
@@ -45,13 +60,14 @@ class RecordUUIDProvider(BaseProvider):
     provide any additional features besides creation of record ids.
     """
 
-    default_status = PIDStatus.REGISTERED
+    default_status = PIDStatus.RESERVED
     """Record UUIDs are registered immediately."""
 
     @classmethod
     def create(cls, object_type=None, object_uuid=None, **kwargs):
         """Create a new record identifier from the depoist PID value."""
-        assert 'pid_value' in kwargs
+        if 'pid_value' not in kwargs:
+            kwargs.setdefault('pid_value', uuid.uuid4().hex)
         kwargs.setdefault('status', cls.default_status)
         return super(RecordUUIDProvider, cls).create(
             object_type=object_type, object_uuid=object_uuid, **kwargs)

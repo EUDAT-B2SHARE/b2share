@@ -1,0 +1,123 @@
+[
+    {
+        "created": "2017-11-03 09:04:45.347433",
+        "updated": "2017-11-03 09:04:45.347454",
+        "id": 1,
+        "pid_type": "b2dep",
+        "pid_value": "a1c2ef96a1e446fa9bd7a2a46d2242d4",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "a1c2ef96-a1e4-46fa-9bd7-a2a46d2242d4"
+    },
+    {
+        "created": "2017-11-03 09:04:45.975537",
+        "updated": "2017-11-03 09:04:45.975553",
+        "id": 2,
+        "pid_type": "b2rec",
+        "pid_value": "a1c2ef96a1e446fa9bd7a2a46d2242d4",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "9d518b6d-70b4-47b5-9e69-1f35fd4eb1d1"
+    },
+    {
+        "created": "2017-11-03 09:04:45.979942",
+        "updated": "2017-11-03 09:04:45.979967",
+        "id": 3,
+        "pid_type": "oai",
+        "pid_value": "oai:b2share.eudat.eu:b2rec/a1c2ef96a1e446fa9bd7a2a46d2242d4",
+        "pid_provider": "oai",
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "9d518b6d-70b4-47b5-9e69-1f35fd4eb1d1"
+    },
+    {
+        "created": "2017-11-03 09:04:46.481281",
+        "updated": "2017-11-03 09:04:46.481296",
+        "id": 4,
+        "pid_type": "b2dep",
+        "pid_value": "47077e3c4b9f4852a40709e338ad4620",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "47077e3c-4b9f-4852-a407-09e338ad4620"
+    },
+    {
+        "created": "2017-11-03 09:04:46.725830",
+        "updated": "2017-11-03 09:04:46.725847",
+        "id": 5,
+        "pid_type": "b2rec",
+        "pid_value": "47077e3c4b9f4852a40709e338ad4620",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "1eb14309-87de-4f41-ad93-840e76fa0e15"
+    },
+    {
+        "created": "2017-11-03 09:04:46.730679",
+        "updated": "2017-11-03 09:04:46.730700",
+        "id": 6,
+        "pid_type": "oai",
+        "pid_value": "oai:b2share.eudat.eu:b2rec/47077e3c4b9f4852a40709e338ad4620",
+        "pid_provider": "oai",
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "1eb14309-87de-4f41-ad93-840e76fa0e15"
+    },
+    {
+        "created": "2017-11-03 09:04:47.318029",
+        "updated": "2017-11-03 09:04:47.318046",
+        "id": 7,
+        "pid_type": "b2dep",
+        "pid_value": "1033083fedf4408fb5611f23527a926d",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "1033083f-edf4-408f-b561-1f23527a926d"
+    },
+    {
+        "created": "2017-11-03 09:04:47.651005",
+        "updated": "2017-11-03 09:04:47.651024",
+        "id": 8,
+        "pid_type": "b2rec",
+        "pid_value": "1033083fedf4408fb5611f23527a926d",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "29ad6eb8-559e-4b0d-a1cd-e5b1f1f268ff"
+    },
+    {
+        "created": "2017-11-03 09:04:47.656581",
+        "updated": "2017-11-03 09:04:47.656597",
+        "id": 9,
+        "pid_type": "oai",
+        "pid_value": "oai:b2share.eudat.eu:b2rec/1033083fedf4408fb5611f23527a926d",
+        "pid_provider": "oai",
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "29ad6eb8-559e-4b0d-a1cd-e5b1f1f268ff"
+    },
+    {
+        "created": "2017-11-04 09:04:47.318029",
+        "updated": "2017-11-04 09:04:47.318046",
+        "id": 10,
+        "pid_type": "b2dep",
+        "pid_value": "9544056edff2505fb5611f11127b817e",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "9544056e-dff2-505f-b561-1f11127b817e"
+    },
+    {
+        "created": "2017-11-07 15:23:02.095302",
+        "updated": "2017-11-07 15:33:52.390569",
+        "id": 11,
+        "pid_type": "b2dep",
+        "pid_value": "6cd752bd21904e218a5f787c5dc416ab",
+        "pid_provider": null,
+        "status": "D",
+        "object_type": "rec",
+        "object_uuid": "6cd752bd-2190-4e21-8a5f-787c5dc416ab"
+    }
+]

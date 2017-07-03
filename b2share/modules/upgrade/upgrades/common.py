@@ -27,7 +27,7 @@ from __future__ import absolute_import, print_function
 
 import amqp
 from flask import current_app
-from invenio_search import current_search
+from invenio_search import current_search, current_search_client
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_indexer.api import RecordIndexer
 from invenio_indexer.tasks import process_bulk_queue
@@ -38,6 +38,10 @@ from b2share.modules.schemas.helpers import load_root_schemas
 
 def elasticsearch_index_destroy(alembic, verbose):
     """Destroy the elasticsearch indices and indexing queue."""
+    # Delete "records" index as it might have been created during the upgrade.
+    # This happens when the indices have not been initialized yet and are
+    # indexed. Normally "records" should be an alias, not an index.
+    current_search_client.indices.delete(index='records', ignore=[404])
     for _ in current_search.delete(ignore=[400, 404]):
         pass
     queue = current_app.config['INDEXER_MQ_QUEUE']
