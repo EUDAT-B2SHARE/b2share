@@ -53,7 +53,7 @@ const NavbarMenu = React.createClass({
                     <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
                     <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
                     <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
-                    <li> <a href="http://www.eudat.eu/services/b2share" activeClassName='active' target="_blank"> Contact </a> </li>
+                    <li> <a href="https://www.eudat.eu/support-request?service=B2SHARE" activeClassName='active' target="_blank"> Contact </a> </li>
                 </ul>
                 <ul className="nav navbar-nav user">
                     <NavbarUser user={serverCache.getUser()}/>
