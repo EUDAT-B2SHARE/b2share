@@ -153,3 +153,74 @@ For example:
 
     $ b2share access allow -r com:8d963a295e19492b8cfe97da4f54fad2:admin update-record-metadata -a '{"community":"8d963a29-5e19-492b-8cfe-97da4f54fad2"}'
 
+
+Records
+-------
+
+Delete a published Record
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Command Line Interface is currently missing a way to delete a record while
+leaving a tombstone. This will be fixed shortly but in the mean time here is
+how to delete a record. Note that the following method just marks the record
+as deleted, it still keeps it in the database just in case we want to revert
+the deletion. If a user access the record page after that he will see a
+``410 Gone`` error code meaning that a record existed before but was deleted.
+
+First go to the page of the record you want to delete. Look at the URL, it
+should have the form ``https://<B2SHARE_HOST>/records/<RECORD_PID>``, where
+``<RECORD_PID>`` is a UUID. Note this UUID, it is the persistent identifier of
+this record, we will need it later.
+
+Next we open the b2share shell. This shell executes python code as B2SHARE.
+Be careful as any action is performed directly on the database.
+
+.. code-block:: console
+
+    $ b2share shell
+
+In the shell we will start by retrieving the record using the persistent
+identifier.
+
+.. code-block:: python
+
+    >>> from invenio_pidstore.models import PersistentIdentifier
+    >>> from invenio_records_files.api import Record
+    >>> pid = PersistentIdentifier.get('b2rec', '<RECORD_PID>')
+    >>> record = Record.get_record(pid.object_uuid)
+
+Where ``<RECORD_PID>`` should be replaced with the record persistent identifier.
+
+Now we retrieve all the other persistent identifiers attached to that record
+
+.. code-block:: python
+
+    >>> pids = PersistentIdentifier.query.filter_by(object_type='rec', object_uuid=pid.object_uuid).all()
+
+Now we mark the record as deleted.
+
+.. code-block:: python
+
+    >>> record.delete()
+
+We also need to mark all the persistent identifier as deleted so that the
+proper error message is returned to users. As this is python code you must
+keep the indentation as shown bellow.
+
+.. code-block:: python
+
+    >>> for pid in pids:
+    ...     pid.unassign()
+    ...     pid.delete()
+
+Finally we commit our changes to the database.
+
+.. code-block:: python
+
+    >>> from invenio_db import db
+    >>> db.session.commit()
+
+If you go the record webpage you should now see the `410` error message.
+
+Note that we didn't delete the deposit. Everything is kept in the database
+and can be reverted if need be. The files are not removed either.
