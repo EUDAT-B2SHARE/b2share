@@ -114,6 +114,24 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
             uploaded_content = uploaded_files[draft_file['key']]
             assert draft_file['size'] == len(uploaded_content)
 
+            # download the file and test it
+            file_res = client.get(draft_file['links']['self'], headers=headers)
+            h = file_res.headers
+            # content type is changed from text/html to text/plain by
+            # invenio-files-rest in order to avoid XSS attacks.
+            assert h['Content-Type'] == 'text/plain; charset=utf-8'
+            # XSS prevention
+            assert h['Content-Security-Policy'] == 'default-src \'none\';'
+            assert h['X-Content-Type-Options'] == 'nosniff'
+            assert h['X-Download-Options'] == 'noopen'
+            assert h['X-Permitted-Cross-Domain-Policies'] == 'none'
+            assert h['X-Frame-Options'] == 'deny'
+            assert h['X-XSS-Protection'] == '1; mode=block'
+            assert h['Content-Disposition'] == 'inline'
+            # check file content
+            assert file_res.data == uploaded_content
+
+
     headers = [('Content-Type', 'application/json'),
                 ('Accept', 'application/json')] + allowed_headers
     patch_headers = [('Content-Type', 'application/json-patch+json'),
@@ -137,13 +155,16 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
                 draft_create_res.get_data(as_text=True))
 
             uploaded_files = {
-                'myfile1.dat': b'contents1',
-                'myfile2.dat': b'contents2'
+                'myfile1.html': b'contents1',
+                'myfile2.html': b'contents2'
             }
 
             for file_key, file_content in uploaded_files.items():
                 # Test file upload
-                headers = [('Accept', '*/*')] + allowed_headers
+                headers = [
+                    ('Accept', '*/*'),
+                    ('Content-Type', 'text/html; charset=utf-8')
+                ] + allowed_headers
                 object_url = '{0}/{1}'.format(
                     draft_create_data['links']['files'], file_key)
                 file_put_res = client.put(
