@@ -68,7 +68,8 @@ class BlockSchema(db.Model, Timestamp):
 
     name = db.Column(db.String(200),
                      sa.CheckConstraint('LENGTH(name) > 2 AND '
-                                        'LENGTH(name) <= 200'),
+                                        'LENGTH(name) <= 200',
+                                        name='name_length'),
                      nullable=False,
 
                      )
@@ -77,8 +78,12 @@ class BlockSchema(db.Model, Timestamp):
     deprecated = db.Column(db.Boolean, default=False, nullable=False)
     """True if the schema is not maintained anymore."""
 
-    community = db.Column(UUIDType, db.ForeignKey(Community.id),
-                          nullable=False)
+    community = db.Column(
+        UUIDType,
+        db.ForeignKey(Community.id,
+                      name='fk_b2share_block_schema_community'),
+        nullable=False
+    )
     """Community owning and maintaining this schema."""
 
 
@@ -93,8 +98,13 @@ class BlockSchemaVersion(db.Model):
 
     __tablename__ = 'b2share_block_schema_version'
 
-    block_schema = db.Column(UUIDType, db.ForeignKey(BlockSchema.id),
-                             primary_key=True)
+    block_schema = db.Column(
+        UUIDType, db.ForeignKey(
+            BlockSchema.id,
+            name='fk_b2share_block_schema_version_block_schema'
+        ),
+        primary_key=True
+    )
     """ID of the parent block schema."""
 
     version = db.Column(db.Integer, primary_key=True, autoincrement=False)
@@ -119,8 +129,14 @@ class CommunitySchemaVersion(db.Model):
 
     __tablename__ = 'b2share_community_schema_version'
 
-    community = db.Column(UUIDType, db.ForeignKey(Community.id),
-                          primary_key=True)
+    community = db.Column(
+        UUIDType,
+        db.ForeignKey(
+            Community.id,
+            name='fk_b2share_community_schema_version_community'
+        ),
+        primary_key=True
+    )
     """Community accepting this schema."""
 
     version = db.Column(db.Integer, primary_key=True, default=None,
@@ -130,9 +146,14 @@ class CommunitySchemaVersion(db.Model):
     released = sa.Column(sa.DateTime, default=datetime.utcnow, nullable=False)
     """Schema release date."""
 
-    root_schema = db.Column(db.Integer,
-                            db.ForeignKey(RootSchemaVersion.version),
-                            nullable=False)
+    root_schema = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            RootSchemaVersion.version,
+            name='fk_b2share_community_schema_version_root_schema'
+        ),
+        nullable=False
+    )
     """Root schema used by this community."""
 
     community_schema = db.Column(db.String, nullable=False, default="{}")
