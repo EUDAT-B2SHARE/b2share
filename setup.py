@@ -31,8 +31,8 @@ from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
 install_requires = [
-    'Flask-Login<0.4,>=0.3.0',
-    'celery>=3.1,<4.0', # TODO Unpin this once compatible with Celery 4.0
+    'Flask-Login<0.4,>=0.3.2',
+    'celery>=3.1.24,<4.0', # TODO Unpin this once compatible with Celery 4.0
     'elasticsearch<3.0.0,>=2.0.0',
     'elasticsearch-dsl<3.0.0,>=2.0.0',
     'datacite>=0.3.0',
@@ -45,7 +45,7 @@ install_requires = [
     'invenio-base>=1.0.0a14,<1.1.0',
     'invenio-celery>=1.0.0b1,<1.1.0',
     'invenio-config>=1.0.0b2,<1.1.0',
-    'invenio-db>=1.0.0b5,<1.1.0',
+    'invenio-db>=1.0.0b7,<1.1.0',
     'invenio-deposit>=1.0.0a8,<1.1.0',
     'invenio-files-rest>=1.0.0a17,<1.1.0',
     'invenio-mail>=1.0.0b1,<1.1.0',
@@ -56,7 +56,7 @@ install_requires = [
     'invenio-pidstore>=v1.0.0b1,<1.1.0',
     'invenio-query-parser>=0.6.0,<1.1.0',
     'invenio-records>=1.0.0b1,<1.1.0',
-    'invenio-records-rest>=1.0.0a16,<1.1.0',
+    'invenio-records-rest>=1.0.0a17,<1.1.0',
     'invenio-records-files>=1.0.0a9,<1.1.0',
     'invenio-rest[cors]>=1.0.0a10,<1.1.0',
     'invenio-search>=1.0.0a9,<1.1.0',
