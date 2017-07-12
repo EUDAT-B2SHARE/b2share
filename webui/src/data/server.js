@@ -13,6 +13,7 @@ const apiUrls = {
 
     user()                            { return `${urlRoot}/api/user` },
     userTokens()                      { return `${urlRoot}/api/user/tokens` },
+    manageToken(id)                   { return `${urlRoot}/api/user/tokens/${id}` },
 
     users(queryString)                { return `${urlRoot}/api/users` + (queryString ? `?q=${queryString}` : ``) },
     userListWithRole(id)              { return `${urlRoot}/api/roles/${id}/users` },
@@ -291,11 +292,20 @@ class ServerCache {
             disciplines: null,
 
             communityUsers: {}, // list of users belong to a specific community
+            tokens: null, // list of user's tokens
         });
 
         this.store.setIn(['communities'], OrderedMap());
 
         this.getters = {};
+
+        this.getters.tokens = new Getter(
+            apiUrls.userTokens(), null, 
+            (data) => {
+                var tokens = data.hits.hits.map(c =>  { return c })
+                this.store.setIn(['tokens'], tokens);
+            }, 
+            (xhr) => this.store.setIn(['tokens'], new Error(xhr)) );
 
         this.getters.communityUsers = new Pool(roleid => new Getter(
         	apiUrls.userListWithRole(roleid), null,
@@ -433,6 +443,7 @@ class ServerCache {
                 return new FilePoster(fileBucketUrl + '/' + fileName);
             })
         );
+        this.posters.tokens = new Pool(tokenName => new Poster(apiUrls.userTokens()));
     }
 
     fixFile(file) {
@@ -603,18 +614,26 @@ class ServerCache {
         return this.getCommunitySchemas(communityID, ver);
     }
 
-    getUserTokens(successFn) {
-        ajaxGet({
-            url: apiUrls.userTokens(),
-            successFn: (data) => successFn(data.hits.hits),
+    newUserToken(tokenName, successFn) {
+        var param = {token_name:tokenName};
+        this.posters.tokens.get().post(param, (token)=>{
+            this.getters.tokens.forceFetch(null);
+            successFn(token);
         });
     }
 
-    newUserToken(tokenName, successFn) {
-        ajaxPost({
-            params: {token_name:tokenName},
-            url: apiUrls.userTokens(),
-            successFn: successFn,
+    getUserTokens(){
+        this.getters.tokens.autofetch();
+        return this.store.getIn(['tokens']);
+    }
+
+    removeUserToken(tokenID) {
+        ajaxDelete({
+            url: apiUrls.manageToken(tokenID),
+            successFn: ()=>{
+                notifications.success("Token is successfully deleted");
+                this.getters.tokens.forceFetch(null);
+            },
         });
     }
 
