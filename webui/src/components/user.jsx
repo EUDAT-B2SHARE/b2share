@@ -2,6 +2,7 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { serverCache, Error, loginURL, notifications } from '../data/server';
 import { CommunityAdmin } from './community_admin.jsx'
+import { Wait, Err } from './waiting.jsx';
 
 const PT = React.PropTypes;
 
@@ -156,46 +157,46 @@ export const UserProfile = React.createClass({
 
 
 const TokenList = React.createClass({
-    mixins: [React.addons.PureRenderMixin],
-
     getInitialState() {
         return {
-            name: "",
             token: null,
-            tokenList: [],
         }
     },
 
-    componentWillMount() {
-        serverCache.getUserTokens(tokenList => this.setState({tokenList}));
-    },
-
-    newToken(e) {
-        e.preventDefault();
-        if (!this.state.name) {
+    newToken(tokenName) {
+        if (!tokenName) {
             notifications.danger('Please choose a name for the new token');
         } else {
             notifications.clearAll();
-            serverCache.newUserToken(this.state.name, token => {
-                const tokenList = this.state.tokenList;
-                tokenList.push(token);
-                this.setState({token, tokenList})
+            serverCache.newUserToken(tokenName, token => {
+                this.setState({token});
             });
         }
     },
 
     renderToken(t) {
-        return <li className="list-group-item" key={t.id}>{t.name}</li>;
+        return <div key={t.id}> <Token token_id={t.id} token_name={t.name} removeToken={this.removeToken} /> </div>
+    },
+
+    removeToken(token_id){
+        serverCache.removeUserToken(token_id);
     },
 
     render() {
+        const tokenList = serverCache.getUserTokens();
+        if (!tokenList) {
+            return <Wait/>;
+        }
+        if (tokenList instanceof Error) {
+            return <Err err={tokenList}/>;
+        }
         return (
             <div>
-                {this.state.tokenList.length ?
+                {tokenList.length ?
                     <div>
                         <p>Active tokens:</p>
                             <ul className="list-group">
-                                { this.state.tokenList.map(this.renderToken) }
+                                { tokenList.map(this.renderToken) }
                             </ul>
                     </div> : <div><p> You have no active tokens </p></div>
                 }
@@ -213,9 +214,48 @@ const TokenList = React.createClass({
                     </div> : false
                 }
 
-                <div>
+            <AddToken newToken={this.newToken} />
+            </div>
+        );
+    }
+});
+
+
+const Token = React.createClass({
+    removeToken(e){
+        e.preventDefault();
+        this.props.removeToken(this.props.token_id);
+    },
+
+    render(){
+        return  <li className="list-group-item" key={this.props.token_id}>{this.props.token_name}
+                    <span className="pull-right">
+                            <form className="form-inline" onSubmit={this.removeToken}>
+                                <button className="btn btn-default btn-xs" type="submit">
+                                    <i className="fa fa-trash-o"></i> Remove
+                                </button>
+                            </form>
+                    </span> 
+                </li>;
+    }
+});
+
+const AddToken = React.createClass({
+    getInitialState() {
+        return {
+            name: "",
+        }
+    },
+
+    addToken(e){
+        e.preventDefault();
+        this.props.newToken(this.state.name);
+    },
+
+    render(){
+        return <div>
                     <p className="control-label">Create new token:</p>
-                    <form className="form-inline" onSubmit={this.newToken}>
+                    <form className="form-inline" onSubmit={this.addToken}>
                         <div className="form-group">
                             <input className="form-control" style={{borderRadius:0}} type="text" name="name"
                                 value={this.state.name} onChange={e => this.setState({name: e.target.value})}
@@ -228,7 +268,5 @@ const TokenList = React.createClass({
                         </div>
                     </form>
                 </div>
-            </div>
-        );
-    }
+            }
 });
