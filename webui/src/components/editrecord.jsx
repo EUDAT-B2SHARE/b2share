@@ -171,7 +171,7 @@ const EditRecord = React.createClass({
         if(typeof value === 'string' || value instanceof String) {
             value = value.replace(/^\s+/, '').replace(/\s+$/, ' ') ;
         }
-        
+
         r = value !== undefined ? r.setIn(path, value) : r.deleteIn(path);
         const errors = this.state.errors;
         const pathstr = path.join('/');
@@ -489,9 +489,11 @@ const EditRecord = React.createClass({
 
     validField(schema, value) {
         if (schema && schema.get('isRequired')) {
-            // 0 is fine
-            if (value === undefined || value === null || (""+value).trim() === "")
-                return false;
+            if (!this.props.isDraft || this.isForPublication()) {
+                // 0 is fine
+                if (value === undefined || value === null || (""+value).trim() === "")
+                    return false;
+            }
         }
         return true;
     },
@@ -499,9 +501,11 @@ const EditRecord = React.createClass({
     findValidationErrorsRec(errors, schema, path, value) {
         const isValue = (value !== undefined && value !== null && value !== "");
         if (schema.get('isRequired') && !isValue) {
-            const pathstr = path.join("/");
-            errors[pathstr] = invalidFieldMessage(pathstr);
-            return;
+            if (!this.props.isDraft || this.isForPublication()) {
+                const pathstr = path.join("/");
+                errors[pathstr] = invalidFieldMessage(pathstr);
+                return;
+            }
         }
 
         const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
