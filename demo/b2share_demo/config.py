@@ -24,6 +24,7 @@
 """Demonstration configuration, to be changed by the site administrator"""
 
 from __future__ import absolute_import, print_function
+from b2share.modules.oauthclient.b2access import make_b2access_remote_app
 
 
 SITE_FUNCTION = 'demo' # set to "production" on production instances
@@ -34,38 +35,6 @@ SITE_FUNCTION = 'demo' # set to "production" on production instances
 #: needs to be removed from docker-compose.yml
 #: Change this parameter to use an external database, e.g.:
 # SQLALCHEMY_DATABASE_URI = "postgresql://db_username:db_password@db_host/db_name"
-
-# Cache
-# =====
-#: In order to modify this variable B2SHARE_CACHE_REDIS_HOST
-#: needs to be removed from docker-compose.yml
-# CACHE_REDIS_HOST='redis'
-
-#: In order to modify this variable B2SHARE_CACHE_REDIS_URL
-#: needs to be removed from docker-compose.yml
-# CACHE_REDIS_URL='redis://redis:6379/0'
-
-# Session
-# =======
-#: In order to modify this variable B2SHARE_ACCOUNTS_SESSION_REDIS_URL
-#: needs to be removed from docker-compose.yml
-# ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'
-
-# Celery
-# ======
-#: In order to modify this variable B2SHARE_BROKER_URL needs to be
-#: removed from docker-compose.yml
-# BROKER_URL='amqp://guest:guest@mq:5672//'
-
-#: In order to modify this variable B2SHARE_CELERY_RESULT_BACKEND needs to be
-#: removed from docker-compose.yml
-# CELERY_RESULT_BACKEND='redis://redis:6379/2'
-
-# Elasticsearch
-# =============
-#: In order to modify this variable B2SHARE_SEARCH_ELASTIC_HOSTS needs to be
-#: removed from docker-compose.yml
-# SEARCH_ELASTIC_HOSTS=['elasticsearch']
 
 
 # email notifications
@@ -80,6 +49,15 @@ OAISERVER_ADMIN_EMAILS = [SUPPORT_EMAIL]
 # this will make the SUPPORT_EMAIL show up on the oai-pmh identify page
 # if this is undesirable, set it to [], or to ['some_other_email@example.com']
 
+
+# B2ACCESS
+# ========
+#: To change the B2ACCESS instance, uncomment and set B2ACCESS_BASE_URL
+#:     and also make sure to uncomment OAUTHCLIENT_REMOTE_APPS
+# B2ACCESS_BASE_URL = 'https://b2access.eudat.eu/'
+# OAUTHCLIENT_REMOTE_APPS = dict(
+#     b2access=make_b2access_remote_app(B2ACCESS_BASE_URL)
+# )
 
 
 # file and record quotas
@@ -133,3 +111,37 @@ PIDSTORE_DATACITE_PASSWORD = "XXXX"
 # if the TRAINING_SITE_LINK parameter is not empty, a message will show up
 # on the front page redirecting the testers to this link
 TRAINING_SITE_LINK = ""
+
+
+# Cache
+# =====
+#: In order to modify this variable B2SHARE_CACHE_REDIS_HOST
+#: needs to be removed from docker-compose.yml
+# CACHE_REDIS_HOST='redis'
+
+#: In order to modify this variable B2SHARE_CACHE_REDIS_URL
+#: needs to be removed from docker-compose.yml
+# CACHE_REDIS_URL='redis://redis:6379/0'
+
+# Session
+# =======
+#: In order to modify this variable B2SHARE_ACCOUNTS_SESSION_REDIS_URL
+#: needs to be removed from docker-compose.yml
+# ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'
+
+# Celery
+# ======
+#: In order to modify this variable B2SHARE_BROKER_URL needs to be
+#: removed from docker-compose.yml
+# BROKER_URL='amqp://guest:guest@mq:5672//'
+
+#: In order to modify this variable B2SHARE_CELERY_RESULT_BACKEND needs to be
+#: removed from docker-compose.yml
+# CELERY_RESULT_BACKEND='redis://redis:6379/2'
+
+# Elasticsearch
+# =============
+#: In order to modify this variable B2SHARE_SEARCH_ELASTIC_HOSTS needs to be
+#: removed from docker-compose.yml
+# SEARCH_ELASTIC_HOSTS=['elasticsearch']
+

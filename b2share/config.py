@@ -177,9 +177,9 @@ B2ACCESS_APP_CREDENTIALS = dict(
 )
 
 
-B2ACCESS_BASE_URL = 'https://b2access.eudat.eu:8443/'
+B2ACCESS_BASE_URL = 'https://b2access.eudat.eu/'
 if os.environ.get("USE_STAGING_B2ACCESS"):
-    B2ACCESS_BASE_URL = 'https://unity.eudat-aai.fz-juelich.de:8443/'
+    B2ACCESS_BASE_URL = 'https://unity.eudat-aai.fz-juelich.de/'
 
 OAUTHCLIENT_REMOTE_APPS = dict(
     b2access=make_b2access_remote_app(B2ACCESS_BASE_URL)
