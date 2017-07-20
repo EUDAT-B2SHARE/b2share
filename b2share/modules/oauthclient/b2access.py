@@ -161,10 +161,7 @@ def authorized_signup_handler(resp, remote, *args, **kwargs):
 
         # Authenticate user
         if not oauth_authenticate(remote.consumer_key, user,
-                                  require_existing_link=False,
-                                  remember=current_app.config[
-                                      'OAUTHCLIENT_REMOTE_APPS']
-                                  [remote.name].get('remember', False)):
+                                  require_existing_link=False):
             return current_app.login_manager.unauthorized()
 
         # Link account

@@ -218,7 +218,7 @@ const Record = React.createClass({
                     const showB2NoteWindow = e => this.setState({showB2NoteWindow: true});
                     b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={showB2NoteWindow}/>;
                 }
-                return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget}/>
+                return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} hideFileDownloads={false} />
             }
             fileComponent =
                 <div className='fileList'>

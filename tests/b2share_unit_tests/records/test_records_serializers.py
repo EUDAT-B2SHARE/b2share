@@ -28,6 +28,7 @@ import pytest
 from b2share_unit_tests.helpers import (create_record, create_user)
 from b2share.modules.records.serializers import (
     oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31)
+from invenio_indexer.api import RecordIndexer
 
 def make_record(test_records_data):
     creator = create_user('creator')
@@ -56,7 +57,12 @@ def make_record(test_records_data):
 def test_records_serializers_dc(app, test_records_data):
     with app.app_context():
         pid, record = make_record(test_records_data)
-        rec = {'_source': record.copy(), '_version': record.revision_id}
+        rec = {
+            '_source': RecordIndexer._prepare_record(
+                record, 'records', 'record'
+            ).copy(),
+            '_version': record.revision_id
+        }
         dcxml = oaipmh_oai_dc(pid=pid, record=rec)
 
         namespaces = {'dc':'http://purl.org/dc/elements/1.1/'}
@@ -100,7 +106,12 @@ def test_records_serializers_dc(app, test_records_data):
 def test_records_serializers_marc(app, test_records_data):
     with app.app_context():
         pid, record = make_record(test_records_data)
-        rec = {'_source': record.copy(), '_version': record.revision_id}
+        rec = {
+            '_source': RecordIndexer._prepare_record(
+                record, 'records', 'record'
+            ).copy(),
+            '_version': record.revision_id
+        }
         marcxml = oaipmh_marc21_v1(pid=pid, record=rec)
 
         namespaces = {'m':'http://www.loc.gov/MARC21/slim'}

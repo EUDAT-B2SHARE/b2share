@@ -26,4 +26,5 @@
 -e git+git://github.com/inveniosoftware/invenio-oaiserver.git#egg=invenio-oaiserver
 -e git+git://github.com/inveniosoftware/invenio-records-rest.git#egg=invenio-records-rest
 -e git+git://github.com/inveniosoftware/invenio-accounts-rest.git#egg=invenio-accounts-rest
+-e git+git://github.com/inveniosoftware/invenio-stats.git#egg=invenio-stats
 -e git+git://github.com/inveniosoftware/doschema.git#egg=doschema

@@ -2,6 +2,7 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { fromJS, OrderedMap, Map } from 'immutable';
 import moment from 'moment';
+import _ from 'lodash';
 import { serverCache, Error } from '../data/server';
 import { pairs, humanSize } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
@@ -363,7 +364,7 @@ export const EditFiles = React.createClass({
                 <div className="fileList">
                     <FileRecordHeader/>
                     { this.props.files.map(f =>
-                        <FileRecordRow key={f.key} file={f} remove={()=>this.removeRecordFile(f)} />) }
+                        <FileRecordRow key={f.key} file={f} remove={()=>this.removeRecordFile(f)} hideFileDownloads={true} />) }
                 </div>
             </div>
         );
@@ -412,7 +413,6 @@ export const EditFiles = React.createClass({
         );
     },
 });
-
 
 export const FileUploadHeader = React.createClass({
     mixins: [React.addons.PureRenderMixin],
@@ -491,7 +491,6 @@ const FileUploadRow = React.createClass({
     },
 });
 
-
 export const FileRecordHeader = React.createClass({
     mixins: [React.addons.PureRenderMixin],
     render() {
@@ -518,12 +517,27 @@ export const FileRecordRow = React.createClass({
         return {
             open: false,
             remove: false,
+            downloads: {},
         };
+    },
+
+    componentDidMount() {
+        let file = this.props.file;
+        file = file.toJS ? file.toJS() : file;
+
+        if (! this.props.hideFileDownloads) {
+            serverCache.getFileStatistics(file.bucket, (fileDownloads) => {
+                const downloads = _.chain(fileDownloads.buckets)
+                  .keyBy('key').mapValues('value').value();
+                this.setState({ downloads });
+            });
+        }
     },
 
     render() {
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
+        const downloads = this.state.downloads[file.key || file.name] || 0;
 
         const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
@@ -538,6 +552,11 @@ export const FileRecordRow = React.createClass({
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <a style={{display:'inline-block', marginLeft:'0.5em'}}
                             href={file.url}>{file.key || file.name}</a>
+                        { this.props.hideFileDownloads ? null :
+                            <span className="fileDownloadBadge" style={{marginLeft:'1em', fontSize:11, color: '#888'}}>
+                                <span className="badge" style={{marginLeft:'0.5em'}}> Total Downloads {downloads} </span>
+                            </span> 
+                        }
                     </div>
                     <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
                     { this.props.remove ?
@@ -566,6 +585,7 @@ export const FileRecordRow = React.createClass({
                                 { this.props.b2noteWidget }
                             </div> : false }
                     </div> : false }
+
                 { this.props.remove && this.state.remove ?
                     <FileRemoveDialog file={file}
                                       remove={this.props.remove}

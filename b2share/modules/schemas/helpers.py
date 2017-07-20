@@ -176,7 +176,6 @@ def load_root_schemas(cli=False, verbose=False):
                                .format(version, filename))
                 configs_count += 1
                 RootSchema.create_new_version(version, json_schema)
-                db.session.commit()
             except Exception:
                 click.echo()
                 raise
