@@ -32,7 +32,7 @@ from invenio_db import db
 
 from ..api import UpgradeRecipe, alembic_stamp, alembic_upgrade
 from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
-    elasticsearch_index_reindex
+    elasticsearch_index_reindex, queues_declare, schemas_init
 
 
 migrate_2_0_0_to_2_0_2 = UpgradeRecipe('2.0.0', '2.0.2')
@@ -89,5 +89,5 @@ def alembic_upgrade_to_2_0_2(alembic, verbose):
 
 
 for step in [elasticsearch_index_destroy, elasticsearch_index_init,
-             elasticsearch_index_reindex]:
+             elasticsearch_index_reindex, queues_declare, schemas_init]:
     migrate_2_0_0_to_2_0_2.step()(step)

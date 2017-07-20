@@ -39,6 +39,8 @@ const apiUrls = {
     languages()                       { return `${urlRoot}/suggest/languages.json` },
     disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
 
+    statistics()                      { return `${urlRoot}/api/stats` },
+
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
             return [];
@@ -802,6 +804,25 @@ class ServerCache {
             },
             errorFn: () => {
                 notifications.danger("An error occured while trying to the role");
+            },
+        });
+    }
+
+    // Get the number of downloads for each file
+    getFileStatistics(bucketID, successFn) {
+        var data = {
+            "fileDownloads": {
+                "stat": "bucket-file-download-total",
+                "params": {
+                    "bucket_id": bucketID,
+                }
+            }
+        };
+        ajaxPost({
+            url: apiUrls.statistics(),
+            params: data,
+            successFn: response => {
+                successFn(response.fileDownloads);
             },
         });
     }

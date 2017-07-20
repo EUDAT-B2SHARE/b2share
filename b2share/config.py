@@ -267,6 +267,16 @@ CELERYBEAT_SCHEDULE = {
         'task': 'invenio_indexer.tasks.process_bulk_queue',
         'schedule': timedelta(minutes=5),
     },
+    'process-file-downloads': {
+        'task': 'invenio_stats.tasks.process_events',
+        'schedule': timedelta(minutes=5),
+        'args': [['file-download']]
+    },
+    'aggregate-daily-file-downloads': {
+        'task': 'invenio_stats.tasks.aggregate_events',
+        'schedule': timedelta(hours=1),
+        'args': [['file-download-agg']]
+    },
 }
 
 
@@ -328,6 +338,37 @@ SITE_FUNCTION = 'demo' # set to "production" on production instances
 # on the front page redirecting the testers to this link
 TRAINING_SITE_LINK = ""
 
+
+# Invenio Stats
+# ==============
+
+STATS_EVENTS = {
+    'file-download': dict(
+        signal='invenio_files_rest.signals.file_downloaded',
+        event_builders=[
+            'invenio_stats.contrib.event_builders.file_download_event_builder'
+        ],
+        processor_config=dict(
+            preprocessors=[
+                'b2share.modules.stats.processors:skip_deposit',
+                'invenio_stats.processors:flag_robots',
+                'invenio_stats.processors:anonymize_user',
+                'invenio_stats.contrib.event_builders:build_file_unique_id',
+            ],
+            # Keep only 1 file download for each file and user every 30 sec
+            double_click_window=30,
+            # Create one index per month which will store file download events
+            suffix='%Y-%m'
+        ))
+}
+
+STATS_AGGREGATIONS = {
+    'file-download-agg': {},
+}
+
+STATS_QUERIES = {
+    'bucket-file-download-total': {},
+}
 
 # Flask-Security
 # ==============

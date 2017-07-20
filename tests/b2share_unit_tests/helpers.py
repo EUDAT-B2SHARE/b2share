@@ -29,7 +29,7 @@ from copy import deepcopy
 from contextlib import contextmanager
 from collections import namedtuple
 
-from flask_security.utils import encrypt_password
+from flask_security.utils import hash_password
 from b2share.modules.records.links import url_for_bucket
 from flask import current_app, url_for
 from six import string_types, BytesIO
@@ -156,7 +156,7 @@ def create_user(name, roles=None, permissions=None, admin_communities=None,
     with db.session.begin_nested():
         user = accounts.datastore.create_user(
             email=email,
-            password=encrypt_password(users_password),
+            password=hash_password(users_password),
             active=True,
         )
         db.session.add(user)
