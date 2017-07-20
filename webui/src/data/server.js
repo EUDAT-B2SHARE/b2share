@@ -39,6 +39,8 @@ const apiUrls = {
     languages()                       { return `${urlRoot}/suggest/languages.json` },
     disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
 
+    statistics(file_id, bucket_id)    { return `${urlRoot}/stats` }, 
+
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
             return [];
@@ -804,6 +806,16 @@ class ServerCache {
                 notifications.danger("An error occured while trying to the role");
             },
         });
+    }
+
+    // Get the number of downloads for each file
+    getFileStatistics(file_id, bucket_id){
+        // ajaxGet({
+        //     url: apiUrls.statistics(fileID),
+        //     successFn,
+        //     errorFn,
+        // });
+        return Math.floor(Math.random() * 11); 
     }
 };
 
