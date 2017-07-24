@@ -291,14 +291,28 @@ const EditRecord = React.createClass({
             field = this.renderEmbargoField(schema, path);
         } else if (objEquals(path, ['language']) || objEquals(path, ['language_code'])) {
             const languages = serverCache.getLanguages();
+            // Common Languages: These are the world’s most common languages (top 20) + the language of countries that some of our communities are from.
+            const langs = {"languages": [["-", "-- Select None --"], ["arb", "Standard Arabic"], ["ben", "Bengali"], ["bul", "Bulgarian"], ["ces", "Czech"], ["cmn", "Mandarin Chinese"], ["dan", "Danish"], ["deu", "German"], 
+                                            ["eng", "English"], ["ell", "Modern Greek (1453-)"], ["est", "Estonian"], ["fas", "Persian"], ["fin", "Finnish"], ["fra", "French"],
+                                            ["gle", "Irish"], ["hin", "Hindi"], ["hrv", "Croatian"], ["hun", "Hungarian"], ["ind", "Indonesian"], ["ita", "Italian"], ["jav", "Javanese"],
+                                            ["jpn", "Japanese"], ["kor", "Korean"], ["lah", "Lahnda"], ["lav", "Latvian"], ["lit", "Lithuanian"], ["mlt", "Maltese"], ["nld", "Dutch"],
+                                            ["pol", "Polish"], ["por", "Portuguese"], ["ron", "Romanian"], ["rus", "Russian"], ["slk", "Slovak"], ["slv", "Slovenian"], ["spa", "Spanish"],
+                                            ["swe", "Swedish"], ["tam", "Tamil"], ["tel", "Telugu"], ["tur", "Turkish"], ["urd", "Urdu"], ["vie", "Vietnamese"], ["...", "Load Full List"]]};
+            const common_langs = langs.languages.map(([id, name]) => ({id, name}));
             field = (languages instanceof Error) ? <Err err={languages}/> :
-                <SelectBig data={languages}
-                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+                <SelectBig data={common_langs}
+                            list_extend={languages}
+                            extendable={true}
+                            onSelect={ (x) => { x ? this.setValue(schema, path, x) : this.setValue(schema, path, undefined) }}
+                            value={this.getValue(path)} />;
         } else if (path.length === 2 && path[0] === 'disciplines') {
             const disciplines = serverCache.getDisciplines();
             field = (disciplines instanceof Error) ? <Err err={disciplines}/> :
                 <SelectBig data={disciplines}
-                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+                            list_extend={null}
+                            extendable={false}
+                            onSelect={ (x) => { x ? this.setValue(schema, path, x) : this.setValue(schema, path, undefined) }}
+                            value={this.getValue(path)} />;
         } else if (schema.get('type') === 'array') {
             const itemSchema = schema.get('items');
             const raw_values = this.getValue(path);

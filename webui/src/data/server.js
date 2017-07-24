@@ -652,6 +652,9 @@ class ServerCache {
         if (!disciplines) {
             this.getters.disciplines.autofetch();
         }
+        if(disciplines && disciplines.filter((v) => { if(v.id === "-") { return v.id } }).length == 0 ){
+            disciplines.unshift({id: "-", name: "-- Select None --"});
+        }
         return disciplines;
     }
 
