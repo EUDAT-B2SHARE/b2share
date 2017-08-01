@@ -465,7 +465,7 @@ module.exports = function() {
             <li><p>Returns: informations about the newly uploaded file</p></li>
         </ul>
         <Example>
-            curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' -d @TestFileToBeUploaded.txt https://$HOSTNAME/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
+            curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' --data-binary @TestFileToBeUploaded.txt https://$HOSTNAME/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
         </Example>
 
         <h3 id="delete-file">Delete file from draft record</h3>
