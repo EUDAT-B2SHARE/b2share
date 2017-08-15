@@ -25,6 +25,13 @@
 
 from invenio_records.models import RecordMetadata
 from invenio_records_files.api import Record
+from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
+from invenio_pidstore.resolver import Resolver
+from invenio_indexer.api import RecordIndexer
+from invenio_pidstore.models import PersistentIdentifier
+from invenio_files_rest.models import Bucket
+from elasticsearch.exceptions import NotFoundError
+from b2share.modules.deposit.api import Deposit
 
 
 def is_publication(record):
@@ -54,3 +61,46 @@ def list_db_published_records():
         record = Record(obj.json, model=obj)
         if is_publication(record.model):
             yield record
+
+
+def delete_record(pid, record):
+    """Delete a published record."""
+    # Fetch deposit id from record and resolve deposit record and pid.
+    depid = b2share_deposit_uuid_fetcher(None, record)
+    if not depid:
+        abort(404)
+
+    depid, deposit = Resolver(
+        pid_type=depid.pid_type,
+        object_type='rec',
+        # Retrieve the deposit with the Record class on purpose as the current
+        # Deposit api prevents the deletion of published deposits.
+        getter=Record.get_record,
+    ).resolve(depid.pid_value)
+
+    # Note: the record is unindexed from Elasticsearch via the
+    # signal handlers in triggers.py
+    try:
+        RecordIndexer().delete(deposit)
+    except NotFoundError:
+        pass
+
+    # Mark connected buckets as DELETED
+    record_bucket = record.files.bucket
+    deposit_bucket = deposit.files.bucket
+    Bucket.delete(deposit_bucket.id)
+    Bucket.delete(record_bucket.id)
+
+    # mark all PIDs as DELETED
+    all_pids = PersistentIdentifier.query.filter(
+        PersistentIdentifier.object_type == pid.object_type,
+        PersistentIdentifier.object_uuid == pid.object_uuid,
+    ).all()
+    for rec_pid in all_pids:
+        if not rec_pid.is_deleted():
+            rec_pid.delete()
+    depid.delete()
+
+    # Mark the record and deposit as deleted
+    record.delete()
+    deposit.delete()

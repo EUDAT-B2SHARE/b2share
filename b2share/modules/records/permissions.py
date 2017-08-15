@@ -28,7 +28,8 @@ from __future__ import absolute_import, print_function
 import json
 from flask_principal import UserNeed
 
-from invenio_access.permissions import ParameterizedActionNeed
+from invenio_access.permissions import superuser_access, \
+    ParameterizedActionNeed
 from b2share.modules.access.permissions import StrictDynamicPermission
 
 
@@ -55,6 +56,7 @@ update_record_metadata_need = update_record_metadata_need_factory(None)
 
 class UpdateRecordPermission(StrictDynamicPermission):
     """Record update permission."""
+
     def __init__(self, record):
         super(UpdateRecordPermission, self).__init__()
         # Owners are allowed to update
@@ -68,5 +70,9 @@ class UpdateRecordPermission(StrictDynamicPermission):
             )
         )
 
+
 class DeleteRecordPermission(StrictDynamicPermission):
     """Record delete permission."""
+
+    def __init__(self, record):
+        super(DeleteRecordPermission, self).__init__(superuser_access)

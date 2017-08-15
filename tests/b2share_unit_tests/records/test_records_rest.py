@@ -388,3 +388,132 @@ def test_modify_metadata_published_record_permissions(app, test_communities,
         test_modify(403, com_member)
         test_modify(200, com_admin)
         test_modify(200, admin)
+
+
+def test_delete_record(app, test_users, test_communities, login_user,
+                       script_info):
+    """Test record deletion through the REST API."""
+    from click.testing import CliRunner
+    from invenio_search import current_search_client
+    from invenio_indexer import cli
+    from invenio_indexer.tasks import process_bulk_queue
+    uploaded_files = {
+        'myfile1.dat': b'contents1',
+        'myfile2.dat': b'contents2'
+    }
+    admin = test_users['admin']
+
+    headers = [('Accept', 'application/json')]
+    with app.app_context():
+        creator = create_user('creator')
+        non_creator = create_user('non_creator')
+
+        record_data = generate_record_data()
+        with app.test_client() as client:
+            deposit, record_pid, record = create_record(
+                record_data, creator, files=uploaded_files
+            )
+            pid_value = record_pid.pid_value
+            record_id = record.id
+            bucket_id = record.files.bucket.id
+            object_version = record.files.bucket.objects[0]
+            deposit_bucket_id = deposit.files.bucket.id
+            deposit_object_version = deposit.files.bucket.objects[0]
+
+            record_url = url_for('b2share_records_rest.b2rec_item',
+                                 pid_value=pid_value)
+            deposit_url = url_for('b2share_deposit_rest.b2dep_item',
+                                  pid_value=pid_value)
+            bucket_url = url_for('invenio_files_rest.bucket_api',
+                                 bucket_id=bucket_id)
+            deposit_bucket_url = url_for('invenio_files_rest.bucket_api',
+                                         bucket_id=deposit_bucket_id)
+            object_version_url = url_for(
+                'invenio_files_rest.object_api',
+                bucket_id=bucket_id,
+                version=object_version.version_id,
+                key=object_version.key
+            )
+            deposit_object_version_url = url_for(
+                'invenio_files_rest.object_api',
+                bucket_id=deposit_bucket_id,
+                version=deposit_object_version.version_id,
+                key=deposit_object_version.key
+            )
+        # check that the record and deposit are searchable
+        current_search_client.indices.flush('*')
+
+        res = current_search_client.search(index='records')
+        assert res['hits']['total'] == 1
+        res = current_search_client.search(index='deposits')
+        assert res['hits']['total'] == 1
+
+    def test_delete(status, user=None):
+        with app.test_client() as client:
+            if user is not None:
+                login_user(user, client)
+            # delete the record
+            request_res = client.delete(record_url, headers=headers)
+            assert request_res.status_code == status
+
+    def test_access(user=None, deleted=True):
+        with app.test_client() as client:
+            if user is not None:
+                login_user(user, client)
+            # try accessing the record
+            request_res = client.get(record_url, headers=headers)
+            assert request_res.status_code == 410 if deleted else 200
+            # try accessing the file bucket
+            request_res = client.get(bucket_url, headers=headers)
+            assert request_res.status_code == 404 if deleted else 200
+            # try accessing the file
+            request_res = client.get(object_version_url, headers=headers)
+            assert request_res.status_code == 404 if deleted else 200
+
+            # try accessing the deposit
+            request_res = client.get(deposit_url, headers=headers)
+            assert request_res.status_code == 410 if deleted else 200
+            # try accessing the deposit file bucket
+            request_res = client.get(deposit_bucket_url, headers=headers)
+            assert request_res.status_code == 404 if deleted else 200
+            # try accessing the deposit file
+            request_res = client.get(deposit_object_version_url,
+                                     headers=headers)
+            assert request_res.status_code == 404 if deleted else 200
+
+    # Check that everything is accessible
+    test_access(creator, deleted=False)
+
+    test_delete(401)  # anonymous user
+    test_delete(403, creator)
+    test_delete(403, non_creator)
+    test_delete(200, admin)
+
+    test_access()  # anonymous user
+    test_access(creator)
+    test_access(non_creator)
+    test_access(admin)
+
+    # Check that reindexing records does not index deleted records and deposits
+    with app.app_context():
+        runner = CliRunner()
+        # Initialize queue
+        res = runner.invoke(cli.queue, ['init', 'purge'],
+                            obj=script_info)
+        assert 0 == res.exit_code
+        # schedule a reindex task
+        res = runner.invoke(cli.reindex, ['--yes-i-know'],
+                            obj=script_info)
+        assert 0 == res.exit_code
+        res = runner.invoke(cli.run, [], obj=script_info)
+        assert 0 == res.exit_code
+        # execute scheduled tasks synchronously
+        process_bulk_queue.delay()
+        # flush the indices so that indexed records are searchable
+        current_search_client.indices.flush('*')
+
+        # check that the record and deposit are not indexed
+        res = current_search_client.search(index='records')
+        assert res['hits']['total'] == 0
+        res = current_search_client.search(index='deposits')
+        assert res['hits']['total'] == 0

@@ -72,4 +72,7 @@ def unindex_record_trigger(record):
         # The indexer requires that the record still exists in the database
         # when it is removed from the search index. Thus we have to unindex it
         # synchonously.
-        RecordIndexer().delete(record)
+        try:
+            RecordIndexer().delete(record)
+        except NotFoundError:
+            pass
