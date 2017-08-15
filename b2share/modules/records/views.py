@@ -24,7 +24,7 @@
 
 import uuid
 import re
-from functools import partial
+from functools import partial, wraps
 
 from flask import Blueprint, abort, request, url_for
 from flask import jsonify, Flask, current_app
@@ -34,6 +34,7 @@ from invenio_records_files.api import Record
 from invenio_rest.errors import RESTValidationError
 from invenio_search import RecordsSearch
 from jsonschema.exceptions import ValidationError
+from invenio_records_files.api import RecordsBuckets
 from invenio_records_rest.views import (pass_record,
                                         RecordsListResource, RecordResource,
                                         RecordsListOptionsResource,
@@ -44,11 +45,15 @@ from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import verify_record_permission
 from b2share.modules.deposit.serializers import json_v1_response as \
     deposit_serializer
+from b2share.modules.deposit.api import Deposit
+from b2share.modules.records.permissions import DeleteRecordPermission
 from invenio_mail import InvenioMail
 from flask_mail import Message
 from invenio_mail.tasks import send_email
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_accounts.models import User
+
+from .utils import delete_record
 
 
 def create_blueprint(endpoints):
@@ -299,6 +304,22 @@ class B2ShareRecordResource(RecordResource):
     def put(*args, **kwargs):
         """Disable PUT."""
         abort(405)
+
+    def delete(self, *args, **kwargs):
+        """Delete a record."""
+        pid_value = request.view_args['pid_value']
+        pid, record = pid_value.data
+
+        # Check permissions.
+        permission_factory = self.delete_permission_factory
+        if permission_factory:
+            verify_record_permission(permission_factory, record)
+
+        delete_record(pid, record)
+
+        db.session.commit()
+
+        return 'Record was deleted.', 200
 
 
 class RecordsAbuseResource(ContentNegotiatedMethodView):
