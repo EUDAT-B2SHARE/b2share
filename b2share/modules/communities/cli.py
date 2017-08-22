@@ -79,8 +79,10 @@ def create(verbose, name, description, logo):
      Description is a text of maximally 1024 characters enclosed in
     parentheses. The logo parameter should be a valid path to a logo file
     relative to B2SHARE_UI_PATH/img/communities directory """
-    name, description, logo = _validate_community_parameters(name, description,
-                                                             logo)
+    name, description, logo, workflow = _validate_community_parameters(
+        name, 
+        description,
+        logo, None)
     try:
         Community.get(name=name)
         #if it does not yield the CommunityDoesNotExistError then:
