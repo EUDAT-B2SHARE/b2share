@@ -57,6 +57,11 @@ def assign_role_need_factory(role=None, community=None):
                                  role=str(role))
 
 
+# actions to be registered by invenio_actions, see setup.py
+assign_role_need = assign_role_need_factory()
+# search_accounts_need -- see above
+
+
 class RoleAssignPermission(StrictDynamicPermission):
     """Role assignment permission."""
 
