@@ -4,7 +4,17 @@ EXPOSE 5000
 RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm
 
 RUN yum -y update
-RUN yum -y install wget gcc-c++ openssl-devel uwsgi-plugin-python3 postgresql-devel python34 python34-devel npm supervisor git uwsgi  libffi-devel python-devel libxml2-devel libxml2 libxslt-devel zlib1g-devel libxslt
+
+# temporary fix to install node, see https://bugs.centos.org/view.php?id=13669&nbn=1
+# after centos 7.4 is released this should be removed and npm installed below
+RUN rpm -ivh https://kojipkgs.fedoraproject.org//packages/http-parser/2.7.1/3.el7/x86_64/http-parser-2.7.1-3.el7.x86_64.rpm \
+             https://kojipkgs.fedoraproject.org//packages/http-parser/2.7.1/3.el7/x86_64/http-parser-devel-2.7.1-3.el7.x86_64.rpm \
+             && yum -y install nodejs-devel
+
+RUN yum -y install wget gcc-c++ openssl-devel uwsgi-plugin-python3 \
+                   postgresql-devel python34 python34-devel supervisor \
+                   git uwsgi libffi-devel python-devel libxml2-devel libxml2 \
+                   libxslt-devel zlib1g-dev libxslt http-parser # npm
 
 # install locale
 RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
