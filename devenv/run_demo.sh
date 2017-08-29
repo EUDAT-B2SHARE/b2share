@@ -113,10 +113,9 @@ fi
 if [ -n "$REINIT" ]; then
 	echo; echo "### Reinitialize database"
 	b2share db destroy --yes-i-know
-	b2share db create
 	b2share index destroy --yes-i-know
-	b2share index init
-	b2share schemas init
+	b2share db init
+	b2share upgrade run
 
 	echo; echo "### Add demo config and objects"
 	b2share demo load_config -f
