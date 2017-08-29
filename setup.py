@@ -241,6 +241,10 @@ setup(
             'b2share.modules.deposit.permissions:update_deposit_metadata_need',
             'update_record_metadata_need = '
             'b2share.modules.records.permissions:update_record_metadata_need',
+            'assign_role_need = '
+            'b2share.modules.users.permissions:assign_role_need',
+            'search_accounts_need = '
+            'b2share.modules.users.permissions:search_accounts_need',
         ],
     },
     extras_require=extras_require,
