@@ -413,7 +413,6 @@ export const EditFiles = React.createClass({
     },
 });
 
-
 export const FileUploadHeader = React.createClass({
     mixins: [React.addons.PureRenderMixin],
     render() {
@@ -491,7 +490,6 @@ const FileUploadRow = React.createClass({
     },
 });
 
-
 export const FileRecordHeader = React.createClass({
     mixins: [React.addons.PureRenderMixin],
     render() {
@@ -518,6 +516,7 @@ export const FileRecordRow = React.createClass({
         return {
             open: false,
             remove: false,
+            downloadsTot: 0,
         };
     },
 
@@ -527,6 +526,7 @@ export const FileRecordRow = React.createClass({
 
         const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
+        const downloadsTot = serverCache.getFileStatistics(file.version_id, file.bucket);
 
         return (
             <div className="file">
@@ -538,6 +538,9 @@ export const FileRecordRow = React.createClass({
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <a style={{display:'inline-block', marginLeft:'0.5em'}}
                             href={file.url}>{file.key || file.name}</a>
+                        <span className="fileDownloadBadge" style={{marginLeft:'1em', fontSize:11, color: '#888'}}>
+                             <span className="badge" style={{marginLeft:'0.5em'}}> Total Downloads {downloadsTot} </span>
+                        </span>
                     </div>
                     <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
                     { this.props.remove ?
@@ -566,6 +569,7 @@ export const FileRecordRow = React.createClass({
                                 { this.props.b2noteWidget }
                             </div> : false }
                     </div> : false }
+
                 { this.props.remove && this.state.remove ?
                     <FileRemoveDialog file={file}
                                       remove={this.props.remove}
