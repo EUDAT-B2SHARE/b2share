@@ -99,3 +99,16 @@ def test_edit_community2(app, test_communities):
             obj=script_info)
         assert result.exit_code != 0
 
+def test_community_workflow(app, test_communities):
+    with app.app_context():
+        runner = CliRunner()
+        script_info = ScriptInfo(create_app=lambda info:app)
+        result = runner.invoke(
+            communities_cmd,
+            ["edit",
+            "cccccccc-1111-1111-1111-111111111111",
+            "publication_workflow",
+            "review_and_publish"],
+            obj=script_info)
+    
+

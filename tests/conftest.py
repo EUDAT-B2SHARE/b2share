@@ -86,7 +86,9 @@ def base_app():
         DEBUG_TB_ENABLED=False,
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             'SQLALCHEMY_DATABASE_URI',
-            'postgresql+psycopg2://postgres@localhost:5432/b2sharedb'),
+            #'postgresql+psycopg2://postgres@localhost:5432/b2sharedb'),
+            'sqlite://'),
+        FLASK_DEBUG=0,
         LOGIN_DISABLED=False,
         WTF_CSRF_ENABLED=False,
         SECRET_KEY="CHANGE_ME",
