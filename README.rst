@@ -44,7 +44,8 @@ B2SHARE is based on `Invenio <http://invenio-software.org/>`_. Invenio enables y
 Development Installation
 ------------------------
 
-Read INSTALL.rst for install instructions.
+Installation instructions are available on:
+https://github.com/EUDAT-Training/B2SHARE-Training/tree/master/deploy
 
 Contributing
 ------------
