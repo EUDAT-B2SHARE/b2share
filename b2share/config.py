@@ -274,7 +274,7 @@ CELERYBEAT_SCHEDULE = {
     },
     'aggregate-daily-file-downloads': {
         'task': 'invenio_stats.tasks.aggregate_events',
-        'schedule': timedelta(hours=1),
+        'schedule': timedelta(minutes=15),
         'args': [['file-download-agg']]
     },
 }
