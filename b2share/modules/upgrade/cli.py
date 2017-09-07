@@ -66,9 +66,12 @@ def run(verbose):
                 if last_migration.version == last_version:
                     click.secho('Already up to date.')
                     return
-
-            last_success = next(mig for mig in all_migrations if mig.success)
-            current_version = last_success.version
+            try:
+                last_success = next(mig for mig in all_migrations
+                                    if mig.success)
+                current_version = last_success.version
+            except StopIteration:
+                current_version = '2.0.0'
     else:
         current_version = 'init'
 
