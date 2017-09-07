@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import, print_function
 
+import amqp
 from flask import current_app
 from invenio_search import current_search
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
@@ -42,8 +43,10 @@ def elasticsearch_index_destroy(alembic, verbose):
     queue = current_app.config['INDEXER_MQ_QUEUE']
     with establish_connection() as c:
         q = queue(c)
-        q.purge()
-        q.delete()
+        try:
+            q.delete()
+        except amqp.exceptions.NotFound:
+            pass
 
 
 def elasticsearch_index_init(alembic, verbose):
