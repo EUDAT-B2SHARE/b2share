@@ -22,6 +22,7 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 """Record utils."""
+from flask import abort
 
 from invenio_records.models import RecordMetadata
 from invenio_records_files.api import Record
@@ -52,11 +53,9 @@ def is_deposit(record):
     return record.json['$schema'].endswith('#/draft_json_schema')
 
 
-
-
 def list_db_published_records():
     """A generator for all the published records"""
-    query = RecordMetadata.query.filter(RecordMetadata.json != None)
+    query = RecordMetadata.query.filter(RecordMetadata.json is not None)
     for obj in query.all():
         record = Record(obj.json, model=obj)
         if is_publication(record.model):

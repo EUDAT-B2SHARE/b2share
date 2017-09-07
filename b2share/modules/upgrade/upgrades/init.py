@@ -30,7 +30,9 @@ from b2share.version import __version__
 
 from ..models import Migration
 from ..api import UpgradeRecipe, alembic_stamp, alembic_upgrade
-from .common import elasticsearch_index_destroy, elasticsearch_index_init
+from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
+    queues_declare, schemas_init
+
 
 
 simple_init = UpgradeRecipe('init', __version__.split('.dev')[0])
@@ -47,5 +49,6 @@ def alembic_upgrade_heads(alembic, verbose):
     db.session.commit()
 
 
-simple_init.step()(elasticsearch_index_destroy)
-simple_init.step()(elasticsearch_index_init)
+for step in [elasticsearch_index_destroy, elasticsearch_index_init,
+             queues_declare, schemas_init]:
+    simple_init.step()(step)

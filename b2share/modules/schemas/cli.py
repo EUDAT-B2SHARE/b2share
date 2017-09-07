@@ -59,6 +59,7 @@ def init(verbose):
     """CLI command loading Root Schema files in the database."""
     try:
         load_root_schemas(cli=True, verbose=verbose)
+        db.session.commit()
     except RootSchemaAlreadyExistsError as e:
         raise click.ClickException(str(e))
 

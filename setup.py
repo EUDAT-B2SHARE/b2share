@@ -32,7 +32,7 @@ from setuptools.command.test import test as TestCommand
 
 install_requires = [
     'Flask-Login<0.4,>=0.3.2',
-    'celery>=3.1.24,<4.0', # TODO Unpin this once compatible with Celery 4.0
+    'celery>=3.1.24',  # TODO Unpin this once compatible with Celery 4.0
     'elasticsearch<3.0.0,>=2.0.0',
     'elasticsearch-dsl<3.0.0,>=2.0.0',
     'datacite>=0.3.0',
@@ -41,7 +41,7 @@ install_requires = [
     'httplib2>=0.9.2',
     'invenio-access>=1.0.0a11,<1.1.0',
     'invenio-accounts>=1.0.0b5,<1.1.0',
-    'invenio-accounts-rest>=1.0.0a3,<1.1.0',
+    'invenio-accounts-rest>=1.0.0a4,<1.1.0',
     'invenio-base>=1.0.0a14,<1.1.0',
     'invenio-celery>=1.0.0b1,<1.1.0',
     'invenio-config>=1.0.0b2,<1.1.0',
@@ -59,7 +59,8 @@ install_requires = [
     'invenio-records-rest>=1.0.0a17,<1.1.0',
     'invenio-records-files>=1.0.0a9,<1.1.0',
     'invenio-rest[cors]>=1.0.0a10,<1.1.0',
-    'invenio-search>=1.0.0a9,<1.1.0',
+    'invenio-search>=1.0.0a10,<1.1.0',
+    'invenio-stats>=1.0.0a6',
     'jsonresolver[jsonschema]>=0.2.1',
     'invenio-logging>=1.0.0a3',
     'invenio-indexer>=1.0.0a9',

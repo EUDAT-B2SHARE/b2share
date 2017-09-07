@@ -56,6 +56,7 @@ from b2share.modules.communities.api import Community as CommunityAPI
 from sqlalchemy.exc import ProgrammingError
 from invenio_accounts.models import Role
 from b2share.modules.upgrade.api import alembic_stamp
+from invenio_queues.proxies import current_queues
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -119,6 +120,9 @@ def clean_app(request, base_app):
         # reset elasticsearch
         for deleted in current_search.delete(ignore=[404]):
             pass
+        # reset queues
+        current_queues.delete()
+        current_queues.declare()
 
     yield base_app
 
@@ -129,6 +133,7 @@ def clean_app(request, base_app):
             # Dispose the engine in order to close all connections. This is
             # needed for sqlite in memory databases.
             db.engine.dispose()
+            current_queues.delete()
     request.addfinalizer(finalize)
 
     return base_app

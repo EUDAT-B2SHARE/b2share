@@ -25,20 +25,37 @@
 
 from __future__ import absolute_import, print_function
 
+from flask import current_app
 from invenio_search import current_search
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_indexer.api import RecordIndexer
 from invenio_indexer.tasks import process_bulk_queue
+from invenio_queues.proxies import current_queues
+from celery.messaging import establish_connection
+from b2share.modules.schemas.helpers import load_root_schemas
 
 
 def elasticsearch_index_destroy(alembic, verbose):
-    """Destroy the elasticsearch indices."""
-    current_search.delete(ignore=[400, 404])
+    """Destroy the elasticsearch indices and indexing queue."""
+    for _ in current_search.delete(ignore=[400, 404]):
+        pass
+    queue = current_app.config['INDEXER_MQ_QUEUE']
+    with establish_connection() as c:
+        q = queue(c)
+        q.purge()
+        q.delete()
 
 
 def elasticsearch_index_init(alembic, verbose):
-    """Initialize the elasticsearch indices."""
-    current_search.create(ignore=[400])
+    """Initialize the elasticsearch indices and indexing queue."""
+    for _ in current_search.create(ignore=[400]):
+        pass
+    for _ in current_search.put_templates(ignore=[400]):
+        pass
+    queue = current_app.config['INDEXER_MQ_QUEUE']
+    with establish_connection() as c:
+        q = queue(c)
+        q.declare()
 
 
 def elasticsearch_index_reindex(alembic, verbose):
@@ -52,3 +69,13 @@ def elasticsearch_index_reindex(alembic, verbose):
         ))
     RecordIndexer().bulk_index(query)
     process_bulk_queue.delay()
+
+
+def queues_declare(alembic, verbose):
+    """Declare queues, except for the indexing queue."""
+    current_queues.declare()
+
+
+def schemas_init(alembic, verbose):
+    """Load root schemas."""
+    load_root_schemas(cli=True, verbose=verbose)
