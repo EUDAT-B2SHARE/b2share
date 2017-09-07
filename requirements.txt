@@ -94,7 +94,7 @@ invenio-records==1.0.0b2
 invenio-rest[cors]==1.0.0b1
 invenio-search-ui==1.0.0a7  # via invenio-deposit
 invenio-search==1.0.0a10
-invenio-stats==1.0.0a6
+invenio-stats==1.0.0a7
 itsdangerous==0.24        # via flask, flask-kvsession, flask-security
 jinja2-time==0.2.0        # via cookiecutter
 jinja2==2.8               # via cookiecutter, flask, flask-babelex, jinja2-time
@@ -117,6 +117,7 @@ ordereddict==1.1          # via invenio-query-parser
 passlib==1.7.1            # via flask-security, invenio-accounts
 pluggy==0.4.0             # via jsonresolver
 poyo==0.4.0               # via cookiecutter
+psycopg2==2.7.1
 pyasn1==0.1.9             # via cryptography
 pycparser==2.17           # via cffi
 pyjwt==1.5.0              # via invenio-accounts
