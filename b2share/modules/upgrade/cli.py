@@ -49,8 +49,8 @@ def upgrade():
 def run(verbose):
     """Upgrade the database and reindex the records."""
     alembic = current_app.extensions['invenio-db'].alembic
-    # Remove ".dev" from the version to simplify the upgrade
-    last_version = __version__.split('.dev')[0]
+    # Remove ".dev*", "rc*", ... from the version to simplify the upgrade
+    last_version = re.match(r'^\d+\.\d+\.\d+', __version__).group(0)
 
     last_failure = None
     # detect data current version. Special case for version 2.0.0 as there was

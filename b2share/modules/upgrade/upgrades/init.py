@@ -25,6 +25,8 @@
 
 from __future__ import absolute_import, print_function
 
+import re
+
 from invenio_db import db
 from b2share.version import __version__
 
@@ -35,7 +37,10 @@ from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
 
 
 
-simple_init = UpgradeRecipe('init', __version__.split('.dev')[0])
+simple_init = UpgradeRecipe(
+    'init',
+    re.match(r'^\d+\.\d+\.\d+', __version__).group(0)
+)
 
 @simple_init.step()
 def alembic_upgrade_heads(alembic, verbose):
