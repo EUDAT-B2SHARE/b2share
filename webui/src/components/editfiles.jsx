@@ -525,7 +525,7 @@ export const FileRecordRow = React.createClass({
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
 
-        if (! this.props.hideFileDownloads) {
+        if (! this.props.hideFileDownloads && file.bucket) {
             serverCache.getFileStatistics(file.bucket, (fileDownloads) => {
                 const downloads = _.chain(fileDownloads.buckets)
                   .keyBy('key').mapValues('value').value();
