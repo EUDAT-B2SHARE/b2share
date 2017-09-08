@@ -21,6 +21,7 @@
 
 import click
 import pytest
+import re
 import sqlalchemy as sa
 from invenio_db import InvenioDB, db
 from b2share.version import __version__
@@ -37,7 +38,7 @@ from b2share.modules.upgrade.errors import MigrationFromUnknownVersionError
 from b2share_unit_tests.upgrade.helpers import upgrade_run, repeat_upgrade, \
     validate_metadata, get_all_constraints
 
-current_migration_version = __version__.split('.dev')[0]
+current_migration_version = re.match(r'^\d+\.\d+\.\d+', __version__).group(0)
 
 def test_alembic(clean_app):
     """Test alembic recipes upgrade and downgrade."""
