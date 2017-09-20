@@ -277,6 +277,34 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(minutes=15),
         'args': [['file-download-agg']]
     },
+    # Check file checksums
+    'file-checks': {
+        'task': 'invenio_files_rest.tasks.schedule_checksum_verification',
+        'schedule': timedelta(hours=1),
+        'kwargs': {
+            # Manually check and calculate checksums of files biannually
+            'frequency': {'days': 180},
+            'batch_interval': {'hours': 1},
+            # Split batches based on max number of files
+            'max_count': 0,
+            # Split batches based on total files size
+            'max_size': 0,
+        },
+    },
+    # Check file checksums which have previously failed the scan
+    'file-checks-failed': {
+        'task': 'b2share.modules.files.tasks.schedule_failed_checksum_files',
+        'schedule': timedelta(hours=1),
+        'kwargs': {
+            # Manually check and calculate checksums of files biannually
+            'frequency': {'days': 7},
+            'batch_interval': {'hours': 1},
+            # Split batches based on max number of files
+            'max_count': 0,
+            # Split batches based on total files size
+            'max_size': 0,
+        },
+    },
 }
 
 

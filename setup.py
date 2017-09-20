@@ -48,7 +48,7 @@ install_requires = [
     'invenio-config>=1.0.0b2,<1.1.0',
     'invenio-db[postgresql,versioning]>=1.0.0b7,<1.1.0',
     'invenio-deposit>=1.0.0a8,<1.1.0',
-    'invenio-files-rest>=1.0.0a17,<1.1.0',
+    'invenio-files-rest>=1.0.0a21,<1.1.0',
     'invenio-mail>=1.0.0b1,<1.1.0',
     'invenio-marc21>=1.0.0a3',
     'invenio-oaiserver>=1.0.0a9,<1.1.0',
@@ -230,6 +230,7 @@ setup(
         ],
         'invenio_celery.tasks': [
             'b2share_records = b2share.modules.records.tasks',
+            'b2share_files = b2share.modules.files.tasks',
         ],
         'invenio_access.actions': [
             'create_deposit_need = '
