@@ -72,9 +72,9 @@ invenio-assets==1.0.0b6   # via invenio-deposit, invenio-search-ui
 invenio-base==1.0.0a14
 invenio-celery==1.0.0b3
 invenio-config==1.0.0b3
-invenio-db[versioning]==1.0.0b8
+invenio-db[postgresql,versioning]==1.0.0b8
 invenio-deposit==1.0.0a8
-invenio-files-rest==1.0.0a17
+invenio-files-rest==1.0.0a21
 invenio-i18n==1.0.0b4     # via invenio-accounts
 invenio-indexer==1.0.0a9
 invenio-jsonschemas==1.0.0a5  # via invenio-deposit, invenio-marc21
