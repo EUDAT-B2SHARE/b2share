@@ -160,7 +160,7 @@ def test_init_fail_and_retry(clean_app):
         assert result.exit_code == 0
 
         # check that the migration information have been saved
-        migrations = Migration.query.all();
+        migrations = Migration.query.all()
         assert len(migrations) == 1
         mig = migrations[0]
         assert mig.version == current_migration_version
@@ -187,7 +187,7 @@ def test_upgrade_from_v2_0_0(clean_app):
         repeat_upgrade(clean_app, ext.alembic)
 
         # check that the migration information have been saved
-        migrations = Migration.query.all();
+        migrations = Migration.query.all()
         assert len(migrations) == 1
         mig = migrations[0]
         assert mig.version == current_migration_version
@@ -213,14 +213,13 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
         assert result.exception.__class__ == sa.exc.ProgrammingError
 
         Migration.__table__.drop(db.engine)
-
         result = upgrade_run(clean_app)
         assert result.exit_code == 0
         # Check that the resulting state is in sync with sqlalchemy's MetaData
         assert not ext.alembic.compare_metadata()
 
         # check that the migration information have been saved
-        migrations = Migration.query.all();
+        migrations = Migration.query.all()
         assert len(migrations) == 1
         mig = migrations[0]
         assert mig.version == current_migration_version
