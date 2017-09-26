@@ -185,6 +185,7 @@ setup(
             'b2share_access = b2share.modules.access:B2ShareAccess',
             'b2share_oaiserver = b2share.modules.oaiserver:B2ShareOAIServer',
             'b2share_upgrade = b2share.modules.upgrade:B2ShareUpgrade',
+            'b2share_fair = b2share.modules.fair:B2ShareFair',
             # enable OAuthClient on the API
             'invenio_oauthclient = invenio_oauthclient:InvenioOAuthClient',
             'invenio_oauth2server = invenio_oauth2server:InvenioOAuth2Server',
@@ -218,7 +219,7 @@ setup(
         'invenio_base.api_converters': [
             'file_key = b2share.modules.deposit.utils:FileKeyConverter',
         ],
-        'invenio_search.mappings':[
+        'invenio_search.mappings': [
             'records = b2share.modules.records.mappings',
             'deposits = b2share.modules.deposit.mappings',
         ],
