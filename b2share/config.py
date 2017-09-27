@@ -258,7 +258,7 @@ CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
 #: Accepted content types for Celery.
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 #: Beat schedule
-CELERYBEAT_SCHEDULE = {
+CELERY_BEAT_SCHEDULE = {
     'embargo-updater': {
         'task': 'b2share.modules.records.tasks.update_expired_embargoes',
         'schedule': crontab(minute=2, hour=0),
