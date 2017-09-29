@@ -913,9 +913,8 @@ export const browser = {
         return `${window.location.origin}/records/${recordId}`;
     },
 
-    gotoSearch({q, community, sort, page, size}) {
-        console.log("gotoSearch", {q, community, sort, page, size});
-        const queryString = encode({q, community, sort, page, size});
+    gotoSearch({q, community, sort, page, size, drafts}) {
+        const queryString = encode({q, community, sort, page, size, drafts});
         // trigger a route reload which will do the new search, see SearchRecordRoute
         browserHistory.push(`/records/?${queryString}`);
     },
