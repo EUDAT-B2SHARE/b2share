@@ -17,9 +17,10 @@ export const SearchRecordRoute = React.createClass({
         const numResults = (result && result.get('total')) || 0;
         return (
             <div>
-                <h1>Records</h1>
+                {drafts ? <h1>Drafts</h1> : <h1>Records</h1>}
                 <Search location={location}
                         communities={communities}
+                        drafts={drafts}
                         numResults={result && result.get('total') || 0}/>
                 { result instanceof Error ? <Err err={result}/>
                     : !result ? <Wait/>
@@ -53,6 +54,7 @@ const Search = React.createClass({
     componentWillReceiveProps(newProps) {
         const location = newProps.location || {};
         this.setState(location.query || {});
+        this.setState({drafts:this.props.drafts});
     },
 
     componentDidUpdate(prevProps, prevState) {
