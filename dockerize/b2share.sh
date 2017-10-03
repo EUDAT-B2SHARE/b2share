@@ -33,4 +33,15 @@ fi
 # safe to run even when up to date
 /usr/bin/b2share upgrade run
 
-/usr/bin/supervisord
+if [ "${B2SHARE_START_MODE}" = "WEB" ]; then
+    echo "Starting web node"
+    uwsgi --ini /eudat/b2share/uwsgi/uwsgi.ini
+elif [ "${B2SHARE_START_MODE}" = "CELERY_BEAT" ]; then
+    echo "Starting celery beat node"
+    /usr/bin/celery beat -A b2share.celery --pidfile= --workdir=/eudat/b2share --loglevel="DEBUG"
+elif [ "${B2SHARE_START_MODE}" = "CELERY_WORKER" ]; then
+    echo "Starting celery worker node"
+    /usr/bin/celery worker -E -A b2share.celery -l "INFO" --workdir="/eudat/b2share"
+else
+    echo "Set B2SHARE_START_MODE to one of the three available modes: WEB | CELERY_BEAT | CELERY_WORKER"
+fi
