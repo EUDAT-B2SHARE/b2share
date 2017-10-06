@@ -82,7 +82,8 @@ def alembic_upgrade_to_2_0_2(alembic, verbose):
         # Upgrade alembic recipes for B2SHARE 2.0.2.
         for revision in [
             '456bf6bcb1e6',  # b2share-upgrade
-            'e12419831262'  # invenio-accounts
+            'e12419831262',  # invenio-accounts
+            'f741aa746a7d'   # invenio-files-rest
         ]:
             alembic_upgrade(revision)
     db.session.commit()

@@ -59,7 +59,7 @@ def update_expired_embargoes():
                 datetime.now(timezone.utc).isoformat()
             ),
             allow_leading_wildcard=False
-            ).fields([])
+        ).fields([])
         record_ids = [hit.meta.id for hit in s.scan()]
         if record_ids:
             logger.info('Changing access of {} embargoed publications'
