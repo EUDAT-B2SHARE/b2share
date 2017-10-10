@@ -9,7 +9,11 @@
 # License, or (at your option) any later version.
 #
 # B2Share is distributed in the hope that it will be useful, but
+<<<<<<< HEAD
 # WITHOUT ANY WARRANTY; without even the implied warr   anty of
+=======
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+>>>>>>> files: B2Safe integration for PIDs
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
@@ -21,6 +25,7 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
+<<<<<<< HEAD
 """B2Share Record API."""
 
 from elasticsearch.exceptions import NotFoundError
@@ -32,16 +37,41 @@ from b2share.modules.deposit.api import Deposit as B2ShareDeposit
 from invenio_records.models import RecordMetadata
 from invenio_records_files.models import RecordsBuckets
 from invenio_records.api import Record
-from invenio_records_files.api import Record
-from invenio_files_rest.models import Bucket
 # from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 from b2share.modules.deposit.providers import DepositUUIDProvider
 from b2share.modules.records.fetchers import b2share_record_uuid_fetcher
 from invenio_indexer.api import RecordIndexer
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 
-class B2ShareRecord(Record):
+from invenio_records_files.api import Record, FilesIterator, FileObject
+from invenio_records_files.utils import sorted_files_from_bucket
+from invenio_files_rest.models import Bucket, ObjectVersion, FileInstance
+
+
+class B2ShareFileObject(FileObject):
+    """Wrapper for B2Share files."""
+
+    def dumps(self):
+        """Dump the record metadata."""
+        if self.obj.file.storage_class == 'B':
+            self.b2safe_pid = True
+        else:
+            self.b2safe_pid = False
+        self.data.update({
+            'bucket': str(self.obj.bucket_id),
+            'checksum': self.obj.file.checksum,
+            'key': self.obj.key,  # IMPORTANT it must stay here!
+            'size': self.obj.file.size,
+            'version_id': str(self.obj.version_id),
+            'b2safe_pid': self.b2safe_pid,
+        })
+        return self.data
+
+
+class B2ShareRecord(Deposit, Record):
     """B2Share record class."""
+
+    file_cls = B2ShareFileObject
 
     @property
     def pid(self):

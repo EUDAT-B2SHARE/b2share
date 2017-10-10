@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2017 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,29 +21,24 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2share records extension"""
+"""B2share Storage Class."""
 
-from __future__ import absolute_import, print_function
+from flask import make_response
+from invenio_files_rest.storage.pyfs import PyFSFileStorage, \
+    pyfs_storage_factory
 
-from .cli import files as files_cmd
-from .views import blueprint
+
+class B2ShareFileStorage(PyFSFileStorage):
+    """Base class for B2Share file storage interface to files."""
+    def send_file(self, filename, mimetype=None, restricted=True,
+                  checksum=None, trusted=False, chunk_size=None):
+        """Redirect to the actual pid of the file."""
+        headers = [('Location', self.fileurl)]
+        return make_response(("Found", 302, headers))
 
 
-class B2ShareFiles(object):
-    """B2Share Files extension."""
-
-    def __init__(self, app=None):
-        """Extension initialization."""
-        if app:
-            self.init_app(app)
-
-    def init_app(self, app):
-        """Flask application initialization."""
-        self.init_config(app)
-        app.cli.add_command(files_cmd)
-        app.register_blueprint(blueprint)
-        app.extensions['b2share-files'] = self
-
-    def init_config(self, app):
-        """Initialize configuration."""
-        pass
+def b2share_storage_factory(**kwargs):
+    """Pass B2ShareFileStorage as parameter to pyfs_storage_factory."""
+    if kwargs['fileinstance'].storage_class == 'B':
+        kwargs['filestorage_class'] = B2ShareFileStorage
+    return pyfs_storage_factory(**kwargs)

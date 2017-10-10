@@ -391,7 +391,7 @@ const EditRecord = React.createClass({
         const plugins = schema.getIn(['b2share', 'plugins']);
 
         function renderBigFieldTree([pid, pschema]) {
-            const datapath = schemaID ? ['community_specific', schemaID, pid] : [pid];
+             const datapath = schemaID ? ['community_specific', schemaID, pid] : [pid];
             const f = this.renderFieldTree(pid, pschema, datapath);
             if (!f) {
                 return false;

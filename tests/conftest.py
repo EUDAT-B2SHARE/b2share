@@ -101,6 +101,12 @@ def base_app():
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
         SUPPORT_EMAIL='support@eudat.eu',
         PREFERRED_URL_SCHEME='https',
+        FILES_REST_STORAGE_FACTORY='b2share.modules.files.storage.b2share_storage_factory',
+        FILES_REST_STORAGE_CLASS_LIST={
+            'B': 'B2SafePid',
+            'S': 'Standard',
+            'A': 'Archive',
+        }
     )
 
     # Disable most of alembic logging.

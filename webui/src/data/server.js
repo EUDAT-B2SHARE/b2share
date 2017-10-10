@@ -42,6 +42,7 @@ const apiUrls = {
     disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
 
     statistics()                      { return `${urlRoot}/api/stats` },
+    b2handle_pid_info(file_pid)       { return `${urlRoot}/api/handle/${file_pid}` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -874,7 +875,47 @@ class ServerCache {
             },
         });
     }
-}
+
+    // Get the number of downloads for each file
+    getFileStatistics(bucketID, successFn) {
+        var data = {
+            "fileDownloads": {
+                "stat": "bucket-file-download-total",
+                "params": {
+                    "bucket_id": bucketID,
+                }
+            }
+        };
+        ajaxPost({
+            url: apiUrls.statistics(),
+            params: data,
+            successFn: response => {
+                successFn(response.fileDownloads);
+            },
+        });
+    }
+
+    getB2HandlePidInfo(file_pid, successFn){
+        ajaxGet({
+            url: apiUrls.b2handle_pid_info(file_pid),
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+        });
+    }
+
+    addB2SafePid(file_pid, successFn){
+        ajaxPatch({
+            url: apiUrls.addB2SafeFile(file_pid),
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+        });
+    }
+};
+
 
 class Notifications {
     constructor() {
