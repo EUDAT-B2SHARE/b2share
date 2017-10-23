@@ -41,7 +41,8 @@ def communities():
     """communities management commands."""
 
 
-def _validate_community_parameters(name=None, description=None, logo=None):
+def _validate_community_parameters(name=None, description=None, 
+        logo=None, workflow=None):
     """Validate community parameters and update them if needed."""
     if name is not None and len(name) > 255:
         raise click.BadParameter(""""NAME parameter is longer than the 255
@@ -60,7 +61,11 @@ def _validate_community_parameters(name=None, description=None, logo=None):
             image file existing in the B2SHARE_UI_PATH/img/communities/
             directory.""")
         logo = '/' + os.path.relpath(logo, webui_path)
-    return (name, description, logo)
+    if workflow is not None:
+        if not workflow in ('direct_publish', 'review_and_publish'):
+            raise click.BadParameter("""WORKFLOW should be either
+                direct_publish or review_and_publish""")
+    return (name, description, logo, workflow)
 
 
 @communities.command()
@@ -74,8 +79,10 @@ def create(verbose, name, description, logo):
      Description is a text of maximally 1024 characters enclosed in
     parentheses. The logo parameter should be a valid path to a logo file
     relative to B2SHARE_UI_PATH/img/communities directory """
-    name, description, logo = _validate_community_parameters(name, description,
-                                                             logo)
+    name, description, logo, workflow = _validate_community_parameters(
+        name, 
+        description,
+        logo, None)
     try:
         Community.get(name=name)
         #if it does not yield the CommunityDoesNotExistError then:
@@ -96,7 +103,7 @@ def list(verbose):
     """List all communities in this instances' database"""
     communities = Community.get_all()
     for c in communities:
-        click.echo("%s\t%s\t%s\t%s" % (c.name[0:15], c.id, c.description[0:31], c.logo))
+        click.echo("%s\t%s\t%s\t%s\t%s" % (c.name[0:15], c.id, c.description[0:31], c.logo, c.publication_workflow))
 
 
 @communities.command()
@@ -105,21 +112,22 @@ def list(verbose):
 @click.option('--name')
 @click.option('--description')
 @click.option('--logo')
+@click.option('--workflow', help='direct_publish or review_and_publish')
 @click.option('--clear_fields', is_flag=True, default=False,
               help='if set edit nullifies unspecified value options')
 @click.argument('id')
-def edit(verbose, id, name, description, logo, clear_fields):
+def edit(verbose, id, name, description, logo, workflow, clear_fields):
     """Edit data of the specified community."""
     try:
         community = Community.get(id=id)
     except:
         raise click.BadParameter("No community with id %s" % id)
-    if not(name or description or logo):
-        raise click.ClickException("""At least one of name, description or
-        id must be specified""")
+    if not(name or description or logo or workflow):
+        raise click.ClickException("""At least one of name, description, 
+        logo or workflow must be specified""")
 
-    name, description, logo = _validate_community_parameters(name, description,
-                                                             logo)
+    name, description, logo, workflow = _validate_community_parameters(
+        name, description, logo, workflow)
     data = {}
     if name:
         if name != community.name:
@@ -135,11 +143,15 @@ def edit(verbose, id, name, description, logo, clear_fields):
         data['description'] = description
     if logo:
         data['logo'] = logo
+    if workflow:
+        data['publication_workflow'] = workflow
     updated_community = community.update(data, clear_fields)
     db.session.commit()
-    click.echo("Community %s updated: name= %s description=%s logo=%s" %
+    click.echo("""Community %s updated: name= %s description=%s 
+        logo=%s workflow=%s""" %
                (updated_community.id, updated_community.name,
-                updated_community.description, updated_community.logo))
+                updated_community.description, updated_community.logo,
+                updated_community.publication_workflow))
 
 
 @communities.command()
