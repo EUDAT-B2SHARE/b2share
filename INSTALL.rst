@@ -258,3 +258,21 @@ above. The 'return URL' of the B2ACCESS configuration in this case can be set
 to ``http://localhost:5000/api/oauth/authorized/b2access/``
 
 If working on the web UI, see also: https://github.com/EUDAT-B2SHARE/b2share/wiki/Developer's-corner.
+
+5. Running different versions within a docker container
+=======================================================
+
+  * checkout the version you want from git to a folder say $B2SHARE_DIR
+  * from there you run
+  .. code-block:: console
+    $ docker build -t "image_name" -f dockerize/Dockerfile .
+  
+  * checkout the dockerize folder
+  * change the following line: https://github.com/EUDAT-B2SHARE/dockerize/blob/master/docker-compose.yml#L15
+  .. code-block: console 
+  build: image_name
+  
+  where "image_name" is the string that you provided in the docker build command above.
+  Now you can run docker-compose up from that directory.
+
+
