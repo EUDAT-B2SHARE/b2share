@@ -1,12 +1,14 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 
+import { serverCache, Error } from '../data/server';
 import Restapi from '../docs/rest-api.jsx';
 import Termofuse from '../docs/tou.jsx';
 
 
 export const Help = React.createClass({
     render() {
+        const termsOfUse = serverCache.getInfo().get('terms_of_use_link');
         return (
             <div className="container-fluid help-page">
                 <div className="row">
@@ -24,11 +26,13 @@ export const Help = React.createClass({
                             <li className="list-group-item">
                                 <Link to="https://eudat.eu/services/userdoc/b2share-usage" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
                             </li>
+                            { termsOfUse ?
+                                <li className="list-group-item">
+                                    <a href={termsOfUse}><i className="fa fa-question-circle"></i> Terms of Use</a>
+                                </li> : false
+                            }
                             <li className="list-group-item">
-                                <Link to="/help/terms-of-use"><i className="fa fa-question-circle"></i> Term-Of-Use</Link>
-                            </li>
-                            <li className="list-group-item">
-                                <Link to="/help/api"><i className="fa fa-list"></i> RestAPI</Link>
+                                <Link to="/help/api"><i className="fa fa-list"></i> HTTP API </Link>
                             </li>
                         </ul>
                     </div>
@@ -38,21 +42,6 @@ export const Help = React.createClass({
     }
 });
 
-
-export const TermsOfUse = React.createClass({
-	render: function() {
-		var termofuse;
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <Termofuse term_of_use={termofuse}/>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});
 
 export const RestApi = React.createClass({
     render: function() {

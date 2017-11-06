@@ -284,6 +284,7 @@ class ServerCache {
                 training_site_link: "",
                 b2access_registration_link: "",
                 b2note_url: "",
+                terms_of_use_link: "",
             },
             user: null,
 
@@ -491,13 +492,7 @@ class ServerCache {
         ajaxGet({
             url: apiUrls.root(),
             successFn: (data, linkHeader, etag) => {
-                this.store.setIn(['info'], fromJS({
-                    version: data.version,
-                    site_function: data.site_function,
-                    training_site_link: data.training_site_link,
-                    b2access_registration_link: data.b2access_registration_link,
-                    b2note_url: data.b2note_url,
-                }));
+                this.store.setIn(['info'], fromJS(data));
                 successFn(this.store.getIn(['info']));
             },
         });
