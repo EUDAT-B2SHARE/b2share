@@ -12,7 +12,6 @@ import { Versions } from './versions.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 
 
-const B2NoteUrl = "https://b2note.bsc.es/devel/interface_main.html";
 const PT = React.PropTypes;
 
 
@@ -28,11 +27,11 @@ export const RecordRoute = React.createClass({
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
-        const showB2Note = serverCache.getInfo().get('show_b2note');
+        const b2noteUrl = serverCache.getInfo().get('b2note_url');
 
         return (
             <ReplaceAnimate>
-                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} showB2Note={showB2Note}/>
+                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} b2noteUrl={b2noteUrl}/>
             </ReplaceAnimate>
         );
     }
@@ -45,6 +44,7 @@ const B2NoteWidget = React.createClass({
         record: PT.object.isRequired,
         file: PT.object.isRequired,
         showB2NoteWindow: PT.func.isRequired,
+        b2noteUrl: PT.string.isRequired,
     },
 
     handleSubmit(e) {
@@ -60,7 +60,7 @@ const B2NoteWidget = React.createClass({
         const record_url = (record.links.self||"").replace('/api/records/', '/records/');
         const file_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
         return (
-            <form id="b2note_form_" action={B2NoteUrl} method="post" target="b2note_iframe" onSubmit={this.handleSubmit}>
+            <form id="b2note_form_" action={this.props.b2noteUrl} method="post" target="b2note_iframe" onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="pid_tofeed" value={record.metadata.ePIC_PID} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="subject_tofeed" value={file_url} className="field left" readOnly="readonly"/>
@@ -210,7 +210,7 @@ const Record = React.createClass({
         'creators': true, 'keywords': true, 'disciplines': true, 'publication_state': true,
     },
 
-    renderFileList(files, showB2Note) {
+    renderFileList(files, b2noteUrl) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
         const showAccessRequest = (!openAccess && !isRecordOwner(this.props.record));
 
@@ -220,9 +220,9 @@ const Record = React.createClass({
         } else {
             const fileRecordRowFn = f => {
                 let b2noteWidget = false;
-                if (showB2Note) {
+                if (b2noteUrl) {
                     const showB2NoteWindow = e => this.setState({showB2NoteWindow: true});
-                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={showB2NoteWindow}/>;
+                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={showB2NoteWindow} b2noteUrl={b2noteUrl}/>;
                 }
                 return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} hideFileDownloads={false} />
             }
@@ -398,19 +398,19 @@ const Record = React.createClass({
                         <div className="col-lg-12">
                             {this.renderFixedFields(record, this.props.community)}
                         </div>
-                        {showB2Note ?
+                        {this.props.b2noteUrl ?
                             <div className="well" style={B2NoteWellStyle}>
                                 <button type="button" className="close" aria-label="Close" onClick={e => this.setState({showB2NoteWindow:false})}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
-                                <iframe id="b2note_iframe" name="b2note_iframe" src="https://b2note.bsc.es/devel/interface_main.html"
+                                <iframe id="b2note_iframe" name="b2note_iframe" src={this.props.b2noteUrl}
                                         style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
                             </div> : false
                         }
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
-                            { this.renderFileList(files, this.props.showB2Note) }
+                            { this.renderFileList(files, this.props.b2noteUrl) }
                         </div>
 
                         <div className="col-lg-6">

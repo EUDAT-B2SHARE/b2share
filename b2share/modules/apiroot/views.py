@@ -45,6 +45,7 @@ class ApiRoot(ContentNegotiatedMethodView):
             'site_function': current_app.config.get('SITE_FUNCTION', ''),
             'training_site_link': current_app.config.get('TRAINING_SITE_LINK', ''),
             'b2access_registration_link': b2access.get('registration_url'),
+            'b2note_url': current_app.config.get('B2NOTE_URL'),
         }
         response = jsonify(data)
         return response

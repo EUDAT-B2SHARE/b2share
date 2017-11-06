@@ -112,6 +112,9 @@ PIDSTORE_DATACITE_PASSWORD = "XXXX"
 # on the front page redirecting the testers to this link
 TRAINING_SITE_LINK = ""
 
+# uncomment B2NOTE_URL to show b2note buttons
+B2NOTE_URL = 'https://b2note.bsc.es/devel/interface_main.html'
+
 
 # Cache
 # =====

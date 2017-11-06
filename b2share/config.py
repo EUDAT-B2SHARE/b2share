@@ -348,6 +348,9 @@ B2DROP_SERVER = {
     'path': '/remote.php/webdav/',
 }
 
+
+# B2NOTE_URL = 'https://b2note.bsc.es/devel/interface_main.html'
+
 # By default we suppose there is one proxy in front of B2Share
 WSGI_PROXIES = 1
 PREFERRED_URL_SCHEME = 'http'

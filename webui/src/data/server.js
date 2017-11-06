@@ -282,8 +282,8 @@ class ServerCache {
                 version: "",
                 site_function: "",
                 training_site_link: "",
-                show_b2note: false,
                 b2access_registration_link: "",
+                b2note_url: "",
             },
             user: null,
 
@@ -495,8 +495,8 @@ class ServerCache {
                     version: data.version,
                     site_function: data.site_function,
                     training_site_link: data.training_site_link,
-                    show_b2note: data.site_function != 'production',
                     b2access_registration_link: data.b2access_registration_link,
+                    b2note_url: data.b2note_url,
                 }));
                 successFn(this.store.getIn(['info']));
             },
