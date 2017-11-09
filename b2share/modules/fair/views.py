@@ -24,7 +24,7 @@
 """EUDAT B2ACCESS Fair REST API."""
 
 import json
-from flask import Blueprint
+from flask import Blueprint, current_app
 from pyld import jsonld
 from invenio_pidstore.models import PersistentIdentifier
 from invenio_records import Record
@@ -32,7 +32,7 @@ from invenio_rest import ContentNegotiatedMethodView
 
 from invenio_records_rest.serializers.jsonld import JSONLDSerializer
 from .contexts import FDP_CONTEXT, _FDPSchema
-
+from b2share.modules.communities.api import Community
 
 blueprint = Blueprint(
     'fdp',
@@ -61,7 +61,7 @@ class FairDataPoint(ContentNegotiatedMethodView):
 
     def get(self):
         doc = {
-            "@id":"http://localhost:5000/api/fdp/",
+            "@id": "%sapi/fdp/" % current_app.config['JSONSCHEMAS_HOST'],
             "@type": [
                   "http://www.re3data.org/schema/3-0#Repository"
                 ],
@@ -70,6 +70,14 @@ class FairDataPoint(ContentNegotiatedMethodView):
         context = {
                 "description":"http://purl.org/dc/terms/description"
         }
+        catalogs = []
+        communities = Community.get_all()
+        for comm in communities:
+            id_value = "%sapi/fdp/%s" % (
+                current_app.config['JSONSCHEMAS_HOST'], comm.name
+            )
+            catalogs.append({"@id":id_value})
+        doc['http://www.re3data.org/schema/3-0#dataCatalog'] = catalogs
         compacted = jsonld.compact(doc, context)
         return compacted
 
