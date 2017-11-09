@@ -25,8 +25,15 @@
 
 from marshmallow import Schema, fields
 
+FDP_CONTEXT = {
+    '@context': {
+        "dct":"http://purl.org/dc/terms/",
+        "description":"dct:description",
+        "identifier":"dct:identifier"
+    }        
+}
 
-CONTEXT = {
+FDP_CONTEXT2 = {
     '@context': {
         "dct": "http://purl.org/dc/terms/",
         '@base': 'http://localhost/record/',
@@ -35,6 +42,12 @@ CONTEXT = {
     }
 }
 
+
+class _FDPSchema(Schema):
+    """FDP Schema"""
+    identifier = fields.Str()
+    description = fields.Str()
+    
 
 class _TestSchema(Schema):
     """Test schema."""

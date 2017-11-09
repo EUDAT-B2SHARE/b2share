@@ -31,7 +31,7 @@ from invenio_records import Record
 from invenio_rest import ContentNegotiatedMethodView
 
 from invenio_records_rest.serializers.jsonld import JSONLDSerializer
-from .contexts import CONTEXT, _TestSchema
+from .contexts import FDP_CONTEXT, _FDPSchema
 
 
 blueprint = Blueprint(
@@ -49,8 +49,7 @@ class FairDataPoint(ContentNegotiatedMethodView):
             serializers={
                 'application/ld-json':
                     # This is a record specific serializer for json-ld
-                    JSONLDSerializer(CONTEXT, schema_class=_TestSchema).
-                    serialize
+                    json.dumps
             },
             default_method_media_type={
                 'GET': 'application/ld-json',
@@ -61,8 +60,18 @@ class FairDataPoint(ContentNegotiatedMethodView):
         )
 
     def get(self):
-        return (PersistentIdentifier(pid_type='recid', pid_value='2'),
-                Record({'title': 'mytitle', 'recid': '2'}))
+        doc = {
+            "@id":"http://localhost:5000/api/fdp/",
+            "@type": [
+                  "http://www.re3data.org/schema/3-0#Repository"
+                ],
+            "http://purl.org/dc/terms/description": "test description"
+        }
+        context = {
+                "description":"http://purl.org/dc/terms/description"
+        }
+        compacted = jsonld.compact(doc, context)
+        return compacted
 
     def patch(self):
         pass
@@ -117,7 +126,7 @@ class DatasetMetadata(ContentNegotiatedMethodView):
         super(DatasetMetadata, self).__init__(
             serializers={
                 'application/ld-json':
-                    JSONLDSerializer(CONTEXT, schema_class=_TestSchema).
+                    JSONLDSerializer(FDP_CONTEXT, schema_class=_FDPSchema).
                     serialize
             },
             default_method_media_type={
