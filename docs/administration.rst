@@ -229,7 +229,7 @@ and can be reverted if need be. The files are not removed either.
 Upgrade B2SHARE
 ---------------
 
-From version 2.0.2 on B2SHARE can be upgraded by running
+From version 2.1.0 on B2SHARE can be upgraded by running
 
 .. code-block:: console
 
