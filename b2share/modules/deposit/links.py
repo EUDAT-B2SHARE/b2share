@@ -25,6 +25,14 @@
 
 from flask import url_for, g
 from b2share.modules.records.providers import RecordUUIDProvider
+from invenio_pidrelations.contrib.versioning import PIDVersioning
+from invenio_pidstore.models import PIDStatus
+
+
+def versions_url(pid_value):
+    """Generate the URL to the versions endpoint."""
+    return url_for('b2share_records_rest.b2rec_versions',
+                   pid_value=pid_value, _external=True)
 
 
 def deposit_links_factory(pid):
@@ -40,18 +48,23 @@ def deposit_links_factory(pid):
                             _external=True)
     )
 
-    def _url(name, **kwargs):
-        """URL builder."""
-        endpoint = 'b2share_deposit_rest.{0}_{1}'.format(pid.pid_type, name)
-        return url_for(endpoint, pid_value=pid.pid_value, _external=True,
-                       **kwargs)
-
+    # if this is a direct record get (see B2SHARE serializer, this is a hack
+    # to provide more information to the link factory)
     if hasattr(g, 'record'):
-        record = g.record
+        metadata = g.record
         # FIXME: index the record bucket with the bucket so that we can
         # add the "files" link
-        if record.files is not None:
+        if metadata.files is not None:
             links['files'] = url_for('invenio_files_rest.bucket_api',
-                                     bucket_id=record.files.bucket.id,
+                                     bucket_id=metadata.files.bucket.id,
                                      _external=True)
+    else: # if this is a search hit
+        metadata = g.record_hit['_source']
+
+    parent_pid = next(
+        pid['value'] for pid in metadata['_pid']
+        if pid['type'] == RecordUUIDProvider.parent_pid_type
+    )
+    links['versions'] = versions_url(parent_pid)
+
     return links

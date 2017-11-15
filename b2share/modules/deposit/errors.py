@@ -24,7 +24,8 @@
 """B2Share Deposit errors."""
 
 
-from invenio_rest.errors import RESTValidationError
+import json
+from invenio_rest.errors import RESTValidationError, FieldError
 
 
 class B2ShareDepositError(RESTValidationError):
@@ -33,3 +34,52 @@ class B2ShareDepositError(RESTValidationError):
 
 class InvalidDepositError(B2ShareDepositError):
     """Exception raised when the Deposit is invalid."""
+
+
+class VersioningDepositError(B2ShareDepositError):
+    """Versioning related exception."""
+
+
+class DraftExistsVersioningError(VersioningDepositError):
+    """Exception raised when trying to create a new version of a record which
+    already is associated with a new version draft."""
+    description = ("Versioning error. A draft already exists in the "+
+                   "version chain designated by the specified `version_of` "+
+                   "parameter.")
+
+    def __init__(self, draft_pid):
+        super(DraftExistsVersioningError, self).__init__()
+        self.draft_pid = draft_pid
+
+    def get_body(self, environ=None):
+        body = dict(
+            status=self.code,
+            message=self.get_description(environ),
+            goto_draft=self.draft_pid.pid_value,
+        )
+        return json.dumps(body)
+
+class IncorrectRecordVersioningError(VersioningDepositError):
+    """Exception raised when trying to create a new version of a record which
+    is not the latest in a versioning chain or is the parent pid."""
+    description = ("Versioning error. The `version_of` parameter " +
+                  "must specify the id of the latest published record in a "+
+                  "version chain.")
+
+    def __init__(self, record_pid_value):
+        super(IncorrectRecordVersioningError, self).__init__()
+        self.record_pid_value = record_pid_value
+
+    def get_body(self, environ=None):
+        body = dict(
+            status=self.code,
+            message=self.get_description(environ),
+            use_record=self.record_pid_value,
+        )
+        return json.dumps(body)
+
+class RecordNotFoundVersioningError(VersioningDepositError):
+    """Exception raised when the `version_of` parameter does not point to
+    a record."""
+    description = ("Versioning error. The `version_of` parameter " +
+                  "must point to a valid published record.")

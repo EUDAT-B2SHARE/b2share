@@ -31,6 +31,7 @@ from flask import current_app, url_for
 
 from invenio_oaiserver.provider import OAIIDProvider
 from invenio_oaiserver.utils import datetime_to_datestamp
+from invenio_pidstore.models import PIDStatus
 
 from datacite.errors import DataCiteError
 
@@ -41,11 +42,11 @@ from .b2share_epic import createHandle
 
 def b2share_record_uuid_minter(record_uuid, data):
     """Use record's UUID as unique identifier."""
-    rec_pid = RecordUUIDProvider.create(
-        object_type='rec',
-        object_uuid=record_uuid,
-        pid_value=data['_deposit']['id']
-    ).pid
+    # register the existing record PID
+    rec_pid = RecordUUIDProvider.get(data['_deposit']['id']).pid
+    rec_pid.assign('rec', record_uuid)
+    rec_pid.register()
+
     if '_pid' not in data:
         data['_pid'] = []
     data['_pid'].append({

@@ -25,19 +25,20 @@
 
 
 import uuid
-from copy import deepcopy
 
 import pytest
 from b2share.modules.deposit.api import Deposit, PublicationStates
 from b2share.modules.deposit.errors import InvalidDepositError
 from b2share.modules.communities.errors import InvalidPublicationStateError
 from jsonschema.exceptions import ValidationError
+from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from b2share.modules.records.errors import AlteredRecordError
+from b2share_unit_tests.helpers import create_deposit, pid_of
 
 def test_deposit_create(app, draft_deposits):
     """Test deposit creation."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         assert (deposit['publication_state']
                 == PublicationStates.draft.name)
         assert (deposit['_deposit']['status'] == 'draft')
@@ -46,7 +47,7 @@ def test_deposit_create(app, draft_deposits):
 def test_deposit_submit(app, draft_deposits):
     """Test deposit submission."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         deposit.submit()
         assert (deposit['publication_state']
                 == PublicationStates.submitted.name)
@@ -56,7 +57,7 @@ def test_deposit_submit(app, draft_deposits):
 def test_deposit_update_and_submit(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         deposit.update({'publication_state':
                         PublicationStates.submitted.name})
         deposit.commit()
@@ -68,7 +69,7 @@ def test_deposit_update_and_submit(app, draft_deposits):
 def test_deposit_publish(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         deposit.submit()
         deposit.publish()
         assert (deposit['publication_state']
@@ -79,7 +80,7 @@ def test_deposit_publish(app, draft_deposits):
 def test_deposit_update_and_publish(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         deposit.submit()
         deposit.update({'publication_state':
                         PublicationStates.published.name})
@@ -92,7 +93,7 @@ def test_deposit_update_and_publish(app, draft_deposits):
 def test_deposit_update_unknown_publication_state(app, draft_deposits):
     """Test deposit submission by updating the "publication_state" field."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         deposit.update({'publication_state':
                         'invalid_state'})
         with pytest.raises(InvalidPublicationStateError):
@@ -115,7 +116,7 @@ def test_deposit_add_unknown_fields(app, draft_deposits):
         '/license/new_field',
     ]:
         with app.app_context():
-            deposit = Deposit.get_record(draft_deposits[0].id)
+            deposit = Deposit.get_record(draft_deposits[0].deposit_id)
             deposit = deposit.patch([
                 {'op': 'add', 'path': path, 'value': 'any value'}
             ])
@@ -130,12 +131,12 @@ def test_deposit_create_with_invalid_fields_fails(app, test_records_data):
     with app.app_context():
         data['publication_state'] = 'published'
         with pytest.raises(InvalidDepositError):
-            deposit = Deposit.create(deepcopy(data))
+            deposit = create_deposit(data=data)
 
     with app.app_context():
         data['$schema'] = '__garbage__'
         with pytest.raises(InvalidDepositError):
-            deposit = Deposit.create(deepcopy(data))
+            deposit = create_deposit(data=data)
 
 
 def test_deposit_create_with_invalid_community_fails(app,
@@ -146,26 +147,26 @@ def test_deposit_create_with_invalid_community_fails(app,
         # test with no community
         del data['community']
         with pytest.raises(ValidationError):
-            deposit = Deposit.create(deepcopy(data))
+            deposit = create_deposit(data=data)
 
     with app.app_context():
         # test with an invalid community
         data['community'] = str(uuid.uuid4())
         with pytest.raises(InvalidDepositError):
-            deposit = Deposit.create(deepcopy(data))
+            deposit = create_deposit(data=data)
 
 
 def test_change_deposit_community(app, draft_deposits):
     """Test deposit creation without or with an invalid community fails."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         # test removing the community id
         del deposit['community']
         with pytest.raises(AlteredRecordError):
             deposit.commit()
 
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         # test changing the community id
         deposit['community'] = str(uuid.uuid4())
         with pytest.raises(InvalidDepositError):
@@ -177,7 +178,7 @@ def test_deposit_create_with_incomplete_metadata(app,
     """Test deposit creation with incomplete metadata succeeds."""
     with app.app_context():
         for data in test_incomplete_records_data:
-            deposit = Deposit.create(data.incomplete_data)
+            deposit = create_deposit(data=data.incomplete_data)
             assert (deposit['publication_state']
                     == PublicationStates.draft.name)
             assert (deposit['_deposit']['status'] == 'draft')
@@ -188,7 +189,7 @@ def test_deposit_submit_with_incomplete_metadata(app,
     """Test deposit submission with incomplete metadata fails."""
     for data in test_incomplete_records_data:
         with app.app_context():
-            deposit = Deposit.create(data.complete_data)
+            deposit = create_deposit(data=data.complete_data)
             deposit.commit()
             # make the data incomplete
             deposit = deposit.patch(data.patch)
@@ -201,7 +202,7 @@ def test_deposit_publish_with_incomplete_metadata(app,
     """Test publication of an incomplete deposit fails."""
     for data in test_incomplete_records_data:
         with app.app_context():
-            deposit = Deposit.create(data.complete_data)
+            deposit = create_deposit(data=data.complete_data)
             deposit.submit()
             deposit.commit()
             # make the data incomplete
@@ -213,7 +214,7 @@ def test_deposit_publish_with_incomplete_metadata(app,
 def test_change_deposit_schema_fails(app, draft_deposits):
     """Test updating the $schema field fails."""
     with app.app_context():
-        deposit = Deposit.get_record(draft_deposits[0].id)
+        deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         del deposit['$schema']
         with pytest.raises(AlteredRecordError):
             deposit.commit()

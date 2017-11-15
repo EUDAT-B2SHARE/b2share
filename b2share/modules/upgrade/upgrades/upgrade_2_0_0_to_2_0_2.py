@@ -29,10 +29,17 @@ from __future__ import absolute_import, print_function
 import pkg_resources
 
 from invenio_db import db
+from invenio_pidrelations.contrib.versioning import PIDVersioning
+from invenio_pidstore.models import PersistentIdentifier, PIDStatus
+from invenio_pidstore.errors import PIDDoesNotExistError
 
 from ..api import UpgradeRecipe, alembic_stamp, alembic_upgrade
 from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
     elasticsearch_index_reindex, queues_declare, schemas_init
+from b2share.modules.records.providers import RecordUUIDProvider
+from b2share.modules.deposit.providers import DepositUUIDProvider
+from b2share.modules.deposit.api import Deposit
+from invenio_records_files.api import Record
 
 
 migrate_2_0_0_to_2_0_2 = UpgradeRecipe('2.0.0', '2.0.2')
@@ -41,7 +48,7 @@ migrate_2_0_0_to_2_0_2 = UpgradeRecipe('2.0.0', '2.0.2')
     lambda alembic, *args:
     not db.engine.dialect.has_table(db.engine, 'alembic_version')
 )
-def alembic_upgrade_to_2_0_2(alembic, verbose):
+def alembic_upgrade_database_schema(alembic, verbose):
     """Migrate the database from the v2.0.0 schema to the 2.0.2 schema."""
     # This also fixes the B2SHARE 2.0.0 database so that it matches alembic
     # recipes.
@@ -83,12 +90,69 @@ def alembic_upgrade_to_2_0_2(alembic, verbose):
         for revision in [
             '456bf6bcb1e6',  # b2share-upgrade
             'e12419831262',  # invenio-accounts
-            'f741aa746a7d'   # invenio-files-rest
+            'f741aa746a7d',  # invenio-files-rest
+            '1d4e361b7586',  # invenio-pidrelations
         ]:
             alembic_upgrade(revision)
     db.session.commit()
 
 
+@migrate_2_0_0_to_2_0_2.step()
+def alembic_upgrade_database_data(alembic, verbose):
+    """Migrate the database data from v2.0.0 to 2.0.2."""
+    ### Add versioning PIDs ###
+    # Reserve the record PID and versioning PID for unpublished deposits
+    with db.session.begin_nested():
+        deposit_pids = PersistentIdentifier.query.filter(
+            PersistentIdentifier.pid_type == DepositUUIDProvider.pid_type,
+            PersistentIdentifier.status == PIDStatus.REGISTERED,
+        ).all()
+        for dep_pid in deposit_pids:
+            try:
+                # Retrieve the corresponding Record PID if it exists
+                rec_pid = RecordUUIDProvider.get(dep_pid.pid_value).pid
+                # Do not version deleted records.
+                if rec_pid.status != PIDStatus.REGISTERED:
+                    continue
+                published = True
+            except PIDDoesNotExistError as e:
+                # The record is not published yet. Reserve the PID.
+                rec_pid = RecordUUIDProvider.create(
+                    object_type='rec',
+                    pid_value=dep_pid.pid_value,
+                ).pid
+                published = False
+
+            # Create parent version PID
+            parent_pid = RecordUUIDProvider.create().pid
+            version_master = PIDVersioning(parent=parent_pid)
+            version_master.insert_draft_child(child=rec_pid)
+
+            # Migrate record and deposit metadata
+            migrate_record_metadata(
+                Deposit.get_record(dep_pid.object_uuid),
+                parent_pid
+            )
+            if published:
+                migrate_record_metadata(
+                    Record.get_record(rec_pid.object_uuid),
+                    parent_pid
+                )
+                version_master.update_redirect()
+
+
+def migrate_record_metadata(record, parent_pid):
+    """Migrate a record's metadata to 2.0.2 format."""
+    # Mint the parent version Persistent Identifier. Every existing record
+    # should be versioned.
+    record['_pid'] = record.get('_pid', []) + [{
+        'value': parent_pid.pid_value,
+        'type': RecordUUIDProvider.parent_pid_type,
+    }]
+    record.commit()
+
+
+
 for step in [elasticsearch_index_destroy, elasticsearch_index_init,
-             elasticsearch_index_reindex, queues_declare, schemas_init]:
+             elasticsearch_index_reindex, queues_declare]:
     migrate_2_0_0_to_2_0_2.step()(step)

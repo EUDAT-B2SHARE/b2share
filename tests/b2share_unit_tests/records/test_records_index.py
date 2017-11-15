@@ -140,6 +140,38 @@ def test_record_unindex(app, test_users, test_records, script_info,
                           login_user)
 
 
+def test_unpublished_deposit_unindex(app, test_users, draft_deposits, script_info,
+                        login_user):
+    """Check that deleting an unpublished deposit also removes it from the search index."""
+    creator = test_users['deposits_creator']
+
+    with app.app_context():
+        Deposit.get_record(draft_deposits[0].deposit_id).delete()
+        # execute scheduled tasks synchronously
+        process_bulk_queue.delay()
+        # flush the indices so that indexed records are searchable
+        current_search_client.indices.flush('*')
+    # deleted record should not be searchable
+    subtest_record_search(app, creator, [], draft_deposits[1:],
+                          login_user)
+
+
+def test_published_deposit_unindex(app, test_users, test_records, script_info,
+                                   login_user):
+    """Check that deleting a published deposit also removes it from the search index."""
+    creator = test_users['deposits_creator']
+
+    with app.app_context():
+        Deposit.get_record(test_records[0].deposit_id).delete()
+        # execute scheduled tasks synchronously
+        process_bulk_queue.delay()
+        # flush the indices so that indexed records are searchable
+        current_search_client.indices.flush('*')
+    # deleted record should not be searchable
+    subtest_record_search(app, creator, test_records, test_records[1:],
+                          login_user)
+
+
 def test_record_index_after_update(app, test_users, test_records, script_info,
                                    login_user):
     """Check that updating a record also reindex it."""

@@ -27,6 +27,7 @@
 from __future__ import absolute_import, print_function
 
 import pytz
+from elasticsearch.exceptions import NotFoundError
 from invenio_indexer.tasks import delete_record, index_record
 from invenio_records.signals import (
     after_record_insert, after_record_update, before_record_delete,

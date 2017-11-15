@@ -23,14 +23,25 @@
 
 """Test Record's programmatic API."""
 
-
+from six import BytesIO
 import uuid
+from functools import partial
 
+from copy import deepcopy
 import pytest
 from jsonschema.exceptions import ValidationError
 from b2share.modules.records.errors import AlteredRecordError
 from invenio_records import Record
-from b2share.modules.deposit.api import Deposit
+from invenio_records_files.api import Record as _Record
+from invenio_records_rest.utils import LazyPIDValue
+from invenio_files_rest.models import ObjectVersion
+from invenio_pidstore.models import PersistentIdentifier, PIDStatus
+from invenio_pidstore.resolver import Resolver
+from b2share.modules.records.api import B2ShareRecord
+from b2share.modules.deposit.api import Deposit, copy_data_from_previous
+from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
+from b2share_unit_tests.helpers import create_deposit, pid_of
+from invenio_pidrelations.contrib.versioning import PIDVersioning
 
 
 def test_change_record_schema_fails(app, test_records):
@@ -84,14 +95,110 @@ def test_record_add_unknown_fields(app, test_records):
 def test_record_commit_with_incomplete_metadata(app,
                                                 test_incomplete_records_data):
     """Test commit of an incomplete record fails."""
-    for data in test_incomplete_records_data:
+    for metadata in test_incomplete_records_data:
         with app.app_context():
-            deposit = Deposit.create(data.complete_data)
+            data = deepcopy(metadata.complete_data)
+            record_uuid = uuid.uuid4()
+            b2share_deposit_uuid_minter(record_uuid, data=data)
+            deposit = Deposit.create(data, id_=record_uuid)
             deposit.submit()
             deposit.publish()
             deposit.commit()
             pid, record = deposit.fetch_published()
             # make the data incomplete
-            record = record.patch(data.patch)
+            record = record.patch(metadata.patch)
             with pytest.raises(ValidationError):
                 record.commit()
+
+
+def test_record_delete_version(app, test_records, test_users):
+    """Test deletion of a record version."""
+    with app.app_context():
+        resolver = Resolver(
+            pid_type='b2rec',
+            object_type='rec',
+            getter=B2ShareRecord.get_record,
+        )
+
+        v1 = test_records[0].data
+        v1_pid, v1_id = pid_of(v1)
+
+        _, v1_rec = resolver.resolve(v1_id)
+        data = copy_data_from_previous(v1_rec.model.json)
+        v2 = create_deposit(data, test_users['deposits_creator'],
+                            version_of=v1_id)
+        ObjectVersion.create(v2.files.bucket, 'myfile1',
+                             stream=BytesIO(b'mycontent'))
+        v2.submit()
+        v2.publish()
+        v2_pid, v2_id = pid_of(v2)
+        data = copy_data_from_previous(v2.model.json)
+        v3 = create_deposit(data, test_users['deposits_creator'],
+                            version_of=v2_id)
+        v3.submit()
+        v3.publish()
+        v3_pid, v3_id = pid_of(v3)
+        v3_pid, v3_rec = resolver.resolve(v3_pid.pid_value)
+        # chain is now: [v1] -- [v2] -- [v3]
+        version_child = PIDVersioning(child=v2_pid)
+        version_master = PIDVersioning(parent=version_child.parent)
+        assert len(version_master.children.all()) == 3
+        v3_rec.delete()
+        assert len(version_master.children.all()) == 2
+        # chain is now [v1] -- [v2]
+        # assert that we can create again a new version from v2
+        data = copy_data_from_previous(v2.model.json)
+        v3 = create_deposit(data, test_users['deposits_creator'],
+                            version_of=v2_id)
+        v3.submit()
+        v3.publish()
+        v3_pid, v3_id = pid_of(v3)
+        v3_pid, v3_rec = resolver.resolve(v3_pid.pid_value)
+        assert len(version_master.children.all()) == 3
+        v2_pid, v2_rec = resolver.resolve(v2_pid.pid_value)
+        # Delete an intermediate version
+        v2_rec.delete()
+        assert len(version_master.children.all()) == 2
+        # chain is now [v1] -- [v3]
+        # Add a new version
+        data = copy_data_from_previous(v3.model.json)
+        v4 = create_deposit(data, test_users['deposits_creator'],
+                            version_of=v3_id)
+        v4.submit()
+        v4.publish()
+        assert len(version_master.children.all()) == 3
+        # final chain [v1] -- [v3] -- [v4]
+        v4_pid, v4_id = pid_of(v4)
+        v4_pid, v4_rec = resolver.resolve(v4_pid.pid_value)
+        data = copy_data_from_previous(v4)
+        draft_child = create_deposit(data, test_users['deposits_creator'],
+                                     version_of=v4_id)
+        draft_child.submit()
+
+        # delete all children except the draft child
+        assert len(version_master.children.all()) == 3
+        v4_rec.delete()
+        assert len(version_master.children.all()) == 2
+
+        v3_rec.delete()
+        assert len(version_master.children.all()) == 1
+
+        v1_rec.delete()
+        assert len(version_master.children.all()) == 0
+
+        assert version_master.parent.status != PIDStatus.DELETED
+
+        draft_child.publish()
+        draft_child_pid, draft_child_id = pid_of(draft_child)
+        draft_child_pid, draft_child_rec = \
+            resolver.resolve(draft_child_pid.pid_value)
+        # assert that we can create again a new version
+
+        assert len(version_master.children.all()) == 1
+
+        # no child remains and there is no draft_child
+        draft_child_rec.delete()
+        assert version_master.parent.status == PIDStatus.DELETED
+
+        # TODO: test in ES that the previous version is reindexed
+        # and can be found

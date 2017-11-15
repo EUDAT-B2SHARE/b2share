@@ -31,6 +31,7 @@ import shutil
 import re
 import tempfile
 import sys
+import uuid
 from contextlib import contextmanager
 from copy import deepcopy
 from collections import namedtuple
@@ -57,6 +58,7 @@ from sqlalchemy.exc import ProgrammingError
 from invenio_accounts.models import Role
 from b2share.modules.upgrade.api import alembic_stamp
 from invenio_queues.proxies import current_queues
+from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 
 from b2share.config import B2SHARE_RECORDS_REST_ENDPOINTS, \
     B2SHARE_DEPOSIT_REST_ENDPOINTS
@@ -393,14 +395,15 @@ def test_incomplete_records_data(app, test_communities):
 
 def create_deposits(app, test_records_data, creator):
     """Create test deposits."""
-    DepositInfo = namedtuple('DepositInfo', ['id', 'data', 'deposit'])
+    DepositInfo = namedtuple('DepositInfo', ['deposit_id', 'data', 'deposit'])
 
+    deposits = []
     with authenticated_user(creator):
-        deposits = [Deposit.create(data=data)
-                    for data in deepcopy(test_records_data)]
-    for deposit in deposits:
-        deposit.commit()
-        deposit.commit()
+        for data in deepcopy(test_records_data):
+            record_uuid = uuid.uuid4()
+            # Create persistent identifier
+            b2share_deposit_uuid_minter(record_uuid, data=data)
+            deposits.append(Deposit.create(data=data, id_=record_uuid))
     return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
 
 
@@ -433,7 +436,7 @@ def test_records(app, request, test_records_data, test_users):
         test_deposits = create_deposits(app, test_records_data,
                                         test_users['deposits_creator'])
 
-        RecordInfo = namedtuple('DepositInfo', ['deposit_id', 'pid',
+        RecordInfo = namedtuple('RecordInfo', ['deposit_id', 'pid',
                                                 'record_id', 'data'])
         def publish(deposit):
             deposit.submit()

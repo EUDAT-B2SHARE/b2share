@@ -44,6 +44,7 @@ def _in_draft_request():
     """
     return has_request_context() and 'drafts' in request.args
 
+
 class B2ShareRecordsSearch(RecordsSearch):
     """Search class for records."""
 
@@ -65,7 +66,7 @@ class B2ShareRecordsSearch(RecordsSearch):
     class Meta(metaclass=MetaClass):
         """Default index and filter for record search."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, all_versions=False, **kwargs):
         """Initialize instance."""
         super(B2ShareRecordsSearch, self).__init__(**kwargs)
         if _in_draft_request():
@@ -87,9 +88,19 @@ class B2ShareRecordsSearch(RecordsSearch):
                               Q('term', community=str(community))],
                     ))
 
+
             # otherwise filter returned deposits
             self.query = Bool(
                 must=self.query._proxied,
                 should=filters,
                 minimum_should_match=1
             )
+        else:
+            if not all_versions:
+                # search for last record versions only
+                filters = [Q('term', **{'_internal.is_last_version': True})]
+                self.query = Bool(
+                    must=self.query._proxied,
+                    should=filters,
+                    minimum_should_match=1
+                )

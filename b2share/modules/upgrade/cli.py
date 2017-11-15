@@ -26,17 +26,11 @@
 
 from __future__ import absolute_import, print_function
 
-import re
-
 import click
 from flask.cli import with_appcontext
-from b2share.version import __version__
 from flask import current_app
-from invenio_db import db
 
-from .models import Migration
-from .api import UpgradeRecipe
-
+from .api import upgrade_to_last_version
 
 @click.group()
 def upgrade():
@@ -47,35 +41,5 @@ def upgrade():
 @with_appcontext
 @click.option('-v', '--verbose', is_flag=True, default=False)
 def run(verbose):
-    """Upgrade the database and reindex the records."""
-    alembic = current_app.extensions['invenio-db'].alembic
-    # Remove ".dev*", "rc*", ... from the version to simplify the upgrade
-    last_version = re.match(r'^\d+\.\d+\.\d+', __version__).group(0)
-
-    last_failure = None
-    # detect data current version. Special case for version 2.0.0 as there was
-    # no alembic recipe at that time.
-    if db.engine.dialect.has_table(db.engine, 'transaction'):
-        if not db.engine.dialect.has_table(db.engine, 'alembic_version'):
-            current_version = '2.0.0'
-        else:
-            all_migrations = Migration.query.order_by(
-                Migration.updated.desc()).all()
-            last_migration = all_migrations[-1]
-            if last_migration.success:
-                if last_migration.version == last_version:
-                    click.secho('Already up to date.')
-                    return
-            try:
-                last_success = next(mig for mig in all_migrations
-                                    if mig.success)
-                current_version = last_success.version
-            except StopIteration:
-                current_version = '2.0.0'
-    else:
-        current_version = 'init'
-
-    upgrades = UpgradeRecipe.build_upgrade_path(current_version,
-                                                last_version)
-    for upgrade in upgrades:
-        upgrade.run(failed_migration=last_failure, verbose=verbose)
+    """Upgrade the database to the last version and reindex the records."""
+    upgrade_to_last_version(verbose)

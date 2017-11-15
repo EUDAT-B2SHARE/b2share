@@ -27,8 +27,6 @@ from collections import namedtuple
 
 from .providers import DepositUUIDProvider
 
-from invenio_records_rest.views import Blueprint
-
 
 FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
 

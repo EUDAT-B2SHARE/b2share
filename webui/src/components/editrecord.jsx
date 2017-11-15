@@ -18,6 +18,7 @@ import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 import { EditFiles } from './editfiles.jsx';
+import { Versions } from './versions.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 import { SelectBig } from './selectbig.jsx';
 import { renderSmallCommunity } from './common.jsx';
@@ -76,14 +77,13 @@ export const EditRecordRoute = React.createClass({
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
-
         return (
             <ReplaceAnimate>
                 <EditRecord record={record} community={community}
                             rootSchema={rootSchema} blockSchemas={blockSchemas}
                             refreshCache={this.refreshCache}
                             patchFn={this.patchRecordOrDraft}
-                            isDraft={this.isDraft} />
+                            isDraft={this.isDraft} isVersion={true} />
             </ReplaceAnimate>
         );
     }
@@ -567,6 +567,9 @@ const EditRecord = React.createClass({
         const afterPatch = (record) => {
             if (this.props.isDraft && !this.isForPublication()) {
                 this.props.refreshCache();
+                // TODO(edima): when a draft is publised, clean the state of
+                // records in versioned chain, to trigger a refetch of
+                // versioning data
                 this.setState({dirty:false, waitingForServer: false});
                 notifications.clearAll();
             } else {
@@ -638,9 +641,13 @@ const EditRecord = React.createClass({
         if (!this.state.record || !rootSchema) {
             return <Wait/>;
         }
-        const editTitle = "Editing " + (this.props.isDraft ? "draft" : "record");
+        const editTitle = "Editing " + (this.props.isDraft ? "draft" : "record") + (this.props.isVersion ?  " version": "");
         return (
             <div className="edit-record">
+                <Versions isDraft={this.props.isDraft}
+                          recordID={this.props.record.get('id')}
+                          versions={this.props.record.get('versions')}/>
+
                 <div className="row">
                     <div className="col-xs-12">
                         <h2 className="name">

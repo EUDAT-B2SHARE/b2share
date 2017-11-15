@@ -27,6 +27,9 @@ import re
 
 from flask import url_for, g
 
+from b2share.modules.records.providers import RecordUUIDProvider
+from b2share.modules.records.fetchers import b2share_parent_pid_fetcher
+
 
 RECORD_BUCKET_RELATION_TYPE = \
     'http://b2share.eudat.eu/relation_types/record_bucket'
@@ -47,23 +50,29 @@ def url_for_bucket(bucket_id):
         _external=True
     )
 
-
 def record_links_factory(pid):
     """Factory for record links generation."""
-    endpoint = 'b2share_records_rest.{0}_item'.format(pid.pid_type)
-    links = dict(self=url_for(endpoint, pid_value=pid.pid_value,
-                              _external=True))
+    def _url(name, pid_value):
+        endpoint = 'b2share_records_rest.{0}_{1}'.format(pid.pid_type, name)
+        return url_for(endpoint, pid_value=pid_value, _external=True)
 
-    if hasattr(g, 'record'):
-        record = g.record
+    links = dict(self=_url('item', pid.pid_value))
+
+    if hasattr(g, 'record'): # set by the serializer
+        metadata = g.record
         # FIXME: index the record bucket with the bucket so that we can
         # add the "files" link
-        if record.files is not None:
-            links['files'] = url_for_bucket(record.files.bucket)
-    if hasattr(g, 'record_hit'):
+        if metadata.files is not None:
+            links['files'] = url_for_bucket(metadata.files.bucket)
+
+    if hasattr(g, 'record_hit'): # set when retrieving search results
         metadata = g.record_hit['_source']
         if 'files_bucket_id' in metadata.get('_internal', {}):
             links['files'] = url_for_bucket(
                 metadata['_internal']['files_bucket_id']
             )
+
+    parent_pid = b2share_parent_pid_fetcher(None, metadata).pid_value
+    links['versions'] = _url('versions', parent_pid)
+
     return links

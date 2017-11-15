@@ -87,7 +87,7 @@ def test_users_tokens(app, test_users, login_user):
         if req.status_code == 200:
             hits = json.loads(req.get_data(as_text=True))['hits']
             assert hits['total'] == len(names)
-            assert [h['name'] for h in hits['hits']] == names
+            assert set([h['name'] for h in hits['hits']]) == set(names)
 
     def get_user_token(token_id, expected_code=200):
         url = url_for('b2share_users.user_token_item', token_id=token_id)

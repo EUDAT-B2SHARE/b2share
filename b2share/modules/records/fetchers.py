@@ -40,3 +40,12 @@ def b2share_record_uuid_fetcher(record_uuid, data):
         pid_value=str(next(pid['value'] for pid in data['_pid']
                            if pid['type'] == RecordUUIDProvider.pid_type)),
     )
+
+def b2share_parent_pid_fetcher(record_uuid, data):
+    """Fetch record's parent version persistent identifier."""
+    return FetchedPID(
+        provider=RecordUUIDProvider,
+        pid_type=RecordUUIDProvider.pid_type,
+        pid_value=next(pid['value'] for pid in data['_pid']
+                        if pid['type'] == RecordUUIDProvider.parent_pid_type)
+    )

@@ -86,8 +86,7 @@ export const NewRecordRoute = React.createClass({
         if (communities instanceof Error) {
             return <Err err={communities}/>;
         }
-        const gap = {marginTop:'1em'};
-        const biggap = {marginTop:'2em'};
+
         const stitle = {marginTop:'1em'};
         if (this.state.errors.title) {
             stitle.color = "red";
@@ -111,7 +110,7 @@ export const NewRecordRoute = React.createClass({
                             <label htmlFor="title" className="col-sm-3 control-label" style={stitle}>
                                 <span style={{float:'right'}}>Title</span>
                             </label>
-                            <div className="col-sm-9" style={gap}>
+                            <div className="col-sm-9" style={{marginTop:'1em'}}>
                                 <input type="text" className="form-control" id='title'
                                     style={{fontSize:24, height:48}}
                                     value={this.state.title} onChange={this.onTitleChange} />
@@ -132,12 +131,20 @@ export const NewRecordRoute = React.createClass({
                                 <div className="col-sm-9 col-sm-offset-3">{this.state.errors.title} </div>: false }
                             {this.state.errors.community ?
                                 <div className="col-sm-9 col-sm-offset-3">{this.state.errors.community} </div> : false }
-                            <div className="col-sm-offset-3 col-sm-9" style={gap}>
+                            <div className="col-sm-offset-3 col-sm-9" style={{marginTop:'1em'}}>
                                 <button type="submit" className="btn btn-primary btn-default btn-block">
                                     Create Draft Record</button>
                             </div>
                         </div>
                     </form>
+                </div>
+                <div className="row">
+                    <div className="col-sm-9 col-sm-offset-3"  style={{borderTop:'1px solid #eee', paddingTop:'1em'}}>
+                        <p className="alert alert-warning" style={{color:'black'}}>
+                        You can also update the data in an existing record by creating a new version of that record.
+                        Search for the 'Create new version' button on the record's page.
+                        </p>
+                    </div>
                 </div>
             </div>
         );

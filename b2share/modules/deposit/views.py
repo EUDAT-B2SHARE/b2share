@@ -28,14 +28,19 @@ from flask import abort, Blueprint, current_app, g, request
 from invenio_files_rest.errors import InvalidOperationError
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.resolver import Resolver
+from invenio_db import db
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_rest.views import create_api_errorhandler
 from werkzeug.local import LocalProxy
 from invenio_records_rest.links import default_links_factory
-from invenio_records_rest.views import RecordResource
+from invenio_records_rest.views import RecordResource, pass_record
+from invenio_records_rest.views import verify_record_permission
 from invenio_deposit.search import DepositSearch
 from b2share.modules.deposit.api import Deposit
 from invenio_indexer.api import RecordIndexer
+from invenio_pidrelations.contrib.versioning import PIDVersioning
+from invenio_pidstore.models import PIDStatus
+from b2share.modules.records.providers import RecordUUIDProvider
 
 
 current_jsonschemas = LocalProxy(
@@ -124,7 +129,6 @@ def records_rest_url_rules(endpoint, list_route=None, item_route=None,
                                        with_deleted=True))
 
     item_view = DepositResource.as_view(
-    # item_view = RecordResource.as_view(
         RecordResource.view_name.format(endpoint),
         resolver=resolver,
         read_permission_factory=read_permission_factory,
@@ -175,10 +179,6 @@ class DepositResource(RecordResource):
     def put(self, *args, **kwargs):
         """PUT the deposit."""
         abort(405)
-        # pid, record = request.view_args['pid_value'].data
-        # result = super(DepositResource, self).put(*args, **kwargs)
-        # self._index_record(record)
-        # return result
 
     def _index_record(self, record):
         """Index the published record if the deposit is published."""

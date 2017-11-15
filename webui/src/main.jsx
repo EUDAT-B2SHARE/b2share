@@ -16,7 +16,7 @@ import { CommunityListRoute, CommunityRoute } from './components/communities.jsx
 import { SearchRecordRoute } from './components/search.jsx';
 import { RecordRoute  } from './components/record.jsx';
 import { NewRecordRoute  } from './components/newrecord.jsx';
-import { EditRecordRoute  } from './components/editrecord.jsx';
+import { EditRecordRoute, NewRecordVersionRoute  } from './components/editrecord.jsx';
 import { AccessRequest } from './components/accessrequest.jsx';
 import { ReportAbuse } from './components/reportabuse.jsx';
 import { CommunityAdmin } from './components/community_admin.jsx'
@@ -116,9 +116,9 @@ const router = (
                 <Route path=":id" component={Frame} >
                     <IndexRoute component={RecordRoute} />
                     <Route path="edit" component={EditRecordRoute}/>
+                    <Route path="update" component={NewRecordVersionRoute}/>
                     <Route path="accessrequest" component={AccessRequest}/>
                     <Route path="abuse" component={ReportAbuse}/>
-
                 </Route>
             </Route>
 

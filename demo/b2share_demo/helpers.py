@@ -35,7 +35,7 @@ import requests
 from six import BytesIO
 import ssl
 import sys, traceback
-from uuid import UUID
+from uuid import UUID, uuid4
 from urllib.parse import urlunsplit
 from urllib.request import urlopen
 
@@ -51,6 +51,7 @@ from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_records_files.api import Record
 from b2share.modules.deposit.api import Deposit
 from b2share.modules.deposit.providers import DepositUUIDProvider
+from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 
 from b2share.modules.communities import Community
 from b2share.modules.schemas import BlockSchema, CommunitySchema
@@ -214,31 +215,54 @@ def _create_records(path, verbose):
                 split_filename = os.path.splitext(filename)
                 if split_filename[1] == '.json':
                     rec_uuid = UUID(split_filename[0])
-                    with open(os.path.join(records_dir, root,
-                                           filename)) as record_file:
-                        record_str = record_file.read()
-                    record_str = resolve_community_id(record_str)
-                    record_str = resolve_block_schema_id(record_str)
-                    deposit = Deposit.create(json.loads(record_str),
-                                             id_=rec_uuid)
-                    ObjectVersion.create(deposit.files.bucket, 'myfile',
-                        stream=BytesIO(b'mycontent'))
-                    deposit.publish()
-                    pid, record = deposit.fetch_published()
-                    # index the record
-                    indexer.index(record)
+                    path = os.path.join(records_dir, root, filename)
+                    record, deposit = _create_record_from_filepath(
+                        path, rec_uuid, indexer, nb_records, verbose)
                     if verbose > 1:
                         click.secho('CREATED RECORD {0}:\n {1}'.format(
-                            str(rec_uuid), json.dumps(record,
-                                                  indent=4)
+                            str(rec_uuid), json.dumps(record, indent=4)
                         ))
                         click.secho('CREATED DEPOSIT {0}:\n {1}'.format(
-                            str(rec_uuid), json.dumps(deposit,
-                                                  indent=4)
+                            str(rec_uuid), json.dumps(deposit, indent=4)
                         ))
                     nb_records += 1
     if verbose > 0:
         click.secho('Created {} records!'.format(nb_records), fg='green')
+
+def _create_record_from_filepath(path, rec_uuid, indexer, versions, verbose):
+    with open(path) as record_file:
+        record_str = record_file.read()
+    record_str = resolve_community_id(record_str)
+    record_str = resolve_block_schema_id(record_str)
+    json_data = json.loads(record_str)
+    b2share_deposit_uuid_minter(rec_uuid, data=json_data)
+    deposit = Deposit.create(json_data, id_=rec_uuid)
+    ObjectVersion.create(deposit.files.bucket, 'myfile',
+                         stream=BytesIO(b'mycontent'))
+    deposit.publish()
+    pid, record = deposit.fetch_published()
+    indexer.index(record)
+    if verbose > 0:
+        click.secho('created new record: {}'.format(str(rec_uuid)))
+
+    last_id = pid.pid_value
+    for i in range(2*versions):
+        rec_uuid = uuid4()
+        json_data = json.loads(record_str)
+        b2share_deposit_uuid_minter(rec_uuid, data=json_data)
+        deposit2 = Deposit.create(json_data, id_=rec_uuid,
+                                  version_of=last_id)
+
+        ObjectVersion.create(deposit2.files.bucket, 'myfile-ver{}'.format(i),
+                             stream=BytesIO(b'mycontent'))
+        deposit2.publish()
+        pid, record2 = deposit2.fetch_published()
+        indexer.index(record2)
+        last_id = pid.pid_value
+        if verbose > 0:
+            click.secho('created new version: {}'.format(str(rec_uuid)))
+
+    return record, deposit
 
 
 def resolve_block_schema_id(source):

@@ -26,14 +26,21 @@ import uuid
 import re
 from functools import partial, wraps
 
-from flask import Blueprint, abort, request, url_for
+from sqlalchemy import and_
+from sqlalchemy.orm import aliased
+from flask import Blueprint, abort, request, url_for, make_response
 from flask import jsonify, Flask, current_app
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
+from invenio_pidstore.errors import PIDDoesNotExistError, PIDRedirectedError
+from invenio_pidstore.models import PersistentIdentifier
+from invenio_pidrelations.contrib.versioning import PIDVersioning
+from invenio_pidrelations.models import PIDRelation
 from invenio_records_files.api import Record
 from invenio_rest.errors import RESTValidationError
 from invenio_search import RecordsSearch
 from jsonschema.exceptions import ValidationError
+from invenio_records.models import RecordMetadata
 from invenio_records_files.api import RecordsBuckets
 from invenio_records_rest.views import (pass_record,
                                         RecordsListResource, RecordResource,
@@ -42,18 +49,39 @@ from invenio_records_rest.views import (pass_record,
 from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.query import default_search_factory
 from invenio_records_rest.utils import obj_or_import_string
-from invenio_records_rest.views import verify_record_permission
-from b2share.modules.deposit.serializers import json_v1_response as \
-    deposit_serializer
-from b2share.modules.deposit.api import Deposit
-from b2share.modules.records.permissions import DeleteRecordPermission
 from invenio_mail import InvenioMail
 from flask_mail import Message
 from invenio_mail.tasks import send_email
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_accounts.models import User
 
-from .utils import delete_record
+from b2share.modules.records.api import B2ShareRecord
+from b2share.modules.records.providers import RecordUUIDProvider
+from b2share.modules.deposit.serializers import json_v1_response as \
+    deposit_serializer
+from b2share.modules.deposit.api import Deposit, copy_data_from_previous
+from b2share.modules.deposit.errors import RecordNotFoundVersioningError, \
+    IncorrectRecordVersioningError
+from b2share.modules.records.permissions import DeleteRecordPermission
+
+
+# duplicated from invenio-records-rest because we need
+# to pass the previous version record data
+def verify_record_permission(permission_factory, record, **kwargs):
+    """Check that the current user has the required permissions on record.
+    In case the permission check fails, an Flask abort is launched.
+    If the user was previously logged-in, a HTTP error 403 is returned.
+    Otherwise, is returned a HTTP error 401.
+    :param permission_factory: permission factory used to check permissions.
+    :param record: record whose access is limited.
+    """
+    # Note, cannot be done in one line due overloading of boolean
+    # operations permission object.
+    if not permission_factory(record=record, **kwargs).can():
+        from flask_login import current_user
+        if not current_user.is_authenticated:
+            abort(401)
+        abort(403)
 
 
 def create_blueprint(endpoints):
@@ -214,6 +242,10 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         links_factory=links_factory,
         default_media_type=default_media_type)
 
+    versions_view = RecordsVersionsResource.as_view(
+        RecordsVersionsResource.view_name.format(endpoint),
+        resolver=resolver)
+
     abuse_view = RecordsAbuseResource.as_view(
         RecordsAbuseResource.view_name.format(endpoint),
         resolver=resolver)
@@ -226,7 +258,9 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
         dict(rule=list_route, view_func=list_view),
         dict(rule=item_route, view_func=item_view),
         dict(rule=item_route + '/abuse', view_func=abuse_view),
-        dict(rule=item_route + '/accessrequests', view_func=access_view)
+        dict(rule=item_route + '/accessrequests', view_func=access_view),
+        # Special case for versioning as the parent PID is redirected.
+        dict(rule='/records/<pid_value>/versions', view_func=versions_view),
     ]
 
     if suggesters:
@@ -266,26 +300,49 @@ class B2ShareRecordsListResource(RecordsListResource):
         """
         # import deposit dependencies here in order to avoid recursive imports
         from b2share.modules.deposit.links import deposit_links_factory
-
         if request.content_type not in self.loaders:
             abort(415)
+        version_of = request.args.get('version_of')
+        previous_record = None
+        data = None
+        if version_of:
+            try:
+                _, previous_record = Resolver(
+                    pid_type='b2rec',
+                    object_type='rec',
+                    getter=B2ShareRecord.get_record,
+                ).resolve(version_of)
+            # if the pid doesn't exist
+            except PIDDoesNotExistError as e:
+                raise RecordNotFoundVersioningError()
+            # if it is the parent pid
+            except PIDRedirectedError as e:
+                raise IncorrectRecordVersioningError(version_of)
+            # Copy the metadata from a previous version if this version is
+            # specified and no data was provided.
+            if request.content_length == 0:
+                data = copy_data_from_previous(previous_record.model.json)
 
-        data = self.loaders[request.content_type]()
+        if data is None:
+            data = self.loaders[request.content_type]()
+
         if data is None:
             abort(400)
 
         # Check permissions
         permission_factory = self.create_permission_factory
         if permission_factory:
-            verify_record_permission(permission_factory, data)
+            verify_record_permission(permission_factory, data,
+                                     previous_record=previous_record)
 
         # Create uuid for record
         record_uuid = uuid.uuid4()
         # Create persistent identifier
         pid = self.minter(record_uuid, data=data)
-        # Create record
-        record = self.record_class.create(data, id_=record_uuid)
 
+        # Create record
+        record = self.record_class.create(data, id_=record_uuid,
+                                          version_of=version_of)
         db.session.commit()
 
         response = self.make_response(
@@ -305,8 +362,10 @@ class B2ShareRecordResource(RecordResource):
         """Disable PUT."""
         abort(405)
 
-    def delete(self, *args, **kwargs):
+    @pass_record
+    def delete(self, pid, record, *args, **kwargs):
         """Delete a record."""
+        self.check_etag(str(record.model.version_id))
         pid_value = request.view_args['pid_value']
         pid, record = pid_value.data
 
@@ -314,12 +373,74 @@ class B2ShareRecordResource(RecordResource):
         permission_factory = self.delete_permission_factory
         if permission_factory:
             verify_record_permission(permission_factory, record)
-
-        delete_record(pid, record)
-
+        record.delete()
         db.session.commit()
+        return '', 204
 
-        return 'Record was deleted.', 200
+
+class RecordsVersionsResource(ContentNegotiatedMethodView):
+
+    view_name = '{0}_versions'
+
+    def __init__(self, resolver=None, **kwargs):
+        """Constructor.
+
+        :param resolver: Persistent identifier resolver instance.
+        """
+        default_media_type = 'application/json'
+        super(RecordsVersionsResource, self).__init__(
+            serializers={
+                'application/json': lambda response: jsonify(response)
+            },
+            default_method_media_type={
+                'GET': default_media_type,
+            },
+            default_media_type=default_media_type,
+            **kwargs)
+        self.resolver = resolver
+
+    def get(self, pid=None, **kwargs):
+        """GET a list of record's versions."""
+        record_endpoint = 'b2share_records_rest.{0}_item'.format(
+            RecordUUIDProvider.pid_type)
+
+        pid_value = request.view_args['pid_value']
+        pid = RecordUUIDProvider.get(pid_value).pid
+        pid_versioning = PIDVersioning(child=pid)
+        if pid_versioning.is_child:
+            # This is a record PID. Retrieve the parent versioning PID.
+            version_parent_pid_value = pid_versioning.parent.pid_value
+        else:
+            # This is a parent versioning PID
+            version_parent_pid_value = pid_value
+        records = []
+        child_pid_table = aliased(PersistentIdentifier)
+        parent_pid_table = aliased(PersistentIdentifier)
+        pids_and_meta = db.session.query(
+            child_pid_table, RecordMetadata
+        ).join(
+            PIDRelation,
+            PIDRelation.child_id == child_pid_table.id,
+        ).join(
+            parent_pid_table,
+            PIDRelation.parent_id == parent_pid_table.id
+        ).filter(
+            parent_pid_table.pid_value == version_parent_pid_value,
+            RecordMetadata.id == child_pid_table.object_uuid,
+        ).order_by(RecordMetadata.created).all()
+
+        for version_number, rec_pid_and_rec_meta in enumerate(pids_and_meta):
+            rec_pid, rec_meta = rec_pid_and_rec_meta
+            records.append({
+                'version': version_number + 1,
+                'id': str(rec_pid.pid_value),
+                'url': url_for(record_endpoint,
+                               pid_value=str(rec_pid.pid_value),
+                               _external=True),
+                'created': rec_meta.created,
+                'updated': rec_meta.updated,
+            })
+        return {'versions': records}
 
 
 class RecordsAbuseResource(ContentNegotiatedMethodView):

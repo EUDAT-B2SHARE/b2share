@@ -36,7 +36,7 @@ from subprocess import call
 from b2share.modules.upgrade.errors import MigrationFromUnknownVersionError
 
 from b2share_unit_tests.upgrade.helpers import upgrade_run, repeat_upgrade, \
-    validate_metadata, get_all_constraints
+    validate_loaded_data, validate_database_schema, get_all_constraints
 
 current_migration_version = re.match(r'^\d+\.\d+\.\d+', __version__).group(0)
 
@@ -137,9 +137,11 @@ def test_init_upgrade(clean_app):
         assert mig.version == current_migration_version
         assert mig.success
 
+    with clean_app.app_context():
         repeat_upgrade(clean_app, ext.alembic)
 
-        validate_metadata(clean_app, ext.alembic)
+    with clean_app.app_context():
+        validate_database_schema(clean_app, ext.alembic)
 
 
 def test_init_fail_and_retry(clean_app):
@@ -166,9 +168,11 @@ def test_init_fail_and_retry(clean_app):
         assert mig.version == current_migration_version
         assert mig.success
 
+    with clean_app.app_context():
         repeat_upgrade(clean_app, ext.alembic)
 
-        validate_metadata(clean_app, ext.alembic)
+    with clean_app.app_context():
+        validate_database_schema(clean_app, ext.alembic)
 
 
 def test_upgrade_from_v2_0_0(clean_app):
@@ -195,7 +199,13 @@ def test_upgrade_from_v2_0_0(clean_app):
             assert step['status'] == 'success'
         assert mig.data['error'] is None
 
-        validate_metadata(clean_app, ext.alembic)
+    with clean_app.app_context():
+        validate_loaded_data(clean_app, ext.alembic)
+        # Check that it is possible to create a new record version after
+        # the upgrade
+        _create_new_record_version(clean_app)
+
+        validate_database_schema(clean_app, ext.alembic)
 
 
 def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
@@ -225,6 +235,43 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
         assert mig.version == current_migration_version
         assert mig.success
 
+    with clean_app.app_context():
         repeat_upgrade(clean_app, ext.alembic)
 
-        validate_metadata(clean_app, ext.alembic)
+    with clean_app.app_context():
+        validate_loaded_data(clean_app, ext.alembic)
+        # Check that it is possible to create a new record version after
+        # the upgrade
+        _create_new_record_version(clean_app)
+        validate_database_schema(clean_app, ext.alembic)
+
+
+def _create_new_record_version(app):
+    """Create a new version of a record existing before the upgrade."""
+    from invenio_accounts.models import User
+    from flask_security import url_for_security
+    from flask_security.utils import hash_password
+    from flask import url_for
+    from invenio_oauth2server.models import Token
+    user = User.query.filter(User.email=='firstuser@example.com').one()
+    user.password = hash_password('123')
+    token = Token.create_personal(
+        'other_token', user.id,
+        scopes=[]
+    )
+    headers = [
+        ('Authorization', 'Bearer {}'.format(token.access_token)),
+        ('Content-type', 'application/json')
+    ]
+    db.session.commit()
+    with app.test_request_context():
+        login_url = url_for_security('login')
+    with app.test_client() as client:
+        res = client.post(login_url, data={
+            'email': 'firstuser@example.com', 'password': '123'
+        })
+        assert res.status_code == 302
+        url = url_for('b2share_records_rest.b2rec_list',
+                      version_of='1033083fedf4408fb5611f23527a926d')
+        res = client.post(url, headers=headers)
+        assert res.status_code == 201

@@ -28,18 +28,27 @@ from __future__ import absolute_import, print_function
 import uuid
 
 from .providers import DepositUUIDProvider
+from b2share.modules.records.providers import RecordUUIDProvider
 
 
 def b2share_deposit_uuid_minter(record_uuid, data):
     """Mint deposit's PID."""
-    provider = DepositUUIDProvider.create(
+    dep_pid = DepositUUIDProvider.create(
         object_type='rec', object_uuid=record_uuid,
         # we reuse the deposit UUID as PID value. This makes the demo easier.
         pid_value=record_uuid.hex
     )
+
     data['_deposit'] = {
-        'id': provider.pid.pid_value,
+        'id': dep_pid.pid.pid_value,
         # FIXME: do not set the status once it is done by invenio-deposit API
         'status': 'draft',
     }
-    return provider.pid
+
+    # reserve the record PID
+    RecordUUIDProvider.create(
+        object_type='rec',
+        pid_value=dep_pid.pid.pid_value
+    )
+
+    return dep_pid.pid
