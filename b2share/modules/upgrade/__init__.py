@@ -61,7 +61,7 @@ B2Share v2.0.1 Specifics
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 As B2Share v2.0.1 and earlier didn't include alembic recipes the transition to
-v2.0.2 is special.
+v2.1.0 is special.
 It bridges this gap by:
 
 1. Creating the alembic_version table in the db

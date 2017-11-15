@@ -21,7 +21,7 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Upgrade recipemigrating B2SHARE from version 2.0.0 to 2.0.2."""
+"""Upgrade recipemigrating B2SHARE from version 2.0.0 to 2.1.0."""
 
 
 from __future__ import absolute_import, print_function
@@ -42,14 +42,14 @@ from b2share.modules.deposit.api import Deposit
 from invenio_records_files.api import Record
 
 
-migrate_2_0_0_to_2_0_2 = UpgradeRecipe('2.0.0', '2.0.2')
+migrate_2_0_0_to_2_1_0 = UpgradeRecipe('2.0.0', '2.1.0')
 
-@migrate_2_0_0_to_2_0_2.step(
+@migrate_2_0_0_to_2_1_0.step(
     lambda alembic, *args:
     not db.engine.dialect.has_table(db.engine, 'alembic_version')
 )
 def alembic_upgrade_database_schema(alembic, verbose):
-    """Migrate the database from the v2.0.0 schema to the 2.0.2 schema."""
+    """Migrate the database from the v2.0.0 schema to the 2.1.0 schema."""
     # This also fixes the B2SHARE 2.0.0 database so that it matches alembic
     # recipes.
 
@@ -86,7 +86,7 @@ def alembic_upgrade_database_schema(alembic, verbose):
                 'alembic_renaming_script.sql') as stream:
             script_str = stream.read().decode().strip()
             db.session.execute(script_str)
-        # Upgrade alembic recipes for B2SHARE 2.0.2.
+        # Upgrade alembic recipes for B2SHARE 2.1.0.
         for revision in [
             '456bf6bcb1e6',  # b2share-upgrade
             'e12419831262',  # invenio-accounts
@@ -97,9 +97,9 @@ def alembic_upgrade_database_schema(alembic, verbose):
     db.session.commit()
 
 
-@migrate_2_0_0_to_2_0_2.step()
+@migrate_2_0_0_to_2_1_0.step()
 def alembic_upgrade_database_data(alembic, verbose):
-    """Migrate the database data from v2.0.0 to 2.0.2."""
+    """Migrate the database data from v2.0.0 to 2.1.0."""
     ### Add versioning PIDs ###
     # Reserve the record PID and versioning PID for unpublished deposits
     with db.session.begin_nested():
@@ -142,7 +142,7 @@ def alembic_upgrade_database_data(alembic, verbose):
 
 
 def migrate_record_metadata(record, parent_pid):
-    """Migrate a record's metadata to 2.0.2 format."""
+    """Migrate a record's metadata to 2.1.0 format."""
     # Mint the parent version Persistent Identifier. Every existing record
     # should be versioned.
     record['_pid'] = record.get('_pid', []) + [{
@@ -155,4 +155,4 @@ def migrate_record_metadata(record, parent_pid):
 
 for step in [elasticsearch_index_destroy, elasticsearch_index_init,
              elasticsearch_index_reindex, queues_declare]:
-    migrate_2_0_0_to_2_0_2.step()(step)
+    migrate_2_0_0_to_2_1_0.step()(step)
