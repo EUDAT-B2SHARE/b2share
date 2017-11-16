@@ -1,6 +1,22 @@
 B2Share changelog
 *****************
 
+2.1.0 (mid November)
+===========================
+
+Changes since 2.0.1 include:
+
+- record versioning!
+- the new upgrade command, automatically executed on start
+- file statistics module and UI integration
+- file checksum verification
+- latest versions of Invenio packages
+- record deletion (HTTP API, superadmin only)
+- improved error messages
+- various UI fixes
+- documentation improvements
+
+
 2.0.1 (released 2017-04-29)
 ===========================
 
