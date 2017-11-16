@@ -24,7 +24,7 @@ from __future__ import absolute_import
 from flask import Blueprint, abort, request, jsonify
 
 from invenio_rest import ContentNegotiatedMethodView
-from b2handle.handleclient import EUDATHandleClient
+# from b2handle.handleclient import EUDATHandleClient
 
 
 blueprint = Blueprint(
@@ -33,30 +33,30 @@ blueprint = Blueprint(
 )
 
 
-class B2HandleRetriever(ContentNegotiatedMethodView):
-    """Class for handling the b2handle record retrieval."""
-    view_name = 'b2handle_retriever'
-
-    def __init__(self, **kwargs):
-
-        default_media_type = 'application/json'
-
-        super(B2HandleRetriever, self).__init__(
-            serializers={
-                default_media_type: lambda response: jsonify(response)
-            },
-            default_method_media_type={
-                'GET': default_media_type,
-            },
-            default_media_type=default_media_type,
-            **kwargs
-        )
-
-    def get(self, prefix, file_pid, **kwargs):
-        eudat_handle_client = EUDATHandleClient()
-        return eudat_handle_client.retrieve_handle_record(prefix + "/" + file_pid)
-
-
-blueprint.add_url_rule('/handle/<prefix>/<file_pid>',
-                       view_func=B2HandleRetriever.as_view(
-                           B2HandleRetriever.view_name))
+# class B2HandleRetriever(ContentNegotiatedMethodView):
+#     """Class for handling the b2handle record retrieval."""
+#     view_name = 'b2handle_retriever'
+#
+#     def __init__(self, **kwargs):
+#
+#         default_media_type = 'application/json'
+#
+#         super(B2HandleRetriever, self).__init__(
+#             serializers={
+#                 default_media_type: lambda response: jsonify(response)
+#             },
+#             default_method_media_type={
+#                 'GET': default_media_type,
+#             },
+#             default_media_type=default_media_type,
+#             **kwargs
+#         )
+#
+#     def get(self, prefix, file_pid, **kwargs):
+#         eudat_handle_client = EUDATHandleClient()
+#         return eudat_handle_client.retrieve_handle_record(prefix + "/" + file_pid)
+#
+#
+# blueprint.add_url_rule('/handle/<prefix>/<file_pid>',
+#                        view_func=B2HandleRetriever.as_view(
+#                            B2HandleRetriever.view_name))

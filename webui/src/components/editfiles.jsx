@@ -279,7 +279,7 @@ const B2SafeZone = React.createClass({
             event.preventDefault();
             if(this.state.value.length == 64 && this.state.filename != ''){
                 var prefixhdl = "http://hdl.handle.net/";
-                serverCache.getB2HandlePidInfo(this.state.value.slice(22), this.handleResponse);
+                // serverCache.getB2HandlePidInfo(this.state.value.slice(22), this.handleResponse);
             }
         }
         else{
