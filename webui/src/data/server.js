@@ -3,6 +3,7 @@ import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler} from '.
 import {Store} from './store'
 import {objEquals, expect, pairs} from './misc'
 import {browserHistory} from 'react-router'
+import _ from 'lodash';
 
 const urlRoot = ""; // window.location.origin;
 
@@ -561,17 +562,57 @@ class ServerCache {
         }
         const files = record.get('files');
         if (files) {
+            // code path for published records
+            const file0 = files.get(0);
+            if (!file0.get('downloads')) {
+                this.fetchFileStats(id, file0.get('bucket'));
+            }
             return files;
         }
         const url = record.getIn(['links', 'files']);
         if (url) {
+            // code path for drafts
             ajaxGet({
                 url: url,
-                successFn: (data) =>
-                    this.store.setIn(['recordCache', id, 'files'], fromJS(data.contents.map(this.fixFile))),
+                successFn: (data) => {
+                    const files = fromJS(data.contents.map(this.fixFile));
+                    this.store.setIn(['recordCache', id, 'files'], files);
+                    if (files && files.get(0)) {
+                        this.fetchFileStats(id, files.get(0).get('bucket'));
+                    }
+                },
                 errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
             });
         }
+    }
+
+    fetchFileStats(recordID, bucketID) {
+        var data = {
+            "fileDownloads": {
+                "stat": "bucket-file-download-total",
+                "params": {
+                    "bucket_id": bucketID,
+                }
+            }
+        };
+        ajaxPost({
+            url: apiUrls.statistics(),
+            params: data,
+            successFn: response => {
+                const fileDownloads = response && response.fileDownloads;
+                if (!fileDownloads) {
+                    return;
+                }
+                fileDownloads.buckets.forEach(kv => {
+                    const index = this.store.getIn(['recordCache', recordID, 'files']).findIndex(f => f.get('key') == kv.key);
+                    if (index >= 0) {
+                        this.store.setIn(['recordCache', recordID, 'files', index, 'downloads'], kv.value);
+                    } else {
+                        console.error('cannot find file with key: ', kv.key);
+                    }
+                });
+            },
+        });
     }
 
     getDraft(id) {
@@ -845,27 +886,7 @@ class ServerCache {
             },
         });
     }
-
-    // Get the number of downloads for each file
-    getFileStatistics(bucketID, successFn) {
-        var data = {
-            "fileDownloads": {
-                "stat": "bucket-file-download-total",
-                "params": {
-                    "bucket_id": bucketID,
-                }
-            }
-        };
-        ajaxPost({
-            url: apiUrls.statistics(),
-            params: data,
-            successFn: response => {
-                successFn(response.fileDownloads);
-            },
-        });
-    }
-};
-
+}
 
 class Notifications {
     constructor() {

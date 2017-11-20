@@ -2,7 +2,6 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { fromJS, OrderedMap, Map } from 'immutable';
 import moment from 'moment';
-import _ from 'lodash';
 import { serverCache, Error } from '../data/server';
 import { pairs, humanSize } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
@@ -364,7 +363,7 @@ export const EditFiles = React.createClass({
                 <div className="fileList">
                     <FileRecordHeader/>
                     { this.props.files.map(f =>
-                        <FileRecordRow key={f.key} file={f} remove={()=>this.removeRecordFile(f)} hideFileDownloads={true} />) }
+                        <FileRecordRow key={f.key} file={f} remove={()=>this.removeRecordFile(f)} />) }
                 </div>
             </div>
         );
@@ -517,27 +516,12 @@ export const FileRecordRow = React.createClass({
         return {
             open: false,
             remove: false,
-            downloads: {},
         };
-    },
-
-    componentDidMount() {
-        let file = this.props.file;
-        file = file.toJS ? file.toJS() : file;
-
-        if (! this.props.hideFileDownloads && file.bucket) {
-            serverCache.getFileStatistics(file.bucket, (fileDownloads) => {
-                const downloads = _.chain(fileDownloads.buckets)
-                  .keyBy('key').mapValues('value').value();
-                this.setState({ downloads });
-            });
-        }
     },
 
     render() {
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
-        const downloads = this.state.downloads[file.key || file.name] || 0;
 
         const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
@@ -550,12 +534,14 @@ export const FileRecordRow = React.createClass({
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <span className={"glyphicon glyphicon-file"}
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
-                        <a style={{display:'inline-block', marginLeft:'0.5em'}}
+                        <a style={{display:'inline-block', marginLeft:'0.5em'}} onClick={e => e.stopPropagation()}
                             href={file.url}>{file.key || file.name}</a>
-                        { this.props.hideFileDownloads ? null :
+                        { this.props.showDownloads && file.downloads >= 0 ?
                             <span className="fileDownloadBadge" style={{marginLeft:'1em', fontSize:11, color: '#888'}}>
-                                <span className="badge" style={{marginLeft:'0.5em'}}> Total Downloads {downloads} </span>
-                            </span> 
+                                <span className="badge" style={{marginLeft:'0.5em'}}>
+                                    {file.downloads}{file.downloads === 1 ? ' download':' downloads'}
+                                </span>
+                            </span> : false
                         }
                     </div>
                     <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
@@ -638,40 +624,6 @@ export const PersistentIdentifier = React.createClass({
         "http://doi.org/"
     ],
 
-    getInitialState() {
-        return {
-            prefix: "",
-            pid: "",
-        }
-    },
-
-    componentWillMount() {
-        this.componentWillReceiveProps(this.props);
-    },
-
-    componentWillReceiveProps(props) {
-        let prefix = "";
-        let pid = props.pid;
-        for (const p of this.KNOWN_PREFIXES) {
-            if (pid.indexOf(p) === 0) {
-                prefix = p;
-                pid = pid.substring(p.length, pid.length);
-                break;
-            }
-        }
-        this.setState({ prefix, pid });
-    },
-
-    copyToClipboard() {
-        if (!this.pidref) {
-            return;
-        }
-        this.pidref.value = this.state.prefix+this.state.pid;
-        this.pidref.select();
-        document.execCommand('copy');
-        this.pidref.value = this.state.pid;
-    },
-
     render: function() {
         const style = {
             whiteSpace:"nowrap",
@@ -683,11 +635,47 @@ export const PersistentIdentifier = React.createClass({
             backgroundColor:"transparent",
         };
         const className = this.props.doi ? "doi" : "epic_pid";
+
+        let prefix = "";
+        let pid = this.props.pid;
+        for (const p of this.KNOWN_PREFIXES) {
+            if (pid.indexOf(p) === 0) {
+                prefix = p;
+                pid = pid.substring(p.length, pid.length);
+                break;
+            }
+        }
+
         return (
             <span style={this.props.style}>
-                <input className={className} readOnly style={style} ref={c => this.pidref = c} defaultValue={this.state.pid} />
-                <span><a className="btn btn-xs btn-default" onClick={this.copyToClipboard}>Copy</a></span>
+                <span className={className} style={style}> {pid} </span>
+                <span><a className="btn btn-xs btn-default" onClick={() => copyToClipboard(this.props.pid)}> Copy</a></span>
             </span>
         );
     },
 });
+
+
+function copyToClipboard(text) {
+    // from https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+    var textArea = document.createElement("textarea");
+    textArea.style.position = 'fixed';
+    textArea.style.top = 0;
+    textArea.style.left = 0;
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = 0;
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    textArea.value = text;
+
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+    }
+    document.body.removeChild(textArea);
+}

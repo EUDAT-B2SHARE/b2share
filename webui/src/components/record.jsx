@@ -210,7 +210,7 @@ const Record = React.createClass({
         'creators': true, 'keywords': true, 'disciplines': true, 'publication_state': true,
     },
 
-    renderFileList(files, b2noteUrl) {
+    renderFileList(files, b2noteUrl, showDownloads) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
         const showAccessRequest = (!openAccess && !isRecordOwner(this.props.record));
 
@@ -224,7 +224,7 @@ const Record = React.createClass({
                     const showB2NoteWindow = e => this.setState({showB2NoteWindow: true});
                     b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={showB2NoteWindow} b2noteUrl={b2noteUrl}/>;
                 }
-                return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} hideFileDownloads={false} />
+                return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} showDownloads={showDownloads} />
             }
             fileComponent =
                 <div className='fileList'>
@@ -410,7 +410,7 @@ const Record = React.createClass({
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
-                            { this.renderFileList(files, this.props.b2noteUrl) }
+                            { this.renderFileList(files, this.props.b2noteUrl, true) }
                         </div>
 
                         <div className="col-lg-6">
