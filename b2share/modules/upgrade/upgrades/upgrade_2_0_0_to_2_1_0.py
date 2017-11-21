@@ -27,6 +27,7 @@
 from __future__ import absolute_import, print_function
 
 import pkg_resources
+import click
 
 from invenio_db import db
 from invenio_pidrelations.contrib.versioning import PIDVersioning
@@ -102,12 +103,22 @@ def alembic_upgrade_database_data(alembic, verbose):
     """Migrate the database data from v2.0.0 to 2.1.0."""
     ### Add versioning PIDs ###
     # Reserve the record PID and versioning PID for unpublished deposits
+
+    # Hack: disable record indexing during record migration
+    from invenio_indexer.api import RecordIndexer
+    old_index_fn = RecordIndexer.index
+    RecordIndexer.index = lambda s, record: None
+
+    if verbose:
+        click.secho('migrating deposits and records...')
     with db.session.begin_nested():
         deposit_pids = PersistentIdentifier.query.filter(
             PersistentIdentifier.pid_type == DepositUUIDProvider.pid_type,
             PersistentIdentifier.status == PIDStatus.REGISTERED,
         ).all()
         for dep_pid in deposit_pids:
+            if verbose:
+                click.secho('    deposit {}'.format(dep_pid.pid_value))
             try:
                 # Retrieve the corresponding Record PID if it exists
                 rec_pid = RecordUUIDProvider.get(dep_pid.pid_value).pid
@@ -139,6 +150,9 @@ def alembic_upgrade_database_data(alembic, verbose):
                     parent_pid
                 )
                 version_master.update_redirect()
+    if verbose:
+        click.secho('done migrating deposits.')
+    RecordIndexer.index = old_index_fn
 
 
 def migrate_record_metadata(record, parent_pid):
