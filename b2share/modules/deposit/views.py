@@ -36,7 +36,6 @@ from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.views import RecordResource, pass_record
 from invenio_records_rest.views import verify_record_permission
 from invenio_deposit.search import DepositSearch
-from b2share.modules.deposit.api import Deposit
 from invenio_indexer.api import RecordIndexer
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 from invenio_pidstore.models import PIDStatus
@@ -97,6 +96,8 @@ def records_rest_url_rules(endpoint, list_route=None, item_route=None,
     :returns: a list of dictionaries with can each be passed as keywords
         arguments to ``Blueprint.add_url_rule``.
     """
+    from b2share.modules.deposit.api import Deposit
+
     read_permission_factory = obj_or_import_string(
         read_permission_factory_imp
     )

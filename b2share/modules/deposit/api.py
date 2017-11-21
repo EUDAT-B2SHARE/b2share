@@ -278,6 +278,7 @@ class Deposit(B2ShareRecord):
         This method extends the default implementation by publishing the
         deposition when 'publication_state' is set to 'published'.
         """
+        import ipdb; ipdb.set_trace()
         if 'b2safe_pids' in self:
             deposit_id = self['_deposit']['id']
             recid = PersistentIdentifier.query.filter_by(

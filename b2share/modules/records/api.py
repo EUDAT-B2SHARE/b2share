@@ -9,11 +9,7 @@
 # License, or (at your option) any later version.
 #
 # B2Share is distributed in the hope that it will be useful, but
-<<<<<<< HEAD
-# WITHOUT ANY WARRANTY; without even the implied warr   anty of
-=======
 # WITHOUT ANY WARRANTY; without even the implied warranty of
->>>>>>> files: B2Safe integration for PIDs
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
@@ -25,15 +21,13 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-<<<<<<< HEAD
 """B2Share Record API."""
 
 from elasticsearch.exceptions import NotFoundError
 from invenio_db import db
+from invenio_deposit.api import Deposit
 from invenio_pidstore.resolver import Resolver
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
-from invenio_deposit.api import Deposit
-from b2share.modules.deposit.api import Deposit as B2ShareDeposit
 from invenio_records.models import RecordMetadata
 from invenio_records_files.models import RecordsBuckets
 from invenio_records.api import Record
@@ -76,6 +70,7 @@ class B2ShareRecord(Deposit, Record):
     @property
     def pid(self):
         """Return an instance of record PID."""
+        import ipdb; ipdb.set_trace()
         pid = b2share_record_uuid_fetcher(self.id, self)
         return PersistentIdentifier.get(pid.pid_type,
                                         pid.pid_value)
@@ -91,7 +86,7 @@ class B2ShareRecord(Deposit, Record):
                 object_type='rec',
                 # Retrieve the deposit with the Record class on purpose as the current
                 # Deposit api prevents the deletion of published deposits.
-                getter=B2ShareDeposit.get_record,
+                getter=Deposit.get_record,
             ).resolve(depid.pid_value)
             deposit.delete()
 
