@@ -46,7 +46,7 @@ class Migration(db.Model, Timestamp):
 
     # migration version
     version = db.Column(
-        db.String(80), unique=True, nullable=False)
+        db.String(80), nullable=False)
 
     data = db.Column(
         JSONType().with_variant(
