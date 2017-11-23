@@ -29,6 +29,8 @@ from __future__ import absolute_import, print_function
 import pkg_resources
 import click
 
+from flask import current_app
+
 from invenio_db import db
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
@@ -182,6 +184,14 @@ def alembic_upgrade_database_data(alembic, verbose):
 
 def migrate_record_metadata(record, parent_pid):
     """Migrate a record's metadata to 2.1.0 format."""
+    # Fix bad OAI-PMH identifiers
+    oai_prefix = current_app.config.get('OAISERVER_ID_PREFIX')
+    if oai_prefix:
+        oai_id = record.get('_oai', {}).get('id')
+        if oai_id and not oai_id.startswith(oai_prefix):
+            assert oai_id == record['_deposit']['id']
+            record['_oai']['id'] = oai_prefix + oai_id
+
     # Mint the parent version Persistent Identifier. Every existing record
     # should be versioned.
     record['_pid'] = record.get('_pid', []) + [{
