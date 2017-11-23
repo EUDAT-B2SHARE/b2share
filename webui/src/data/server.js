@@ -564,7 +564,7 @@ class ServerCache {
         if (files) {
             // code path for published records
             const file0 = files.get(0);
-            if (!file0.get('downloads')) {
+            if (file0 && !file0.get('downloads')) {
                 this.fetchFileStats(id, file0.get('bucket'));
             }
             return files;
