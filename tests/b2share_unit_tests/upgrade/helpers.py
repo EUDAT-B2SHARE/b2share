@@ -99,6 +99,9 @@ def check_records_migration():
             'type': RecordUUIDProvider.parent_pid_type,
             'value': parent_pid.pid_value,
         })
+        # The OAI-PMH identifier has been modified by the migration
+        if db_record.get('_oai'):
+            exp_record['metadata']['_oai']['id'] = db_record['_oai']['id']
         assert db_record == exp_record['metadata']
 
 
