@@ -290,7 +290,7 @@ class Deposit(InvenioDeposit):
             # Reindex previous version. This is needed in order to update
             # the is_last_version flag
             if previous_version_pid is not None:
-                RecordIndexer().index_by_id(previous_version_uuid)
+                self.indexer.index_by_id(previous_version_uuid)
 
             # save the action for later indexing
             if g:
