@@ -574,14 +574,13 @@ class ServerCache {
         return this.store.getIn(['latestRecords']);
     }
 
-    searchRecords({q, community, sort, page, size, drafts}) {
+    searchRecords({q, community, sort, page, size, drafts, submitted}) {
         if (community) {
             q = (q ? '(' + q + ') && ' : '') + ' community:' + community;
         }
         if (drafts) {
-            // TODO: change this once the workflows are working.
-            // Add "submitted" drafts.
-            q = (q ? '(' + q + ') && ' : '') + 'publication_state:draft';
+            const publication_state = submitted ? 'publication_state:submitted' : 'publication_state:draft';
+            q = (q ? '(' + q + ') && ' : '') + publication_state;
         }
         (drafts == 1) ? this.getters.searchRecords.fetch({q, sort, page, size, drafts}) : this.getters.searchRecords.fetch({q, sort, page, size});
         return this.store.getIn(['searchRecords']);
@@ -996,8 +995,8 @@ export const browser = {
         return `${window.location.origin}/records/${recordId}`;
     },
 
-    gotoSearch({q, community, sort, page, size, drafts}) {
-        const queryString = encode({q, community, sort, page, size, drafts});
+    gotoSearch({q, community, sort, page, size, drafts, submitted}) {
+        const queryString = encode({q, community, sort, page, size, drafts, submitted});
         // trigger a route reload which will do the new search, see SearchRecordRoute
         browserHistory.push(`/records/?${queryString}`);
     },

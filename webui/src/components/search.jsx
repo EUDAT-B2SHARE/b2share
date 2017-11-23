@@ -13,11 +13,13 @@ export const SearchRecordRoute = React.createClass({
         const communities = serverCache.getCommunities();
         const location = this.props.location || {};
         const drafts = (location.query.drafts == 1) ? 1 : "";
+        const submitted = (location.query.submitted == 1) ? 1 : "";
         const result = serverCache.searchRecords(location.query || {});
         const numResults = (result && result.get('total')) || 0;
+        const title = submitted ? 'Submitted for review' : ( drafts ? 'Drafts' : 'Records');
         return (
             <div>
-                {drafts ? <h1>Drafts</h1> : <h1>Records</h1>}
+                <h1>{title}</h1>
                 <Search location={location}
                         communities={communities}
                         drafts={drafts}

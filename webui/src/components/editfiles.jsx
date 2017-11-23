@@ -547,39 +547,43 @@ export const EditFiles = React.createClass({
         this.updateNext();
         const b2dropZone = <B2DropZone close={e => this.props.setModal(false)}
                                        onFiles={fs => this.handleAdd(fs, 'b2drop')} />;
+        // FIXME: the following doesn't work, need to fix it and change the cursor to disabled icon
+        const disabledCursor = this.props.readOnly ? " , cursor: 'not-allowed'" : "";
         return (
             <div>
-                <div className="row" style={{borderBottom:'1px solid #ddd'}}>
-                    <h3 className="col-md-3">
-                        Add files
-                    </h3>
-                    <div className="col-md-9" style={{margin:'1em 0'}}>
-                        <LocalDropZone onFiles={fs => this.handleAdd(fs, 'local')}/>
-                    </div>
-                    <div className="col-md-offset-3 col-md-9" style={{marginBottom:'1em'}}>
-                        <button className='b2dropbutton' onClick={e => this.props.setModal(b2dropZone)}>
-                            <img src="/img/b2drop.png"/>
-                            <h3>Add B2DROP files</h3>
-                        </button>
+                <fieldset disabled={this.props.readOnly}>
+                    <div className="row" style={{borderBottom:'1px solid #ddd'}}>
+                        <h3 className="col-md-3">
+                            Add files
+                        </h3>
+                        <div className="col-md-9" style={{margin:'1em 0'}}>
+                            <LocalDropZone onFiles={fs => this.handleAdd(fs, 'local')}/>
+                        </div>
+                        <div className="col-md-offset-3 col-md-9" style={{marginBottom:'1em'}}>
+                            <button className='b2dropbutton' onClick={e => this.props.setModal(b2dropZone)} disabled={this.props.readOnly}>
+                                <img src="/img/b2drop.png"/>
+                                <h3>Add B2DROP files</h3>
+                            </button>
+                        </div>
+
+                        { !this.state.files.length ? false :
+                            <div className="col-md-offset-3 col-md-9">
+                                { this.renderUploadQueue() }
+                            </div>
+                        }
                     </div>
 
-                    { !this.state.files.length ? false :
-                        <div className="col-md-offset-3 col-md-9">
-                            { this.renderUploadQueue() }
+                    { !this.props.files.length ? false :
+                        <div className="row" style={{borderBottom:'1px solid #ddd'}}>
+                            <div className="col-md-3">
+                                <h3> Uploaded files </h3>
+                            </div>
+                            <div className="col-md-9" style={{marginBottom:'1em'}}>
+                                { this.renderRecordFiles() }
+                            </div>
                         </div>
                     }
-                </div>
-
-                { !this.props.files.length ? false :
-                    <div className="row" style={{borderBottom:'1px solid #ddd'}}>
-                        <div className="col-md-3">
-                            <h3> Uploaded files </h3>
-                        </div>
-                        <div className="col-md-9" style={{marginBottom:'1em'}}>
-                            { this.renderRecordFiles() }
-                        </div>
-                    </div>
-                }
+                </fieldset>
             </div>
         );
     },
