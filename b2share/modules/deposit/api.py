@@ -361,7 +361,8 @@ def create_file_pids(record_metadata):
                            bucket_id=f.get('bucket'), key=f.get('key'),
                            _external=True)
         try:
-            file_pid = createHandle(file_url, checksum=f.get('checksum'))
+            file_pid = createHandle(file_url, checksum=f.get('checksum'),
+                                              fixed=True)
             if file_pid is None:
                 raise EpicPIDError("EPIC PID allocation for file failed")
             f['ePIC_PID'] = file_pid

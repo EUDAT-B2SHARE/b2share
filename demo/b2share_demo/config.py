@@ -77,6 +77,19 @@ FILES_REST_DEFAULT_QUOTA_SIZE = 20 * 1024 * 1024 * 1024 # 20 GB per record
 CFG_FAIL_ON_MISSING_PID = False
 CFG_FAIL_ON_MISSING_FILE_PID = False
 
+## uncomment and configure PID_HANDLE_CREDENTIALS for Handle servers v8 or above
+# PID_HANDLE_CREDENTIALS = {
+#   "handle_server_url": "https://fqdn:<port>",
+#   "private_key": "/<path>/<index>_<prefix>_ADMIN_privkey.pem",
+#   "certificate_only": "/<path>/<index>_<prefix>_ADMIN_certificate_only.pem",
+#   "prefix": "<prefix>",
+#   "handleowner": "200:0.NA/<prefix>",
+#   "reverse_username": "<prefix>",
+#   "reverse_password": "<password>",
+#   "HTTPS_verify": "True"
+# }
+
+## uncomment and configure the following Handle servers supporting the ePIC API
 # CFG_EPIC_USERNAME = 0000
 # CFG_EPIC_PASSWORD = ''
 # CFG_EPIC_BASEURL = 'https://epic4.storage.surfsara.nl/v2_A/handles/'

@@ -35,6 +35,7 @@ from .errors import register_error_handlers
 from .views import create_blueprint
 from .indexer import indexer_receiver
 from .cli import b2records
+from .b2share_epic import init_handle_client
 
 
 class B2ShareRecords(object):
@@ -68,6 +69,9 @@ class B2ShareRecords(object):
 
         before_record_index.connect(indexer_receiver, sender=app)
         app.url_map.converters['pid'] = PIDConverter
+
+        init_handle_client(app)
+
 
     def init_config(self, app):
         """Initialize configuration."""

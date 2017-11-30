@@ -2,18 +2,69 @@ import httplib2
 from simplejson import dumps as jsondumps
 from werkzeug.exceptions import abort
 from flask import current_app
+from datetime import datetime
 from urllib.parse import urljoin, urlparse
+from b2handle.handleclient import EUDATHandleClient
 
 from .errors import EpicPIDError
 
 
-def createHandle(location, checksum=None, suffix=''):
+handle_client = None
+handle_prefix = None
+
+
+def init_handle_client(app):
+    global handle_client, handle_prefix
+    credentials = app.config.get('PID_HANDLE_CREDENTIALS')
+    if not credentials:
+        # assume EPIC API
+        return
+    handle_prefix = credentials.get('prefix')
+    handle_client = EUDATHandleClient(**credentials)
+
+
+def createHandle(location, checksum=None, fixed=False):
+    """ Create a new handle for a file, using the B2HANDLE library. """
+
+    if current_app.config.get('TESTING', False) or current_app.config.get('FAKE_EPIC_PID', False):
+        # special case for unit/functional testing: it's useful to get a PID,
+        # which otherwise will not get allocated due to missing credentials;
+        # this also speeds up testing just a bit, by avoiding HTTP requests
+        uuid = location.split('/')[-1] # record id
+        handle = '0000/{}'.format(uuid)
+    elif not handle_client:
+        # assume EPIC API
+        return _createEpicHandle(location, checksum)
+    else:
+        try:
+            eudat_entries = {
+                'EUDAT/FIXED_CONTENT': str(fixed),
+                'EUDAT/PROFILE_VERSION': str(1),
+            }
+            if checksum:
+                eudat_entries['EUDAT/CHECKSUM'] = str(checksum)
+                eudat_entries['EUDAT/CHECKSUM_TIMESTAMP'] = datetime.now().isoformat()
+            handle = handle_client.generate_and_register_handle(
+                prefix=handle_prefix, location=location, checksum=checksum,
+                **eudat_entries)
+        except Exception as e:
+            msg = "Handle System PID creation error: {}".format(e)
+            current_app.logger.error(msg)
+            raise EpicPIDError(msg) from e
+
+    current_app.logger.info("Created Handle System PID: {}".format(handle))
+
+    CFG_HANDLE_SYSTEM_BASEURL = current_app.config.get(
+        'CFG_HANDLE_SYSTEM_BASEURL')
+    return urljoin(CFG_HANDLE_SYSTEM_BASEURL, handle)
+
+
+def _createEpicHandle(location, checksum=None):
     """ Create a new handle for a file.
 
     Parameters:
         location: The location (URL) of the file.
         checksum: Optional parameter, store the checksum of the file as well.
-        suffix: The suffix of the handle. Default: ''.
     Returns:
         the URI of the new handle, raises a 503 exception if an error occurred.
     """
@@ -51,8 +102,6 @@ def createHandle(location, checksum=None, suffix=''):
         uri = baseurl + prefix
     else:
         uri = baseurl + '/' + prefix
-    if suffix != '':
-        uri += "/" + suffix.lstrip(prefix + "/")
 
     # for a PUT, add 'If-None-Match': '*' to the header
     hdrs = {'Content-Type': 'application/json', 'Accept': 'application/json'}
