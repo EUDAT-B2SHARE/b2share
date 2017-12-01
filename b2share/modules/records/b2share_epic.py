@@ -23,7 +23,7 @@ def init_handle_client(app):
     handle_client = EUDATHandleClient(**credentials)
 
 
-def createHandle(location, checksum=None, fixed=False):
+def create_handle(location, checksum=None, fixed=False):
     """ Create a new handle for a file, using the B2HANDLE library. """
 
     if current_app.config.get('TESTING', False) or current_app.config.get('FAKE_EPIC_PID', False):
@@ -34,7 +34,7 @@ def createHandle(location, checksum=None, fixed=False):
         handle = '0000/{}'.format(uuid)
     elif not handle_client:
         # assume EPIC API
-        return _createEpicHandle(location, checksum)
+        return _create_epic_handle(location, checksum)
     else:
         try:
             eudat_entries = {
@@ -59,7 +59,61 @@ def createHandle(location, checksum=None, fixed=False):
     return urljoin(CFG_HANDLE_SYSTEM_BASEURL, handle)
 
 
-def _createEpicHandle(location, checksum=None):
+def check_eudat_entries_to_handle_pid(handle, fixed=False,
+        checksum=None, checksum_timestamp_iso=None, update=False):
+    """Checks the mandatory EUDAT entries to the Handle PID"""
+
+    if not handle_client:
+        current_app.logger.error("check_eudat_entries_to_handle_pid only "
+            "works if the handle API is used; please define "
+            "PID_HANDLE_CREDENTIALS in the configuration file.")
+        return
+
+    handle_prefix = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
+    if not handle_prefix.endswith('/'):
+        handle_prefix += '/'
+
+    if handle.startswith(handle_prefix):
+        handle = handle[len(handle_prefix):]
+
+    try:
+        old_values = handle_client.retrieve_handle_record(handle=handle)
+    except Exception as e:
+        msg = "Handle System PID retrieval error for handle {}:\n\t{}".format(
+                handle, e)
+        current_app.logger.error(msg)
+        raise EpicPIDError(msg) from e
+
+    assert old_values
+    assert old_values.get('URL')
+    if old_values.get('CHECKSUM') and checksum:
+        assert old_values.get('CHECKSUM') == checksum
+
+    new_values = {}
+    if not old_values.get('EUDAT/FIXED_CONTENT'):
+        new_values['EUDAT/FIXED_CONTENT'] = str(fixed)
+    if not old_values.get('EUDAT/PROFILE_VERSION'):
+        new_values['EUDAT/PROFILE_VERSION'] = str(1)
+    if not old_values.get('CHECKSUM') and checksum:
+        new_values['CHECKSUM'] = checksum
+    if not old_values.get('EUDAT/CHECKSUM') and checksum:
+        new_values['EUDAT/CHECKSUM'] = checksum
+    if not old_values.get('EUDAT/CHECKSUM_TIMESTAMP') and checksum_timestamp_iso:
+        new_values['EUDAT/CHECKSUM_TIMESTAMP'] = checksum_timestamp_iso
+
+    if update:
+        try:
+            handle_client.modify_handle_value(handle=handle, **new_values)
+        except Exception as e:
+            msg = "Handle System PID modification error for handle {}:\n\t{}".format(
+                handle, e)
+            current_app.logger.error(msg)
+            raise EpicPIDError(msg) from e
+
+    return new_values
+
+
+def _create_epic_handle(location, checksum=None):
     """ Create a new handle for a file.
 
     Parameters:

@@ -37,7 +37,7 @@ from datacite.errors import DataCiteError
 
 from .providers import RecordUUIDProvider
 from .errors import EpicPIDError
-from .b2share_epic import createHandle
+from .b2share_epic import create_handle
 
 
 def b2share_record_uuid_minter(record_uuid, data):
@@ -93,7 +93,7 @@ def b2share_pid_minter(rec_pid, data):
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_PID', True)
 
     try:
-        pid = createHandle(url)
+        pid = create_handle(url)
         if pid is None:
             raise EpicPIDError("EPIC PID allocation failed")
         data['_pid'].append({'value': pid, 'type': 'ePIC_PID'})

@@ -41,6 +41,7 @@ from b2share.modules.communities.api import Community
 from b2share.modules.records.tasks import update_expired_embargoes \
     as update_expired_embargoes_task
 from .utils import list_db_published_records
+from .b2share_epic import check_eudat_entries_to_handle_pid
 
 
 @click.group()
@@ -54,6 +55,48 @@ def update_expired_embargoes():
     """Updates all records with expired embargoes to open access."""
     update_expired_embargoes_task.delay()
     click.secho('Expiring embargoes...', fg='green')
+
+
+@b2records.command()
+@with_appcontext
+@click.option('-u', '--update', is_flag=True, default=False)
+@click.option('-v', '--verbose', is_flag=True, default=False)
+def check_and_update_handle_records(update, verbose):
+    """ Checks that PIDs of records and files have the mandatory EUDAT entries
+        and updates them if necessary (when -u is used).
+    """
+    update_msg = 'updated' if update else 'to update'
+
+    if verbose:
+        click.secho('checking PIDs for all records')
+
+    for record in list_db_published_records():
+        pid_list = [p.get('value') for p in record['_pid']
+                    if p.get('type') == 'ePIC_PID']
+        if pid_list:
+            pid = pid_list[0]
+            res = check_eudat_entries_to_handle_pid(pid, update=update)
+            if verbose:
+                if res:
+                    click.secho('{} record PID {} with {}'.format(
+                        update_msg, pid, ", ".join(res.keys())))
+                else:
+                    click.secho('record PID ok: {}'.format(pid))
+
+        for f in record.get('_files', []):
+            pid = f.get('ePIC_PID')
+            if pid:
+                res = check_eudat_entries_to_handle_pid(pid,
+                    fixed=True,
+                    checksum=f.get('checksum'),
+                    checksum_timestamp_iso=record.get('_oai', {}).get('updated'),
+                    update=update)
+                if verbose:
+                    if res:
+                        click.secho('  {} file PID {} with {}'.format(
+                            update_msg, pid, ", ".join(res.keys())))
+                    elif verbose:
+                        click.secho('  file PID ok: {}'.format(pid))
 
 
 @b2records.command()
@@ -114,7 +157,6 @@ def _datacite_doi_reference(doi_value):
             res.status_code, doi_value))
         return None
     return res.headers['Location']
-
 
 
 def _datacite_register_doi(doi, url, doc):

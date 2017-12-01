@@ -351,7 +351,7 @@ class Deposit(InvenioDeposit):
 
 def create_file_pids(record_metadata):
     from flask import current_app
-    from b2share.modules.records.b2share_epic import createHandle
+    from b2share.modules.records.b2share_epic import create_handle
     from b2share.modules.records.errors import EpicPIDError
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_FILE_PID', False)
     for f in record_metadata.get('_files'):
@@ -361,7 +361,7 @@ def create_file_pids(record_metadata):
                            bucket_id=f.get('bucket'), key=f.get('key'),
                            _external=True)
         try:
-            file_pid = createHandle(file_url, checksum=f.get('checksum'),
+            file_pid = create_handle(file_url, checksum=f.get('checksum'),
                                               fixed=True)
             if file_pid is None:
                 raise EpicPIDError("EPIC PID allocation for file failed")
