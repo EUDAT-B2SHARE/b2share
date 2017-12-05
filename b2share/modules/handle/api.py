@@ -1,32 +1,43 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of EUDAT B2Share.
+# Copyright (C) 2017 CERN, University of Tübingen.
+#
+# B2Share is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# B2Share is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with B2Share; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
+
+"""B2SHARE Handle API."""
+
 import httplib2
 from simplejson import dumps as jsondumps
 from werkzeug.exceptions import abort
 from flask import current_app
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
-from b2handle.handleclient import EUDATHandleClient
 
 from .errors import EpicPIDError
 
 
-handle_client = None
-handle_prefix = None
+def create_handle(handle_client, handle_prefix, location,
+                  checksum=None, fixed=False, fake=None):
+    """Create a new handle for a file, using the B2HANDLE library."""
 
-
-def init_handle_client(app):
-    global handle_client, handle_prefix
-    credentials = app.config.get('PID_HANDLE_CREDENTIALS')
-    if not credentials:
-        # assume EPIC API
-        return
-    handle_prefix = credentials.get('prefix')
-    handle_client = EUDATHandleClient(**credentials)
-
-
-def create_handle(location, checksum=None, fixed=False):
-    """ Create a new handle for a file, using the B2HANDLE library. """
-
-    if current_app.config.get('TESTING', False) or current_app.config.get('FAKE_EPIC_PID', False):
+    if fake:
         # special case for unit/functional testing: it's useful to get a PID,
         # which otherwise will not get allocated due to missing credentials;
         # this also speeds up testing just a bit, by avoiding HTTP requests
@@ -59,9 +70,10 @@ def create_handle(location, checksum=None, fixed=False):
     return urljoin(CFG_HANDLE_SYSTEM_BASEURL, handle)
 
 
-def check_eudat_entries_to_handle_pid(handle, fixed=False,
-        checksum=None, checksum_timestamp_iso=None, update=False):
-    """Checks the mandatory EUDAT entries to the Handle PID"""
+def check_eudat_entries_in_handle_pid(handle_client, handle_prefix,
+        handle, fixed=False, checksum=None, checksum_timestamp_iso=None,
+        update=False):
+    """Checks and update the mandatory EUDAT entries in a Handle PID."""
 
     if not handle_client:
         current_app.logger.error("check_eudat_entries_to_handle_pid only "
@@ -114,7 +126,7 @@ def check_eudat_entries_to_handle_pid(handle, fixed=False,
 
 
 def _create_epic_handle(location, checksum=None):
-    """ Create a new handle for a file.
+    """Create a new handle for a file.
 
     Parameters:
         location: The location (URL) of the file.

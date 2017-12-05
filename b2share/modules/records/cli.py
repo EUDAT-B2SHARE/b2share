@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2017 University of Tübingen
+# Copyright (C) 2017 University of Tübingen, CERN
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -41,7 +41,7 @@ from b2share.modules.communities.api import Community
 from b2share.modules.records.tasks import update_expired_embargoes \
     as update_expired_embargoes_task
 from .utils import list_db_published_records
-from .b2share_epic import check_eudat_entries_to_handle_pid
+from b2share.modules.handle.proxies import current_handle
 
 
 @click.group()
@@ -59,11 +59,11 @@ def update_expired_embargoes():
 
 @b2records.command()
 @with_appcontext
-@click.option('-u', '--update', is_flag=True, default=False)
+@click.option('-u', '--update', is_flag=True, default=False,
+              help='updates if necessary')
 @click.option('-v', '--verbose', is_flag=True, default=False)
 def check_and_update_handle_records(update, verbose):
-    """ Checks that PIDs of records and files have the mandatory EUDAT entries
-        and updates them if necessary (when -u is used).
+    """Checks that PIDs of records and files have the mandatory EUDAT entries.
     """
     update_msg = 'updated' if update else 'to update'
 
@@ -75,7 +75,9 @@ def check_and_update_handle_records(update, verbose):
                     if p.get('type') == 'ePIC_PID']
         if pid_list:
             pid = pid_list[0]
-            res = check_eudat_entries_to_handle_pid(pid, update=update)
+            res = current_handle.check_eudat_entries_to_handle_pid(
+                pid, update=update
+            )
             if verbose:
                 if res:
                     click.secho('{} record PID {} with {}'.format(
@@ -86,7 +88,8 @@ def check_and_update_handle_records(update, verbose):
         for f in record.get('_files', []):
             pid = f.get('ePIC_PID')
             if pid:
-                res = check_eudat_entries_to_handle_pid(pid,
+                res = current_handle.check_eudat_entries_to_handle_pid(
+                    pid,
                     fixed=True,
                     checksum=f.get('checksum'),
                     checksum_timestamp_iso=record.get('_oai', {}).get('updated'),
