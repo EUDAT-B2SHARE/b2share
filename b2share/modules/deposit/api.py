@@ -389,10 +389,7 @@ def find_version_master_and_previous_record(version_of):
 
     prev_pid = version_master.last_child
     assert prev_pid.pid_type == RecordUUIDProvider.pid_type
-    try:
-        prev_version = Record.get_record(prev_pid.object_uuid)
-    except NoResultFound:
-        import ipdb; ipdb.set_trace()
+    prev_version = Record.get_record(prev_pid.object_uuid)
     # check that version_of references the last version of a record
     assert is_publication(prev_version.model)
     if prev_pid.pid_value != version_of:

@@ -30,6 +30,7 @@ import pytest
 from click.testing import CliRunner
 from flask.cli import ScriptInfo
 from invenio_db import db
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_utils.functions import create_database, drop_database
 
 from b2share.modules.upgrade.models import Migration
@@ -81,11 +82,14 @@ def check_records_migration():
     """Check that a set of records have been migrated."""
     expected_records = _load_json('expected_records.json')
     for exp_record in expected_records:
-        db_record = Record.get_record(exp_record['id'])
+        db_record = Record.get_record(exp_record['id'], with_deleted=True)
         assert str(db_record.created) == exp_record['created']
+        # If the record is deleted there is no metadata to check
+        if db_record.model.json is None:
+            continue
         # Check that the parent pid is minted properly
         parent_pid = b2share_parent_pid_fetcher(exp_record['id'],
-                                                       db_record)
+                                                db_record)
         fetched_pid = b2share_record_uuid_fetcher(exp_record['id'], db_record)
         record_pid = PersistentIdentifier.get(fetched_pid.pid_type,
                                               fetched_pid.pid_value)
@@ -109,16 +113,33 @@ def check_pids_migration():
             if key != 'updated':
                 assert str(getattr(db_pid, key)) == str(value)
 
+        # check that deleted PID's records are (soft or hard) deleted
+        if exp_pid['status'] == PIDStatus.DELETED.value:
+            metadata = None
+            try:
+                record = Record.get_record(exp_pid['pid_value'],
+                                           with_deleted=True)
+                # Soft deleted record
+                metadata = record.model.json
+            except NoResultFound:
+                # Hard deleted record
+                pass
+            assert metadata is None
+
         # Check versioning relations and PIDs
         if exp_pid['pid_type'] == 'b2dep':
-            # If the deposit is deleted, no record pid should exist
-            if db_pid.status == PIDStatus.DELETED:
-                with pytest.raises(PIDDoesNotExistError):
-                    PersistentIdentifier.get('b2rec', exp_pid['pid_value'])
+            try:
+                rec_pid = PersistentIdentifier.get('b2rec',
+                                                    exp_pid['pid_value'])
+                # if the deposit is deleted, either the record PID was reserved
+                # and has been deleted, or it still exists.
+                if db_pid.status == PIDStatus.DELETED:
+                    assert rec_pid.status != PIDStatus.RESERVED
+            except PIDDoesNotExistError:
+                # The record PID was only reserved and has been deleted
+                # with the deposit PID.
+                assert db_pid.status == PIDStatus.DELETED
                 continue
-
-            # Check that the record PID exists otherwise
-            rec_pid = PersistentIdentifier.get('b2rec', exp_pid['pid_value'])
 
             # Check that a parent pid has been created
             versioning = PIDVersioning(child=rec_pid)

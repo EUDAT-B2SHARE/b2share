@@ -315,8 +315,11 @@ INSERT INTO files_bucket (created, updated, id, default_location, default_storag
 INSERT INTO files_bucket (created, updated, id, default_location, default_storage_class, size, quota_size, max_file_size, locked, deleted) VALUES ('2017-11-03 09:04:47.752354', '2017-11-03 09:04:47.813204', '37f0f783-0537-4c2d-9256-8d2e944a97af', 1, 'S', 9, 21474836480, 10737418240, true, false);
 --- Non published deposit draft's bucket
 INSERT INTO files_bucket (created, updated, id, default_location, default_storage_class, size, quota_size, max_file_size, locked, deleted) VALUES ('2017-11-04 09:04:47.752354', '2017-11-04 09:04:47.813204', '46f649f1-7a86-4eae-82a2-8aef2625521e', 1, 'S', 9, 21474836480, 10737418240, true, false);
---- Deleted deposit's bucket (the file and bucket remain for now but should be deleted. See issue #1572)
+--- Hard deleted deposit's bucket (the file and bucket remain for now but should be deleted. See issue #1572)
 INSERT INTO files_bucket (created, updated, id, default_location, default_storage_class, size, quota_size, max_file_size, locked, deleted) VALUES ('2017-11-07 15:23:02.719529', '2017-11-07 15:23:26.633379', 'a5645d6d-451d-4d3d-ac21-c25e93d11da0', 1, 'S', 13, 21474836480, 10737418240, false, false);
+--- Soft deleted deposit's bucket and its non deleted record
+INSERT INTO files_bucket (created, updated, id, default_location, default_storage_class, size, quota_size, max_file_size, locked, deleted) VALUES ('2016-12-21 13:55:36.184829', '2016-12-21 13:59:11.331594', 'c83cb78a-1592-4cfe-9fc0-4bfc35903de6', 1, 'S', 3, 21474836480, 10737418240, false, false);
+INSERT INTO files_bucket (created, updated, id, default_location, default_storage_class, size, quota_size, max_file_size, locked, deleted) VALUES ('2016-12-21 13:55:36.184829', '2016-12-21 13:59:11.331594', '02e429f2-3b18-45d4-9089-79dece4caba5', 1, 'S', 3, 21474836480, 10737418240, false, false);
 
 
 --
@@ -334,6 +337,8 @@ INSERT INTO files_files (created, updated, id, uri, storage_class, size, checksu
 INSERT INTO files_files (created, updated, id, uri, storage_class, size, checksum, readable, writable, last_check_at, last_check) VALUES ('2017-11-03 09:04:47.581233', '2017-11-03 09:04:47.800309', '6d50b8ca-0b32-4fd1-9fd5-f4a1a52eec75', 'file:///usr/var/b2share-instance/files/6d/50/b8ca-0b32-4fd1-9fd5-f4a1a52eec75/data', 'S', 9, 'md5:c8afdb36c52cf4727836669019e69222', true, false, NULL, true);
 --- Deleted deposit's file (the file and bucket remain for now but should be deleted. See issue #1572)
 INSERT INTO files_files (created, updated, id, uri, storage_class, size, checksum, readable, writable, last_check_at, last_check) VALUES ('2017-11-07 15:23:26.468502', '2017-11-07 15:23:26.620844', 'dfcb1788-1619-4880-bb89-16c5f7c2dc8c', 'file:///usr/var/b2share-instance/files/df/cb/1788-1619-4880-bb89-16c5f7c2dc8c/data', 'S', 13, 'md5:d6eb32081c822ed572b70567826d9d9d', true, false, NULL, true);
+--- Soft deleted deposit's file
+INSERT INTO files_files (created, updated, id, uri, storage_class, size, checksum, readable, writable, last_check_at, last_check) VALUES ('2016-12-21 13:58:38.782533', '2017-12-01 21:51:17.000115', 'b888901d-4b86-4cb6-86c1-3c995756dddc', 'file:///usr/var/b2share-instance/files/b8/88/901d-4b86-4cb6-86c1-3c995756dddc/data', 'S', 3, 'md5:aa559b4e3523a6c931f08f4df52d58f2', true, false, NULL, true);
 
 
 --
@@ -367,6 +372,9 @@ INSERT INTO files_object (created, updated, bucket_id, key, version_id, file_id,
 INSERT INTO files_object (created, updated, bucket_id, key, version_id, file_id, _mimetype, is_head) VALUES ('2017-11-03 09:04:47.791338', '2017-11-03 09:04:47.805738', '37f0f783-0537-4c2d-9256-8d2e944a97af', 'myfile', 'd7facd2f-68ea-4184-80d3-4dd778a323f6', '6d50b8ca-0b32-4fd1-9fd5-f4a1a52eec75', NULL, true);
 --- Deleted deposit (the file and bucket remain for now but should be deleted. See issue #1572)
 INSERT INTO files_object (created, updated, bucket_id, key, version_id, file_id, _mimetype, is_head) VALUES ('2017-11-07 15:23:26.441388', '2017-11-07 15:23:26.484648', 'a5645d6d-451d-4d3d-ac21-c25e93d11da0', 'test-file.txt', 'b0c43299-1614-4d1e-9edd-6fea2a973ca7', 'dfcb1788-1619-4880-bb89-16c5f7c2dc8c', NULL, true);
+--- Soft deleted deposit's bucket
+INSERT INTO files_object (created, updated, bucket_id, key, version_id, file_id, _mimetype, is_head) VALUES ('2016-12-21 13:58:38.778974', '2016-12-21 13:58:38.783342', 'c83cb78a-1592-4cfe-9fc0-4bfc35903de6', '512MB.file', 'dc5b7627-671d-4a59-a465-970da523360c', 'b888901d-4b86-4cb6-86c1-3c995756dddc', NULL, true);
+INSERT INTO files_object (created, updated, bucket_id, key, version_id, file_id, _mimetype, is_head) VALUES ('2016-12-21 13:58:38.778974', '2016-12-21 13:58:38.783342', '02e429f2-3b18-45d4-9089-79dece4caba5', '512MB.file', '994b69ac-9ed8-49b2-8a33-89c8e8508da5', 'b888901d-4b86-4cb6-86c1-3c995756dddc', NULL, true);
 
 
 --
@@ -452,15 +460,21 @@ INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provide
 INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2017-11-03 09:04:47.656581', '2017-11-03 09:04:47.656597', 9, 'oai', 'oai:b2share.eudat.eu:b2rec/1033083fedf4408fb5611f23527a926d', 'oai', 'R', 'rec', '29ad6eb8-559e-4b0d-a1cd-e5b1f1f268ff');
 --- Non published deposit PID
 INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2017-11-04 09:04:47.318029', '2017-11-04 09:04:47.318046', 10, 'b2dep', '9544056edff2505fb5611f11127b817e', NULL, 'R', 'rec', '9544056e-dff2-505f-b561-1f11127b817e');
---- Deleted deposit PID
+--- Hard Deleted deposit PID
 INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2017-11-07 15:23:02.095302', '2017-11-07 15:33:52.390569', 11, 'b2dep', '6cd752bd21904e218a5f787c5dc416ab', NULL, 'D', 'rec', '6cd752bd-2190-4e21-8a5f-787c5dc416ab');
+--- Soft Deleted deposit PID whose PID was not deleted. This is an invalid state which should be fixed by the upgrade. This should be fixed by the upgrade.
+INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2016-12-21 13:55:36.118510', '2016-12-21 13:55:36.118521', 12, 'b2dep', '9d2cba26de4442af9633140e35e8a357', NULL, 'R', 'rec', '9d2cba26-de44-42af-9633-140e35e8a357');
+INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2016-12-21 13:55:36.118510', '2016-12-21 13:55:36.118521', 13, 'b2rec', '9d2cba26de4442af9633140e35e8a357', NULL, 'R', 'rec', 'ed6c104a-1243-4ed8-86c5-2b1691b81f37');
+INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2016-12-21 13:55:36.118510', '2016-12-21 13:55:36.118521', 14, 'oai', 'oai:b2share.eudat.eu:b2rec/9d2cba26de4442af9633140e35e8a357', NULL, 'R', 'oai', 'ed6c104a-1243-4ed8-86c5-2b1691b81f37');
+--- Mis-deleted record. The pid is not deleted but the record is. This shouold be fixed by the upgrade.
+INSERT INTO pidstore_pid (created, updated, id, pid_type, pid_value, pid_provider, status, object_type, object_uuid) VALUES ('2016-12-21 13:55:36.118510', '2016-12-21 13:55:36.118521', 15, 'b2rec', 'b953a54fb3a44d3e9392b6edfce5697d', NULL, 'R', 'rec', '331acc49-d97a-4415-969d-97c82424fc99');
 
 
 --
 -- Name: pidstore_pid_id_seq; Type: SEQUENCE SET; Schema: public; Owner: b2share
 --
 
-SELECT pg_catalog.setval('pidstore_pid_id_seq', 11, true);
+SELECT pg_catalog.setval('pidstore_pid_id_seq', 15, true);
 
 
 --
@@ -494,6 +508,12 @@ INSERT INTO records_metadata (created, updated, id, json, version_id) VALUES ('2
 INSERT INTO records_metadata (created, updated, id, json, version_id) VALUES ('2017-11-03 09:04:47.367063', '2017-11-03 09:04:48.096744', '1033083f-edf4-408f-b561-1f23527a926d', '{"resource_types": [{"resource_type_general": "Text"}], "community": "0afede87-2bf2-4d89-867e-d2ee57251c62", "_pid": [{"type": "b2rec", "value": "1033083fedf4408fb5611f23527a926d"}], "creators": [{"creator_name": "Daniel Zeman"}], "descriptions": [{"description_type": "Abstract", "description": "Description of verbal paradigms in Bengali. The description is written in Czech."}], "_oai": {"id": "1033083fedf4408fb5611f23527a926d", "updated": "2017-11-03T09:04:47Z", "sets": ["0afede87-2bf2-4d89-867e-d2ee57251c62"]}, "$schema": "http://localhost:5000/communities/0afede87-2bf2-4d89-867e-d2ee57251c62/schemas/0#/draft_json_schema", "_deposit": {"id": "1033083fedf4408fb5611f23527a926d", "pid": {"type": "b2rec", "revision_id": 0, "value": "1033083fedf4408fb5611f23527a926d"}, "owners": [1], "status": "published", "created_by": 1}, "community_specific": {"2a01ee91-36fe-4edb-9734-73d22ac78821": {"ling_resource_type": ["Text"], "language_code": "eng"}}, "contact_email": "x@example.com", "titles": [{"title": "\u010casov\u00e1n\u00ed sloves v beng\u00e1l\u0161tin\u011b"}], "publication_state": "published", "open_access": true}', 2);
 --- Non published deposit draft
 INSERT INTO records_metadata (created, updated, id, json, version_id) VALUES ('2017-11-04 09:04:47.367063', '2017-11-04 09:04:48.096744', '9544056e-dff2-505f-b561-1f11127b817e', '{"resource_types": [{"resource_type_general": "Text"}], "community": "0afede87-2bf2-4d89-867e-d2ee57251c62", "_pid": [{"type": "b2rec", "value": "9544056edff2505fb5611f11127b817e"}], "creators": [{"creator_name": "Daniel Zeman"}], "descriptions": [{"description_type": "Abstract", "description": "This is an unpublished draft record description."}], "$schema": "http://localhost:5000/communities/0afede87-2bf2-4d89-867e-d2ee57251c62/schemas/0#/draft_json_schema", "_deposit": {"id": "1033083fedf4408fb5611f23527a926d", "pid": {"type": "b2rec", "revision_id": 0, "value": "1033083fedf4408fb5611f23527a926d"}, "owners": [1], "status": "published", "created_by": 1}, "community_specific": {"2a01ee91-36fe-4edb-9734-73d22ac78821": {"ling_resource_type": ["Text"], "language_code": "eng"}}, "contact_email": "x@example.com", "titles": [{"title": "This is an unpublished a draft record"}], "publication_state": "draft", "open_access": true}', 2);
+--- Soft deleted deposit and its non deleted record
+INSERT INTO records_metadata (created, updated, id, json, version_id) VALUES ('2016-12-21 13:55:36.136869', '2016-12-21 15:04:21.185352', '9d2cba26-de44-42af-9633-140e35e8a357', NULL, 2);
+INSERT INTO records_metadata (created, updated, id, json, version_id) VALUES ('2016-12-21 13:55:36.136869', '2016-12-21 15:04:21.185352', 'ed6c104a-1243-4ed8-86c5-2b1691b81f37', '{"titles": [{"title": "test_upload"}], "open_access": true, "_pid": [{"type": "b2rec", "value": "9d2cba26de4442af9633140e35e8a357"}, {"type": "ePIC_PID", "value": "http://hdl.handle.net/11304/a42592ce-aee6-4b6f-9bd1-8909c7625e03"}], "creators": [{"creator_name": "John Doe"}], "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/json_schema", "license": {"license_uri": "http://creativecommons.org/publicdomain/mark/1.0/", "license": "Public Domain Mark (PD)"}, "community_specific": {}, "_files": [{"version_id": "994b69ac-9ed8-49b2-8a33-89c8e8508da5", "bucket": "02e429f2-3b18-45d4-9089-79dece4caba5", "key": "512MB.file", "checksum": "md5:aa559b4e3523a6c931f08f4df52d58f2", "ePIC_PID": "http://hdl.handle.net/11304/76166cb2-f453-4a07-b7a8-68bea9db51b3", "size": 536870912}], "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "publication_state": "published", "_oai": {"id": "oai:b2share.eudat.eu:b2rec/9d2cba26de4442af9633140e35e8a357", "sets": [], "updated": "2016-12-21T13:59:10Z"}, "descriptions": [{"description_type": "Abstract", "description": "One 512MB file"}], "_deposit": {"id": "9d2cba26de4442af9633140e35e8a357", "status": "published", "created_by": 2, "pid": {"type": "b2rec", "revision_id": 0, "value": "9d2cba26de4442af9633140e35e8a357"}, "owners": [2]}, "keywords": ["one gigabyte file"]}', 2);
+--- Mis-deleted record. The pid is not deleted but the record is.
+INSERT INTO records_metadata (created, updated, id, json, version_id) VALUES ('2016-12-21 13:55:36.136869', '2016-12-21 15:04:21.185352', '331acc49-d97a-4415-969d-97c82424fc99', NULL, 1);
+
 
 
 --
@@ -508,6 +528,9 @@ INSERT INTO records_buckets (record_id, bucket_id) VALUES ('1033083f-edf4-408f-b
 INSERT INTO records_buckets (record_id, bucket_id) VALUES ('29ad6eb8-559e-4b0d-a1cd-e5b1f1f268ff', '37f0f783-0537-4c2d-9256-8d2e944a97af');
 --- Non published deposit draft's bucket
 INSERT INTO records_buckets (record_id, bucket_id) VALUES ('9544056e-dff2-505f-b561-1f11127b817e', '46f649f1-7a86-4eae-82a2-8aef2625521e');
+--- bucket of the soft deleted deposit and its non deleted record
+INSERT INTO records_buckets (record_id, bucket_id) VALUES ('9d2cba26-de44-42af-9633-140e35e8a357', 'c83cb78a-1592-4cfe-9fc0-4bfc35903de6');
+INSERT INTO records_buckets (record_id, bucket_id) VALUES ('ed6c104a-1243-4ed8-86c5-2b1691b81f37', '02e429f2-3b18-45d4-9089-79dece4caba5');
 
 
 --
