@@ -33,6 +33,7 @@ from invenio_db import db
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_pidstore.errors import PIDDoesNotExistError
+from sqlalchemy.orm.exc import NoResultFound
 
 from ..api import UpgradeRecipe, alembic_stamp, alembic_upgrade
 from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
@@ -41,6 +42,7 @@ from b2share.modules.records.providers import RecordUUIDProvider
 from b2share.modules.deposit.providers import DepositUUIDProvider
 from b2share.modules.deposit.api import Deposit
 from invenio_records_files.api import Record
+from b2share.modules.deposit.api import PublicationStates
 
 
 migrate_2_0_0_to_2_1_0 = UpgradeRecipe('2.0.0', '2.1.0')
@@ -112,6 +114,31 @@ def alembic_upgrade_database_data(alembic, verbose):
     if verbose:
         click.secho('migrating deposits and records...')
     with db.session.begin_nested():
+        # Migrate published records
+        records_pids = PersistentIdentifier.query.filter(
+            PersistentIdentifier.pid_type == RecordUUIDProvider.pid_type,
+            PersistentIdentifier.status == PIDStatus.REGISTERED,
+        ).all()
+        for rec_pid in records_pids:
+            if verbose:
+                click.secho('    record {}'.format(rec_pid.pid_value))
+            try:
+                record = Record.get_record(rec_pid.object_uuid)
+            except NoResultFound:
+                # The record is deleted but not the PID. Fix it.
+                rec_pid.status = PIDStatus.DELETED
+                continue
+            # Create parent version PID
+            parent_pid = RecordUUIDProvider.create().pid
+            version_master = PIDVersioning(parent=parent_pid)
+            version_master.insert_draft_child(child=rec_pid)
+            version_master.update_redirect()
+            migrate_record_metadata(
+                Record.get_record(rec_pid.object_uuid),
+                parent_pid
+            )
+
+        # Migrate deposits
         deposit_pids = PersistentIdentifier.query.filter(
             PersistentIdentifier.pid_type == DepositUUIDProvider.pid_type,
             PersistentIdentifier.status == PIDStatus.REGISTERED,
@@ -120,36 +147,34 @@ def alembic_upgrade_database_data(alembic, verbose):
             if verbose:
                 click.secho('    deposit {}'.format(dep_pid.pid_value))
             try:
-                # Retrieve the corresponding Record PID if it exists
-                rec_pid = RecordUUIDProvider.get(dep_pid.pid_value).pid
-                # Do not version deleted records.
-                if rec_pid.status != PIDStatus.REGISTERED:
-                    continue
-                published = True
-            except PIDDoesNotExistError as e:
-                # The record is not published yet. Reserve the PID.
-                rec_pid = RecordUUIDProvider.create(
-                    object_type='rec',
-                    pid_value=dep_pid.pid_value,
-                ).pid
-                published = False
+                deposit = Deposit.get_record(dep_pid.object_uuid)
 
-            # Create parent version PID
-            parent_pid = RecordUUIDProvider.create().pid
-            version_master = PIDVersioning(parent=parent_pid)
-            version_master.insert_draft_child(child=rec_pid)
+                if deposit['publication_state'] != \
+                        PublicationStates.published.name:
+                    # The record is not published yet. Reserve the PID.
+                    rec_pid = RecordUUIDProvider.create(
+                        object_type='rec',
+                        pid_value=dep_pid.pid_value,
+                    ).pid
+                    # Create parent version PID
+                    parent_pid = RecordUUIDProvider.create().pid
+                    version_master = PIDVersioning(parent=parent_pid)
+                    version_master.insert_draft_child(child=rec_pid)
+                else:
+                    # Retrieve previously created version PID
+                    rec_pid = RecordUUIDProvider.get(dep_pid.pid_value).pid
+                    version_master = PIDVersioning(child=rec_pid)
+                    parent_pid = version_master.parent
 
-            # Migrate record and deposit metadata
-            migrate_record_metadata(
-                Deposit.get_record(dep_pid.object_uuid),
-                parent_pid
-            )
-            if published:
                 migrate_record_metadata(
-                    Record.get_record(rec_pid.object_uuid),
+                    Deposit.get_record(dep_pid.object_uuid),
                     parent_pid
                 )
-                version_master.update_redirect()
+            except NoResultFound:
+                # The deposit is deleted but not the PID. Fix it.
+                dep_pid.status = PIDStatus.DELETED
+
+
     if verbose:
         click.secho('done migrating deposits.')
     RecordIndexer.index = old_index_fn

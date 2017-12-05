@@ -119,5 +119,49 @@
         "status": "D",
         "object_type": "rec",
         "object_uuid": "6cd752bd-2190-4e21-8a5f-787c5dc416ab"
+    },
+    {
+        "created": "2016-12-21 13:55:36.118510",
+        "updated": "2016-12-21 13:55:36.118521",
+        "id": 12,
+        "pid_type": "b2dep",
+        "pid_value": "9d2cba26de4442af9633140e35e8a357",
+        "pid_provider": null,
+        "status": "D",
+        "object_type": "rec",
+        "object_uuid": "9d2cba26-de44-42af-9633-140e35e8a357"
+    },
+    {
+        "created": "2016-12-21 13:55:36.118510",
+        "updated": "2016-12-21 13:55:36.118521",
+        "id": 13,
+        "pid_type": "b2rec",
+        "pid_value": "9d2cba26de4442af9633140e35e8a357",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "rec",
+        "object_uuid": "ed6c104a-1243-4ed8-86c5-2b1691b81f37"
+    },
+    {
+        "created": "2016-12-21 13:55:36.118510",
+        "updated": "2016-12-21 13:55:36.118521",
+        "id": 14,
+        "pid_type": "oai",
+        "pid_value": "oai:b2share.eudat.eu:b2rec/9d2cba26de4442af9633140e35e8a357",
+        "pid_provider": null,
+        "status": "R",
+        "object_type": "oai",
+        "object_uuid": "ed6c104a-1243-4ed8-86c5-2b1691b81f37"
+    },
+    {
+        "created": "2016-12-21 13:55:36.118510",
+        "updated": "2016-12-21 13:55:36.118521",
+        "id": 15,
+        "pid_type": "b2rec",
+        "pid_value": "b953a54fb3a44d3e9392b6edfce5697d",
+        "pid_provider": null,
+        "status": "D",
+        "object_type": "rec",
+        "object_uuid": "331acc49-d97a-4415-969d-97c82424fc99"
     }
 ]
