@@ -12,7 +12,7 @@ if [ ! -f /usr/var/b2share-instance/provisioned ]; then
 
     if [ "${INIT_DB_AND_INDEX}" = "1" ]; then
         /usr/bin/b2share db init
-        /usr/bin/b2share upgrade run
+        /usr/bin/b2share upgrade run -v
         sleep 20
     fi
 
@@ -31,6 +31,6 @@ if [ "${USE_STAGING_B2ACCESS}" = "1" ]; then
 fi
 
 # safe to run even when up to date
-/usr/bin/b2share upgrade run
+/usr/bin/b2share upgrade run -v
 
 /usr/bin/supervisord

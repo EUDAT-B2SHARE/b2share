@@ -77,7 +77,7 @@ def b2share_oaiid_minter(rec_pid, data):
     )
     data.setdefault('_oai', {})
     data['_oai'].update({
-        'id': rec_pid.pid_value,
+        'id': oai_pid_value,
         'sets': [data.get('community')], # community_id == setSpec
         'updated': datetime_to_datestamp(datetime.utcnow()),
     })
