@@ -160,6 +160,7 @@ def alembic_upgrade_database_data(alembic, verbose):
                     ).pid
                     # Create parent version PID
                     parent_pid = RecordUUIDProvider.create().pid
+                    assert parent_pid
                     version_master = PIDVersioning(parent=parent_pid)
                     version_master.insert_draft_child(child=rec_pid)
                 else:
@@ -167,11 +168,14 @@ def alembic_upgrade_database_data(alembic, verbose):
                     rec_pid = RecordUUIDProvider.get(dep_pid.pid_value).pid
                     version_master = PIDVersioning(child=rec_pid)
                     parent_pid = version_master.parent
+                    if not parent_pid:
+                        click.secho('    record {} was deleted, but the deposit has not been removed'.format(rec_pid.pid_value), fg='red')
 
-                migrate_record_metadata(
-                    Deposit.get_record(dep_pid.object_uuid),
-                    parent_pid
-                )
+                if parent_pid:
+                    migrate_record_metadata(
+                        Deposit.get_record(dep_pid.object_uuid),
+                        parent_pid
+                    )
             except NoResultFound:
                 # The deposit is deleted but not the PID. Fix it.
                 dep_pid.status = PIDStatus.DELETED

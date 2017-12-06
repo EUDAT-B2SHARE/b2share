@@ -102,7 +102,8 @@ def check_records_migration(app):
         # The OAI-PMH identifier has been modified by the migration
         if db_record.get('_oai'):
             oai_prefix = app.config.get('OAISERVER_ID_PREFIX', 'oai:')
-            assert db_record['_oai']['id'] == str(oai_prefix) + exp_record['id']
+            record_id = exp_record['metadata']['_deposit']['id']
+            assert db_record['_oai']['id'] == str(oai_prefix) + record_id
             exp_record['metadata']['_oai']['id'] = db_record['_oai']['id']
         assert db_record == exp_record['metadata']
 
