@@ -78,7 +78,7 @@ def _load_json(filename):
         return json.load(data_file)
 
 
-def check_records_migration():
+def check_records_migration(app):
     """Check that a set of records have been migrated."""
     expected_records = _load_json('expected_records.json')
     for exp_record in expected_records:
@@ -101,6 +101,8 @@ def check_records_migration():
         })
         # The OAI-PMH identifier has been modified by the migration
         if db_record.get('_oai'):
+            oai_prefix = app.config.get('OAISERVER_ID_PREFIX', 'oai:')
+            assert db_record['_oai']['id'] == str(oai_prefix) + exp_record['id']
             exp_record['metadata']['_oai']['id'] = db_record['_oai']['id']
         assert db_record == exp_record['metadata']
 
@@ -163,7 +165,7 @@ def validate_loaded_data(app, alembic):
         assert len(users) == 1
         assert users[0].email == 'firstuser@example.com'
 
-        check_records_migration()
+        check_records_migration(app)
         check_pids_migration()
 
 
