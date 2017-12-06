@@ -3,20 +3,25 @@ EXPOSE 5000
 
 RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
 
-RUN yum -y update
-
-RUN yum -y install wget gcc-c++ openssl-devel uwsgi-plugin-python3 \
-                   postgresql-devel python34 python34-devel supervisor \
-                   git uwsgi libffi-devel python-devel libxml2-devel libxml2 \
+RUN yum -y update && \
+    yum -y groupinstall "Development tools" && \
+    yum -y install wget gcc-c++ openssl-devel \
+                   postgresql-devel supervisor \
+                   git libffi-devel python-devel libxml2-devel libxml2 \
                    libxslt-devel zlib1g-dev libxslt http-parser npm
+
+RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+RUN yum -y install python35u pythn35u-pip python35u-devel \
+                   uwsgi-plugin-python35u uwsgi
+RUN python3.5 -m ensurepip
 
 # install locale
 RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
 
-WORKDIR /tmp
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3.4 get-pip.py
-RUN pip3 install --upgrade pip
+RUN python3.5 --version
+
+RUN pip3.5 install --upgrade pip
+RUN pip3.5 --version
 
 ENV LANG=en_US.UTF-8
 ENV DB_NAME="b2share-evolution"
@@ -75,12 +80,12 @@ ADD setup.py setup.py
 ADD b2share/version.py b2share/version.py
 ADD requirements.txt requirements.txt
 
-RUN pip install -r requirements.txt
-RUN pip install -e .
+RUN pip3.5 install -r requirements.txt
+RUN pip3.5 install -e .
 
 WORKDIR /eudat/b2share/demo
 ADD demo/setup.py setup.py
-RUN pip install -e .
+RUN pip3.5 install -e .
 
 COPY dockerize/b2share.sh /eudat/
 COPY dockerize/supervisord.conf /etc/

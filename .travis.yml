@@ -46,7 +46,7 @@ matrix:
     - env: REQUIREMENTS=devel REXTRAS=all ES_VERSION=2.3.3
 
 python:
-  - "3.4"
+  # - "3.4" # b2handle does not support it
   - "3.5"
 
 sudo: false
