@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 University of Tübingen, CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -61,6 +61,8 @@ from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 from b2share.modules.deposit.providers import DepositUUIDProvider
+from b2share.modules.handle.proxies import current_handle
+from b2share.modules.handle.errors import EpicPIDError
 
 
 class PublicationStates(Enum):
@@ -351,8 +353,6 @@ class Deposit(InvenioDeposit):
 
 def create_file_pids(record_metadata):
     from flask import current_app
-    from b2share.modules.records.b2share_epic import createHandle
-    from b2share.modules.records.errors import EpicPIDError
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_FILE_PID', False)
     for f in record_metadata.get('_files'):
         if f.get('ePIC_PID'):
@@ -361,7 +361,9 @@ def create_file_pids(record_metadata):
                            bucket_id=f.get('bucket'), key=f.get('key'),
                            _external=True)
         try:
-            file_pid = createHandle(file_url, checksum=f.get('checksum'))
+            file_pid = current_handle.create_handle(
+                file_url, checksum=f.get('checksum'), fixed=True
+            )
             if file_pid is None:
                 raise EpicPIDError("EPIC PID allocation for file failed")
             f['ePIC_PID'] = file_pid

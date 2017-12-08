@@ -69,6 +69,7 @@ class B2ShareRecords(object):
         before_record_index.connect(indexer_receiver, sender=app)
         app.url_map.converters['pid'] = PIDConverter
 
+
     def init_config(self, app):
         """Initialize configuration."""
         pass

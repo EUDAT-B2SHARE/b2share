@@ -44,10 +44,6 @@ class AlteredRecordError(B2ShareRecordsError):
        immutable record data."""
 
 
-class EpicPIDError(Exception):
-    """Raise when a record has no community."""
-
-
 class UnknownRecordType(B2ShareRecordsError):
     """Error raised when a record type cannot be determined.
 

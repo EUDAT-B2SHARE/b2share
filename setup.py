@@ -31,6 +31,7 @@ from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
 install_requires = [
+    'b2handle>=1.1.1,<2.0.0',
     'elasticsearch<3.0.0,>=2.0.0',
     'elasticsearch-dsl<3.0.0,>=2.0.0',
     'datacite>=0.3.0',
@@ -180,6 +181,7 @@ setup(
             'b2share_users = b2share.modules.users:B2ShareUsers',
             'b2share_records = b2share.modules.records:B2ShareRecords',
             'b2share_deposit = b2share.modules.deposit:B2ShareDeposit',
+            'b2share_handle = b2share.modules.handle:B2ShareHandle',
             'b2share_files = b2share.modules.files:B2ShareFiles',
             'b2share_remotes = b2share.modules.remotes:B2ShareRemotes',
             'b2share_access = b2share.modules.access:B2ShareAccess',
