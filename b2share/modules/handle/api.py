@@ -34,45 +34,45 @@ from .errors import EpicPIDError
 
 
 def create_handle(handle_client, handle_prefix, location,
-                  checksum=None, fixed=False, fake=None):
+                  checksum=None, fixed=False):
     """Create a new handle for a file, using the B2HANDLE library."""
 
-    if fake:
-        # special case for unit/functional testing: it's useful to get a PID,
-        # which otherwise will not get allocated due to missing credentials;
-        # this also speeds up testing just a bit, by avoiding HTTP requests
-        uuid = location.split('/')[-1] # record id
-        handle = '0000/{}'.format(uuid)
-    elif not handle_client:
-        # assume EPIC API
-        return _create_epic_handle(location, checksum)
-    else:
-        try:
-            eudat_entries = {
-                'EUDAT/FIXED_CONTENT': str(fixed),
-                'EUDAT/PROFILE_VERSION': str(1),
-            }
-            if checksum:
-                eudat_entries['EUDAT/CHECKSUM'] = str(checksum)
-                eudat_entries['EUDAT/CHECKSUM_TIMESTAMP'] = datetime.now().isoformat()
-            handle = handle_client.generate_and_register_handle(
-                prefix=handle_prefix, location=location, checksum=checksum,
-                **eudat_entries)
-        except Exception as e:
-            msg = "Handle System PID creation error: {}".format(e)
-            current_app.logger.error(msg)
-            raise EpicPIDError(msg) from e
+    try:
+        eudat_entries = {
+            'EUDAT/FIXED_CONTENT': str(fixed),
+            'EUDAT/PROFILE_VERSION': str(1),
+        }
+        if checksum:
+            eudat_entries['EUDAT/CHECKSUM'] = str(checksum)
+            eudat_entries['EUDAT/CHECKSUM_TIMESTAMP'] = datetime.now().isoformat()
+        handle = handle_client.generate_and_register_handle(
+            prefix=handle_prefix, location=location, checksum=checksum,
+            **eudat_entries)
+    except Exception as e:
+        msg = "Handle System PID creation error: {}".format(e)
+        current_app.logger.error(msg)
+        raise EpicPIDError(msg) from e
 
     current_app.logger.info("Created Handle System PID: {}".format(handle))
 
-    CFG_HANDLE_SYSTEM_BASEURL = current_app.config.get(
-        'CFG_HANDLE_SYSTEM_BASEURL')
-    return urljoin(CFG_HANDLE_SYSTEM_BASEURL, handle)
+    base_url = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
+    return urljoin(base_url, handle)
 
 
-def check_eudat_entries_in_handle_pid(handle_client, handle_prefix,
-        handle, fixed=False, checksum=None, checksum_timestamp_iso=None,
-        update=False):
+def create_fake_handle(location):
+    """Create a fake handle. """
+
+    uuid = location.split('/')[-1] # record id
+    handle = '0000/{}'.format(uuid)
+
+    current_app.logger.info("Created fake handle PID: {}".format(handle))
+
+    base_url = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
+    return urljoin(base_url, handle)
+
+
+def check_eudat_entries_in_handle_pid(handle_client, handle_prefix, handle,
+        fixed=False, checksum=None, checksum_timestamp_iso=None, update=False):
     """Checks and update the mandatory EUDAT entries in a Handle PID."""
 
     if not handle_client:
@@ -81,12 +81,12 @@ def check_eudat_entries_in_handle_pid(handle_client, handle_prefix,
             "PID_HANDLE_CREDENTIALS in the configuration file.")
         return
 
-    handle_prefix = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
-    if not handle_prefix.endswith('/'):
-        handle_prefix += '/'
+    prefix = current_app.config.get('CFG_HANDLE_SYSTEM_BASEURL')
+    if not prefix.endswith('/'):
+        prefix += '/'
 
-    if handle.startswith(handle_prefix):
-        handle = handle[len(handle_prefix):]
+    if handle.startswith(prefix):
+        handle = handle[len(prefix):]
 
     try:
         old_values = handle_client.retrieve_handle_record(handle=handle)
@@ -125,7 +125,7 @@ def check_eudat_entries_in_handle_pid(handle_client, handle_prefix,
     return new_values
 
 
-def _create_epic_handle(location, checksum=None):
+def create_epic_handle(location, checksum=None):
     """Create a new handle for a file.
 
     Parameters:

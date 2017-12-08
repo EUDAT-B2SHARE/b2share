@@ -24,7 +24,8 @@ from __future__ import absolute_import, print_function
 from b2handle.handleclient import EUDATHandleClient
 from flask import current_app
 
-from .api import create_handle
+from .api import (create_handle, create_fake_handle, create_epic_handle,
+    check_eudat_entries_in_handle_pid)
 
 
 class _B2ShareHandleState(object):
@@ -45,23 +46,32 @@ class _B2ShareHandleState(object):
         self.handle_client = None
         if credentials:
             self.handle_prefix = credentials.get('prefix')
+            assert self.handle_prefix
             self.handle_client = EUDATHandleClient(**credentials)
-        # otherwise assume EPIC API
-        # TODO: load EPIC config variables
+
 
     def create_handle(self, location, checksum=None, fixed=False,
                       fake=None):
         """Create a new handle for a file, using the B2HANDLE library."""
-        if fake is None:
-            fake = current_app.config.get('TESTING', False) \
+        fake = fake or current_app.config.get('TESTING', False) \
                 or current_app.config.get('FAKE_EPIC_PID', False)
-        create_handle(self.handle_client, self.handle_prefix,
-                      location, checksum, fixed, fake=fake)
+        if fake:
+            # special case for unit/functional testing: it's useful to get a PID,
+            # which otherwise will not get allocated due to missing credentials;
+            # this also speeds up testing just a bit, by avoiding HTTP requests
+            return create_fake_handle(location)
+        elif self.handle_client:
+            return create_handle(self.handle_client, self.handle_prefix,
+                          location, checksum, fixed)
+        else:
+            # assume EPIC API
+            return create_epic_handle(location, checksum)
 
-    def check_eudat_entries_in_handle_pid(self, update, verbose):
+
+    def check_eudat_entries_in_handle_pid(self, **kwargs):
         """Checks and update the mandatory EUDAT entries in a Handle PID."""
-        check_eudat_entries_in_handle_pid(self.handle_client,
-                                          self.handle_prefix, update)
+        return check_eudat_entries_in_handle_pid(
+            self.handle_client, self.handle_prefix, **kwargs)
 
 
 class B2ShareHandle(object):

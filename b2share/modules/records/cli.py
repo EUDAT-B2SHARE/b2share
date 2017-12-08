@@ -75,8 +75,8 @@ def check_and_update_handle_records(update, verbose):
                     if p.get('type') == 'ePIC_PID']
         if pid_list:
             pid = pid_list[0]
-            res = current_handle.check_eudat_entries_to_handle_pid(
-                pid, update=update
+            res = current_handle.check_eudat_entries_in_handle_pid(
+                handle=pid, update=update
             )
             if verbose:
                 if res:
@@ -88,8 +88,8 @@ def check_and_update_handle_records(update, verbose):
         for f in record.get('_files', []):
             pid = f.get('ePIC_PID')
             if pid:
-                res = current_handle.check_eudat_entries_to_handle_pid(
-                    pid,
+                res = current_handle.check_eudat_entries_in_handle_pid(
+                    handle=pid,
                     fixed=True,
                     checksum=f.get('checksum'),
                     checksum_timestamp_iso=record.get('_oai', {}).get('updated'),
