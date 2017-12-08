@@ -10,6 +10,8 @@ Changes since 2.0.1 include:
 - the new upgrade command, automatically executed on start
 - file statistics module and UI integration
 - file checksum verification
+- configuration options for B2NOTE integration
+- compatibility with the handle system API (via b2handle)
 - latest versions of Invenio packages
 - record deletion (HTTP API, superadmin only)
 - improved error messages
