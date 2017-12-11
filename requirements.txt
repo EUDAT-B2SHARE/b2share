@@ -95,7 +95,7 @@ invenio-records==1.0.0b2
 invenio-rest[cors]==1.0.0b1
 invenio-search-ui==1.0.0a7  # via invenio-deposit
 invenio-search==1.0.0a10
-invenio-stats==1.0.0a7
+invenio-stats==1.0.0a8
 itsdangerous==0.24        # via flask, flask-kvsession, flask-security
 jinja2-time==0.2.0        # via cookiecutter
 jinja2==2.8               # via cookiecutter, flask, flask-babelex, jinja2-time
