@@ -27,7 +27,7 @@ def upgrade():
         sa.Column('created', sa.DateTime(), nullable=False),
         sa.Column('updated', sa.DateTime(), nullable=False),
         sa.Column('id', UUIDType, default=uuid.uuid4, nullable=False),
-        sa.Column('version', sa.String(80), default=__version__, unique=True,
+        sa.Column('version', sa.String(80), default=__version__,
                   nullable=False),
         sa.Column('data', JSONType().with_variant(
                   postgresql.JSON(none_as_null=True),

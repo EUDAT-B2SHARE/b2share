@@ -57,7 +57,7 @@ def upgrade_run(app):
     #     upgrade_to_last_version(False)
 
 
-def repeat_upgrade(app, alembic):
+def repeat_upgrade(app, alembic, expected_migrations=1):
     """Repeat the upgrade just to make sure that everything is done well."""
     # Make sure that alembic upgrades can be run now
     alembic.upgrade()
@@ -67,7 +67,7 @@ def repeat_upgrade(app, alembic):
     assert result.exit_code == 0
     # no migration should have been performed
     migrations = Migration.query.all();
-    assert len(migrations) == 1
+    assert len(migrations) == expected_migrations
     assert result.output == 'Already up to date.\n'
 
 

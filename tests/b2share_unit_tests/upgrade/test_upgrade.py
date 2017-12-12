@@ -32,6 +32,7 @@ from b2share_unit_tests.helpers import db_create_v2_0_1, \
     remove_alembic_version_table
 from sqlalchemy.engine.reflection import Inspector
 from subprocess import call
+from invenio_records.models import RecordMetadata
 
 from b2share.modules.upgrade.errors import MigrationFromUnknownVersionError
 
@@ -222,7 +223,39 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
         result = upgrade_run(clean_app)
         assert result.exception.__class__ == sa.exc.ProgrammingError
 
+        # Drop the problematic table
         Migration.__table__.drop(db.engine)
+        # Make a record impossible to migrate
+        query = ("UPDATE {tablename} "
+                 "SET json={value} "
+                 "WHERE id='{id}'::uuid")
+        db.session.execute(
+            query.format(
+                tablename=RecordMetadata.__tablename__,
+                id='331acc49-d97a-4415-969d-97c82424fc99',
+                value='\'{"wrong": "field"}\''
+            )
+        )
+        # Run again a failing upgrade.
+        result = upgrade_run(clean_app)
+        assert result.exit_code == -1
+        # This time the upgrade succeeded partially, the db schema is migrated
+        # But not the records.
+        migrations = Migration.query.all()
+        assert len(migrations) == 1
+        mig = migrations[0]
+        assert mig.version == current_migration_version
+        assert not mig.success
+        assert not ext.alembic.compare_metadata()
+        # Fix the record
+        db.session.execute(
+            query.format(
+                tablename=RecordMetadata.__tablename__,
+                id='331acc49-d97a-4415-969d-97c82424fc99',
+                value='NULL'
+            )
+        )
+        # Migrate successfully
         result = upgrade_run(clean_app)
         assert result.exit_code == 0
         # Check that the resulting state is in sync with sqlalchemy's MetaData
@@ -230,13 +263,13 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
 
         # check that the migration information have been saved
         migrations = Migration.query.all()
-        assert len(migrations) == 1
-        mig = migrations[0]
+        assert len(migrations) == 2
+        mig = next(mig for mig in migrations if mig.success)
         assert mig.version == current_migration_version
         assert mig.success
 
     with clean_app.app_context():
-        repeat_upgrade(clean_app, ext.alembic)
+        repeat_upgrade(clean_app, ext.alembic, 2)
 
     with clean_app.app_context():
         validate_loaded_data(clean_app, ext.alembic)
