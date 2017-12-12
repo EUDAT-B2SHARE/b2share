@@ -47,14 +47,21 @@ from invenio_pidstore.errors import PIDDoesNotExistError
 
 def upgrade_run(app):
     """Run the "b2share upgrade" command."""
+    # unset SERVER_NAME as we want to check that it is not needed.
+    server_name = app.config['SERVER_NAME']
+    app.config.update(dict(SERVER_NAME=None))
     # Upgrade B2SHARE with `b2share upgrade run`
     runner = CliRunner()
     script_info = ScriptInfo(create_app=lambda info: app)
-    return runner.invoke(run, ['-v'], obj=script_info)
+    result = runner.invoke(run, ['-v'], obj=script_info)
     ## Uncomment this in order to test without Click. ##
     # from b2share.modules.upgrade.api import upgrade_to_last_version
     # with app.app_context():
     #     upgrade_to_last_version(False)
+
+    # Set the SERVER_NAME to its previous value
+    app.config.update(dict(SERVER_NAME=server_name))
+    return result
 
 
 def repeat_upgrade(app, alembic, expected_migrations=1):
