@@ -687,15 +687,9 @@ export const FileRecordRow = React.createClass({
     render() {
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
-        const downloads = this.state.downloads[file.key || file.name] || 0;
-        // var b2safe_pid = false;
-
+        // const downloads = this.state.downloads[file.key || file.name] || 0;
         const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
-        // if (file.b2safe_pid == "Yes"){
-        //    b2safe_pid = true;
-        // }
-        console.log(file.b2safe_pid);
 
         return (
             <div className="file">
@@ -715,7 +709,7 @@ export const FileRecordRow = React.createClass({
                             </span> : false
                         }
                         {
-                            file.b2safe_pid ?
+                            file.b2safe ?
                             <span className="b2safeFileBadge" style={{marginLeft:'1em', fontSize:11}}>
                                 <span className="badge" style={{marginLeft:'0.5em', backgroundColor: '#000'}}> B2Safe </span>
                             </span> : null

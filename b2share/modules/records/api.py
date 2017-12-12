@@ -25,7 +25,6 @@
 
 from elasticsearch.exceptions import NotFoundError
 from invenio_db import db
-from invenio_deposit.api import Deposit
 from invenio_pidstore.resolver import Resolver
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_records.models import RecordMetadata
@@ -62,7 +61,7 @@ class B2ShareFileObject(FileObject):
         return self.data
 
 
-class B2ShareRecord(Deposit, Record):
+class B2ShareRecord(Record):
     """B2Share record class."""
 
     file_cls = B2ShareFileObject
@@ -70,12 +69,12 @@ class B2ShareRecord(Deposit, Record):
     @property
     def pid(self):
         """Return an instance of record PID."""
-        import ipdb; ipdb.set_trace()
         pid = b2share_record_uuid_fetcher(self.id, self)
         return PersistentIdentifier.get(pid.pid_type,
                                         pid.pid_value)
     def delete(self):
         """Delete a record."""
+        from b2share.modules.deposit.api import Deposit
         pid = self.pid
         # Fetch deposit id from record and resolve deposit record and pid.
         depid = PersistentIdentifier.get(DepositUUIDProvider.pid_type,

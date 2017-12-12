@@ -428,7 +428,6 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
             parent_pid_table.pid_value == version_parent_pid_value,
             RecordMetadata.id == child_pid_table.object_uuid,
         ).order_by(RecordMetadata.created).all()
-
         for version_number, rec_pid_and_rec_meta in enumerate(pids_and_meta):
             rec_pid, rec_meta = rec_pid_and_rec_meta
             records.append({

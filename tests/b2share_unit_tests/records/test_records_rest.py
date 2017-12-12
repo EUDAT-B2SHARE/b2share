@@ -483,7 +483,6 @@ def test_delete_record(app, test_users, test_communities, login_user,
 
     # Check that everything is accessible
     test_access(creator, deleted=False)
-
     test_delete(401)  # anonymous user
     test_delete(403, creator)
     test_delete(403, non_creator)

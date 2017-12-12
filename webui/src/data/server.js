@@ -414,6 +414,7 @@ class ServerCache {
         this.getters.record = new Pool(recordID =>
             new Getter(apiUrls.record(recordID), null,
                 (data) => {
+                    console.log('data in server:', data);
                     if (data.files) { data.files = data.files.map(this.fixFile); }
                     this.store.setIn(['recordCache', recordID], fromJS(data));
                     if (data.files && data.files[0]) {
@@ -455,8 +456,23 @@ class ServerCache {
                 console.error("accessing fileBucketUrl before draft fetch", draftID);
                 return null;
             }
-            const placeDataFn = data =>
+            const placeDataFn = (data) => {
+                var current_files = this.store.getIn(['draftCache', draftID, 'files']);
+                for(var i = 0; i < data.contents.length; i++){
+                    var file = data.contents[i];
+                    for(var j = 0; j < current_files._tail.array.length ; j++){
+                        // change everything here
+                        if(current_files._tail && current_files._tail.array &&
+                           current_files._tail.array && current_files._tail.array[j] && 
+                           current_files._tail.array[j]._root && current_files._tail.array[j]._root.entries && 
+                           current_files._tail.array[j]._root.entries[3] && 
+                           file.key == current_files._tail.array[j]._root.entries[3][1]){
+                            file.b2safe = true;
+                        }
+                    }
+                }
                 this.store.setIn(['draftCache', draftID, 'files'], fromJS(data.contents.map(this.fixFile)));
+            };
             const errorFn = (xhr) => this.store.setIn(['draftCache', draftID, 'files'], new Error(xhr));
             return new Getter(fileBucketUrl, null, placeDataFn, errorFn);
         });

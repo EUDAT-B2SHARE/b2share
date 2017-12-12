@@ -82,7 +82,7 @@ class PublicationStates(Enum):
     """Deposit is published."""
 
 
-class Deposit(B2ShareRecord):
+class Deposit(InvenioDeposit):
     """B2Share Deposit API."""
 
     published_record_class = B2ShareRecord
@@ -215,9 +215,14 @@ class Deposit(B2ShareRecord):
                 _external=True
             )
 
-        deposit = super(Deposit, cls).create(data, id_=id_)
-
         # create file bucket
+        from b2share.modules.schemas.serializers import \
+            community_schema_draft_json_schema_link
+        data['$schema'] = community_schema_draft_json_schema_link(
+            schema,
+            _external=True
+        )
+
         if prev_version and prev_version.files:
             # Clone the bucket from the previous version. This doesn't
             # duplicate files.
@@ -233,6 +238,8 @@ class Deposit(B2ShareRecord):
             data['_deposit']['b2safe_pids'] = data['b2safe_pids']
             del data['b2safe_pids']
 
+        import ipdb
+        ipdb.set_trace()
         deposit = super(Deposit, cls).create(data, id_=id_)
         db.session.add(bucket)
         db.session.add(RecordsBuckets(
@@ -278,7 +285,6 @@ class Deposit(B2ShareRecord):
         This method extends the default implementation by publishing the
         deposition when 'publication_state' is set to 'published'.
         """
-        import ipdb; ipdb.set_trace()
         if 'b2safe_pids' in self:
             deposit_id = self['_deposit']['id']
             recid = PersistentIdentifier.query.filter_by(
@@ -471,8 +477,17 @@ def copy_data_from_previous(previous_record):
     """Copy metadata from previous record version."""
     data = copy.deepcopy(previous_record)
     # eliminate _deposit, _files, _oai, _pid, etc.
+    if 'b2safe_pids' in previous_record['_deposit']:
+        b2safe_pids = previous_record['_deposit']['b2safe_pids']
+        files = []
+        for _file in previous_record['_files']:
+            if _file['key'] in b2safe_pids:
+                files.append(_file)
     copied_data = {k: v for k, v in data.items() if not k.startswith('_') and
                    k not in copy_data_from_previous.extra_removed_fields}
+    if b2safe_pids:
+        copied_data['_deposit'] = {'b2safe_pids': b2safe_pids}
+        copied_data['_files'] = files
     return copied_data
 
 

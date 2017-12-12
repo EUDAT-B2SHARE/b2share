@@ -49,6 +49,10 @@ class DraftSchemaJSONV1(Schema):
         if '_files' in data['metadata']:
             if allow_public_file_metadata(data['metadata']):
                 data['files'] = data['metadata']['_files']
+                for _file in data['files']:
+                    if 'b2safe_pids' in data['metadata'] and \
+                            _file['key'] in data['metadata']['b2safe_pids']:
+                        _file['b2safe'] = True
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
             # move PIDs to metadata top level
