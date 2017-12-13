@@ -372,7 +372,6 @@ const Record = React.createClass({
 
         const recordID = record.get('id');
         const files = record.get('files') || record.getIn(['metadata', '_files']);
-
         const isLatestVersion = !record.has('versions') || recordID == record.getIn(['versions', 0, 'id']);
         function onNewVersion (e) {
             e.preventDefault();

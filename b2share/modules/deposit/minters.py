@@ -39,8 +39,8 @@ def b2share_deposit_uuid_minter(record_uuid, data):
         pid_value=record_uuid.hex
     )
 
-    # this change is done to keep the b2safe_pids info for the new versions
-    if '_deposit' in data and 'b2safe_pids' in data['_deposit']:
+    # this change is done to keep the external_pids info for the new versions
+    if '_deposit' in data and 'external_pids' in data['_deposit']:
         data['_deposit'].update({
             'id': dep_pid.pid.pid_value,
             # FIXME: do not set the status once it is done by invenio-deposit API

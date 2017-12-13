@@ -516,6 +516,24 @@ export const EditFiles = React.createClass({
         if (!this.props.files.length) {
             return false;
         }
+        let record = this.props.record;
+
+        var metadata = this.props.record.get('metadata').toJS();
+        var external_pids = metadata.external_pids;
+        for(var i=0; i < this.props.files.length; i++){
+            var _file = this.props.files[i];
+            console.log('_file:', _file);
+            if(Boolean(external_pids)){
+                for(var j=0; j < external_pids.length; j++){
+                    var external_pid = external_pids[j];
+                    console.log('file key match: ', _file.key);
+                    console.log('external_pid key match: ', external_pid.key);
+                    if(_file.key == external_pid.key){
+                        _file.b2safe = true;
+                    }
+                }
+            }
+        }
         return(
             <div className="well" style={{marginTop:'1em'}}>
                 <div className="fileList">

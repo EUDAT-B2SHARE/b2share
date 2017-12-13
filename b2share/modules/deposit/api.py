@@ -233,13 +233,11 @@ class Deposit(InvenioDeposit):
                 'DEPOSIT_DEFAULT_STORAGE_CLASS'
             ])
 
-        if 'b2safe_pids' in data:
-            create_b2safe_file(data['b2safe_pids'], bucket)
-            data['_deposit']['b2safe_pids'] = data['b2safe_pids']
-            del data['b2safe_pids']
+        if 'external_pids' in data:
+            create_b2safe_file(data['external_pids'], bucket)
+            data['_deposit']['external_pids'] = data['external_pids']
+            del data['external_pids']
 
-        import ipdb
-        ipdb.set_trace()
         deposit = super(Deposit, cls).create(data, id_=id_)
         db.session.add(bucket)
         db.session.add(RecordsBuckets(
@@ -285,7 +283,7 @@ class Deposit(InvenioDeposit):
         This method extends the default implementation by publishing the
         deposition when 'publication_state' is set to 'published'.
         """
-        if 'b2safe_pids' in self:
+        if 'external_pids' in self:
             deposit_id = self['_deposit']['id']
             recid = PersistentIdentifier.query.filter_by(
                 pid_value=deposit_id).first()
@@ -301,18 +299,18 @@ class Deposit(InvenioDeposit):
                         object_version.file.storage_class != 'B':
                     continue
                 # check that they are still in the file pids list or remove
-                if object_version.key not in self['b2safe_pids']:
+                if object_version.key not in self['external_pids']:
                     ObjectVersion.delete(bucket,
                                          object_version.key)
                 # check that the uri is still the same or update it
                 elif object_version.file.uri != \
-                        self['b2safe_pids'][object_version.key]:
+                        self['external_pids'][object_version.key]:
                     db.session.query(FileInstance).\
                         filter_by(key=object_version.key).\
-                        update({"uri": self['b2safe_pids'][object_version.key]})
-            create_b2safe_file(self['b2safe_pids'], bucket)
-            self['_deposit']['b2safe_pids'] = self['b2safe_pids']
-            del self['b2safe_pids']
+                        update({"uri": self['external_pids'][object_version.key]})
+            create_b2safe_file(self['external_pids'], bucket)
+            self['_deposit']['external_pids'] = self['external_pids']
+            del self['external_pids']
 
         if self.model is None or self.model.json is None:
             raise MissingModelError()
@@ -435,16 +433,17 @@ def create_file_pids(record_metadata):
                 current_app.logger.warning(e)
 
 
-def create_b2safe_file(file_pids, bucket):
+def create_b2safe_file(external_pids, bucket):
     """Create a FileInstance which contains a PID in its uri."""
-    for key in file_pids:
+    for external_pid in external_pids:
         try:
-            file_instance = FileInstance.get_by_uri(file_pids[key])
+            file_instance = FileInstance.get_by_uri(external_pid['ePIC_PID'])
             if file_instance is None:
                 file_instance = FileInstance.create()
-                file_instance.set_uri(file_pids[key], 1, 0, storage_class='B')
+                file_instance.set_uri(
+                    external_pid['ePIC_PID'], 1, 0, storage_class='B')
             assert file_instance.storage_class == 'B'
-            ObjectVersion.create(bucket, key, file_instance.id)
+            ObjectVersion.create(bucket, external_pid['key'], file_instance.id)
         except IntegrityError as e:
             raise InvalidDepositError('File URI already exists.')
 
@@ -477,16 +476,17 @@ def copy_data_from_previous(previous_record):
     """Copy metadata from previous record version."""
     data = copy.deepcopy(previous_record)
     # eliminate _deposit, _files, _oai, _pid, etc.
-    if 'b2safe_pids' in previous_record['_deposit']:
-        b2safe_pids = previous_record['_deposit']['b2safe_pids']
+    external_pids = None
+    if 'external_pids' in previous_record['_deposit']:
+        external_pids = previous_record['_deposit']['external_pids']
         files = []
         for _file in previous_record['_files']:
-            if _file['key'] in b2safe_pids:
+            if _file['key'] in external_pids:
                 files.append(_file)
     copied_data = {k: v for k, v in data.items() if not k.startswith('_') and
                    k not in copy_data_from_previous.extra_removed_fields}
-    if b2safe_pids:
-        copied_data['_deposit'] = {'b2safe_pids': b2safe_pids}
+    if external_pids:
+        copied_data['_deposit'] = {'external_pids': external_pids}
         copied_data['_files'] = files
     return copied_data
 

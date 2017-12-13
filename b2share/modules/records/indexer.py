@@ -49,12 +49,9 @@ def indexer_receiver(sender, json=None, record=None, index=None,
                      **dummy_kwargs):
     """Connect to before_record_index signal to transform record for ES."""
     if is_deposit(record.model):
-        if 'b2safe_pids' in json['_deposit']:
-            b2safe_pids_prepared = []
-            for key, pid in json['_deposit']['b2safe_pids'].items():
-                b2safe_pids_prepared.append({'key': key, 'ePIC_PID': pid})
-            del json['_deposit']['b2safe_pids']
-            json['b2safe_pids'] = b2safe_pids_prepared
+        if 'external_pids' in json['_deposit']:
+            json['external_pids'] = json['_deposit']['external_pids']
+            del json['_deposit']['external_pids']
     if not index.startswith('records'):
         return
     try:

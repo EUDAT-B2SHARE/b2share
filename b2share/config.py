@@ -293,12 +293,12 @@ CELERY_BEAT_SCHEDULE = {
     },
     'process-file-downloads': {
         'task': 'invenio_stats.tasks.process_events',
-        'schedule': timedelta(minutes=5),
+        'schedule': timedelta(seconds=2),
         'args': [['file-download']]
     },
     'aggregate-daily-file-downloads': {
         'task': 'invenio_stats.tasks.aggregate_events',
-        'schedule': timedelta(minutes=15),
+        'schedule': timedelta(seconds=5),
         'args': [['file-download-agg']]
     },
     # Check file checksums
