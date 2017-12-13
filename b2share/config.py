@@ -151,7 +151,21 @@ RECORDS_REST_DEFAULT_SORT = dict(
 RECORDS_REST_SORT_OPTIONS = dict(
     records=dict(
         bestmatch=dict(
-            fields=['_score'],
+            fields=['-_score'],
+            title='Best match',
+            default_order='desc',
+            order=1,
+        ),
+        mostrecent=dict(
+            fields=['-_created'],
+            title='Most recent',
+            default_order='desc',
+            order=2,
+        ),
+    ),
+    deposits=dict(
+        bestmatch=dict(
+            fields=['-_score'],
             title='Best match',
             default_order='desc',
             order=1,
