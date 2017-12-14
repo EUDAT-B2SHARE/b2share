@@ -518,7 +518,12 @@ class ServerCache {
 
     searchRecords({q, community, sort, page, size, drafts}) {
         if (community) {
-            q = (q || "") + ' community:' + community;
+            q = (q ? '(' + q + ') && ' : '') + ' community:' + community;
+        }
+        if (drafts) {
+            // TODO: change this once the workflows are working.
+            // Add "submitted" drafts.
+            q = (q ? '(' + q + ') && ' : '') + 'publication_state:draft';
         }
         (drafts == 1) ? this.getters.searchRecords.fetch({q, sort, page, size, drafts}) : this.getters.searchRecords.fetch({q, sort, page, size});
         return this.store.getIn(['searchRecords']);

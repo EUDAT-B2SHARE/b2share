@@ -11,7 +11,7 @@ import { ReplaceAnimate } from './animate.jsx';
 export const SearchRecordRoute = React.createClass({
     render() {
         const communities = serverCache.getCommunities();
-        const location = this.props.location || {};        
+        const location = this.props.location || {};
         const drafts = (location.query.drafts == 1) ? 1 : "";
         const result = serverCache.searchRecords(location.query || {});
         const numResults = (result && result.get('total')) || 0;
@@ -61,7 +61,8 @@ const Search = React.createClass({
         if (prevState.community !== this.state.community
             || prevState.page !== this.state.page
             || prevState.size !== this.state.size
-            || prevState.sort !== this.state.sort ) {
+            || prevState.sort !== this.state.sort
+            || prevState.drafts !== this.state.drafts ) {
             this.search();
         }
     },
@@ -234,7 +235,7 @@ const RecordList = React.createClass({
         const edit = (this.props.drafts == 1) ? "/edit" : ""
         return (
             <div className="record col-lg-12" key={id}>
-                <Link to={'/records/'+id+edit}> 
+                <Link to={'/records/'+id+edit}>
                     <p className="name">{title}</p>
                     <p>
                         <span className="date">{timestamp2str(created)}</span>
