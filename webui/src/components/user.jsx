@@ -141,7 +141,7 @@ export const UserProfile = React.createClass({
                     </div>
                     <div className="row">
                         <h3>Own drafts</h3>
-                            <p><Link to={"/records?drafts=1&q=publication_state%3Adraft"}>
+                            <p><Link to={"/records?drafts=1"}>
                                 List of your draft records
                             </Link></p>
                     </div>
@@ -235,7 +235,7 @@ const Token = React.createClass({
                                     <i className="fa fa-trash-o"></i> Remove
                                 </button>
                             </form>
-                    </span> 
+                    </span>
                 </li>;
     }
 });

@@ -78,7 +78,11 @@ const NavbarSearch = React.createClass({
 
     componentWillReceiveProps(newProps) {
         const location = newProps.location || {};
-        this.setState(location.query || {});
+        const state = Object.assign({}, location.query);
+        delete state['drafts'];
+        delete state['community'];
+        delete state['page'];
+        this.setState(state);
     },
 
     search(event) {
