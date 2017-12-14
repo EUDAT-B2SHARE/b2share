@@ -24,7 +24,7 @@
 """error class(es) for remotes"""
 
 
-from invenio_rest.errors import RESTException
+from invenio_rest.errors import RESTException, FieldError
 
 
 class UserError(RESTException):
@@ -34,16 +34,21 @@ class UserError(RESTException):
         super(UserError, self).__init__(description=description)
 
 
+class ConnectionError(RESTException):
+    code = 502
+
+    def __init__(self, description):
+        super(ConnectionError, self).__init__(description=description)
+
+
 class RemoteError(RESTException):
     code = 502
 
-    def __init__(self, description, error):
-        super(RemoteError, self).__init__(
-            description=description, errors=[error])
+    def __init__(self, description):
+        super(RemoteError, self).__init__(description=description)
 
     @classmethod
     def from_webdav(cls, error):
-        json_error = {'remote_code':error.actual_code, 'message':error.reason}
         if error.actual_code == 401:
-            return cls("Remote service authentication error", json_error)
-        return cls("Remote service operation error", json_error)
+            return cls("Remote service authentication error")
+        return cls("Remote service operation error")
