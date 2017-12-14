@@ -29,7 +29,9 @@ import dateutil.parser
 import urllib.parse
 import easywebdav
 
-from .errors import RemoteError
+from flask import current_app
+
+from .errors import ConnectionError, RemoteError
 
 
 class B2DropClient(object):
@@ -40,9 +42,14 @@ class B2DropClient(object):
             path += '/'
         self.path = path # '/remote.php/webdav/'
         self.rpath = self.path + '.'
-        self.client = easywebdav.connect(self.host, \
-            protocol=self.protocol, path=self.path, \
-            username=username, password=password)
+        try:
+            self.client = easywebdav.connect(self.host, \
+                protocol=self.protocol, path=self.path, \
+                username=username, password=password)
+        except Exception as e:
+            current_app.logger.error("Exception while connecting to b2drop",
+                                       exc_info=True)
+            raise ConnectionError("Exception while connecting to b2drop") from e
 
     def list(self, remote_path="/"):
         try:
@@ -53,6 +60,7 @@ class B2DropClient(object):
             files = [self.cleanFile(f) for f in ls[1:]]
             return {'parent':parent, 'files':files}
         except easywebdav.OperationFailed as e:
+            current_app.logger.error("b2drop/webdav error", exc_info=True)
             raise RemoteError.from_webdav(e) from e
 
     def make_stream_object(self, remote_path):
@@ -61,6 +69,7 @@ class B2DropClient(object):
                 remote_path = remote_path[len(self.path):]
             return B2DropStream(self.client, remote_path)
         except easywebdav.OperationFailed as e:
+            current_app.logger.error("b2drop/webdav error", exc_info=True)
             raise RemoteError.from_webdav(e) from e
 
     def cleanFile(self, f):
@@ -87,10 +96,9 @@ class B2DropStream(object):
         self.response = webdav_client.session.request(
             'GET', url, allow_redirects=False, stream=True)
         if self.response.status_code != 200:
-            json_error = {
-                'remote_code': self.response.status_code,
-            }
-            raise RemoteError('error while GETting b2drop file: {}'.format(url), json_error)
+            current_app.logger.error("b2drop/webdav streaming error code {}".format(
+                self.response.status_code))
+            raise RemoteError('error while GETting b2drop file: {}'.format(url))
         self.content_iterator = None
 
     def length(self):

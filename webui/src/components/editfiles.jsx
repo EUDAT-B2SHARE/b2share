@@ -165,6 +165,9 @@ const B2DropZone = React.createClass({
                         <i className="glyphicon glyphicon-arrow-right"/>
                     </button>
                 </div>
+                <div style={{marginTop:'1em', color:'red'}}>
+                    {this.state.error ? <p>{this.state.error}</p> : false }
+                </div>
             </form>
         );
     },
