@@ -180,7 +180,7 @@ def put_file_into_bucket(bucket_id, key, stream, content_length):
         db.session.commit()
         return obj
 
-    return create_object(bucket, key)
+    return create_object(key=key, bucket=bucket)
 
 
 blueprint.add_url_rule('/remotes/jobs',
