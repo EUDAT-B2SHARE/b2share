@@ -375,6 +375,7 @@ const Record = React.createClass({
 
         const isLatestVersion = !record.has('versions') || recordID == record.getIn(['versions', 0, 'id']);
         function onNewVersion (e) {
+            e.preventDefault();
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
 
@@ -433,8 +434,8 @@ const Record = React.createClass({
                                     : false
                                 }
                                 { isRecordOwner(record) && isLatestVersion ?
-                                    <Link onClick={onNewVersion} className="btn btn-warning" style={{margin: '0 0.5em'}}>
-                                        Create New Version</Link>
+                                    <a href='#' onClick={onNewVersion} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                        Create New Version</a>
                                     : false
                                 }
                             </div>

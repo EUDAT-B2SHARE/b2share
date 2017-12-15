@@ -52,7 +52,8 @@ const DraftVersions = React.createClass({
             return (
                 <div style={style}>
                     You are now creating a new version of
-                    <Link onClick={e=>browser.gotoRecord(versions[0].id)} href="#"> this published record</Link>.
+                    <a href="#" onClick={e => { e.preventDefault(); browser.gotoRecord(versions[0].id)} }
+                       > this published record</a>.
                 </div>
             );
         }
@@ -86,7 +87,7 @@ const PublishedVersions = React.createClass({
                     { beQuiet ? "" : "This record has newer versions. " }
                 </div>
 
-                <div style={{display: 'inline-block', verticalAlign: 'middle', marginBottom: '1px', padding: '0', width: '17em'}}>
+                <div style={{display: 'inline-block', verticalAlign: 'middle', marginBottom: '1px', padding: '0px', width: '17em'}}>
                     <DropdownList data={versions} defaultValue={thisVersion}
                         valueComponent={VerItemRenderer} itemComponent={VerItemRenderer}
                         onChange={handleVersionChange}/>
