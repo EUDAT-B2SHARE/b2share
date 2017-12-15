@@ -381,11 +381,55 @@ class ServerCache {
             });
         }
 
+        function fetchFileStats(store, recordID, bucketID) {
+            var data = {
+                "fileDownloads": {
+                    "stat": "bucket-file-download-total",
+                    "params": {
+                        "bucket_id": bucketID,
+                    }
+                }
+            };
+            ajaxPost({
+                url: apiUrls.statistics(),
+                params: data,
+                successFn: response => {
+                    const fileDownloads = response && response.fileDownloads;
+                    if (!fileDownloads) {
+                        return;
+                    }
+                    fileDownloads.buckets.forEach(kv => {
+                        const index = store.getIn(['recordCache', recordID, 'files']).findIndex(f => f.get('key') == kv.key);
+                        if (index >= 0) {
+                            store.setIn(['recordCache', recordID, 'files', index, 'downloads'], kv.value);
+                        } else {
+                            console.error('cannot find file with key: ', kv.key);
+                        }
+                    });
+                },
+            });
+        }
+
         this.getters.record = new Pool(recordID =>
             new Getter(apiUrls.record(recordID), null,
                 (data) => {
                     if (data.files) { data.files = data.files.map(this.fixFile); }
                     this.store.setIn(['recordCache', recordID], fromJS(data));
+                    if (data.files && data.files[0]) {
+                        fetchFileStats(this.store, recordID, data.files[0].bucket);
+                    } else if (!data.files && data.links.files) {
+                        // private or embargoed record, needs manual file fetching
+                        ajaxGet({
+                            url: data.links.files,
+                            successFn: (filedata) => {
+                                const files = filedata.contents.map(this.fixFile);
+                                this.store.setIn(['recordCache', recordID, 'files'], fromJS(files));
+                                // do not fetch file statistiscs for private files
+                                // (these files are missing the 'bucket' field)
+                            },
+                            errorFn: (xhr) => this.store.setIn(['recordCache', recordID, 'files'], new Error(xhr)),
+                        });
+                    }
                     retrieveVersions(this.store, data.links, ['recordCache', recordID, 'versions']);
                 },
                 (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
@@ -556,68 +600,7 @@ class ServerCache {
 
     getRecord(id) {
         this.getters.record.get(id).fetch();
-        this.fetchRecordFiles(id);
         return this.store.getIn(['recordCache', id]);
-    }
-
-    fetchRecordFiles(id) {
-        const record = this.store.getIn(['recordCache', id]);
-        if (!record || !record.get) {
-            return null;
-        }
-        const files = record.get('files');
-        if (files) {
-            // code path for published records
-            const file0 = files.get(0);
-            if (file0 && !file0.get('downloads')) {
-                this.fetchFileStats(id, file0.get('bucket'));
-            }
-            return files;
-        }
-        const url = record.getIn(['links', 'files']);
-        if (url) {
-            // code path for drafts
-            ajaxGet({
-                url: url,
-                successFn: (data) => {
-                    const files = fromJS(data.contents.map(this.fixFile));
-                    this.store.setIn(['recordCache', id, 'files'], files);
-                    if (files && files.get(0)) {
-                        this.fetchFileStats(id, files.get(0).get('bucket'));
-                    }
-                },
-                errorFn: (xhr) => this.store.setIn(['recordCache', id, 'files'], new Error(xhr)),
-            });
-        }
-    }
-
-    fetchFileStats(recordID, bucketID) {
-        var data = {
-            "fileDownloads": {
-                "stat": "bucket-file-download-total",
-                "params": {
-                    "bucket_id": bucketID,
-                }
-            }
-        };
-        ajaxPost({
-            url: apiUrls.statistics(),
-            params: data,
-            successFn: response => {
-                const fileDownloads = response && response.fileDownloads;
-                if (!fileDownloads) {
-                    return;
-                }
-                fileDownloads.buckets.forEach(kv => {
-                    const index = this.store.getIn(['recordCache', recordID, 'files']).findIndex(f => f.get('key') == kv.key);
-                    if (index >= 0) {
-                        this.store.setIn(['recordCache', recordID, 'files', index, 'downloads'], kv.value);
-                    } else {
-                        console.error('cannot find file with key: ', kv.key);
-                    }
-                });
-            },
-        });
     }
 
     getDraft(id) {
