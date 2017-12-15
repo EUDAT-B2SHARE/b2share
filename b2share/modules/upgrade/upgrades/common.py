@@ -26,6 +26,7 @@
 from __future__ import absolute_import, print_function
 
 import amqp
+import click
 from flask import current_app
 from invenio_search import current_search, current_search_client
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
@@ -34,6 +35,8 @@ from invenio_indexer.tasks import process_bulk_queue
 from invenio_queues.proxies import current_queues
 from celery.messaging import establish_connection
 from b2share.modules.schemas.helpers import load_root_schemas
+from b2share.modules.communities.models import create_roles_and_permissions, \
+    create_community_oaiset, Community
 
 
 def elasticsearch_index_destroy(alembic, verbose):
@@ -86,3 +89,12 @@ def queues_declare(alembic, verbose):
 def schemas_init(alembic, verbose):
     """Load root schemas."""
     load_root_schemas(cli=True, verbose=verbose)
+
+
+def fix_communities(alembic, verbose):
+    """Fix communities by creating the missing permissions, roles, etc."""
+    for community in Community.query.all():
+        if verbose:
+            click.secho('Fixing community {}.'.format(community.name))
+        create_roles_and_permissions(community, fix=True)
+        create_community_oaiset(community, fix=True)
