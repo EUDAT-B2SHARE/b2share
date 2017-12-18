@@ -33,7 +33,8 @@ SET search_path = public, pg_catalog;
 INSERT INTO accounts_role (id, name, description) VALUES (1, 'com:c4234f93da964d2fa2c8fa83d0775212:admin', 'Admin role of the community "Aalto"');
 INSERT INTO accounts_role (id, name, description) VALUES (2, 'com:c4234f93da964d2fa2c8fa83d0775212:member', 'Member role of the community "Aalto"');
 INSERT INTO accounts_role (id, name, description) VALUES (3, 'com:99916f6f9a2c4feba3426552ac7f1529:admin', 'Admin role of the community "BBMRI"');
-INSERT INTO accounts_role (id, name, description) VALUES (4, 'com:99916f6f9a2c4feba3426552ac7f1529:member', 'Member role of the community "BBMRI"');
+-- This is commented on purpose so that we can check that the permissions are correctly fixed if they are missing
+-- INSERT INTO accounts_role (id, name, description) VALUES (4, 'com:99916f6f9a2c4feba3426552ac7f1529:member', 'Member role of the community "BBMRI"');
 INSERT INTO accounts_role (id, name, description) VALUES (5, 'com:0afede872bf24d89867ed2ee57251c62:admin', 'Admin role of the community "CLARIN"');
 INSERT INTO accounts_role (id, name, description) VALUES (6, 'com:0afede872bf24d89867ed2ee57251c62:member', 'Member role of the community "CLARIN"');
 INSERT INTO accounts_role (id, name, description) VALUES (7, 'com:94a9567e2fba46778fdea8b68bdb63e8:admin', 'Admin role of the community "DRIHM"');
@@ -68,8 +69,9 @@ INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES 
 INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (8, 'update-record-metadata', false, '{"community":"c4234f93-da96-4d2f-a2c8-fa83d0775212"}', 1);
 INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (9, 'assign_role', false, '{"community":"c4234f93-da96-4d2f-a2c8-fa83d0775212","role":"None"}', 1);
 INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (10, 'accounts-search', false, NULL, 1);
-INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (11, 'create-deposit', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"draft"}', 4);
-INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (12, 'create-deposit', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"draft"}', 3);
+-- This is commented on purpose so that we can check that the permissions are correctly fixed if they are missing
+-- INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (11, 'create-deposit', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"draft"}', 4);
+-- INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (12, 'create-deposit', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"draft"}', 3);
 INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (13, 'read-deposit', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"submitted"}', 3);
 INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (14, 'read-deposit', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"published"}', 3);
 INSERT INTO access_actionsroles (id, action, exclude, argument, role_id) VALUES (15, 'update-deposit-metadata', false, '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"submitted"}', 3);

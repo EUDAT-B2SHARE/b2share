@@ -39,7 +39,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from ..api import UpgradeRecipe, alembic_stamp, alembic_upgrade
 from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
-    elasticsearch_index_reindex, queues_declare, schemas_init
+    elasticsearch_index_reindex, queues_declare, schemas_init, fix_communities
 from b2share.modules.records.providers import RecordUUIDProvider
 from b2share.modules.deposit.providers import DepositUUIDProvider
 from b2share.modules.deposit.api import Deposit
@@ -205,7 +205,7 @@ def migrate_record_metadata(record, parent_pid):
     record.commit()
 
 
-
-for step in [elasticsearch_index_destroy, elasticsearch_index_init,
-             elasticsearch_index_reindex, queues_declare]:
+for step in [fix_communities, elasticsearch_index_destroy,
+             elasticsearch_index_init, elasticsearch_index_reindex,
+             queues_declare]:
     migrate_2_0_0_to_2_1_0.step()(step)

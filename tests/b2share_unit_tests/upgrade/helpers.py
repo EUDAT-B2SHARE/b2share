@@ -43,6 +43,8 @@ from b2share.modules.records.fetchers import b2share_parent_pid_fetcher, \
     b2share_record_uuid_fetcher
 from b2share.modules.records.providers import RecordUUIDProvider
 from invenio_pidstore.errors import PIDDoesNotExistError
+from invenio_accounts.models import Role
+from invenio_access.models import ActionRoles
 
 
 def upgrade_run(app):
@@ -165,6 +167,24 @@ def check_pids_migration():
                 assert parent.get_redirect() == rec_pid
 
 
+def check_communities():
+    """Check that the missing community permissions have been fixed.
+
+    See the commented rows of Role and ActionRole in b2share_db_load_data.sql.
+    These are recreated by the upgrade.
+    """
+    role = Role.query.filter(
+        Role.name == 'com:99916f6f9a2c4feba3426552ac7f1529:member'
+    ).one_or_none()
+    assert role is not None
+    action = ActionRoles.query.filter(
+        ActionRoles.argument == '{"community":"99916f6f-9a2c-4feb-a342-6552ac7f1529","publication_state":"draft"}',
+        ActionRoles.action == 'create-deposit',
+        ActionRoles.role_id == role.id
+    ).one_or_none()
+    assert action is not None
+
+
 def validate_loaded_data(app, alembic):
     """Checks that the loaded data is still there and valid."""
     with app.app_context():
@@ -175,6 +195,7 @@ def validate_loaded_data(app, alembic):
 
         check_records_migration(app)
         check_pids_migration()
+        check_communities()
 
 
 def validate_database_schema(app, alembic):
