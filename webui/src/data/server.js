@@ -22,6 +22,7 @@ const apiUrls = {
 
     records()                         { return `${urlRoot}/api/records/` },
     recordsVersion(versionOf)         { return `${urlRoot}/api/records/?version_of=${versionOf}` },
+    versions(id)                      { return `${urlRoot}/api/records/${id}/versions` },
     record(id)                        { return `${urlRoot}/api/records/${id}` },
     draft(id)                         { return `${urlRoot}/api/records/${id}/draft` },
     fileBucket(bucket, key)           { return `${urlRoot}/api/files/${bucket}/${key}` },
@@ -530,6 +531,15 @@ class ServerCache {
         return file;
     }
 
+    getVersions(recordID, callback){
+        ajaxGet({
+            url: apiUrls.versions(recordID),
+            successFn: (versions) => {
+                callback(versions);
+            },
+        });
+    }
+
     // info and user can only be set once during a UI view; they will both be
     // refreshed when the page reloads (including when following hrefs)
     // user can be: null (uninitialized), {} (anonymous user), or {name,...}
@@ -873,6 +883,18 @@ class ServerCache {
                 notifications.danger("An error occured while trying to the role");
             },
         });
+    }
+
+    checkLastActiveVersion(recordID, versions){
+        if(versions){
+            for(var v=0; v<versions.length; v++){
+                var version = versions[v];
+                if(!version.deleted){
+                    return recordID == version.id;
+                }
+            }
+        }
+        return false;
     }
 }
 

@@ -439,6 +439,7 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
                                _external=True),
                 'created': rec_meta.created,
                 'updated': rec_meta.updated,
+                'deleted': rec_pid.status.value == 'D'
             })
         return {'versions': records}
 

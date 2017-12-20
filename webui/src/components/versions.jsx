@@ -66,13 +66,12 @@ const PublishedVersions = React.createClass({
 
     render() {
         let {recordID, versions, style} = this.props;
-        const beQuiet = recordID == versions[0].id;
-        const versionClass = beQuiet ? "" : "alert alert-warning";
-
+        const beQuiet = serverCache.checkLastActiveVersion(recordID, versions);
         const thisVersion = versions.find(v => recordID == v.id);
+
+        const versionClass = thisVersion.deleted || beQuiet ? "" : "alert alert-warning";
         const VerItemRenderer = ({item}) => {
-            const index = item.index + 1;
-            const text = index == versions.length ? "Latest Version" : ("Version" + index);
+            const text = item.version == versions.length ? "Latest Version" : ("Version" + item.version);
             const creation = moment(item.created).format('ll');
             return (<span>{text} - {creation}</span>);
         };
@@ -84,7 +83,7 @@ const PublishedVersions = React.createClass({
         return (
             <div className={versionClass} style={style}>
                 <div className="btn" style={{display: 'inline-block', color:'black', border: '0px solid #eee'}}>
-                    { beQuiet ? "" : "This record has newer versions. " }
+                    { thisVersion.deleted ? "" : beQuiet ? "" : "This record has newer versions. " }
                 </div>
 
                 <div style={{display: 'inline-block', verticalAlign: 'middle', marginBottom: '1px', padding: '0px', width: '17em'}}>

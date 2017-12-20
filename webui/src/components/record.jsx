@@ -16,11 +16,17 @@ const PT = React.PropTypes;
 
 
 export const RecordRoute = React.createClass({
+
+    getVersions(versions){
+        this.versions = versions.versions;
+    },
+
     render() {
         const { id } = this.props.params;
         const record = serverCache.getRecord(id);
+        serverCache.getVersions(id, this.getVersions);
         if (record instanceof Error) {
-            return <Err err={record}/>;
+            return <Err err={record} id={id} versions={this.versions} />;
         }
         if (!record) {
             return <Wait/>;
@@ -369,16 +375,18 @@ const Record = React.createClass({
         if (!record || !rootSchema) {
             return <Wait/>;
         }
-
         const recordID = record.get('id');
         const files = record.get('files') || record.getIn(['metadata', '_files']);
 
-        const isLatestVersion = !record.has('versions') || recordID == record.getIn(['versions', 0, 'id']);
+        var isLatestVersion = false;
+        if(Boolean(record.get('versions'))){
+            isLatestVersion = serverCache.checkLastActiveVersion(recordID, record.get('versions').toJS());
+        }
+
         function onNewVersion (e) {
             e.preventDefault();
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
-
 
         const showB2Note = serverCache.getInfo().get('show_b2note');
         const B2NoteWellStyle = {
