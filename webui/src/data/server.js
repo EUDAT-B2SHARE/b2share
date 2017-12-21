@@ -369,7 +369,6 @@ class ServerCache {
             if (!versionsLink) {
                 return
             }
-            store.setIn(cachePath, null);
             ajaxGet({
                 url: versionsLink,
                 successFn: (data) => {
@@ -377,7 +376,14 @@ class ServerCache {
                         item.index = index;
                         return item;
                     });
-                    store.setIn(cachePath, fromJS(v).reverse());
+                    var record_or_error = store.getIn(['recordCache', cachePath[1]]);
+                    if(record_or_error instanceof Error){
+                        record_or_error.versions = fromJS(v).reverse();
+                    }
+                    else{
+                        store.setIn(cachePath, null);
+                        store.setIn(cachePath, fromJS(v).reverse());
+                    }
                 },
             });
         }
@@ -425,7 +431,7 @@ class ServerCache {
                             successFn: (filedata) => {
                                 const files = filedata.contents.map(this.fixFile);
                                 this.store.setIn(['recordCache', recordID, 'files'], fromJS(files));
-                                // do not fetch file statistiscs for private files
+                                // do not fetch file statistics for private files
                                 // (these files are missing the 'bucket' field)
                             },
                             errorFn: (xhr) => this.store.setIn(['recordCache', recordID, 'files'], new Error(xhr)),
@@ -433,7 +439,18 @@ class ServerCache {
                     }
                     retrieveVersions(this.store, data.links, ['recordCache', recordID, 'versions']);
                 },
-                (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
+                (xhr) => {
+                    if(xhr.status == 410){
+                        var links = {versions: apiUrls.versions(recordID)};
+                        retrieveVersions(this.store, links, ['recordCache', recordID, 'versions']);
+                        var error_with_versions = this.store.getIn(['recordCache', recordID]);
+                        var err = new Error(xhr);
+                        if (error_with_versions){
+                            err.versions = error_with_versions.versions;
+                        }
+                        this.store.setIn(['recordCache', recordID], err);
+                    }
+                } ));
 
         this.getters.draft = new Pool(draftID =>
             new Getter(apiUrls.draft(draftID), null,
@@ -529,15 +546,6 @@ class ServerCache {
             }
         }
         return file;
-    }
-
-    getVersions(recordID, callback){
-        ajaxGet({
-            url: apiUrls.versions(recordID),
-            successFn: (versions) => {
-                callback(versions);
-            },
-        });
     }
 
     // info and user can only be set once during a UI view; they will both be

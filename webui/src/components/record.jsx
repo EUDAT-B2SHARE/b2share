@@ -17,16 +17,11 @@ const PT = React.PropTypes;
 
 export const RecordRoute = React.createClass({
 
-    getVersions(versions){
-        this.versions = versions.versions;
-    },
-
     render() {
         const { id } = this.props.params;
         const record = serverCache.getRecord(id);
-        serverCache.getVersions(id, this.getVersions);
         if (record instanceof Error) {
-            return <Err err={record} id={id} versions={this.versions} />;
+            return <Err err={record} id={id} versions={record.versions} />;
         }
         if (!record) {
             return <Wait/>;

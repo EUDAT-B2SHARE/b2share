@@ -73,6 +73,9 @@ const PublishedVersions = React.createClass({
         const VerItemRenderer = ({item}) => {
             const text = item.version == versions.length ? "Latest Version" : ("Version" + item.version);
             const creation = moment(item.created).format('ll');
+            if(item.deleted){
+                return (<span><strike>{text} - {creation}</strike></span>);
+            }
             return (<span>{text} - {creation}</span>);
         };
         const handleVersionChange = (v) => {
