@@ -146,7 +146,7 @@ module.exports = function() {
             variable is defined and contains the host part of the targeted
             B2SHARE site, e.g.:
         </p>
-        <Example>export HOSTNAME='trng-b2share.eudat.eu'</Example>
+        <Example>export B2SHARE_HOST='trng-b2share.eudat.eu'</Example>
 
 
         <p>Each allowed request is described below as follows:</p>
@@ -220,7 +220,7 @@ module.exports = function() {
             <li><p>Returns: the list of communities (in JSON format) or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/communities/?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/communities/?access_token=$ACCESS_TOKEN
             <Returns>
             {{
               "hits": {
@@ -256,7 +256,7 @@ module.exports = function() {
             <li><p>Returns: the JSON schema, embedded in a JSON object, or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/communities/$COMMUNITY_ID/schemas/last?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/communities/$COMMUNITY_ID/schemas/last?access_token=$ACCESS_TOKEN
             <Returns>
             {{
               "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
@@ -286,7 +286,7 @@ module.exports = function() {
             <li><p>Returns: the list of records (in JSON format) or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/records/?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN
             <Returns>
             {{
               "aggregations": {
@@ -340,7 +340,7 @@ module.exports = function() {
             <li><p>Returns: the list of records (in JSON format) or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/records/?q=community:$COMMUNITY_ID?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/records/?q=community:$COMMUNITY_ID?access_token=$ACCESS_TOKEN
             <Returns>
             {{
               "aggregations": {
@@ -383,7 +383,7 @@ module.exports = function() {
             <li><p>Returns: the list of matching records (in JSON format) or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/records/?q=$QUERY_STRING?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/records/?q=$QUERY_STRING?access_token=$ACCESS_TOKEN
         </Example>
 
         <h3>Search drafts</h3>
@@ -395,7 +395,7 @@ module.exports = function() {
             <li><p>Returns: the list of matching drafts (in JSON format) or an error message.</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/records/?drafts&access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/records/?drafts&access_token=$ACCESS_TOKEN
         </Example>
 
         <h3>Get a specific record</h3>
@@ -406,7 +406,7 @@ module.exports = function() {
             <li><p>Required parameters: access_token</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/records/47077e3c4b9f4852a40709e338ad4620?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/records/47077e3c4b9f4852a40709e338ad4620?access_token=$ACCESS_TOKEN
         </Example>
 
 
@@ -423,7 +423,7 @@ module.exports = function() {
                 will end in '/draft/'</p></li>
         </ul>
         <Example>
-            {'curl -i -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' -X POST https://$HOSTNAME/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -i -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -465,7 +465,7 @@ module.exports = function() {
             <li><p>Returns: informations about the newly uploaded file</p></li>
         </ul>
         <Example>
-            curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' --data-binary @TestFileToBeUploaded.txt https://$HOSTNAME/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
+            curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' --data-binary @TestFileToBeUploaded.txt https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
         </Example>
 
         <h3 id="delete-file">Delete file from draft record</h3>
@@ -477,7 +477,7 @@ module.exports = function() {
             <li><p>Returns: no content</p></li>
         </ul>
         <Example>
-            curl -X DELETE -H 'Accept:application/json' https://$HOSTNAME/api/files/$FILE_BUCKET_ID/FileToBeRemoved.txt?access_token=$ACCESS_TOKEN
+            curl -X DELETE -H 'Accept:application/json' https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID/FileToBeRemoved.txt?access_token=$ACCESS_TOKEN
         </Example>
 
         <h3>List the files uploaded into a record object</h3>
@@ -489,7 +489,7 @@ module.exports = function() {
             <li><p>Returns: information about all the files in the record object</p></li>
         </ul>
         <Example>
-            curl https://$HOSTNAME/api/files/$FILE_BUCKET_ID?access_token=$ACCESS_TOKEN
+            curl https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID?access_token=$ACCESS_TOKEN
         </Example>
 
         <h3 id="update-draft">Update draft record's metadata</h3>
@@ -506,7 +506,7 @@ module.exports = function() {
                 </p> </li>
         </ul>
         <Example>
-            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"]}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"]}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -554,7 +554,7 @@ module.exports = function() {
             message is returned with further details.</p>
 
         <Example>
-            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/publication_state", "value": "submitted"}]\' https://$HOSTNAME/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/publication_state", "value": "submitted"}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -614,7 +614,7 @@ module.exports = function() {
 
 
         <Example>
-            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is s not research data...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$HOSTNAME/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is s not research data...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
             <Returns>
                 {{
                   "message": "The record is reported."
@@ -636,7 +636,7 @@ module.exports = function() {
 
 
         <Example>
-            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"explain the request...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$HOSTNAME/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"explain the request...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
             <Returns>
                 {{
                     "message": "An email was sent to the record owner."
