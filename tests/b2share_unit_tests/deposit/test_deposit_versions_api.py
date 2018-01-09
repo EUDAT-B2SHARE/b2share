@@ -27,6 +27,7 @@
 from six import BytesIO
 import pytest
 from functools import partial
+import json
 
 from invenio_files_rest.models import ObjectVersion, Bucket
 from invenio_records_files.models import RecordsBuckets
@@ -44,6 +45,7 @@ from b2share.modules.deposit.errors import (DraftExistsVersioningError,
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from b2share.modules.records.providers import RecordUUIDProvider
 from invenio_pidrelations.contrib.versioning import PIDVersioning
+from b2share.modules.schemas.api import CommunitySchema
 
 from b2share_unit_tests.helpers import authenticated_user, create_deposit, \
     pid_of
@@ -207,6 +209,44 @@ def test_deposit_copy_data_from_previous(app, test_records, test_users):
             del prev_record.data[field]
         data = {k: v for k, v in prev_record.data.items() if not k.startswith('_')}
         assert copied_data == data
+
+def test_new_deposit_versions_preserve_schema(app, test_records, test_users):
+    """Creating new versions of existing records."""
+    with app.app_context():
+        # Retrieve a record which will be the first version, and its deposit
+        v1_rec = B2ShareRecord.get_record(test_records[0].record_id)
+        _, v1_id = pid_of(test_records[0].data)
+
+        # update the community's schema
+        community_id = v1_rec.model.json['community']
+        old_schema = CommunitySchema.get_community_schema(community_id)
+        json_schema = json.loads(old_schema.model.community_schema)
+        new_schema = CommunitySchema.create_version(community_id, json_schema)
+        assert new_schema.version > old_schema.version
+
+        # create new, unversioned, draft and records
+        data = copy_data_from_previous(v1_rec.model.json)
+        unver_dep = create_deposit(data, test_users['deposits_creator'])
+        unver_dep.submit()
+        unver_dep.publish()
+        _, unver_rec = unver_dep.fetch_published()
+
+        # the unversioned draft or record in a version chain have the updated schema
+        assert unver_dep['$schema'] != Deposit._build_deposit_schema(v1_rec.model.json)
+        assert unver_rec.model.json['$schema'] != v1_rec.model.json['$schema']
+
+        # create new draft and record in the version chain of v1
+        data = copy_data_from_previous(v1_rec.model.json)
+        v2_dep = create_deposit(data, test_users['deposits_creator'],
+                            version_of=v1_id)
+        v2_dep.submit()
+        v2_dep.publish()
+        _, v2_rec = v2_dep.fetch_published()
+
+        # the new draft and record in a version chain preserve the version of the schema
+        assert v2_dep['$schema'] == Deposit._build_deposit_schema(v1_rec.model.json)
+        assert v2_rec.model.json['$schema'] == v1_rec.model.json['$schema']
+
 
 def list_published_pids(child_pid):
     """List all the child pids of a versionned record.
