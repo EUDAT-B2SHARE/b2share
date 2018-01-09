@@ -15,8 +15,10 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     const presentation = schema.getIn(['b2share', 'presentation']);
     const properties = schema.get('properties');
 
-    const majorIDs = presentation ? presentation.get('major') : null;
-    const minorIDs = presentation ?  presentation.get('minor') : null;
+    const majorIDs = presentation && presentation.get('major') ?
+        presentation.get('major').filter(id => properties.get(id)) : null;
+    const minorIDs = presentation && presentation.get('minor') ?
+        presentation.get('minor').filter(id => properties.get(id)) : null;
 
     let minors = OrderedMap(minorIDs ? minorIDs.map(id => [id, properties.get(id)]) : []);
     let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get(id)]) : []);
