@@ -32,11 +32,12 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import url_for, g, current_app
 from flask_login import current_user
-from jsonschema.validators import validator_for
+from jsonschema.validators import validator_for, validate as validate_schema
 from jsonschema.exceptions import ValidationError
 from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
+from jsonpatch import apply_patch
 
 from invenio_db import db
 from invenio_files_rest.models import Bucket, FileInstance, ObjectVersion
@@ -112,6 +113,28 @@ class Deposit(InvenioDeposit):
     def build_deposit_schema(self, record):
         """Convert record schema to a valid deposit schema."""
         return Deposit._build_deposit_schema(record)
+
+    def patch(self, patch):
+        """Patch record metadata.
+        :params patch: Dictionary of record metadata.
+        :returns: A new :class:`Record` instance.
+        """
+        data = dict(self)
+        # Copying temporarily 'external_pids' field in order to give the
+        # illusion that this field actually exist.
+        # TODO: Note that the 'external_pids' field should in the end
+        # be part of the root schema.
+        if 'external_pids' in data['_deposit']:
+            data['external_pids'] = data['_deposit']['external_pids']
+
+        data = apply_patch(data, patch)
+
+        # if the 'external_pids' field was not modified we can discard it.
+        if 'external_pids' in data and \
+                data['external_pids'] == data['_deposit']['external_pids']:
+            del data['external_pids']
+
+        return self.__class__(data, model=self.model)
 
     @contextmanager
     def _process_files(self, record_id, data):
@@ -293,21 +316,27 @@ class Deposit(InvenioDeposit):
             bucket = Bucket.query.filter_by(id=record_bucket.bucket_id).first()
             object_versions = ObjectVersion.query.filter_by(
                 bucket_id=bucket.id).all()
+            key_to_pid = {
+                ext_pid['key']: ext_pid['ePIC_PID']
+                for ext_pid in self['external_pids']
+            }
             # for the existing files
             for object_version in object_versions:
+                # import ipdb
+                # ipdb.set_trace()
                 if object_version.file is None or \
                         object_version.file.storage_class != 'B':
                     continue
                 # check that they are still in the file pids list or remove
-                if object_version.key not in self['external_pids']:
+                if object_version.key not in key_to_pid:
                     ObjectVersion.delete(bucket,
                                          object_version.key)
                 # check that the uri is still the same or update it
                 elif object_version.file.uri != \
-                        self['external_pids'][object_version.key]:
+                        key_to_pid[object_version.key]:
                     db.session.query(FileInstance).\
-                        filter_by(key=object_version.key).\
-                        update({"uri": self['external_pids'][object_version.key]})
+                        filter(FileInstance.id==object_version.file_id).\
+                        update({"uri": key_to_pid[object_version.key]})
             create_b2safe_file(self['external_pids'], bucket)
             self['_deposit']['external_pids'] = self['external_pids']
             del self['external_pids']
@@ -435,15 +464,33 @@ def create_file_pids(record_metadata):
 
 def create_b2safe_file(external_pids, bucket):
     """Create a FileInstance which contains a PID in its uri."""
+    validate_schema(external_pids, {
+        'type': 'array',
+        'items': {
+            'type': 'object',
+            'properties': {
+                'ePIC_PID': {'type': 'string'},
+                'key': {'type': 'string'}
+            },
+            'additionalProperties': False,
+            'required': ['ePIC_PID', 'key']
+        }
+    })
     for external_pid in external_pids:
         try:
+            # Create the file instance if it does not already exist
             file_instance = FileInstance.get_by_uri(external_pid['ePIC_PID'])
             if file_instance is None:
                 file_instance = FileInstance.create()
                 file_instance.set_uri(
                     external_pid['ePIC_PID'], 1, 0, storage_class='B')
             assert file_instance.storage_class == 'B'
-            ObjectVersion.create(bucket, external_pid['key'], file_instance.id)
+            # Add the file to the bucket if it is not already in it
+            current_version = ObjectVersion.get(bucket, external_pid['key'])
+            if not current_version or \
+                    current_version.file_id != file_instance.id:
+                ObjectVersion.create(bucket, external_pid['key'],
+                                     file_instance.id)
         except IntegrityError as e:
             raise InvalidDepositError('File URI already exists.')
 

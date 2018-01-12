@@ -37,6 +37,7 @@ from invenio_access.permissions import (
 from invenio_access.models import ActionUsers, ActionRoles
 from flask_security import current_user
 from invenio_accounts.models import userrole
+from b2share.modules.files.permissions import DepositFilesPermission
 
 from flask import request, abort
 from b2share.modules.access.permissions import (AuthenticatedNeed,
@@ -266,8 +267,23 @@ class UpdateDepositPermission(DepositPermission):
             # the patch twice
             patch = deposit_patch_input_loader(self.deposit)
             new_deposit = deepcopy(self.deposit)
+            external_pids_changed = False
             try:
+
+                # Copying temporarily 'external_pids' field in order to give
+                # the illusion that this field actually exist.
+                # TODO: Note that the 'external_pids' field should in the end
+                # be part of the root schema.
+                if 'external_pids' in new_deposit['_deposit']:
+                    new_deposit['external_pids'] = new_deposit['_deposit']['external_pids']
                 apply_patch(new_deposit, patch, in_place=True)
+                if 'external_pids' in new_deposit['_deposit']:
+                    external_pids_changed = (
+                        new_deposit['_deposit']['external_pids'] !=
+                        new_deposit['external_pids']
+                    )
+                    del new_deposit['external_pids']
+
             except JsonPatchException:
                 abort(400)
         # elif (request.method == 'PUT' and
@@ -312,6 +328,11 @@ class UpdateDepositPermission(DepositPermission):
             if original_metadata != new_deposit:
                 permissions.append(
                     UpdateDepositMetadataPermission(self.deposit, new_state)
+                )
+
+            if external_pids_changed:
+                permissions.append(
+                    DepositFilesPermission(self.deposit, 'bucket-update')
                 )
 
         if len(permissions) > 1:

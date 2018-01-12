@@ -550,8 +550,6 @@ export const EditFiles = React.createClass({
         this.updateNext();
         const b2dropZone = <B2DropZone close={e => this.props.setModal(false)}
                                        onFiles={fs => this.handleAdd(fs, 'b2drop')} />;
-        const b2safeZone = <B2SafeZone close={e => this.props.setModal(false)}
-                                       onFiles={fs => this.handleAdd(fs, 'b2safe')} />;
         return (
             <div>
                 <div className="row" style={{borderBottom:'1px solid #ddd'}}>
@@ -565,12 +563,6 @@ export const EditFiles = React.createClass({
                         <button className='b2dropbutton' onClick={e => this.props.setModal(b2dropZone)}>
                             <img src="/img/b2drop.png"/>
                             <h3>Add B2DROP files</h3>
-                        </button>
-                    </div>
-                    <div className="col-md-offset-3 col-md-9" style={{marginBottom:'1em'}}>
-                        <button className='b2dropbutton' onClick={e => this.props.setModal(b2safeZone)}>
-                            <img src="/img/b2safe.png"/>
-                            <h3>Add B2SAFE files</h3>
                         </button>
                     </div>
 
