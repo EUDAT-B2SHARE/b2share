@@ -41,7 +41,7 @@ from jsonpatch import apply_patch
 
 from invenio_db import db
 from invenio_files_rest.models import Bucket, FileInstance, ObjectVersion
-from invenio_deposit.api import Deposit as InvenioDeposit
+from invenio_deposit.api import Deposit as InvenioDeposit, has_status, preserve
 from invenio_records_files.api import Record
 from invenio_records_files.models import RecordsBuckets
 from invenio_records.errors import MissingModelError
@@ -114,6 +114,9 @@ class Deposit(InvenioDeposit):
         """Convert record schema to a valid deposit schema."""
         return Deposit._build_deposit_schema(record)
 
+    @has_status
+    # check also that these fields are not mutable on the published records too
+    @preserve(fields=['_internal', '_files', '_oai', '_deposit'])
     def patch(self, patch):
         """Patch record metadata.
         :params patch: Dictionary of record metadata.

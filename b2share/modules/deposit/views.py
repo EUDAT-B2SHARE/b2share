@@ -39,6 +39,7 @@ from invenio_deposit.search import DepositSearch
 from invenio_indexer.api import RecordIndexer
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 from invenio_pidstore.models import PIDStatus
+from b2share.modules.deposit.api import Deposit
 from b2share.modules.records.providers import RecordUUIDProvider
 
 
@@ -174,6 +175,7 @@ class DepositResource(RecordResource):
         """PATCH the deposit."""
         pid, record = request.view_args['pid_value'].data
         result = super(DepositResource, self).patch(*args, **kwargs)
+        record = Deposit.get_record(record['_deposit']['id'])
         self._index_record(record)
         return result
 
