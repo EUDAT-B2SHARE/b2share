@@ -318,6 +318,14 @@ class UpdateDepositPermission(DepositPermission):
             self.permissions.add(AndPermissions(*permissions))
         elif len(permissions) == 1:
             self.permissions.add(permissions[0])
+        elif len(permissions) == 0:
+            # Avoid forbidding requests doing nothing. This can be useful if
+            # a script replays an action.
+            self.permissions.add(
+                UpdateDepositMetadataPermission(
+                    self.deposit, new_deposit['publication_state']
+                )
+            )
 
 
 class DeleteDepositPermission(DepositPermission):
