@@ -39,65 +39,26 @@ from b2share.modules.files.storage import B2ShareFileStorage
 from invenio_db import db
 
 
-def test_deposit_create(app, tmp_location, login_user, test_users):
-    """Test deposit creation."""
-    with app.app_context():
-        tmp_location = Location.query.first()
-        with db.session.begin_nested():
-            b1 = Bucket.create(tmp_location, storage_class='B')
-            f1 = FileInstance.create()
-            f1.set_uri('http://hdl.handle.net/11304/74c66f0b-f814-4202-9dcb-4889ba9b1047',
-                       1, 0, storage_class='B')
-            # f2 = FileInstance(uri="f2", size=1,
-            #                   checksum="mychecksum", storage_class='S')
-            # f2.create
-            # f2.set_uri('http://hdl.handle.net/11304/74c66f0b-f814-4202-9dcb-4889ba9b1047',
-                       # 1, 0, storage_class='B2SAFE')
-            ObjectVersion.create(b1, 'test.txt', f1.id)
-            # ObjectVersion.create(b1, 'test2.txt', f2.id)
-        db.session.commit()
-
-        with app.test_client() as client:
-            login_user(test_users['normal'], client)
-            resp = client.get(
-                url_for('invenio_files_rest.object_api',
-                        bucket_id=b1.id,
-                        key='test.txt',
-                        follow_redirects=True)
-            )
-            print(resp.data)
-
-
-# move these to the functional tests
-def test_create_record_with_b2safe_files(app):
-    # create a record which has a file_pids field in the metadata
-    pass
-
-
-def test_modify_record_adding_b2safe_files(app):
-    # create an empty record
-    # modify it to add 2 b2safe files
-    # modify it to remove 1 and add 1
-    # modify it to remove all
-    pass
-
-
-def test_record_with_both_types_of_files(app):
-    # create a record with a b2safe file
-    # upload a normal record
-    # modify to change the b2safe file
-    # upload a second normal file
-    pass
-
-
-def test_getting_a_b2safe_file(app, tmp_location):
-    # create a b2safe file
-    # query to get the contents of the b2safe file
-    # check that the redirect works
+def test_b2share_storage_with_pid(app, tmp_location, login_user, test_users):
+    """Check that the storage class will redirect pid files."""
+    pid = 'http://hdl.handle.net/11304/74c66f0b-f814-4202-9dcb-4889ba9b1047'
+    # Disable access control for this test
+    app.config.update({
+        'FILES_REST_PERMISSION_FACTORY': 'invenio_records_rest.utils:allow_all'
+    })
     with app.app_context():
         tmp_location = Location.query.first()
         with db.session.begin_nested():
             bucket = Bucket.create(tmp_location, storage_class='B')
-            b2safe_file = FileInstance.create()
-            b2safe_file.set_uri('http://hdl.handle.net/11304/74c66f0b-f814-4202-9dcb-4889ba9b1047',
-                                1, 0, storage_class='B')
+            pid_file = FileInstance.create()
+            pid_file.set_uri(pid, 1, 0, storage_class='B')
+            ObjectVersion.create(bucket, 'test.txt', pid_file.id)
+        db.session.commit()
+        url = url_for('invenio_files_rest.object_api',
+                        bucket_id=bucket.id,
+                        key='test.txt')
+    # Check that accessing the file redirects to the PID
+    with app.test_client() as client:
+        resp = client.get(url)
+        assert resp.headers['Location'] == pid
+        assert resp.status_code == 302

@@ -218,3 +218,39 @@ def test_change_deposit_schema_fails(app, draft_deposits):
         del deposit['$schema']
         with pytest.raises(AlteredRecordError):
             deposit.commit()
+
+
+def test_create_deposit_with_external_pids(app, deposit_with_external_pids):
+    expected_files = deposit_with_external_pids.data['_deposit']['external_pids']
+    expected_uris = { exp['ePIC_PID'] for exp in expected_files }
+    expected_keys = { exp['key'] for exp in expected_files }
+    with app.app_context():
+        files = [f for f in deposit_with_external_pids.get_deposit().files]
+        assert len(files) == len(expected_files)
+        # Check that the URIs match
+        uris = {file.obj.file.uri for file in files}
+        assert uris == expected_uris
+        # Check that the keys match
+        keys = {file.obj.key for file in files}
+        assert keys == expected_keys
+        # Check that all files are redirect files
+        assert all([file.obj.file.storage_class == 'B' for file in files])
+        # Check that the files are deduplicated in the DB
+        file_ids = {file.obj.file_id for file in files}
+        assert len(file_ids) == len(uris)
+
+
+def test_modify_record_adding_b2safe_files(app):
+    # create an empty record
+    # modify it to add 2 b2safe files
+    # modify it to remove 1 and add 1
+    # modify it to remove all
+    pass
+
+
+def test_record_with_both_types_of_files(app):
+    # create a record with a b2safe file
+    # upload a normal record
+    # modify to change the b2safe file
+    # upload a second normal file
+    pass

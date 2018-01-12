@@ -345,6 +345,40 @@ def test_records_data(app, test_communities):
 
 
 @pytest.fixture(scope='function')
+def deposit_with_external_pids(app, test_communities, test_users):
+    """Create a deposit with external pids."""
+    record_data = json.dumps({
+        "external_pids":[
+            {
+                "key":"file1.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+            }, {
+                "key":"file1_copy.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+            }, {
+                "key":"file2.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a7"
+            }
+        ],
+        'titles': [{'title':'BBMRI dataset 6'}],
+        'community': '$COMMUNITY_ID[MyTestCommunity2]',
+        'open_access': True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    })
+    with app.app_context():
+        data = json.loads(resolve_block_schema_id(resolve_community_id(
+            record_data)))
+        result = create_deposits(app, [data],
+                                 test_users['deposits_creator'])[0]
+        db.session.commit()
+        return result
+
+
+@pytest.fixture(scope='function')
 def test_incomplete_records_data(app, test_communities):
     """Create incomplete record data and the corresponding patch."""
     invalid_patches = [[
@@ -400,7 +434,13 @@ def test_incomplete_records_data(app, test_communities):
 
 def create_deposits(app, test_records_data, creator):
     """Create test deposits."""
-    DepositInfo = namedtuple('DepositInfo', ['deposit_id', 'data', 'deposit'])
+    DepositInfo = namedtuple(
+        'DepositInfo', [
+            'deposit_id',
+            'data',
+            'deposit', # FIXME: replaced by get_deposit, remove it later
+            'get_deposit'
+        ])
 
     deposits = []
     with authenticated_user(creator):
@@ -409,7 +449,10 @@ def create_deposits(app, test_records_data, creator):
             # Create persistent identifier
             b2share_deposit_uuid_minter(record_uuid, data=data)
             deposits.append(B2ShareDeposit.create(data=data, id_=record_uuid))
-    return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
+    return [DepositInfo(
+        dep.id, dep.dumps(), dep,
+        (lambda id: lambda: B2ShareDeposit.get_record(id))(dep.id)
+    ) for dep in deposits]
 
 
 @pytest.fixture(scope='function')
