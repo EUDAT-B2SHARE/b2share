@@ -480,6 +480,9 @@ def create_b2safe_file(external_pids, bucket):
         }
     })
     for external_pid in external_pids:
+        if not external_pid['ePIC_PID'].startswith("http://hdl.handle.net/"):
+            external_pid['ePIC_PID'] = "http://hdl.handle.net/" + \
+                external_pid['ePIC_PID']
         try:
             # Create the file instance if it does not already exist
             file_instance = FileInstance.get_by_uri(external_pid['ePIC_PID'])

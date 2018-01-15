@@ -72,6 +72,7 @@ class B2ShareRecord(Record):
         pid = b2share_record_uuid_fetcher(self.id, self)
         return PersistentIdentifier.get(pid.pid_type,
                                         pid.pid_value)
+
     def delete(self):
         """Delete a record."""
         from b2share.modules.deposit.api import Deposit
@@ -83,8 +84,9 @@ class B2ShareRecord(Record):
             depid, deposit = Resolver(
                 pid_type=depid.pid_type,
                 object_type='rec',
-                # Retrieve the deposit with the Record class on purpose as the current
-                # Deposit api prevents the deletion of published deposits.
+                # Retrieve the deposit with the Record class on purpose
+                # as the current Deposit api prevents the deletion of
+                # published deposits.
                 getter=Deposit.get_record,
             ).resolve(depid.pid_value)
             deposit.delete()

@@ -725,7 +725,10 @@ export const FileRecordRow = React.createClass({
                             </span> : null
                         }
                     </div>
-                    <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
+                    <div className={"col-sm-"+(this.props.remove? "2":"3")}>{
+                        file.b2safe ?
+                        "-" : humanSize(file.size)
+                    }</div>
                     { this.props.remove ?
                         <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
                             onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>
