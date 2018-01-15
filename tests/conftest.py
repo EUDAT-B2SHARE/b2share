@@ -345,8 +345,7 @@ def test_records_data(app, test_communities):
 
 
 @pytest.fixture(scope='function')
-def deposit_with_external_pids(app, test_communities, test_users):
-    """Create a deposit with external pids."""
+def records_data_with_external_pids(app, test_communities):
     record_data = json.dumps({
         "external_pids":[
             {
@@ -370,9 +369,16 @@ def deposit_with_external_pids(app, test_communities, test_users):
         }
     })
     with app.app_context():
-        data = json.loads(resolve_block_schema_id(resolve_community_id(
+        return json.loads(resolve_block_schema_id(resolve_community_id(
             record_data)))
-        result = create_deposits(app, [data],
+
+
+@pytest.fixture(scope='function')
+def deposit_with_external_pids(app, records_data_with_external_pids,
+                               test_communities, test_users):
+    """Create a deposit with external pids."""
+    with app.app_context():
+        result = create_deposits(app, [records_data_with_external_pids],
                                  test_users['deposits_creator'])[0]
         db.session.commit()
         return result

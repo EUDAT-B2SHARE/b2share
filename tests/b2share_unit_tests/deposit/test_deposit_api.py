@@ -25,8 +25,10 @@
 
 
 import uuid
+from copy import deepcopy
 
 import pytest
+from jsonschema.exceptions import ValidationError
 from b2share.modules.deposit.api import Deposit, PublicationStates
 from b2share.modules.deposit.errors import InvalidDepositError
 from b2share.modules.communities.errors import InvalidPublicationStateError
@@ -244,3 +246,78 @@ def test_record_with_both_types_of_files(app):
     # modify to change the b2safe file
     # upload a second normal file
     pass
+
+
+def test_create_deposit_with_external_pids_errors(
+        app, records_data_with_external_pids):
+    """Test errors when a deposit is created with invalid external files."""
+    data_without_pid = deepcopy(records_data_with_external_pids)
+    del data_without_pid['external_pids'][0]['ePIC_PID']
+    with app.app_context():
+        with pytest.raises(ValidationError,
+                           match="'ePIC_PID' is a required property.*"):
+            create_deposit(data_without_pid)
+
+    data_without_key = deepcopy(records_data_with_external_pids)
+    del data_without_key['external_pids'][0]['key']
+    with app.app_context():
+        with pytest.raises(ValidationError,
+                           match="'key' is a required property.*"):
+            create_deposit(data_without_key)
+
+
+    data_with_unknown_key = deepcopy(records_data_with_external_pids)
+    data_with_unknown_key['external_pids'][0]['unknown'] = 'value'
+    with app.app_context():
+        with pytest.raises(ValidationError,
+                           match="Additional properties are not allowed "
+                           "\('unknown' was unexpected\).*"):
+            create_deposit(data_with_unknown_key)
+
+
+def test_patch_deposit_with_external_pids_errors(app,
+                                                 deposit_with_external_pids):
+    """Test errors when an invalid PATCH modifies the external files."""
+    with app.app_context():
+        deposit = deposit_with_external_pids.get_deposit()
+        with pytest.raises(ValidationError,
+                           match="'ePIC_PID' is a required property.*"):
+            deposit = deposit.patch([
+                {
+                    "op": "replace",
+                    "path": "/external_pids",
+                    "value": [{
+                        "key":"file1.txt",
+                    }]
+                }
+            ])
+            deposit.commit()
+
+        deposit = deposit_with_external_pids.get_deposit()
+        with pytest.raises(ValidationError,
+                           match="'key' is a required property.*"):
+            deposit = deposit.patch([
+                {
+                    "op": "replace",
+                    "path": "/external_pids",
+                    "value": [{
+                        "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+                    }]
+                }
+            ])
+            deposit.commit()
+        with pytest.raises(ValidationError,
+                           match="Additional properties are not allowed "
+                           "\('unknown' was unexpected\).*"):
+            deposit = deposit.patch([
+                {
+                    "op": "replace",
+                    "path": "/external_pids",
+                    "value": [{
+                        "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3",
+                        "key":"file1.txt",
+                        "unknown":"field",
+                    }]
+                }
+            ])
+            deposit.commit()

@@ -320,13 +320,11 @@ class Deposit(InvenioDeposit):
             object_versions = ObjectVersion.query.filter_by(
                 bucket_id=bucket.id).all()
             key_to_pid = {
-                ext_pid['key']: ext_pid['ePIC_PID']
+                ext_pid.get('key'): ext_pid.get('ePIC_PID')
                 for ext_pid in self['external_pids']
             }
             # for the existing files
             for object_version in object_versions:
-                # import ipdb
-                # ipdb.set_trace()
                 if object_version.file is None or \
                         object_version.file.storage_class != 'B':
                     continue
