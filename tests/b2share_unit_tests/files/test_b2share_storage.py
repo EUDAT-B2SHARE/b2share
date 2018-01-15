@@ -37,16 +37,15 @@ from invenio_files_rest.models import Bucket, FileInstance, \
     ObjectVersion, Location
 from b2share.modules.files.storage import B2ShareFileStorage
 from invenio_db import db
+from invenio_records_rest.utils import allow_all
+from invenio_files_rest.proxies import current_files_rest
 
 
-def test_b2share_storage_with_pid(app, tmp_location, login_user, test_users):
+def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_users):
     """Check that the storage class will redirect pid files."""
     pid = 'http://hdl.handle.net/11304/74c66f0b-f814-4202-9dcb-4889ba9b1047'
-    # Disable access control for this test
-    app.config.update({
-        'FILES_REST_PERMISSION_FACTORY': 'invenio_records_rest.utils:allow_all'
-    })
     with app.app_context():
+        # Disable access control for this test
         tmp_location = Location.query.first()
         with db.session.begin_nested():
             bucket = Bucket.create(tmp_location, storage_class='B')
@@ -57,8 +56,15 @@ def test_b2share_storage_with_pid(app, tmp_location, login_user, test_users):
         url = url_for('invenio_files_rest.object_api',
                         bucket_id=bucket.id,
                         key='test.txt')
-    # Check that accessing the file redirects to the PID
-    with app.test_client() as client:
-        resp = client.get(url)
-        assert resp.headers['Location'] == pid
-        assert resp.status_code == 302
+    try:
+        with app.app_context():
+            permission = current_files_rest.permission_factory
+            current_files_rest.permission_factory = allow_all
+        # Check that accessing the file redirects to the PID
+        with app.test_client() as client:
+            resp = client.get(url)
+            assert resp.headers['Location'] == pid
+            assert resp.status_code == 302
+    finally:
+        with app.app_context():
+            current_files_rest.permission_factory = permission
