@@ -1,5 +1,6 @@
 # create new storage class for invenio-files-rest
-# which disables almost everything but redirects when getting a file (send_file)
+# which disables almost everything but redirects when getting a file
+# (send_file)
 
 # create the FileInstance with the planted PID
 # - and the required ObjectVersion
@@ -32,13 +33,16 @@
 
 """Test B2Share Storage Class."""
 
+import pytest
 from flask import url_for
 from invenio_files_rest.models import Bucket, FileInstance, \
     ObjectVersion, Location
+from b2share.modules.deposit.api import Deposit
 from b2share.modules.files.storage import B2ShareFileStorage
 from invenio_db import db
 from invenio_records_rest.utils import allow_all
 from invenio_files_rest.proxies import current_files_rest
+from b2share_unit_tests.helpers import assert_external_files
 
 
 def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_users):
@@ -68,3 +72,56 @@ def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_
     finally:
         with app.app_context():
             current_files_rest.permission_factory = permission
+
+
+@pytest.mark.parametrize('new_external_pids',
+                         [[{
+                             "key": "file1.txt",
+                             "ePIC_PID":
+                             "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa2"
+                         }], [{
+                             "key": "renamed_file.txt",
+                             "ePIC_PID":
+                             "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa4"
+                         }]])
+def test_modify_external_files(app, deposit_with_external_pids,
+                               new_external_pids):
+    """Test changing PID, renaming and deletion of external files."""
+    with app.app_context():
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        deposit = deposit.patch([
+            {'op': 'replace', 'path': '/external_pids',
+             'value': new_external_pids}
+        ])
+        deposit.commit()
+        assert_external_files(deposit, new_external_pids)
+
+
+def test_adding_external_files(app, deposit_with_external_pids):
+    """Test the addition of external files."""
+    with app.app_context():
+        new_external_pids = [
+            {
+                "key": "file1.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+            }, {
+                "key": "file1_copy.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+            }, {
+                "key": "file2.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a7"
+            }, {
+                "key": "file3.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a6"
+            }, {
+                "key": "file4.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a8"
+            }
+        ]
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        deposit = deposit.patch([
+            {'op': 'replace', 'path': '/external_pids',
+             'value': new_external_pids}
+        ])
+        deposit.commit()
+        assert_external_files(deposit, new_external_pids)
