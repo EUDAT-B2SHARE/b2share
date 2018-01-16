@@ -96,10 +96,15 @@ class Deposit(InvenioDeposit):
         parsed = urlparse(self['$schema'])
         return urlunparse(parsed._replace(fragment='/json_schema'))
 
-    def build_deposit_schema(self, record):
+    @staticmethod
+    def _build_deposit_schema(record):
         """Convert record schema to a valid deposit schema."""
         parsed = urlparse(record['$schema'])
         return urlunparse(parsed._replace(fragment='/draft_json_schema'))
+
+    def build_deposit_schema(self, record):
+        """Convert record schema to a valid deposit schema."""
+        return Deposit._build_deposit_schema(record)
 
     @contextmanager
     def _process_files(self, record_id, data):
@@ -193,12 +198,16 @@ class Deposit(InvenioDeposit):
             raise InvalidDepositError(
                 'No schema for community {}.'.format(community_id)) from e
 
-        from b2share.modules.schemas.serializers import \
-            community_schema_draft_json_schema_link
-        data['$schema'] = community_schema_draft_json_schema_link(
-            schema,
-            _external=True
-        )
+        if version_of:
+            data['$schema'] = Deposit._build_deposit_schema(prev_version)
+        else:
+            from b2share.modules.schemas.serializers import \
+                community_schema_draft_json_schema_link
+            data['$schema'] = community_schema_draft_json_schema_link(
+                schema,
+                _external=True
+            )
+
         deposit = super(Deposit, cls).create(data, id_=id_)
 
         # create file bucket
