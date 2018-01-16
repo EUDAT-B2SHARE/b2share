@@ -424,6 +424,17 @@ class ServerCache {
                             url: data.links.files,
                             successFn: (filedata) => {
                                 const files = filedata.contents.map(this.fixFile);
+                                for(var file_idx=0; file_idx<files.length; file_idx++){
+                                    var current_file = files[file_idx];
+                                    var external_pids = data.metadata.external_pids
+                                    for(var ext_file_idx=0; ext_file_idx<data.metadata.external_pids.length; ext_file_idx++){
+                                        var ext_file = data.metadata.external_pids[ext_file_idx];
+                                        if(ext_file.key == current_file.key){
+                                            current_file.b2safe = true;
+                                            break;
+                                        }
+                                    }
+                                }
                                 this.store.setIn(['recordCache', recordID, 'files'], fromJS(files));
                                 // do not fetch file statistiscs for private files
                                 // (these files are missing the 'bucket' field)

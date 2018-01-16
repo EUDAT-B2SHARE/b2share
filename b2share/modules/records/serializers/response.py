@@ -73,8 +73,6 @@ class JSONSerializer(InvenioJSONSerializer):
 
     def serialize(self, pid, record, links_factory=None):
         """B2ShareRecord serializer."""
-        if 'external_pids' in record['_deposit']:
-            record['external_pids'] = record['_deposit']['external_pids']
         return super(JSONSerializer, self).\
             serialize(pid, record, links_factory)
 

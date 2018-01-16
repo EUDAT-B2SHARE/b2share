@@ -44,14 +44,14 @@ class DraftSchemaJSONV1(Schema):
     def filter_internal(self, data):
         """Remove internal fields from the record metadata."""
         if '_deposit' in data['metadata']:
+            if 'external_pids' in data['metadata']['_deposit']:
+                data['metadata']['external_pids'] = \
+                    data['metadata']['_deposit']['external_pids']
             data['metadata']['owners'] = data['metadata']['_deposit']['owners']
             del data['metadata']['_deposit']
         if '_files' in data['metadata']:
             if allow_public_file_metadata(data['metadata']):
                 data['files'] = data['metadata']['_files']
-                if 'external_pids' in data['metadata']:
-                    data['external_pids'] = \
-                        [d['key'] for d in data['metadata']['external_pids']]
                 for _file in data['files']:
                     if 'external_pids' in data['metadata'] and \
                             any(d['key'] == _file['key']

@@ -33,16 +33,17 @@
 
 """Test B2Share Storage Class."""
 
+import json
 import pytest
 from flask import url_for
 from invenio_files_rest.models import Bucket, FileInstance, \
     ObjectVersion, Location
-from b2share.modules.deposit.api import Deposit
-from b2share.modules.files.storage import B2ShareFileStorage
 from invenio_db import db
 from invenio_records_rest.utils import allow_all
 from invenio_files_rest.proxies import current_files_rest
-from b2share_unit_tests.helpers import assert_external_files
+from b2share.modules.deposit.api import Deposit, PublicationStates
+from b2share_unit_tests.helpers import assert_external_files, \
+    build_expected_metadata
 
 
 def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_users):
@@ -56,6 +57,7 @@ def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_
             pid_file = FileInstance.create()
             pid_file.set_uri(pid, 1, 0, storage_class='B')
             ObjectVersion.create(bucket, 'test.txt', pid_file.id)
+
         db.session.commit()
         url = url_for('invenio_files_rest.object_api',
                         bucket_id=bucket.id,
@@ -125,3 +127,51 @@ def test_adding_external_files(app, deposit_with_external_pids):
         ])
         deposit.commit()
         assert_external_files(deposit, new_external_pids)
+
+
+def test_missing_handle_prefix(app, test_users, login_user,
+                               records_data_with_external_pids,
+                               deposit_with_external_pids):
+    """Test external files that are registered without a handle prefix."""
+    with app.app_context():
+        no_prefix_external_pid = \
+            [{"key": "no_prefix.txt",
+              "ePIC_PID": "11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"}]
+        correct_external_pid = \
+            [{"key": "no_prefix.txt",
+              "ePIC_PID":
+              "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"}]
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        deposit = deposit.patch([
+            {'op': 'replace', 'path': '/external_pids',
+             'value': no_prefix_external_pid}
+        ])
+        deposit.commit()
+        assert_external_files(deposit, correct_external_pid)
+
+    headers = [('Content-Type', 'application/json'),
+               ('Accept', 'application/json')]
+
+    def create_record(client, record_data):
+        return client.post(
+            url_for('b2share_records_rest.b2rec_list'),
+            data=json.dumps(record_data),
+            headers=headers
+        )
+
+    with app.app_context():
+        with app.test_client() as client:
+            user = test_users['normal']
+            login_user(user, client)
+            # create the deposit with the missing prefix
+            records_data_with_external_pids['external_pids'] = \
+                no_prefix_external_pid
+            draft_data_with_external_pids = records_data_with_external_pids
+            draft_create_res = create_record(
+                client, draft_data_with_external_pids)
+            assert draft_create_res.status_code == 201
+            draft_create_data = json.loads(
+                draft_create_res.get_data(as_text=True))
+            # assert that when returned the external pid has the prefix
+            assert draft_create_data['metadata']['external_pids'] == \
+                correct_external_pid
