@@ -126,7 +126,7 @@ PIDSTORE_DATACITE_PASSWORD = "XXXX"
 TRAINING_SITE_LINK = ""
 
 # comment B2NOTE_URL to hide b2note buttons
-B2NOTE_URL = 'https://b2note.bsc.es/devel/interface_main.html'
+B2NOTE_URL = 'https://b2note.bsc.es/interface_main.html'
 
 # displayed in the UI
 TERMS_OF_USE_LINK = 'http://hdl.handle.net/11304/e43b2e3f-83c5-4e3f-b8b7-18d38d37a6cd'

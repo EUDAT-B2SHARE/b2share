@@ -130,7 +130,9 @@ const routerElement = ReactDOM.render(router, document.getElementById('page'));
 serverCache.init(info => {
     const siteFunctionElement = document.getElementById('site-function');
     if (siteFunctionElement && info.get('site_function')) {
-        siteFunctionElement.innerHTML = info.get('site_function');
+        if (info.get('site_function') != 'production') {
+            siteFunctionElement.innerHTML = info.get('site_function');
+        }
     }
 
     const versionElement = document.getElementById('version');
