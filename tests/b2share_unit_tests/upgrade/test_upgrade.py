@@ -33,6 +33,7 @@ from b2share_unit_tests.helpers import db_create_v2_0_1, \
 from sqlalchemy.engine.reflection import Inspector
 from subprocess import call
 from invenio_records.models import RecordMetadata
+from b2share.modules.upgrade.api import UpgradeRecipe
 
 from b2share.modules.upgrade.errors import MigrationFromUnknownVersionError
 
@@ -189,16 +190,18 @@ def test_upgrade_from_v2_0_0(clean_app):
         result = upgrade_run(clean_app)
         assert result.exit_code == 0
 
-        repeat_upgrade(clean_app, ext.alembic)
+        expected_migrations = UpgradeRecipe.build_upgrade_path(
+            '2.0.0', current_migration_version)
+        repeat_upgrade(clean_app, ext.alembic, len(expected_migrations))
 
         # check that the migration information have been saved
-        migrations = Migration.query.all()
-        assert len(migrations) == 1
-        mig = migrations[0]
-        assert mig.version == current_migration_version
-        for step in mig.data['steps']:
-            assert step['status'] == 'success'
-        assert mig.data['error'] is None
+        migrations = Migration.query.order_by(Migration.created.asc()).all()
+        assert len(migrations) == len(expected_migrations)
+        assert migrations[-1].version == current_migration_version
+        for mig in migrations:
+            for step in mig.data['steps']:
+                assert step['status'] == 'success'
+            assert mig.data['error'] is None
 
     with clean_app.app_context():
         validate_loaded_data(clean_app, ext.alembic)
@@ -244,7 +247,7 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
         migrations = Migration.query.all()
         assert len(migrations) == 1
         mig = migrations[0]
-        assert mig.version == current_migration_version
+        assert mig.version == '2.1.0'
         assert not mig.success
         assert not ext.alembic.compare_metadata()
         # Fix the record
@@ -262,14 +265,18 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
         assert not ext.alembic.compare_metadata()
 
         # check that the migration information have been saved
-        migrations = Migration.query.all()
-        assert len(migrations) == 2
-        mig = next(mig for mig in migrations if mig.success)
-        assert mig.version == current_migration_version
-        assert mig.success
+        migrations = Migration.query.order_by(Migration.created.asc()).all()
+        expected_migrations = UpgradeRecipe.build_upgrade_path(
+            '2.0.0', current_migration_version)
+        # Failed release + total succeeded releases
+        assert len(migrations) == 1 + len(expected_migrations)
+        assert [mig.version for mig in migrations if mig.success] == \
+            [mig.dst_version for mig in expected_migrations]
+        # assert mig.version == current_migration_version
+        # assert mig.success
 
     with clean_app.app_context():
-        repeat_upgrade(clean_app, ext.alembic, 2)
+        repeat_upgrade(clean_app, ext.alembic, 1 + len(expected_migrations))
 
     with clean_app.app_context():
         validate_loaded_data(clean_app, ext.alembic)
