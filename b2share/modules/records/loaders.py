@@ -30,7 +30,9 @@ from b2share.modules.deposit.loaders import (
 
 
 IMMUTABLE_PATHS = DEPOSIT_IMMUTABLE_PATHS.union({
-    '/publication_state', # immutable for a published record
+    # additional fields immutable for a published record
+    '/publication_state',
+    '/external_pids',
 })
 
 def record_patch_input_loader(record=None):

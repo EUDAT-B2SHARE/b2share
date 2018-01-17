@@ -232,22 +232,6 @@ def test_create_deposit_with_external_pids(app, deposit_with_external_pids):
                               expected_files)
 
 
-def test_modify_record_adding_b2safe_files(app):
-    # create an empty record
-    # modify it to add 2 b2safe files
-    # modify it to remove 1 and add 1
-    # modify it to remove all
-    pass
-
-
-def test_record_with_both_types_of_files(app):
-    # create a record with a b2safe file
-    # upload a normal record
-    # modify to change the b2safe file
-    # upload a second normal file
-    pass
-
-
 def test_create_deposit_with_external_pids_errors(
         app, records_data_with_external_pids):
     """Test errors when a deposit is created with invalid external files."""

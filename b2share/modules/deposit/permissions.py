@@ -29,7 +29,7 @@ from collections import namedtuple
 from itertools import chain
 from functools import partial
 
-from jsonpatch import apply_patch, JsonPatchException
+from jsonpatch import apply_patch
 from flask_principal import UserNeed
 from invenio_access.permissions import (
     superuser_access, ParameterizedActionNeed, DynamicPermission
@@ -268,24 +268,20 @@ class UpdateDepositPermission(DepositPermission):
             patch = deposit_patch_input_loader(self.deposit)
             new_deposit = deepcopy(self.deposit)
             external_pids_changed = False
-            try:
+            # Copying temporarily 'external_pids' field in order to give
+            # the illusion that this field actually exist.
+            # TODO: Note that the 'external_pids' field should in the end
+            # be part of the root schema.
+            if 'external_pids' in new_deposit['_deposit']:
+                new_deposit['external_pids'] = new_deposit['_deposit']['external_pids']
+            apply_patch(new_deposit, patch, in_place=True)
+            if 'external_pids' in new_deposit['_deposit']:
+                external_pids_changed = (
+                    new_deposit['_deposit']['external_pids'] !=
+                    new_deposit['external_pids']
+                )
+                del new_deposit['external_pids']
 
-                # Copying temporarily 'external_pids' field in order to give
-                # the illusion that this field actually exist.
-                # TODO: Note that the 'external_pids' field should in the end
-                # be part of the root schema.
-                if 'external_pids' in new_deposit['_deposit']:
-                    new_deposit['external_pids'] = new_deposit['_deposit']['external_pids']
-                apply_patch(new_deposit, patch, in_place=True)
-                if 'external_pids' in new_deposit['_deposit']:
-                    external_pids_changed = (
-                        new_deposit['_deposit']['external_pids'] !=
-                        new_deposit['external_pids']
-                    )
-                    del new_deposit['external_pids']
-
-            except JsonPatchException:
-                abort(400)
         # elif (request.method == 'PUT' and
         #         request.content_type == 'application/json'):
             # new_deposit = put_input_loader(self.deposit)

@@ -128,13 +128,14 @@ class Deposit(InvenioDeposit):
         # TODO: Note that the 'external_pids' field should in the end
         # be part of the root schema.
         if 'external_pids' in data['_deposit']:
-            data['external_pids'] = data['_deposit']['external_pids']
-
+            data['external_pids'] = copy.deepcopy(
+                data['_deposit']['external_pids']
+            )
         data = apply_patch(data, patch)
 
         # if the 'external_pids' field was not modified we can discard it.
         if 'external_pids' in data and \
-                data['external_pids'] == data['_deposit']['external_pids']:
+                data['external_pids'] == data['_deposit'].get('external_pids'):
             del data['external_pids']
 
         return self.__class__(data, model=self.model)

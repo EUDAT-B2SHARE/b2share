@@ -33,7 +33,7 @@ from copy import deepcopy
 from b2share_unit_tests.helpers import (
     subtest_self_link, create_deposit, create_record, generate_record_data,
     url_for_file, subtest_file_bucket_content, subtest_file_bucket_permissions,
-    build_expected_metadata, create_user, create_role,
+    build_expected_metadata, create_user, create_role, assert_external_files
 )
 from invenio_access.models import ActionUsers, ActionRoles
 from b2share.modules.records.providers import RecordUUIDProvider
@@ -114,6 +114,84 @@ def test_deposit_patch_immutable_fields(app, draft_deposits, test_users,
                         data=json.dumps([command]),
                         headers=headers)
                     assert draft_patch_res.status_code == 400
+
+
+def test_deposit_invalid_patch_external_pids(app, draft_deposits,
+                                             deposit_with_external_pids,
+                                             test_users, login_user):
+    """Test invalid modification of a deposit's external_pids field."""
+    patch = json.dumps([{
+        "op": "replace",
+        "path": "/external_pids/42",
+        "value": {
+            "key":"b2safe_file.txt",
+            "ePIC_PID": "http://hdl.handle.net/4242/1234"
+        }
+    }])
+    headers = [('Content-Type', 'application/json-patch+json'),
+               ('Accept', 'application/json')]
+    with app.app_context():
+        # This draft has external pids
+        deposit1 = deposit_with_external_pids.get_deposit()
+        # This draft record has no external pids.
+        deposit2 = draft_deposits[0].get_deposit()
+        with app.test_client() as client:
+            user = test_users['deposits_creator']
+            login_user(user, client)
+
+            # Test replace out of external pids array's bounds
+            draft_patch_res = client.patch(
+                url_for('b2share_deposit_rest.b2dep_item',
+                        pid_value=deposit1.pid.pid_value),
+                data=patch,
+                headers=headers)
+            assert draft_patch_res.status_code == 400
+            data = json.loads(draft_patch_res.get_data(as_text=True))
+            assert data['errors'][0]['message'] == \
+                'JSON-Patch error: can\'t replace outside of list'
+            # Test patching a non existing list
+            draft_patch_res = client.patch(
+                url_for('b2share_deposit_rest.b2dep_item',
+                        pid_value=deposit2.pid.pid_value),
+                data=patch,
+                headers=headers)
+            assert draft_patch_res.status_code == 400
+            data = json.loads(draft_patch_res.get_data(as_text=True))
+            assert data['errors'][0]['message'] == \
+                'Invalid JSON Pointer'
+
+
+def test_deposit_patch_external_pids(app, deposit_with_external_pids,
+                                     test_users, login_user):
+    newfile = "http://hdl.handle.net/11304/730e10a7-46d5-48fc-b192-7d716adb686a"
+    patch = json.dumps([{
+        "op": "replace",
+        "path": "/external_pids/0/ePIC_PID",
+        "value": newfile
+    }])
+    headers = [('Content-Type', 'application/json-patch+json'),
+               ('Accept', 'application/json')]
+    with app.app_context():
+        # Build the expected list of files
+        expected_files = deepcopy(
+            deposit_with_external_pids.data['_deposit']['external_pids']
+        )
+        expected_files[0]['ePIC_PID'] = newfile
+
+        # Patch the record draft
+        with app.test_client() as client:
+            user = test_users['deposits_creator']
+            login_user(user, client)
+            draft_patch_res = client.patch(
+                url_for('b2share_deposit_rest.b2dep_item',
+                        pid_value=deposit_with_external_pids.deposit_id.hex),
+                data=patch,
+                headers=headers)
+            assert draft_patch_res.status_code == 200
+    with app.app_context():
+        # Check that the files match
+        assert_external_files(deposit_with_external_pids.get_deposit(),
+                              expected_files)
 
 
 def test_deposit_put_is_disabled(app, draft_deposits, test_users,
