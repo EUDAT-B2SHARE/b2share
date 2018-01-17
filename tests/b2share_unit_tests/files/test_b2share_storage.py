@@ -1,13 +1,3 @@
-# create new storage class for invenio-files-rest
-# which disables almost everything but redirects when getting a file
-# (send_file)
-
-# create the FileInstance with the planted PID
-# - and the required ObjectVersion
-
-# then add the REST API enable the blueprints
-# - > access it and see if it redirects
-
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.

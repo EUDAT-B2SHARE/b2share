@@ -522,12 +522,9 @@ export const EditFiles = React.createClass({
         var external_pids = metadata.external_pids;
         for(var i=0; i < this.props.files.length; i++){
             var _file = this.props.files[i];
-            console.log('_file:', _file);
             if(Boolean(external_pids)){
                 for(var j=0; j < external_pids.length; j++){
                     var external_pid = external_pids[j];
-                    console.log('file key match: ', _file.key);
-                    console.log('external_pid key match: ', external_pid.key);
                     if(_file.key == external_pid.key){
                         _file.b2safe = true;
                     }
@@ -697,7 +694,6 @@ export const FileRecordRow = React.createClass({
     render() {
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
-        // const downloads = this.state.downloads[file.key || file.name] || 0;
         const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
 

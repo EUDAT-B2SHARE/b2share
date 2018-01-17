@@ -26,7 +26,6 @@
 from __future__ import absolute_import, print_function
 
 from .cli import files as files_cmd
-# from .views import blueprint
 
 
 class B2ShareFiles(object):
@@ -41,7 +40,6 @@ class B2ShareFiles(object):
         """Flask application initialization."""
         self.init_config(app)
         app.cli.add_command(files_cmd)
-        # app.register_blueprint(blueprint)
         app.extensions['b2share-files'] = self
 
     def init_config(self, app):

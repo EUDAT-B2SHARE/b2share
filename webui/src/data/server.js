@@ -889,25 +889,6 @@ class ServerCache {
         });
     }
 
-    // Get the number of downloads for each file
-    getFileStatistics(bucketID, successFn) {
-        var data = {
-            "fileDownloads": {
-                "stat": "bucket-file-download-total",
-                "params": {
-                    "bucket_id": bucketID,
-                }
-            }
-        };
-        ajaxPost({
-            url: apiUrls.statistics(),
-            params: data,
-            successFn: response => {
-                successFn(response.fileDownloads);
-            },
-        });
-    }
-
     getB2HandlePidInfo(file_pid, successFn){
         ajaxGet({
             url: apiUrls.b2handle_pid_info(file_pid),

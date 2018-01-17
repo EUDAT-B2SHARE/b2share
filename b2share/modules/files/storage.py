@@ -29,7 +29,7 @@ from invenio_files_rest.storage.pyfs import PyFSFileStorage, \
 
 
 class B2ShareFileStorage(PyFSFileStorage):
-    """Base class for B2Share file storage interface to files."""
+    """Class for B2Share file storage interface to files."""
     def send_file(self, filename, mimetype=None, restricted=True,
                   checksum=None, trusted=False, chunk_size=None):
         """Redirect to the actual pid of the file."""
