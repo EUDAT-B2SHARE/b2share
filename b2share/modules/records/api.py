@@ -9,7 +9,7 @@
 # License, or (at your option) any later version.
 #
 # B2Share is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warr   anty of
+# WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
@@ -27,21 +27,44 @@ from elasticsearch.exceptions import NotFoundError
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
-from invenio_deposit.api import Deposit
-from b2share.modules.deposit.api import Deposit as B2ShareDeposit
 from invenio_records.models import RecordMetadata
 from invenio_records_files.models import RecordsBuckets
 from invenio_records.api import Record
-from invenio_records_files.api import Record
-from invenio_files_rest.models import Bucket
 # from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 from b2share.modules.deposit.providers import DepositUUIDProvider
 from b2share.modules.records.fetchers import b2share_record_uuid_fetcher
 from invenio_indexer.api import RecordIndexer
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 
+from invenio_records_files.api import Record, FilesIterator, FileObject
+from invenio_records_files.utils import sorted_files_from_bucket
+from invenio_files_rest.models import Bucket, ObjectVersion, FileInstance
+
+
+class B2ShareFileObject(FileObject):
+    """Wrapper for B2Share files."""
+
+    def dumps(self):
+        """Dump the record metadata."""
+        if self.obj.file.storage_class == 'B':
+            self.b2safe_pid = True
+        else:
+            self.b2safe_pid = False
+        self.data.update({
+            'bucket': str(self.obj.bucket_id),
+            'checksum': self.obj.file.checksum,
+            'key': self.obj.key,  # IMPORTANT it must stay here!
+            'size': self.obj.file.size,
+            'version_id': str(self.obj.version_id),
+            'b2safe_pid': self.b2safe_pid,
+        })
+        return self.data
+
+
 class B2ShareRecord(Record):
     """B2Share record class."""
+
+    file_cls = B2ShareFileObject
 
     @property
     def pid(self):
@@ -49,8 +72,10 @@ class B2ShareRecord(Record):
         pid = b2share_record_uuid_fetcher(self.id, self)
         return PersistentIdentifier.get(pid.pid_type,
                                         pid.pid_value)
+
     def delete(self):
         """Delete a record."""
+        from b2share.modules.deposit.api import Deposit
         pid = self.pid
         # Fetch deposit id from record and resolve deposit record and pid.
         depid = PersistentIdentifier.get(DepositUUIDProvider.pid_type,
@@ -59,9 +84,10 @@ class B2ShareRecord(Record):
             depid, deposit = Resolver(
                 pid_type=depid.pid_type,
                 object_type='rec',
-                # Retrieve the deposit with the Record class on purpose as the current
-                # Deposit api prevents the deletion of published deposits.
-                getter=B2ShareDeposit.get_record,
+                # Retrieve the deposit with the Record class on purpose
+                # as the current Deposit api prevents the deletion of
+                # published deposits.
+                getter=Deposit.get_record,
             ).resolve(depid.pid_value)
             deposit.delete()
 

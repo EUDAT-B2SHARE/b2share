@@ -27,6 +27,7 @@ from __future__ import absolute_import, print_function
 
 from .cli import files as files_cmd
 
+
 class B2ShareFiles(object):
     """B2Share Files extension."""
 

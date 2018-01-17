@@ -252,6 +252,161 @@ const B2DropZone = React.createClass({
 });
 
 
+const B2SafeZone = React.createClass({
+
+    getInitialState() {
+        return {
+            state: 'b2safe',
+            b2safe_files: [],
+            value: '',
+            filename: '',
+            showResults: false,
+            URL: '',
+            CHECKSUM: '',
+        }
+    },
+
+    handleChangeValue(event) {
+        this.setState({value: event.target.value});
+    },
+
+    handleChangeFilename(event) {
+        this.setState({filename: event.target.value});
+    },
+
+    handleSubmit(event) {
+        if(!this.state.showResults){
+            event.preventDefault();
+            if(this.state.value.length == 64 && this.state.filename != ''){
+                var prefixhdl = "http://hdl.handle.net/";
+                // serverCache.getB2HandlePidInfo(this.state.value.slice(22), this.handleResponse);
+            }
+        }
+        else{
+            serverCache.addB2SafePid(this.state.value, this.handleAdd);
+        }
+    },
+
+    handleResponse(response) {
+        this.setState({URL: response.URL});
+        this.setState({CHECKSUM: response.CHECKSUM});
+        this.setState({showResults: true});
+    },
+
+    handleAdd(event) {
+        alert("B2SafePid has been added");
+        event.preventDefault();
+        const original = this.props.record.get('metadata').toJS();
+        const updated = this.state.record.toJS();
+        const patch = compare(original, updated);
+        if (!patch || !patch.length) {
+            this.setState({dirty:false});
+            return;
+        }
+        const afterPatch = (record) => {
+            if (this.props.isDraft && !this.isForPublication()) {
+                this.props.refreshCache();
+                this.setState({dirty:false, waitingForServer: false});
+                notifications.clearAll();
+            } else {
+                browser.gotoRecord(record.id);
+            }
+        }
+        const onError = (xhr) => {
+            this.setState({waitingForServer: false});
+            onAjaxError(xhr);
+            try {
+                const errors = JSON.parse(xhr.responseText).errors;
+                errors.map(err => {
+                    notifications.warning(`Error in field '${err.field}': ${err.message}`);
+                });
+            } catch (_) {
+            }
+        }
+
+        this.setState({waitingForServer: true});
+        this.props.patchFn(patch, afterPatch, onError);
+    },
+
+    resetPID(){
+        this.setState({value: ''});
+        this.setState({filename: ''});
+        this.setState({showResults: false});
+    },
+
+
+
+    render: function() {
+        const closeStyle = {
+            display:'inline',
+            float:'right',
+            cursor:'pointer',
+            fontSize: 24,
+            fontWeight: 'bold',
+            marginTop:-8,
+        };
+
+        return (
+            <div className="row">
+                <div className="col-md-8 col-md-offset-2">
+                    <div className="panel panel-default">
+                        <div className="panel-heading">
+                            <div style={closeStyle} onClick={e => this.props.close()}>×</div>
+                            <img src="/img/b2safe.png" style={{display:'inline', float:'left', height:30}}/>
+                            <div style={{textAlign:'center'}}>
+                                <h3 style={{display:'inline'}}>{" "}
+                                    Add the B2SAFE PID
+                                </h3>
+                            </div>
+                        </div>
+
+                        <form onSubmit={this.handleSubmit}>
+                            { this.state.showResults ?
+                                <div class="col-md-8">
+                                    <label>
+                                        PID
+                                        <input id="pid_field" class="col-md-3" type="text" value={this.state.value} onChange={this.handleChangeValue} />
+                                    </label>
+                                    <br />
+                                    <label>
+                                        File Name
+                                        <input id="filename_field" class="col-md-3" type="text" value={this.state.filename} onChange={this.handleChangeFilename} />
+                                    </label>
+                                    <br />
+                                    URL: <input class="col-md-5 doi" type="text" value={this.state.URL} />
+                                    <br />
+                                    Checksum: <input class="col-md-5 doi" type="text" value={this.state.CHECKSUM} />
+                                    <br />
+                                    <button type="button" className="btn btn-default btn-sm"
+                                    onClick={this.resetPID}>Reset</button>
+                                    <button type="button" className="btn btn-default btn-sm"
+                                    onClick={this.handleAdd}>Submit</button>
+                                </div>
+                                :
+                                <div class="col-md-8">
+                                    <label>
+                                        PID
+                                        <input id="pid_field" class="col-md-3" value={this.state.value} type="text" onChange={this.handleChangeValue} />
+                                    </label>
+                                    <br />
+                                    <label>
+                                        File Name
+                                        <input id="filename_field" class="col-md-3" type="text" value={this.state.filename} onChange={this.handleChangeFilename}/>
+                                    </label>
+                                    <br />
+                                    <button type="button" className="btn btn-default btn-sm"
+                                    onClick={this.handleSubmit}>Check</button>
+                                </div>
+                            }
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    },
+});
+
+
 export const EditFiles = React.createClass({
     propTypes: {
         files: PT.array.isRequired,
@@ -361,6 +516,21 @@ export const EditFiles = React.createClass({
         if (!this.props.files.length) {
             return false;
         }
+        let record = this.props.record;
+
+        var metadata = this.props.record.get('metadata').toJS();
+        var external_pids = metadata.external_pids;
+        for(var i=0; i < this.props.files.length; i++){
+            var _file = this.props.files[i];
+            if(Boolean(external_pids)){
+                for(var j=0; j < external_pids.length; j++){
+                    var external_pid = external_pids[j];
+                    if(_file.key == external_pid.key){
+                        _file.b2safe = true;
+                    }
+                }
+            }
+        }
         return(
             <div className="well" style={{marginTop:'1em'}}>
                 <div className="fileList">
@@ -371,7 +541,6 @@ export const EditFiles = React.createClass({
             </div>
         );
     },
-
 
 
     render: function() {
@@ -525,7 +694,6 @@ export const FileRecordRow = React.createClass({
     render() {
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
-
         const allowDetails = file.checksum || file.ePIC_PID;
         const stateMark = allowDetails ? (this.state.open ? "down":"right") : "";
 
@@ -546,8 +714,17 @@ export const FileRecordRow = React.createClass({
                                 </span>
                             </span> : false
                         }
+                        {
+                            file.b2safe ?
+                            <span className="b2safeFileBadge" style={{marginLeft:'1em', fontSize:11}}>
+                                <span className="badge" style={{marginLeft:'0.5em', backgroundColor: '#000'}}> B2Safe </span>
+                            </span> : null
+                        }
                     </div>
-                    <div className={"col-sm-"+(this.props.remove? "2":"3")}>{humanSize(file.size)}</div>
+                    <div className={"col-sm-"+(this.props.remove? "2":"3")}>{
+                        file.b2safe ?
+                        "-" : humanSize(file.size)
+                    }</div>
                     { this.props.remove ?
                         <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
                             onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>

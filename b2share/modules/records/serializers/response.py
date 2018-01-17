@@ -71,6 +71,11 @@ class JSONSerializer(InvenioJSONSerializer):
         return super(JSONSerializer, self).preprocess_record(
             pid, record, links_factory)
 
+    def serialize(self, pid, record, links_factory=None):
+        """B2ShareRecord serializer."""
+        return super(JSONSerializer, self).\
+            serialize(pid, record, links_factory)
+
     def transform_search_hit(self, pid, record_hit, links_factory=None):
         g.record_hit = record_hit
         return super(JSONSerializer, self).transform_search_hit(

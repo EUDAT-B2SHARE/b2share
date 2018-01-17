@@ -29,7 +29,7 @@ from collections import namedtuple
 from itertools import chain
 from functools import partial
 
-from jsonpatch import apply_patch, JsonPatchException
+from jsonpatch import apply_patch
 from flask_principal import UserNeed
 from invenio_access.permissions import (
     superuser_access, ParameterizedActionNeed, DynamicPermission
@@ -37,6 +37,7 @@ from invenio_access.permissions import (
 from invenio_access.models import ActionUsers, ActionRoles
 from flask_security import current_user
 from invenio_accounts.models import userrole
+from b2share.modules.files.permissions import DepositFilesPermission
 
 from flask import request, abort
 from b2share.modules.access.permissions import (AuthenticatedNeed,
@@ -266,10 +267,21 @@ class UpdateDepositPermission(DepositPermission):
             # the patch twice
             patch = deposit_patch_input_loader(self.deposit)
             new_deposit = deepcopy(self.deposit)
-            try:
-                apply_patch(new_deposit, patch, in_place=True)
-            except JsonPatchException:
-                abort(400)
+            external_pids_changed = False
+            # Copying temporarily 'external_pids' field in order to give
+            # the illusion that this field actually exist.
+            # TODO: Note that the 'external_pids' field should in the end
+            # be part of the root schema.
+            if 'external_pids' in new_deposit['_deposit']:
+                new_deposit['external_pids'] = new_deposit['_deposit']['external_pids']
+            apply_patch(new_deposit, patch, in_place=True)
+            if 'external_pids' in new_deposit['_deposit']:
+                external_pids_changed = (
+                    new_deposit['_deposit']['external_pids'] !=
+                    new_deposit['external_pids']
+                )
+                del new_deposit['external_pids']
+
         # elif (request.method == 'PUT' and
         #         request.content_type == 'application/json'):
             # new_deposit = put_input_loader(self.deposit)
@@ -314,10 +326,23 @@ class UpdateDepositPermission(DepositPermission):
                     UpdateDepositMetadataPermission(self.deposit, new_state)
                 )
 
+            if external_pids_changed:
+                permissions.append(
+                    DepositFilesPermission(self.deposit, 'bucket-update')
+                )
+
         if len(permissions) > 1:
             self.permissions.add(AndPermissions(*permissions))
         elif len(permissions) == 1:
             self.permissions.add(permissions[0])
+        elif len(permissions) == 0:
+            # Avoid forbidding requests doing nothing. This can be useful if
+            # a script replays an action.
+            self.permissions.add(
+                UpdateDepositMetadataPermission(
+                    self.deposit, new_deposit['publication_state']
+                )
+            )
 
 
 class DeleteDepositPermission(DepositPermission):

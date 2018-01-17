@@ -26,8 +26,10 @@
 
 import uuid
 from jsonschema.exceptions import ValidationError
+from jsonpatch import JsonPatchException
+from jsonpointer import JsonPointerException
 
-from invenio_rest.errors import RESTValidationError, FieldError
+from invenio_rest.errors import RESTException, RESTValidationError, FieldError
 
 
 class B2ShareRecordsError(RESTValidationError):
@@ -56,6 +58,37 @@ class AnonymousDepositSearch(B2ShareRecordsError):
     description = 'Only authenticated users can search for drafts.'
 
 
+class InvalidOperationError(RESTException):
+    """Raise when an invalid operation is performed on a record."""
+    code = 400
+    description = 'Invalid Operation.'
+
+
+class GenericError(object):
+    """Represents a generic error described by a simple message.
+
+    .. note:: This is not an actual exception.
+    """
+
+    def __init__(self, message, code=None):
+        """Init object.
+
+        :param message: The text message to show.
+        :param code: The HTTP status to return. (Default: ``None``)
+        """
+        self.res = dict(message=message)
+        if code:
+            self.res['code'] = code
+
+    def to_dict(self):
+        """Convert to dictionary.
+
+        :returns: A dictionary message and, if initialized, the
+            HTTP status code.
+        """
+        return self.res
+
+
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(err):
@@ -76,6 +109,19 @@ def register_error_handlers(app):
         return InvalidRecordError(errors=[
             FieldError(fieldpath, message)
         ])
+
+    @app.errorhandler(JsonPointerException)
+    def handle_validation_error(err):
+        return InvalidOperationError(
+            errors=[GenericError('Invalid JSON Pointer')]
+        )
+
+
+    @app.errorhandler(JsonPatchException)
+    def handle_validation_error(err):
+        return InvalidOperationError(
+            errors=[GenericError('JSON-Patch error: {}'.format(err.args[0]))]
+        )
 
 
 def is_valid_uuid(argument):

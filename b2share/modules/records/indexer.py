@@ -48,6 +48,12 @@ def record_to_index(record):
 def indexer_receiver(sender, json=None, record=None, index=None,
                      **dummy_kwargs):
     """Connect to before_record_index signal to transform record for ES."""
+    if 'external_pids' in json['_deposit']:
+        # Keep the 'external_pids' if the record is a draft (deposit) or
+        # if the files are public.
+        if (is_deposit(record.model) or allow_public_file_metadata(json)):
+            json['external_pids'] = json['_deposit']['external_pids']
+        del json['_deposit']['external_pids']
     if not index.startswith('records'):
         return
     try:

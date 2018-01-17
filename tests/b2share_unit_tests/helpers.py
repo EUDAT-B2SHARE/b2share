@@ -357,3 +357,22 @@ def pid_of(record):
     pid = PersistentIdentifier.get(pid_type=pids[0]['type'],
                                    pid_value=pids[0]['value'])
     return pid, pid.pid_value
+
+
+def assert_external_files(record, expected_files):
+    """Assert that a record or deposit has the expected external_files."""
+    expected_uris = {exp['ePIC_PID'] for exp in expected_files}
+    expected_keys = {exp['key'] for exp in expected_files}
+    files = [f for f in record.files]
+    assert len(files) == len(expected_files)
+    # Check that the URIs match
+    uris = {file.obj.file.uri for file in files}
+    assert uris == expected_uris
+    # Check that the keys match
+    keys = {file.obj.key for file in files}
+    assert keys == expected_keys
+    # Check that all files are redirect files
+    assert all([file.obj.file.storage_class == 'B' for file in files])
+    # Check that the files are deduplicated in the DB
+    file_ids = {file.obj.file_id for file in files}
+    assert len(file_ids) == len(uris)

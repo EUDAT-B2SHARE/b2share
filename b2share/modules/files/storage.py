@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of EUDAT B2Share.
-# Copyright (C) 2017 CERN, University of Tübingen.
+# Copyright (C) 2017 CERN.
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,19 +21,24 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share record input loaders."""
+"""B2share Storage Class."""
 
-from b2share.modules.deposit.loaders import (
-    IMMUTABLE_PATHS as DEPOSIT_IMMUTABLE_PATHS,
-    check_patch_input_loader
-)
+from flask import make_response
+from invenio_files_rest.storage.pyfs import PyFSFileStorage, \
+    pyfs_storage_factory
 
 
-IMMUTABLE_PATHS = DEPOSIT_IMMUTABLE_PATHS.union({
-    # additional fields immutable for a published record
-    '/publication_state',
-    '/external_pids',
-})
+class B2ShareFileStorage(PyFSFileStorage):
+    """Class for B2Share file storage interface to files."""
+    def send_file(self, filename, mimetype=None, restricted=True,
+                  checksum=None, trusted=False, chunk_size=None):
+        """Redirect to the actual pid of the file."""
+        headers = [('Location', self.fileurl)]
+        return make_response(("Found", 302, headers))
 
-def record_patch_input_loader(record=None):
-    return check_patch_input_loader(record, IMMUTABLE_PATHS)
+
+def b2share_storage_factory(**kwargs):
+    """Pass B2ShareFileStorage as parameter to pyfs_storage_factory."""
+    if kwargs['fileinstance'].storage_class == 'B':
+        kwargs['filestorage_class'] = B2ShareFileStorage
+    return pyfs_storage_factory(**kwargs)

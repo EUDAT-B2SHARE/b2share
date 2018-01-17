@@ -141,6 +141,16 @@ INDEXER_RECORD_TO_INDEX='b2share.modules.records.indexer:record_to_index'
 FILES_REST_PERMISSION_FACTORY = \
     'b2share.modules.files.permissions:files_permission_factory'
 
+FILES_REST_STORAGE_FACTORY = \
+    'b2share.modules.files.storage.b2share_storage_factory'
+
+FILES_REST_STORAGE_CLASS_LIST = dict(
+    B='B2SafePid',
+    S='Standard',
+    A='Archived'
+)
+
+
 RECORDS_REST_DEFAULT_SORT = dict(
     records=dict(
         query='bestmatch',

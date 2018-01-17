@@ -42,6 +42,7 @@ const apiUrls = {
     disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
 
     statistics()                      { return `${urlRoot}/api/stats` },
+    b2handle_pid_info(file_pid)       { return `${urlRoot}/api/handle/${file_pid}` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -423,6 +424,17 @@ class ServerCache {
                             url: data.links.files,
                             successFn: (filedata) => {
                                 const files = filedata.contents.map(this.fixFile);
+                                for(var file_idx=0; file_idx<files.length; file_idx++){
+                                    var current_file = files[file_idx];
+                                    var external_pids = data.metadata.external_pids
+                                    for(var ext_file_idx=0; ext_file_idx<data.metadata.external_pids.length; ext_file_idx++){
+                                        var ext_file = data.metadata.external_pids[ext_file_idx];
+                                        if(ext_file.key == current_file.key){
+                                            current_file.b2safe = true;
+                                            break;
+                                        }
+                                    }
+                                }
                                 this.store.setIn(['recordCache', recordID, 'files'], fromJS(files));
                                 // do not fetch file statistiscs for private files
                                 // (these files are missing the 'bucket' field)
@@ -454,8 +466,10 @@ class ServerCache {
                 console.error("accessing fileBucketUrl before draft fetch", draftID);
                 return null;
             }
-            const placeDataFn = data =>
+            const placeDataFn = (data) => {
+                var current_files = this.store.getIn(['draftCache', draftID, 'files']);
                 this.store.setIn(['draftCache', draftID, 'files'], fromJS(data.contents.map(this.fixFile)));
+            };
             const errorFn = (xhr) => this.store.setIn(['draftCache', draftID, 'files'], new Error(xhr));
             return new Getter(fileBucketUrl, null, placeDataFn, errorFn);
         });
@@ -874,7 +888,28 @@ class ServerCache {
             },
         });
     }
-}
+
+    getB2HandlePidInfo(file_pid, successFn){
+        ajaxGet({
+            url: apiUrls.b2handle_pid_info(file_pid),
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+        });
+    }
+
+    addB2SafePid(file_pid, successFn){
+        ajaxPatch({
+            url: apiUrls.addB2SafeFile(file_pid),
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+        });
+    }
+};
+
 
 class Notifications {
     constructor() {

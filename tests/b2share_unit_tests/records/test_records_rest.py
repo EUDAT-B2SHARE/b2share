@@ -38,7 +38,7 @@ from b2share.modules.records.links import url_for_bucket
 from six import BytesIO
 from jsonpatch import apply_patch
 from invenio_records import Record
-from b2share.modules.deposit.loaders import IMMUTABLE_PATHS
+from b2share.modules.records.loaders import IMMUTABLE_PATHS
 
 
 def test_record_content(app, test_communities,
@@ -240,6 +240,10 @@ def test_record_patch_immutable_fields(app, test_records, test_users,
                         data=json.dumps([command]),
                         headers=headers)
                     assert draft_patch_res.status_code == 400
+                    data = json.loads(draft_patch_res.get_data(as_text=True))
+                    assert data['errors'][0]['message'] == \
+                        'The field "{}" is immutable.'.format(path)
+
 
 
 def test_record_put_is_disabled(app, test_records, test_users,
@@ -483,7 +487,6 @@ def test_delete_record(app, test_users, test_communities, login_user,
 
     # Check that everything is accessible
     test_access(creator, deleted=False)
-
     test_delete(401)  # anonymous user
     test_delete(403, creator)
     test_delete(403, non_creator)

@@ -55,7 +55,6 @@ from invenio_mail.tasks import send_email
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_accounts.models import User
 
-from b2share.modules.records.api import B2ShareRecord
 from b2share.modules.records.providers import RecordUUIDProvider
 from b2share.modules.deposit.serializers import json_v1_response as \
     deposit_serializer
@@ -300,6 +299,7 @@ class B2ShareRecordsListResource(RecordsListResource):
         """
         # import deposit dependencies here in order to avoid recursive imports
         from b2share.modules.deposit.links import deposit_links_factory
+        from b2share.modules.records.api import B2ShareRecord
         if request.content_type not in self.loaders:
             abort(415)
         version_of = request.args.get('version_of')
@@ -428,7 +428,6 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
             parent_pid_table.pid_value == version_parent_pid_value,
             RecordMetadata.id == child_pid_table.object_uuid,
         ).order_by(RecordMetadata.created).all()
-
         for version_number, rec_pid_and_rec_meta in enumerate(pids_and_meta):
             rec_pid, rec_meta = rec_pid_and_rec_meta
             records.append({

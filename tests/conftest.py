@@ -41,11 +41,10 @@ import pytest
 import responses
 from jsonpatch import apply_patch
 from b2share_unit_tests.helpers import authenticated_user, create_user
-from b2share.modules.deposit.api import Deposit
+from b2share.modules.deposit.api import Deposit as B2ShareDeposit
 from b2share.modules.schemas.helpers import load_root_schemas
 from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from flask_security import url_for_security
-from b2share.modules.deposit.api import Deposit
 from invenio_db import db
 from invenio_files_rest.models import Location
 from invenio_search import current_search_client, current_search
@@ -101,6 +100,12 @@ def base_app():
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
         SUPPORT_EMAIL='support@eudat.eu',
         PREFERRED_URL_SCHEME='https',
+        FILES_REST_STORAGE_FACTORY='b2share.modules.files.storage.b2share_storage_factory',
+        FILES_REST_STORAGE_CLASS_LIST={
+            'B': 'B2SafePid',
+            'S': 'Standard',
+            'A': 'Archive',
+        }
     )
 
     # Disable most of alembic logging.
@@ -340,6 +345,46 @@ def test_records_data(app, test_communities):
 
 
 @pytest.fixture(scope='function')
+def records_data_with_external_pids(app, test_communities):
+    record_data = json.dumps({
+        "external_pids":[
+            {
+                "key":"file1.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+            }, {
+                "key":"file1_copy.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+            }, {
+                "key":"file2.txt",
+                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a7"
+            }
+        ],
+        'titles': [{'title':'BBMRI dataset 6'}],
+        'community': '$COMMUNITY_ID[MyTestCommunity2]',
+        'open_access': True,
+        'community_specific': {
+            '$BLOCK_SCHEMA_ID[MyTestSchema]': {
+                'study_design': ['Case-control']
+            }
+        }
+    })
+    with app.app_context():
+        return json.loads(resolve_block_schema_id(resolve_community_id(
+            record_data)))
+
+
+@pytest.fixture(scope='function')
+def deposit_with_external_pids(app, records_data_with_external_pids,
+                               test_communities, test_users):
+    """Create a deposit with external pids."""
+    with app.app_context():
+        result = create_deposits(app, [records_data_with_external_pids],
+                                 test_users['deposits_creator'])[0]
+        db.session.commit()
+        return result
+
+
+@pytest.fixture(scope='function')
 def test_incomplete_records_data(app, test_communities):
     """Create incomplete record data and the corresponding patch."""
     invalid_patches = [[
@@ -395,7 +440,13 @@ def test_incomplete_records_data(app, test_communities):
 
 def create_deposits(app, test_records_data, creator):
     """Create test deposits."""
-    DepositInfo = namedtuple('DepositInfo', ['deposit_id', 'data', 'deposit'])
+    DepositInfo = namedtuple(
+        'DepositInfo', [
+            'deposit_id',
+            'data',
+            'deposit', # FIXME: replaced by get_deposit, remove it later
+            'get_deposit'
+        ])
 
     deposits = []
     with authenticated_user(creator):
@@ -403,8 +454,11 @@ def create_deposits(app, test_records_data, creator):
             record_uuid = uuid.uuid4()
             # Create persistent identifier
             b2share_deposit_uuid_minter(record_uuid, data=data)
-            deposits.append(Deposit.create(data=data, id_=record_uuid))
-    return [DepositInfo(dep.id, dep.dumps(), dep) for dep in deposits]
+            deposits.append(B2ShareDeposit.create(data=data, id_=record_uuid))
+    return [DepositInfo(
+        dep.id, dep.dumps(), dep,
+        (lambda id: lambda: B2ShareDeposit.get_record(id))(dep.id)
+    ) for dep in deposits]
 
 
 @pytest.fixture(scope='function')
