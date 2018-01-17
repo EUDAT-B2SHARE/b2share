@@ -33,6 +33,7 @@
 
 """Test B2Share Storage Class."""
 
+from datetime import datetime, timedelta
 import json
 import pytest
 from flask import url_for
@@ -42,9 +43,10 @@ from invenio_files_rest.models import Bucket, FileInstance, \
 from invenio_db import db
 from invenio_records_rest.utils import allow_all
 from invenio_files_rest.proxies import current_files_rest
+from b2share.modules.communities.api import Community
 from b2share.modules.deposit.api import Deposit, PublicationStates
 from b2share_unit_tests.helpers import assert_external_files, \
-    build_expected_metadata
+    build_expected_metadata, subtest_file_bucket_permissions, create_user
 
 
 def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_users):
@@ -104,9 +106,11 @@ def test_adding_external_files(app, records_data_with_external_pids,
                                deposit_with_external_pids):
     """Test the addition of external files."""
     with app.app_context():
+        # renaming a file to have a duplicate key
         records_data_with_external_pids['external_pids'][0]['key'] = \
             'file2.txt'
         deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        # this should be caught and return an InvalidDepositError
         with pytest.raises(InvalidDepositError):
             deposit = deposit.patch([
                 {'op': 'replace', 'path': '/external_pids',
@@ -177,3 +181,46 @@ def test_missing_handle_prefix(app, test_users, login_user,
             # assert that when returned the external pid has the prefix
             assert draft_create_data['metadata']['external_pids'] == \
                 correct_external_pid
+
+
+def test_embargoed_records_with_external_pids(app, test_users,
+                                              login_user,
+                                              deposit_with_external_pids):
+    """Test that embargoed records handle external pids correctly."""
+    with app.app_context():
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        deposit = deposit.patch([
+            {'op': 'add', 'path': '/embargo_date',
+             'value': (datetime.utcnow() + timedelta(days=1)).isoformat()}
+        ])
+        deposit = deposit.patch([
+            {'op': 'replace', 'path': '/open_access',
+             'value': False}
+        ])
+        deposit.commit()
+        deposit.submit()
+        deposit.publish()
+
+    with app.app_context():
+        with app.test_client() as client:
+            # anonymous user tries to download the external file
+            for file in deposit.files:
+                ext_file_url = url_for('invenio_files_rest.object_api',
+                                       bucket_id=file.obj.bucket,
+                                       key=file.obj.key)
+                resp = client.get(ext_file_url)
+                # 404
+                assert resp.status_code == 404
+                # test that when getting the record the external_pids field
+                # is not visible in the metadata
+
+    with app.app_context():
+        with app.test_client() as client:
+            # the owner can download the external file
+            login_user(test_users['deposits_creator'], client)
+            for file in deposit.files:
+                ext_file_url = url_for('invenio_files_rest.object_api',
+                                       bucket_id=file.obj.bucket,
+                                       key=file.obj.key)
+                resp = client.get(ext_file_url)
+                assert resp.status_code == 302
