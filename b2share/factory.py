@@ -162,9 +162,9 @@ def check_configuration(config, logger):
         if config.get('FAKE_DOI'):
             error("FAKE_DOI must be set to False for a production instance")
 
-        if not (config['PID_HANDLE_CREDENTIALS'] or
-                (config['CFG_EPIC_USERNAME'] and config['CFG_EPIC_PASSWORD'] and
-                 config['CFG_EPIC_BASEURL'] and config['CFG_EPIC_PREFIX'])):
+        if not (config.get('PID_HANDLE_CREDENTIALS') or
+                (config.get('CFG_EPIC_USERNAME') and config.get('CFG_EPIC_PASSWORD') and
+                 config.get('CFG_EPIC_BASEURL') and config.get('CFG_EPIC_PREFIX'))):
             logger.warning("Configuration variables for PID allocation are missing")
 
         if not (config['PIDSTORE_DATACITE_DOI_PREFIX'] and
