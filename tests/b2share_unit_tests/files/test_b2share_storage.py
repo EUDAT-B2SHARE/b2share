@@ -36,6 +36,7 @@
 import json
 import pytest
 from flask import url_for
+from b2share.modules.deposit.errors import InvalidDepositError
 from invenio_files_rest.models import Bucket, FileInstance, \
     ObjectVersion, Location
 from invenio_db import db
@@ -99,34 +100,35 @@ def test_modify_external_files(app, deposit_with_external_pids,
         assert_external_files(deposit, new_external_pids)
 
 
-def test_adding_external_files(app, deposit_with_external_pids):
+def test_adding_external_files(app, records_data_with_external_pids,
+                               deposit_with_external_pids):
     """Test the addition of external files."""
     with app.app_context():
-        new_external_pids = [
-            {
-                "key": "file1.txt",
-                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
-            }, {
-                "key": "file1_copy.txt",
-                "ePIC_PID": "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
-            }, {
-                "key": "file2.txt",
-                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a7"
-            }, {
-                "key": "file3.txt",
-                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a6"
-            }, {
-                "key": "file4.txt",
-                "ePIC_PID": "http://hdl.handle.net/11304/50fafc50-4227-4464-bacc-2d85295c18a8"
-            }
-        ]
+        records_data_with_external_pids['external_pids'][0]['key'] = \
+            'file2.txt'
         deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        with pytest.raises(InvalidDepositError):
+            deposit = deposit.patch([
+                {'op': 'replace', 'path': '/external_pids',
+                 'value': records_data_with_external_pids['external_pids']}
+            ])
+            deposit.commit()
+
+    with app.app_context():
+        records_data_with_external_pids['external_pids'][0]['key'] = \
+        'file1.txt'
+        records_data_with_external_pids['external_pids'].append({
+            "key": "file3.txt",
+            "ePIC_PID":
+            "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa3"
+        })
         deposit = deposit.patch([
             {'op': 'replace', 'path': '/external_pids',
-             'value': new_external_pids}
+             'value': records_data_with_external_pids['external_pids']}
         ])
         deposit.commit()
-        assert_external_files(deposit, new_external_pids)
+        assert_external_files(deposit,
+                              records_data_with_external_pids['external_pids'])
 
 
 def test_missing_handle_prefix(app, test_users, login_user,

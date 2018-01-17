@@ -242,13 +242,6 @@ class Deposit(InvenioDeposit):
             )
 
         # create file bucket
-        from b2share.modules.schemas.serializers import \
-            community_schema_draft_json_schema_link
-        data['$schema'] = community_schema_draft_json_schema_link(
-            schema,
-            _external=True
-        )
-
         if prev_version and prev_version.files:
             # Clone the bucket from the previous version. This doesn't
             # duplicate files.
@@ -477,6 +470,12 @@ def create_b2safe_file(external_pids, bucket):
             'required': ['ePIC_PID', 'key']
         }
     })
+
+    keys_list = [e['key'] for e in external_pids]
+    keys_set = set(keys_list)
+    if len(keys_list) != len(keys_set):
+        raise InvalidDepositError(
+            'Field external_pids contains duplicate keys.')
     for external_pid in external_pids:
         if not external_pid['ePIC_PID'].startswith("http://hdl.handle.net/"):
             external_pid['ePIC_PID'] = "http://hdl.handle.net/" + \
