@@ -39,6 +39,7 @@ from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 from jsonpatch import apply_patch
 
+from b2handle.handleclient import EUDATHandleClient
 from invenio_db import db
 from invenio_files_rest.models import Bucket, FileInstance, ObjectVersion
 from invenio_deposit.api import Deposit as InvenioDeposit, has_status, preserve
@@ -477,17 +478,27 @@ def create_b2safe_file(external_pids, bucket):
     if len(keys_list) != len(keys_set):
         raise InvalidDepositError(
             'Field external_pids contains duplicate keys.')
+
     for external_pid in external_pids:
         if not external_pid['ePIC_PID'].startswith("http://hdl.handle.net/"):
             external_pid['ePIC_PID'] = "http://hdl.handle.net/" + \
                 external_pid['ePIC_PID']
         try:
             # Create the file instance if it does not already exist
+            eudat_handle_client = EUDATHandleClient()
+            handle_info = eudat_handle_client.retrieve_handle_record(
+                external_pid['ePIC_PID'].split('/')[3] + '/' + external_pid['ePIC_PID'].split('/')[4])
+            file_checksum = handle_info.get('CHECKSUM')
+        except Exception as e:
+            raise InvalidDepositError(
+                'Could not retrieve file info from handle server for PID: %s'.\
+                format(external_pid['ePIC_PID']))
+        try:
             file_instance = FileInstance.get_by_uri(external_pid['ePIC_PID'])
             if file_instance is None:
                 file_instance = FileInstance.create()
                 file_instance.set_uri(
-                    external_pid['ePIC_PID'], 1, 0, storage_class='B')
+                    external_pid['ePIC_PID'], 1, file_checksum, storage_class='B')
             assert file_instance.storage_class == 'B'
             # Add the file to the bucket if it is not already in it
             current_version = ObjectVersion.get(bucket, external_pid['key'])

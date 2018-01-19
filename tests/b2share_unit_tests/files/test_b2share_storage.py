@@ -39,7 +39,8 @@ from b2share_unit_tests.helpers import assert_external_files, \
     build_expected_metadata, subtest_file_bucket_permissions, create_user
 
 
-def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_users):
+def test_b2share_storage_with_pid(base_app, app, tmp_location,
+                                  login_user, test_users):
     """Check that the storage class will redirect pid files."""
     pid = 'http://hdl.handle.net/11304/74c66f0b-f814-4202-9dcb-4889ba9b1047'
     with app.app_context():
@@ -71,25 +72,38 @@ def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_
 
 @pytest.mark.parametrize('new_external_pids',
                          [[{
-                             "key": "file1.txt",
+                             "key": "existing_pid_with_checksum.txt",
                              "ePIC_PID":
-                             "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa2"
+                             "http://hdl.handle.net/11304/dad1a76c-4311-46d6-bb55-085525f8dd18"
                          }], [{
-                             "key": "renamed_file.txt",
+                             "key": "non_existing_pid.txt",
                              "ePIC_PID":
-                             "http://hdl.handle.net/11304/0d8dbdec-74e4-4774-954e-1a98e5c0cfa4"
+                             "http://hdl.handle.net/11304/dad1a76c-4311-46d6-bb55-999999999999"
                          }]])
 def test_modify_external_files(app, deposit_with_external_pids,
                                new_external_pids):
     """Test changing PID, renaming and deletion of external files."""
     with app.app_context():
-        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
-        deposit = deposit.patch([
-            {'op': 'replace', 'path': '/external_pids',
-             'value': new_external_pids}
-        ])
-        deposit.commit()
-        assert_external_files(deposit, new_external_pids)
+        if new_external_pids[0]['key'] == 'non_existing_pid.txt':
+            with pytest.raises(InvalidDepositError):
+                deposit = Deposit.get_record(
+                    deposit_with_external_pids.deposit_id)
+                deposit = deposit.patch([
+                    {'op': 'replace', 'path': '/external_pids',
+                     'value': new_external_pids}
+                ])
+                deposit.commit()
+                assert_external_files(deposit, new_external_pids)
+        else:
+            deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+            deposit = deposit.patch([
+                {'op': 'replace', 'path': '/external_pids',
+                 'value': new_external_pids}
+            ])
+            deposit.commit()
+            for file in deposit.files:
+                assert file.obj.file.checksum != 0
+            assert_external_files(deposit, new_external_pids)
 
 
 def test_adding_external_files(app, records_data_with_external_pids,
@@ -110,7 +124,7 @@ def test_adding_external_files(app, records_data_with_external_pids,
 
     with app.app_context():
         records_data_with_external_pids['external_pids'][0]['key'] = \
-        'file1.txt'
+            'file1.txt'
         records_data_with_external_pids['external_pids'].append({
             "key": "file3.txt",
             "ePIC_PID":
