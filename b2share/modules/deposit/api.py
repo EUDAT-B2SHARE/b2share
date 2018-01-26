@@ -542,6 +542,18 @@ def copy_data_from_previous(previous_record):
     return copied_data
 
 
+def generate_external_pids(record):
+    """Generate the list of external files of a record sorted by key."""
+    external_pids = []
+    current_file_keys = [f for f in record.files if
+                         f.obj.file.storage_class == 'B']
+    current_file_keys.sort(key=lambda f: f.obj.key)
+    for f in current_file_keys:
+        external_pids.append({'key': f.obj.key,
+                              'ePIC_PID': f.obj.file.uri})
+    return external_pids
+
+
 copy_data_from_previous.extra_removed_fields = [
     'publication_state', 'publication_date', '$schema'
 ]

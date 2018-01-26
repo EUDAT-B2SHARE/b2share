@@ -28,12 +28,15 @@ from collections import namedtuple
 from .providers import DepositUUIDProvider
 
 
-FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
+FetchedPID = namedtuple('FetchedPID', ['provider', 'object_uuid',
+                                       'pid_type', 'pid_value'])
+
 
 def b2share_deposit_uuid_fetcher(record_uuid, data):
     """Fetch a deposit's identifiers."""
     return FetchedPID(
         provider=DepositUUIDProvider,
+        object_uuid=record_uuid,
         pid_type=DepositUUIDProvider.pid_type,
         pid_value=str(data['_deposit']['id']),
     )
