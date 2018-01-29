@@ -214,13 +214,22 @@ def test_upgrade_from_v2_0_0(clean_app):
 
 def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
     """Test upgrade from an unknown B2SHARE version."""
+
+    def failing_step(alembic, verbose):
+        """Failing step used to make the upgrade fail."""
+        raise Exception('This error is on purpose')
+
     with clean_app.app_context():
+        expected_migrations = UpgradeRecipe.build_upgrade_path(
+            '2.0.0', current_migration_version)
         ext = clean_app.extensions['invenio-db']
         if db.engine.name == 'sqlite':
             raise pytest.skip('upgrades are not supported on sqlite.')
 
         # bring db to v2.0.1 state
         db_create_v2_0_1()
+        # Add a table which shouldn't exist in 2.0.1 version. This will
+        # Make the 2.0.0->2.1.0 migration fail.
         Migration.__table__.create(db.engine)
         db.session.commit()
         result = upgrade_run(clean_app)
@@ -228,36 +237,39 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
 
         # Drop the problematic table
         Migration.__table__.drop(db.engine)
-        # Make a record impossible to migrate
-        query = ("UPDATE {tablename} "
-                 "SET json={value} "
-                 "WHERE id='{id}'::uuid")
-        db.session.execute(
-            query.format(
-                tablename=RecordMetadata.__tablename__,
-                id='331acc49-d97a-4415-969d-97c82424fc99',
-                value='\'{"wrong": "field"}\''
-            )
-        )
-        # Run again a failing upgrade.
-        result = upgrade_run(clean_app)
-        assert result.exit_code == -1
-        # This time the upgrade succeeded partially, the db schema is migrated
-        # But not the records.
-        migrations = Migration.query.all()
-        assert len(migrations) == 1
-        mig = migrations[0]
-        assert mig.version == '2.1.0'
-        assert not mig.success
-        assert not ext.alembic.compare_metadata()
-        # Fix the record
-        db.session.execute(
-            query.format(
-                tablename=RecordMetadata.__tablename__,
-                id='331acc49-d97a-4415-969d-97c82424fc99',
-                value='NULL'
-            )
-        )
+
+        # Fail every other migration one by one. Fixing the previous one at
+        # each iteration.
+        expected_number_of_migrations = 0
+        first_loop = True
+        for migration_idx  in range(len(expected_migrations)):
+            migration = expected_migrations[migration_idx]
+            # Add a failing step to the migration
+            migration.step()(failing_step)
+            # Run again a failing upgrade.
+            result = upgrade_run(clean_app)
+            assert result.exit_code == -1
+            # This time the upgrade succeeded partially, the db schema is migrated
+            # But not the records.
+            migrations = Migration.query.order_by(
+                Migration.updated.asc()).all()
+            # The first failing migration is expected to save only one
+            # "Migration" row in the database, every other migration should
+            # have 2 migrations (the successful previous migration and the
+            # next failing one).
+            if first_loop:
+                expected_number_of_migrations += 1
+                first_loop = False
+            else:
+                expected_number_of_migrations += 2
+
+            assert len(migrations) == expected_number_of_migrations
+            number_of_migrations = len(migrations)
+            last_migration = migrations[-1]
+            assert last_migration.version == migration.dst_version
+            assert not last_migration.success
+            # Remove the failing migration step
+            migration.remove_step(failing_step)
         # Migrate successfully
         result = upgrade_run(clean_app)
         assert result.exit_code == 0
@@ -266,17 +278,15 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
 
         # check that the migration information have been saved
         migrations = Migration.query.order_by(Migration.created.asc()).all()
-        expected_migrations = UpgradeRecipe.build_upgrade_path(
-            '2.0.0', current_migration_version)
         # Failed release + total succeeded releases
-        assert len(migrations) == 1 + len(expected_migrations)
+        expected_number_of_migrations += 1
+        assert len(migrations) == expected_number_of_migrations
+        # Check that every migration ran successfully
         assert [mig.version for mig in migrations if mig.success] == \
             [mig.dst_version for mig in expected_migrations]
-        # assert mig.version == current_migration_version
-        # assert mig.success
 
     with clean_app.app_context():
-        repeat_upgrade(clean_app, ext.alembic, 1 + len(expected_migrations))
+        repeat_upgrade(clean_app, ext.alembic, expected_number_of_migrations)
 
     with clean_app.app_context():
         validate_loaded_data(clean_app, ext.alembic)
