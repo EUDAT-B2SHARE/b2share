@@ -75,6 +75,8 @@ def upgrade_to_last_version(verbose):
                 if last_migration.version == last_version:
                     click.secho('Already up to date.')
                     return
+            else:
+                last_failure = last_migration
             try:
                 last_success = next(mig for mig in all_migrations
                                     if mig.success)
@@ -91,6 +93,27 @@ def upgrade_to_last_version(verbose):
 
 
 Step = namedtuple('Step', ['condition', 'run'])
+
+
+def default_step_condition_factory(target_version, step_name):
+    """Create a default condition used by upgrade steps.
+
+    The created condition checks if the step was already successfully ran
+    and skip it if it is the case.
+    """
+    def default_step_condition(alembic, failed_migration, *args):
+        if failed_migration and failed_migration.version == target_version:
+            try:
+                step = next(step for step in failed_migration.data['steps']
+                            if step['name'] == step_name)
+                # skip the step if it already ran successfully
+                if step['status'] in {'success', 'skip'}:
+                    return False
+            except StopIteration:
+                # The step was not run at all.
+                pass
+        return True
+    return default_step_condition
 
 
 class UpgradeRecipe(object):
@@ -137,12 +160,23 @@ class UpgradeRecipe(object):
             assert step_func.__doc__ is not None
             # check for duplicate step names
             assert step_func.__name__ not in self._step_names
+            final_condition = condition
+            # Use the default condition if none is provided
+            if condition is None:
+                final_condition = default_step_condition_factory(
+                    self.dst_version, step_func.__name__
+                )
             self.steps.append(
-                Step(condition=condition, run=step_func)
+                Step(condition=final_condition, run=step_func)
             )
             self._step_names.add(step_func.__name__)
             return step_func
         return decorator
+
+    def remove_step(self, step_func):
+        """Remove a step from the list of upgrade steps."""
+        self.steps = filter(lambda step: step.run != step_func, self.steps)
+        self._step_names.remove(step_func.__name__)
 
 
     @classmethod
@@ -190,6 +224,10 @@ class UpgradeRecipe(object):
                     step_log['status'] = 'skip'
             except BaseException as e:
                 db.session.rollback()
+                migration.data['steps'].append(dict(
+                    name=step.run.__name__,
+                    status='error'
+                ))
                 migration.data['error'] = traceback.format_exc()
                 migration.data['status'] = 'error'
                 if not db.engine.dialect.has_table(db.engine,
