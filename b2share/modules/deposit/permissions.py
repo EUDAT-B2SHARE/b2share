@@ -38,6 +38,7 @@ from invenio_access.models import ActionUsers, ActionRoles
 from flask_security import current_user
 from invenio_accounts.models import userrole
 from b2share.modules.files.permissions import DepositFilesPermission
+from b2share.modules.deposit.api import generate_external_pids
 
 from flask import request, abort
 from b2share.modules.access.permissions import (AuthenticatedNeed,
@@ -267,26 +268,18 @@ class UpdateDepositPermission(DepositPermission):
             # the patch twice
             patch = deposit_patch_input_loader(self.deposit)
             new_deposit = deepcopy(self.deposit)
-            external_pids_changed = False
-            # Copying temporarily 'external_pids' field in order to give
+            # Generate 'external_pids' field in order to give
             # the illusion that this field actually exist.
-            # TODO: Note that the 'external_pids' field should in the end
-            # be part of the root schema.
-            if 'external_pids' in new_deposit['_deposit']:
-                new_deposit['external_pids'] = new_deposit['_deposit']['external_pids']
+            external_pids = generate_external_pids(self.deposit)
+            if external_pids:
+                new_deposit['external_pids'] = deepcopy(external_pids)
             apply_patch(new_deposit, patch, in_place=True)
-            if 'external_pids' in new_deposit['_deposit']:
+            external_pids_changed = False
+            if external_pids:
                 external_pids_changed = (
-                    new_deposit['_deposit']['external_pids'] !=
-                    new_deposit['external_pids']
+                    external_pids != new_deposit['external_pids']
                 )
                 del new_deposit['external_pids']
-
-        # elif (request.method == 'PUT' and
-        #         request.content_type == 'application/json'):
-            # new_deposit = put_input_loader(self.deposit)
-            # if new_deposit is None:
-            #     abort(400)
         else:
             abort(400)
 

@@ -138,7 +138,6 @@ def test_deposit_invalid_patch_external_pids(app, draft_deposits,
         with app.test_client() as client:
             user = test_users['deposits_creator']
             login_user(user, client)
-
             # Test replace out of external pids array's bounds
             draft_patch_res = client.patch(
                 url_for('b2share_deposit_rest.b2dep_item',
@@ -162,6 +161,7 @@ def test_deposit_invalid_patch_external_pids(app, draft_deposits,
 
 
 def test_deposit_patch_external_pids(app, deposit_with_external_pids,
+                                     records_data_with_external_pids,
                                      test_users, login_user):
     newfile = "http://hdl.handle.net/11304/730e10a7-46d5-48fc-b192-7d716adb686a"
     patch = json.dumps([{
@@ -174,7 +174,7 @@ def test_deposit_patch_external_pids(app, deposit_with_external_pids,
     with app.app_context():
         # Build the expected list of files
         expected_files = deepcopy(
-            deposit_with_external_pids.data['_deposit']['external_pids']
+            records_data_with_external_pids['external_pids']
         )
         expected_files[0]['ePIC_PID'] = newfile
 

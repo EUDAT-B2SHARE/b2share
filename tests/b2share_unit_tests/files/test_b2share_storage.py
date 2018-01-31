@@ -31,12 +31,15 @@ from b2share.modules.deposit.errors import InvalidDepositError
 from invenio_files_rest.models import Bucket, FileInstance, \
     ObjectVersion, Location
 from invenio_db import db
+from invenio_search import current_search_client
 from invenio_records_rest.utils import allow_all
 from invenio_files_rest.proxies import current_files_rest
+from invenio_pidstore.resolver import Resolver
 from b2share.modules.communities.api import Community
-from b2share.modules.deposit.api import Deposit, PublicationStates
-from b2share_unit_tests.helpers import assert_external_files, \
-    build_expected_metadata, subtest_file_bucket_permissions, create_user
+from b2share.modules.records.api import B2ShareRecord
+from b2share.modules.deposit.api import Deposit, PublicationStates, \
+    generate_external_pids
+from b2share_unit_tests.helpers import assert_external_files, create_deposit
 
 
 def test_b2share_storage_with_pid(base_app, app, tmp_location, login_user, test_users):
@@ -162,9 +165,8 @@ def test_missing_handle_prefix(app, test_users, login_user,
             # create the deposit with the missing prefix
             records_data_with_external_pids['external_pids'] = \
                 no_prefix_external_pid
-            draft_data_with_external_pids = records_data_with_external_pids
             draft_create_res = create_record(
-                client, draft_data_with_external_pids)
+                client, records_data_with_external_pids)
             assert draft_create_res.status_code == 201
             draft_create_data = json.loads(
                 draft_create_res.get_data(as_text=True))
@@ -214,3 +216,182 @@ def test_embargoed_records_with_external_pids(app, test_users,
                                        key=file.obj.key)
                 resp = client.get(ext_file_url)
                 assert resp.status_code == 302
+
+
+def test_generation_of_external_pids(app, records_data_with_external_pids,
+                                     deposit_with_external_pids, test_users):
+    """Test the generate_external_pids function."""
+    expected_output = records_data_with_external_pids[
+        'external_pids'][:]
+    with app.app_context():
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        output = generate_external_pids(deposit)
+        assert output == expected_output
+
+        all_files = list(deposit.files)
+        for f in all_files:
+            if f.obj.key == \
+                    records_data_with_external_pids['external_pids'][0]['key']:
+                f.delete(f.obj.bucket, f.obj.key)
+        output = generate_external_pids(deposit)
+        expected_output_sorted = \
+            records_data_with_external_pids['external_pids'][1:]
+        expected_output_sorted.sort(key=lambda f: f['key'])
+        assert output == expected_output_sorted
+
+        records_data_with_external_pids['external_pids'].reverse()
+        deposit2 = create_deposit(records_data_with_external_pids,
+                                  test_users['deposits_creator'])
+        output = generate_external_pids(deposit2)
+        assert output == expected_output
+
+
+def test_getting_record_with_external_pids(app, login_user, test_users,
+                                           deposit_with_external_pids,
+                                           records_data_with_external_pids):
+    """External pids are serialized in the metadata when it is allowed."""
+
+    def test_get_deposit(deposit_pid_value, user):
+        with app.test_client() as client:
+            login_user(user, client)
+            deposit_url = url_for('b2share_deposit_rest.b2dep_item',
+                                  pid_value=deposit_pid_value)
+            resp = client.get(deposit_url)
+            deposit_data = json.loads(
+                resp.get_data(as_text=True))
+            return deposit_data
+
+    def test_get_record(record_pid_value, user):
+        with app.test_client() as client:
+            login_user(user, client)
+            record_url = url_for('b2share_records_rest.b2rec_item',
+                                 pid_value=record_pid_value)
+            resp = client.get(record_url)
+            record_data = json.loads(
+                resp.get_data(as_text=True))
+            return record_data
+
+    def test_search_deposits(user):
+        with app.test_client() as client:
+            login_user(user, client)
+            search_deposits_url = url_for(
+                'b2share_records_rest.b2rec_list', drafts=1, size=100)
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            resp = client.get(
+                search_deposits_url,
+                headers=headers)
+            deposit_search_res = json.loads(
+                resp.get_data(as_text=True))
+            return deposit_search_res
+
+    def test_search_records(user):
+        with app.test_client() as client:
+            login_user(user, client)
+            search_records_url = url_for(
+                'b2share_records_rest.b2rec_list', size=100)
+            headers = [('Content-Type', 'application/json'),
+                       ('Accept', 'application/json')]
+            resp = client.get(
+                search_records_url,
+                headers=headers)
+            record_search_res = json.loads(
+                resp.get_data(as_text=True))
+            return record_search_res
+
+    with app.app_context():
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+
+    with app.app_context():
+        deposit_data = test_get_deposit(deposit.pid.pid_value,
+                                        test_users['deposits_creator'])
+        # assert that the external_pids are visible
+        # when getting a specific deposit
+        assert_external_files(
+            deposit,
+            deposit_data['metadata']['external_pids'])
+        current_search_client.indices.refresh('*')
+
+    deposit_search_data = test_search_deposits(
+        test_users['deposits_creator'])
+    assert deposit_search_data['hits']['total'] == 1
+    # external_pids are not shown in a deposit search because it would use
+    # too much resources to generate it for each search hit.
+    assert 'external_pids' not in deposit_search_data[
+        'hits']['hits'][0]['metadata']
+
+    with app.app_context():
+        deposit = Deposit.get_record(deposit_with_external_pids.deposit_id)
+        deposit.submit()
+        deposit.publish()
+        record_resolver = Resolver(
+            pid_type='b2rec',
+            object_type='rec',
+            getter=B2ShareRecord.get_record,
+        )
+        record_pid, record = record_resolver.resolve(deposit.pid.pid_value)
+        current_search_client.indices.refresh('*')
+
+        record_data = test_get_record(
+            record_pid.pid_value, test_users['deposits_creator'])
+        # when getting a specific record the owner sees the external_pids
+        assert_external_files(record, record_data['metadata']['external_pids'])
+
+    with app.app_context():
+        record_data = test_get_record(
+            record_pid.pid_value, test_users['normal'])
+        # and all other users as well if it is open access
+        assert_external_files(record, record_data['metadata']['external_pids'])
+
+    deposit_search_data = test_search_deposits(
+        test_users['deposits_creator'])
+    assert deposit_search_data['hits']['total'] == 1
+    # external_pids are not shown in deposit search even when published
+    assert 'external_pids' not in deposit_search_data[
+        'hits']['hits'][0]['metadata']
+
+    record_search_data = test_search_records(
+        test_users['deposits_creator'])
+    assert record_search_data['hits']['total'] == 1
+    # external_pids are shown for record search if they are open access
+    # for all users
+    assert 'external_pids' in record_search_data[
+        'hits']['hits'][0]['metadata']
+    record_search_data = test_search_records(test_users['normal'])
+    assert record_search_data['hits']['total'] == 1
+    assert 'external_pids' in record_search_data[
+        'hits']['hits'][0]['metadata']
+
+    with app.app_context():
+        deposit2 = create_deposit(records_data_with_external_pids,
+                                  test_users['deposits_creator'])
+        deposit2 = deposit2.patch([
+            {'op': 'add', 'path': '/embargo_date',
+             'value': (datetime.utcnow() + timedelta(days=1)).isoformat()},
+            {'op': 'replace', 'path': '/open_access',
+             'value': False}
+        ])
+        deposit2.commit()
+        deposit2.submit()
+        deposit2.publish()
+
+        record_resolver = Resolver(
+            pid_type='b2rec',
+            object_type='rec',
+            getter=B2ShareRecord.get_record,
+        )
+
+        record_pid, record = record_resolver.resolve(deposit2.pid.pid_value)
+        record_data = test_get_record(
+            record_pid.pid_value, test_users['deposits_creator'])
+        # owners of records have access to files and
+        # external_pids of embargoed records
+        assert_external_files(record, record_data['metadata']['external_pids'])
+
+    with app.app_context():
+        record_data = test_get_record(
+            record_pid.pid_value, test_users['normal'])
+        # normal users shouldn't have access to the
+        # files and external_pids of an embargoed record
+        assert 'metadata' in record_data
+        assert 'external_pids' not in record_data['metadata']

@@ -29,7 +29,6 @@ from b2share.modules.access.policies import allow_public_file_metadata
 from b2share.modules.deposit.api import generate_external_pids
 from b2share.modules.files.permissions import files_permission_factory
 from b2share.modules.records.utils import is_deposit
-from invenio_records_files.models import Bucket
 
 
 DOI_URL_PREFIX = 'http://doi.org/'
@@ -51,11 +50,12 @@ class DraftSchemaJSONV1(Schema):
         external_pids = []
         bucket = None
         record = None
+        # differentiating between search results and
+        # single record requests
         if hasattr(g, 'record'):
             record = g.record
             if record.files:
-                bucket = Bucket.query.filter_by(
-                    id=str(record.files.bucket)).first()
+                bucket = record.files.bucket
             if is_deposit(record.model):
                 external_pids = generate_external_pids(record)
             # if it is a published record don't generate external pids
@@ -63,27 +63,32 @@ class DraftSchemaJSONV1(Schema):
             else:
                 external_pids = record.model.json[
                     '_deposit'].get('external_pids')
+            user_has_permission = \
+                allow_public_file_metadata(data['metadata']) if bucket \
+                is None else files_permission_factory(
+                    bucket, 'bucket-read').can()
+        elif hasattr(g, 'record_hit'):
+            user_has_permission = allow_public_file_metadata(
+                g.record_hit['_source'])
 
         if '_deposit' in data['metadata']:
             data['metadata']['owners'] = data['metadata']['_deposit']['owners']
+
             # Add the external_pids only if the
             # user is allowed to read the bucket
-            if external_pids and record and bucket:
-                if (files_permission_factory(bucket, 'bucket-read').can() or
-                        allow_public_file_metadata(record)):
-                    data['metadata']['external_pids'] = external_pids
+            if external_pids and bucket and user_has_permission:
+                data['metadata']['external_pids'] = external_pids
             del data['metadata']['_deposit']
         if '_files' in data['metadata']:
             # Also add the files field only if the user is allowed
-            if (bucket and files_permission_factory(
-                bucket, 'bucket-read').can()) or \
-                    allow_public_file_metadata(data['metadata']):
+            if user_has_permission:
                 data['files'] = data['metadata']['_files']
-                for _file in data['files']:
-                    if 'external_pids' in data['metadata'] and \
-                            any(d['key'] == _file['key']
-                                for d in external_pids):
-                        _file['b2safe'] = True
+                if external_pids and bucket:
+                    for _file in data['files']:
+                        if 'external_pids' in data['metadata'] and \
+                                any(d['key'] == _file['key']
+                                    for d in external_pids):
+                            _file['b2safe'] = True
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
             # move PIDs to metadata top level
