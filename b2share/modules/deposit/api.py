@@ -50,6 +50,7 @@ from invenio_pidrelations.contrib.versioning import PIDVersioning
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_pidstore.resolver import Resolver
 from invenio_pidstore.errors import PIDDoesNotExistError
+from invenio_rest.errors import FieldError
 
 
 from .errors import (InvalidDepositError,
@@ -127,10 +128,9 @@ class Deposit(InvenioDeposit):
         # illusion that this field actually exist.
         # TODO: Note that the 'external_pids' field should in the end
         # be part of the root schema.
-        if 'external_pids' in data['_deposit']:
-            data['external_pids'] = copy.deepcopy(
-                data['_deposit']['external_pids']
-            )
+        external_pids = generate_external_pids(self)
+        if external_pids:
+            data['external_pids'] = external_pids
         data = apply_patch(data, patch)
 
         # if the 'external_pids' field was not modified we can discard it.
@@ -255,7 +255,6 @@ class Deposit(InvenioDeposit):
 
         if 'external_pids' in data:
             create_b2safe_file(data['external_pids'], bucket)
-            data['_deposit']['external_pids'] = data['external_pids']
             del data['external_pids']
 
         deposit = super(Deposit, cls).create(data, id_=id_)
@@ -330,10 +329,9 @@ class Deposit(InvenioDeposit):
                 elif object_version.file.uri != \
                         key_to_pid[object_version.key]:
                     db.session.query(FileInstance).\
-                        filter(FileInstance.id==object_version.file_id).\
+                        filter(FileInstance.id == object_version.file_id).\
                         update({"uri": key_to_pid[object_version.key]})
             create_b2safe_file(self['external_pids'], bucket)
-            self['_deposit']['external_pids'] = self['external_pids']
             del self['external_pids']
 
         if self.model is None or self.model.json is None:
@@ -367,6 +365,9 @@ class Deposit(InvenioDeposit):
                 previous_version_uuid = str(RecordUUIDProvider.get(
                     previous_version_pid.pid_value
                 ).pid.object_uuid)
+            external_pids = generate_external_pids(self)
+            if external_pids:
+                self['_deposit']['external_pids'] = external_pids
 
             super(Deposit, self).publish()  # publish() already calls commit()
             # Register parent PID if necessary and update redirect
@@ -405,7 +406,8 @@ class Deposit(InvenioDeposit):
         record_pid = RecordUUIDProvider.get(pid_value).pid
         version_master = PIDVersioning(child=record_pid)
         # every deposit has a parent version after the 2.1.0 upgrade
-        # except deleted ones. We check the parent version in case of a delete revert.
+        # except deleted ones. We check the parent version in case of a delete
+        # revert.
         assert version_master is not None, 'Unexpected deposit without versioning.'
         # if the record is unpublished hard delete it
         if record_pid.status == PIDStatus.RESERVED:
@@ -475,12 +477,16 @@ def create_b2safe_file(external_pids, bucket):
     keys_list = [e['key'] for e in external_pids]
     keys_set = set(keys_list)
     if len(keys_list) != len(keys_set):
-        raise InvalidDepositError(
-            'Field external_pids contains duplicate keys.')
+        raise InvalidDepositError([FieldError('external_pids',
+            'Field external_pids contains duplicate keys.')])
     for external_pid in external_pids:
-        if not external_pid['ePIC_PID'].startswith("http://hdl.handle.net/"):
-            external_pid['ePIC_PID'] = "http://hdl.handle.net/" + \
+        if not external_pid['ePIC_PID'].startswith('http://hdl.handle.net/'):
+            external_pid['ePIC_PID'] = 'http://hdl.handle.net/' + \
                 external_pid['ePIC_PID']
+        if external_pid['key'].startswith('/'):
+            raise InvalidDepositError(
+                [FieldError('external_pids',
+                            'File key cannot start with a "/".')])
         try:
             # Create the file instance if it does not already exist
             file_instance = FileInstance.get_by_uri(external_pid['ePIC_PID'])
@@ -496,7 +502,8 @@ def create_b2safe_file(external_pids, bucket):
                 ObjectVersion.create(bucket, external_pid['key'],
                                      file_instance.id)
         except IntegrityError as e:
-            raise InvalidDepositError('File URI already exists.')
+            raise InvalidDepositError(
+                [FieldError('external_pids', 'File URI already exists.')])
 
 
 def find_version_master_and_previous_record(version_of):
@@ -540,6 +547,18 @@ def copy_data_from_previous(previous_record):
         copied_data['_deposit'] = {'external_pids': external_pids}
         copied_data['_files'] = files
     return copied_data
+
+
+def generate_external_pids(record):
+    """Generate the list of external files of a record sorted by key."""
+    external_pids = []
+    current_file_keys = [f for f in record.files if
+                         f.obj.file.storage_class == 'B']
+    current_file_keys.sort(key=lambda f: f.obj.key)
+    for f in current_file_keys:
+        external_pids.append({'key': f.obj.key,
+                              'ePIC_PID': f.obj.file.uri})
+    return external_pids
 
 
 copy_data_from_previous.extra_removed_fields = [

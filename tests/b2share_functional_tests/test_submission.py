@@ -254,7 +254,7 @@ def subtest_deposit(app, test_communities, allowed_user, other_user,
 
             # test that published record's files match too
             test_files(client, record_get_data['links']['files'],
-                        uploaded_files)
+                       uploaded_files)
 
             created_records[record_get_data['id']] = record_get_data
 

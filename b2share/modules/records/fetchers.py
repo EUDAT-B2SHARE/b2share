@@ -27,25 +27,29 @@ from collections import namedtuple
 
 from .providers import RecordUUIDProvider
 
-FetchedPID = namedtuple('FetchedPID', ['provider', 'pid_type', 'pid_value'])
-
-from invenio_records_rest.views import Blueprint
+FetchedPID = namedtuple('FetchedPID', ['provider', 'object_uuid',
+                                       'pid_type', 'pid_value'])
 
 
 def b2share_record_uuid_fetcher(record_uuid, data):
     """Fetch a record's identifiers."""
     return FetchedPID(
         provider=RecordUUIDProvider,
+        object_uuid=record_uuid,
         pid_type=RecordUUIDProvider.pid_type,
         pid_value=str(next(pid['value'] for pid in data['_pid']
                            if pid['type'] == RecordUUIDProvider.pid_type)),
     )
 
+
 def b2share_parent_pid_fetcher(record_uuid, data):
     """Fetch record's parent version persistent identifier."""
     return FetchedPID(
         provider=RecordUUIDProvider,
+        # The record_uuid is not relevant for the parent pids
+        # but it is added in the signature for consistency.
+        object_uuid=None,
         pid_type=RecordUUIDProvider.pid_type,
         pid_value=next(pid['value'] for pid in data['_pid']
-                        if pid['type'] == RecordUUIDProvider.parent_pid_type)
+                       if pid['type'] == RecordUUIDProvider.parent_pid_type)
     )

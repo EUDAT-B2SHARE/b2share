@@ -224,14 +224,6 @@ def test_change_deposit_schema_fails(app, draft_deposits):
             deposit.commit()
 
 
-def test_create_deposit_with_external_pids(app, deposit_with_external_pids):
-    expected_files = \
-        deposit_with_external_pids.data['_deposit']['external_pids']
-    with app.app_context():
-        assert_external_files(deposit_with_external_pids.get_deposit(),
-                              expected_files)
-
-
 def test_create_deposit_with_external_pids_errors(
         app, records_data_with_external_pids):
     """Test errors when a deposit is created with invalid external files."""

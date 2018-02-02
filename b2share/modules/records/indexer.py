@@ -51,7 +51,7 @@ def indexer_receiver(sender, json=None, record=None, index=None,
     if 'external_pids' in json['_deposit']:
         # Keep the 'external_pids' if the record is a draft (deposit) or
         # if the files are public.
-        if (is_deposit(record.model) or allow_public_file_metadata(json)):
+        if (not is_deposit(record.model) and allow_public_file_metadata(json)):
             json['external_pids'] = json['_deposit']['external_pids']
         del json['_deposit']['external_pids']
     if not index.startswith('records'):
