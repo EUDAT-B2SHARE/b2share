@@ -1,6 +1,8 @@
 {
     "mappings" : {
       "record" : {
+        "date_detection": false,
+        "numeric_detection": false,
         "_all":{
           "type":"string",
           "index":"analyzed",
@@ -62,6 +64,10 @@
             }
           },
           "_updated" : {
+            "type" : "date",
+            "format" : "strict_date_optional_time||epoch_millis"
+          },
+          "embargo_date" : {
             "type" : "date",
             "format" : "strict_date_optional_time||epoch_millis"
           },
