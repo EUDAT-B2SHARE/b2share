@@ -716,8 +716,8 @@ export const FileRecordRow = React.createClass({
                         }
                         {
                             file.b2safe ?
-                            <span className="b2safeFileBadge" style={{marginLeft:'1em', fontSize:11}}>
-                                <span className="badge" style={{marginLeft:'0.5em', backgroundColor: '#000'}}> B2Safe </span>
+                            <span style={{marginLeft:'1em', fontSize:11}}>
+                                <span className="badge" style={{marginLeft:'0.5em', backgroundColor: '#000'}}> external </span>
                             </span> : null
                         }
                     </div>
