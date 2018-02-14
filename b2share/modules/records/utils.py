@@ -56,5 +56,5 @@ def list_db_published_records():
     query = RecordMetadata.query.filter(RecordMetadata.json is not None)
     for obj in query.all():
         record = Record(obj.json, model=obj)
-        if is_publication(record.model):
+        if record.model.json and is_publication(record.model):
             yield record
