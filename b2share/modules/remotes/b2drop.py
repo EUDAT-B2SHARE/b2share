@@ -27,7 +27,7 @@
 import time
 import dateutil.parser
 import urllib.parse
-import easywebdav
+import easywebdav2 as easywebdav
 
 from flask import current_app
 
