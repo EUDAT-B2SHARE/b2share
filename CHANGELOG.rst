@@ -1,6 +1,16 @@
 B2Share changelog
 *****************
 
+2.1.1 (end of February)
+===========================
+
+Changes since 2.1.0 include:
+
+- support external files, specified by PID, including B2SAFE files
+- support latest version of b2drop/nextcloud
+- bug fixes
+
+
 2.1.0 (mid November)
 ===========================
 
