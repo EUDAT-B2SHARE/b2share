@@ -35,5 +35,11 @@ from .common import elasticsearch_index_destroy, elasticsearch_index_init, \
 
 migrate_2_1_0_to_2_1_1 = UpgradeRecipe('2.1.0', '2.1.1')
 
-# No need to execute anything for this upgrade. There are no change to the
-# Database schema and the external pids are added to new records.
+# We updated the elasticsearch mappings
+for step in [elasticsearch_index_destroy,
+             elasticsearch_index_init,
+             elasticsearch_index_reindex,
+             queues_declare]:
+    migrate_2_1_0_to_2_1_1.step()(step)
+
+# There are no changes to the db schema, so no other updates are necessary

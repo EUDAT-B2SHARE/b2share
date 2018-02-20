@@ -205,7 +205,4 @@ def migrate_record_metadata(record, parent_pid):
     record.commit()
 
 
-for step in [fix_communities, elasticsearch_index_destroy,
-             elasticsearch_index_init, elasticsearch_index_reindex,
-             queues_declare]:
-    migrate_2_0_0_to_2_1_0.step()(step)
+migrate_2_0_0_to_2_1_0.step()(fix_communities)
