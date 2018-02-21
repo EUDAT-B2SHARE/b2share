@@ -84,11 +84,12 @@ class DraftSchemaJSONV1(Schema):
             if user_has_permission:
                 data['files'] = data['metadata']['_files']
                 if external_pids and bucket:
+                    external_dict = {x['key']: x['ePIC_PID']
+                                     for x in external_pids}
                     for _file in data['files']:
-                        if 'external_pids' in data['metadata'] and \
-                                any(d['key'] == _file['key']
-                                    for d in external_pids):
+                        if _file['key'] in external_dict:
                             _file['b2safe'] = True
+                            _file['ePIC_PID'] = external_dict[_file['key']]
             del data['metadata']['_files']
         if '_pid' in data['metadata']:
             # move PIDs to metadata top level

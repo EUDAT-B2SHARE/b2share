@@ -520,3 +520,48 @@ def test_delete_record(app, test_users, test_communities, login_user,
         assert res['hits']['total'] == 0
         res = current_search_client.search(index='deposits')
         assert res['hits']['total'] == 0
+
+
+
+def test_record_publish_with_external_pids(app, login_user,
+                                           records_data_with_external_pids): #test_users, test_communities
+    """Test record external files and handle allocation."""
+    uploaded_files = {
+        'myfile1.dat': b'contents1',
+        'myfile2.dat': b'contents2'
+    }
+
+    with app.app_context():
+        app.config.update({'FAKE_EPIC_PID': True})
+
+        creator = create_user('creator')
+        external_pids = records_data_with_external_pids['external_pids']
+        record_data = generate_record_data(external_pids=external_pids)
+        _, record_pid, record = create_record(
+            record_data, creator, files=uploaded_files
+        )
+
+        with app.test_client() as client:
+            login_user(creator, client)
+            headers = [('Accept', 'application/json')]
+            request_res = client.get(
+                url_for('b2share_records_rest.b2rec_item',
+                        pid_value=record_pid.pid_value),
+                headers=headers)
+
+            assert request_res.status_code == 200
+
+            record = json.loads(request_res.get_data(as_text=True))
+            assert len(record['files']) == len(external_pids) + len(uploaded_files)
+
+            for f in record['files']:
+                assert f['ePIC_PID']
+                if f['key'] in uploaded_files:
+                    # uploaded (internal) file
+                    assert '0000' in f['ePIC_PID'] # freshly allocated fake pid
+                else:
+                    # external file
+                    assert f['b2safe']
+                    x_pid = [rec for rec in external_pids
+                             if rec['key'] == f['key']][0]
+                    assert f['ePIC_PID'] == x_pid['ePIC_PID']

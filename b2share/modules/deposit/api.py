@@ -439,8 +439,10 @@ def create_file_pids(record_metadata):
     from flask import current_app
     throw_on_failure = current_app.config.get(
         'CFG_FAIL_ON_MISSING_FILE_PID', False)
+    external_pids = record_metadata['_deposit'].get('external_pids', [])
+    external_keys = { x.get('key') for x in external_pids }
     for f in record_metadata.get('_files'):
-        if f.get('ePIC_PID'):
+        if f.get('ePIC_PID') or f.get('key') in external_keys:
             continue
         file_url = url_for('invenio_files_rest.object_api',
                            bucket_id=f.get('bucket'), key=f.get('key'),
