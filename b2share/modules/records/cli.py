@@ -35,8 +35,10 @@ from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.datacite import DataCiteProvider
 from invenio_records_files.api import Record
 
+from b2share.modules.deposit.api import create_file_pids
 from b2share.modules.records.serializers import datacite_v31
-from b2share.modules.records.minters import make_record_url
+from b2share.modules.records.providers import RecordUUIDProvider
+from b2share.modules.records.minters import make_record_url, b2share_pid_minter
 from b2share.modules.communities.api import Community
 from b2share.modules.records.tasks import update_expired_embargoes \
     as update_expired_embargoes_task
@@ -100,6 +102,49 @@ def check_and_update_handle_records(update, verbose):
                             update_msg, pid, ", ".join(res.keys())))
                     elif verbose:
                         click.secho('  file PID ok: {}'.format(pid))
+
+
+@b2records.command()
+@with_appcontext
+@click.option('-u', '--update', is_flag=True, default=False)
+@click.argument('record_pid', required=True)
+def check_handles(update, record_pid):
+    """Allocate handles for a record and its files, if necessary."""
+    rec_pid = RecordUUIDProvider.get(pid_value=record_pid).pid
+    record = Record.get_record(rec_pid.object_uuid)
+    record_updated = False
+
+    pid_list = [p.get('value') for p in record['_pid']
+                if p.get('type') == 'ePIC_PID']
+    if pid_list:
+        click.secho('record {} already has a handle'.format(record_pid), fg='green')
+    else:
+        click.secho('record {} has no handle'.format(record_pid), fg='red')
+        if update:
+            b2share_pid_minter(rec_pid, record)
+            record_updated = True
+            click.secho('    handle added to record', fg='green')
+        else:
+            click.secho('use -u argument to add a handle to the record')
+
+    files_ok = True
+    for f in record.get('_files', []):
+        if f.get('ePIC_PID'):
+            click.secho('file {} already has a handle'.format(f.get('key')), fg='green')
+        else:
+            click.secho('file {} has no handle'.format(f.get('key')), fg='red')
+            files_ok = False
+
+    if update and not files_ok:
+        create_file_pids(record)
+        record_updated = True
+        click.secho('    files updated with handles', fg='green')
+    elif not update and not files_ok:
+         click.secho('use -u argument to add handles to the files')
+
+    if record_updated:
+        record.commit()
+        db.session.commit()
 
 
 @b2records.command()
