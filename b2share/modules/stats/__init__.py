@@ -17,4 +17,9 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2SHARE"""
+"""B2Share statistics module.
+
+This module works with invenio-stats. It adds a processor
+which is applied to new events in order to filter out events
+coming from deposits. This way the download statistics are
+calculated only for files of published records."""
