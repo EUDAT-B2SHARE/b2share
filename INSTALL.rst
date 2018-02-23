@@ -1,5 +1,5 @@
-B2Share installation
-********************
+Installation
+************
 
 
 
@@ -184,7 +184,7 @@ Remember to also delete the containers.
 
 
 2. Running the service in production
--------------------------------------
+====================================
 
 The provided docker-compose file is not production ready. The
 database has no backup mechanism running. The system administrator can
@@ -201,7 +201,7 @@ native docker volumes instead of mounted host directories.
 
 
 3. Integration with other services
-------------------------------------
+==================================
 
 The records metadata in your local instance of B2SHARE can be harvested by
 various other repositories by using the included endpoint for the OAI-PMH
@@ -278,9 +278,6 @@ create the Elasticsearch indices and load the templates:
 .. code-block:: console
     
     $ b2share index init
-
-.. code-block:: console
-    
     $ b2share schemas init
 
 and start B2Share with:
@@ -316,16 +313,14 @@ This could indicate that the JSONSCHEMAS_HOST is misconfigured. If you are runni
 
 - When trying to login the following error is shown:
 
-```
-ERROR
-OAuth Authorization Server got an invalid request.
+    ERROR
+    OAuth Authorization Server got an invalid request.
 
-If you are a user then you can be sure that the web application you was using previously is either misconfigured or buggy.
+    If you are a user then you can be sure that the web application you was using previously is either misconfigured or buggy.
 
-If you are an administrator or developer the details of the error follows:
+    If you are an administrator or developer the details of the error follows:
 
-The client '<your-b2access-consumer-key>' is unknown
-```
+    The client '<your-b2access-consumer-key>' is unknown
 
 This means that your B2ACCESS credentials are incorrect, or you are working with the staging server and you didn't set USE_STAGING_B2ACCESS=1.
 

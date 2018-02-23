@@ -21,15 +21,29 @@
 
 .. include:: ../README.rst
 
-.. toctree::
-   :maxdepth: 1
+User's Guide
+------------
 
-   architecture
+This part of the documentation will show you how to get started in using
+B2Share.
+
+.. toctree::
+   :maxdepth: 2
+
    installation
+   administration
+   architecture
+
+Additional Notes
+----------------
+
+Notes on how to contribute, legal information and changes are here for the
+interested.
+
+.. toctree::
+   :maxdepth: 2
+
    contributing
    changes
    license
    authors
-.. toctree::
-   :maxdepth: 2
-
