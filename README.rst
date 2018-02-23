@@ -37,17 +37,24 @@ B2SHARE is an user-friendly, secure, robust, reliable, and trusted service to sh
 
 **Deposit and release your data** via the generic interface, or select a community extension including domain-specific metadata fields. **Share your data** with others in a safe and trusted environment. **Scientific communities** are able to brand templates, and use their own collections with specific metadata.
 
-B2SHARE is based on `Invenio <http://invenio-software.org/>`_. Invenio enables you to run your own electronic preprint server, your own online library catalogue or a digital document system on the web. It complies with the Open Archive Initiative metadata harvesting protocol and uses `MARC21 <http://www.loc.gov/marc/>`_ as its underlying bibliographic standard.
+B2SHARE is based on `Invenio <http://invenio-software.org/>`_. Invenio enables you to run your own electronic preprint server, your own online library catalogue or a digital document system on the web. It complies with the Open Archive Initiative metadata harvesting protocol.
 
-**Official site:** https://b2share.eudat.eu/
+**Main service is running at:** https://b2share.eudat.eu/
 
-Development Installation
-------------------------
+Build developer documentation
+-----------------------------
 
-Read INSTALL.rst for install instructions.
+A developer documentation is available. It can be built like this:
+
+.. code-block:: console
+
+    $ pip install -r requirements.txt # install dependencies
+    $ pip install -e .[all]
+    $ cd docs
+    $ make html
+    $ # open in your browser docs/_build/html/index.html
 
 Contributing
 ------------
 
 We appreciate contributions to our repository. Before you fork and make pull-requests please visit our `wiki <https://github.com/EUDAT-B2SHARE/b2share/wiki/Contributing>`_
-

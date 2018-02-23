@@ -16,7 +16,19 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""EUDAT B2Share."""
+r"""EUDAT B2Share Digital Repository.
+
+B2SHARE is based on the Invenio framework. It uses multiple Invenio **modules**
+enabling the storage and processing and of its data.
+For a complete list of Invenio modules used by B2SHARE see the
+**requirements.txt** file.
+
+As all Invenio application, B2SHARE uses Flask to handle HTTP requests. A
+B2SHARE service is initialized by the function :func:`~.factory.create_app`.
+This function creates the Flask application and loads all B2SHARE and Invenio
+modules.
+
+"""
 
 from .version import __version__
 

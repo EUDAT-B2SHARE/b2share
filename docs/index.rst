@@ -1,5 +1,5 @@
 .. This file is part of EUDAT B2Share.
-   Copyright (C) 2016, CERN.
+   Copyright (C) 2016, 2018 CERN.
 
    B2Share is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -24,7 +24,8 @@
 .. toctree::
    :maxdepth: 1
 
-   administration
+   architecture
+   installation
    contributing
    changes
    license

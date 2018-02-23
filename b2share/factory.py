@@ -21,7 +21,69 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Application factory creating the b2share application."""
+"""Application factory creating the B2SHARE application.
+
+This module is the starting point of a B2SHARE service.
+
+The real B2SHARE application is the HTTP REST API application created by
+:py:func:`~.create_api`. However the UI files (ReactJS) also needs to be served
+to the users' browser.
+It would be better to serve it via NGINX but up to now we chose to serve it
+via another top Flask application. The requests are dispatched between this
+UI application and the REST API application depending on the request URL. Any
+request whose endpoint starts with ``/api`` will be redirected to the REST API
+application.
+
+.. graphviz::
+
+    digraph G {
+    rankdir=TB;
+
+    web [
+        label="WEB",
+        width=3,
+        height=1.5,
+        fixedsize=true,
+        shape=rectangle
+        color=grey,
+        style=filled,
+    ];
+    web -> dispatcher [label="request"];
+
+    subgraph cluster_invenio_stats {
+        rank=same;
+        fontsize = 20;
+        label = "B2SHARE";
+        style = "solid";
+
+        dispatcher [label="DispatcherMiddleware", shape="parallelogram"]
+        app [label="Top Flask\\napplication", shape="Mcircle"];
+        rest_app [label="REST API\\nApplication", shape="Mcircle"]
+        ui_files [label="UI Files", shape="folder"]
+        communities_views [label="b2share.modules.communities.views", shape="rectangle"]
+        schemas_views [label="b2share.modules.schemas.views", shape="rectangle"]
+        other_views [label="...", shape="rectangle"]
+    }
+    dispatcher -> app [label="endpoint != '/api/*'"];
+    app -> ui_files [label="serves"];
+    dispatcher -> rest_app [label="endpoint == '/api/*'"];
+    rest_app -> communities_views [label="endpoint in\\n['/api/communities/*', ...]"]
+    rest_app -> schemas_views [label="endpoint in\\n['/api/communities/<ID>/schemas/*', ...]"]
+    rest_app -> other_views [label="endpoint == '...'"]
+    }
+
+See Invenio and invenio_base module for more information regarding how Invenio
+applications are created. The *"UI Application"* in our case is a custom
+one, it does not match *"Invenio UI application"* which serves default
+Invenio UI.
+
+The ``*\*.views*`` are the ``views.py`` modules included in modules which
+contains the REST API definition. The requests are dispatched to the right
+view class using the Flask endpoints matching rules.
+
+**TODO**: Note that Invenio has evolved since :py:func:`~.create_app` was
+created. It will be necessary at some point to refactor it.
+"""
 
 import os
 import sys
@@ -44,6 +106,7 @@ instance_path = os.getenv(env_prefix + '_INSTANCE_PATH') or \
 
 
 def create_api(*args, **kwargs):
+    """Create Flask application providing B2SHARE REST API."""
     app = create_app_factory(
         'b2share',
         config_loader=config_loader,
@@ -56,6 +119,12 @@ def create_api(*args, **kwargs):
 
 
 def create_app(**kwargs):
+    """Create Flask application providing B2SHARE UI and REST API.abs
+
+    The REST API is provided by redirecting any request to another Flask
+    application created with :func:`~.create_api`.
+    """
+    # Create the REST API Flask application
     api = create_api(**kwargs)
     api.config.update(
         APPLICATION_ROOT='/api'
