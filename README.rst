@@ -41,8 +41,8 @@ B2SHARE is based on `Invenio <http://invenio-software.org/>`_. Invenio enables y
 
 **Main service is running at:** https://b2share.eudat.eu/
 
-Build developer documentation
------------------------------
+Developer documentation
+-----------------------
 
 A developer documentation is available. It can be built like this:
 
@@ -53,8 +53,3 @@ A developer documentation is available. It can be built like this:
     $ cd docs
     $ make html
     $ # open in your browser docs/_build/html/index.html
-
-Contributing
-------------
-
-We appreciate contributions to our repository. Before you fork and make pull-requests please visit our `wiki <https://github.com/EUDAT-B2SHARE/b2share/wiki/Contributing>`_
