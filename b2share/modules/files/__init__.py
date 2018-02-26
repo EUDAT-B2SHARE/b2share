@@ -27,6 +27,11 @@ in order to change the procedure when downloading and
 redirect to the PID instead of starting a file download.
 
 The API for interacting with files is provided directly by invenio-files-rest.
+
+The permissions in the files REST API dictate that files cannot be changed
+if their record is published.
+Also, the files of a draft can only be modified by the creator of the draft
+or the community administrator.
 """
 
 from __future__ import absolute_import, print_function
