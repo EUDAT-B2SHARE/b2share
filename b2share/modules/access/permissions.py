@@ -77,6 +77,9 @@ class StrictDynamicPermission(DynamicPermission):
         - Identities can also provide a need without using the database.
         - The permission is not given even if there are no needs in the
             database. Thus the action is not allowed by default.
+
+    NOTE: This could be deprecated as the current version of invenio-access'
+    DynamicPermission class forbids by default instead of allowing.
     """
     def __init__(self, *needs):
         self.explicit_excludes = set()
@@ -96,7 +99,15 @@ class StrictDynamicPermission(DynamicPermission):
 
 
 class PermissionSet(Permission):
-    """Abstract permissions combining multiple permissions."""
+    """Abstract permissions combining multiple permissions.
+
+    Default Flask-Principal permissions just test the intersection of
+    user Identity set of Needs and Permission set of Needs. The user is allowed
+    to access as soon as one of the need is in both sets. This is enough in
+    most cases but sometime we need to have more complex permissions where
+    one intersection is not enough. This is why this class and its subclasses
+    were created.
+    """
 
     def __init__(self, *permissions, allow_if_no_permissions=False):
         """A set of set of permissions, all of which must be allow the

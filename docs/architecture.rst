@@ -78,10 +78,58 @@ contain follow Invenio convention:
 2.5 Files
 ~~~~~~~~~
 
-.. automodule:: b2share.modules.schemas
+.. automodule:: b2share.modules.files
 
 
-2.8 ApiRoot
+2.6 Stats
+~~~~~~~~~
+
+.. automodule:: b2share.modules.stats
+
+
+2.7 Remotes
 ~~~~~~~~~~~
 
+.. automodule:: b2share.modules.remotes
+
+
+2.8 Oauthclient
+~~~~~~~~~~~~~~~
+
+.. automodule:: b2share.modules.oauthclient
+
+
+2.9 OAIServer
+~~~~~~~~~~~~~
+
+.. automodule:: b2share.modules.oaiserver
+
+
+2.10 Handle
+~~~~~~~~~~~
+
+.. automodule:: b2share.modules.handle
+
+
+2.11 Access
+~~~~~~~~~~~
+
+.. automodule:: b2share.modules.access
+
+
+2.12 upgrade
+~~~~~~~~~~~~
+
+.. automodule:: b2share.modules.upgrade
+
+
+2.13 ApiRoot
+~~~~~~~~~~~~
+
 .. automodule:: b2share.modules.apiroot
+
+
+2.14 Docs
+~~~~~~~~~
+
+.. automodule:: b2share.modules.docs

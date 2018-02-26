@@ -21,7 +21,11 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2Share extension of the invenio-access module."""
+"""B2Share extension of the invenio-access module.
+
+This module provide helper classes enabling to extend the functionalities
+of Invenio-Access and Flask-Principal.
+"""
 
 from __future__ import absolute_import, print_function
 

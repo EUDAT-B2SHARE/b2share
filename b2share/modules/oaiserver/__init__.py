@@ -24,7 +24,12 @@
 """B2Share oaiserver module.
 
 This module works with invenio-oaiserver to provide a
-command line interface for checking and fixing OAI PMH sets."""
+command line interface for checking and fixing OAI PMH sets.
+
+
+OAI-PMH is the protocol used by B2SHARE in order to be harvestable. B2Find uses
+it to create a catalogue of every record in a B2SHARE service.
+"""
 
 from __future__ import absolute_import, print_function
 

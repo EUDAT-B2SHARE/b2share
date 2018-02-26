@@ -17,7 +17,10 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2SHARE"""
+"""B2SHARE remote services module.
+
+This module enables interactions with the B2Drop service.
+"""
 
 from __future__ import absolute_import, print_function
 

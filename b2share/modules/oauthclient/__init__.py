@@ -25,4 +25,8 @@
 """B2SHARE oauthclient module.
 
 The oauthclient module is used to configure and add helper functions
-to invenio-oauthclient."""
+to invenio-oauthclient.
+
+Invenio-oauthclient is used in order to provide oauth authentication via
+B2ACCESS.
+"""

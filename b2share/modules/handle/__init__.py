@@ -17,7 +17,11 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2SHARE's Handle module"""
+"""B2SHARE's Handle module.
+
+This module provide helpers enabling to create and manipulate EPIC Persistent
+Identifiers.
+"""
 
 from __future__ import absolute_import, print_function
 
