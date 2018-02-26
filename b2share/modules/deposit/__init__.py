@@ -34,16 +34,16 @@ Use cases
 The need for a deposit comes from different use cases:
 
 * Draft work: a researcher wants to work on a draft for some time, potentially
-  loging out in-between, before publicating his dataset.
+  logging out in-between, before publishiing his dataset.
 * Filtering: some communities want to filter what is published in their
   communities. The deposit can be submitted by the author and then accepted
   by the community administrator.
 * Curation: a curator can modify the deposit before it is published.
-* Validation: many communities have use case where they would like to perform
-  some automatic validation on the dataset before they are published. The
-  deposit is the right stage at which this validation should be done.
+* Validation: many communities have the use case where they would like to
+  perform some automatic validation on the dataset before they are published.
+  The deposit is the right stage at which this validation should be done.
 
-Not all these use case are currently supported but they have been taken into
+Not all these use cases are currently supported but they have been taken into
 account during the design of draft records.
 
 When a user calls ``POST /api/records`` a deposit is created. This deposit has
@@ -67,7 +67,7 @@ Currently there are two existing workflows:
   community administrator can either set it to ``published`` (and thus publish
   the deposit) or to ``draft``. The owner can also set it back to draft.
 * :py:func:`b2share.modules.communities.wokflows.direct_publish_workflow`
-  When the deposit pwner sets ``publication_state`` to ``submitted``, the
+  When the deposit owner sets ``publication_state`` to ``submitted``, the
   workflow automatically sets it to ``published``.
 
 Access control
@@ -75,11 +75,11 @@ Access control
 
 **Combining permissions**
 
-As the publication state is part of the metadata, sending a PATCH requesst
+As the publication state is part of the metadata, sending a PATCH request
 via the REST API on a deposit can do multiple actions:
 
-* modifying the deposit metadata.
-* changing the publication state of the deposit.
+* modify the deposit metadata.
+* change the publication state of the deposit.
 
 The permissions for both actions are different. Thus multiple permissions need
 to be checked at the same time on a single request. If either of those
@@ -100,14 +100,14 @@ deposit:
   modify the publication_state field.
 * submitted: the owner cannot modify the metadata nor the files. The community
   administrator can modify both. The owner and the community adminisrator can
-  set publication_state back to *draft*. Community administrator can also set
-  it to *published*.
+  set publication_state back to *draft*. The community administrator can also
+  set it to *published*.
 * published: files cannot be changed as a published record was created.
 
 The deposit can always be deleted for any reason by its owner or the
 superuser.
 
-We could have hardcoded those permissions but we chose to instead use
+We could have hardcoded those permissions but we chose instead to use
 the ``invenio-access`` module which enables to create generic permissions. We
 hacked a little the :py:class:`invenio_access.models.ActionNeedMixin` model
 by putting JSON inside the ``argument`` field. This enables to use custom

@@ -48,7 +48,7 @@ Design
 
 Schemas are split in 3 types:
 
-* one **root schema**: this schemas contains the fields common to every
+* one **root schema**: this schema contains the fields common to every
   record. It is provided by the B2SHARE software itself. It is versioned
   so that it can evolve in future versions of B2SHARE. All versions are stored
   in JSON files in ``b2share.modules.schemas.root_schemas``.
@@ -64,7 +64,7 @@ Schemas are split in 3 types:
 Block schemas are designed to be shared by communities. That way they can
 cooperate and follow the same standards.
 
-A concrete example of use case would be to have a set of fields mandatory
+A concrete example of a use case would be to have a set of fields mandatory
 for every scientific department in a university and then other sets of fields
 specific to each department.
 Each department would define the set of fields they require in a specific block
@@ -114,7 +114,7 @@ us that no organization lasts forever.
 
 We didn't have time to implement fully the design defined above. The model
 and API enables it but the REST API and UI is limited on purpose as we didn't
-want to support a half finished features. The only way for now to add schemas
+want to support a half finished feature. The only way for now to add schemas
 is via CLI. A community schema can only reference one block schema and the
 the structure is imposed. These restrictions could be removed in the future
 without breaking the API.
