@@ -133,3 +133,28 @@ contain follow Invenio convention:
 ~~~~~~~~~
 
 .. automodule:: b2share.modules.docs
+
+
+3. B2SHARE CELERY
+-----------------
+
+This module creates the application used by celery.
+
+Example:
+
+::
+
+    $ B2SHARE_JSONSCHEMAS_HOST='localhost:5000' celery worker -A b2share.celery --loglevel="DEBUG"
+
+4. wsgi
+-------
+
+This module provides the WSGI application used by UWSGI when it runs the
+B2SHARE REST API service, i.e. B2SHARE backend.
+
+5. config
+---------
+
+B2SHARE default configuration. Some of its variable are overriden by the
+flask application instance configuration when it runs in the docker container.
+See Flask and Invenio documentation for more information.
