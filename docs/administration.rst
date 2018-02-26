@@ -111,7 +111,7 @@ id between colons).
 
     $ b2share roles add <email_address_of_user> com:COMMUNITY_ID:admin
 
-CLI for community mgt
+CLI for community management
 ---------------------
 1. Create a community 
 
