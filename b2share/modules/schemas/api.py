@@ -590,8 +590,13 @@ class CommunitySchema(object):
         Each Block Schema and the Root Schema should also refuse any additional
         properties in order to avoid conflicts.
         """
+        # The root schema already defines the "community_specific" field but
+        # Doesn't define what it contains. This way it can forbid any
+        # additional field at the root level while enabling the later
+        # definition of the "community_specific" field content.
         root_schema = RootSchema.get_root_schema(self.model.root_schema)
         result = {"allOf": [
+            # Combine root schema and community specific schema.
             json.loads(root_schema.json_schema),
             {
                 'type': 'object',

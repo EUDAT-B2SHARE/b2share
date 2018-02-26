@@ -17,7 +17,11 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2Share apiroot module."""
+"""B2Share apiroot module.
+
+This module simply gives information on the B2SHARE service via the root
+``/api/`` endpoint.
+"""
 
 from __future__ import absolute_import, print_function
 
