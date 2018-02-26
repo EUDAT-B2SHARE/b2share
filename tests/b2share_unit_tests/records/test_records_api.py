@@ -202,3 +202,39 @@ def test_record_delete_version(app, test_records, test_users):
 
         # TODO: test in ES that the previous version is reindexed
         # and can be found
+
+
+def test_record_publish_adds_no_handles_for_external_files(app,
+                            records_data_with_external_pids,
+                            test_records_data):
+    """Test that no handle PIDs are created for external files."""
+    for metadata in test_records_data:
+        with app.app_context():
+            app.config.update({'FAKE_EPIC_PID': True})
+
+            external_pids = records_data_with_external_pids['external_pids']
+            external_dict = {x['key']: x['ePIC_PID'] for x in external_pids}
+            data = deepcopy(metadata)
+            data['external_pids'] = deepcopy(external_pids)
+
+            record_uuid = uuid.uuid4()
+            b2share_deposit_uuid_minter(record_uuid, data=data)
+
+            deposit = Deposit.create(data, id_=record_uuid)
+            ObjectVersion.create(deposit.files.bucket, 'real_file_1.txt',
+                             stream=BytesIO(b'mycontent'))
+            ObjectVersion.create(deposit.files.bucket, 'real_file_2.txt',
+                             stream=BytesIO(b'mycontent'))
+            deposit.submit()
+            deposit.publish()
+            deposit.commit()
+
+            _, record = deposit.fetch_published()
+
+            # external files don't get a handle PID, they already have one
+            # which is stored in record['_deposit']['external_pids']
+            for f in record.files:
+                if f['key'] in external_dict:
+                    assert f.get('ePIC_PID') is None
+                else:
+                    assert '0000' in f['ePIC_PID'] # is a new fake PID
