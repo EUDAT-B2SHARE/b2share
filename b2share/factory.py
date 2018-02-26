@@ -26,7 +26,7 @@
 This module is the starting point of a B2SHARE service.
 
 The real B2SHARE application is the HTTP REST API application created by
-:py:func:`~.create_api`. However the UI files (ReactJS) also needs to be served
+:py:func:`~.create_api`. However the UI files (ReactJS) also need to be served
 to the users' browser.
 It would be better to serve it via NGINX but up to now we chose to serve it
 via another top Flask application. The requests are dispatched between this
@@ -78,7 +78,7 @@ one, it does not match *"Invenio UI application"* which serves default
 Invenio UI.
 
 The ``*\*.views*`` are the ``views.py`` modules included in modules which
-contains the REST API definition. The requests are dispatched to the right
+contain the REST API definition. The requests are dispatched to the right
 view class using the Flask endpoints matching rules.
 
 **TODO**: Note that Invenio has evolved since :py:func:`~.create_app` was

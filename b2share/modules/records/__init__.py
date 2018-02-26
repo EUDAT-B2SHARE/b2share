@@ -92,7 +92,7 @@ module for more information.
 
 Records belong to a **community**. The first thing a user does when he creates
 a draft record is to select the community it will belong to. See the
-``b2share.communities`` module for more information. The community povides
+``b2share.communities`` module for more information. The community provides
 the JSON Schema validating the record.
 
 Record versioning
@@ -155,7 +155,7 @@ references the "b2rec" PID of each version of a record.
     }
 
 You will see that **draft records**, also known as **deposits**, also have
-their own PIDs, whith type **b2dep**. Whenever a draft record is created,
+their own PIDs, with type **b2dep**. Whenever a draft record is created,
 the HEAD PID also keeps a reference to the b2rec PID which will be used by the
 next published record.
 
@@ -214,7 +214,7 @@ Invenio-deposits provide respectively the endpoints:
 * ``/api/records``
 * ``/api/deposits``
 
-This enables Invenio to have different PIDs a record and its deposit (aka draft
+This enables Invenio to have different PIDs for a record and its deposit (aka draft
 record): ``/api/records/<ID1>`` and ``/api/records/<ID2>`` where ``ID1``
 and ``ID2`` are different. This is simplified in B2SHARE as the record and its
 deposit share the same PID value (but with different types: b2rec and b2dep).

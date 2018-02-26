@@ -23,7 +23,7 @@ enabling the storage and processing and of its data.
 For a complete list of Invenio modules used by B2SHARE see the
 **requirements.txt** file.
 
-As all Invenio application, B2SHARE uses Flask to handle HTTP requests. A
+As an Invenio application, B2SHARE uses Flask to handle HTTP requests. A
 B2SHARE service is initialized by the function :func:`~.factory.create_app`.
 This function creates the Flask application and loads all B2SHARE and Invenio
 modules.
