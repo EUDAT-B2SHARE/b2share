@@ -22,4 +22,11 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""B2SHARE oauth configurations and helpers."""
+"""B2SHARE oauthclient module.
+
+The oauthclient module is used to configure and add helper functions
+to invenio-oauthclient.
+
+Invenio-oauthclient is used in order to provide oauth authentication via
+B2ACCESS.
+"""

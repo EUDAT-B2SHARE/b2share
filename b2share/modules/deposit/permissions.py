@@ -52,6 +52,11 @@ from .loaders import deposit_patch_input_loader
 
 
 def _deposit_need_factory(name, **kwargs):
+    """Generate a JSON argument string from the given keyword arguments.
+
+    The JSON string is always generated the same way so that the resulting Need
+    is equal to any other Need generated with the same name and kwargs.
+    """
     if kwargs:
         for key, value in enumerate(kwargs):
             if value is None:
@@ -65,6 +70,7 @@ def _deposit_need_factory(name, **kwargs):
 
 
 def create_deposit_need_factory(community=None, publication_state='draft'):
+    """Create the need needed to create a deposit."""
     # FIXME: check that the community_id and publication_state exist
     return _deposit_need_factory('create-deposit',
                                  community=community,
@@ -72,6 +78,7 @@ def create_deposit_need_factory(community=None, publication_state='draft'):
 
 
 def read_deposit_need_factory(community, publication_state):
+    """Create the need needed to read a deposit."""
     # FIXME: check that the community_id and publication_state exist
     return _deposit_need_factory('read-deposit',
                                  community=community,
@@ -80,6 +87,7 @@ def read_deposit_need_factory(community, publication_state):
 
 def update_deposit_publication_state_need_factory(community, old_state,
                                                   new_state):
+    """Create the need needed to change the publication_state of a deposit."""
     # FIXME: check that the community_id and publication states exist
     return _deposit_need_factory('update-deposit-publication-state',
                                  community=community,
@@ -88,6 +96,7 @@ def update_deposit_publication_state_need_factory(community, old_state,
 
 
 def update_deposit_metadata_need_factory(community, publication_state):
+    """Create the need needed to change the metadata of a deposit."""
     # FIXME: check that the community_id and publication state exist
     return _deposit_need_factory('update-deposit-metadata',
                                  community=community,

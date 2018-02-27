@@ -18,7 +18,28 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2SHARE"""
+"""B2SHARE module providing access to user accounts
+
+
+B2SHARE is accessible to anonymous users (not authenticated). However some
+actions can only be performed by authenticated users.
+
+Invenio provides the ``invenio-accounts`` module which stores in the database
+user account information.
+
+The B2SHARE module ``b2share.modules.users`` adds some features on top of
+``invenio-accounts``.
+
+* A REST API enabling to read user information and to create **REST API Access
+  Tokens**. See ``b2share.modules.users.views``.
+
+* Permission classes limiting the access to the REST API. See the
+  ``b2share.modules.users.permissions`` module.
+
+REST API Access Tokens enable a user to send authenticated requests via the
+REST API. Example: ``GET /api/user/?access_token=<ACCESS_TOKEN>``. See
+``invenio-oauth2server`` for more information on Access Tokens.
+"""
 
 from __future__ import absolute_import, print_function
 

@@ -17,7 +17,22 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2SHARE"""
+"""B2Share files module.
+
+The files module provides the storage class for files with external PIDs
+and background tasks for file checksum verification.
+
+The storage class B2ShareFileStorage is assigned to files with external PIDs
+in order to change the procedure when downloading and
+redirect to the PID instead of starting a file download.
+
+The API for interacting with files is provided directly by invenio-files-rest.
+
+The permissions in the files REST API dictate that files cannot be changed
+if their record is published.
+Also, the files of a draft can only be modified by the creator of the draft
+or the community administrator.
+"""
 
 from __future__ import absolute_import, print_function
 

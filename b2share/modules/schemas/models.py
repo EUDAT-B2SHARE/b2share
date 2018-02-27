@@ -36,7 +36,8 @@ from b2share.modules.communities.models import Community
 
 
 class RootSchemaVersion(db.Model):
-    """Represent a version of the B2Share metadata schema in the database."""
+    """Represent a version of the B2Share root metadata schema in the database.
+    """
 
     __tablename__ = 'b2share_root_schema_version'
 

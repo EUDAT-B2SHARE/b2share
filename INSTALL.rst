@@ -1,5 +1,5 @@
-B2Share installation
-********************
+Installation
+************
 
 
 
@@ -184,7 +184,7 @@ Remember to also delete the containers.
 
 
 2. Running the service in production
--------------------------------------
+====================================
 
 The provided docker-compose file is not production ready. The
 database has no backup mechanism running. The system administrator can
@@ -201,7 +201,7 @@ native docker volumes instead of mounted host directories.
 
 
 3. Integration with other services
-------------------------------------
+==================================
 
 The records metadata in your local instance of B2SHARE can be harvested by
 various other repositories by using the included endpoint for the OAI-PMH
@@ -225,36 +225,105 @@ Before installing B2Share you will need the following software:
     $ brew install python --framework --universal
     $ pip install virtualenv virtualenvwrapper
 
-- ``docker`` and ``docker-compose``
+and a working installation of the following services:
 
-On macOS we recommend using Docker for Mac.
+- ``Elasticsearch 2.4``
+- ``Redis 2.10.5``
+- ``RabbitMQ 3.6``
+- ``Celery 4.1``
+- ``PostgreSQL 9.6`` and ``psycopg2``
 
-If the conditions are satisfied, open one terminal window and download in a
-temporary folder the ``devenv/docker-compose`` and ``devenv/run_demo.sh``
-files:
+Another option, which requires a bit more RAM, is to use a docker-compose.yml file
+to manage the starting and stopping of the services,
+and just have a bare metal installation of B2Share for development.
 
-.. code-block:: console
-
-    $ mdir develop-b2share
-    $ cd develop-b2share
-    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/master/devenv/docker-compose.yml
-    $ curl -O https://raw.githubusercontent.com/EUDAT-B2SHARE/b2share/master/devenv/run_demo.sh
-
-
-Then start the ``run_demo.sh`` script:
+Now to install B2Share, first create a new virtualenv with:
 
 .. code-block:: console
 
-    $ chmod +x ./run_demo.sh
-    $ ./run_demo.sh
+    $ virtualenv -p python3 b2share
 
-The script will create a python virtualenv, clone the master branch of
-B2SHARE into it, install the necessary python packages, build the web UI and
-start the Flask server in development mode. B2SHARE should be available at
-http://localhost:5000.
+and clone the B2Share repository from github:
+
+.. code-block:: console
+    
+    $ git clone https://github.com/eudat-b2share/b2share.git
+
+Now we can install b2share for development with pip:
+
+.. code-block:: console
+    
+    $ pip install -r requirements.txt
+    $ pip install -e .[all]
+
+and start all services.
+
+B2Share requires some configuration as mentioned in section 1.1 of this document so
+make sure to follow the steps exporting the enviroment variables, and the additional ones
+required for local installations:
+
+.. code-block:: console
+    
+    $ export B2SHARE_UI_PATH=<path-to-b2share-repository>/webui/app
+    $ export B2SHARE_SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://$B2SHARE_POSTGRESQL_USER:$B2SHARE_POSTGRESQL_PASSWORD@localhost:5432/$B2SHARE_POSTGRESQL_DBNAME
+
+Finally, create the DB:
+
+.. code-block:: console
+
+    $ b2share upgrade run
+
+create the Elasticsearch indices and load the templates:
+
+.. code-block:: console
+    
+    $ b2share index init
+    $ b2share schemas init
+
+and start B2Share with:
+
+.. code-block:: console
+
+    $ b2share run
+
+If you wish to add some demo records and communities, then install the b2share demo application:
+
+.. code-block:: console
+
+    $ cd <path-to-b2share-repository>/demo/
+    $ pip install .
+
+and load the demo data:
+
+.. code-block:: console
+
+    $ b2share demo load_data -vv
 
 Please note that a custom B2ACCESS configuration is also needed, as described
 above. The 'return URL' of the B2ACCESS configuration in this case can be set
 to ``http://localhost:5000/api/oauth/authorized/b2access/``
 
 If working on the web UI, see also: https://github.com/EUDAT-B2SHARE/b2share/wiki/Developer's-corner.
+
+FAQ:
+
+- There is a timeout when trying to create a new record from the UI, or the server hangs when trying to create a draft from the REST API.
+
+This could indicate that the JSONSCHEMAS_HOST is misconfigured. If you are running B2SHARE locally then it should be set to localhost:5000.
+
+- When trying to login the following error is shown:
+
+    ERROR
+    OAuth Authorization Server got an invalid request.
+
+    If you are a user then you can be sure that the web application you was using previously is either misconfigured or buggy.
+
+    If you are an administrator or developer the details of the error follows:
+
+    The client '<your-b2access-consumer-key>' is unknown
+
+This means that your B2ACCESS credentials are incorrect, or you are working with the staging server and you didn't set USE_STAGING_B2ACCESS=1.
+
+- There is the following error when you run `b2share upgrade run`: sqlalchemy.exc.InvalidRequestError: Naming convention including %(constraint_name)s
+
+If your alembic recipes are unchanged and you also didn't change any of your models.py, this could be due to not having set the B2SHARE_SQLALCHEMY_DATABASE_URI to use Postgresql, and you are using the default which is SQLite, which doesn't support DB migrations with alembic.

@@ -61,7 +61,7 @@ I18N_LANGUAGES = [
 # Records
 # =======
 
-RECORDS_REST_ENDPOINTS={}
+RECORDS_REST_ENDPOINTS={} # We disable all endpoints as we will define our own custom REST API
 #: Records REST API endpoints.
 B2SHARE_RECORDS_REST_ENDPOINTS = dict(
     b2rec=dict(
@@ -98,7 +98,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
 )
 
 
-DEPOSIT_REST_ENDPOINTS={}
+DEPOSIT_REST_ENDPOINTS={} # We disable all endpoints as we will define our own custom REST API
 #: REST API configuration.
 DEPOSIT_PID = 'pid(b2dep,record_class="b2share.modules.deposit.api:Deposit")'
 DEPOSIT_PID_MINTER='b2rec'

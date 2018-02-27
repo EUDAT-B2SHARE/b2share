@@ -17,10 +17,22 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""B2Share upgrade module.
+"""B2SHARE upgrade module.
+
+This module makes it easy to upgrade a B2SHARE instance in a one line
+command. It is required because:
+
+* Invenio alpha modules are unstable and the alembic recipes can change after
+  a release (beta modules are deemed stable). Thus it is sometime not possible
+  to just ask alembic to upgrade.
+* A B2SHARE upgrade can require more than database changes.
+* If an upgrade fail (ex: because of a DB connection) it should just require
+  to run the same command again in order to fix and finish the upgrade.
+* Each upgrade should be logged in the Database so that information is
+  available in case of a repeated failed upgrade.
 
 Command-line interface
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 The upgrade module provides a Command Line Interface which enables
 administrators to migrate an existing B2Share deployment from one version
@@ -58,7 +70,7 @@ In order to upgrade a B2Share deployment call the command:
 when advised by EUDAT support.
 
 B2Share v2.0.1 Specifics
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 As B2Share v2.0.1 and earlier didn't include alembic recipes the transition to
 v2.1.0 is special.
@@ -113,6 +125,14 @@ did not change we can safely add them in the alembic_version table.
 3. Using alembic to upgrade the new recipes.
 
 4. Destroying and reindexing elasticsearch indices
+
+
+Database model
+^^^^^^^^^^^^^^
+
+All previously ran migrations are saved, including failed migration, except
+for failed 2.0.0->2.0.1 migrations because the upgrade database model did
+not exist yet.
 """
 
 from __future__ import absolute_import, print_function
