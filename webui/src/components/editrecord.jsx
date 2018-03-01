@@ -61,6 +61,11 @@ export const EditRecordRoute = React.createClass({
         }
     },
 
+    currentUser(){
+        const { id } = this.props.params;
+        return serverCache.getUser();
+    },
+
     render() {
         const record = this.getRecordOrDraft();
         if (!record) {
@@ -74,15 +79,21 @@ export const EditRecordRoute = React.createClass({
             return <Err err={rootSchema}/>;
         }
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
+
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
+
+        const user = this.currentUser();
+        
         return (
             <ReplaceAnimate>
                 <EditRecord record={record} community={community}
                             rootSchema={rootSchema} blockSchemas={blockSchemas}
                             refreshCache={this.refreshCache}
                             patchFn={this.patchRecordOrDraft}
+                            currentUser={user}
+                            publicationState={record.getIn(['metadata', 'publication_state'])}
                             isDraft={this.isDraft} isVersion={true} />
             </ReplaceAnimate>
         );
@@ -102,6 +113,9 @@ const EditRecord = React.createClass({
             readOnly: false,
             reviewOrPublishConfirmed: null,
             revokeSubmitted:false,
+            isResponsibleAdmin:false,
+            adminUserIsEditing:false,
+            checkPermission: false,
         };
     },
 
@@ -461,7 +475,26 @@ const EditRecord = React.createClass({
         this.componentWillReceiveProps(this.props);
     },
 
+
+    getCurrentUserRoles(currentUser, currentDraftCommunityID){
+        var check = false;
+        currentUser.get('roles').forEach(role => {
+            if(currentDraftCommunityID == role.get('id')){
+                check = true;
+            }
+        });
+        return check;
+    },
+
     componentWillReceiveProps(props) {
+        // The current user should be abble to only see his/her own drafts and submitted records
+        if (props.record && this.props.currentUser){
+            const ownerID = props.record.getIn(['metadata', 'owners']).first();
+            if(ownerID == this.props.currentUser.get('id')){
+                this.setState({checkPermission:true});
+            }
+        }
+
         if (props.record && !this.state.record) {
             let record = props.record.get('metadata');
             if (!record.has('community_specific')) {
@@ -477,10 +510,18 @@ const EditRecord = React.createClass({
             }
         }
 
-        // Record is submitted for review: the publication_state is 'submitted' and readonly should be True
-        if(this.props.community && this.state.record){
-            if(this.props.community.get("publication_workflow") == 'review_and_publish' && this.state.record.get('publication_state')=='submitted' && !this.state.revokeSubmitted){
+        // Record is submitted for review: the publication_state is 'submitted' and readonly should be True.
+        // Also, check if the current user is the community administrator who should review the 
+        // submitted draft and if so, set the isResponsibleAdmin state to true.
+        if(this.props.community){
+            if(this.props.community.get("publication_workflow") == 'review_and_publish' && this.props.publicationState=='submitted' && !this.state.revokeSubmitted){
                 this.setState({readOnly: true});
+                    // Check if the current user is an admin of this draft's community who can review this draft
+                    const isResponsibleAdmin = this.getCurrentUserRoles(this.props.currentUser, this.props.community.get('roles').get('admin').get('id'));
+                    this.setState({isResponsibleAdmin});
+            }
+            if(this.state.adminUserIsEditing){
+                this.setState({readOnly: false});
             }
         }
 
@@ -565,15 +606,18 @@ const EditRecord = React.createClass({
     componentDidUpdate(prevProps, prevState) {
         const original = this.props.record.get('metadata').toJS();
         let updated = this.state.record.toJS();
-        // checkbox is enabled and record is going to be "submitted" for review by community admin
-        if (prevState.record.get('publication_state') !== this.state.record.get('publication_state') && !this.state.revokeSubmitted){
-            const patch = compare(original, updated);
-            if (!patch || !patch.length) {
-                this.setState({dirty:false});
-                return;
+        // The checkbox at the end of the page  is enabled and record is going to be "submitted" for review by community admin
+        if(prevState.record){
+            if (prevState.record.get('publication_state') !== this.state.record.get('publication_state') && !this.state.revokeSubmitted){
+                const patch = compare(original, updated);
+                if (!patch || !patch.length) {
+                    this.setState({dirty:false});
+                    return;
+                }
+                this.updateBrowserState(patch, 'submitted');
             }
-            this.updateBrowserState(patch, 'submitted');
         }
+
         // Revoking the submitted record for review. Going back to the draft mode.
         if(prevState.revokeSubmitted !== this.state.revokeSubmitted && this.state.revokeSubmitted){
             updated['publication_state'] = 'draft';
@@ -634,7 +678,7 @@ const EditRecord = React.createClass({
                 }
                 break;
 
-            case 'edit':
+            case 'edit_or_reject':
                 afterPatch = (record) => {
                     this.setState({waitingForServer: false, revokeSubmitted: false});
                     notifications.clearAll();
@@ -644,15 +688,13 @@ const EditRecord = React.createClass({
 
             case 'save_draft':
                 afterPatch = (record) => {
-                    // if (this.props.isDraft && !this.isForPublication()) {
                         this.props.refreshCache();
                         // TODO(edima): when a draft is publised, clean the state of
                         // records in versioned chain, to trigger a refetch of
                         // versioning data
                         this.setState({dirty: false, waitingForServer: false, reviewOrPublishConfirmed: 'draft'});
                         notifications.clearAll();
-                    // }
-                }
+                    }
                 break;
 
             case 'edit_metadata':
@@ -663,6 +705,20 @@ const EditRecord = React.createClass({
                     this.setState({dirty:false, waitingForServer: false});
                     notifications.clearAll();
                     browser.gotoRecord(record.id);
+                }
+                break;
+
+            case 'accept_and_publish':
+                afterPatch = (record) =>{
+                    browser.gotoRecord(record.id);
+                    // TODO: Send an email to the record owner and notify her
+                }
+                break;
+
+            case 'reject':
+                afterPatch = (record) =>{
+                    browser.gotoSearch({"community":this.props.community.get("id"),"submitted":1,"drafts":1});
+                    // TODO: Send an email to the record owner and notify her
                 }
                 break;
         }
@@ -682,11 +738,17 @@ const EditRecord = React.createClass({
         this.props.patchFn(patch, afterPatch, onError);
     },
 
-    editSubmittedRecord(event){
+    editSubmittedDraft(event){
         event.preventDefault();
         const record = this.state.record.set('publication_state', "draft");
         this.setState({record});
         this.setState({dirty:false, reviewOrPublishConfirmed:'draft', revokeSubmitted:true, readOnly:false});
+    },
+
+    adminEditSubmittedDraft(event){
+        // When the admin user is editting the sumbitted draft, the 'publication_state' should still be 'submitted'
+        event.preventDefault();
+        this.setState({dirty:false, readOnly:false, adminUserIsEditing:true});
     },
 
     isForPublication() {
@@ -737,11 +799,99 @@ const EditRecord = React.createClass({
         }
     },
 
+    rejectSubmittedDraft(event){
+        event.preventDefault();
+        // Change the "record_state" from "submitted" to "draft"
+        const original = this.props.record.get('metadata').toJS();
+        const updated = this.state.record.toJS();
+        updated['publication_state'] = 'draft';
+        const patch = compare(original, updated);
+        if (!patch || !patch.length) {
+            return;
+        }
+        this.updateBrowserState(patch, 'reject');
+    },
+
+    acceptSubmittedDraft(event){
+        event.preventDefault();
+        // Changes the "record_state" from "submitted" to "published"
+        const original = this.props.record.get('metadata').toJS();
+        const updated = this.state.record.toJS();
+        updated['publication_state'] = 'published';
+        const patch = compare(original, updated);
+        if (!patch || !patch.length) {
+            return;
+        }
+        this.updateBrowserState(patch, 'accept_and_publish');
+    },
+
+    renderButtons(){
+        if(this.state.record.get('publication_state') == 'submitted'){
+            if(this.state.isResponsibleAdmin){
+                // Current user is a responsible admin to approve or reject the submitted draft
+                // Then there will be two cases: either the admin is editing the submitted draft or not
+                if(this.state.readOnly){
+                    return(
+                        <div>
+                            <div className="row">
+                                <div className="col-sm-offset-3 col-sm-9">
+                                    <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.adminEditSubmittedDraft}>Edit</button>
+                                </div>
+                            </div>
+                            <p></p>
+                            <div className="row">
+                                <div className="col-sm-offset-3 col-sm-4">
+                                    <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.rejectSubmittedDraft}>Reject the submitted draft</button>
+                                </div>
+                                <div className="col-sm-5">
+                                    <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.acceptSubmittedDraft}>Accept the submitted draft and publish it</button>
+                                </div>
+                            </div>
+                        </div>
+                        )
+                } else {
+                    // The admin is editing the submitted draft
+                    return(
+                        <div>
+                            <div className="row">
+                                <div className="col-sm-offset-3 col-sm-4">
+                                    <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.rejectSubmittedDraft}>Reject the submitted draft</button>
+                                </div>
+                                <div className="col-sm-5">
+                                    <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.acceptSubmittedDraft}>Accept the submitted draft and publish it</button>
+                                </div>
+                            </div>
+                        </div>
+                        )
+                }
+            } else {
+                // A non admin user is submitting a draft for review
+                return(
+                    <div className="form-group submit row" style={{margin:'2em 0', paddingTop:'2em', borderTop:'1px solid #eee'}}>
+                        <div className="col-sm-offset-3 col-sm-9">
+                            <p> Note that by editing the record, it will be revoked and won't being reviewd by your community admin anymore. You will need to submit it again. </p>
+                            <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.editSubmittedDraft}>Edit</button>
+                        </div>
+                    </div>)
+            }
+        } else {
+            // The workflow is direct publish, only needs an 'Edit' button
+            return (<div className="form-group submit row" style={{margin:'2em 0', paddingTop:'2em', borderTop:'1px solid #eee'}}>
+                {pairs(this.state.errors).map( ([id, msg]) =>
+                    <div className="col-sm-offset-3 col-sm-9 alert alert-warning" key={id}>{msg} </div>) }
+                { this.props.isDraft ? this.renderSubmitDraftForm() : this.renderUpdateRecordForm() }
+            </div>)
+        }
+    },
+
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
         if (!this.state.record || !rootSchema) {
             return <Wait/>;
+        }
+        if (!this.state.checkPermission){
+            return <Err err={this.state.record}/>;
         }
         const editTitle = "Editing " + (this.props.isDraft ? "draft" : "record") + (this.props.isVersion ?  " version": "");
         return (
@@ -780,20 +930,7 @@ const EditRecord = React.createClass({
                     </div>
                 </div>
                 <div className="row">
-                    {this.state.record.get('publication_state') == 'submitted' && this.state.readOnly ?
-                        <div className="form-group submit row" style={{margin:'2em 0', paddingTop:'2em', borderTop:'1px solid #eee'}}>
-                            <div className="col-sm-offset-3 col-sm-9">
-                                <p> Note that by editing the record, it will be revoked and won't being reviewd by your community admin anymore. You will need to submit it again. </p>
-                                <button type="submit" className={"btn btn-default btn-block btn-primary btn-danger "} onClick={this.editSubmittedRecord}>Edit</button>
-                            </div>
-                        </div>
-                    :
-                        <div className="form-group submit row" style={{margin:'2em 0', paddingTop:'2em', borderTop:'1px solid #eee'}}>
-                            {pairs(this.state.errors).map( ([id, msg]) =>
-                                <div className="col-sm-offset-3 col-sm-9 alert alert-warning" key={id}>{msg} </div>) }
-                            { this.props.isDraft ? this.renderSubmitDraftForm() : this.renderUpdateRecordForm() }
-                        </div>
-                    }
+                    {this.renderButtons()}
                 </div>
             </div>
         );

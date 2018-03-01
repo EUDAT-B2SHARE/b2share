@@ -98,7 +98,7 @@ export const UserProfile = React.createClass({
         );
     },
 
-    createLink(communitiesList, name){
+    createAdminPageLink(communitiesList, name){
         return <Link to={`/communities/${communitiesList[name.replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]}/admin`}>(admin page)</Link>
     },
 
@@ -106,7 +106,18 @@ export const UserProfile = React.createClass({
         return roles.map(r =>
             <li key={r.get('name')}>
                 {r.get('description')}
-                {r.get('name').includes(':admin')? this.createLink(communitiesList, r.get('name')) : ""}
+                {r.get('name').includes(':admin')? this.createAdminPageLink(communitiesList, r.get('name')) : ""}
+            </li>)
+    },
+
+    listRecordsForReview(roles, communitiesList){
+        const adminRolesOnly = roles.filter( r => {
+            return r.get('name').includes('admin')
+        });
+
+        return adminRolesOnly.map(r =>
+            <li key={r.get('name')}>
+                <Link to={`records?drafts=1&submitted=1&community=${r.get('name').replace(new RegExp("^com:(.{8})(.{4})(.{4})(.{4})(.{12}):.*?$",'g'),"$1-$2-$3-$4-$5")}`}>{communitiesList[r.get('name').replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]} community</Link>
             </li>)
     },
 
@@ -117,10 +128,14 @@ export const UserProfile = React.createClass({
         }
         const roles = user.get('roles');
         const communitiesListTemp = serverCache.getCommunities();
-        var communitiesList = communitiesListTemp.reduce(function(map, community){
-            map[community.get('id').replace(new RegExp("-",'g'),"")] = community.get('name');
-            return map;
-        });
+        let communitiesList;
+        if(communitiesListTemp.size > 0){
+            communitiesList = communitiesListTemp.reduce(function(map, community){
+                map[community.get('id').replace(new RegExp("-",'g'),"")] = community.get('name');
+                return map;
+            },{});
+        }
+ 
         return (
             <div>
                 <h1>User Profile</h1>
@@ -135,7 +150,9 @@ export const UserProfile = React.createClass({
                     </div>
                     <div className="row">
                         <h3>Submitted Records for Review </h3>
-                        <p><Link to={"/records?submitted=1&drafts=1"}> List of submitted records waiting for review by your community administrator </Link></p>
+                        <p><Link to={"/records?submitted=1&drafts=1"}> List of your submitted records waiting for review by your community administrator </Link></p>
+                        {roles && roles.count() && typeof(communitiesList) !== "undefined" ? <p>List of submitted records waiting for your review:</p> : "" }
+                        {roles && roles.count() && typeof(communitiesList) !== "undefined" ? this.listRecordsForReview(roles, communitiesList) : <p>There is no submitted draft for review</p>}
                     </div>
                     <div className="row">
                         <h3>Own records</h3>
