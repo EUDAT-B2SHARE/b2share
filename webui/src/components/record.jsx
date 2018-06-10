@@ -403,8 +403,45 @@ const Record = React.createClass({
                                 <button type="button" className="close" aria-label="Close" onClick={e => this.setState({showB2NoteWindow:false})}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
-                                <iframe id="b2note_iframe" name="b2note_iframe" src={this.props.b2noteUrl}
-                                        style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
+                                <iframe id="b2note_iframe" name="b2note_iframe"
+                                    src={`data:text/html, <style type="text/css">
+                                        .center-div {
+                                            width: 100%;
+                                            height: 100%;
+                                            position: absolute;
+                                            margin: auto;
+                                            top: 0;
+                                            right: 0;
+                                            bottom: 0;
+                                            left: 0;
+                                        }    
+                                        .loader {
+                                            position: absolute;
+                                            margin: auto;
+                                            top: 0;
+                                            right: 0;
+                                            bottom: 0;
+                                            left: 0;
+                                            border: 16px solid %23e3e3e3; /* Light grey */
+                                            border-top: 16px solid %233498db; /* Blue */
+                                            border-radius: 50%;
+                                            width: 60px;
+                                            height: 60px;
+                                            animation: spin 2s linear infinite;
+                                        }
+                                        /* Safari */
+                                        @-webkit-keyframes spin {
+                                            0% { -webkit-transform: rotate(0deg); }
+                                            100% { -webkit-transform: rotate(360deg); }
+                                        }
+                                        @keyframes spin {
+                                            0% { transform: rotate(0deg); }
+                                            100% { transform: rotate(360deg); }
+                                        }
+                                        </style>
+                                        <div class="center-div"><div class="loader"></div></div>`
+                                    }
+                                    style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
                             </div> : false
                         }
                     </div>
