@@ -28,6 +28,7 @@ Authors
 - Dennis Blommensteijn (SURFsara)
 - Dinos Kousidis (CERN)
 - Emanuel Dima (EKUT)
+- Harri Hirvonsalo (CSC)
 - Hilary Hanahoe (TRUST)
 - Huw Morris (STFC)
 - Ilja Livenson (KTH)

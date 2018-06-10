@@ -1,6 +1,15 @@
 B2Share changelog
 *****************
 
+2.1.2 (start of June)
+===========================
+
+Changes since 2.1.1 include:
+
+- more (developer oriented) documentation
+- bug fixes
+
+
 2.1.1 (end of February)
 ===========================
 
