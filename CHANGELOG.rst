@@ -1,7 +1,7 @@
 B2Share changelog
 *****************
 
-2.1.2 (start of June)
+2.1.2 (end of August 2018)
 ===========================
 
 Changes since 2.1.1 include:
