@@ -3,7 +3,9 @@ import ReactDOM from 'react-dom';
 const ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
 import { fromJS } from 'immutable';
-import { Router, Route, browserHistory, IndexRoute } from 'react-router'
+import { Router, Route, browserHistory, useRouterHistory, IndexRoute } from 'react-router';
+
+import PiwikReactRouter from 'piwik-react-router';
 
 import { serverCache, notifications } from './data/server';
 
@@ -25,6 +27,14 @@ import { CommunityAdmin } from './components/community_admin.jsx'
 // TODO: edit records: plugins
 // TODO: edit records: open enums (rename enum to options?)
 // TODO: do memory profile
+
+// Set environmental variables in Dockerfile
+const piwik = process.env.B2SHARE_WEBUI_MATOMO_URL && process.env.B2SHARE_WEBUI_MATOMO_SITEID ?
+    PiwikReactRouter({
+        url: process.env.B2SHARE_WEBUI_MATOMO_URL,
+        siteId: process.env.B2SHARE_WEBUI_MATOMO_SITEID
+    }) : false;
+
 
 const AppFrame = React.createClass({
     getInitialState() {
@@ -88,7 +98,7 @@ function testNewPage(prev, next) {
 
 
 const router = (
-    <Router history={browserHistory}>
+    <Router history={ piwik ? (piwik.connectToHistory(browserHistory)) : (browserHistory) }>
         <Route path="/" component={AppFrame} onChange={testNewPage}>
             <IndexRoute component={HomeRoute} />
 
