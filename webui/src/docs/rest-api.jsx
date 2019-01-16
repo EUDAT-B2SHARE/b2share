@@ -301,12 +301,12 @@ module.exports = function() {
                 this schema. Use the
                 <a href={`#get-community-schema`}> Get community schema </a> function </li>
             <li>Create a draft record: use the
-                <a href={`#create-draft`}> Create draft record </a> function</li>
+                <a href={`#create-draft-record`}> Create draft record </a> function</li>
             <li>Upload the files into the draft record. You will have to use
                 one HTTP request per file. Use the
-                <a href={`#upload-file`}> Upload file </a> function</li>
+                <a href={`#upload-file-into-draft-record`}> Upload file </a> function</li>
             <li>Set the complete metadata and publish the record. Use the
-                <a href={`#submit-draft`}> Submit draft for publication </a> function</li>
+                <a href={`#submit-draft-record-for-publication`}> Submit draft for publication </a> function</li>
         </ol>
 
         <h3 id="migration">Migrating to the B2SHARE v2 HTTP REST API</h3>
@@ -319,15 +319,15 @@ module.exports = function() {
             </li>
             <li>Update the URL for creating a new record, from
                 <code>/api/deposition/</code> to <code>/api/records/</code>; see
-                <a href={`#create-draft`}> Create draft record </a> function</li>
+                <a href={`#create-draft-record`}> Create draft record </a> function</li>
             <li>Update the JSON structure of the newly created records to match the
                 required JSON schema structure, see the
                 <a href={`#get-community-schema`}> Get community schema </a> function </li>
             <li>Update the file upload calls, making sure that the file bucket url is used
                 instead of the old record URL, see the
-                <a href={`#upload-file`}> Upload file </a> function</li>
+                <a href={`#upload-file-into-draft-record`}> Upload file </a> function</li>
             <li>Update the old 'commit' action as described in the
-                <a href={`#submit-draft`}> Submit draft for publication </a> function</li>
+                <a href={`#submit-draft-record-for-publication`}> Submit draft for publication </a> function</li>
         </ol>
 
         <h2>Available HTTP REST API requests</h2>
@@ -352,6 +352,7 @@ module.exports = function() {
         <ul>
             <li><p><code>COMMUNITY_ID</code> - identifier of a user community in B2SHARE</p></li>
             <li><p><code>RECORD_ID</code> - identifier for a specific record, which can be in draft or published state</p></li>
+            <li><p><code>RECORD_HEAD_ID</code> - head identifier for a group of record that are versions of each other</p></li>
             <li><p><code>FILE_BUCKET_ID</code> - identifier for a set of files. Each record has its own file set,
                 usually found in the links -> files section </p></li>
             <li><p><code>FILE_NAME</code> - name of a file in a specific file bucket</p></li>
@@ -497,7 +498,8 @@ module.exports = function() {
                     "id": "f7fddf6f111f4362a9e4661294e2b59e",
                     "links": {
                       "files": "https://trng-b2share.eudat.eu/api/files/90ea3483-2792-4483-9392-7d624b610398",
-                      "self": "https://trng-b2share.eudat.eu/api/records/f7fddf6f111f4362a9e4661294e2b59e"
+                      "self": "https://trng-b2share.eudat.eu/api/records/f7fddf6f111f4362a9e4661294e2b59e",
+                      "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
                     },
                     "updated": "2016-10-24T11:29:27.016900+00:00",
                     "..." : "..."
@@ -566,7 +568,8 @@ module.exports = function() {
               "links": {
                 "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
                 "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
-                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
+                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
               },
               "metadata": {
                 "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
@@ -644,7 +647,8 @@ module.exports = function() {
               "links": {
                 "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
                 "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
-                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
+                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
               },
               "metadata": {
                 "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
@@ -671,7 +675,7 @@ module.exports = function() {
         </Example>
 
         <Request>{{
-            "title": "Submit a draft record for publication",
+            "title": "Submit draft record for publication",
             "description": "This action marks the draft record as complete and submits it for \
                     publication. Currently B2SHARE automatically publishes all the \
                     submitted drafts. Please be advised that publishing the draft \
@@ -695,6 +699,7 @@ module.exports = function() {
               "links": {
                 "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
                 "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "versions": "https://trng-b2share.eudat.eu/api/records/c1d28e53db104cb286425902af134579/versions",
                 "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft"
               },
               "metadata": {
@@ -723,6 +728,52 @@ module.exports = function() {
             </Returns>
         </Example>
 
+        <h3>Record versioning</h3>
+
+        <Request>{{
+            "title": "Create new version of published record",
+            "description": "Create a new version of an existing published record into a new draft.",
+            "path": "/api/records/RECORD_ID/draft",
+            "method": "POST",
+            "status": 201,
+            "returns": "the new draft record metadata including new URL location. \
+                The metadata will be exactly the same as the original record with the exception of the links and persistent identifiers. \
+                Since the new record is in draft state, you can freely alter it, including the files.",
+            "notes": "the output of the request is the same as the output of the <a href='#create-new-record'>Create new record</a> request. \
+                You cannot create a new version of a draft record itself."
+        }}</Request>
+        <Example>
+            {'curl -i -H "Content-Type:application/json" -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+        </Example>
+
+        <Request>{{
+            "title": "Get all record versions",
+            "description": "Get all versions of a specific record by using the record head identifier.",
+            "path": "/api/records/RECORD_HEAD_ID/versions",
+            "returns": "a JSON structure containing a list of all record versions with identifier, version number and URL."
+        }}</Request>
+        <Example>
+            {'curl -i -H "Content-Type:application/json" -X GET https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            <Returns>{{
+              "versions": [
+                {
+                  "created": "Wed, 05 Jul 2017 09:40:14 GMT",
+                  "id": "a766efd2e5d543968fff9dd7bf3783c5",
+                  "updated": "Tue, 19 Dec 2017 12:15:06 GMT",
+                  "url": "https://trng-b2share.eudat.eu/api/records/a766efd2e5d543968fff9dd7bf3783c5",
+                  "version": 1
+                },
+                {
+                  "created": "Fri, 12 Jan 2018 16:43:33 GMT",
+                  "id": "2ff3f5815db3494a840e6b3f1e6a6542",
+                  "updated": "Fri, 12 Jan 2018 16:43:33 GMT",
+                  "url": "https://trng-b2share.eudat.eu/api/records/2ff3f5815db3494a840e6b3f1e6a6542",
+                  "version": 2
+                }
+              ]
+            }}</Returns>
+        </Example>
+
         <h3>Other requests</h3>
 
         <Request>{{
@@ -746,10 +797,10 @@ module.exports = function() {
         }}</Request>
         <Example>
             {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is s not research data...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
-            <Returns>
-                {{
-                  "message": "The record is reported."
-                }}
+            <Returns>{{
+                "message": "The record is reported.",
+                "status": 200
+            }}
             </Returns>
         </Example>
 
@@ -764,10 +815,10 @@ module.exports = function() {
         }}</Request>
         <Example>
             {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"explain the request...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
-            <Returns>
-                {{
-                    "message": "An email was sent to the record owner."
-                }}
+            <Returns>{{
+                "message": "An email was sent to the record owner.",
+                "status": 200
+            }}
             </Returns>
         </Example>
     </div>
