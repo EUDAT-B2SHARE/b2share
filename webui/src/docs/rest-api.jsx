@@ -30,7 +30,7 @@ const Returns = React.createClass({
     },
     toggle(e) {
         e.preventDefault();
-        this.setState({open:!this.state.open});
+        this.setState({open: !this.state.open});
     },
     jsonize(x) {
         x = JSON.stringify(this.props.children, null, 2);
@@ -40,11 +40,7 @@ const Returns = React.createClass({
         return (
             <span style={{display:'block'}}>
                 <span style={{color:'#888'}}>{this.props.title ? this.props.title : "Returns"}: </span>
-                { this.state.open ?
-                    <a href="#" onClick={this.toggle}>[hide]</a> :
-                    <a href="#" onClick={this.toggle}>[show]</a>
-                }
-
+                <a href="#" onClick={this.toggle}>{"[" + (this.state.open ? "hide" : "show") + "]"}</a>
                 <span style={{display:'block'}}>
                 { this.state.open ? this.jsonize(this.props.children) : false }
                 </span>
@@ -55,7 +51,7 @@ const Returns = React.createClass({
 
 const ReturnsError = React.createClass({
     render() {
-        return <Returns title="Error" children={this.props.children} />
+        return <Returns title="On error" children={this.props.children} />
     }
 });
 
@@ -830,6 +826,32 @@ module.exports = function() {
                 "status": 200
             }}
             </Returns>
+        </Example>
+
+        <Request>{{
+            "title": "Delete draft record",
+            "description": "Delete a draft record.",
+            "path": "/api/records/RECORD_ID/draft",
+            "method": "DELETE",
+            "status": 204,
+            "returns": "no contents.",
+            "notes": "you can only delete draft records that you own, not published records."
+        }}</Request>
+        <Example>
+            {'curl -X DELETE https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+        </Example>
+
+        <Request>{{
+            "title": "Delete published record",
+            "description": "Delete a draft record.",
+            "path": "/api/records/RECORD_ID",
+            "method": "DELETE",
+            "status": 204,
+            "returns": "no contents.",
+            "notes": "only a site administrator can delete a published record."
+        }}</Request>
+        <Example>
+            {'curl -X DELETE https://$B2SHARE_HOST/api/records/$RECORD_ID?access_token=$ACCESS_TOKEN'}
         </Example>
     </div>
   );
