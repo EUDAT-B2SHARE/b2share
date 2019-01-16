@@ -1,6 +1,14 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 
+function jsonize(data) {
+    if (typeof data === 'object' && !Array.isArray(data)) {
+        var x = JSON.stringify(data, null, 2);
+        return x.replace(new RegExp('"\\.\\.\\."', 'g'), "...");
+    }
+    return data;
+};
+
 const Example = React.createClass({
     render() {
         const stylePre = {
@@ -13,9 +21,9 @@ const Example = React.createClass({
         };
         return (
             <pre style={stylePre}>
-                <span style={{color:'#888'}}>Example: </span>
+                <span style={{color:'#888'}}>Example: <br/></span>
                 <span style={{color:'#111'}}>
-                    { this.props.children }
+                    { jsonize(this.props.children) }
                 </span>
             </pre>
         );
@@ -32,17 +40,13 @@ const Returns = React.createClass({
         e.preventDefault();
         this.setState({open: !this.state.open});
     },
-    jsonize(x) {
-        x = JSON.stringify(this.props.children, null, 2);
-        return x.replace(new RegExp('"\\.\\.\\."', 'g'), "...");
-    },
     render() {
         return (
             <span style={{display:'block'}}>
                 <span style={{color:'#888'}}>{this.props.title ? this.props.title : "Returns"}: </span>
                 <a href="#" onClick={this.toggle}>{"[" + (this.state.open ? "hide" : "show") + "]"}</a>
                 <span style={{display:'block'}}>
-                { this.state.open ? this.jsonize(this.props.children) : false }
+                { this.state.open ? jsonize(this.props.children) : false }
                 </span>
             </span>
         );
@@ -52,6 +56,12 @@ const Returns = React.createClass({
 const ReturnsError = React.createClass({
     render() {
         return <Returns title="On error" children={this.props.children} />
+    }
+});
+
+const Payload = React.createClass({
+    render() {
+        return <Returns title="Payload" children={this.props.children} />
     }
 });
 
@@ -116,10 +126,6 @@ var Request = React.createClass({
 });
 
 const Json = React.createClass({
-    jsonize(x) {
-        x = JSON.stringify(this.props.children, null, 2);
-        return x.replace(new RegExp('"\\.\\.\\."', 'g'), "...");
-    },
     render() {
         const stylePre = {
             background:'#fafafa',
@@ -132,7 +138,7 @@ const Json = React.createClass({
         return (
             <pre style={stylePre}>
                 <span style={{display:'block'}}>
-                { this.jsonize(this.props.children) }
+                { jsonize(this.props.children) }
                 </span>
             </pre>
         );
@@ -562,7 +568,7 @@ module.exports = function() {
                 Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'"
         }}</Request>
         <Example>
-            {'curl -i -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -745,7 +751,7 @@ module.exports = function() {
                 You cannot create a new version of a draft record itself."
         }}</Request>
         <Example>
-            {'curl -i -H "Content-Type:application/json" -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -H "Content-Type:application/json" -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
         </Example>
 
         <Request>{{
@@ -755,7 +761,7 @@ module.exports = function() {
             "returns": "a JSON structure containing a list of all record versions with identifier, version number and URL."
         }}</Request>
         <Example>
-            {'curl -i -H "Content-Type:application/json" -X GET https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -H "Content-Type:application/json" https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
             <Returns>{{
               "versions": [
                 {
@@ -824,8 +830,41 @@ module.exports = function() {
             <Returns>{{
                 "message": "An email was sent to the record owner.",
                 "status": 200
-            }}
-            </Returns>
+            }}</Returns>
+        </Example>
+
+        <Request>{{
+            "title": "Get record statistics",
+            "description": "Returns statistics of a record, indicated by statistic type.</p><p>Supported statistics:</p><ul><li><p><code>bucket-file-download-total</code> - total downloads per file in a bucket</p></li></ul><p>More statistics might be added in future releases of B2SHARE.",
+            "path": "/api/stats",
+            "method": "POST",
+            "status": 200,
+            "data": "JSON structure containing the statistic and required elements for that statistic, see below",
+            "returns": "JSON structure containing requested statistics"
+        }}</Request>
+        <Example>
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"fileDownloads": {"params": {"bucket_id": "b0377611-d5a4-4683-9781-b83edcb86324"}, "stat": "bucket-file-download-total"}}\' https://$B2SHARE_HOST/api/stats?access_token=$ACCESS_TOKEN'}
+            <Payload>{{
+                "fileDownloads": {
+                    "params": {
+                        "bucket_id": "b0377611-d5a4-4683-9781-b83edcb86324"
+                    },
+                    "stat": "bucket-file-download-total"
+                }
+            }}</Payload>
+            <Returns>{{
+                "fileDownloads": {
+                    "key_type": "terms",
+                    "field": "file_key",
+                    "buckets": [
+                        {
+                            "value": 1.0,
+                            "key": "file.dat"
+                        }
+                    ],
+                    "type": "bucket"
+                }
+            }}</Returns>
         </Example>
 
         <Request>{{
@@ -843,7 +882,7 @@ module.exports = function() {
 
         <Request>{{
             "title": "Delete published record",
-            "description": "Delete a draft record.",
+            "description": "Delete a published record.",
             "path": "/api/records/RECORD_ID",
             "method": "DELETE",
             "status": 204,
