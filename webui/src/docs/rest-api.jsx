@@ -1,13 +1,13 @@
 import React from 'react/lib/ReactWithAddons';
-import { Link } from 'react-router'
+import { Link } from 'react-router';
 
 const Example = React.createClass({
     render() {
         const stylePre = {
             background:'#fafafa',
-            border:'1px solid #eee',
+            border: '1px solid #eee',
             padding: '0.5em',
-            margin: '0.5em 1em 0.5em 0',
+            margin: '0.5em 1em 2em 0.5em',
             fontSize:'1em',
             whiteSpace: 'pre-wrap',
         };
@@ -53,16 +53,107 @@ const Returns = React.createClass({
     },
 });
 
+function VarValue(props) {
+    if (props.fixed) {
+        return ( <code>{props.value}</code> );
+    } else {
+        return ( <span dangerouslySetInnerHTML={ {__html: props.value} } /> );
+    }
+}
+
+function VarRow(props) {
+    if (Array.isArray(props.values)) {
+        var listValues = props.values.map(key =>
+            <VarValue key={key} value={key} fixed={props.fixed}/>
+        );
+    } else {
+        var listValues = <VarValue key={props.values} value={props.values} fixed={props.fixed}/>
+    }
+    return ( <li><p>{props.title}: {listValues}</p></li> );
+}
+
+var Request = React.createClass({
+    // specify the titles per variable, the order is implicit
+    vars: {
+        "method": ["HTTP method", true],
+        "path": ["URL path", true],
+        "params": ["Required parameters", true],
+        "status": ["Expected status code", true],
+        "returns": ["Returns", false],
+        "notes": ["Notes", false]
+    },
+    defaults: {
+        "method": "GET",
+        "status": 200,
+        "params": ["access_token"]
+    },
+    render() {
+        const styleH4 = {
+            color: '#944',
+            fontSize: '1.4em'
+        };
+        // add default values if missing
+        var self = this;
+        Object.keys(this.defaults).forEach(function(key) {
+            if (!(key in self.props.children)) {
+                self.props.children[key] = self.defaults[key]
+            }
+        });
+        return (
+            <span>
+                <h4 style={styleH4} id={"" + this.props.children.title.toLowerCase().replace(/ /g, '-')}>{this.props.children.title}</h4>
+                <p> <span dangerouslySetInnerHTML={ {__html: this.props.children.description} } /></p>
+                <ul>{
+                    Object.keys(this.vars).filter(name => Object.keys(this.props.children).includes(name)).map(name => (
+                        <VarRow key={name} values={this.props.children[name]} title={this.vars[name][0]} fixed={this.vars[name][1]} />
+                    ))
+                }</ul>
+            </span>
+        );
+    },
+});
+
+const Json = React.createClass({
+    jsonize(x) {
+        x = JSON.stringify(this.props.children, null, 2);
+        return x.replace(new RegExp('"\\.\\.\\."', 'g'), "...");
+    },
+    render() {
+        const stylePre = {
+            background:'#fafafa',
+            border:'1px solid #eee',
+            padding: '0.5em',
+            margin: '0.5em 1em 0.5em 0',
+            fontSize:'0.9em',
+            whiteSpace: 'pre-wrap',
+        };
+        return (
+            <pre style={stylePre}>
+                <span style={{display:'block'}}>
+                { this.jsonize(this.props.children) }
+                </span>
+            </pre>
+        );
+    },
+});
+
 module.exports = function() {
   return (
     <div className='rest_api'>
-        <h1>The B2SHARE HTTP REST API</h1>
-        <p>The B2HARE HTTP REST API can be used for interacting with B2SHARE via
-            external services or applications, for example for integrating with
+        <h1>B2SHARE HTTP REST API</h1>
+        <p>The B2HARE HTTP REST API can be used for interaction with B2SHARE via
+            external services or applications, for example for integration with
             other web-sites (research community portals) or for uploading or
             downloading large data sets that are not easily handled via a web
-            browser. This API can also be used for metadata harvesting.
+            browser. The API can also be used for metadata harvesting, although an
+            OAI-PMH API endpoint is also provided for this purpose. This latter API will not
+            be discussed here.
         </p>
+        <p>This page will explain the basic concepts, authentication and all existing
+            HTTP requests that can currently be used. The given examples are explained
+            using curl commands. For usage of the API with Python, please follow the
+            <a href="https://github.com/EUDAT-Training/B2SHARE-Training"> training material </a>
+            provided by EUDAT.</p>
 
         <h3>Basic concepts</h3>
         <p> A scientific <strong>community</strong> has
@@ -79,15 +170,6 @@ module.exports = function() {
             metadata blocks, each block containing related metadata fields. A
             record is always connected to one scientific community which has the
             role of curating and maintaining it.</p>
-        <p> A data record can exist in several states. Immediately after creation a record
-            enters the 'draft' state. In this state the record is only accessible
-            by its owner and can be freely modified: its metadata can be changed
-            and files can be uploaded into or removed from it. A draft can be
-            published at any time, and through this action it changes its state
-            from 'draft' to 'published', is assigned Persistent Identifiers,
-            and becomes publicly accessible. <strong>Please note that the list
-            of files in a <em>published record</em> cannot be changed</strong>.
-            </p>
         <p> A record contains a set of common metadata fields and a set of
             custom metadata blocks. This metadata is not free form, however,
             but is governed by static schemas; the common metadata schema is
@@ -95,16 +177,36 @@ module.exports = function() {
             while the schema for the custom metadata block is specific to each
             community and can be customized by the community administrators.
             The schemas are formally defined in the JSON Schema format. A
-            special HTTP API call is available for retrieving the JSON Schema
+            special HTTP REST API call is available for retrieving the JSON Schema
             of a record in a specific community. In order to be accepted, the
             records submitted to a community must conform to the schema
             required by the community.
         </p>
 
+        <h3>Editing and versioning records</h3>
+        <p> A data record can exist in several states. Immediately after creation a record
+            enters the 'draft' state. In this state the record is only accessible
+            by its owner and can be freely modified: its metadata can be changed
+            and files can be uploaded into or removed from it. A draft can be
+            published at any time, and through this action it changes its state
+            from 'draft' to 'published', is assigned Persistent Identifiers,
+            and becomes publicly accessible. <strong>Please note that the list
+            of files in a <em>published record</em> cannot be changed without
+            versioning the record</strong>.
+            </p>
+        <p> Existing published records can be versioned by creating a derivative draft
+            that initially is a clone of the original record. This draft record can be
+            changed in metadata but also files. A link will be established to the
+            original record so that anyone can find and compare the contents of the
+            versioned and original record. There is no limit to the number of versions
+            created per record. A new versioned record needs to be published before it
+            becomes available to other users.</p>
+
         <h3>Authentication</h3>
-        <p>Only authenticated users can use the API. Each HTTP request to the
-            server must pass an <code>access_token</code> parameter that
-            identifies the user. The <code>access_token</code> is an
+        <p>Only authenticated users can use the API. Each HTTP request
+            to the server that involves creation or modification of records or
+            the retrieval of user-private data must pass an <code>access_token</code>
+            parameter that identifies the user. The <code>access_token</code> is an
             opaque string which can be created in the user profile when
             logged in to the B2SHARE web user interface. B2SHARE’s access
             tokens follow the OAuth 2.0 standard. </p>
@@ -114,6 +216,8 @@ module.exports = function() {
             “New Token”. This will create an access token, visible on the
             screen. Please note that this is the only time the access token is
             visible, so copy it to a safe place. </p>
+        <p>You can remove existing access tokens by clicking on the corresponding
+            'Remove' button on the far right to the token you want to remove.</p>
         <p>The following shell commands will expect that the ACCESS_TOKEN
             environment variable is defined and contains the actual
             access_token. The command to define this variable looks like this: </p>
@@ -122,8 +226,8 @@ module.exports = function() {
         	as an example above.</p>
 
 
-        <h3>HTTP Requests</h3>
-        <p> The HTTP requests are made to a URL with parameters as described
+        <h3>API Requests</h3>
+        <p> The API requests are made to a URL with parameters as described
             below. Each URL consists of a protocol part (always 'https://'), a
             hostname and a path. One of the following hostnames can be used
             to identify the B2SHARE instance:
@@ -148,29 +252,48 @@ module.exports = function() {
         </p>
         <Example>export B2SHARE_HOST='trng-b2share.eudat.eu'</Example>
 
+        <h3>Responses</h3>
+        <p>All request response bodies are JSON encoded (UTF-8 encoded).</p>
+        <p>A record is represented as a JSON object:</p>
+        <Json>{{ "field1": "value" }}</Json>
+        <p>A collection of records is represented as a JSON array of objects:</p>
+        <Json>{{ "collection": [{ "field1": "value", "field2": "value" }, { "field1": "value", "field2": "value" }] }}</Json>
+        <p>Timestamps are in UTC and formatted according to ISO 8601:</p>
+        <Json>{{ "updated": "YYYY-MM-DDTHH:MM:SS.ssssss+00:00" }}</Json>
 
-        <p>Each allowed request is described below as follows:</p>
+        <p>In case a request fails, the body of the response body contains details about the error, for example:</p>
+        <Json>{{ "message": "The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again.", "status": 404 }}</Json>
+        <p>Herein the message field provides a detailed description of what went wrong, while the code indicates the HTTP status code (equivalent to the request response status code).</p>
+
+        <h4>Status codes</h4>
+        <p> The request status codes indicate whether the request was successfully received, processed and/or
+            executed. B2SHARE follows the HTTP status codes where possible, a complete list can be found
+            <a href="https://en.wikipedia.org/wiki/List_of_HTTP_status_codes"> here</a>.</p>
+        <p> One of the following status codes is returned in case the request was successful:</p>
         <ul>
-            <li><p>Description - A description of the function of the request.</p></li>
-            <li><p>URL path - grammar for the allowed paths used together with one of the base URLs above.</p></li>
-            <li><p>HTTP method - whether the HTTP protocols GET or POST method is used.</p></li>
-            <li><p>Example - an example of usage using the program curl from the command line.</p></li>
+            <li><p><code>200</code> - Request was successfully received and executed, see body for results</p></li>
+            <li><p><code>201</code> - Object created, see body for results</p></li>
+            <li><p><code>204</code> - No contents, this occurs when for example an object is successfully deleted</p></li>
         </ul>
 
-        <p>Variables in the descriptions:</p>
+        <p> In case the request failed, the body of the response usually contains details, and one of the following
+            status codes is returned:</p>
         <ul>
-            <li><p>COMMUNITY_ID - identifier of a user community in B2SHARE</p></li>
-            <li><p>RECORD_ID - identifier for a specific record, which can be in draft or published state</p></li>
-            <li><p>FILE_BUCKET_ID - identifier for a set of files. Each record has its own file set,
-                usually found in the links -> files section </p></li>
+            <li><p><code>400</code> - Request was not understood</p></li>
+            <li><p><code>401</code> - User must authenticate first, usually because no access token was provided with the request</p></li>
+            <li><p><code>403</code> - User is not authorized to perform request, missing permission to do so</p></li>
+            <li><p><code>404</code> - Requested object not found or API endpoint does not exist</p></li>
         </ul>
+
+        <p> Any status code greater then or equal to 500 indicates that internally something went wrong in the server. If in this case
+            the problem persists, kindly report this to <a href="https://eudat.eu/contact-support-request"> EUDAT</a>.</p>
 
         <h3>A publication workflow</h3>
-        <p> The HTTP API does not impose a specific workflow for creating a record.
+        <p> The HTTP REST API does not impose a specific workflow for creating a record.
             The following example workflow only defines the most basic steps:
         </p>
         <ol>
-            <li>Identify a target community for your data by using the HTTP API
+            <li>Identify a target community for your data by using the HTTP REST API
                 <a href={`#list-all-communities`}> List all communities </a> function
             </li>
             <li>Using the community's identifier, retrieve the JSON Schema of the
@@ -186,9 +309,9 @@ module.exports = function() {
                 <a href={`#submit-draft`}> Submit draft for publication </a> function</li>
         </ol>
 
-        <h3 id="migration">Migrating to the B2SHARE v2 HTTP API</h3>
+        <h3 id="migration">Migrating to the B2SHARE v2 HTTP REST API</h3>
         <p> The following changes are needed for a B2SHARE version 1 client using
-            the old HTTP API in order to make it work with B2SHARE version 2
+            the old HTTP REST API in order to make it work with B2SHARE version 2
             for creating and publishing a record: </p>
         <ol>
             <li>Identify the unique ID of your target community or communities: see
@@ -197,7 +320,7 @@ module.exports = function() {
             <li>Update the URL for creating a new record, from
                 <code>/api/deposition/</code> to <code>/api/records/</code>; see
                 <a href={`#create-draft`}> Create draft record </a> function</li>
-            <li>Update the json structure of the newly created records to match the
+            <li>Update the JSON structure of the newly created records to match the
                 required JSON schema structure, see the
                 <a href={`#get-community-schema`}> Get community schema </a> function </li>
             <li>Update the file upload calls, making sure that the file bucket url is used
@@ -207,18 +330,41 @@ module.exports = function() {
                 <a href={`#submit-draft`}> Submit draft for publication </a> function</li>
         </ol>
 
+        <h2>Available HTTP REST API requests</h2>
 
-
-        <h2>The HTTP API</h2>
-
-        <h3 id="list-all-communities">List all communities</h3>
-        <p>List all the communities, without any filtering.</p>
+        <p>Each allowed request is described as follows:</p>
         <ul>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>URL path: /api/communities</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: the list of communities (in JSON format) or an error message.</p></li>
+            <li><p>Description - A description of the function of the request.</p></li>
+            <li><p>HTTP method - which HTTP protocol such as GET or POST method is used.</p></li>
+            <li><p>URL path - grammar for the allowed paths used together with one of the base URLs above.</p></li>
+            <li><p>Status code - the returned status code upon a successful request.</p></li>
+            <li><p>Returns - the returned data in the body of the response upon a successful request.</p></li>
+            <li><p>Example - an example of usage using the program curl from the command line.</p></li>
         </ul>
+
+        <p>Some of the requests additionally might have the following information:</p>
+        <ul>
+            <li><p>Required parameters - the parameters that need to be added to the URL.</p></li>
+            <li><p>Required data - the data that needs to be sent with the request, the expected structure is shown in the example.</p></li>
+        </ul>
+
+        <p>Variables in the descriptions:</p>
+        <ul>
+            <li><p><code>COMMUNITY_ID</code> - identifier of a user community in B2SHARE</p></li>
+            <li><p><code>RECORD_ID</code> - identifier for a specific record, which can be in draft or published state</p></li>
+            <li><p><code>FILE_BUCKET_ID</code> - identifier for a set of files. Each record has its own file set,
+                usually found in the links -> files section </p></li>
+            <li><p><code>FILE_NAME</code> - name of a file in a specific file bucket</p></li>
+        </ul>
+
+        <h3>Object retrieval</h3>
+
+        <Request>{{
+            "title": "List all communities",
+            "description": "List all the communities, without any filtering.",
+            "path": "/api/communities/",
+            "returns": "the list of communities (in JSON format) or an error message."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/communities/?access_token=$ACCESS_TOKEN
             <Returns>
@@ -247,14 +393,12 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="get-community-schema">Get community schema</h3>
-        <p>Retrieves the JSON schema of records approved by a specific community.</p>
-        <ul>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>URL path: /api/communities/$COMMUNITY_ID/schemas/last</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: the JSON schema, embedded in a JSON object, or an error message.</p></li>
-        </ul>
+         <Request>{{
+            "title": "Get community schema",
+            "description": "Retrieves the JSON schema of records approved by a specific community.",
+            "path": "/api/communities/$COMMUNITY_ID/schemas/last",
+            "returns": "the community metadata schema, embedded in a JSON object, or an error message."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/communities/$COMMUNITY_ID/schemas/last?access_token=$ACCESS_TOKEN
             <Returns>
@@ -277,14 +421,12 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3>List all the records</h3>
-        <p>List all the records, without any filtering.</p>
-        <ul>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>URL path: /api/records</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: the list of records (in JSON format) or an error message.</p></li>
-        </ul>
+        <Request>{{
+            "title": "List all records",
+            "description": "List all the records, without any filtering.",
+            "path": "/api/records",
+            "returns": "the list of records (in JSON format) or an error message."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN
             <Returns>
@@ -331,14 +473,12 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="list-records-per-community">List records per community</h3>
-        <p>List all records of a specific community.</p>
-        <ul>
-            <li><p>URL path: /api/records/?q=community:COMMUNITY_ID</p></li>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: the list of records (in JSON format) or an error message.</p></li>
-        </ul>
+        <Request>{{
+            "title": "List records per community",
+            "description": "List all records of a specific community.",
+            "path": "/api/records/?q=community:COMMUNITY_ID",
+            "returns": "the list of records (in JSON format) or an error message."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/records/?q=community:$COMMUNITY_ID?access_token=$ACCESS_TOKEN
             <Returns>
@@ -374,54 +514,49 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3>Search records</h3>
-        <p>Search all the published records for a query string.</p>
-        <ul>
-            <li><p>URL path: /api/records/?q=$QUERY_STRING</p></li>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: the list of matching records (in JSON format) or an error message.</p></li>
-        </ul>
+        <Request>{{
+            "title": "Search records",
+            "description": "Search all the published records for a query string.",
+            "path": "/api/records/?q=$QUERY_STRING",
+            "returns": "the list of matching records (in JSON format) or an error message."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/records/?q=$QUERY_STRING?access_token=$ACCESS_TOKEN
         </Example>
 
-        <h3>Search drafts</h3>
-        <p>Search for all drafts (unpublished records) that are accessible by the requestor. Usually this means own records only.</p>
-        <ul>
-            <li><p>URL path: /api/records/?drafts</p></li>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>Required parameters: access_token, drafts</p></li>
-            <li><p>Returns: the list of matching drafts (in JSON format) or an error message.</p></li>
-        </ul>
+        <Request>{{
+            "title": "Search drafts",
+            "decription": "Search for all drafts (unpublished records) that are accessible by the requestor. Usually this means own records only.",
+            "path": "/api/records/?drafts",
+            "returns": "the list of matching drafts (in JSON format) or an error message."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/records/?drafts&access_token=$ACCESS_TOKEN
         </Example>
 
-        <h3>Get a specific record</h3>
-        <p>List the metadata of the record specified by RECORD_ID</p>
-        <ul>
-            <li><p>URL path: /api/record/RECORD_ID</p></li>
-            <li><p>HTTP method: GET</p></li>
-            <li><p>Required parameters: access_token</p></li>
-        </ul>
+        <Request>{{
+            "title": "Get specific record",
+            "path": "/api/records/RECORD_ID",
+            "description": "List the metadata of the record specified by RECORD_ID",
+            "notes": "the access token is only required when a record is not publicly available."
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/records/47077e3c4b9f4852a40709e338ad4620?access_token=$ACCESS_TOKEN
         </Example>
 
+        <h3>Record creation</h3>
 
-        <h3 id="create-draft">Create a draft record</h3>
-        <p>Create a new record, in the draft state.</p>
-        <ul>
-            <li><p>URL path: /api/records</p></li>
-            <li><p>HTTP method: POST</p></li>
-            <li><p>Required URL parameter: access_token</p></li>
-            <li><p>Required data payload: json object with basic information about the object </p></li>
-            <li><p>Returns: the new draft record contents and location. Please note that
-                the returned json object contains also the URL of the file bucket used for the record.
-                Also note that the URL of the draft record, needed for setting record metadata,
-                will end in '/draft/'</p></li>
-        </ul>
+        <Request>{{
+            "title": "Create draft record",
+            "description": "Create a new record, in the draft state.",
+            "path": "/api/records",
+            "method": "POST",
+            "status": 201,
+            "data": "JSON object with basic metadata of the object",
+            "returns": "the new draft record metadata including new URL location. \
+                Please note that the returned JSON object contains also the URL of the file bucket used for the record. \
+                Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'"
+        }}</Request>
         <Example>
             {'curl -i -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
             <Returns>
@@ -453,58 +588,53 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="upload-file">Upload file into draft record</h3>
-        <p>To upload a new file into a draft record object, first you need to identify
-            the file bucket URL. This URL can be found in the information returned when
-            querying a draft record, in the 'links/files' section of the returned data. </p>
-        <ul>
-            <li><p>URL path: /api/files/FILE_BUCKET_ID/FILE_NAME</p></li>
-            <li><p>HTTP Method: PUT</p></li>
-            <li><p>Required input data: the file, sent as direct stream</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: informations about the newly uploaded file</p></li>
-        </ul>
+        <Request>{{
+            "title": "Upload file into draft record",
+            "description": "To upload a new file into a draft record object, first you need to identify \
+            the file bucket URL. This URL can be found in the information returned when \
+            querying a draft record, in the 'links/files' section of the returned data.",
+            "path": "/api/files/FILE_BUCKET_ID/FILE_NAME",
+            "method": "PUT",
+            "data": "the file, sent as direct stream",
+            "returns": "informations about the newly uploaded file"
+        }}</Request>
         <Example>
             curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' --data-binary @TestFileToBeUploaded.txt https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
         </Example>
 
-        <h3 id="delete-file">Delete file from draft record</h3>
-        <p>Send a DELETE request to the file's URL, which is the same URL used for uploading.</p>
-        <ul>
-            <li><p>URL path: /api/files/FILE_BUCKET_ID/FILE_NAME</p></li>
-            <li><p>HTTP Method: DELETE</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: no content</p></li>
-        </ul>
+        <Request>{{
+            "title": "Delete file from draft record",
+            "description": "Send a DELETE request to the file's URL, which is the same URL used for uploading.",
+            "path": "/api/files/FILE_BUCKET_ID/FILE_NAME",
+            "method": "DELETE",
+            "status": 204,
+            "returns": "no content"
+        }}</Request>
         <Example>
             curl -X DELETE -H 'Accept:application/json' https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID/FileToBeRemoved.txt?access_token=$ACCESS_TOKEN
         </Example>
 
-        <h3>List the files uploaded into a record object</h3>
-        <p>List the files uploaded into a record object</p>
-        <ul>
-            <li><p>URL path: /api/files/FILE_BUCKET_ID</p></li>
-            <li><p>Http Method: GET</p></li>
-            <li><p>Required parameters: access_token</p></li>
-            <li><p>Returns: information about all the files in the record object</p></li>
-        </ul>
+        <Request>{{
+            "title": "List files of record",
+            "description": "List the files uploaded into a record object. For this request you need the <code>FILE_BUCKET_ID</code> which can be found in the metadata of the record.",
+            "path": "/api/files/FILE_BUCKET_ID",
+            "returns": "information about all the files in the record object"
+        }}</Request>
         <Example>
             curl https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID?access_token=$ACCESS_TOKEN
         </Example>
 
-        <h3 id="update-draft">Update draft record's metadata</h3>
-        <p>This action updates the draft record with new information.</p>
-        <ul>
-            <li><p>URL path: /api/records/RECORD_ID/</p></li>
-            <li><p>HTTP Method: PATCH</p></li>
-            <li><p>Required input data: the metadata for the record object to be created,
-                in the json patch format (see <a href="http://jsonpatch.com/">http://jsonpatch.com/</a>)
-                </p> </li>
-            <li><p>Notes: The patch format contains one or more JSONPath strings. The root of these paths
-                are the <i>metadata</i> object, as this is the only mutable object. For instance, to
-                update the <i>title</i> field of the record, use this JSONPath: <code>/title</code>
-                </p> </li>
-        </ul>
+        <Request>{{
+            "title": "Update draft record metadata",
+            "description": "This action updates the draft record with new information.",
+            "path": "/api/records/RECORD_ID/draft",
+            "method": "PATCH",
+            "data": "the metadata for the record object to be created, \
+                in the JSON patch format (see <a href='http://jsonpatch.com/'>http://jsonpatch.com/</a>)",
+            "notes": "The patch format contains one or more JSONPath strings. The root of these paths \
+                are the <i>metadata</i> object, as this is the only mutable object. For instance, to \
+                update the <i>title</i> field of the record, use this JSONPath: <code>/title</code>"
+        }}</Request>
         <Example>
             {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"]}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
@@ -540,19 +670,22 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="submit-draft">Submit a draft record for publication</h3>
-        <p> This action marks the draft record as complete and submits it for
-            publication. Currently B2SHARE automatically publishes all the
-            submitted drafts. Please be advised that publishing the draft
-            <strong> will make its files immutable</strong>.</p>
-        <p> A draft record is submitted for publication if a special metadata
-            field, called 'publication_state' is set to 'submitted'. This field
-            can be set using the PATCH call described above.</p>
-        <p> Depending on the domain specification, other fields could be
-            required in order to successfully publish a record. In case one of
-            the required fields is missing the request fails and an error
-            message is returned with further details.</p>
-
+        <Request>{{
+            "title": "Submit a draft record for publication",
+            "description": "This action marks the draft record as complete and submits it for \
+                    publication. Currently B2SHARE automatically publishes all the \
+                    submitted drafts. Please be advised that publishing the draft \
+                    <strong> will make its files immutable</strong>.</p> \
+                <p> A draft record is submitted for publication if a special metadata \
+                    field, called 'publication_state' is set to 'submitted'. This field \
+                    can be set using the PATCH call described above.</p> \
+                <p> Depending on the domain specification, other fields could be \
+                    required in order to successfully publish a record. In case one of \
+                    the required fields is missing the request fails and an error \
+                    message is returned with further details.",
+            "path": "/api/records/$RECORD_ID/draft",
+            "data": "JSON-Patch operation that alters the <code>publication_state</code> metadata field of the record metadata, see example below."
+        }}</Request>
         <Example>
             {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/publication_state", "value": "submitted"}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
@@ -590,29 +723,27 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="report-abuse">Report a record as an abuse record</h3>
-        <p> If there is anything wrong with the record users can report it as an abuse record.
-            An email will be send to the related admin and it will be followed up. There are 4 different
-            reasons listed on the report abuse form and the reporter should choose one of:</p>
-            <ol>
-                <li><p>Abuse or Inappropriate content</p></li>
-                <li><p>Copyrighted material</p></li>
-                <li><p>Not research data</p></li>
-                <li><p>Illegal content</p></li>
-            </ol>
+        <h3>Other requests</h3>
 
-            <p>The reporter can also send a message to explain more about the problem. It is possible for an anonymous
-               user to send the report and authentication is not required. </p>
-            <p>Report an abuse record.</p>
-            <ul>
-                <li><p>HTTP method: POST</p></li>
-                <li><p>URL path: /api/records/$RECORD_ID/abuse</p></li>
-                <li><p>Required data payload: json object with information about reporter and the reason</p></li>
-                <li><p>Optional parameters: access_token</p></li>
-                <li><p>Returns: a messgae that an email was sent and the record is reported</p></li>
-            </ul>
-
-
+        <Request>{{
+            "title": "Report a record as an abuse record",
+            "description": "If there is anything wrong with the record users can report it as an abuse record. \
+                An email will be send to the related admin and it will be followed up. There are 4 different \
+                reasons listed on the report abuse form and the reporter should choose one of:</p> \
+                <ol> \
+                    <li><p>Abuse or Inappropriate content</p></li> \
+                    <li><p>Copyrighted material</p></li> \
+                    <li><p>Not research data</p></li> \
+                    <li><p>Illegal content</p></li> \
+                </ol> \
+                <p>The reporter can also send a message to explain more about the problem. It is possible for an anonymous \
+                   user to send the report and authentication is not required. </p> \
+                <p>Report an abuse record.",
+            "method": "POST",
+            "path": "/api/records/$RECORD_ID/abuse",
+            "data": "JSON object with information about reporter and the reason",
+            "returns": "a message that an email was sent and the record is reported"
+        }}</Request>
         <Example>
             {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is s not research data...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
             <Returns>
@@ -622,19 +753,15 @@ module.exports = function() {
             </Returns>
         </Example>
 
-        <h3 id="access-request">Send a request to get access to restricted data in a record</h3>
-        <p> For the records with restricted access to data, a user (either authenticated or anonymous) can
-            send a request to the record owner and ask for it. </p>
-            <p>Send request to access closed data.</p>
-            <ul>
-                <li><p>HTTP method: POST</p></li>
-                <li><p>URL path: /api/records/$RECORD_ID/accessrequests</p></li>
-                <li><p>Required data payload: json object with information about who is sending the request</p></li>
-                <li><p>Optional parameters: access_token</p></li>
-                <li><p>Returns: a message that an email was sent </p></li>
-            </ul>
-
-
+        <Request>{{
+            "title": "Send record access request",
+            "description": "For the records with restricted access to data, a user (either authenticated or anonymous) can \
+                send a request to the record owner and ask for it. Send request to access closed data.",
+            "method": "POST",
+            "path": "/api/records/$RECORD_ID/accessrequests",
+            "data": "JSON object with information about who is sending the request",
+            "returns": "a message that an email was sent"
+        }}</Request>
         <Example>
             {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"explain the request...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
             <Returns>
@@ -643,14 +770,6 @@ module.exports = function() {
                 }}
             </Returns>
         </Example>
-
-        <h3>Responses</h3>
-        <p>All response bodies are JSON encoded (UTF-8 encoded).</p>
-        <p>{'A record is represented as a JSON object: \u007B "field1": value, … \u007D '}</p>
-        <p>A collection of records is represented as a JSON array of objects:</p>
-        <p>{'[\u007B "field1": value, ... }, … ]\u007D'}</p>
-        <p>Timestamps are in UTC and formatted according to ISO 8601:</p>
-        <p>YYYY-MM-DDTHH:MM:SS+00:00</p>
     </div>
   );
 };
