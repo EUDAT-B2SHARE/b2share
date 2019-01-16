@@ -32,7 +32,7 @@ export const Help = React.createClass({
                                 </li> : false
                             }
                             <li className="list-group-item">
-                                <Link to="/help/api"><i className="fa fa-list"></i> HTTP API </Link>
+                                <Link to="/help/api"><i className="fa fa-list"></i> HTTP REST API </Link>
                             </li>
                         </ul>
                     </div>
