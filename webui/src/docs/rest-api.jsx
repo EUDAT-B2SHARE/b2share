@@ -25,7 +25,7 @@ const Example = React.createClass({
 const Returns = React.createClass({
     getInitialState() {
         return {
-            open: false,
+            open: false
         };
     },
     toggle(e) {
@@ -39,7 +39,7 @@ const Returns = React.createClass({
     render() {
         return (
             <span style={{display:'block'}}>
-                <span style={{color:'#888'}}>Returns: </span>
+                <span style={{color:'#888'}}>{this.props.title ? this.props.title : "Returns"}: </span>
                 { this.state.open ?
                     <a href="#" onClick={this.toggle}>[hide]</a> :
                     <a href="#" onClick={this.toggle}>[show]</a>
@@ -53,11 +53,17 @@ const Returns = React.createClass({
     },
 });
 
+const ReturnsError = React.createClass({
+    render() {
+        return <Returns title="Error" children={this.props.children} />
+    }
+});
+
 function VarValue(props) {
     if (props.fixed) {
-        return ( <code>{props.value}</code> );
+        return <code>{props.value}</code>;
     } else {
-        return ( <span dangerouslySetInnerHTML={ {__html: props.value} } /> );
+        return <span dangerouslySetInnerHTML={ {__html: props.value} } />;
     }
 }
 
@@ -69,7 +75,7 @@ function VarRow(props) {
     } else {
         var listValues = <VarValue key={props.values} value={props.values} fixed={props.fixed}/>
     }
-    return ( <li><p>{props.title}: {listValues}</p></li> );
+    return <li><p>{props.title}: {listValues}</p></li>;
 }
 
 var Request = React.createClass({
@@ -772,6 +778,10 @@ module.exports = function() {
                 }
               ]
             }}</Returns>
+            <ReturnsError>{{
+                "message": "PID is not registered.",
+                "status": 404
+            }}</ReturnsError>
         </Example>
 
         <h3>Other requests</h3>
