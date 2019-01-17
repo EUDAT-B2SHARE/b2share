@@ -2,14 +2,16 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 
 function jsonize(data) {
-    if (typeof data === 'object' && !Array.isArray(data)) {
+    if (!data) {
+        return false;
+    } else if (typeof data === 'object' && !Array.isArray(data)) {
         var x = JSON.stringify(data, null, 2);
         return x.replace(new RegExp('"\\.\\.\\."', 'g'), "...");
     }
     return data;
 };
 
-const Example = React.createClass({
+const Block = React.createClass({
     render() {
         const stylePre = {
             background:'#fafafa',
@@ -21,7 +23,7 @@ const Example = React.createClass({
         };
         return (
             <pre style={stylePre}>
-                <span style={{color:'#888'}}>Example: <br/></span>
+                {this.props.title ? <span style={{color:'#888'}}>{this.props.title}: <br/></span> : false}
                 <span style={{color:'#111'}}>
                     { jsonize(this.props.children) }
                 </span>
@@ -30,7 +32,13 @@ const Example = React.createClass({
     }
 });
 
-const Returns = React.createClass({
+const Example = React.createClass({
+    render() {
+        return <Block title="Example" children={this.props.children} />
+    }
+});
+
+const CollapseBlock = React.createClass({
     getInitialState() {
         return {
             open: false
@@ -43,7 +51,7 @@ const Returns = React.createClass({
     render() {
         return (
             <span style={{display:'block'}}>
-                <span style={{color:'#888'}}>{this.props.title ? this.props.title : "Returns"}: </span>
+                {this.props.title ? <span style={{color:'#888'}}>{this.props.title}: </span> : false}
                 <a href="#" onClick={this.toggle}>{"[" + (this.state.open ? "hide" : "show") + "]"}</a>
                 <span style={{display:'block'}}>
                 { this.state.open ? jsonize(this.props.children) : false }
@@ -53,15 +61,21 @@ const Returns = React.createClass({
     },
 });
 
+const Returns = React.createClass({
+    render() {
+        return <CollapseBlock title="Returns" children={this.props.children} />
+    }
+});
+
 const ReturnsError = React.createClass({
     render() {
-        return <Returns title="On error" children={this.props.children} />
+        return <CollapseBlock title={"On " + this.props.type + " error"} children={this.props.children} />
     }
 });
 
 const Payload = React.createClass({
     render() {
-        return <Returns title="Payload" children={this.props.children} />
+        return <CollapseBlock title="Payload" children={this.props.children} />
     }
 });
 
@@ -90,6 +104,7 @@ var Request = React.createClass({
         "method": ["HTTP method", true],
         "path": ["URL path", true],
         "params": ["Required parameters", true],
+        "data": ["Payload data", false],
         "status": ["Expected status code", true],
         "returns": ["Returns", false],
         "notes": ["Notes", false]
@@ -202,6 +217,9 @@ module.exports = function() {
             of files in a <em>published record</em> cannot be changed without
             versioning the record</strong>.
             </p>
+        <p> To update the metadata of a record through the API, a <a href="http://jsonpatch.com/"> JSON Patch </a>
+            must be supplied with the request. Please read the documentation on this website carefully
+            to fully understand how these patches work.</p>
         <p> Existing published records can be versioned by creating a derivative draft
             that initially is a clone of the original record. This draft record can be
             changed in metadata but also files. A link will be established to the
@@ -226,15 +244,19 @@ module.exports = function() {
             visible, so copy it to a safe place. </p>
         <p>You can remove existing access tokens by clicking on the corresponding
             'Remove' button on the far right to the token you want to remove.</p>
-        <p>The following shell commands will expect that the ACCESS_TOKEN
+        <p>The following shell commands will expect that the `ACCESS_TOKEN`
             environment variable is defined and contains the actual
             access_token. The command to define this variable looks like this: </p>
         <Example>export ACCESS_TOKEN='7O28DlvgCatQV0pkS6jLw947tbo123oztkU4dPw6fnqmJ8inOYAi7dYhF0d04'</Example>
-        <p>Please remember to use your actual token instead of the one given
-        	as an example above.</p>
+        <p><b>Notes:</b></p>
+        <ul>
+        <li><p>Please remember to use your actual token instead of the one given
+        	as an example above.</p></li>
+        <li><p>Your token can only be used for the instance you created the token in. That means that a token for the training
+            instance of B2SHARE will not work with the production instance of B2SHARE and vice-versa!</p></li>
+        </ul>
 
-
-        <h3>API Requests</h3>
+        <h3>Requests</h3>
         <p> The API requests are made to a URL with parameters as described
             below. Each URL consists of a protocol part (always 'https://'), a
             hostname and a path. One of the following hostnames can be used
@@ -251,12 +273,18 @@ module.exports = function() {
                 training site. Use this URL for testing.
             </li>
         </ul>
-        <p>Please make sure that you are not using production instances for
+        <p><b>Notes:</b></p>
+        <ul>
+        <li><p>Please make sure that you are not using production instances for
             creating test records or testing the API in general.
-        </p>
-        <p>The following shell commands will expect that the HOST environment
-            variable is defined and contains the host part of the targeted
-            B2SHARE site, e.g.:
+        </p></li>
+        <li><p>Make sure to add a forward-slash ('/') to the URL if that is required. If you forget the slash then the request is
+            interpreted differently and you might get other results than expected. In many cases, a redirect (status code <code>302</code>) will
+            be returned, a result that in the browser will be handled automatically, but not in a typical API request.
+        </p></li>
+        </ul>
+        <p>The curl commands in the examples of each request will expect that the HOST environment
+            variable is defined and contains the host part of the targeted B2SHARE site, e.g.:
         </p>
         <Example>export B2SHARE_HOST='trng-b2share.eudat.eu'</Example>
 
@@ -273,7 +301,7 @@ module.exports = function() {
         <Json>{{ "message": "The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again.", "status": 404 }}</Json>
         <p>Herein the message field provides a detailed description of what went wrong, while the code indicates the HTTP status code (equivalent to the request response status code).</p>
 
-        <h4>Status codes</h4>
+        <h4 id="status-codes">Status codes</h4>
         <p> The request status codes indicate whether the request was successfully received, processed and/or
             executed. B2SHARE follows the HTTP status codes where possible, a complete list can be found
             <a href="https://en.wikipedia.org/wiki/List_of_HTTP_status_codes"> here</a>.</p>
@@ -366,6 +394,8 @@ module.exports = function() {
             <li><p><code>FILE_NAME</code> - name of a file in a specific file bucket</p></li>
             <li><p><code>FIELD_NAME</code> - name of a metadata field</p></li>
         </ul>
+
+        <p>For most requests, an example is shown using a curl command. If a payload is sent with the request, this is shown in a structured way below the example. The returned response body and request-specific errors are shown if applicable.</p>
 
         <h3>Object retrieval</h3>
 
@@ -567,11 +597,14 @@ module.exports = function() {
             "returns": "the new draft record metadata including new URL location. \
                 Please note that the returned JSON object contains also the URL of the file bucket used for the record. \
                 Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'",
-            "notes": "you cannot change the community after you have created the record."
+            "notes": "you cannot change the community the record resides in after you have created the record."
         }}</Request>
-        <p>The following example creates an open-access record for a community with identifier <code>e9b9792e-79fb-4b07-b6b4-b9c2bd06d095</code> with title 'My dataset record'. It does not contain community-specific metadata.</p>
+        <p>The following example creates an open-access record for a community with identifier <code>e9b9792e-79fb-4b07-b6b4-b9c2bd06d095</code> with title 'My dataset record', creators 'John Smith' and 'Jane Smith' and description of type abstract 'A simple description'. It contains two community-specific metadata fields and values.</p>
         <Example>
-            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My dataset record"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My dataset record"}], "creators":[{"creator_name": "John Smith"}, {"creator_name": "Jane Smith"}], "descriptions":[{"description": "A simple description", "description_type": "Abstract"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {"field_1": "value_1", "field_2": "value_2"}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            <Payload>{{
+                "titles":[{"title":"My dataset record"}], "creators":[{"creator_name": "John Smith"}, {"creator_name": "Jane Smith"}], "descriptions":[{"description": "A simple description", "description_type": "Abstract"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {"field_1": "value_1", "field_2": "value_2"}
+            }}</Payload>
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -585,7 +618,10 @@ module.exports = function() {
               "metadata": {
                 "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
-                "community_specific": {},
+                "community_specific": {
+                    "field_1": "value_1",
+                    "field_2": "value_2"
+                },
                 "open_access": true,
                 "owners": [
                   8
@@ -595,12 +631,28 @@ module.exports = function() {
                   {
                     "title": "My dataset record"
                   }
+                ],
+                "creators":[
+                  {
+                    "creator_name": "John Smith"
+                  },
+                  {
+                    "creator_name": "Jane Smith"
+                  }
                 ]
               },
               "updated": "2016-10-24T12:21:21.697744+00:00"
             }}
             </Returns>
         </Example>
+
+        <h4>Common errors</h4>
+        <Block>
+            <ReturnsError type="metadata validation">
+                {{"message": "Validation error.", "status": 400}}
+            </ReturnsError>
+            {"The supplied metadata is invalid or incorrectly structured. This means that either a specified field does not exist in the metadata schema, or that one of the values for a given field is invalid."}
+        </Block>
 
         <Request>{{
             "title": "Upload file into draft record",
@@ -609,7 +661,7 @@ module.exports = function() {
             querying a draft record, in the 'links/files' section of the returned data.",
             "path": "/api/files/FILE_BUCKET_ID/FILE_NAME",
             "method": "PUT",
-            "data": "the file, sent as direct stream",
+            "data": "the file, sent as direct stream, for curl use the <code>--data-binary @FILE_NAME</code> option for this.",
             "returns": "informations about the newly uploaded file"
         }}</Request>
         <Example>
@@ -721,6 +773,22 @@ module.exports = function() {
             }}
             </Returns>
         </Example>
+
+        <h4>Common errors</h4>
+        <Block>
+            <ReturnsError type="JSON Patch operation">
+                {{"message": "Invalid Operation.", "errors": [{"message": "Invalid JSON Pointer"}], "status": 400}}
+            </ReturnsError>
+            {"One of the JSON Patch operations is invalid."}
+            <ReturnsError type="JSON Patch content type">
+                {{"message": "Invalid 'Content-Type' header. Expected one of: application/json-patch+json", "status": 415}}
+            </ReturnsError>
+            {"The supplied content type header value is invalid."}
+            <ReturnsError type="metadata validation">
+                {{"message": "Validation error.", "errors": [{"message": "{'title': 'Some title'} is not of type 'array'", "field": "titles"}], "status": 400}}
+            </ReturnsError>
+            {"The supplied value for the metadata field is invalid."}
+        </Block>
 
         <Request>{{
             "title": "Submit draft record for publication",
