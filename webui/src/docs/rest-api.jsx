@@ -220,7 +220,8 @@ module.exports = function() {
             </p>
         <p> To update the metadata of a record through the API, a <a href="http://jsonpatch.com/"> JSON Patch </a>
             must be supplied with the request. Please read the documentation on this website carefully
-            to fully understand how these patches work.</p>
+            to fully understand how these patches work. In the request below, the term 'JSONPath' is used which indicates
+            a path in the metadata relative to the root of the structure.</p>
         <p> Existing published records can be versioned by creating a derivative draft
             that initially is a clone of the original record. This draft record can be
             changed in metadata but also files. A link will be established to the
@@ -669,8 +670,8 @@ module.exports = function() {
                 "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
               },
               "metadata": {
-                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
-                "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/94a9567e-2fba-4677-8fde-a8b68bdb63e8/schemas/0#/draft_json_schema",
+                "community": "94a9567e-2fba-4677-8fde-a8b68bdb63e8",
                 "community_specific": {
                     "5108aff5-be5b-4d92-968a-22930ee65e94": {
                         "field_1": "value_1",
@@ -684,7 +685,7 @@ module.exports = function() {
                 "publication_state": "draft",
                 "titles":[
                   {
-                    "title": "My dataset record"
+                    "title": "My community record"
                   }
                 ],
                 "creators":[
@@ -788,7 +789,7 @@ module.exports = function() {
                 "publication_state": "draft",
                 "titles": [
                   {
-                    "title": "TestRest"
+                    "title": "My community title"
                   }
                 ]
               },
@@ -798,6 +799,40 @@ module.exports = function() {
         </Example>
 
         <h4>Example 2</h4>
+        <p>This example replaces the value of the title of a record. This requires a JSONPath <code>/titles/0/title</code> as we are updated an existing value of multivalued field.</p>
+        <Example>
+            {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "replace", "path":"/titles/0/title", "value": ["The new title"]}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
+            <Returns>
+            {{
+              "created": "2016-10-24T12:21:21.697737+00:00",
+              "id": "01826ff3e4974415afdb2574a7ea5a91",
+              "links": {
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
+                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
+              },
+              "metadata": {
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
+                "community_specific": {},
+                "open_access": true,
+                "owners": [
+                  8
+                ],
+                "publication_state": "draft",
+                "titles": [
+                  {
+                    "title": "The new title"
+                  }
+                ]
+              },
+              "updated": "2016-10-24T12:23:59.454951+00:00"
+            }}
+            </Returns>
+        </Example>
+
+        <h4>Example 3</h4>
         <p>The next example updates the community-specific metadata fields `field_1` and `field_2` of an existing draft record of community with identifier `e9b9792e-79fb-4b07-b6b4-b9c2bd06d095`.
             Note that in order to update a community-specific field, the JSONPath `/community-specific/SCHEMA_ID/FIELD_NAME` is required which contains the schema identifier used by the community.</p>
         <p>For this to work, the schema identifier of the community metadata schema is required. You can get this information from the community metadata using the <a href='#get-community-schema'>Get community schema</a> request, although it is a bit hidden. The correct JSONPath for this metadata is <code>/json_schema/allOf/1/properties/community_specific/required</code>.</p>
@@ -916,7 +951,7 @@ module.exports = function() {
                 are the <i>metadata</i> object, as this is the only mutable object. For instance, to \
                 update the <i>title</i> field of the record, use this JSONPath: <code>/titles/title</code>"
         }}</Request>
-        <p>See the <a href='#update-draft-record-metadata'>Update draft record metadata</a> request for an example.</p>
+        <p>See the <a href='#update-draft-record-metadata'>Update draft record metadata</a> request for examples.</p>
 
         <h3>Record versioning</h3>
 
