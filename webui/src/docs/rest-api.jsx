@@ -364,6 +364,7 @@ module.exports = function() {
             <li><p><code>FILE_BUCKET_ID</code> - identifier for a set of files. Each record has its own file set,
                 usually found in the links -> files section </p></li>
             <li><p><code>FILE_NAME</code> - name of a file in a specific file bucket</p></li>
+            <li><p><code>FIELD_NAME</code> - name of a metadata field</p></li>
         </ul>
 
         <h3>Object retrieval</h3>
@@ -565,7 +566,8 @@ module.exports = function() {
             "data": "JSON object with basic metadata of the object",
             "returns": "the new draft record metadata including new URL location. \
                 Please note that the returned JSON object contains also the URL of the file bucket used for the record. \
-                Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'"
+                Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'",
+            "notes": "you cannot change the community after you have created the record."
         }}</Request>
         <p>The following example creates an open-access record for a community with identifier <code>e9b9792e-79fb-4b07-b6b4-b9c2bd06d095</code> with title 'My dataset record'. It does not contain community-specific metadata.</p>
         <Example>
@@ -591,42 +593,7 @@ module.exports = function() {
                 "publication_state": "draft",
                 "titles":[
                   {
-                    "title":"TestRest"
-                  }
-                ]
-              },
-              "updated": "2016-10-24T12:21:21.697744+00:00"
-            }}
-            </Returns>
-        </Example>
-        <p>The next example creates an open-access record for the same community with title 'My next record' and with community-specific metadata.</p>
-        <Example>
-            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My nexy record"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {"field_1": "value_1", "field_2": "value_2"}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
-            <Returns>
-            {{
-              "created": "2016-10-24T12:21:21.697737+00:00",
-              "id": "01826ff3e4974415afdb2574a7ea5a91",
-              "links": {
-                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
-                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
-                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
-                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
-              },
-              "metadata": {
-                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
-                "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
-                "community_specific": {
-                    "field_1": "value_1",
-                    "field_2": "value_2",
-                },
-                "open_access": true,
-                "owners": [
-                  8
-                ],
-                "publication_state": "draft",
-                "titles":[
-                  {
-                    "title":"TestRest"
+                    "title": "My dataset record"
                   }
                 ]
               },
@@ -715,6 +682,42 @@ module.exports = function() {
                 ]
               },
               "updated": "2016-10-24T12:23:59.454951+00:00"
+            }}
+            </Returns>
+        </Example>
+        <p>The next example updates the community-specific metadata fields `field_1` and `field_2` of an existing draft record of community with identifier `e9b9792e-79fb-4b07-b6b4-b9c2bd06d095`.
+            Note that in order to update a community-specific field, the JSONPath `/community-specific/COMMUNITY_ID/FIELD_NAME` is required.</p>
+        <Example>
+            {'curl -X POST -H "Content-Type:application/json" -d \'[{"op": "add", "path": "/community_specific/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/field_1", "value": "value_1"}, {"op": "add", "path": "/community_specific/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/field_2", "value": "value_2"}]\' https://$B2SHARE_HOST/api/records/01826ff3e4974415afdb2574a7ea5a91/draft?access_token=$ACCESS_TOKEN'}
+            <Returns>
+            {{
+              "created": "2016-10-24T12:21:21.697737+00:00",
+              "id": "01826ff3e4974415afdb2574a7ea5a91",
+              "links": {
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
+                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
+              },
+              "metadata": {
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
+                "community_specific": {
+                    "field_1": "value_1",
+                    "field_2": "value_2",
+                },
+                "open_access": true,
+                "owners": [
+                  8
+                ],
+                "publication_state": "draft",
+                "titles":[
+                  {
+                    "title": "My dataset record"
+                  }
+                ]
+              },
+              "updated": "2016-10-24T12:21:21.697744+00:00"
             }}
             </Returns>
         </Example>
