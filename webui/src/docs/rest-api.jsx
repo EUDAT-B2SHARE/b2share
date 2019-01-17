@@ -559,7 +559,7 @@ module.exports = function() {
         <Request>{{
             "title": "Create draft record",
             "description": "Create a new record, in the draft state.",
-            "path": "/api/records",
+            "path": "/api/records/",
             "method": "POST",
             "status": 201,
             "data": "JSON object with basic metadata of the object",
@@ -567,8 +567,9 @@ module.exports = function() {
                 Please note that the returned JSON object contains also the URL of the file bucket used for the record. \
                 Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'"
         }}</Request>
+        <p>The following example creates an open-access record for a community with identifier <code>e9b9792e-79fb-4b07-b6b4-b9c2bd06d095</code> with title 'My dataset record'. It does not contain community-specific metadata.</p>
         <Example>
-            {'curl -H "Content-Type:application/json" -d \'{"titles":[{"title":"TestRest"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My dataset record"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -583,6 +584,41 @@ module.exports = function() {
                 "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
                 "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
                 "community_specific": {},
+                "open_access": true,
+                "owners": [
+                  8
+                ],
+                "publication_state": "draft",
+                "titles":[
+                  {
+                    "title":"TestRest"
+                  }
+                ]
+              },
+              "updated": "2016-10-24T12:21:21.697744+00:00"
+            }}
+            </Returns>
+        </Example>
+        <p>The next example creates an open-access record for the same community with title 'My next record' and with community-specific metadata.</p>
+        <Example>
+            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My nexy record"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {"field_1": "value_1", "field_2": "value_2"}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            <Returns>
+            {{
+              "created": "2016-10-24T12:21:21.697737+00:00",
+              "id": "01826ff3e4974415afdb2574a7ea5a91",
+              "links": {
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
+                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
+              },
+              "metadata": {
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
+                "community_specific": {
+                    "field_1": "value_1",
+                    "field_2": "value_2",
+                },
                 "open_access": true,
                 "owners": [
                   8
@@ -640,12 +676,13 @@ module.exports = function() {
             "description": "This action updates the draft record with new information.",
             "path": "/api/records/RECORD_ID/draft",
             "method": "PATCH",
-            "data": "the metadata for the record object to be created, \
-                in the JSON patch format (see <a href='http://jsonpatch.com/'>http://jsonpatch.com/</a>)",
-            "notes": "The patch format contains one or more JSONPath strings. The root of these paths \
+            "data": "the metadata for the draft record to be updated, \
+                in the JSON Patch format (see <a href='http://jsonpatch.com/'>http://jsonpatch.com/</a>)",
+            "notes": "The JSON Patch format contains one or more JSONPath strings. The root of these paths \
                 are the <i>metadata</i> object, as this is the only mutable object. For instance, to \
-                update the <i>title</i> field of the record, use this JSONPath: <code>/title</code>"
+                update the <i>title</i> field of the record, use this JSONPath: <code>/titles/title</code>"
         }}</Request>
+        <p>The following example adds two values to the metadata field `keywords` of an existing draft record.</p>
         <Example>
             {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"]}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
@@ -736,6 +773,19 @@ module.exports = function() {
             </Returns>
         </Example>
 
+        <Request>{{
+            "title": "Update published record metadata",
+            "description": "This request updates the metadata of an already published record without creating a new version.",
+            "path": "/api/records/RECORD_ID/",
+            "method": "PATCH",
+            "data": "the metadata for the published record object to be updated, \
+                in the JSON Patch format (see <a href='http://jsonpatch.com/'>http://jsonpatch.com/</a>)",
+            "notes": "The JSON Patch format contains one or more JSONPath strings. The root of these paths \
+                are the <i>metadata</i> object, as this is the only mutable object. For instance, to \
+                update the <i>title</i> field of the record, use this JSONPath: <code>/titles/title</code>"
+        }}</Request>
+        <p>See the <a href='#update-draft-record-metadata'>Update draft record metadata</a> request for an example.</p>
+
         <h3>Record versioning</h3>
 
         <Request>{{
@@ -804,11 +854,14 @@ module.exports = function() {
                 <p>Report an abuse record.",
             "method": "POST",
             "path": "/api/records/$RECORD_ID/abuse",
-            "data": "JSON object with information about reporter and the reason",
+            "data": "JSON object with information about reporter, the reason indicated by booleans and a message.",
             "returns": "a message that an email was sent and the record is reported"
         }}</Request>
         <Example>
-            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is s not research data...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is not research data...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            <Payload>{{
+                "noresearch":true, "abusecontent":false, "copyright":false, "illegalcontent":false,"message":"It is not research data...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"
+            }}</Payload>
             <Returns>{{
                 "message": "The record is reported.",
                 "status": 200
@@ -826,7 +879,10 @@ module.exports = function() {
             "returns": "a message that an email was sent"
         }}</Request>
         <Example>
-            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"explain the request...", "name":"John Smith", "affiliation":"example University", "email":"j.smith@example.com", "address":"example street", "city":"exampleCity", "country":"exampleCountry", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"Explain the request...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            <Payload>{{
+                "message":"Explain the request...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"
+            }}</Payload>
             <Returns>{{
                 "message": "An email was sent to the record owner.",
                 "status": 200
