@@ -17,7 +17,7 @@ const Block = React.createClass({
             background:'#fafafa',
             border: '1px solid #eee',
             padding: '0.5em',
-            margin: '0.5em 1em 2em 0.5em',
+            margin: '0.5em 1em 1em 0.5em', // top right bottom left
             fontSize:'1em',
             whiteSpace: 'pre-wrap',
         };
@@ -117,7 +117,8 @@ var Request = React.createClass({
     render() {
         const styleH4 = {
             color: '#944',
-            fontSize: '1.4em'
+            fontSize: '1.4em',
+            marginTop: '1.5em'
         };
         // add default values if missing
         var self = this;
@@ -386,11 +387,12 @@ module.exports = function() {
 
         <p>Variables in the descriptions:</p>
         <ul>
-            <li><p><code>COMMUNITY_ID</code> - identifier of a user community in B2SHARE</p></li>
             <li><p><code>RECORD_ID</code> - identifier for a specific record, which can be in draft or published state</p></li>
             <li><p><code>RECORD_HEAD_ID</code> - head identifier for a group of record that are versions of each other</p></li>
             <li><p><code>FILE_BUCKET_ID</code> - identifier for a set of files. Each record has its own file set,
                 usually found in the links -> files section </p></li>
+            <li><p><code>COMMUNITY_ID</code> - identifier of a user community in B2SHARE</p></li>
+            <li><p><code>SCHEMA_ID</code> - identifier of a metadata schema in B2SHARE</p></li>
             <li><p><code>FILE_NAME</code> - name of a file in a specific file bucket</p></li>
             <li><p><code>FIELD_NAME</code> - name of a metadata field</p></li>
         </ul>
@@ -433,7 +435,7 @@ module.exports = function() {
             </Returns>
         </Example>
 
-         <Request>{{
+        <Request>{{
             "title": "Get community schema",
             "description": "Retrieves the JSON schema of records approved by a specific community.",
             "path": "/api/communities/$COMMUNITY_ID/schemas/last",
@@ -593,15 +595,17 @@ module.exports = function() {
             "path": "/api/records/",
             "method": "POST",
             "status": 201,
-            "data": "JSON object with basic metadata of the object",
+            "data": "JSON object with basic metadata of the object, at least the required fields of the basic metadata schema of each new record: <code>titles</code>, <code>community</code> and <code>open_access</code>.",
             "returns": "the new draft record metadata including new URL location. \
                 Please note that the returned JSON object contains also the URL of the file bucket used for the record. \
                 Also note that the URL of the draft record, needed for setting record metadata, will end in '/draft/'",
             "notes": "you cannot change the community the record resides in after you have created the record."
         }}</Request>
-        <p>The following example creates an open-access record for a community with identifier <code>e9b9792e-79fb-4b07-b6b4-b9c2bd06d095</code> with title 'My dataset record', creators 'John Smith' and 'Jane Smith' and description of type abstract 'A simple description'. It contains two community-specific metadata fields and values.</p>
+
+        <h4>Example 1</h4>
+        <p>The following example creates an open-access record for a community with identifier <code>e9b9792e-79fb-4b07-b6b4-b9c2bd06d095</code> with title 'My dataset record', creators 'John Smith' and 'Jane Smith' and description of type abstract 'A simple description'.</p>
         <Example>
-            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My dataset record"}], "creators":[{"creator_name": "John Smith"}, {"creator_name": "Jane Smith"}], "descriptions":[{"description": "A simple description", "description_type": "Abstract"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {"field_1": "value_1", "field_2": "value_2"}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My dataset record"}], "creators":[{"creator_name": "John Smith"}, {"creator_name": "Jane Smith"}], "descriptions":[{"description": "A simple description", "description_type": "Abstract"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
             <Payload>{{
                 "titles":[{"title":"My dataset record"}], "creators":[{"creator_name": "John Smith"}, {"creator_name": "Jane Smith"}], "descriptions":[{"description": "A simple description", "description_type": "Abstract"}], "community":"e9b9792e-79fb-4b07-b6b4-b9c2bd06d095", "open_access":true, "community_specific": {"field_1": "value_1", "field_2": "value_2"}
             }}</Payload>
@@ -646,6 +650,58 @@ module.exports = function() {
             </Returns>
         </Example>
 
+        <h4>Example 2</h4>
+        <p>The next example creates an open-access record for a community with identifier <code>94a9567e-2fba-4677-8fde-a8b68bdb63e8</code> with title 'My community record', creator 'John Smith'. The following community-specific fields are added: 'field_1' and 'field_2'.</p>
+        <p>For this to work, the schema identifier of the community metadata schema is required. You can get this information from the community metadata using the <a href='#get-community-schema'>Get community schema</a> request, although it is a bit hidden. The correct JSONPath for this metadata is <code>/json_schema/allOf/1/properties/community_specific/required</code>, in this example <code>5108aff5-be5b-4d92-968a-22930ee65e94</code>.</p>
+        <Example>
+            {'curl -X POST -H "Content-Type:application/json" -d \'{"titles":[{"title":"My community record"}], "creators":[{"creator_name": "John Smith"}], "community":"94a9567e-2fba-4677-8fde-a8b68bdb63e8", "open_access":true, "community_specific": {"5108aff5-be5b-4d92-968a-22930ee65e94": {"field_1": "value", "field_2": "value"}}}\' https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            <Payload>{{
+                "titles":[{"title":"My community record"}], "creators":[{"creator_name": "John Smith"}], "community":"94a9567e-2fba-4677-8fde-a8b68bdb63e8", "open_access":true, "community_specific": {"5108aff5-be5b-4d92-968a-22930ee65e94": {"field_1": "value", "field_2": "value"}}
+            }}</Payload>
+            <Returns>
+            {{
+              "created": "2016-10-24T12:21:21.697737+00:00",
+              "id": "01826ff3e4974415afdb2574a7ea5a91",
+              "links": {
+                "files": "https://trng-b2share.eudat.eu/api/files/5594a1bf-1484-4a01-b7d3-f1eb3d2e1dc6",
+                "publication": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91",
+                "self": "https://trng-b2share.eudat.eu/api/records/01826ff3e4974415afdb2574a7ea5a91/draft",
+                "versions": "https://trng-b2share.eudat.eu/api/records/d855e187e3864ddcaa1b68625866dd78/versions"
+              },
+              "metadata": {
+                "$schema": "https://trng-b2share.eudat.eu/api/communities/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/schemas/0#/draft_json_schema",
+                "community": "e9b9792e-79fb-4b07-b6b4-b9c2bd06d095",
+                "community_specific": {
+                    "5108aff5-be5b-4d92-968a-22930ee65e94": {
+                        "field_1": "value_1",
+                        "field_2": "value_2"
+                    }
+                },
+                "open_access": true,
+                "owners": [
+                  8
+                ],
+                "publication_state": "draft",
+                "titles":[
+                  {
+                    "title": "My dataset record"
+                  }
+                ],
+                "creators":[
+                  {
+                    "creator_name": "John Smith"
+                  },
+                  {
+                    "creator_name": "Jane Smith"
+                  }
+                ]
+              },
+              "updated": "2016-10-24T12:21:21.697744+00:00"
+            }}
+            </Returns>
+        </Example>
+
+
         <h4>Common errors</h4>
         <Block>
             <ReturnsError type="metadata validation">
@@ -665,7 +721,7 @@ module.exports = function() {
             "returns": "informations about the newly uploaded file"
         }}</Request>
         <Example>
-            curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' --data-binary @TestFileToBeUploaded.txt https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID/TestFileToBeUploaded.txt?access_token=$ACCESS_TOKEN
+            curl -X PUT -H 'Accept:application/json' -H 'Content-Type:application/octet-stream' --data-binary @$FILE_NAME https://$B2SHARE_HOST/api/files/$FILE_BUCKET_ID/$FILE_NAME?access_token=$ACCESS_TOKEN
         </Example>
 
         <Request>{{
@@ -697,10 +753,13 @@ module.exports = function() {
             "method": "PATCH",
             "data": "the metadata for the draft record to be updated, \
                 in the JSON Patch format (see <a href='http://jsonpatch.com/'>http://jsonpatch.com/</a>)",
+            "returns": "the updated metadata of the draft record.",
             "notes": "The JSON Patch format contains one or more JSONPath strings. The root of these paths \
                 are the <i>metadata</i> object, as this is the only mutable object. For instance, to \
                 update the <i>title</i> field of the record, use this JSONPath: <code>/titles/title</code>"
         }}</Request>
+
+        <h4>Example 1</h4>
         <p>The following example adds two values to the metadata field `keywords` of an existing draft record.</p>
         <Example>
             {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/keywords", "value": ["keyword1", "keyword2"]}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
@@ -737,10 +796,13 @@ module.exports = function() {
             }}
             </Returns>
         </Example>
+
+        <h4>Example 2</h4>
         <p>The next example updates the community-specific metadata fields `field_1` and `field_2` of an existing draft record of community with identifier `e9b9792e-79fb-4b07-b6b4-b9c2bd06d095`.
-            Note that in order to update a community-specific field, the JSONPath `/community-specific/COMMUNITY_ID/FIELD_NAME` is required.</p>
+            Note that in order to update a community-specific field, the JSONPath `/community-specific/SCHEMA_ID/FIELD_NAME` is required which contains the schema identifier used by the community.</p>
+        <p>For this to work, the schema identifier of the community metadata schema is required. You can get this information from the community metadata using the <a href='#get-community-schema'>Get community schema</a> request, although it is a bit hidden. The correct JSONPath for this metadata is <code>/json_schema/allOf/1/properties/community_specific/required</code>.</p>
         <Example>
-            {'curl -X POST -H "Content-Type:application/json" -d \'[{"op": "add", "path": "/community_specific/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/field_1", "value": "value_1"}, {"op": "add", "path": "/community_specific/e9b9792e-79fb-4b07-b6b4-b9c2bd06d095/field_2", "value": "value_2"}]\' https://$B2SHARE_HOST/api/records/01826ff3e4974415afdb2574a7ea5a91/draft?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H "Content-Type:application/json-patch+json" -d \'[{"op": "add", "path": "/community_specific/$SCHEMA_ID/field_1", "value": "value_1"}, {"op": "add", "path": "/community_specific/$SCHEMA_ID/field_2", "value": "value_2"}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
             <Returns>
             {{
               "created": "2016-10-24T12:21:21.697737+00:00",
@@ -794,17 +856,16 @@ module.exports = function() {
             "title": "Submit draft record for publication",
             "description": "This action marks the draft record as complete and submits it for \
                     publication. Currently B2SHARE automatically publishes all the \
-                    submitted drafts. Please be advised that publishing the draft \
-                    <strong> will make its files immutable</strong>.</p> \
+                    submitted drafts. Please be advised that publishing the draft <strong> will make its files immutable</strong>.</p> \
                 <p> A draft record is submitted for publication if a special metadata \
                     field, called 'publication_state' is set to 'submitted'. This field \
-                    can be set using the PATCH call described above.</p> \
-                <p> Depending on the domain specification, other fields could be \
-                    required in order to successfully publish a record. In case one of \
+                    can be set using the <a href='#update-metadata-draft-record'>metadata update request</a> described above.</p> \
+                <p> Depending on the community specification, other fields could be required in order to successfully publish a record. In case one of \
                     the required fields is missing the request fails and an error \
                     message is returned with further details.",
             "path": "/api/records/$RECORD_ID/draft",
-            "data": "JSON-Patch operation that alters the <code>publication_state</code> metadata field of the record metadata, see example below."
+            "data": "JSON Patch operation that alters the <code>publication_state</code> metadata field of the record metadata, see example below.",
+            "notes": "this request is essentially a <a href='#update-metadata-draft-record'>metadata update request</a> as described above."
         }}</Request>
         <Example>
             {'curl -X PATCH -H \'Content-Type:application/json-patch+json\' -d \'[{"op": "add", "path":"/publication_state", "value": "submitted"}]\' https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
@@ -872,17 +933,18 @@ module.exports = function() {
                 You cannot create a new version of a draft record itself."
         }}</Request>
         <Example>
-            {'curl -H "Content-Type:application/json" -X POST https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H "Content-Type:application/json" https://$B2SHARE_HOST/api/records/$RECORD_ID/draft?access_token=$ACCESS_TOKEN'}
         </Example>
 
         <Request>{{
             "title": "Get all record versions",
             "description": "Get all versions of a specific record by using the record head identifier.",
             "path": "/api/records/RECORD_HEAD_ID/versions",
-            "returns": "a JSON structure containing a list of all record versions with identifier, version number and URL."
+            "returns": "a JSON structure containing a list of all record versions with identifier, version number and URL.",
+            "notes": "the record head identifier is not the same as the record identifier. Use the metadata of the record to find the record head identifier, located in the JSONPath <code>/links/versions</code>.</p><p>If a record is not versioned, the result will be empty."
         }}</Request>
         <Example>
-            {'curl -H "Content-Type:application/json" https://$B2SHARE_HOST/api/records/?access_token=$ACCESS_TOKEN'}
+            {'curl -H "Content-Type:application/json" https://$B2SHARE_HOST/api/records/$RECORD_HEAD_ID/versions?access_token=$ACCESS_TOKEN'}
             <Returns>{{
               "versions": [
                 {
@@ -901,7 +963,7 @@ module.exports = function() {
                 }
               ]
             }}</Returns>
-            <ReturnsError>{{
+            <ReturnsError type="not found">{{
                 "message": "PID is not registered.",
                 "status": 404
             }}</ReturnsError>
@@ -950,7 +1012,7 @@ module.exports = function() {
             "returns": "a message that an email was sent"
         }}</Request>
         <Example>
-            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"Explain the request...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/abuse?access_token=$ACCESS_TOKEN'}
+            {'curl -X POST -H \'Content-Type:application/json\' -d \'{"message":"Explain the request...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"}\' https://$B2SHARE_HOST/api/records/$RECORD_ID/accessrequests?access_token=$ACCESS_TOKEN'}
             <Payload>{{
                 "message":"Explain the request...", "name":"John Smith", "affiliation":"Example University", "email":"j.smith@example.com", "address":"Example street", "city":"Example City", "country":"Example country", "zipcode":"12345", "phone":"7364017452"
             }}</Payload>
@@ -1017,7 +1079,7 @@ module.exports = function() {
             "notes": "only a site administrator can delete a published record."
         }}</Request>
         <Example>
-            {'curl -X DELETE https://$B2SHARE_HOST/api/records/$RECORD_ID?access_token=$ACCESS_TOKEN'}
+            {'curl -X DELETE https://$B2SHARE_HOST/api/records/$RECORD_ID/?access_token=$ACCESS_TOKEN'}
         </Example>
     </div>
   );
