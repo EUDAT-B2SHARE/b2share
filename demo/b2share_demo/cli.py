@@ -34,9 +34,14 @@ from flask.cli import with_appcontext
 from flask import current_app
 from invenio_db import db
 from invenio_files_rest.models import Location
+from invenio_config import create_conf_loader
 
 from .helpers import load_demo_data
 from . import config as demo_config
+
+
+config_loader = create_conf_loader(config=demo_config,
+                                   env_prefix="B2SHARE_DEMO")
 
 
 @click.group(chain=True)
@@ -50,6 +55,7 @@ def demo():
 def load_data(verbose):
     """Load demonstration data."""
     # add files location
+    config_loader(app=current_app)
     files_path = os.path.join(current_app.instance_path, 'files')
     if os.path.exists(files_path):
         rmtree(files_path)
