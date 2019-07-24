@@ -43,12 +43,12 @@ def communities():
 
 def _validate_community_parameters(name=None, description=None, logo=None):
     """Validate community parameters and update them if needed."""
-    if name is not None and len(name) > 255:
-        raise click.BadParameter(""""NAME parameter is longer than the 255
+    if name is not None and len(name) > 80:
+        raise click.BadParameter(""""NAME parameter is longer than the 80
         character maximum""")
-    if description is not None and len(description) > 1024:
+    if description is not None and len(description) > 2000:
         raise click.BadParameter("""DESCRIPTION parameter is longer than the
-        1024 character maximum""")
+        2000 character maximum""")
 
     if logo is not None:
         webui_path = os.environ.get('B2SHARE_UI_PATH', 'webui/app')
