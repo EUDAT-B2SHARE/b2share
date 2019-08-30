@@ -6,6 +6,7 @@ import { pairs } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { Schema } from './schema.jsx';
 import { ReplaceAnimate } from './animate.jsx';
+import { LatestRecords } from './latest_records.jsx';
 
 
 export const CommunityListRoute = React.createClass({
@@ -138,6 +139,7 @@ const Community = React.createClass({
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
+        const latestRecords = serverCache.getLatestRecordsOfCommunity({community: community.get('id')});
         const rootSchema = this.props.rootSchema;
         if (!rootSchema) {
             return <Wait />;
@@ -151,6 +153,8 @@ const Community = React.createClass({
                 <h1>{community.get('name')}</h1>
 
                 { this.renderCommunity(community) }
+                <hr/>
+                { latestRecords ? <LatestRecords records={latestRecords} community={community.get('id')} /> : <Wait />}
 
                 <div className="row">
                     { rootSchema ? this.renderSchema(['', envelopedRootSchema]) : false }

@@ -330,6 +330,11 @@ class ServerCache {
             (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)),
             (xhr) => this.store.setIn(['latestRecords'], new Error(xhr)) );
 
+        this.getters.latestRecordsOfCommunity = new Getter(
+            apiUrls.records(), {sort:"mostrecent"},
+            (data) => this.store.setIn(['latestRecordsOfCommunity'], fromJS(data.hits.hits)),
+            (xhr) => this.store.setIn(['latestRecordsOfCommunity'], new Error(xhr)) );
+
         this.getters.searchRecords = new Getter(
             apiUrls.records(), null,
             (data) => this.store.setIn(['searchRecords'], fromJS(data.hits)),
@@ -572,6 +577,12 @@ class ServerCache {
     getLatestRecords() {
         this.getters.latestRecords.autofetch();
         return this.store.getIn(['latestRecords']);
+    }
+
+    getLatestRecordsOfCommunity({community}) {
+        let q = ' community:' + community;
+        this.getters.latestRecordsOfCommunity.fetch({q});
+        return this.store.getIn(['latestRecordsOfCommunity']);
     }
 
     searchRecords({q, community, sort, page, size, drafts}) {
