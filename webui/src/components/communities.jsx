@@ -85,7 +85,6 @@ const Community = React.createClass({
 
     renderCommunity(community) {
         const desc = community.get('description') || "";
-
         const bland={color:'#888'};
         const created = new Date(community.get('created')).toLocaleString();
         const updated = new Date(community.get('updated')).toLocaleString();
@@ -106,7 +105,16 @@ const Community = React.createClass({
                             : false }
                     </div>
                     <div style={{clear:"both", height:10}}/>
-                    <p className="description"> {desc} </p>
+                    <p className="description"> {
+                      desc.split('\n').map(function(item, key) {
+                        return (
+                            <span key={key}>
+                            {item}
+                            <br/>
+                            </span>
+                        )
+                      })}
+                    </p>
                 </div>
                 <div className="col-sm-6">
                     <div className="community-small passive" title={community.get('description')}>
