@@ -97,21 +97,21 @@ class Community(object):
         """Searches for matching communities."""
         if (start is None and stop is None):
             if name is None:
-                metadata = CommunityMetadata.query.order_by(CommunityMetadata.created)
-            else:
-                metadata =  CommunityMetadata.query.filter(
-                    CommunityMetadata.name.like(name)
-                    ).order_by(CommunityMetadata.created)
-        elif not(start is None) and not(stop is None):
-            if name is None:
-                metadata = CommunityMetadata.query.order_by(
-                    CommunityMetadata.created).limit(stop)[start:]
+                metadata = CommunityMetadata.query.order_by(CommunityMetadata.name)
             else:
                 metadata = CommunityMetadata.query.filter(
                     CommunityMetadata.name.like(name)
-                ).order_by(CommunityMetadata.created).limit(stop)[start:]
+                    ).order_by(CommunityMetadata.name)
+        elif start is not None and stop is not None:
+            if name is None:
+                metadata = CommunityMetadata.query.order_by(
+                    CommunityMetadata.name).limit(stop)[start:]
+            else:
+                metadata = CommunityMetadata.query.filter(
+                    CommunityMetadata.name.like(name)
+                ).order_by(CommunityMetadata.name).limit(stop)[start:]
         else:
-            #one of them is None this cannot happen
+            # one of them is None this cannot happen
             raise ValueError("Neither or both start and stop should be None")
         return [cls(md) for md in metadata]
 
