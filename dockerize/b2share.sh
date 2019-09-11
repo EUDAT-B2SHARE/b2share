@@ -26,10 +26,6 @@ if [ ! -f /usr/var/b2share-instance/provisioned ]; then
     touch /usr/var/b2share-instance/provisioned
 fi
 
-if [ "${USE_STAGING_B2ACCESS}" = "1" ]; then
-    export SSL_CERT_FILE="/eudat/b2share/staging_b2access.pem"
-fi
-
 # safe to run even when up to date
 /usr/bin/b2share upgrade run -v
 
