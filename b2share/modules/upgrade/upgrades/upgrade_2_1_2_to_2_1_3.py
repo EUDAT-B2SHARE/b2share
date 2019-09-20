@@ -21,7 +21,7 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Upgrade recipe migrating B2SHARE from version 2.1.1 to 2.1.2."""
+"""Upgrade recipe migrating B2SHARE from version 2.1.2 to 2.1.3."""
 
 
 from __future__ import absolute_import, print_function
@@ -31,7 +31,7 @@ import pkg_resources
 from ..api import UpgradeRecipe
 
 
-migrate_2_1_1_to_2_1_2 = UpgradeRecipe('2.1.1', '2.1.2')
+migrate_2_1_1_to_2_1_2 = UpgradeRecipe('2.1.2', '2.1.3')
 
 # No changes to Elasticsearch mappings
 
