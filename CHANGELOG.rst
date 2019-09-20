@@ -1,6 +1,18 @@
 B2Share changelog
 *****************
 
+2.1.3 (October 2019)
+===========================
+
+Changes since 2.1.2 include:
+
+- bug fixes
+- small UI fixes
+- display community's recent records on community details page.
+- list of communities on search page sorted alphabetically.
+- remove custom domain certificate for B2ACCESS staging instance.
+
+
 2.1.2 (end of August 2018)
 ===========================
 
