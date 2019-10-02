@@ -21,4 +21,4 @@
 """Version number."""
 
 
-__version__ = "2.1.3rc1"
+__version__ = "2.1.3"
