@@ -129,12 +129,6 @@ contain follow Invenio convention:
 .. automodule:: b2share.modules.apiroot
 
 
-2.14 Docs
-~~~~~~~~~
-
-.. automodule:: b2share.modules.docs
-
-
 3. B2SHARE CELERY
 -----------------
 
