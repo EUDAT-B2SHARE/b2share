@@ -2,7 +2,6 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 
 import { serverCache, Error } from '../data/server';
-import Restapi from '../docs/rest-api.jsx';
 import Termofuse from '../docs/tou.jsx';
 
 
@@ -35,22 +34,6 @@ export const Help = React.createClass({
                                 <Link to="https://eudat.eu/services/userdoc/b2share-http-rest-api" target="_blank"><i className="fa fa-list"></i> HTTP API </Link>
                             </li>
                         </ul>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});
-
-
-export const RestApi = React.createClass({
-    render: function() {
-	    var restapihelp;
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <Restapi rest_api={restapihelp}/>
                     </div>
                 </div>
             </div>
