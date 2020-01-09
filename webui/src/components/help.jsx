@@ -2,7 +2,6 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router';
 
 import { serverCache, Error } from '../data/server';
-import Termofuse from '../docs/tou.jsx';
 
 
 export const Help = React.createClass({
