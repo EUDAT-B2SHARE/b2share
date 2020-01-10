@@ -1,26 +1,174 @@
 /*** GENERAL SETTINGS ***/
 
+/* New branding font */
+@import url("https://fonts.googleapis.com/css?family=Ubuntu:300,300i,400,400i,500,500i,700,700i&display=swap");
+
 html, body {
   height:100%;
-  margin:0;
+  margin: 0px;
+  padding: 0px;
   color: #333;
 }
 
 html {
   overflow-x: hidden;
 }
+
 body {
-  background: white url('/img/bg-page.jpg') no-repeat center 200px;
+  /*background: white url('/img/bg-page.jpg') no-repeat center 200px;*/
 }
 
-#header {
-  padding: 0 0;
-  background: #FFFFFF url("/img/img_header.png") no-repeat top right;
+/*button {
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #264899 !important;
+    color: #FFF;
+}*/
+
+/*.btn-primary {
+    color: #fff;
+    background-color: #264899;
+    border-color: #A6A8F9;
+}*/
+
+/* New branding */
+.page-wrap .primary-header {
+    background: #264899;
+    padding: 0 8.3333vw
 }
+
+.page-wrap .primary-header .section-link a {
+    font-size: 14px;
+    text-align: left;
+    color: #ffffff;
+    text-transform: uppercase;
+    border-left: 1px solid #577CD5;
+    border-right: 1px solid #577CD5;
+    padding: 10px;
+    float: left;
+    font-weight: 600
+}
+
+.page-wrap .primary-header .section-link a:hover {
+    color: #f45d00;
+    cursor: pointer;
+    text-decoration: none
+}
+
+.page-wrap .header {
+    font-family: 'Ubuntu', sans-serif;
+    background: url("/img/pattern.svg") no-repeat;
+    margin: 0;
+    background-position: 100% 0;
+    box-shadow: -7px 4px 18px -2px rgba(0, 0, 0, 0.1);
+    background-size: 290px !important;
+    padding: 0 8.3333vw
+}
+
+.page-wrap .header #menu {
+    line-height: 110px
+}
+
+.page-wrap .header #menu ul {
+    padding: 0;
+    text-align: center
+}
+
+.page-wrap .header #menu ul li {
+    display: inline-block
+}
+
+.page-wrap .header #menu ul li a {
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 16px;
+    text-align: left;
+    font-weight: 500;
+    color: #555;
+    text-transform: uppercase;
+    margin-right: 10px
+}
+
+.page-wrap .header #menu ul li a:hover {
+    color: #f45d00;
+    cursor: pointer;
+    text-decoration: none
+}
+
+div .page-wrap .footer {
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #2C2C2C;
+    margin: 0;
+    padding: 1vw 8.3333vw
+}
+
+.page-wrap .footer .logo p {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 100
+}
+
+.page-wrap .footer #menu {
+    line-height: 110px
+}
+
+.page-wrap .footer #menu ul {
+    padding: 0;
+    text-align: right
+}
+
+.page-wrap .footer #menu ul li {
+    display: inline-block
+}
+
+.page-wrap .footer #menu ul li a {
+    font-size: 14px;
+    text-align: left;
+    font-weight: 300;
+    color: #fff;
+    text-transform: uppercase;
+    margin-right: 10px
+}
+
+.page-wrap .footer #menu ul li a:hover {
+    color: #f45d00;
+    cursor: pointer;
+    text-decoration: none
+}
+
+.page-wrap .secondary-footer {
+    background-color: #2C2C2C
+}
+
+.page-wrap .secondary-footer p {
+    text-align: center;
+    color: #fff;
+    padding: 1vw;
+    font-size: 14px;
+    font-weight: 100
+}
+
+a {
+    -webkit-transition: ease-out 0.4s;
+    -moz-transition: ease-out 0.4s;
+    -o-transition: ease-out 0.4s;
+    outline: none!important;
+    /*color: #F45D00;*/
+    color: #264899;
+    transition: ease-out 0.4s;
+    text-decoration: none!important;
+}
+
+a:hover {
+    /*color: #f45d00;*/
+    color: #264899;
+    cursor: pointer;
+    text-decoration: none
+}
+/* End new branding */
 
 footer {
   /*background: #F7F3E9 url('/img/footer.png') no-repeat right bottom;*/
-  background: #F7F3E9 url("/img/color-line.jpg") repeat-x top left;
+  /*background: #F7F3E9 url("/img/color-line.jpg") repeat-x top left;*/
+
   padding: 20px 10px 0px 10px;
   font-size: 12px;
 }
@@ -36,14 +184,14 @@ footer {
   }
 }
 
-a {
+/*a {
   outline: none!important;
   color: #F45D00;
   text-decoration: none!important;
 }
 a:hover {
   text-decoration: none!important;
-}
+}*/
 
 h1, h2, h3 {
   margin-top: 1em;
@@ -311,7 +459,8 @@ a.navbar-brand {
 
 .navbar-default {
   margin-bottom: 0;
-  background: white url('/img/header.png') no-repeat right top;
+  background: white url('/img/pattern.svg') no-repeat right top;
+  background-size: contain;
 }
 
 .header-nav .navbar-header {
