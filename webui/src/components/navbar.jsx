@@ -50,10 +50,10 @@ const NavbarMenu = React.createClass({
                 <NavbarSearch location={this.props.location} visibility={!hideSearchBar}/>
 
                 <ul className="nav navbar-nav text-uppercase">
-                    <li> <Link to="/help" activeClassName='active'> Help </Link> </li>
-                    <li> <Link to="/communities" activeClassName='active'> Communities </Link> </li>
-                    <li> <Link to="/records/new" activeClassName='active'> Upload </Link> </li>
-                    <li> <a href="https://www.eudat.eu/support-request?service=B2SHARE" activeClassName='active' target="_blank"> Contact </a> </li>
+                    <li> <Link to="/help"> Help </Link> </li>
+                    <li> <Link to="/communities"> Communities </Link> </li>
+                    <li> <Link to="/records/new"> Upload </Link> </li>
+                    <li> <a href="https://www.eudat.eu/support-request?service=B2SHARE" target="_blank"> Contact </a> </li>
                 </ul>
                 <ul className="nav navbar-nav user">
                     <NavbarUser user={serverCache.getUser()}/>
