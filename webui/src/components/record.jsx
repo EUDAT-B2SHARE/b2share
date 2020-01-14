@@ -247,7 +247,7 @@ const Record = React.createClass({
         );
     },
 
-    renderField(id, schema, value) {
+    renderField(id, schema, value, vtype=null) {
         function renderScalar(schema, value) {
             const type = schema.get('type');
             if (type === 'string' && schema.get('format') === 'date-time') {
@@ -260,13 +260,24 @@ const Record = React.createClass({
                         <span className={markClass} aria-hidden="true"/>
                     </label>
                 );
+            } else if (vtype) {
+                switch (vtype) {
+                    case 'DOI':
+                        return <Link to={"https://dx.doi.org/" + value} target="_blank">{value}</Link>
+                    case 'Handle':
+                        return <Link to={"https://hdl.handle.net/" + value} target="_blank">{value}</Link>
+                    case 'URL':
+                        return <Link to={value} target="_blank">{value}</Link>
+                }
             }
+
             return value;
         }
 
         if (value === undefined || value === null) {
             return false;
         }
+        //console.log(id, value);
         const type = schema.get('type');
         const title = schema.get('title');
         let inner = null;
@@ -278,10 +289,15 @@ const Record = React.createClass({
                 </ul>
             );
         } else if (type === 'object') {
+            // determine if object parent has '_type' element that is a string
+            const mainid = schema.get('properties').keys().next().value;
+            const maintype = schema.get('properties').has(mainid + "_type") ? schema.get('properties').get(mainid + "_type") : null;
+            const vtype = (maintype && maintype.get('type') == 'string') ? value.get(mainid + "_type") : null;
+
             inner = (
                 <ul className="list-unstyled">
                     { schema.get('properties').entrySeq().map(
-                        ([pid, pschema]) => this.renderField(pid, pschema, value.get(pid))) }
+                        ([pid, pschema]) => this.renderField(pid, pschema, value.get(pid), pid == mainid ? vtype : null)) }
                 </ul>
             );
         } else {
