@@ -121,12 +121,12 @@ const Record = React.createClass({
                 (community instanceof Error) ? <Err err={community}/> :
                 (
                     <div key={community.get('id')}>
-                        <a href={"/communities/" + community.get('name')}>
+                        <Link to={"/communities/"+community.get('name')}>
                             <div className="community-small passive" title={community.get('description')}>
                                 <p className="name">{community.get('name')}</p>
                                 <img className="logo" src={community.get('logo')}/>
                             </div>
-                        </a>
+                        </Link>
                     </div>
                 );
         }
