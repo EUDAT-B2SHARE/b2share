@@ -23,19 +23,12 @@ export const Versions = React.createClass({
         if (versions && versions.toJS) {
             versions = versions.toJS();
         }
-        const style = {
-            float:'right',
-            marginTop:'-3em',
-            marginBottom:'-3em',
-            color:'black',
-            padding:'15px',
-        };
         return (
             <div className="row">
                 <div className="col-sm-12" >
                     { isDraft ?
-                        <DraftVersions draftID={recordID} versions={versions} style={style}/> :
-                        <PublishedVersions recordID={recordID} versions={versions} style={style}/> }
+                        <DraftVersions draftID={recordID} versions={versions} className="versions"/> :
+                        <PublishedVersions recordID={recordID} versions={versions} className="versions"/> }
                 </div>
             </div>
         );
@@ -65,9 +58,8 @@ const PublishedVersions = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     render() {
-        let {recordID, versions, style} = this.props;
+        let {recordID, versions, className} = this.props;
         const beQuiet = recordID == versions[0].id;
-        const versionClass = beQuiet ? "" : "alert alert-warning";
 
         const thisVersion = versions.find(v => recordID == v.id);
         const VerItemRenderer = ({item}) => {
@@ -82,12 +74,12 @@ const PublishedVersions = React.createClass({
         }
 
         return (
-            <div className={versionClass} style={style}>
-                <div className="btn" style={{display: 'inline-block', color:'black', border: '0px solid #eee'}}>
+            <div className={className + " " + (beQuiet ? "" : "alert alert-warning")}>
+                <div className="btn newer">
                     { beQuiet ? "" : "This record has newer versions. " }
                 </div>
 
-                <div style={{display: 'inline-block', verticalAlign: 'middle', marginBottom: '1px', padding: '0px', width: '17em'}}>
+                <div className="dropdown">
                     <DropdownList data={versions} defaultValue={thisVersion}
                         valueComponent={VerItemRenderer} itemComponent={VerItemRenderer}
                         onChange={handleVersionChange}/>

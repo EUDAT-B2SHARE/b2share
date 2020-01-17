@@ -121,7 +121,7 @@ const Record = React.createClass({
             return !community ? false :
                 (community instanceof Error) ? <Err err={community}/> :
                 (
-                    <div key={community.get('id')}>
+                    <div key={community.get('id')} className="community">
                         <div className="community-small passive" title={community.get('description')}>
                             <p className="name">{community.get('name')}</p>
                             <img className="logo" src={community.get('logo')}/>
@@ -196,9 +196,7 @@ const Record = React.createClass({
                     </div>
 
                     <div className="col-sm-4 col-md-2">
-                        <div style={{float:'right', width:'10em'}}>
-                            { renderSmallCommunity(community) }
-                        </div>
+                        { renderSmallCommunity(community) }
                     </div>
                 </div>
             </div>
@@ -235,7 +233,7 @@ const Record = React.createClass({
         return (
             <div className="well">
                 <div className="row">
-                    <h3 className="col-sm-9" style={{marginTop:0}}>
+                    <h3 className="col-sm-9">
                         { 'Files' }
                     </h3>
                 </div>
@@ -255,11 +253,10 @@ const Record = React.createClass({
                 value = moment(value).format("LLLL");
             } else if (type === 'boolean') {
                 const markClass = "glyphicon glyphicon-" + (value ? "ok":"remove");
-                const markStyle = {color: value ? "green":"red"};
                 return (
                     <label>
-                        <span style={{fontWeight:'normal', marginRight:'0.5em'}}>{value ? "True":"False"}</span>
-                        <span className={markClass} style={markStyle} aria-hidden="true"/>
+                        <span className="metadata-boolean">{value ? "True":"False"}</span>
+                        <span className={markClass} aria-hidden="true"/>
                     </label>
                 );
             }
@@ -290,22 +287,16 @@ const Record = React.createClass({
             inner = <span key={id}>{renderScalar(schema, value)}</span>
         }
 
-        const leftcolumn = !title ? false :
-            <div className="col-sm-4">
-                <span style={{fontWeight:'bold'}}>{title}</span>
-            </div>;
-        const rightcolumnsize = leftcolumn ? "col-sm-8" : "col-sm-12";
-        const style = {marginBottom:'0.25em'};
-        if (type === 'object') {
-            style.borderLeft = '1px solid #ccc';
-            style.borderRadius = '4px';
-            style.marginBottom = '0.5em';
-        }
-
         return (
             <li key={id} className="row">
-                {leftcolumn}
-                <div className={rightcolumnsize} style={style}> {inner} </div>
+                { !title ? false :
+                    <div className="col-sm-4">
+                        <label>{title}</label>
+                    </div>
+                }
+                <div className={
+                    (title ? "col-sm-8" : "col-sm-12") + " " + (type === 'object' ? "metadata-object" : "metadata")}>
+                     {inner} </div>
             </li>
         );
     },
@@ -328,23 +319,16 @@ const Record = React.createClass({
             if (!f) {
                 return false;
             }
-            const style = {
-                marginTop:'0.25em',
-                marginBottom:'0.25em',
-                paddingTop:'0.25em',
-                paddingBottom:'0.25em',
-            };
-            return <div style={style} key={pid}> {f} </div>;
+
+            return <div className="metadata-field" key={pid}> {f} </div>;
         }
         const majorFields = majors.entrySeq().map(renderBigField.bind(this, excludeFields));
         const minorFields = minors.entrySeq().map(renderBigField.bind(this, excludeFields));
 
-        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em'} : {};
-        blockStyle.overflow = 'scroll';
         return (
-            <div style={blockStyle} key={schemaID||"_"} className="well">
+            <div style={{overflow: 'scroll'}} key={schemaID||"_"} className={"well " + (schemaID ? "block" : "")}>
                 <div className="row">
-                    <h3 className="col-sm-9" style={{marginTop:0}}>
+                    <h3 className="col-sm-9">
                         { schemaID ? schema.get('title') : 'Basic metadata' }
                     </h3>
                 </div>
@@ -378,28 +362,17 @@ const Record = React.createClass({
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
 
-
         const showB2Note = serverCache.getInfo().get('show_b2note');
-        const B2NoteWellStyle = {
-            position: 'absolute',
-            right: 0,
-            zIndex: 1050,
-            boxShadow: 'black 0px 0px 32px',
-            borderRadius: '4px',
-            outline: 0,
-        };
-        if (!this.state.showB2NoteWindow) {
-            B2NoteWellStyle.display = 'none';
-        }
+
         return (
             <div className="container-fluid">
                 <div className="large-record">
-                    <div className="row">
+                    <div className="row metadata-main">
                         <div className="col-lg-12">
                             {this.renderFixedFields(record, this.props.community)}
                         </div>
                         {this.props.b2noteUrl ?
-                            <div className="well" style={B2NoteWellStyle}>
+                            <div className={"well b2note " + (!this.state.showB2NoteWindow ? "hidden" : "")}>
                                 <button type="button" className="close" aria-label="Close" onClick={e => this.setState({showB2NoteWindow:false})}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -414,7 +387,7 @@ const Record = React.createClass({
                                             right: 0;
                                             bottom: 0;
                                             left: 0;
-                                        }    
+                                        }
                                         .loader {
                                             position: absolute;
                                             margin: auto;
@@ -441,7 +414,7 @@ const Record = React.createClass({
                                         </style>
                                         <div class="center-div"><div class="loader"></div></div>`
                                     }
-                                    style={{width:'100%', height: '600px', border: '1px solid #ddd'}}/>
+                                    className="frame"/>
                             </div> : false
                         }
                     </div>
@@ -459,25 +432,24 @@ const Record = React.createClass({
                         </div>
                     </div>
 
-                    <div className="row">
+                    <div className="row bottom-buttons">
                         <div className="col-lg-12">
                             <div>
-                                <Link to={`/records/${recordID}/abuse`} className="btn btn-default"
-                                    style={{margin: '0 0.5em', float:'right', color: '#d43f3a'}}>Report Abuse</Link>
+                                <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse">Report Abuse</Link>
                                 { canEditRecord(record) ?
-                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning">
                                         Edit Metadata</Link>
                                     : false
                                 }
                                 { isRecordOwner(record) && isLatestVersion ?
-                                    <a href='#' onClick={onNewVersion} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                    <a href='#' onClick={onNewVersion} className="btn btn-warning">
                                         Create New Version</a>
                                     : false
                                 }
                             </div>
                         </div>
                     </div>
-                    <div style={{borderBottom: '1px solid #eee', paddingBottom:'1em'}}/>
+                    <div className="bottom-line"/>
                 </div>
             </div>
         );
