@@ -238,14 +238,6 @@ a.navbar-brand {
   }
 }
 
-.well .divider {
-  height: 10px;
-  width: 100%;
-  border-bottom: 1px solid #ddd;
-  padding: 5px;
-  clear: both;
-}
-
 .unselectable {
   -ms-touch-action: manipulation;
   touch-action: manipulation;
@@ -558,7 +550,7 @@ a.navbar-brand {
   margin: 0;
 }
 
-.record .date{
+.record .date {
   color: #228;
 }
 
@@ -712,6 +704,114 @@ a.navbar-brand {
 
 .new-record .submit {
   margin-top: 2em;
+}
+
+/* Metadata display */
+.large-record .versions {
+    float: right;
+    margin-top: -3em;
+    margin-bottom: -3em;
+    color: black;
+    padding: 15px;
+}
+
+.large-record .versions .newer {
+    display: inline-block;
+    color: black;
+    border: 0px solid #eee;
+}
+
+.large-record .versions .dropdown {
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 1px;
+    padding: 0px;
+    width: 17em;
+}
+
+.large-record .metadata-main .community {
+    float: right;
+    width: 10em;
+}
+
+.large-record .b2note {
+    position: absolute;
+    right: 0;
+    z-index: 1050;
+    box-shadow: black 0px 0px 32px;
+    border-radius: 4px;
+    outline: 0;
+}
+
+.large-record .b2note .frame {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+}
+
+.large-record .bottom-buttons a {
+    margin: 0em 0.5em;
+}
+
+.large-record .bottom-buttons a.abuse {
+    float: right;
+    color: #d43f3a;
+}
+
+.large-record .bottom-line {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1em;
+}
+
+.well .block {
+    margin-top: 1em;
+    padding-top: 1em;
+}
+
+.well h3 {
+    margin-top: 0px;
+}
+
+.well .divider {
+  height: 10px;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  padding: 5px;
+  clear: both;
+}
+
+.well .metadata {
+    margin-bottom: 0.25em;
+}
+
+.well .metadata-object {
+    border-left: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 0.5em;
+}
+
+.metadata-field {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+}
+
+.metadata-field label {
+    font-weight: bold;
+}
+
+.metadata-boolean {
+    font-weight: normal;
+    margin-right: 0.5em;
+}
+
+.metadata .glyphicon-ok {
+    color: green;
+}
+
+.metadata .glyphicon-remove {
+    color: red;
 }
 
 /*****************************************************************************/
