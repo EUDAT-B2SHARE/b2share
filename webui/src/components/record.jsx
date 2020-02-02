@@ -89,7 +89,9 @@ const Record = React.createClass({
         function renderCreator(creator) {
             const c = creator.get('creator_name');
             return (
-                <span key={c}> <a className="creator" key={c}>{c}</a>; </span>
+                <span>
+                    <Link to={{pathname:'/records', query:{q:c}}} className="creator" key={c}>{c}</Link>;&nbsp;
+                </span>
             );
         }
         function renderDates(record) {
