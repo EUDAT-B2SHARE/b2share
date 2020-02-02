@@ -92,31 +92,29 @@ const Community = React.createClass({
         return (
             <div className="row" key={community.get("id")}>
                 <div className="col-sm-6">
-                    <div>
+                    <div className="dates">
                         <p>
-                            <span style={bland}>Created at </span>
-                            <span style={{color:'#225'}}>{created}</span>
-                        </p>
-                        <div style={{clear:"both"}}/>
+                            <span>Created at </span>
+                            {created}
                         { created != updated
                             ? <p>
-                                <span style={bland}>Last updated at </span>
-                                <span style={{color:'#225'}}>{updated}</span>
+                                <span>Last updated at </span>{updated}
                               </p>
                             : false }
+                        </p>
                     </div>
-                    <div style={{clear:"both", height:10}}/>
-                    <p className="description"> {
-                      desc.split('\n').map(function(item, key) {
-                        return (
-                            <span key={key}>
-                            {item}
-                            <br/>
-                            </span>
-                        )
-                      })}
-                    </p>
-                </div>
+                    <div className="description"/>
+                        <p> {
+                          desc.split('\n').map(function(item, key) {
+                            return (
+                                <span key={key}>
+                                {item}
+                                <br/>
+                                </span>
+                            )
+                          })}
+                        </p>
+                    </div>
                 <div className="col-sm-6">
                     <div className="community-small passive" title={community.get('description')}>
                         <p className="name">{community.get('name')}</p>
@@ -129,7 +127,7 @@ const Community = React.createClass({
 
     renderSchema([schemaID, schema]) {
         return !schema ? false :
-            <div key={schema.get('id')} className="col-sm-12" style={{borderBottom:'1px solid #eee'}}>
+            <div key={schema.get('id')} className="col-sm-12 bottom-line">
                 <Schema schema={schema}/>
             </div>;
     },
