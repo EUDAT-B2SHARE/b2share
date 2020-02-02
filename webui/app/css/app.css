@@ -567,6 +567,14 @@ a.navbar-brand {
 }
 
 /*****************************************************************************/
+/* landing pages */
+
+.bottom-line {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1em;
+}
+
+/*****************************************************************************/
 /* communities */
 
 .community-small {
@@ -619,6 +627,18 @@ a.navbar-brand {
   padding-bottom:1em;
 }
 
+.community-page .description {
+    clear: both;
+    height: 10px;
+}
+
+.community-page .dates {
+    color: #888;
+}
+
+.community-page .dates span {
+    color: #225;
+}
 
 .community-list-page .community {
   padding: 5px 20px;
@@ -758,9 +778,12 @@ a.navbar-brand {
     color: #d43f3a;
 }
 
-.large-record .bottom-line {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 1em;
+.large-record .dates {
+    color: #333;
+}
+
+.large-record .dates span {
+    color: #aaa;
 }
 
 .well .block {
