@@ -96,12 +96,11 @@ const Record = React.createClass({
             const created = moment(record.get('created')).format('ll');
             const updated = moment(record.get('updated')).format('ll');
             return (
-                <div>
-                    <p> <span style={{color:'#225'}}>{created}</span> </p>
+                <div className="dates">
+                    <p>{created}</p>
                     { created != updated
                         ? <p>
-                            <span style={{color:'#aaa'}}>Last updated at </span>
-                            <span style={{color:'#225'}}>{updated}</span>
+                            <span>Last updated at </span>{updated}
                           </p>
                         : false }
                 </div>
@@ -366,7 +365,7 @@ const Record = React.createClass({
 
         return (
             <div className="container-fluid">
-                <div className="large-record">
+                <div className="large-record bottom-line">
                     <div className="row metadata-main">
                         <div className="col-lg-12">
                             {this.renderFixedFields(record, this.props.community)}
@@ -449,7 +448,6 @@ const Record = React.createClass({
                             </div>
                         </div>
                     </div>
-                    <div className="bottom-line"/>
                 </div>
             </div>
         );
