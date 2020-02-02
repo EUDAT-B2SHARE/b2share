@@ -7,6 +7,7 @@ import { Wait, Err } from './waiting.jsx';
 import { Schema } from './schema.jsx';
 import { ReplaceAnimate } from './animate.jsx';
 import { LatestRecords } from './latest_records.jsx';
+import { PersistentIdentifier } from './editfiles.jsx';
 
 
 export const CommunityListRoute = React.createClass({
@@ -86,7 +87,6 @@ const Community = React.createClass({
 
     renderCommunity(community) {
         const desc = community.get('description') || "";
-        const bland={color:'#888'};
         const created = new Date(community.get('created')).toLocaleString();
         const updated = new Date(community.get('updated')).toLocaleString();
         return (
@@ -103,7 +103,7 @@ const Community = React.createClass({
                             : false }
                         </p>
                     </div>
-                    <div className="description"/>
+                    <div className="description">
                         <p> {
                           desc.split('\n').map(function(item, key) {
                             return (
@@ -115,6 +115,11 @@ const Community = React.createClass({
                           })}
                         </p>
                     </div>
+                    <p className="pid">
+                        <span>Identifier: </span>
+                        <PersistentIdentifier pid={community.get('id')}/>
+                    </p>
+                </div>
                 <div className="col-sm-6">
                     <div className="community-small passive" title={community.get('description')}>
                         <p className="name">{community.get('name')}</p>
