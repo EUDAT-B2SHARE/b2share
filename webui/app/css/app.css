@@ -575,6 +575,31 @@ a.navbar-brand {
 }
 
 /*****************************************************************************/
+/* schemas */
+
+.schema {
+    margin: 2em 0;
+}
+
+.schema .title {
+    font-weight: bold;
+}
+
+.schema .field-array {
+    margin-left: 5px;
+    padding-left: 10px;
+    border-left: 1px solid black;
+    border-radius: 4px;
+}
+
+.schema .field-general {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+/*****************************************************************************/
 /* communities */
 
 .community-small {
