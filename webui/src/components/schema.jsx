@@ -69,7 +69,7 @@ export const Schema = React.createClass({
         const leftcolumn = !id ? false :
             <div className="col-sm-6">
                 <p className={requiredClass}>
-                    <span className="title">{title}</span>
+                    <span className="bold">{title}</span>
                     <span className="mono-style">
                         {title?" :: ":""}
                         {id}

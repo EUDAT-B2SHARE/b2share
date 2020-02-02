@@ -805,15 +805,6 @@ export const PersistentIdentifier = React.createClass({
     ],
 
     render: function() {
-        const style = {
-            whiteSpace:"nowrap",
-            overflow: "auto",
-            border: "none",
-            padding:0,
-            margin:0,
-            width:"26em",
-            backgroundColor:"transparent",
-        };
         const className = this.props.doi ? "doi" : "epic_pid";
 
         let prefix = "";
@@ -828,7 +819,7 @@ export const PersistentIdentifier = React.createClass({
 
         return (
             <span style={this.props.style}>
-                <span className={className} style={style}> {pid} </span>
+                <span className={className + " pid-number"}> {pid} </span>
                 <span><a className="btn btn-xs btn-default" onClick={() => copyToClipboard(this.props.pid)}> Copy</a></span>
             </span>
         );
