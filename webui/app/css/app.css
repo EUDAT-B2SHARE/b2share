@@ -574,15 +574,37 @@ a.navbar-brand {
     padding-bottom: 1em;
 }
 
+.bold {
+    font-weight: bold;
+}
+
+.pid {
+  margin-bottom: 0;
+}
+
+.pid > span:first-of-type {
+    font-weight: bold;
+}
+
+.pid > span:nth-child(2) {
+     margin-left: 1em;
+}
+
+.pid-number {
+    white-space: nowrap;
+    overflow: auto;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 26em;
+    background-color: transparent;
+}
+
 /*****************************************************************************/
 /* schemas */
 
 .schema {
     margin: 2em 0;
-}
-
-.schema .title {
-    font-weight: bold;
 }
 
 .schema .field-array {
@@ -654,7 +676,6 @@ a.navbar-brand {
 
 .community-page .description {
     clear: both;
-    height: 10px;
 }
 
 .community-page .dates {
