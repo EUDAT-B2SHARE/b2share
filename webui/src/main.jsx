@@ -50,7 +50,7 @@ const AppFrame = React.createClass({
         return (
             <div>
                 <Navbar dataRef={this.state.dataRef}  location={this.props.location}/>
-                <div className="container-fluid" dataRef="content">
+                <div className="container-fluid">
                     <div className="col-sm-1"/>
                     <div className="col-sm-10">
                         <Breadcrumbs />
