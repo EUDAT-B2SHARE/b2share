@@ -36,20 +36,7 @@ export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     renderSchema([id, schema]) {
-        const arrayStyle = {
-            marginLeft: '5px',
-            paddingLeft:'10px',
-            borderLeft:'1px solid black',
-            borderRadius:'4px',
-        };
-        const generalStyle = {
-            marginTop: '0.5em',
-            marginBottom: '0.5em',
-            paddingTop: '0.5em',
-            paddingBottom: '0.5em',
-        };
         const requiredClass = schema.get('isRequired') ? "required property":"";
-        const monoStyle = {fontFamily:'monospace'};
 
         const type = schema.get('type');
         const title = schema.get('title');
@@ -58,7 +45,7 @@ export const Schema = React.createClass({
 
         if (type === 'array') {
             inner = (
-                <ul className="list-unstyled" style={arrayStyle}>
+                <ul className="list-unstyled field-array">
                     {this.renderSchema([null, schema.get('items')])}
                 </ul>
             );
@@ -70,20 +57,20 @@ export const Schema = React.createClass({
             );
         } else if (schema.get('enum')) {
             const e = schema.get('enum').toJS();
-            inner = (<span style={monoStyle}>enum [{e.join(', ')}]</span>);
+            inner = (<span className="mono-style">enum [{e.join(', ')}]</span>);
         } else {
             inner = type;
             if (schema.get('format')) {
                 inner += " [" + schema.get('format') + "]";
             }
-            inner = <span style={monoStyle}>{inner}</span>
+            inner = <span className="mono-style">{inner}</span>
         }
 
         const leftcolumn = !id ? false :
             <div className="col-sm-6">
                 <p className={requiredClass}>
-                    <span style={{fontWeight:'bold'}}>{title}</span>
-                    <span style={{fontFamily:'monospace'}}>
+                    <span className="title">{title}</span>
+                    <span className="mono-style">
                         {title?" :: ":""}
                         {id}
                         {schema.get('isRequired') ? " (required)":false}
@@ -93,7 +80,7 @@ export const Schema = React.createClass({
             </div>;
         const rightcolumnsize = leftcolumn ? "col-sm-6" : "col-sm-12";
         return (
-            <li key={id} className="row" style={generalStyle}>
+            <li key={id} className="row field-general">
                 {leftcolumn}
                 <div className={rightcolumnsize}> {inner} </div>
             </li>
@@ -108,7 +95,7 @@ export const Schema = React.createClass({
         const jschema = schema.get('json_schema');
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(jschema);
         return (
-            <div style={{margin:'2em 0'}}>
+            <div className="schema">
                 <div className="row">
                     <div className="col-sm-12">
                         <h3 className="title">{jschema.get('title') || "Metadata"}</h3>
