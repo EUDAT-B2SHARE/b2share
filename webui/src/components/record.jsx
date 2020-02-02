@@ -181,15 +181,15 @@ const Record = React.createClass({
                         }
 
                         {doi ?
-                            <p className="pid" style={{marginBottom:0}}>
-                                <span style={{fontWeight:'bold'}}>DOI: </span>
-                                <PersistentIdentifier style={{marginLeft:'1em'}} pid={doi} doi={true}/>
+                            <p className="pid">
+                                <span>DOI: </span>
+                                <PersistentIdentifier pid={doi} doi={true}/>
                             </p> : false
                         }
                         {pid ?
                             <p className="pid">
-                                <span style={{fontWeight:'bold'}}>PID: </span>
-                                <PersistentIdentifier style={{marginLeft:'1em'}} pid={pid} />
+                                <span>PID: </span>
+                                <PersistentIdentifier pid={pid} />
                             </p> : false
                         }
                     </div>
