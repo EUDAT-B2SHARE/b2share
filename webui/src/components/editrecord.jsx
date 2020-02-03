@@ -635,6 +635,13 @@ const EditRecord = React.createClass({
         );
     },
 
+    removeDraft(e) {
+        e.preventDefault();
+        if (confirm("Are you sure you want to delete this draft record?")) {
+            serverCache.removeDraft(this.props.record.get('id'), browser.gotoHome());
+        }
+    },
+
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
@@ -653,6 +660,17 @@ const EditRecord = React.createClass({
                         <h2 className="name">
                             <span style={{color:'#aaa'}}>{editTitle}</span>
                             {this.state.record.get('title')}
+                        { this.props.isDraft
+                          ?
+                            <div className="pull-right">
+                                <form className="form-inline" onSubmit={this.removeDraft}>
+                                    <button className="btn btn-default" type="submit">
+                                        <i className="fa fa-trash-o"></i> Delete draft
+                                    </button>
+                                </form>
+                            </div>
+                          : false
+                        }
                         </h2>
                     </div>
                 </div>

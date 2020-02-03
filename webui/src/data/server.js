@@ -774,6 +774,17 @@ class ServerCache {
         this.posters.draft.get(id).patch(patch, successFn, errorFn);
     }
 
+    removeDraft(draftID, succesFn) {
+        ajaxDelete({
+            url: apiUrls.draft(draftID),
+            successFn: () => {
+                notifications.success("Draft record was successfully removed");
+                this.store.deleteIn('draftCache', draftID)
+                successFn();
+            }
+        });
+    }
+
     updateRecord(id, metadata, successFn) {
         this.posters.record.get(id).put(metadata, successFn);
     }
@@ -1002,6 +1013,10 @@ function encode(obj) {
 };
 
 export const browser = {
+    gotoHome() {
+        browserHistory.push(`/`);
+    },
+
     getRecordURL(recordId) {
         return `${window.location.origin}/records/${recordId}`;
     },
