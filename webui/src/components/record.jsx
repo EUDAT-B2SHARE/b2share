@@ -173,7 +173,7 @@ const Record = React.createClass({
                         { !disciplines ? false :
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
-                                {disciplines.map(k => <span key={k}>{k}; </span>)}
+                                {disciplines.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
                             </p>
                         }
 
