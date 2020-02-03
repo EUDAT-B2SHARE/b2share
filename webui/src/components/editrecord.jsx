@@ -637,8 +637,8 @@ const EditRecord = React.createClass({
 
     removeDraft(e) {
         e.preventDefault();
-        if (confirm("Are you sure you want to delete this draft record?")) {
-            serverCache.removeDraft(this.props.record.get('id'), browser.gotoHome());
+        if (confirm("Are you sure you want to delete this draft record?\n\nThis cannot be undone!")) {
+            serverCache.removeDraft(this.props.record.get('id'), browser.gotoProfile());
         }
     },
 
