@@ -90,7 +90,7 @@ const Record = React.createClass({
             const c = creator.get('creator_name');
             return (
                 <span>
-                    <Link to={{pathname:'/records', query:{q:c}}} className="creator" key={c}>{c}</Link>;&nbsp;
+                    <Link to={{pathname:'/records', query:{q:c}}} className="creator" key={c}>{c}</Link>
                 </span>
             );
         }
@@ -161,7 +161,7 @@ const Record = React.createClass({
                     <div className="col-sm-8 col-md-10">
                         { creators ?
                             <p><span style={{color:'black'}}> by </span>
-                            { creators.map(renderCreator).implode() }</p>
+                            { creators.map(renderCreator).implode() };</p>
                             : false
                         }
 
@@ -172,14 +172,14 @@ const Record = React.createClass({
                         { !disciplines ? false :
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
-                                {disciplines.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()}
+                                {disciplines.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()};
                             </p>
                         }
 
                         { !keywords ? false :
                             <p className="keywords">
                                 <span style={{fontWeight:'bold'}}>Keywords: </span>
-                                {keywords.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()}
+                                {keywords.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()};
                             </p>
                         }
 
