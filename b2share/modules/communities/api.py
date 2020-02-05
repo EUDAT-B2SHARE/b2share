@@ -32,6 +32,7 @@ import uuid
 from invenio_db import db
 from jsonpatch import apply_patch
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import StatementError
 from invenio_accounts.models import Role
 
 from .errors import CommunityDeletedError, CommunityDoesNotExistError, \
@@ -89,7 +90,7 @@ class Community(object):
             if metadata.deleted and not with_deleted:
                 raise CommunityDeletedError(id)
             return cls(metadata)
-        except NoResultFound as e:
+        except (NoResultFound, StatementError) as e:
             raise CommunityDoesNotExistError(id) from e
 
     @classmethod
