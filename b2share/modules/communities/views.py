@@ -63,7 +63,12 @@ def pass_community(f):
         try:
             community = Community.get(id=community_id)
         except (CommunityDoesNotExistError):
-            abort(404)
+            try:
+                community = Community.get(name=community_id)
+            except (CommunityDoesNotExistError):
+                abort(404)
+            except (CommunityDeletedError):
+                abort(410)
         except (CommunityDeletedError):
             abort(410)
 
