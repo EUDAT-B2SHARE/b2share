@@ -19,7 +19,7 @@ export const LatestRecords = React.createClass({
         return (
             <span>
                 <span style={{color:'black'}}> by </span>
-                {creators.map(c => <span className="creator" key={c.get('creator_name')}> {c.get('creator_name')}; </span>)}
+                {creators.map(c => <span className="creator" key={c.get('creator_name')}> {c.get('creator_name')}</span>).implode()};
             </span>
         );
     },
