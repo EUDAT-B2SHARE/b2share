@@ -92,3 +92,7 @@ export function stateSetter(obj, state) {
         obj.setState(state);
     }
 }
+
+Object.prototype.implode = function(delimiter = ', ') {
+    return this.reduce((prev, curr) => [prev, delimiter, curr])
+}

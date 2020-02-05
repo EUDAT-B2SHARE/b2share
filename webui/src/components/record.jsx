@@ -162,7 +162,7 @@ const Record = React.createClass({
                         <p>
                             <span style={{color:'black'}}> by </span>
                             { !creators ? <span style={{color:'black'}}> [Unknown] </span> :
-                                creators.map(renderCreator)
+                                creators.map(renderCreator).implode()
                             }
                         </p>
 
@@ -173,14 +173,14 @@ const Record = React.createClass({
                         { !disciplines ? false :
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
-                                {disciplines.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
+                                {disciplines.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()}
                             </p>
                         }
 
                         { !keywords ? false :
                             <p className="keywords">
                                 <span style={{fontWeight:'bold'}}>Keywords: </span>
-                                {keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
+                                {keywords.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()}
                             </p>
                         }
 
