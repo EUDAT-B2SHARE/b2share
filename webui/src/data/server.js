@@ -30,6 +30,7 @@ const apiUrls = {
     accessrequests(id)                { return `${urlRoot}/api/records/${id}/accessrequests` },
 
     communities()                     { return `${urlRoot}/api/communities/` },
+    community(id)                     { return `${urlRoot}/api/communities/${id}` },
     communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
 
     schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
@@ -293,6 +294,7 @@ class ServerCache {
             latestRecords: [], // latest records with params
             searchRecords: null, // searched records view, with params
             recordCache: {}, // map of record IDs to records
+            communityCache: {}, // map of community IDs to communities
             draftCache: {}, // map of draft IDs to drafts
 
             communities: {}, // ordered map of community IDs to communities
@@ -450,6 +452,13 @@ class ServerCache {
                     retrieveVersions(this.store, data.links, ['recordCache', recordID, 'versions']);
                 },
                 (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
+
+        this.getters.community = new Pool(communityID =>
+            new Getter(apiUrls.community(communityID), null,
+                (data) => {
+                    this.store.setIn(['communityCache', communityID], fromJS(data));
+                },
+                (xhr) => this.store.setIn(['communityCache', communityID], new Error(xhr)) ));
 
         this.getters.draft = new Pool(draftID =>
             new Getter(apiUrls.draft(draftID), null,
@@ -609,19 +618,8 @@ class ServerCache {
     }
 
     getCommunity(communityIDorName) {
-        this.getters.communities.autofetch();
-        const communities = this.store.getIn(['communities']);
-        if (!communities) {
-            return null;
-        }
-        if (communities instanceof Error) {
-            return communities;
-        }
-        let c = communities.get(communityIDorName);
-        if (!c) {
-            c = communities.valueSeq().find(x => x.get('name') == communityIDorName);
-        }
-        return c;
+        this.getters.community.get(communityIDorName).fetch();
+        return this.store.getIn(['communityCache', communityIDorName]);
     }
 
     getRecord(id) {
