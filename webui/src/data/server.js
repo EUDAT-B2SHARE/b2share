@@ -581,7 +581,8 @@ class ServerCache {
 
     getLatestRecordsOfCommunity({community}) {
         let q = ' community:' + community;
-        this.getters.latestRecordsOfCommunity.fetch({q});
+        let sort = 'mostrecent', page = 1, size = 10;
+        this.getters.latestRecordsOfCommunity.fetch({q, sort, page, size});
         return this.store.getIn(['latestRecordsOfCommunity']);
     }
 
