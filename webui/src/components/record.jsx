@@ -159,12 +159,11 @@ const Record = React.createClass({
 
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
-                        <p>
-                            <span style={{color:'black'}}> by </span>
-                            { !creators ? <span style={{color:'black'}}> [Unknown] </span> :
-                                creators.map(renderCreator).implode()
-                            }
-                        </p>
+                        { creators ?
+                            <p><span style={{color:'black'}}> by </span>
+                            { creators.map(renderCreator).implode() }</p>
+                            : false
+                        }
 
                         { renderDates(record) }
 
