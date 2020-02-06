@@ -25,6 +25,7 @@
 
 from sqlalchemy import UniqueConstraint, PrimaryKeyConstraint
 from invenio_db import db
+import uuid
 
 
 def add_to_db(instance, skip_if_exists=False, **fields):
@@ -69,3 +70,10 @@ def add_to_db(instance, skip_if_exists=False, **fields):
     # Add the row if it does not already exist
     db.session.add(instance)
     return instance
+
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val))
+        return True
+    except ValueError:
+        return False
