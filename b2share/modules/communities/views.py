@@ -45,6 +45,7 @@ from .permissions import communities_create_all_permission, \
     update_permission_factory
 from .serializers import community_to_json_serializer, \
     search_to_json_serializer, community_self_link
+from b2share.utils import is_valid_uuid
 
 current_communities = LocalProxy(
     lambda: current_app.extensions['b2share-communities'])
@@ -61,14 +62,12 @@ def pass_community(f):
     @wraps(f)
     def inner(self, community_id, *args, **kwargs):
         try:
-            community = Community.get(id=community_id)
-        except (CommunityDoesNotExistError):
-            try:
+            if is_valid_uuid(community_id):
+                community = Community.get(id=community_id)
+            else:
                 community = Community.get(name=community_id)
-            except (CommunityDoesNotExistError):
-                abort(404)
-            except (CommunityDeletedError):
-                abort(410)
+        except (CommunityDoesNotExistError):
+            abort(404)
         except (CommunityDeletedError):
             abort(410)
 
