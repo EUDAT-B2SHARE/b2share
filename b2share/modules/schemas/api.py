@@ -495,7 +495,7 @@ class CommunitySchema(object):
         """Retrieve the requested version of a community schema.
 
         Args:
-            schema_id (ID): schema id.
+            community_id (ID): community id.
             version (int): version of the schema to retrieve. If None, the last
                 version will be retrieved.
 

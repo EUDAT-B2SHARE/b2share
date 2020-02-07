@@ -25,6 +25,10 @@
 
 from flask import jsonify, url_for
 
+from b2share.modules.schemas.api import CommunitySchema
+from b2share.modules.schemas.serializers import block_schema_version_self_link, community_schema_json_schema_link
+import json
+
 
 def community_self_link(community, **kwargs):
     """Create self link to a given community.
@@ -44,6 +48,9 @@ def community_self_link(community, **kwargs):
 
 
 def community_to_dict(community):
+    community_schema = CommunitySchema.get_community_schema(community.id)
+    community_schema_dict = json.loads(community_schema.community_schema)
+    props = community_schema_dict['properties']
     return dict(
         id=community.id,
         name=community.name,
@@ -54,7 +61,13 @@ def community_to_dict(community):
         publication_workflow=community.publication_workflow,
         restricted_submission=community.restricted_submission,
         links=dict(
-            self=community_self_link(community, _external=True)
+            self=community_self_link(community, _external=True),
+            schema=community_schema_json_schema_link(community_schema, _external=True),
+            block_schema=next(iter(props.values()))['$ref']
+        ),
+        schema=dict(
+            version=community_schema.version,
+            block_schema_id=next(iter(props))
         ),
         roles=dict(
             admin=dict(id=community.admin_role.id,
