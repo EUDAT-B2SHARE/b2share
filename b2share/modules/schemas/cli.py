@@ -112,8 +112,7 @@ def block_schema_list(verbose, community):
     except BlockSchemaDoesNotExistError:
         raise click.ClickException("""No block schemas found, community
             parameter was: %s""" % community)
-    click.secho("""BLOCK SCHEMA
-         ID\t\t\t\tNAME\t\tMAINTAINER\tDEPRECATED\t#VERSIONS""")
+    click.secho("""BLOCK SCHEMA ID\t\t\t\tNAME\t\tMAINTAINER\tDEPRECATED\t#VERSIONS""")
     for bs in block_schemas:
         bs_comm = Community.get(id=bs.community)
         click.secho("%s\t%s\t%s\t%s\t\t%d" % (
