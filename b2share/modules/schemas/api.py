@@ -112,6 +112,47 @@ class RootSchema(object):
             return root_schema
 
     @classmethod
+    def update_existing_version(cls, version, json_schema):
+        """Update an existing root schema version.
+
+        Args:
+            version (int): version number of this schema. Versions are known
+                in advance and are the same for all B2Share instances. This is
+                more of a security check as the version MUST follow the last
+                loaded one.
+            json_schema (dict): the JSON Schema corresponding to this version.
+
+        Raises:
+            :class:`b2share.modules.schemas.errors.InvalidRootSchemaError`:
+                If the root schema version is invalid.
+            :class:`b2share.modules.schemas.errors.RootSchemaDoesNotExistError`:
+                If the root schema version does not exist.
+            :class:`b2share.modules.schemas.errors.InvalidJSONSchemaError`:
+                The given JSON Schema is not valid.
+        """
+        from .models import RootSchemaVersion
+        if not isinstance(json_schema, dict):
+            raise InvalidJSONSchemaError('json_schema must be a dict')
+
+        existing_schema = RootSchemaVersion.query.filter(
+                RootSchemaVersion.version == version
+            ).one()
+
+        if existing_schema is None:
+            raise RootSchemaDoesNotExistError("Root schema version {0} intended for update does not exist.".format(version))
+
+        validate_json_schema(json_schema, [existing_schema.json_schema])
+
+        with db.session.begin_nested():
+            # Update the root schema.
+            model = RootSchemaVersion(
+                json_schema=json.dumps(json_schema),
+                version=version)
+            root_schema = cls(model)
+            db.session.merge(model)
+            return root_schema
+
+    @classmethod
     def get_root_schema(cls, version):
         """Retrieve a given root schema version.
 

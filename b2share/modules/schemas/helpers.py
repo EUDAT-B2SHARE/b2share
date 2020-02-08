@@ -169,11 +169,12 @@ root_schema_config_schema = {
 }
 
 
-def load_root_schemas(cli=False, verbose=False):
+def load_root_schemas(cli=False, verbose=False, force=False):
     """Load root schemas in the database.
 
     Args:
         verbose (bool): enable verbose messages if :param:`cli` is True.
+        force (bool): force update of existing schemas if :param:`cli` is True.
         cli (bool): enable click messages.
     """
     import click
@@ -199,13 +200,21 @@ def load_root_schemas(cli=False, verbose=False):
                 retrieved = RootSchema.get_root_schema(version)
                 # check that the schema is the same
                 if json.loads(retrieved.json_schema) != json_schema:
-                    if cli and verbose:
-                        raise RootSchemaAlreadyExistsError(
-                            'Already loaded Root JSON Schema '
-                            'version {0} does not match the one in file "{1}".'
-                            .format(version,
-                                    os.path.join(root_schemas_dir, filename)),
-                        )
+                    if force:
+                        if cli and verbose:
+                            click.echo(' => UPDATING root schema version {0}.'
+                                       .format(version, filename))
+                        configs_count += 1
+                        RootSchema.update_existing_version(version, json_schema)
+                        continue
+                    else:
+                        if cli and verbose:
+                            raise RootSchemaAlreadyExistsError(
+                                'Already loaded Root JSON Schema '
+                                'version {0} does not match the one in file "{1}".'
+                                .format(version,
+                                        os.path.join(root_schemas_dir, filename)),
+                            )
                 if cli and verbose:
                     click.echo(' => SCHEMA ALREADY LOADED.')
             except RootSchemaDoesNotExistError:
