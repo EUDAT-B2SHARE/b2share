@@ -34,7 +34,7 @@ from flask import current_app
 from doschema.validation import JSONSchemaValidator
 
 from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
-    RootSchemaAlreadyExistsError
+    RootSchemaAlreadyExistsError, MissingRequiredFieldSchemaError
 
 
 @lru_cache(maxsize=1000)
@@ -60,6 +60,41 @@ def validate_json_schema(new_json_schema, prev_schemas):
         prev_schemas: list of previous versions of a schema.
 
     """
+    def verify_required_fields(json_schema):
+        """Verify that required fields exist in a schema definition
+
+        Recursively check existence of all required fields per (sub)field of type 'object'
+
+        Prerequisites:
+        - If current structure has a field 'type' valued 'object':
+            and has a field 'properties' on the same level
+            and has a field 'required' on the same level
+
+        Args:
+            json_schema: the (partial) json_schema to be verified.
+
+        """
+        if json_schema.get("type", "") != "object" or json_schema.get("required", None) is None:
+            pass
+        else:
+            # check for missing fields in 'properties' that are given in 'required' field
+            missing = set(json_schema["required"]) - set(json_schema["properties"].keys())
+            if len(missing) > 0:
+                raise MissingRequiredFieldSchemaError("Missing required fields in schema properties definition.")
+
+            for k, v in json_schema["properties"].items():
+                # any objects
+                if v.get("type", None) == "object":
+                    js = v
+                # arrays of objects
+                elif v.get("type", None) == "array" and v.get("items", {}).get("type", None) == "object":
+                    js = v["items"]
+                else:
+                    continue
+
+                verify_required_fields(js)
+
+
     if '$schema' not in new_json_schema:
         raise InvalidJSONSchemaError('Missing "$schema" field in JSON Schema')
     if new_json_schema['$schema'] != 'http://json-schema.org/draft-04/schema#':
@@ -85,6 +120,9 @@ def validate_json_schema(new_json_schema, prev_schemas):
     except URLError as e:
         raise InvalidJSONSchemaError('Invalid "$schema" URL.') from e
     jsonschema.validate(new_json_schema, super_schema)
+
+    # verify that required fields are defined in schema properties
+    verify_required_fields(new_json_schema)
 
 
 def resolve_schemas_ref(source):
