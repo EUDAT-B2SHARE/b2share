@@ -23,12 +23,13 @@
 
 """B2Share Records JSON schemas used for serialization."""
 
-from flask import g
+from flask import g, current_app
 from marshmallow import Schema, fields, pre_dump
 from b2share.modules.access.policies import allow_public_file_metadata
 from b2share.modules.deposit.api import generate_external_pids
 from b2share.modules.files.permissions import files_permission_factory
 from b2share.modules.records.utils import is_deposit
+from b2share.modules.records.minters import generate_doi
 
 
 DOI_URL_PREFIX = 'http://doi.org/'
@@ -72,6 +73,10 @@ class DraftSchemaJSONV1(Schema):
                 g.record_hit['_source'])
 
         if '_deposit' in data['metadata']:
+            if is_deposit(record.model) and current_app.config['AUTOMATICALLY_ASSIGN_DOI']:
+                # add future DOI string
+                data['metadata']['future_doi'] = generate_doi(data['metadata']['_deposit']['id'])
+
             data['metadata']['owners'] = data['metadata']['_deposit']['owners']
 
             # Add the external_pids only if the
