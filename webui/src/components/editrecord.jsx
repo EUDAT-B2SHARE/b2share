@@ -17,7 +17,7 @@ import { keys, pairs, objEquals } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
-import { EditFiles } from './editfiles.jsx';
+import { EditFiles, PersistentIdentifier } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 import { SelectBig } from './selectbig.jsx';
@@ -622,14 +622,19 @@ const EditRecord = React.createClass({
         const text = this.state.waitingForServer ? "Updating record, please wait..." :
                       this.isForPublication() ? 'Save and Publish' :
                       this.state.dirty ? 'Save Draft' : 'The draft is up to date';
+        const future_doi = this.props.record.get('b2share', Map()).get('future_doi', '') || "";
         return (
             <div className="col-sm-offset-3 col-sm-9">
                 <label style={{fontSize:18, fontWeight:'normal'}}>
                     <input type="checkbox" value={this.isForPublication} onChange={this.setPublishedState}/>
                     {" "}Submit draft for publication
                 </label>
-                <p>When the draft is published it will be assigned a PID, making it publicly citable.
-                    But a published record's files can no longer be modified by its owner. </p>
+                <p>When the draft is published it will be assigned a PID and a DOI, making it publicly citable.
+                    Please note that the published record's files can no longer be modified by its owner. </p>
+                { future_doi ?
+                    <p>This publication will get the following DOI: <PersistentIdentifier pid={future_doi}/></p>
+                  : false
+                }
                 <button type="submit" className={"btn btn-default btn-block "+klass} onClick={this.updateRecord}>{text}</button>
             </div>
         );
