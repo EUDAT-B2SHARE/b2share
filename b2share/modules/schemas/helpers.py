@@ -34,7 +34,7 @@ from flask import current_app
 from doschema.validation import JSONSchemaValidator
 
 from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
-    RootSchemaAlreadyExistsError, MissingRequiredFieldSchemaError
+    RootSchemaAlreadyExistsError, MissingRequiredFieldSchemaError, MissingPresentationFieldSchemaError
 
 
 @lru_cache(maxsize=1000)
@@ -94,6 +94,23 @@ def validate_json_schema(new_json_schema, prev_schemas):
 
                 verify_required_fields(js)
 
+    def verify_presentation_fields(json_schema):
+        """Verify that presentation fields exist in a schema definition
+
+        Check existence of all presentation fields per (sub)field of type 'object'
+
+        Prerequisites:
+        - A 'b2share' with 'presentation' field must be present in JSON schema definition
+
+        Args:
+            json_schema: the json_schema to be verified.
+
+        """
+        for section, fields in json_schema.get("b2share", {}).get("presentation", {}).items():
+            missing = set(fields) - set(json_schema["properties"])
+            if len(missing) > 0:
+                raise MissingPresentationFieldSchemaError("Missing fields in schema presentation definition.")
+
 
     if '$schema' not in new_json_schema:
         raise InvalidJSONSchemaError('Missing "$schema" field in JSON Schema')
@@ -123,6 +140,8 @@ def validate_json_schema(new_json_schema, prev_schemas):
 
     # verify that required fields are defined in schema properties
     verify_required_fields(new_json_schema)
+    # verify that presentation fields are defined in schema properties
+    verify_presentation_fields(new_json_schema)
 
 
 def resolve_schemas_ref(source):
