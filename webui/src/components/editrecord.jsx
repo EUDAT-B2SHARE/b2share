@@ -216,7 +216,7 @@ const EditRecord = React.createClass({
         } else if (type === 'string') {
             const value_str = ""+(value || "");
             if (schema.get('enum')) {
-                return <DropdownList className={validClass} defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
+                return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
             } else if (schema.get('format') === 'date-time') {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
                 return <DateTimePicker className={validClass} defaultValue={initial}
@@ -234,7 +234,7 @@ const EditRecord = React.createClass({
         } else if (schema.get('enum')) {
             const value_str = ""+(value || "");
             return <DropdownList className={"form-control"+ validClass} data={schema.get('enum').toJS()}
-                     defaultValue={value_str} onChange={setter} />
+                     value={value_str} onChange={setter} />
         } else {
             console.error("Cannot render field of schema:", schema.toJS());
         }
