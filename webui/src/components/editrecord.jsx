@@ -183,6 +183,19 @@ const EditRecord = React.createClass({
         this.setState({record:r, errors, dirty:true});
     },
 
+    removeErrors(path) {
+        var self = this;
+        path.forEach((key) => {
+            let matching = Object.keys(self.state.errors).filter(function(k) {
+                    return ~k.indexOf(path)
+                });
+            matching.forEach((elem) => {
+                delete self.state.errors[elem]
+            });
+        });
+        this.setState({})
+    },
+
     renderScalarField(schema, path) {
         const pathstr = path.join('/');
         const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
@@ -321,11 +334,22 @@ const EditRecord = React.createClass({
                     this.setValue(schema, newpath(pos), undefined);
                 }
             }
+            const btnClear = (ev) => {
+                ev.preventDefault();
+                this.removeErrors(path);
+                this.setValue(schema, path, undefined);
+            }
             field = arrField.map((f, i) =>
                 <div className="container-fluid" key={id+`[${i}]`}>
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
                         <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
+                            { i == 0 ?
+                                <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}>
+                                    <span><span className="glyphicon glyphicon-remove-sign" aria-hidden="true"/> Clear </span>
+                                </btn>
+                                : false
+                            }
                             <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnAddRemove(ev, i)}>
                                 {i == 0 ?
                                     <span><span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/> Add </span> :
