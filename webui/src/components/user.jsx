@@ -42,7 +42,7 @@ export const NavbarUser = React.createClass({
 
     renderNoUser() {
         return (
-            <li>
+            <li className="dropdown">
                 <a href={loginURL}><i className="glyphicon glyphicon-log-in"/> Login</a>
             </li>
         );
