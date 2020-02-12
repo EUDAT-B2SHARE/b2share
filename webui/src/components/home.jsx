@@ -28,7 +28,7 @@ export const HomeRoute = React.createClass({
                         <hr/>
                         <div className="row">
                             <div className="col-sm-6">
-                                <h3>Create Record</h3>
+                                <h3>Create record</h3>
                             </div>
                             <div className="col-sm-5">
                                 <Link to={"/records/new"} className="btn btn-primary btn-block" style={{marginTop:'1em'}}>

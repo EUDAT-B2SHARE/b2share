@@ -62,7 +62,7 @@ export const LatestRecords = React.createClass({
         }
         return (
             <div>
-                <h3>Latest Records</h3>
+                <h3>Latest records</h3>
                 <div className="row">
                     { this.props.records.map(this.renderRecord) }
                 </div>

@@ -451,10 +451,12 @@ a.navbar-brand {
 }
 
 .navbar-default .navbar-nav > li > a {
+    font-size: 15px;
     font-weight: 550;
 }
 
 .navbar-default .navbar-nav > li.dropdown > a {
+    font-size: 14px;
     font-weight: 400;
 }
 
