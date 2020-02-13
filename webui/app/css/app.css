@@ -438,6 +438,26 @@ a.navbar-brand {
   padding-right: 1em;
 }
 
+.navbar-default .navbar-nav >.open .dropdown-toggle.btn-primary {
+    color: #e5601e;
+    background-color: #264899;
+    border-color: #264899;
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+    background-color: #264899;
+}
+
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+    background-color: #264899;
+}
+
+.nav .open > a {
+    border-color: #264899;
+}
+
 @media (min-width: 1024px) {
   .navbar-nav.user {
     float:right;
@@ -476,7 +496,6 @@ a.navbar-brand {
     background-color: #E5601E;
     color: white;
 }
-
 
 /* collapse search placement */
 .header-nav .in .nav-search{
