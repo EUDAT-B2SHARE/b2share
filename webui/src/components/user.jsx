@@ -56,8 +56,11 @@ export const NavbarUser = React.createClass({
                     {" "} {user.get('name')} {" "}
                     <span className="caret"></span>
                 </a>
-                <ul className="dropdown-menu pull-right" role="menu">
+                <ul className="dropdown-menu pull-right" style={{textAlign:'left'}} role="menu">
                     <li><Link to="/user"> <i className="fa fa-info"></i> Profile </Link></li>
+                    <li className="divider"></li>
+                    <li><Link to={"/records/?q=owners:" + this.props.user.get('id')}> <i className="fa fa-file"></i> Published records </Link></li>
+                    <li><Link to="/records/?drafts=1"> <i className="fa fa-file"></i> Draft records </Link></li>
                     <li className="divider"></li>
                     <li><a href="/api/user/logout/"> <i className="glyphicon glyphicon-log-out"></i> Logout </a></li>
                 </ul>
