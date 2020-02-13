@@ -74,6 +74,7 @@ const Search = React.createClass({
 
     searchHelp(event) {
         event.preventDefault();
+        window.open("https://eudat.eu/services/userdoc/b2share-advanced-search", "_blank");
     },
 
     renderSearchBar() {
