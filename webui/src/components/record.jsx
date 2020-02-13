@@ -6,6 +6,7 @@ import moment from 'moment';
 import { serverCache, browser, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
+import { ImplodedList } from './common.jsx';
 import { Wait, Err } from './waiting.jsx';
 import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
@@ -161,7 +162,7 @@ const Record = React.createClass({
                     <div className="col-sm-8 col-md-10">
                         { creators ?
                             <p><span style={{color:'black'}}> by </span>
-                            { creators.map(renderCreator).implode() };</p>
+                            <ImplodedList data={creators.map(renderCreator)}/>;</p>
                             : false
                         }
 
@@ -172,14 +173,14 @@ const Record = React.createClass({
                         { !disciplines ? false :
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
-                                {disciplines.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()};
+                                <ImplodedList data={disciplines.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link>)}/>;
                             </p>
                         }
 
                         { !keywords ? false :
                             <p className="keywords">
                                 <span style={{fontWeight:'bold'}}>Keywords: </span>
-                                {keywords.map(k => <span><Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link></span>).implode()};
+                                <ImplodedList data={keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link>)}/>;
                             </p>
                         }
 

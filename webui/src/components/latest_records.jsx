@@ -3,6 +3,8 @@ import { Link } from 'react-router'
 import { timestamp2str } from '../data/misc.js'
 import { Error } from '../data/server';
 import { Map, List } from 'immutable';
+import { ImplodedList } from './common.jsx';
+
 
 export const LatestRecords = React.createClass({
     mixins: [React.addons.PureRenderMixin],
@@ -19,7 +21,7 @@ export const LatestRecords = React.createClass({
         return (
             <span>
                 <span style={{color:'black'}}> by </span>
-                {creators.map(c => <span className="creator" key={c.get('creator_name')}> {c.get('creator_name')}</span>).implode()};
+                <ImplodedList data={creators.map(c => <span className="creator" key={c.get('creator_name')}> {c.get('creator_name')}</span>)}/>
             </span>
         );
     },
