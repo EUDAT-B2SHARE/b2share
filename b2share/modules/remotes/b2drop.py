@@ -102,7 +102,11 @@ class B2DropStream(object):
         self.content_iterator = None
 
     def length(self):
-        return int(self.response.headers['Content-Length'])
+        if self.response.headers.get('Content-Encoding', '') == '':
+            return int(self.response.headers['Content-Length'])
+        else:
+            # data is encoded (gzip, zip) thus the actual size is unknown
+            return None
 
     def read(self, chunk_size):
         if not self.content_iterator:
