@@ -115,7 +115,7 @@ const Record = React.createClass({
             return (
                 <p className="description" key={i}>
                     <span style={{fontWeight:'bold'}}>{descriptionType}: </span>
-                    {description.get('description')}
+                    <ImplodedList data={description.get('description').split('\n')} delim='<br/>'/>
                 </p>
             );
         }

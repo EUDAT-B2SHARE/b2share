@@ -169,7 +169,7 @@ const EditRecord = React.createClass({
         }
         console.assert(!Array.isArray(value));
         if(typeof value === 'string' || value instanceof String) {
-            value = value.replace(/^\s+/, '').replace(/\s+$/, ' ') ;
+            value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
         }
 
         r = value !== undefined ? r.setIn(path, value) : r.deleteIn(path);
