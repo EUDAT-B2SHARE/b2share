@@ -164,6 +164,9 @@ const Record = React.createClass({
                 <div className="row">
                     <div className="col-sm-12">
                         { metadata.get('titles').map(renderTitle)}
+                        { state != 'draft' ? false :
+                        <h4 style={{color: '#CCC'}}>(draft preview)</h4>
+                        }
                     </div>
                 </div>
 
@@ -397,7 +400,7 @@ const Record = React.createClass({
             e.preventDefault();
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
-
+        const state = record.get('metadata').get('publication_state');
         const showB2Note = serverCache.getInfo().get('show_b2note');
 
         return (
@@ -473,8 +476,8 @@ const Record = React.createClass({
                             <div>
                                 <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse">Report Abuse</Link>
                                 { canEditRecord(record) ?
-                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning">
-                                        Edit Metadata</Link>
+                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                        { state == 'draft' ? 'Edit draft metadata' : 'Edit metadata' }</Link>
                                     : false
                                 }
                                 { isRecordOwner(record) && isLatestVersion ?
