@@ -16,7 +16,7 @@ export const Versions = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     render() {
-        let {isDraft, recordID, versions} = this.props;
+        let {isDraft, recordID, versions, editing} = this.props;
         if (!versions) {
             return false;
         }
@@ -27,8 +27,8 @@ export const Versions = React.createClass({
             <div className="row">
                 <div className="col-sm-12" >
                     { isDraft ?
-                        <DraftVersions draftID={recordID} versions={versions} className="versions"/> :
-                        <PublishedVersions recordID={recordID} versions={versions} className="versions"/> }
+                        <DraftVersions draftID={recordID} versions={versions} style={style} editing={editing}/> :
+                        <PublishedVersions recordID={recordID} versions={versions} style={style} editing={editing}/> }
                 </div>
             </div>
         );
@@ -40,8 +40,8 @@ const DraftVersions = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     render() {
-        let {draftID, versions, style} = this.props;
-        if(versions.length > 0){
+        let {draftID, versions, style, editing} = this.props;
+        if (versions.length > 0 && editing){
             return (
                 <div style={style}>
                     You are now creating a new version of

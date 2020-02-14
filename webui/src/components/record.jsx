@@ -17,17 +17,11 @@ const PT = React.PropTypes;
 
 
 export const RecordRoute = React.createClass({
-    isDraft: false,
-
     getRecordOrDraft() {
         const { id } = this.props.params;
-        if (this.isDraft) {
-            return serverCache.getDraft(id);
-        }
-        const record = serverCache.getRecord(id);
+        let record = serverCache.getRecord(id);
         if (record instanceof Error && record.code == 404) {
-            this.isDraft = true;
-            return serverCache.getDraft(id);
+            record = serverCache.getDraft(id);
         }
         return record;
     },
@@ -46,7 +40,7 @@ export const RecordRoute = React.createClass({
 
         return (
             <ReplaceAnimate>
-                <Record record={record} isDraft={this.isDraft} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} b2noteUrl={b2noteUrl}/>
+                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} b2noteUrl={b2noteUrl}/>
             </ReplaceAnimate>
         );
     }
@@ -161,14 +155,11 @@ const Record = React.createClass({
         const creators = testget(metadata, 'creators');
         const pid = metadata.get('ePIC_PID');
         const doi = metadata.get('DOI');
-
-        if (this.props.isDraft) {
-            notifications.warning("This is a preview of a draft record and is only visible to its owner(s) and/or administrator(s).");
-        }
+        const state = metadata.get('publication_state');
 
         return (
             <div>
-                <Versions isDraft={this.props.isDraft} recordID={record.get('id')} versions={record.get('versions')}/>
+                <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')} editing={false}/>
 
                 <div className="row">
                     <div className="col-sm-12">
