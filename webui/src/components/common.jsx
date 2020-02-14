@@ -19,3 +19,44 @@ export function renderSmallCommunity(community, selected, onClickFn) {
         </a>
     );
 }
+
+export const FocusManager = React.createClass({
+    getInitialState() {
+        return {
+            onBlur: () => null,
+            onFocus: () => null
+        }
+    },
+
+    canBlur: true,
+
+    handleMouseDown() {
+        this.canBlur = false
+    },
+
+    handleMouseUp() {
+        this.canBlur = true
+    },
+
+    handleBlur(event) {
+        if (this.canBlur) {
+            this.props.onBlur(event)
+        }
+    },
+
+    handleKeyDown(event) {
+        if (event.key === 'Escape') {
+            this.props.onBlur(event)
+        }
+    },
+
+    render() {
+        return this.props.children({
+            onBlur: this.handleBlur,
+            onFocus: this.props.onFocus,
+            onMouseDown: this.handleMouseDown,
+            onMouseUp: this.handleMouseUp,
+            onKeyDown: this.handleKeyDown,
+        })
+    }
+});

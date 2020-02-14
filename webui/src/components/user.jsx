@@ -1,6 +1,7 @@
 import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { serverCache, Error, loginURL, notifications } from '../data/server';
+import { FocusManager } from './common.jsx'
 import { CommunityAdmin } from './community_admin.jsx'
 import { Wait, Err } from './waiting.jsx';
 
@@ -31,13 +32,13 @@ export const NavbarUser = React.createClass({
         }
     },
 
-    toggleOpen() {
-        this.setState({open:!this.state.open});
-    },
-
     ignore(e) {
         e.preventDefault();
         return false;
+    },
+
+    menuClick() {
+        this.setState({open: false})
     },
 
     renderNoUser() {
@@ -50,21 +51,30 @@ export const NavbarUser = React.createClass({
 
     renderUser(user) {
         return (
-            <li className={"dropdown"+(this.state.open ? " open":"")} onClick={this.toggleOpen}>
-                <a href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" onClick={this.ignore}>
-                    <i className="glyphicon glyphicon-user"></i>
-                    {" "} {user.get('name')} {" "}
-                    <span className="caret"></span>
-                </a>
-                <ul className="dropdown-menu pull-right" style={{textAlign:'left'}} role="menu">
-                    <li><Link to="/user"> <i className="fa fa-info"></i> Profile </Link></li>
-                    <li className="divider"></li>
-                    <li><Link to={"/records/?q=owners:" + this.props.user.get('id')}> <i className="fa fa-file"></i> Published records </Link></li>
-                    <li><Link to="/records/?drafts=1"> <i className="fa fa-file"></i> Draft records </Link></li>
-                    <li className="divider"></li>
-                    <li><a href="/api/user/logout/"> <i className="glyphicon glyphicon-log-out"></i> Logout </a></li>
-                </ul>
-            </li>
+            <FocusManager
+                onFocus={() => this.setState({open: true})}
+                onBlur={() => this.setState({open: false})}
+            >
+            {bind => (
+                <li className={"dropdown"+(this.state.open ? " open":"")}>
+                    <a id="dropdown-top" href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" {...bind}>
+                        <i className="glyphicon glyphicon-user"></i>
+                        {" "} {user.get('name')} {" "}
+                        <span className="caret"></span>
+                    </a>
+                {this.state.open && (
+                    <ul id="dropdown-menu" className="dropdown-menu pull-right" style={{textAlign:'left'}} role="menu" onClick={this.menuClick} {...bind}>
+                        <li><Link to="/user"> <i className="fa fa-info"></i> Profile </Link></li>
+                        <li className="divider"></li>
+                        <li><Link to={"/records/?q=owners:" + this.props.user.get('id')}> <i className="fa fa-file"></i> Published records </Link></li>
+                        <li><Link to="/records/?drafts=1"> <i className="fa fa-file"></i> Draft records </Link></li>
+                        <li className="divider"></li>
+                        <li><a href="/api/user/logout/"> <i className="glyphicon glyphicon-log-out"></i> Logout </a></li>
+                    </ul>
+                )}
+                </li>
+            )}
+            </FocusManager>
         );
     },
 
