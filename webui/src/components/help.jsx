@@ -19,10 +19,16 @@ export const Help = React.createClass({
                     <div className="col-sm-6">
                         <ul className="list-group">
                             <li className="list-group-item">
-                                <Link to="https://www.eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE</Link>
+                                <Link to="https://eudat.eu/services/b2share" target="_blank"><i className="fa fa-list"></i> What is B2SHARE?</Link>
                             </li>
                             <li className="list-group-item">
                                 <Link to="https://eudat.eu/services/userdoc/b2share-usage" target="_blank"><i className="fa fa-info-circle"></i> User Guide</Link>
+                            </li>
+                            <li className="list-group-item">
+                                <Link to="https://eudat.eu/services/userdoc/b2share-advanced-search" target="_blank"><i className="fa fa-info-circle"></i> Advanced Search guide </Link>
+                            </li>
+                            <li className="list-group-item">
+                                <Link to="https://eudat.eu/services/userdoc/b2share-http-rest-api" target="_blank"><i className="fa fa-list"></i> REST API </Link>
                             </li>
                             { termsOfUse ?
                                 <li className="list-group-item">
@@ -30,7 +36,7 @@ export const Help = React.createClass({
                                 </li> : false
                             }
                             <li className="list-group-item">
-                                <Link to="https://eudat.eu/services/userdoc/b2share-http-rest-api" target="_blank"><i className="fa fa-list"></i> REST API </Link>
+                                <Link to="https://github.com/EUDAT-B2SHARE/b2share" target="_blank"><i className="fa fa-exclamation-circle"></i> Report an issue </Link>
                             </li>
                         </ul>
                     </div>
