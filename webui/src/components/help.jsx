@@ -8,14 +8,10 @@ export const Help = React.createClass({
     render() {
         const termsOfUse = serverCache.getInfo().get('terms_of_use_link');
         return (
-            <div className="container-fluid help-page">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <div className="page-header"> <h2>Help</h2> </div>
-                    </div>
-                </div>
+            <div className="help-page">
+                <h1>Help</h1>
 
-                <div className="row">
+                <div className="container-fluid">
                     <div className="col-sm-6">
                         <ul className="list-group">
                             <li className="list-group-item">
