@@ -194,7 +194,7 @@ input, select, textarea {
   border: 1px solid #ccc;
 }
 input:focus, select:focus, textarea:focus, button:focus, a:focus {
-  box-shadow: 0 0 10px #F45D00 !important;
+  box-shadow: 0 0 10px #264899 !important;
   outline: none !important;
 }
 
@@ -599,6 +599,25 @@ a.navbar-brand {
 
 .pagination .info {
   font-size: 0.8em;
+}
+
+.pagination > li > a,
+.pagination > li > span,
+.pagination > li > a:hover,
+.pagination > li > span:hover,
+.pagination > li > a:focus,
+.pagination > li > span:focus {
+  color: #264899;
+}
+
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
+  background-color: #264899;
+  border-color: #264899;
 }
 
 /*****************************************************************************/
