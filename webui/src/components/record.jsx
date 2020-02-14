@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
 import moment from 'moment';
-import { serverCache, browser, Error } from '../data/server';
+import { serverCache, notifications, browser, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { ImplodedList } from './common.jsx';
@@ -17,14 +17,28 @@ const PT = React.PropTypes;
 
 
 export const RecordRoute = React.createClass({
-    render() {
+    isDraft: false,
+
+    getRecordOrDraft() {
         const { id } = this.props.params;
-        const record = serverCache.getRecord(id);
-        if (record instanceof Error) {
-            return <Err err={record}/>;
+        if (this.isDraft) {
+            return serverCache.getDraft(id);
         }
+        const record = serverCache.getRecord(id);
+        if (record instanceof Error && record.code == 404) {
+            this.isDraft = true;
+            return serverCache.getDraft(id);
+        }
+        return record;
+    },
+
+    render() {
+        const record = this.getRecordOrDraft();
         if (!record) {
             return <Wait/>;
+        }
+        if (record instanceof Error) {
+            return <Err err={record}/>;
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
@@ -32,7 +46,7 @@ export const RecordRoute = React.createClass({
 
         return (
             <ReplaceAnimate>
-                <Record record={record} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} b2noteUrl={b2noteUrl}/>
+                <Record record={record} isDraft={this.isDraft} community={community} rootSchema={rootSchema} blockSchemas={blockSchemas} b2noteUrl={b2noteUrl}/>
             </ReplaceAnimate>
         );
     }
@@ -148,9 +162,13 @@ const Record = React.createClass({
         const pid = metadata.get('ePIC_PID');
         const doi = metadata.get('DOI');
 
+        if (this.props.isDraft) {
+            notifications.warning("This is a preview of a draft record and is only visible to its owner(s) and/or administrator(s).");
+        }
+
         return (
             <div>
-                <Versions recordID={record.get('id')} versions={record.get('versions')}/>
+                <Versions isDraft={this.props.isDraft} recordID={record.get('id')} versions={record.get('versions')}/>
 
                 <div className="row">
                     <div className="col-sm-12">
