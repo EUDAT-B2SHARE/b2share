@@ -135,7 +135,7 @@ export const UserProfile = React.createClass({
             return map;
         });
         return (
-            <div>
+            <div className="bottom-line">
                 <h1>User Profile</h1>
                 <div className="container-fluid">
                     <div className="row">
