@@ -63,11 +63,11 @@ def community_to_dict(community):
         links=dict(
             self=community_self_link(community, _external=True),
             schema=community_schema_json_schema_link(community_schema, _external=True),
-            block_schema=next(iter(props.values()))['$ref']
+            block_schema=next(iter(props.values()))['$ref'] if props else ""
         ),
         schema=dict(
             version=community_schema.version,
-            block_schema_id=next(iter(props))
+            block_schema_id=next(iter(props)) if props else ""
         ),
         roles=dict(
             admin=dict(id=community.admin_role.id,
