@@ -41,17 +41,3 @@ export const Help = React.createClass({
         );
     }
 });
-
-export const SearchHelp = React.createClass({
-    render() {
-        return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-sm-10">
-                        <h1>Searching</h1>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-});

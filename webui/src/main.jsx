@@ -11,7 +11,7 @@ import { ReplaceAnimate } from './components/animate.jsx';
 import { Navbar, Breadcrumbs, Notifications } from './components/navbar.jsx';
 import { HomeRoute } from './components/home.jsx';
 import { UserRoute } from './components/user.jsx';
-import { Help, SearchHelp } from './components/help.jsx';
+import { Help } from './components/help.jsx';
 import { CommunityListRoute, CommunityRoute } from './components/communities.jsx';
 import { SearchRecordRoute } from './components/search.jsx';
 import { RecordRoute  } from './components/record.jsx';
@@ -94,7 +94,6 @@ const router = (
 
             <Route path="help">
                 <IndexRoute component={Help} />
-                <Route path="search" component={SearchHelp} />
             </Route>
 
             <Route path="user" component={UserRoute} />
