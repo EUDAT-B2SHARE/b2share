@@ -37,8 +37,7 @@ export const CommunityAdmin = React.createClass({
 
     render() {
         const current_user = serverCache.getUser();
-        const communityName = this.props.params.id;
-        const community = serverCache.getCommunity(communityName);
+        const community = serverCache.getCommunity(this.props.params.id);
 
         if (!current_user || !current_user.get || !current_user.get('name')) {
             return this.renderNoUser();
@@ -49,6 +48,8 @@ export const CommunityAdmin = React.createClass({
         if (community instanceof Error) {
             return <Err err={community}/>;
         }
+
+        const communityName = community.get('name');
 
         var roles = {};
         community.get('roles').forEach( role =>{
@@ -110,12 +111,12 @@ export const UsersTable = React.createClass({
 
         return (
             <div>
-                <div className="row" >
+                <div className="row">
                     <div className="col-sm-4"><h4><strong> Email Address </strong></h4></div>
                     <div className="col-sm-2"><h4><strong> Role </strong></h4></div>
                     <div className="col-sm-6"><h4><strong> Edit </strong></h4></div>
                 </div>
-                <div >{rows}</div>
+                <div>{rows}</div>
             </div>
         );
     }
@@ -138,7 +139,7 @@ export const UserRow = React.createClass({
                                                         defRoleName={this.props.userRoleName}
                                                         defRoleID={this.props.userRoleID}
                                                         userEmail={this.props.userEmail}
-                                                        userID={this.props.userID}/ ></div>
+                                                        userID={this.props.userID}/></div>
                 </div>
             </div>
         );
