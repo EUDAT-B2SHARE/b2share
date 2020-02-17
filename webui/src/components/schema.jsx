@@ -2,6 +2,7 @@ import React from 'react/lib/ReactWithAddons';
 import { OrderedMap } from 'immutable';
 import { Link } from 'react-router'
 import { serverCache, Error } from '../data/server';
+import { PersistentIdentifier } from './editfiles.jsx';
 import { Wait, Err } from './waiting.jsx';
 
 const except = {'$schema':true, 'community_specific':true, 'owner':true,
@@ -100,6 +101,12 @@ export const Schema = React.createClass({
                     <div className="col-sm-12">
                         <h3 className="title">{jschema.get('title') || "Metadata"}</h3>
                         <p className="description">{jschema.get('description')}</p>
+                        { !this.props.id ? false :
+                            <p className="pid">
+                                <span>Block schema identifier: </span>
+                                <PersistentIdentifier pid={this.props.id}/>
+                            </p>
+                        }
                     </div>
                 </div>
                 <ul className="list-unstyled">

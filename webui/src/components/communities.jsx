@@ -133,7 +133,7 @@ const Community = React.createClass({
     renderSchema([schemaID, schema]) {
         return !schema ? false :
             <div key={schema.get('id')} className="col-sm-12 bottom-line">
-                <Schema schema={schema}/>
+                <Schema id={schemaID} schema={schema}/>
             </div>;
     },
 
