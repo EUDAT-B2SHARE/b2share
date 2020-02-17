@@ -820,7 +820,7 @@ export const PersistentIdentifier = React.createClass({
         return (
             <span style={this.props.style}>
                 <span className={className + " pid-number"}> {pid} </span>
-                <span><a className="btn btn-xs btn-default" onClick={() => copyToClipboard(this.props.pid)}> Copy</a></span>
+                <span><a className="btn btn-xs btn-default" onClick={() => copyToClipboard(this.props.pid)} title="Copy identifier"><i className="fa fa-clipboard"/></a></span>
             </span>
         );
     },
