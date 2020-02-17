@@ -325,7 +325,7 @@ const Record = React.createClass({
         const minorFields = minors.entrySeq().map(renderBigField.bind(this, excludeFields));
 
         return (
-            <div style={{overflow: 'scroll'}} key={schemaID||"_"} className={"well " + (schemaID ? "block" : "")}>
+            <div key={schemaID||"_"} className={"well " + (schemaID ? "block" : "")}>
                 <div className="row">
                     <h3 className="col-sm-9">
                         { schemaID ? schema.get('title') : 'Basic metadata' }
