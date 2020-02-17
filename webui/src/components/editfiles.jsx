@@ -827,7 +827,7 @@ export const PersistentIdentifier = React.createClass({
 });
 
 
-function copyToClipboard(text) {
+export function copyToClipboard(text) {
     // from https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
     var textArea = document.createElement("textarea");
     textArea.style.position = 'fixed';

@@ -7,7 +7,7 @@ import { serverCache, browser, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { Wait, Err } from './waiting.jsx';
-import { FileRecordHeader, FileRecordRow, PersistentIdentifier } from './editfiles.jsx';
+import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 
@@ -330,6 +330,14 @@ const Record = React.createClass({
                     <h3 className="col-sm-9">
                         { schemaID ? schema.get('title') : 'Basic metadata' }
                     </h3>
+                    { !schemaID ? false :
+                        <span style={{float: 'right'}}>
+                            <a className="btn btn-xs btn-default" onClick={() => copyToClipboard(schemaID)}
+                               title="Copy community block schema identifier used for this record">
+                                <i className="fa fa-clipboard"/>
+                            </a>
+                        </span>
+                    }
                 </div>
                 <div className="row">
                     <ul className="col-sm-12 list-unstyled">
