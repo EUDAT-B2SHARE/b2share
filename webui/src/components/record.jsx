@@ -502,7 +502,7 @@ function isRecordOwner(record) {
     return record.getIn(['metadata', 'owners']).indexOf(userId) >= 0;
 }
 
-function isCommunityAdmin(communityId) {
+export function isCommunityAdmin(communityId) {
     if (!serverCache.getUser()) {
         return false;
     }

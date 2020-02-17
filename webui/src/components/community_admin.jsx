@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { DropdownList, Multiselect } from 'react-widgets';
 import { fromJS, OrderedMap, Map } from 'immutable';
 import { serverCache, notifications , browser , Error, loginURL} from '../data/server';
+import { isCommunityAdmin } from './record.jsx';
 import { LoginOrRegister } from './user.jsx';
 import { Wait, Err } from './waiting.jsx';
 
@@ -47,6 +48,10 @@ export const CommunityAdmin = React.createClass({
         }
         if (community instanceof Error) {
             return <Err err={community}/>;
+        }
+
+        if (!isCommunityAdmin(community.get('id'))) {
+            return <Err err={{code: 403, text: "You don't have the required role to access this page"}}/>;
         }
 
         const communityName = community.get('name');
