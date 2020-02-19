@@ -158,7 +158,7 @@ const Community = React.createClass({
                 { this.renderCommunity(community) }
                 <hr/>
                 { latestRecords ? <LatestRecords records={latestRecords} community={community.get('id')} /> : <Wait />}
-
+                <hr/>
                 <div className="row">
                     { rootSchema ? this.renderSchema(['', envelopedRootSchema]) : false }
                 </div>
