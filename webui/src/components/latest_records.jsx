@@ -62,7 +62,7 @@ export const LatestRecords = React.createClass({
         }
         return (
             <div>
-                <h3>Latest records</h3>
+                <h3>{ this.props.title ? this.props.title : "Latest records" }</h3>
                 <div className="row">
                     { this.props.records.map(this.renderRecord) }
                 </div>
@@ -71,6 +71,7 @@ export const LatestRecords = React.createClass({
                     <Link to={{ pathname: "/records", query: params}} className="btn btn-default btn-block"> More Records ... </Link>
                     </div>
                 </div>
+                <hr/>
             </div>
         );
     }
