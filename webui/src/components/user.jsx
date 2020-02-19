@@ -112,7 +112,7 @@ export const UserProfile = React.createClass({
     },
 
     createLink(communitiesList, name){
-        return <Link to={`/communities/${communitiesList[name.replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]}/admin`}>(admin page)</Link>
+        return <Link to={`/communities/${communitiesList[name.replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]}/admin`}> (admin page)</Link>
     },
 
     listRoles(roles, communitiesList){
@@ -144,7 +144,9 @@ export const UserProfile = React.createClass({
                     </div>
                     <div className="row">
                         <h3>Roles</h3>
-                        {roles && roles.count() && typeof(communitiesList) !== "undefined" ? this.listRoles(roles, communitiesList) : <p>You have no assigned roles</p>}
+                        <p>
+                            {roles && roles.count() && typeof(communitiesList) !== "undefined" ? this.listRoles(roles, communitiesList) : "You have no assigned roles" }
+                        </p>
                     </div>
                     <div className="row">
                         <h3>Own records</h3>
