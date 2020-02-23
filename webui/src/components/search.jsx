@@ -21,7 +21,7 @@ export const SearchRecordRoute = React.createClass({
                 <Search location={location}
                         communities={communities}
                         drafts={drafts}
-                        numResults={result && result.get('total') || 0}/>
+                        numResults={!result ? null : (result.get('total') || 0)}/>
                 { result instanceof Error ? <Err err={result}/>
                     : !result ? <Wait/>
                         : <ReplaceAnimate>
@@ -171,7 +171,7 @@ const Search = React.createClass({
         return (
             <div>
                 <div style={{padding:'0.5em 0 0 0.5em', display:'inline-block'}}>
-                    <p> { this.props.numResults ? msg : "No results"}</p>
+                    <p> { this.props.numResults == null ? "" : (this.props.numResults ? msg : "No results")}</p>
                 </div>
                 <div style={{float:'right'}}>
                     <nav aria-label="Page navigation">
