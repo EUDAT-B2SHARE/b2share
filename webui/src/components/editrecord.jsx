@@ -345,12 +345,14 @@ const EditRecord = React.createClass({
                         {f}
                         <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
                             { i == 0 ?
-                                <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}>
+                                <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}
+                                     title="Clear all entries for this field">
                                     <span><span className="glyphicon glyphicon-remove-sign" aria-hidden="true"/> Clear </span>
                                 </btn>
                                 : false
                             }
-                            <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnAddRemove(ev, i)}>
+                            <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnAddRemove(ev, i)}
+                                 title={(i == 0 ? "Add new entry" : "Remove this entry") + " for this field"}>
                                 {i == 0 ?
                                     <span><span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/> Add </span> :
                                     <span><span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/> Remove </span>

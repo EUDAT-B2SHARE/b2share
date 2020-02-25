@@ -38,7 +38,7 @@ export const SelectLicense = React.createClass({
                                      scrolling="auto" />;
         return (
             <a className="input-group-addon" href="#" style={{backgroundColor:'white'}}
-               onClick={() => this.props.setModal(licenseModal)} >
+               onClick={() => this.props.setModal(licenseModal)} title="Open license selector tool">
                     <span className="glyphicon glyphicon-copyright-mark" aria-hidden="true"/>
                     {" "}
                     {this.props.title}
