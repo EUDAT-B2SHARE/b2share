@@ -18,7 +18,6 @@
 # In applying this license, CERN does not
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
-
 alembic==0.8.10           # via flask-alembic
 amqp==2.2.1               # via invenio-queues, kombu
 angular-gettext-babel==0.3  # via invenio-search-ui
@@ -84,7 +83,6 @@ invenio-marc21==1.0.0a5
 invenio-oaiserver==1.0.0a13
 invenio-oauth2server==1.0.0a14
 invenio-oauthclient==1.0.0b2
-invenio-pidrelations==v1.0.0a4
 invenio-pidstore==1.0.0b2
 invenio-query-parser==0.6.0
 invenio-queues==1.0.0a1   # via invenio-stats
@@ -140,7 +138,7 @@ sqlalchemy-utils[encrypted]==0.32.14  # via invenio-accounts, invenio-db, inveni
 sqlalchemy==1.1.11        # via alembic, flask-alembic, flask-sqlalchemy, invenio-db, sqlalchemy-continuum, sqlalchemy-utils, wtforms-alchemy
 ua-parser==0.7.3          # via invenio-accounts
 uritools==2.0.0           # via invenio-oauthclient
-urllib3==1.19             # via elasticsearch
+urllib3==1.24.2           # via elasticsearch
 validators==0.11.0        # via wtforms-components
 vine==1.1.4               # via amqp
 webargs==1.4.0            # via invenio-files-rest, invenio-oaiserver, invenio-records-rest
