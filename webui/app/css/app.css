@@ -135,14 +135,29 @@ div .page-wrap .footer {
 }
 
 .page-wrap .secondary-footer {
-    background-color: #2C2C2C
+    background-color: #2C2C2C;
+    padding: 15px 8.3333vw;
+    height: 70px;
+    border-top: 1px solid #888;
 }
 
 .page-wrap .secondary-footer p {
-    text-align: center;
-    color: #fff;
+    color: #888;
     font-size: 12px;
-    font-weight: 100
+    font-weight: 100;
+    display: inline-block;
+}
+
+.page-wrap .secondary-footer .images {
+    display: inline-block;
+}
+
+.page-wrap .secondary-footer img {
+    max-height: 40px;
+}
+
+.page-wrap .secondary-footer img {
+    margin-right: 10px;
 }
 
 a {
