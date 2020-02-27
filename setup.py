@@ -86,7 +86,7 @@ tests_require = [
     'pytest>=2.8.0',
     'Flask-Testing',
     'mock',
-    'responses>=0.5.1',
+    'responses>=0.5.1,<=0.10.6',
 ]
 
 extras_require = {
