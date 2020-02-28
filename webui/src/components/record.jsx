@@ -159,7 +159,7 @@ const Record = React.createClass({
 
         return (
             <div>
-                <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')} editing={false}/>
+                <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')}/>
 
                 <div className="row">
                     <div className="col-sm-12">

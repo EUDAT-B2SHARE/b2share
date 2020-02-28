@@ -684,7 +684,8 @@ const EditRecord = React.createClass({
             <div className="edit-record">
                 <Versions isDraft={this.props.isDraft}
                           recordID={this.props.record.get('id')}
-                          versions={this.props.record.get('versions')}/>
+                          versions={this.props.record.get('versions')}
+                          editing={true}/>
 
                 <div className="row">
                     <div className="col-xs-12">

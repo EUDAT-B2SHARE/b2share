@@ -842,7 +842,7 @@ a.navbar-brand {
 }
 
 /* Metadata display */
-.large-record .versions {
+.versions {
     float: right;
     margin-top: -3em;
     margin-bottom: -3em;
@@ -850,13 +850,13 @@ a.navbar-brand {
     padding: 15px;
 }
 
-.large-record .versions .newer {
+.versions .newer {
     display: inline-block;
     color: black;
     border: 0px solid #eee;
 }
 
-.large-record .versions .dropdown {
+.versions .dropdown {
     display: inline-block;
     vertical-align: middle;
     margin-bottom: 1px;
