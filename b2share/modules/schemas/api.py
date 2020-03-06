@@ -558,13 +558,13 @@ class CommunitySchema(object):
                     ).one()
                 else:
                     model = CommunitySchemaVersion.query.filter(
-                        CommunitySchemaVersion.community == community_id
+                        CommunitySchemaVersion.community == str(community_id)
                     ).order_by(
                         CommunitySchemaVersion.version.desc()
                     ).limit(1).one()
                 return cls(model)
         except NoResultFound as e:
-            raise CommunitySchemaDoesNotExistError(id) from e
+            raise CommunitySchemaDoesNotExistError(str(community_id)) from e
 
     @classmethod
     def create_version(cls, community_id, community_schema,
