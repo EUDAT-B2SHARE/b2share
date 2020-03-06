@@ -55,10 +55,11 @@ def schemas():
 @schemas.command()
 @with_appcontext
 @click.option('-v', '--verbose', is_flag=True, default=False)
-def init(verbose):
+@click.option('-f', '--force', is_flag=True, default=False)
+def init(verbose, force):
     """CLI command loading Root Schema files in the database."""
     try:
-        load_root_schemas(cli=True, verbose=verbose)
+        load_root_schemas(cli=True, verbose=verbose, force=force)
         db.session.commit()
     except RootSchemaAlreadyExistsError as e:
         raise click.ClickException(str(e))

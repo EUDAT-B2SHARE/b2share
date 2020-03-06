@@ -168,7 +168,7 @@ def put_file_into_bucket(bucket_id, key, stream, content_length):
     @need_bucket_permission('bucket-update')
     def create_object(bucket, key):
         size_limit = bucket.size_limit
-        if size_limit and content_length > size_limit:
+        if size_limit and int(content_length or 0) > size_limit:
             desc = 'File size limit exceeded.' \
                 if isinstance(size_limit, int) else size_limit.reason
             raise FileSizeError(description=desc)

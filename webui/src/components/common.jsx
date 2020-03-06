@@ -60,3 +60,22 @@ export const FocusManager = React.createClass({
         })
     }
 });
+
+export const ImplodedList = React.createClass({
+    getDefaultProps() {
+        return {
+            data: [],
+            delim: '; '
+        }
+    },
+    render() {
+        return (
+            <span>
+                { this.props.data
+                      .map((t, index) => <span key={index}>{t}</span>)
+                      .reduce((prev, curr) => [prev, <span dangerouslySetInnerHTML={{__html: this.props.delim}}/>, curr])
+                }
+            </span>
+        )
+    }
+});

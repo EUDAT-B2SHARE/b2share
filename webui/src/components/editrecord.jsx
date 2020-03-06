@@ -17,7 +17,7 @@ import { keys, pairs, objEquals } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
-import { EditFiles } from './editfiles.jsx';
+import { EditFiles, PersistentIdentifier } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 import { SelectBig } from './selectbig.jsx';
@@ -169,7 +169,7 @@ const EditRecord = React.createClass({
         }
         console.assert(!Array.isArray(value));
         if(typeof value === 'string' || value instanceof String) {
-            value = value.replace(/^\s+/, '').replace(/\s+$/, ' ') ;
+            value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
         }
 
         r = value !== undefined ? r.setIn(path, value) : r.deleteIn(path);
@@ -181,6 +181,19 @@ const EditRecord = React.createClass({
             delete errors[pathstr];
         }
         this.setState({record:r, errors, dirty:true});
+    },
+
+    removeErrors(path) {
+        var self = this;
+        path.forEach((key) => {
+            let matching = Object.keys(self.state.errors).filter(function(k) {
+                    return ~k.indexOf(path)
+                });
+            matching.forEach((elem) => {
+                delete self.state.errors[elem]
+            });
+        });
+        this.setState({})
     },
 
     renderScalarField(schema, path) {
@@ -203,7 +216,7 @@ const EditRecord = React.createClass({
         } else if (type === 'string') {
             const value_str = ""+(value || "");
             if (schema.get('enum')) {
-                return <DropdownList className={validClass} defaultValue={value_str} data={schema.get('enum').toJS()} onChange={setter} />
+                return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
             } else if (schema.get('format') === 'date-time') {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
                 return <DateTimePicker className={validClass} defaultValue={initial}
@@ -221,7 +234,7 @@ const EditRecord = React.createClass({
         } else if (schema.get('enum')) {
             const value_str = ""+(value || "");
             return <DropdownList className={"form-control"+ validClass} data={schema.get('enum').toJS()}
-                     defaultValue={value_str} onChange={setter} />
+                     value={value_str} onChange={setter} />
         } else {
             console.error("Cannot render field of schema:", schema.toJS());
         }
@@ -321,12 +334,25 @@ const EditRecord = React.createClass({
                     this.setValue(schema, newpath(pos), undefined);
                 }
             }
+            const btnClear = (ev) => {
+                ev.preventDefault();
+                this.removeErrors(path);
+                this.setValue(schema, path, undefined);
+            }
             field = arrField.map((f, i) =>
                 <div className="container-fluid" key={id+`[${i}]`}>
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
                         <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
-                            <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnAddRemove(ev, i)}>
+                            { i == 0 ?
+                                <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}
+                                     title="Clear all entries for this field">
+                                    <span><span className="glyphicon glyphicon-remove-sign" aria-hidden="true"/> Clear </span>
+                                </btn>
+                                : false
+                            }
+                            <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnAddRemove(ev, i)}
+                                 title={(i == 0 ? "Add new entry" : "Remove this entry") + " for this field"}>
                                 {i == 0 ?
                                     <span><span className="glyphicon glyphicon-plus-sign" aria-hidden="true"/> Add </span> :
                                     <span><span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/> Remove </span>
@@ -622,17 +648,29 @@ const EditRecord = React.createClass({
         const text = this.state.waitingForServer ? "Updating record, please wait..." :
                       this.isForPublication() ? 'Save and Publish' :
                       this.state.dirty ? 'Save Draft' : 'The draft is up to date';
+        const future_doi = this.props.record.get('b2share', Map()).get('future_doi', '') || "";
         return (
             <div className="col-sm-offset-3 col-sm-9">
                 <label style={{fontSize:18, fontWeight:'normal'}}>
                     <input type="checkbox" value={this.isForPublication} onChange={this.setPublishedState}/>
                     {" "}Submit draft for publication
                 </label>
-                <p>When the draft is published it will be assigned a PID, making it publicly citable.
-                    But a published record's files can no longer be modified by its owner. </p>
+                <p>When the draft is published it will be assigned a PID and a DOI, making it publicly citable.
+                    Please note that the published record's files can no longer be modified by its owner. </p>
+                { future_doi ?
+                    <p>This publication will get the following DOI: <PersistentIdentifier pid={future_doi}/></p>
+                  : false
+                }
                 <button type="submit" className={"btn btn-default btn-block "+klass} onClick={this.updateRecord}>{text}</button>
             </div>
         );
+    },
+
+    removeDraft(e) {
+        e.preventDefault();
+        if (confirm("Are you sure you want to delete this draft record?\n\nThis cannot be undone!")) {
+            serverCache.removeDraft(this.props.record.get('id'), browser.gotoProfile());
+        }
     },
 
     render() {
@@ -646,13 +684,25 @@ const EditRecord = React.createClass({
             <div className="edit-record">
                 <Versions isDraft={this.props.isDraft}
                           recordID={this.props.record.get('id')}
-                          versions={this.props.record.get('versions')}/>
+                          versions={this.props.record.get('versions')}
+                          editing={true}/>
 
                 <div className="row">
                     <div className="col-xs-12">
                         <h2 className="name">
                             <span style={{color:'#aaa'}}>{editTitle}</span>
                             {this.state.record.get('title')}
+                        { this.props.isDraft
+                          ?
+                            <div className="pull-right">
+                                <form className="form-inline" onSubmit={this.removeDraft}>
+                                    <button className="btn btn-default" type="submit">
+                                        <i className="fa fa-trash-o"></i> Delete draft
+                                    </button>
+                                </form>
+                            </div>
+                          : false
+                        }
                         </h2>
                     </div>
                 </div>

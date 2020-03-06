@@ -3,9 +3,10 @@ import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
 import moment from 'moment';
-import { serverCache, browser, Error } from '../data/server';
+import { serverCache, notifications, browser, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
+import { ImplodedList } from './common.jsx';
 import { Wait, Err } from './waiting.jsx';
 import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
@@ -16,14 +17,22 @@ const PT = React.PropTypes;
 
 
 export const RecordRoute = React.createClass({
-    render() {
+    getRecordOrDraft() {
         const { id } = this.props.params;
-        const record = serverCache.getRecord(id);
-        if (record instanceof Error) {
-            return <Err err={record}/>;
+        let record = serverCache.getRecord(id);
+        if (record instanceof Error && record.code == 404) {
+            record = serverCache.getDraft(id);
         }
+        return record;
+    },
+
+    render() {
+        const record = this.getRecordOrDraft();
         if (!record) {
             return <Wait/>;
+        }
+        if (record instanceof Error) {
+            return <Err err={record}/>;
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
@@ -89,7 +98,9 @@ const Record = React.createClass({
         function renderCreator(creator) {
             const c = creator.get('creator_name');
             return (
-                <span key={c}> <a className="creator" key={c}>{c}</a>; </span>
+                <span>
+                    <Link to={{pathname:'/records', query:{q:c}}} className="creator" key={c}>{c}</Link>
+                </span>
             );
         }
         function renderDates(record) {
@@ -112,7 +123,7 @@ const Record = React.createClass({
             return (
                 <p className="description" key={i}>
                     <span style={{fontWeight:'bold'}}>{descriptionType}: </span>
-                    {description.get('description')}
+                    <ImplodedList data={description.get('description').split('\n')} delim='<br/>'/>
                 </p>
             );
         }
@@ -144,25 +155,28 @@ const Record = React.createClass({
         const creators = testget(metadata, 'creators');
         const pid = metadata.get('ePIC_PID');
         const doi = metadata.get('DOI');
+        const state = metadata.get('publication_state');
 
         return (
             <div>
-                <Versions recordID={record.get('id')} versions={record.get('versions')}/>
+                <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')}/>
 
                 <div className="row">
                     <div className="col-sm-12">
                         { metadata.get('titles').map(renderTitle)}
+                        { state != 'draft' ? false :
+                        <h4 style={{color: '#CCC'}}>(draft preview)</h4>
+                        }
                     </div>
                 </div>
 
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
-                        <p>
-                            <span style={{color:'black'}}> by </span>
-                            { !creators ? <span style={{color:'black'}}> [Unknown] </span> :
-                                creators.map(renderCreator)
-                            }
-                        </p>
+                        { creators ?
+                            <p><span style={{color:'black'}}> by </span>
+                            <ImplodedList data={creators.map(renderCreator)}/>;</p>
+                            : false
+                        }
 
                         { renderDates(record) }
 
@@ -171,14 +185,14 @@ const Record = React.createClass({
                         { !disciplines ? false :
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
-                                {disciplines.map(k => <span key={k}>{k}; </span>)}
+                                <ImplodedList data={disciplines.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link>)}/>;
                             </p>
                         }
 
                         { !keywords ? false :
                             <p className="keywords">
                                 <span style={{fontWeight:'bold'}}>Keywords: </span>
-                                {keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}; </Link>)}
+                                <ImplodedList data={keywords.map(k => <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link>)}/>;
                             </p>
                         }
 
@@ -386,7 +400,7 @@ const Record = React.createClass({
             e.preventDefault();
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
-
+        const state = record.get('metadata').get('publication_state');
         const showB2Note = serverCache.getInfo().get('show_b2note');
 
         return (
@@ -462,8 +476,8 @@ const Record = React.createClass({
                             <div>
                                 <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse">Report Abuse</Link>
                                 { canEditRecord(record) ?
-                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning">
-                                        Edit Metadata</Link>
+                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                        { state == 'draft' ? 'Edit draft metadata' : 'Edit metadata' }</Link>
                                     : false
                                 }
                                 { isRecordOwner(record) && isLatestVersion ?

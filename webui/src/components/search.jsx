@@ -67,9 +67,13 @@ const Search = React.createClass({
         }
     },
 
-    search(event) {
+    submitSearch(event) {
         event ? event.preventDefault() : false;
-        browser.gotoSearch(this.state);
+        this.search(Object.assign({}, this.state, {page: 1}));
+    },
+
+    search(state) {
+        browser.gotoSearch(state ? state : this.state);
     },
 
     searchHelp(event) {
@@ -80,7 +84,7 @@ const Search = React.createClass({
     renderSearchBar() {
         const setStateEvent = ev => this.setState({q: ev.target.value});
         return (
-            <form onSubmit={this.search} className="form-group-lg">
+            <form onSubmit={this.submitSearch} className="form-group-lg">
                 <div className="input-group">
                     <span className="input-group-btn">
                         <button onClick={this.searchHelp} className="btn btn-default" type="button">

@@ -46,6 +46,15 @@ class InvalidJSONSchemaError(B2ShareSchemasError):
     """Exception raised when a JSON Schema is considered as invalid."""
     code = 400
 
+
+class MissingRequiredFieldSchemaError(B2ShareSchemasError):
+    """Exception raised when a JSON Schema requires one or more fields that are not defined."""
+    code = 400
+
+class MissingPresentationFieldSchemaError(B2ShareSchemasError):
+    """Exception raised when a JSON Schema presentation definition requires one or more fields that are not defined."""
+    code = 400
+
 #
 # ROOT SCHEMA ERRORS
 #

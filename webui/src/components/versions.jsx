@@ -16,7 +16,7 @@ export const Versions = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     render() {
-        let {isDraft, recordID, versions} = this.props;
+        let {isDraft, recordID, versions, editing} = this.props;
         if (!versions) {
             return false;
         }
@@ -25,10 +25,10 @@ export const Versions = React.createClass({
         }
         return (
             <div className="row">
-                <div className="col-sm-12" >
+                <div className="col-sm-12">
                     { isDraft ?
-                        <DraftVersions draftID={recordID} versions={versions} className="versions"/> :
-                        <PublishedVersions recordID={recordID} versions={versions} className="versions"/> }
+                        <DraftVersions draftID={recordID} versions={versions} editing={editing}/> :
+                        <PublishedVersions recordID={recordID} versions={versions} editing={editing}/> }
                 </div>
             </div>
         );
@@ -40,11 +40,11 @@ const DraftVersions = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     render() {
-        let {draftID, versions, style} = this.props;
-        if(versions.length > 0){
+        let {draftID, versions, editing} = this.props;
+        if (versions.length > 0) {
             return (
-                <div style={style}>
-                    You are now creating a new version of
+                <div className="versions">
+                    { !editing ? "This is a preview of" : "You are now creating" } a new version of
                     <a href="#" onClick={e => { e.preventDefault(); browser.gotoRecord(versions[0].id)} }
                        > this published record</a>.
                 </div>
@@ -58,7 +58,7 @@ const PublishedVersions = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     render() {
-        let {recordID, versions, className} = this.props;
+        let {recordID, versions} = this.props;
         const beQuiet = recordID == versions[0].id;
 
         const thisVersion = versions.find(v => recordID == v.id);
@@ -74,7 +74,7 @@ const PublishedVersions = React.createClass({
         }
 
         return (
-            <div className={className + " " + (beQuiet ? "" : "alert alert-warning")}>
+            <div className={"versions" + (beQuiet ? "" : " alert alert-warning")}>
                 <div className="btn newer">
                     { beQuiet ? "" : "This record has newer versions. " }
                 </div>

@@ -30,15 +30,15 @@ export const SelectLicense = React.createClass({
     render(type, getValue, setValue, title) {
         const licenseModal = <iframe src="/license-selector.html"
                                      style={{border:'none'}}
-                                     frameborder="0"
+                                     frameBorder="0"
                                      width="100%"
                                      height="900px"
-                                     marginheight="0"
-                                     marginwidth="0"
+                                     marginHeight="0"
+                                     marginWidth="0"
                                      scrolling="auto" />;
         return (
             <a className="input-group-addon" href="#" style={{backgroundColor:'white'}}
-               onClick={() => this.props.setModal(licenseModal)} >
+               onClick={() => this.props.setModal(licenseModal)} title="Open license selector tool">
                     <span className="glyphicon glyphicon-copyright-mark" aria-hidden="true"/>
                     {" "}
                     {this.props.title}

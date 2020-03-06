@@ -34,7 +34,7 @@ from flask import current_app
 from doschema.validation import JSONSchemaValidator
 
 from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
-    RootSchemaAlreadyExistsError
+    RootSchemaAlreadyExistsError, MissingRequiredFieldSchemaError, MissingPresentationFieldSchemaError
 
 
 @lru_cache(maxsize=1000)
@@ -60,6 +60,58 @@ def validate_json_schema(new_json_schema, prev_schemas):
         prev_schemas: list of previous versions of a schema.
 
     """
+    def verify_required_fields(json_schema):
+        """Verify that required fields exist in a schema definition
+
+        Recursively check existence of all required fields per (sub)field of type 'object'
+
+        Prerequisites:
+        - If current structure has a field 'type' valued 'object':
+            and has a field 'properties' on the same level
+            and has a field 'required' on the same level
+
+        Args:
+            json_schema: the (partial) json_schema to be verified.
+
+        """
+        if json_schema.get("type", "") != "object" or json_schema.get("required", None) is None:
+            pass
+        else:
+            # check for missing fields in 'properties' that are given in 'required' field
+            missing = set(json_schema["required"]) - set(json_schema["properties"].keys())
+            if len(missing) > 0:
+                raise MissingRequiredFieldSchemaError("Missing required fields in schema properties definition.")
+
+            for k, v in json_schema["properties"].items():
+                # any objects
+                if v.get("type", None) == "object":
+                    js = v
+                # arrays of objects
+                elif v.get("type", None) == "array" and v.get("items", {}).get("type", None) == "object":
+                    js = v["items"]
+                else:
+                    continue
+
+                verify_required_fields(js)
+
+    def verify_presentation_fields(json_schema):
+        """Verify that presentation fields exist in a schema definition
+
+        Check existence of all presentation fields per (sub)field of type 'object'
+
+        Prerequisites:
+        - A 'b2share' with 'presentation' field must be present in JSON schema definition
+
+        Args:
+            json_schema: the json_schema to be verified.
+
+        """
+        for section, fields in json_schema.get("b2share", {}).get("presentation", {}).items():
+            missing = set(fields) - set(json_schema["properties"])
+            if len(missing) > 0:
+                raise MissingPresentationFieldSchemaError("Missing fields in schema presentation definition.")
+
+
     if '$schema' not in new_json_schema:
         raise InvalidJSONSchemaError('Missing "$schema" field in JSON Schema')
     if new_json_schema['$schema'] != 'http://json-schema.org/draft-04/schema#':
@@ -85,6 +137,11 @@ def validate_json_schema(new_json_schema, prev_schemas):
     except URLError as e:
         raise InvalidJSONSchemaError('Invalid "$schema" URL.') from e
     jsonschema.validate(new_json_schema, super_schema)
+
+    # verify that required fields are defined in schema properties
+    verify_required_fields(new_json_schema)
+    # verify that presentation fields are defined in schema properties
+    verify_presentation_fields(new_json_schema)
 
 
 def resolve_schemas_ref(source):
@@ -131,11 +188,12 @@ root_schema_config_schema = {
 }
 
 
-def load_root_schemas(cli=False, verbose=False):
+def load_root_schemas(cli=False, verbose=False, force=False):
     """Load root schemas in the database.
 
     Args:
         verbose (bool): enable verbose messages if :param:`cli` is True.
+        force (bool): force update of existing schemas if :param:`cli` is True.
         cli (bool): enable click messages.
     """
     import click
@@ -161,13 +219,21 @@ def load_root_schemas(cli=False, verbose=False):
                 retrieved = RootSchema.get_root_schema(version)
                 # check that the schema is the same
                 if json.loads(retrieved.json_schema) != json_schema:
-                    if cli and verbose:
-                        raise RootSchemaAlreadyExistsError(
-                            'Already loaded Root JSON Schema '
-                            'version {0} does not match the one in file "{1}".'
-                            .format(version,
-                                    os.path.join(root_schemas_dir, filename)),
-                        )
+                    if force:
+                        if cli and verbose:
+                            click.echo(' => UPDATING root schema version {0}.'
+                                       .format(version, filename))
+                        configs_count += 1
+                        RootSchema.update_existing_version(version, json_schema)
+                        continue
+                    else:
+                        if cli and verbose:
+                            raise RootSchemaAlreadyExistsError(
+                                'Already loaded Root JSON Schema '
+                                'version {0} does not match the one in file "{1}".'
+                                .format(version,
+                                        os.path.join(root_schemas_dir, filename)),
+                            )
                 if cli and verbose:
                     click.echo(' => SCHEMA ALREADY LOADED.')
             except RootSchemaDoesNotExistError:
