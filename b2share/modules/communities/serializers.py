@@ -48,10 +48,7 @@ def community_self_link(community, **kwargs):
 
 
 def community_to_dict(community):
-    community_schema = CommunitySchema.get_community_schema(community.id)
-    community_schema_dict = json.loads(community_schema.community_schema)
-    props = community_schema_dict['properties']
-    return dict(
+    ret = dict(
         id=community.id,
         name=community.name,
         description=community.description,
@@ -62,12 +59,6 @@ def community_to_dict(community):
         restricted_submission=community.restricted_submission,
         links=dict(
             self=community_self_link(community, _external=True),
-            schema=community_schema_json_schema_link(community_schema, _external=True),
-            block_schema=next(iter(props.values()))['$ref'] if props else ""
-        ),
-        schema=dict(
-            version=community_schema.version,
-            block_schema_id=next(iter(props)) if props else ""
         ),
         roles=dict(
             admin=dict(id=community.admin_role.id,
@@ -76,9 +67,20 @@ def community_to_dict(community):
             member=dict(id=community.member_role.id,
                         name=community.member_role.name,
                         description=community.member_role.description),
-        ),
+        )
     )
-
+    try:
+        community_schema = CommunitySchema.get_community_schema(community.id)
+        community_schema_dict = json.loads(community_schema.community_schema)
+        props = community_schema_dict['properties']
+        ret['links']['schema'] = community_schema_json_schema_link(community_schema, _external=True)
+        ret['links']['block_schema'] = next(iter(props.values()))['$ref']
+        ret['schema'] = dict(
+            version=community_schema.version,
+            block_schema_id=next(iter(props))
+        )
+    finally:
+        return ret
 
 def community_to_json_serializer(community, code=200, headers=None):
     """Build a json flask response using the given community data.
