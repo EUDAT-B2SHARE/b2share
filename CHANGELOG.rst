@@ -1,6 +1,18 @@
 B2Share changelog
 *****************
 
+2.1.4 (March 2020)
+===========================
+
+Changes since 2.1.3 include:
+
+- Many interface improvements
+- Additions to REST API output
+- New EUDAT branding layout
+- Many bug fixes
+- Removal of unused files
+
+
 2.1.3 (October 2019)
 ===========================
 

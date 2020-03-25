@@ -1,8 +1,5 @@
 /*** GENERAL SETTINGS ***/
 
-/* New branding font */
-@import url("https://fonts.googleapis.com/css?family=Ubuntu:300,300i,400,400i,500,500i,700,700i&display=swap");
-
 html, body {
   height:100%;
   margin: 0px;
@@ -487,7 +484,7 @@ a.navbar-brand {
 
 .navbar-default .navbar-nav > li > a {
     font-size: 15px;
-    font-weight: 550;
+    font-weight: 500;
 }
 
 .navbar-default .navbar-nav > li.dropdown > a {

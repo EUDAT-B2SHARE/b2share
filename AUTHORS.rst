@@ -25,7 +25,7 @@ Authors
 
 - Adrian Mouat (KTH)
 - Carl Johan Håkansson (KTH)
-- Dennis Blommensteijn (SURFsara)
+- Dennis Blommesteijn (SURFsara)
 - Dinos Kousidis (CERN)
 - Emanuel Dima (EKUT)
 - Hans van Piggelen (SURFsara)
@@ -33,6 +33,7 @@ Authors
 - Hilary Hanahoe (TRUST)
 - Huw Morris (STFC)
 - Ilja Livenson (KTH)
+- Janne Karjalainen (CSC)
 - Klára Pešková (CUNI)
 - Kristian Niininen (CSC)
 - Lassi Lehtinen (CSC)

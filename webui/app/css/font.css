@@ -1,4 +1,7 @@
-#page, input, textarea, button, #testimonials h4, .highlighted-text {
+/* New branding font */
+@import url("https://fonts.googleapis.com/css?family=Open Sans:300,300i,400,400i,500,500i,700,700i&display=swap");
+
+body, input, textarea, button, #testimonials h4, .highlighted-text {
   font-family: 'Open Sans', sans-serif;
   font-style: normal;
   font-weight: 400;
@@ -6,39 +9,4 @@
 
 .mono-style {
     font-family: monospace;
-}
-
-/*h1, h2, h3, h4, h5, h6 {
-  font-family: Raleway;
-  font-family: helvetica;
-  font-style: normal;
-  font-weight: 500;
-}*/
-
-@font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Raleway'), url(/fonts/Raleway.woff2) format('woff2'), url(/fonts/Raleway.woff) format('woff');
-}
-
-@font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Raleway Medium'), local('Raleway-Medium'), url(/fonts/Raleway_medium.woff2) format('woff2'), url(/fonts/Raleway_medium.woff) format('woff');
-}
-
-@font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 600;
-  src: local('Raleway SemiBold'), local('Raleway-SemiBold'), url(/fonts/Raleway_semibold.woff2) format('woff2'), url(/fonts/Raleway_semibold.woff) format('woff');
-}
-
-@font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Raleway Bold'), local('Raleway-Bold'), url(/fonts/Raleway_bold.woff2) format('woff2'), url(/fonts/Raleway_bold.woff) format('woff');
 }
