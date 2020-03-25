@@ -648,7 +648,7 @@ const EditRecord = React.createClass({
         const text = this.state.waitingForServer ? "Updating record, please wait..." :
                       this.isForPublication() ? 'Save and Publish' :
                       this.state.dirty ? 'Save Draft' : 'The draft is up to date';
-        const future_doi = this.props.record.get('b2share', Map()).get('future_doi', '') || "";
+        const future_doi = this.props.record.get('metadata', Map()).get('$future_doi', '') || "";
         return (
             <div className="col-sm-offset-3 col-sm-9">
                 <label style={{fontSize:18, fontWeight:'normal'}}>
