@@ -73,9 +73,9 @@ class DraftSchemaJSONV1(Schema):
                 g.record_hit['_source'])
 
         if '_deposit' in data['metadata']:
-            if hasattr(g, 'record') and is_deposit(record.model) and current_app.config['AUTOMATICALLY_ASSIGN_DOI']:
+            if hasattr(g, 'record') and is_deposit(record.model) and current_app.config.get('AUTOMATICALLY_ASSIGN_DOI', False):
                 # add future DOI string
-                data['metadata'].update({'future_doi': generate_doi(data['metadata']['_deposit']['id']) })
+                data['metadata'].update({'$future_doi': generate_doi(data['metadata']['_deposit']['id']) })
 
             data['metadata']['owners'] = data['metadata']['_deposit']['owners']
 
