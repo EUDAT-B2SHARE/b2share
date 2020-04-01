@@ -99,7 +99,7 @@ export const Schema = React.createClass({
             <div className="schema">
                 <div className="row">
                     <div className="col-sm-12">
-                        <h3 className="title">{jschema.get('title') || "Metadata"}</h3>
+                        <h3 className="title">{jschema.get('title') || "Metadata fields"}</h3>
                         <p className="description">{jschema.get('description')}</p>
                         { !this.props.id ? false :
                             <p className="pid">
