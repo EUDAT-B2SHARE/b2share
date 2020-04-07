@@ -51,9 +51,9 @@ const B2NoteWidget = React.createClass({
     mixins: [React.addons.PureRenderMixin],
     propTypes: {
         record: PT.object.isRequired,
-        file: PT.object.isRequired,
+        file: PT.object,
         showB2NoteWindow: PT.func.isRequired,
-        b2noteUrl: PT.string.isRequired,
+        b2noteUrl: PT.string.isRequired
     },
 
     handleSubmit(e) {
@@ -62,17 +62,25 @@ const B2NoteWidget = React.createClass({
     },
 
     render() {
-        let file = this.props.file;
-        file = file.toJS ? file.toJS() : file;
-        let record = this.props.record;
+        let { file, record } = this.props;
+        let pid = '';
+        let object_url =  '';
         record = record.toJS ? record.toJS() : record;
+        if (file) {
+            file = file.toJS ? file.toJS() : file;
+            pid = file.ePIC_PID;
+            object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
+        } else {
+            pid = record.metadata.ePIC_PID;
+            object_url = record.links.self || ""
+        }
         const record_url = (record.links.self||"").replace('/api/records/', '/records/');
-        const file_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
+
         return (
             <form id="b2note_form_" action={this.props.b2noteUrl} method="post" target="b2note_iframe" onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="pid_tofeed" value={record.metadata.ePIC_PID} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="subject_tofeed" value={file_url} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="pid_tofeed" value={pid} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="subject_tofeed" value={object_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="keywords_tofeed" value={record.metadata.keywords} className="field left" readOnly="readonly"/>
                 <input type="submit" className="btn btn-sm btn-default" value="Annotate in B2Note" title="Click to annotate file using B2Note."/>
             </form>
@@ -87,6 +95,9 @@ const Record = React.createClass({
         return {
             showB2NoteWindow: false,
         };
+    },
+    showB2NoteWindow() {
+            this.setState({showB2NoteWindow: true})
     },
 
     renderFixedFields(record, community) {
@@ -208,6 +219,8 @@ const Record = React.createClass({
                                 <PersistentIdentifier pid={pid} />
                             </p> : false
                         }
+                        { this.props.b2noteUrl && <B2NoteWidget record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={this.props.b2noteUrl}/>
+                        }
                     </div>
 
                     <div className="col-sm-4 col-md-2">
@@ -234,8 +247,7 @@ const Record = React.createClass({
             const fileRecordRowFn = f => {
                 let b2noteWidget = false;
                 if (b2noteUrl) {
-                    const showB2NoteWindow = e => this.setState({showB2NoteWindow: true});
-                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={showB2NoteWindow} b2noteUrl={b2noteUrl}/>;
+                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl}/>;
                 }
                 return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} showDownloads={showDownloads} />
             }
