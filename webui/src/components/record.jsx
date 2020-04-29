@@ -445,7 +445,9 @@ const Record = React.createClass({
                 }
                 <div className={
                     (title ? "col-sm-8" : "col-sm-12") + " " + (type === 'object' ? "metadata-object" : "metadata")}>
-                     {inner} </div>
+                     {inner}
+                     {schema.get('unit') ? <span style={{color: 'grey'}}>  { schema.get('unit') } </span> : false }
+                </div>
             </li>
         );
     },

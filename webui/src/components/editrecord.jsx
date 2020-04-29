@@ -384,8 +384,16 @@ const EditRecord = React.createClass({
                 <div key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
                     {!title ? false :
                         <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
-                            <span style={{float:'right', color:isError?'red':'black'}}>
-                                {title} {schema.get('isRequired') ? "*":""}
+                            <span style={{float:'right'}}>
+                                <span style={{color:isError?'red':'black'}}>
+                                    {title}&nbsp;
+                                </span>
+                                <span>
+                                    {schema.get('unit') ? <span style={{color: 'grey'}}> {'(' + schema.get('unit') + ')'} </span> : false }
+                                </span>
+                                <span>
+                                    {schema.get('isRequired') ? "*" : ""}&nbsp;
+                                </span>
                             </span>
                         </label> }
                     <div className={title ? "col-sm-9":"col-sm-12"} style={arrstyle} onFocus={onfocus} onBlur={onblur}>

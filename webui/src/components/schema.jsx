@@ -67,23 +67,20 @@ export const Schema = React.createClass({
             inner = <span className="mono-style">{inner}</span>
         }
 
-        const leftcolumn = !id ? false :
-            <div className="col-sm-6">
-                <p className={requiredClass}>
-                    <span className="bold">{title}</span>
-                    <span className="mono-style">
-                        {title?" :: ":""}
-                        {id}
-                        {schema.get('isRequired') ? " (required)":false}
-                    </span>
-                </p>
-                <p> {schema.get('description')} </p>
-            </div>;
-        const rightcolumnsize = leftcolumn ? "col-sm-6" : "col-sm-12";
         return (
             <li key={id} className="row field-general">
-                {leftcolumn}
-                <div className={rightcolumnsize}> {inner} </div>
+                <div className="col-sm-6">
+                    <p className={requiredClass}>
+                        <span className="bold">{title} {schema.get('unit') ? ' [' + schema.get('unit') + ']' : false }</span>
+                        <span className="mono-style">
+                            {title ? " :: " : ""}
+                            {id}
+                            {schema.get('isRequired') ? " (required)" : false}
+                        </span>
+                    </p>
+                    <p> {schema.get('description')} </p>
+                </div>
+                <div className="col-sm-6"> {inner} </div>
             </li>
         );
     },
