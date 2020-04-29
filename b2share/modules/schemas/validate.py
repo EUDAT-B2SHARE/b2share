@@ -54,6 +54,7 @@ restricted_metaschema = {
                     # the properties which are defined must have this structure
                     "title": {"type": "string"},
                     "description": {"type": "string"},
+                    "unit": {"type": "string"},
                     "type": {
                         "enum": ["boolean", "integer", "number", "string", "array"]
                     },
