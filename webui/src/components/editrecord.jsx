@@ -386,13 +386,13 @@ const EditRecord = React.createClass({
                         <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                             <span style={{float:'right'}}>
                                 <span style={{color:isError?'red':'black'}}>
-                                    {title}&nbsp;
+                                    {title}
                                 </span>
                                 <span>
-                                    {schema.get('unit') ? <span style={{color: 'grey'}}> {'(' + schema.get('unit') + ')'} </span> : false }
+                                    {schema.get('unit') ? <span style={{color: 'grey'}}>&nbsp;{'(' + schema.get('unit') + ')'}</span> : false }
                                 </span>
                                 <span>
-                                    {schema.get('isRequired') ? "*" : ""}&nbsp;
+                                    &nbsp;{schema.get('isRequired') ? "*" : ""}
                                 </span>
                             </span>
                         </label> }

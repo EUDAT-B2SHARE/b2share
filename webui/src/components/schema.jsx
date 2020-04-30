@@ -37,7 +37,7 @@ export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
     renderSchema([id, schema]) {
-        const requiredClass = schema.get('isRequired') ? "required property":"";
+        const requiredClass = schema.get('isRequired') ? "required property" : "";
 
         const type = schema.get('type');
         const title = schema.get('title');
@@ -70,8 +70,9 @@ export const Schema = React.createClass({
         return (
             <li key={id} className="row field-general">
                 <div className="col-sm-6">
-                    <p className={requiredClass}>
-                        <span className="bold">{title} {schema.get('unit') ? ' [' + schema.get('unit') + ']' : false }</span>
+                    <p className={"schema-field " + requiredClass}>
+                        <span>{title}</span>
+                        <span>{schema.get('unit') ? ' (' + schema.get('unit') + ')' : false }</span>
                         <span className="mono-style">
                             {title ? " :: " : ""}
                             {id}

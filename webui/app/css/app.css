@@ -807,8 +807,20 @@ a.navbar-brand {
   color: #333;
 }
 
+.schema-field {
+  font-weight: bold;
+}
+
+.schema-field span:nth-child(2) {
+  color: grey;
+}
+
 .required.property {
   color: #F45D00;
+}
+
+.required.property span:nth-child(2) {
+  color: #FF9D63;
 }
 
 /*****************************************************************************/
