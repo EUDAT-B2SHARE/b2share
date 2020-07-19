@@ -47,6 +47,6 @@
     "react-toggle": "^2.2.0",
     "react-widgets": "^3.2.4",
     "reqwest": "^2.0.5",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.19"
   }
 }
