@@ -392,6 +392,7 @@ B2NOTE_URL = 'https://b2note.bsc.es/interface_main.html'
 # displayed in the UI
 TERMS_OF_USE_LINK = 'http://hdl.handle.net/11304/e43b2e3f-83c5-4e3f-b8b7-18d38d37a6cd'
 HELP_LINKS = {
+    'b2note': 'https://b2note.eudat.eu/',
     'issues': 'https://github.com/EUDAT-B2SHARE/b2share/issues',
     'rest-api': 'https://eudat.eu/services/userdoc/b2share-http-rest-api',
     'search': 'https://eudat.eu/services/userdoc/b2share-advanced-search',
