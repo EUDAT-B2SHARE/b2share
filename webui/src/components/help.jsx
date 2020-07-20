@@ -23,6 +23,7 @@ export const Help = React.createClass({
             'User Guide': [helplinks.get('user-guide'), 'fa-file'],
             'Search': [helplinks.get('search'), 'fa-info-circle'],
             'REST API': [helplinks.get('rest-api'), 'fa-info-circle'],
+            'Annotation with B2NOTE': [helplinks.get('b2note'), 'fa-list'],
             'Terms of Use': [info.get('terms_of_use_link'), 'fa-question-circle'],
             'Report an issue': [helplinks.get('issues'), 'fa-exclamation-circle']
         }
