@@ -53,7 +53,8 @@ const B2NoteWidget = React.createClass({
         record: PT.object.isRequired,
         file: PT.object,
         showB2NoteWindow: PT.func.isRequired,
-        b2noteUrl: PT.string.isRequired
+        b2noteUrl: PT.string.isRequired,
+        smallButton: PT.bool
     },
 
     handleSubmit(e) {
@@ -77,12 +78,15 @@ const B2NoteWidget = React.createClass({
         const record_url = (record.links.self||"").replace('/api/records/', '/records/');
 
         return (
-            <form id="b2note_form_" action={this.props.b2noteUrl} method="post" target="b2note_iframe" onSubmit={this.handleSubmit}>
+            <form id="b2note_form_" action={this.props.b2noteUrl} method="post" target="b2note_iframe" style={this.props.style} onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="pid_tofeed" value={pid} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="subject_tofeed" value={object_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="keywords_tofeed" value={record.metadata.keywords} className="field left" readOnly="readonly"/>
-                <input type="submit" className="btn btn-sm btn-default" value="Annotate in B2Note" title="Click to annotate file using B2Note."/>
+                { this.props.smallButton
+                    ? <button type="submit" className="btn btn-default btn-xs" title="Click to annotate file using B2NOTE"><i className="fa fa-edit"/></button>
+                    : <button type="submit" className="btn btn-warning" title="Click to annotate record using B2NOTE"><i className="fa fa-edit"/>&nbsp;Annotate</button>
+                }
             </form>
         );
     }
@@ -219,8 +223,6 @@ const Record = React.createClass({
                                 <PersistentIdentifier pid={pid} />
                             </p> : false
                         }
-                        { this.props.b2noteUrl && <B2NoteWidget record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={this.props.b2noteUrl}/>
-                        }
                     </div>
 
                     <div className="col-sm-4 col-md-2">
@@ -247,7 +249,7 @@ const Record = React.createClass({
             const fileRecordRowFn = f => {
                 let b2noteWidget = false;
                 if (b2noteUrl) {
-                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl}/>;
+                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl} smallButton={true}/>;
                 }
                 return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} showDownloads={showDownloads} />
             }
@@ -413,7 +415,6 @@ const Record = React.createClass({
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
         const state = record.get('metadata').get('publication_state');
-        const showB2Note = serverCache.getInfo().get('show_b2note');
 
         return (
             <div className="container-fluid">
@@ -486,14 +487,18 @@ const Record = React.createClass({
                     <div className="row bottom-buttons">
                         <div className="col-lg-12">
                             <div>
-                                <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse">Report Abuse</Link>
+                                <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse"><i className="glyphicon glyphicon-exclamation-sign"/> Report Abuse</Link>
+                                { this.props.b2noteUrl ?
+                                    <B2NoteWidget record={record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={this.props.b2noteUrl} style={{display: 'inline-block', margin: '0px 7px'}}/>
+                                    : false
+                                }
                                 { canEditRecord(record) ?
-                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}>
+                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}><i className="fa fa-pencil"/>&nbsp;
                                         { state == 'draft' ? 'Edit draft metadata' : 'Edit metadata' }</Link>
                                     : false
                                 }
                                 { isRecordOwner(record) && isLatestVersion ?
-                                    <a href='#' onClick={onNewVersion} className="btn btn-warning">
+                                    <a href='#' onClick={onNewVersion} className="btn btn-warning"><i className="fa fa-plus"/>&nbsp;
                                         Create New Version</a>
                                     : false
                                 }
