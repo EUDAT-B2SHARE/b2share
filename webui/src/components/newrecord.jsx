@@ -131,15 +131,15 @@ export const NewRecordRoute = React.createClass({
                                 <div className="col-sm-9 col-sm-offset-3">{this.state.errors.title} </div>: false }
                             {this.state.errors.community ?
                                 <div className="col-sm-9 col-sm-offset-3">{this.state.errors.community} </div> : false }
-                            <div className="col-sm-offset-3 col-sm-9" style={{marginTop:'1em'}}>
+                            <div className="col-sm-offset-3 col-sm-9">
                                 <button type="submit" className="btn btn-primary btn-default btn-block">
                                     Create Draft Record</button>
                             </div>
                         </div>
                     </form>
                 </div>
-                <div className="row">
-                    <div className="col-sm-9 col-sm-offset-3"  style={{borderTop:'1px solid #eee', paddingTop:'1em'}}>
+                <div className="row buttons">
+                    <div className="col-sm-9 col-sm-offset-3">
                         <p className="alert alert-warning" style={{color:'black'}}>
                         You can also update the data in an existing record by creating a new version of that record.
                         Search for the 'Create new version' button on the record's page.
