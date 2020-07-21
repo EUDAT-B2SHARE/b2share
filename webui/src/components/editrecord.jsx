@@ -618,6 +618,13 @@ const EditRecord = React.createClass({
         this.props.patchFn(patch, afterPatch, onError);
     },
 
+    discardChanges(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you discard all metadata changes to this record?")) {
+            browser.gotoRecord(this.props.record.get('id'));
+        }
+    },
+
     isForPublication() {
         return this.state.record.get('publication_state') == 'submitted';
     },
@@ -631,12 +638,23 @@ const EditRecord = React.createClass({
     renderUpdateRecordForm() {
         const klass = this.state.waitingForServer ? 'disabled' :
                       this.state.dirty ? 'btn-primary' : 'disabled';
+        const dlass = this.state.waitingForServer || !this.state.dirty ? 'disabled' : '';
         const text = this.state.waitingForServer ? "Updating record, please wait...":
                      this.state.dirty ? "Update record" : "The record is up to date";
+        const icon = this.state.waitingForServer ? 'time' :
+                      this.isForPublication() ? 'send' :
+                      this.state.dirty ? 'floppy-disk' : 'ok';
         return (
             <div className="col-sm-offset-3 col-sm-9">
                 <p>This record is already published. Any changes you make will be directly visible to other people.</p>
-                <button type="submit" className={"btn btn-default btn-block "+klass} onClick={this.updateRecord}>{text}</button>
+                <div className="row buttons">
+                    <div className="col-sm-10">
+                        <button type="submit" className={"btn btn-default btn-block " + klass} onClick={this.updateRecord}><i className={"glyphicon glyphicon-" + icon}/>&nbsp;&nbsp;{text}</button>
+                    </div>
+                    <div className="col-sm-2">
+                        <button type="submit" className={"btn btn-default discard " + dlass} onClick={this.discardChanges}><i className="glyphicon glyphicon-remove"/>&nbsp;Discard Changes</button>
+                    </div>
+                </div>
             </div>
         );
     },
@@ -645,13 +663,17 @@ const EditRecord = React.createClass({
         const klass = this.state.waitingForServer ? 'disabled' :
                       this.isForPublication() ? 'btn-primary btn-danger' :
                       this.state.dirty ? 'btn-primary' : 'disabled';
+        const dlass = this.state.waitingForServer || !this.state.dirty ? 'disabled' : '';
         const text = this.state.waitingForServer ? "Updating record, please wait..." :
                       this.isForPublication() ? 'Save and Publish' :
                       this.state.dirty ? 'Save Draft' : 'The draft is up to date';
+        const icon = this.state.waitingForServer ? 'time' :
+                      this.isForPublication() ? 'send' :
+                      this.state.dirty ? 'floppy-disk' : 'ok';
         const future_doi = this.props.record.get('metadata', Map()).get('$future_doi', '') || "";
         return (
             <div className="col-sm-offset-3 col-sm-9">
-                <label style={{fontSize:18, fontWeight:'normal'}}>
+                <label>
                     <input type="checkbox" value={this.isForPublication} onChange={this.setPublishedState}/>
                     {" "}Submit draft for publication
                 </label>
@@ -661,7 +683,14 @@ const EditRecord = React.createClass({
                     <p>This publication will get the following DOI: <PersistentIdentifier pid={future_doi}/></p>
                   : false
                 }
-                <button type="submit" className={"btn btn-default btn-block "+klass} onClick={this.updateRecord}>{text}</button>
+                <div className="row buttons">
+                    <div className="col-sm-10">
+                        <button type="submit" className={"btn btn-default btn-block " + klass} onClick={this.updateRecord}><i className={"glyphicon glyphicon-" + icon}/>&nbsp;&nbsp;{text}</button>
+                    </div>
+                    <div className="col-sm-2">
+                        <button type="submit" className={"btn btn-default btn-block discard " + dlass} onClick={this.discardChanges}><i className="glyphicon glyphicon-remove"/>&nbsp;Discard Changes</button>
+                    </div>
+                </div>
             </div>
         );
     },
@@ -726,8 +755,8 @@ const EditRecord = React.createClass({
                     </div>
                 </div>
                 <div className="row">
-                    <div className="form-group submit row" style={{margin:'2em 0', paddingTop:'2em', borderTop:'1px solid #eee'}}>
-                        {pairs(this.state.errors).map( ([id, msg]) =>
+                    <div className="form-group submit">
+                        { pairs(this.state.errors).map( ([id, msg]) =>
                             <div className="col-sm-offset-3 col-sm-9 alert alert-warning" key={id}>{msg} </div>) }
                         { this.props.isDraft ? this.renderSubmitDraftForm() : this.renderUpdateRecordForm() }
                     </div>
