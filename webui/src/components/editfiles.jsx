@@ -643,9 +643,11 @@ const FileUploadRow = React.createClass({
                     </div>
                     <div className="col-sm-3">{humanSize(file.size)}</div>
                     { this.props.remove ?
-                        <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
-                            onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>
-                        </button> : false
+                        <div className="col-sm-3">
+                            <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})}>
+                                <i className="glyphicon glyphicon-remove"/>&nbsp;Cancel
+                            </button>
+                        </div> : false
                     }
                 </div>
                 { this.state.remove ?
@@ -728,9 +730,11 @@ export const FileRecordRow = React.createClass({
                         { this.props.b2noteWidget }
                     </div> : false }
                     { this.props.remove ?
-                        <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
-                            onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>
-                        </button> : false
+                        <div className="col-sm-2">
+                            <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})}>
+                                <i className="glyphicon glyphicon-remove"/>&nbsp;Delete
+                            </button>
+                        </div> : false
                     }
                 </div>
                 { allowDetails && this.state.open ?
