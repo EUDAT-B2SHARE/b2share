@@ -1057,8 +1057,8 @@ a.navbar-brand {
 .fileList .file .btn.remove {
   float: right;
   color: #F45D00;
-  border: none;
-  background-color: transparent;
+  margin-right: 1em;
+  border-color: #eee;
 }
 .fileList .file .btn.remove:hover {
   color: red;
