@@ -334,8 +334,6 @@ const B2SafeZone = React.createClass({
         this.setState({showResults: false});
     },
 
-
-
     render: function() {
         const closeStyle = {
             display:'inline',
@@ -699,8 +697,8 @@ export const FileRecordRow = React.createClass({
 
         return (
             <div className="file">
-                <div className="row" onClick={e => this.setState({open:!this.state.open})}>
-                    <div className="col-sm-9">
+                <div className="row">
+                    <div className="col-sm-9" onClick={e => this.setState({open:!this.state.open})}>
                         <span className={"glyphicon glyphicon-chevron-"+stateMark}
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <span className={"glyphicon glyphicon-file"}
@@ -721,10 +719,14 @@ export const FileRecordRow = React.createClass({
                             </span> : null
                         }
                     </div>
-                    <div className={"col-sm-"+(this.props.remove? "2":"3")}>{
+                    <div className={"col-sm-"+(this.props.remove? "1":"2")} onClick={e => this.setState({open:!this.state.open})}>{
                         file.b2safe ?
                         "-" : humanSize(file.size)
                     }</div>
+                    { this.props.b2noteWidget ?
+                    <div className="col-sm-1" style={{padding: '0px'}}>
+                        { this.props.b2noteWidget }
+                    </div> : false }
                     { this.props.remove ?
                         <button type="button" className="btn btn-sm remove" style={{float:'right', marginRight:'1em'}}
                             onClick={()=>this.setState({remove:true})}> <i className="glyphicon glyphicon-remove"/>
@@ -733,23 +735,17 @@ export const FileRecordRow = React.createClass({
                 </div>
                 { allowDetails && this.state.open ?
                     <div className="details">
-                        { file.checksum ? <div className="row">
-                            <div className="col-sm-12"><span style={{marginLeft:'2.5em'}}/>
+                        { file.checksum ?
+                            <div>
                                 Checksum:
-                                <span className="checksum" style={{marginLeft:'0.5em'}}>{file.checksum}</span>
+                                <span className="checksum">{file.checksum}</span>
                             </div>
-                        </div> : false }
-                        { file.ePIC_PID ? <div className="row">
-                            <div className="col-sm-12">
-                                <div style={{marginLeft:'2.5em', whiteSpace: 'nowrap'}}>
-                                PID: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.ePIC_PID} />
-                                </div>
+                            : false }
+                        { file.ePIC_PID ?
+                            <div>
+                            PID: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.ePIC_PID} />
                             </div>
-                        </div> : false }
-                        { this.props.b2noteWidget ?
-                            <div className="col-sm-12" style={{paddingLeft:'2.5em'}}>
-                                { this.props.b2noteWidget }
-                            </div> : false }
+                            : false }
                     </div> : false }
 
                 { this.props.remove && this.state.remove ?

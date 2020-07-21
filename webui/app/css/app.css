@@ -264,6 +264,7 @@ input:focus, select:focus, textarea:focus, button:focus, a:focus {
   overflow: auto;
   color: #888;
   white-space: nowrap;
+  margin-left: 0.8em;
 }
 
 .site-function {
@@ -1036,8 +1037,12 @@ a.navbar-brand {
   padding: 0.5em 0;
   word-wrap: break-word;
 }
-.fileList .file .details{
+.fileList .file .details {
   overflow-x: auto;
+}
+.fileList .file .details > div {
+  margin-left: 1em;
+  white-space: nowrap
 }
 .fileList .file:nth-child(odd) {
   background-color: #f4f4f4;
