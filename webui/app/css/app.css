@@ -831,6 +831,26 @@ a.navbar-brand {
   padding-bottom:1em;
 }
 
+.edit-record .submit {
+  margin-top: 2em 0;
+  padding-top: 2em;
+  border-top: 1px solid #eee;
+}
+
+.edit-record .submit .buttons {
+  margin-top: 1em;
+}
+
+.edit-record .submit label {
+  font-size: 18px;
+  font-weight: normal;
+}
+
+.edit-record .submit .discard {
+  color: #c73118;
+  border-color: #ccc;
+}
+
 .new-record {
   margin-top: 2em;
 }
