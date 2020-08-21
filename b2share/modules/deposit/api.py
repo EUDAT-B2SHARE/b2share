@@ -242,6 +242,31 @@ class Deposit(InvenioDeposit):
                 _external=True
             )
 
+        # prepopulate required boolean fields with false
+        if not version_of:
+            from b2share.modules.schemas.api import BlockSchema
+            import json
+            community_schema = json.loads(schema.community_schema)
+            if 'required' in community_schema:
+                bs_id = json.loads(schema.community_schema)['required'][0]
+                bs = BlockSchema.get_block_schema(bs_id)
+                bs_version = bs.versions[len(bs.versions) - 1]
+                schema_dict = json.loads(bs_version.json_schema)
+                required = []
+                if 'required' in schema_dict:
+                    required = schema_dict['required']
+                properties = {}
+                if 'properties' in schema_dict:
+                    properties = schema_dict['properties']
+                try:
+                    community_metadata = data['community_specific'][bs_id]
+                except KeyError:
+                    community_metadata = {}
+                for key in required:
+                    if properties[key]['type'] == 'boolean' and not key in community_metadata:
+                        community_metadata[key] = False
+                data['community_specific'] = {bs_id: community_metadata}
+
         # create file bucket
         if prev_version and prev_version.files:
             # Clone the bucket from the previous version. This doesn't
