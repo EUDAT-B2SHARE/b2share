@@ -258,9 +258,12 @@ class Deposit(InvenioDeposit):
                 properties = {}
                 if 'properties' in schema_dict:
                     properties = schema_dict['properties']
-                community_metadata = {}
+                try:
+                    community_metadata = data['community_specific'][bs_id]
+                except KeyError:
+                    community_metadata = {}
                 for key in required:
-                    if properties[key]['type'] == 'boolean':
+                    if properties[key]['type'] == 'boolean' and not key in community_metadata:
                         community_metadata[key] = False
                 data['community_specific'] = {bs_id: community_metadata}
 
