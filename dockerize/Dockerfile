@@ -1,7 +1,7 @@
 FROM centos:7
 EXPOSE 5000
 
-RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-12.noarch.rpm
+RUN rpm -iUvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 RUN yum -y update && \
     yum -y groupinstall "Development tools" && \
@@ -10,9 +10,9 @@ RUN yum -y update && \
                    git libffi-devel python-devel libxml2-devel libxml2 \
                    libxslt-devel zlib1g-dev libxslt http-parser npm
 
-RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-RUN yum -y install python35u pythn35u-pip python35u-devel \
-                   uwsgi-plugin-python35u uwsgi
+RUN yum -y install https://repo.ius.io/ius-release-el7.rpm
+RUN yum -y install python35u python35u-pip python35u-devel \
+                   uwsgi-plugin-python35 uwsgi
 RUN python3.5 -m ensurepip
 
 # install locale
