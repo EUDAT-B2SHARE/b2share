@@ -1,27 +1,28 @@
 FROM centos:7
+
+LABEL maintainer Petri Laihonen <petri.laihonen@csc.fi>
+
 EXPOSE 5000
 
-RUN rpm -iUvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-
-RUN yum -y update && \
-    yum -y groupinstall "Development tools" && \
-    yum -y install wget gcc-c++ openssl-devel \
-                   postgresql-devel supervisor \
+RUN \
+    # yum -y update && \
+    yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
+    yum -y install wget gcc-c++ make openssl-devel \
+                   postgresql-devel mysql-devel supervisor \
                    git libffi-devel python-devel libxml2-devel libxml2 \
-                   libxslt-devel zlib1g-dev libxslt http-parser npm
+                   libxslt-devel zlib-devel libxslt http-parser npm
 
-RUN yum -y install https://repo.ius.io/ius-release-el7.rpm
-RUN yum -y install python35u python35u-pip python35u-devel \
-                   uwsgi-plugin-python35 uwsgi
-RUN python3.5 -m ensurepip
+RUN yum -y install python36 python36-pip python36-devel uwsgi-plugin-python36 uwsgi
 
 # install locale
 RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
 
-RUN python3.5 --version
+# Supposedly helps with pip time-outs.
+ENV PIP_DEFAULT_TIMEOUT=100
 
-RUN pip3.5 install --upgrade pip
-RUN pip3.5 --version
+RUN python3 -m pip install --upgrade pip setuptools wheel && \
+    python3 --version && \
+    pip3 --version
 
 ENV LANG=en_US.UTF-8
 ENV DB_NAME="b2share-evolution"
@@ -42,6 +43,8 @@ RUN npm install
 
 # this next RUN is just a workaround for the old version of node on centos7
 # without it, the npm run build fails when compiling less files
+RUN node --version && \
+    npm --version
 RUN mv webpack.config.js webpack.config.js.0
 RUN echo "require('es6-promise').polyfill();" > webpack.config.js
 RUN cat webpack.config.js.0 >> webpack.config.js
@@ -80,12 +83,12 @@ ADD setup.py setup.py
 ADD b2share/version.py b2share/version.py
 ADD requirements.txt requirements.txt
 
-RUN pip3.5 install -r requirements.txt
-RUN pip3.5 install -e .
+RUN pip3 install -r requirements.txt
+RUN pip3 install -e .
 
 WORKDIR /eudat/b2share/demo
 ADD demo/setup.py setup.py
-RUN pip3.5 install -e .
+RUN pip3 install -e .
 
 COPY dockerize/b2share.sh /eudat/
 COPY dockerize/supervisord.conf /etc/
@@ -103,4 +106,5 @@ WORKDIR /eudat
 ADD . b2share
 
 WORKDIR /eudat/b2share
+
 CMD ["/eudat/b2share.sh"]
