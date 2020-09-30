@@ -99,7 +99,7 @@ invenio-stats==1.0.0a8
 itsdangerous==0.24        # via flask, flask-kvsession, flask-security
 jinja2-time==0.2.0        # via cookiecutter
 jinja2==2.8               # via cookiecutter, flask, flask-babelex, jinja2-time
-jsonpatch==1.14           # via invenio-records
+jsonpatch==1.16           # via invenio-records
 jsonpointer==1.10         # via jsonpatch
 jsonref==0.1              # via invenio-jsonschemas, invenio-records
 jsonresolver[jsonschema]==0.2.1
