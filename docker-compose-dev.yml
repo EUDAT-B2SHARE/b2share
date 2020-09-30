@@ -1,0 +1,117 @@
+version: '3'
+services:
+  # b2share:
+  #   image: eudatb2share/b2share:2.2.0
+  #   environment:
+  #     - "B2ACCESS_CONSUMER_KEY=${B2ACCESS_CONSUMER_KEY}"
+  #     - "B2ACCESS_SECRET_KEY=${B2ACCESS_SECRET_KEY}"
+  #     - "USE_STAGING_B2ACCESS=${USE_STAGING_B2ACCESS}"
+  #     - "B2SHARE_SECRET_KEY=${B2SHARE_SECRET_KEY}"
+  #     - "B2SHARE_JSONSCHEMAS_HOST=${B2SHARE_JSONSCHEMAS_HOST}"
+  #     - "INIT_DB_AND_INDEX=${INIT_DB_AND_INDEX}"
+  #     - "LOAD_DEMO_COMMUNITIES_AND_RECORDS=${LOAD_DEMO_COMMUNITIES_AND_RECORDS}"
+  #     - "B2SHARE_PREFERRED_URL_SCHEME=https"
+  #     - "B2SHARE_SQLALCHEMY_DATABASE_URI='postgresql+psycopg2://${B2SHARE_POSTGRESQL_USER}:${B2SHARE_POSTGRESQL_PASSWORD}@postgres:5432/${B2SHARE_POSTGRESQL_DBNAME}'"
+  #     - "B2SHARE_CACHE_REDIS_HOST='redis'"
+  #     - "B2SHARE_CACHE_REDIS_URL='redis://redis:6379/0'"
+  #     - "B2SHARE_ACCOUNTS_SESSION_REDIS_URL='redis://redis:6379/1'"
+  #     - "B2SHARE_BROKER_URL='amqp://${B2SHARE_RABBITMQ_USER}:${B2SHARE_RABBITMQ_PASS}@mq:5672/'"
+  #     - "B2SHARE_CELERY_BROKER_URL='amqp://${B2SHARE_RABBITMQ_USER}:${B2SHARE_RABBITMQ_PASS}@mq:5672/'"
+  #     - "B2SHARE_CELERY_RESULT_BACKEND='redis://redis:6379/2'"
+  #     - "B2SHARE_SEARCH_ELASTIC_HOSTS='elasticsearch'"
+  #   volumes:
+  #     - "b2share-data:/usr/var/b2share-instance"
+  #   ports:
+  #     - "5000:5000"
+  #   links:
+  #     - elasticsearch
+  #     - redis
+  #     - postgres
+  
+  postgres:
+    image: postgres:9.6
+    restart: "unless-stopped"
+    environment:
+      - "POSTGRES_PASSWORD=${B2SHARE_POSTGRESQL_PASSWORD}"
+      - "POSTGRES_USER=${B2SHARE_POSTGRESQL_USER}"
+      - "PGDATA=/var/lib/postgresql/data"
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+
+  elasticsearch:
+    build: 
+      context: ./elasticsearch
+    image: eudatb2share/elasticsearch:2.4.6
+    restart: "unless-stopped"
+    # Uncomment if DEBUG logging needs to enabled for Elasticsearch
+    # command: ["elasticsearch", "-Elogger.level=DEBUG"]
+    environment:
+      - bootstrap.memory_lock=true
+      # set to reasonable values on production
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - "elasticsearch-data:/usr/share/elasticsearch/data:rw"
+      - "elasticsearch-config:/usr/share/elasticsearch/config:rw"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  redis:
+    image: redis:5-alpine
+    restart: "unless-stopped"
+    volumes:
+      - "redis-data:/data:rw"
+    ports:
+      - "6379:6379"
+
+  mq:
+    image: rabbitmq:3.8-management-alpine
+    restart: "unless-stopped"
+    environment:
+      - "RABBITMQ_DEFAULT_USER=${B2SHARE_RABBITMQ_USER}"
+      - "RABBITMQ_DEFAULT_PASS=${B2SHARE_RABBITMQ_PASS}"
+    volumes:
+      - "rabbitmq-data:/var/lib/rabbitmq:rw"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+volumes:
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${B2SHARE_DATADIR}/postgres-data
+      o: bind
+  elasticsearch-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${B2SHARE_DATADIR}/elasticsearch-data
+      o: bind
+  elasticsearch-config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${B2SHARE_DATADIR}/elasticsearch-config
+      o: bind
+  rabbitmq-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${B2SHARE_DATADIR}/rabbitmq-data
+      o: bind
+  redis-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${B2SHARE_DATADIR}/redis-data
+      o: bind
+  # b2share-data:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ${B2SHARE_DATADIR}/b2share-data
+  #     o: bind
