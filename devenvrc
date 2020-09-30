@@ -1,0 +1,53 @@
+
+## change these to match your folder structure / paths.
+# point to ./b2share/webui/app in the repo root
+export B2SHARE_UI_PATH=$PWD/webui/app
+
+# point to root of cloned B2SHARE repo
+export B2SHARE_REPO_ROOT=$PWD
+
+# path on the host which will be mounted to postgresql, elasticsearch, redis, rabbitmq (and nginx) containers.
+export B2SHARE_DATADIR=$PWD/persistent_data
+
+
+## configuration variables for B2SHARE WebUI
+# URL to Matomo instance. If not specified, Matomo tracking client will be disabled.
+#export B2SHARE_WEBUI_MATOMO_URL=matomo.example.org
+
+# Site ID at Matomo instance. If not specified, Matomo tracking client will be disabled.
+#export B2SHARE_WEBUI_MATOMO_SITEID=2309
+
+
+## mandatory environment variables, should be good for a local development environment.
+## in case of B2ACCESS problems, register new OAUTH SP at https://unity.eudat-aai.fz-juelich.de/home/
+## not at https://b2access.eudat.eu
+
+export USE_STAGING_B2ACCESS=1              # to run with staging (testing) b2access (unity install)
+
+export B2ACCESS_CONSUMER_KEY=b2share_development           # the username used for registration
+
+export B2ACCESS_SECRET_KEY=b2share_development             # the password used for registration
+
+export B2SHARE_SECRET_KEY=secretkey              # a secret string used for encrypting user sessions
+
+export B2SHARE_PREFERRED_URL_SCHEME=http
+export B2SHARE_JSONSCHEMAS_HOST='localhost:5000'   # replace <FQDN> with the domain of the B2SHARE server
+
+export B2SHARE_POSTGRESQL_DBNAME=b2share       # name of the postgresql database used by b2share
+export B2SHARE_POSTGRESQL_PASSWORD=defaultpassword     # password used by b2share when accessing the postgresql database
+export B2SHARE_POSTGRESQL_USER=b2share         # username used by b2share when accessing the postgresql database (default=b2share)
+export B2SHARE_RABBITMQ_USER=defaultuser           # username used by b2share when accessing RabbitMQ service
+export B2SHARE_RABBITMQ_PASS=defaultpassword           # password used by b2share when accessing RabbitMQ service
+
+export INIT_DB_AND_INDEX=1                 # when run the first time, initialize the database and indices
+#export LOAD_DEMO_COMMUNITIES_AND_RECORDS=1 # when run the first time, load some communities and records for demonstration
+
+## configuration parameters related to URLs of postgresql, elasticsearch, redis, rabbitmq (and nginx)
+export B2SHARE_SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://${B2SHARE_POSTGRESQL_USER}:${B2SHARE_POSTGRESQL_PASSWORD}@localhost:5432/${B2SHARE_POSTGRESQL_DBNAME}
+export B2SHARE_BROKER_URL=amqp://${B2SHARE_RABBITMQ_USER}:${B2SHARE_RABBITMQ_PASS}@localhost:5672/
+export B2SHARE_CELERY_BROKER_URL=amqp://${B2SHARE_RABBITMQ_USER}:${B2SHARE_RABBITMQ_PASS}@localhost:5672/
+export B2SHARE_CELERY_RESULT_BACKEND=redis://localhost:6379/2
+export B2SHARE_CACHE_REDIS_URL=redis://localhost:6379/0
+export B2SHARE_ACCOUNTS_SESSION_REDIS_URL=redis://localhost:6379/1
+export B2SHARE_SEARCH_ELASTIC_HOSTS='localhost'
+

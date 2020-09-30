@@ -118,7 +118,7 @@ ordereddict==1.1          # via invenio-query-parser
 passlib==1.7.1            # via flask-security, invenio-accounts
 pluggy==0.13.1             # via jsonresolver
 poyo==0.4.0               # via cookiecutter
-psycopg2==2.7.1
+psycopg2==2.8.6
 pyasn1==0.1.9             # via cryptography
 pycparser==2.17           # via cffi
 pyjwt==1.5.0              # via invenio-accounts
