@@ -18,7 +18,6 @@
 # In applying this license, CERN does not
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
-
 alembic==0.8.10           # via flask-alembic
 amqp==2.2.1               # via invenio-queues, kombu
 angular-gettext-babel==0.3  # via invenio-search-ui
@@ -27,21 +26,21 @@ babel==2.3.4              # via angular-gettext-babel, flask-babelex, invenio-as
 billiard==3.5.0.3         # via celery
 binaryornot==0.4.0        # via cookiecutter
 blinker==1.4              # via flask-mail, flask-principal, invenio-oauthclient, invenio-records
-celery==4.1
+celery==4.1               # via -r requirements.in, flask-celeryext
 cffi==1.8.3               # via cryptography
 chardet==2.3.0            # via binaryornot, doschema
 click==6.6                # via cookiecutter, dojson, doschema, flask
 cookiecutter==1.4.0       # via invenio-base
 cryptography==1.5.2       # via invenio-accounts, invenio-oauthclient, sqlalchemy-utils
-datacite==0.3.0
-dcxml==0.1.0
+datacite==0.3.0           # via -r requirements.in
+dcxml==0.1.0              # via -r requirements.in
 decorator==4.0.10         # via validators
 dictdiffer==0.6.0         # via invenio-deposit
-dojson==1.3.2
-doschema==1.0.0a1
-easywebdav==1.2.0
-elasticsearch-dsl==2.1.0
-elasticsearch==2.4.0
+dojson==1.3.2             # via -r requirements.in, invenio-marc21, invenio-oaiserver
+doschema==1.0.0a1         # via -r requirements.in
+easywebdav==1.2.0         # via -r requirements.in
+elasticsearch-dsl==2.1.0  # via -r requirements.in, invenio-deposit, invenio-oaiserver, invenio-records-rest, invenio-search
+elasticsearch==2.4.0      # via -r requirements.in, elasticsearch-dsl, invenio-deposit, invenio-oaiserver, invenio-search
 flask-alembic==2.0.1      # via invenio-db
 flask-assets==0.12        # via invenio-assets
 flask-babelex==0.9.3      # via flask-security, invenio-accounts, invenio-deposit, invenio-i18n, invenio-marc21, invenio-oaiserver, invenio-oauth2server, invenio-oauthclient, invenio-pidstore, invenio-records-rest, invenio-records-ui, invenio-search-ui
@@ -50,7 +49,7 @@ flask-celeryext==0.3.0    # via invenio-celery, invenio-files-rest, invenio-inde
 flask-collect==1.2.2      # via invenio-assets
 flask-cors==3.0.2         # via invenio-rest
 flask-kvsession==0.6.2    # via invenio-accounts
-flask-login==0.3.2
+flask-login==0.3.2        # via -r requirements.in, flask-security, invenio-accounts, invenio-deposit, invenio-files-rest, invenio-oauth2server
 flask-mail==0.9.1         # via flask-security, invenio-mail
 flask-menu==0.5.1         # via flask-breadcrumbs, invenio-accounts
 flask-oauthlib==0.9.3     # via invenio-oauth2server, invenio-oauthclient
@@ -61,48 +60,47 @@ flask-wtf==0.13.1         # via flask-security, invenio-accounts, invenio-files-
 flask==0.11.1             # via flask-alembic, flask-assets, flask-babelex, flask-breadcrumbs, flask-celeryext, flask-collect, flask-cors, flask-kvsession, flask-login, flask-mail, flask-menu, flask-oauthlib, flask-principal, flask-security, flask-sqlalchemy, flask-wtf, invenio-access, invenio-accounts, invenio-assets, invenio-base, invenio-celery, invenio-config, invenio-db, invenio-deposit, invenio-files-rest, invenio-i18n, invenio-indexer, invenio-jsonschemas, invenio-logging, invenio-mail, invenio-marc21, invenio-oaiserver, invenio-oauth2server, invenio-oauthclient, invenio-pidstore, invenio-queues, invenio-records, invenio-records-files, invenio-records-rest, invenio-records-ui, invenio-rest, invenio-search, invenio-search-ui, invenio-stats
 fs==0.5.4                 # via invenio-files-rest
 future==0.16.0            # via cookiecutter, invenio-accounts
-httplib2==0.9.2
+httplib2==0.9.2           # via -r requirements.in
 idna==2.1                 # via cryptography
 infinity==1.4             # via intervals
 intervals==0.8.0          # via wtforms-components
-invenio-access==1.0.0a11
-invenio-accounts-rest==1.0.0a4
-invenio-accounts==1.0.0b9
+invenio-access==1.0.0a11  # via -r requirements.in, invenio-accounts-rest
+invenio-accounts-rest==1.0.0a4  # via -r requirements.in
+invenio-accounts==1.0.0b9  # via -r requirements.in, invenio-access, invenio-accounts-rest, invenio-oauth2server, invenio-oauthclient
 invenio-assets==1.0.0b6   # via invenio-deposit, invenio-search-ui
-invenio-base==1.0.0a14
-invenio-celery==1.0.0b3
-invenio-config==1.0.0b3
-invenio-db[postgresql,versioning]==1.0.0b8
-invenio-deposit==1.0.0a8
-invenio-files-rest==1.0.0a21
+invenio-base==1.0.0a14    # via -r requirements.in
+invenio-celery==1.0.0b3   # via -r requirements.in
+invenio-config==1.0.0b3   # via -r requirements.in
+invenio-db[postgresql,versioning]==1.0.0b8  # via -r requirements.in, invenio-accounts-rest, invenio-deposit
+invenio-deposit==1.0.0a8  # via -r requirements.in
+invenio-files-rest==1.0.0a21  # via -r requirements.in, invenio-deposit, invenio-records-files, invenio-stats
 invenio-i18n==1.0.0b4     # via invenio-accounts
-invenio-indexer==1.0.0a9
+invenio-indexer==1.0.0a9  # via -r requirements.in, invenio-deposit
 invenio-jsonschemas==1.0.0a5  # via invenio-deposit, invenio-marc21
-invenio-logging==1.0.0a3
-invenio-mail==1.0.0b1
-invenio-marc21==1.0.0a5
-invenio-oaiserver==1.0.0a13
-invenio-oauth2server==1.0.0a14
-invenio-oauthclient==1.0.0b2
-invenio-pidrelations==v1.0.0a4
-invenio-pidstore==1.0.0b2
-invenio-query-parser==0.6.0
+invenio-logging==1.0.0a3  # via -r requirements.in
+invenio-mail==1.0.0b1     # via -r requirements.in, invenio-oauthclient
+invenio-marc21==1.0.0a5   # via -r requirements.in
+invenio-oaiserver==1.0.0a13  # via -r requirements.in
+invenio-oauth2server==1.0.0a14  # via -r requirements.in, invenio-accounts-rest, invenio-deposit
+invenio-oauthclient==1.0.0b2  # via -r requirements.in
+invenio-pidstore==1.0.0b2  # via -r requirements.in, invenio-oaiserver, invenio-records-rest, invenio-records-ui
+invenio-query-parser==0.6.0  # via -r requirements.in, invenio-search
 invenio-queues==1.0.0a1   # via invenio-stats
-invenio-records-files==1.0.0a9
-invenio-records-rest==1.0.0b1
+invenio-records-files==1.0.0a9  # via -r requirements.in, invenio-deposit
+invenio-records-rest==1.0.0b1  # via -r requirements.in, invenio-deposit, invenio-marc21
 invenio-records-ui==1.0.0b1  # via invenio-deposit, invenio-marc21
-invenio-records==1.0.0b2
-invenio-rest[cors]==1.0.0b1
+invenio-records==1.2.2    # via -r requirements.in, invenio-deposit, invenio-indexer, invenio-oaiserver, invenio-records-files, invenio-records-rest, invenio-records-ui
+invenio-rest[cors]==1.0.0b1  # via -r requirements.in, invenio-accounts-rest, invenio-files-rest, invenio-records-rest
 invenio-search-ui==1.0.0a7  # via invenio-deposit
-invenio-search==1.0.0a10
-invenio-stats==1.0.0a8
+invenio-search==1.0.0a10  # via -r requirements.in, invenio-deposit, invenio-indexer, invenio-oaiserver, invenio-records-rest, invenio-stats
+invenio-stats==1.0.0a8    # via -r requirements.in
 itsdangerous==0.24        # via flask, flask-kvsession, flask-security
 jinja2-time==0.2.0        # via cookiecutter
 jinja2==2.8               # via cookiecutter, flask, flask-babelex, jinja2-time
 jsonpatch==1.16           # via invenio-records
 jsonpointer==1.10         # via jsonpatch
 jsonref==0.1              # via invenio-jsonschemas, invenio-records
-jsonresolver[jsonschema]==0.2.1
+jsonresolver[jsonschema]==0.2.1  # via -r requirements.in, invenio-records
 jsonschema==2.5.1         # via datacite, doschema, invenio-records, jsonresolver
 kombu==4.1.0              # via celery, invenio-queues
 lxml==3.6.4               # via datacite, dcxml, dojson, invenio-oaiserver
@@ -118,7 +116,7 @@ ordereddict==1.1          # via invenio-query-parser
 passlib==1.7.1            # via flask-security, invenio-accounts
 pluggy==0.4.0             # via jsonresolver
 poyo==0.4.0               # via cookiecutter
-psycopg2==2.7.1
+psycopg2==2.7.1           # via -r requirements.in, invenio-db
 pyasn1==0.1.9             # via cryptography
 pycparser==2.17           # via cffi
 pyjwt==1.5.0              # via invenio-accounts
@@ -136,7 +134,7 @@ simplekv==0.10.0          # via flask-kvsession
 six==1.10.0               # via cryptography, elasticsearch-dsl, flask-breadcrumbs, flask-cors, flask-kvsession, flask-menu, fs, invenio-access, invenio-logging, invenio-oauth2server, invenio-oauthclient, invenio-query-parser, invenio-records-rest, jsonresolver, python-dateutil, robot-detection, sqlalchemy-utils, validators, wtforms-alchemy, wtforms-components
 speaklater==1.3           # via flask-babelex, invenio-assets
 sqlalchemy-continuum==1.3  # via invenio-db, invenio-deposit
-sqlalchemy-utils[encrypted]==0.32.14  # via invenio-accounts, invenio-db, invenio-deposit, invenio-files-rest, invenio-oauth2server, invenio-oauthclient, invenio-records, sqlalchemy-continuum, wtforms-alchemy
+sqlalchemy-utils[encrypted]==0.32.14  # via invenio-accounts, invenio-db, invenio-deposit, invenio-files-rest, invenio-oauth2server, invenio-oauthclient, sqlalchemy-continuum, wtforms-alchemy
 sqlalchemy==1.1.11        # via alembic, flask-alembic, flask-sqlalchemy, invenio-db, sqlalchemy-continuum, sqlalchemy-utils, wtforms-alchemy
 ua-parser==0.7.3          # via invenio-accounts
 uritools==2.0.0           # via invenio-oauthclient
@@ -145,7 +143,7 @@ validators==0.11.0        # via wtforms-components
 vine==1.1.4               # via amqp
 webargs==1.4.0            # via invenio-files-rest, invenio-oaiserver, invenio-records-rest
 webassets==0.12.0         # via flask-assets, invenio-assets
-werkzeug==0.11.11         # via flask, flask-kvsession, flask-wtf, jsonresolver
+werkzeug==1.0.1           # via flask, flask-kvsession, flask-wtf, invenio-records, jsonresolver
 whichcraft==0.4.0         # via cookiecutter
 wtforms-alchemy==0.16.1   # via invenio-oauth2server
 wtforms-components==0.10.0  # via wtforms-alchemy
