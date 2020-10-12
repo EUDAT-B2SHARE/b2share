@@ -1,4 +1,6 @@
 import React from 'react/lib/ReactWithAddons';
+import 'whatwg-fetch';
+import { Badge } from 'react-bootstrap';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
@@ -57,35 +59,74 @@ const B2NoteWidget = React.createClass({
         smallButton: PT.bool
     },
 
+    getInitialState() {
+        var state = {
+            record: this.props.record.toJS ? this.props.record.toJS() : this.props.record,
+            pid: '',
+            object_url: '',
+            notes: {}
+        }
+
+        if (this.props.file) {
+            var file = this.props.file.toJS ? this.props.file.toJS() : this.props.file;
+            state.pid = file.ePIC_PID;
+            state.object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
+        } else {
+            state.pid = state.record.metadata.ePIC_PID;
+            state.object_url = state.record.links.self || ""
+        }
+
+        return state;
+    },
+
     handleSubmit(e) {
         e.stopPropagation();
         this.props.showB2NoteWindow();
     },
 
-    render() {
-        let { file, record } = this.props;
-        let pid = '';
-        let object_url =  '';
-        record = record.toJS ? record.toJS() : record;
-        if (file) {
-            file = file.toJS ? file.toJS() : file;
-            pid = file.ePIC_PID;
-            object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
-        } else {
-            pid = record.metadata.ePIC_PID;
-            object_url = record.links.self || ""
+    getRecordNotes() {
+        var self = this;
+        var url = this.props.b2noteUrl + '/api/annotations?type[]=semantic&type[]=keyword&type[]=comment&target-id=' + this.state.pid;
+        console.log('--- B2NOTE get: ' + url);
+        fetch(url)
+          .then(function(response) {
+            return response.json()
+          }).then(function(json) {
+            self.setState({
+                    notes: json
+                }
+            );
+          }).catch(function(ex) {
+            console.log('B2NOTE request failed: ' + ex)
+          })
+    },
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.notes != this.props.notes) {
+            this.getRecordNotes();
         }
-        const record_url = (record.links.self||"").replace('/api/records/', '/records/');
+    },
+
+    componentWillMount() {
+        this.getRecordNotes();
+    },
+
+    render() {
+        if (this.state.record === undefined) {
+            return <Wait key={this.state.pid} />
+        }
+        const record_url = (this.state.record.links.self || "").replace('/api/records/', '/records/');
+        //var nc = this.state.notes.length ?  : "";
 
         return (
-            <form id="b2note_form_" action={this.props.b2noteUrl} method="post" target="b2note_iframe" style={this.props.style} onSubmit={this.handleSubmit}>
+            <form id="b2note_form_" action={this.props.b2noteUrl + '/widget'} method="post" target="b2note_iframe" style={this.props.style} onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="pid_tofeed" value={pid} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="subject_tofeed" value={object_url} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="keywords_tofeed" value={record.metadata.keywords} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="pid_tofeed" value={this.state.pid} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="subject_tofeed" value={this.state.object_url} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="keywords_tofeed" value={this.state.record.metadata.keywords||""} className="field left" readOnly="readonly"/>
                 { this.props.smallButton
-                    ? <button type="submit" className="btn btn-default btn-xs" title="Click to annotate file using B2NOTE"><i className="fa fa-edit"/></button>
-                    : <button type="submit" className="btn btn-warning" title="Click to annotate record using B2NOTE"><i className="fa fa-edit"/>&nbsp;Annotate</button>
+                    ? <button type="submit" className="btn btn-default btn-xs" title="Click to annotate file using B2NOTE"><i className="fa fa-edit"/>&nbsp;<Badge>{ this.state.notes.length }</Badge></button>
+                    : <button type="submit" className="btn btn-warning" title="Click to annotate record using B2NOTE"><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ this.state.notes.length }</Badge></button>
                 }
             </form>
         );
@@ -100,6 +141,7 @@ const Record = React.createClass({
             showB2NoteWindow: false,
         };
     },
+
     showB2NoteWindow() {
             this.setState({showB2NoteWindow: true})
     },

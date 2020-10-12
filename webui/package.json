@@ -43,10 +43,12 @@
     "react": "^15.5.0",
     "react-dom": "^15.5.0",
     "react-addons-shallow-compare": "^15.5.0",
+    "react-bootstrap": "^0.31.0",
     "react-router": "^2.1.1",
     "react-toggle": "^2.2.0",
     "react-widgets": "^3.2.4",
     "reqwest": "^2.0.5",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "whatwg-fetch": ""
   }
 }

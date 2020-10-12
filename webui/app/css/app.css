@@ -882,6 +882,10 @@ a.navbar-brand {
     width: 17em;
 }
 
+.large-record .metadata-main .pid:last-child {
+    margin-bottom: 10px;
+}
+
 .large-record .metadata-main .community {
     float: right;
     width: 10em;
