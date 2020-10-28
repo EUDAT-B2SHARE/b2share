@@ -53,3 +53,13 @@ A developer documentation is available. It can be built like this:
     $ cd docs
     $ make html
     $ # open in your browser docs/_build/html/index.html
+
+Acknowledgement
+---------------
+
+This work is co-funded by the `EOSC-hub project <http://eosc-hub.eu>`_ (Horizon 2020) under Grant number 777536.
+
+.. image:: https://wiki.eosc-hub.eu/download/attachments/18973612/EU-logo-mini.png?version=2&modificationDate=1603899760369&api=v2
+
+.. image:: https://wiki.eosc-hub.eu/download/attachments/18973612/eosc-hub-mini.png?version=2&modificationDate=1603899760659&api=v2
+
