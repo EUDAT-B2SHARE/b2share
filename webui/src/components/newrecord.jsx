@@ -3,7 +3,7 @@ import React from 'react/lib/ReactWithAddons';
 import { serverCache, notifications, Error, browser } from '../data/server';
 import { Wait, Err } from './waiting.jsx';
 import { renderSmallCommunity } from './common.jsx';
-
+import PiwikTracker from 'piwik-react-router';
 
 export const NewRecordRoute = React.createClass({
     mixins: [React.addons.LinkedStateMixin],

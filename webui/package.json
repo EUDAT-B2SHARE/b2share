@@ -39,6 +39,7 @@
     "dotenv-webpack": "^1.5.7",
     "fast-json-patch": "^0.5.6",
     "font-awesome": "^4.4.0",
+    "history": "^3.3.0",
     "immutable": "^3.7.6",
     "lodash": "^4.17.4",
     "moment": "^2.13.0",
@@ -51,6 +52,7 @@
 =======
 >>>>>>> a07c893... webui: add basic Matomo support
     "react-dom": "^15.5.0",
+    "react-piwik": "^1.11.0",
     "react-router": "^2.1.1",
     "react-toggle": "^2.2.0",
     "react-widgets": "^3.2.4",

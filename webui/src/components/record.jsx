@@ -14,7 +14,7 @@ import { Wait, Err } from './waiting.jsx';
 import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
-
+import PiwikTracker from 'piwik-react-router';
 
 const PT = React.PropTypes;
 
@@ -48,7 +48,6 @@ export const RecordRoute = React.createClass({
         );
     }
 });
-
 
 const B2NoteWidget = React.createClass({
     mixins: [React.addons.PureRenderMixin],
@@ -272,7 +271,6 @@ const Record = React.createClass({
         const pid = metadata.get('ePIC_PID');
         const doi = metadata.get('DOI');
         const state = metadata.get('publication_state');
-
         return (
             <div>
                 <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')}/>
@@ -502,8 +500,16 @@ const Record = React.createClass({
             </div>
         );
     },
-
+    
+    componentDidMount() {
+        const record = this.props.record;
+        const metadata = record.get('metadata') || Map();
+        const doi = metadata.get('DOI').replace("http://doi.org/", "");
+        window._paq.push(['trackEvent', 'MyCategory', 'MyEvent', doi]);
+    },
+    
     render() {
+        
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
         const record = this.props.record;
@@ -521,8 +527,13 @@ const Record = React.createClass({
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
         const state = record.get('metadata').get('publication_state');
+<<<<<<< HEAD
 
+=======
+        const showB2Note = serverCache.getInfo().get('show_b2note');
+>>>>>>> 07e81d8... added matomo tracking code to following files: newrecord.jsx, record.jsx
         return (
+            
             <div className="container-fluid">
                 <div className="large-record bottom-line">
                     <div className="row metadata-main">
@@ -612,6 +623,7 @@ const Record = React.createClass({
                 </div>
             </div>
         );
+        
     }
 });
 
