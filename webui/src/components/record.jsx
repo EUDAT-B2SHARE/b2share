@@ -78,6 +78,7 @@ const B2NoteWidget = React.createClass({
             var pid = file.ePIC_PID;
             var object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
             var source = file.key || "";
+            var type = 'file';
 
             // filter notes for given file
             notes = notes.filter(n => n.target.id == pid) || [];
@@ -85,6 +86,12 @@ const B2NoteWidget = React.createClass({
             var pid = record.metadata.ePIC_PID;
             var object_url = record.links.self || ""
             var source = '';
+            var type = 'record';
+        }
+
+        const texts = {
+            edit: `Click to annotate ${type} using B2NOTE`,
+            disabled: 'Cannot annotate, missing identifiers'
         }
 
         return (
@@ -96,8 +103,8 @@ const B2NoteWidget = React.createClass({
                 <input type="hidden" name="pidName_tofeed" value={title} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="sourceName_tofeed" value={source} className="field left" readOnly="readonly"/>
                 { this.props.smallButton
-                    ? <button type="submit" className="btn btn-warning btn-xs" title="Click to annotate file using B2NOTE"><i className="fa fa-edit"/>&nbsp;<Badge>{ notes.length }</Badge></button>
-                    : <button type="submit" className="btn btn-warning" title="Click to annotate record using B2NOTE"><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ notes.length }</Badge></button>
+                    ? <button type="submit" className="btn btn-warning btn-xs" title={ pid ? texts.edit : texts.disabled } disabled={ pid ? "" : "disabled"}><i className="fa fa-edit"/>&nbsp;<Badge>{ notes.length }</Badge></button>
+                    : <button type="submit" className="btn btn-warning" title={ pid ? texts.edit : texts.disabled } disabled={ pid ? "" : "disabled"}><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ notes.length }</Badge></button>
                 }
             </form>
         );
