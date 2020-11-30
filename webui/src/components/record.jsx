@@ -69,6 +69,7 @@ const B2NoteWidget = React.createClass({
     render() {
         var record = this.props.record.toJS ? this.props.record.toJS() : this.props.record;
         var notes = this.props.notes || [];
+        var title = record.metadata.titles[0].title || "";
 
         const record_url = (record.links.self || "").replace('/api/records/', '/records/');
 
@@ -76,15 +77,13 @@ const B2NoteWidget = React.createClass({
             var file = this.props.file.toJS ? this.props.file.toJS() : this.props.file;
             var pid = file.ePIC_PID;
             var object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
-            var title = file.key;
-            var source = file.name;
+            var source = file.key || "";
 
             // filter notes for given file
             notes = notes.filter(n => n.target.id == pid) || [];
         } else {
             var pid = record.metadata.ePIC_PID;
             var object_url = record.links.self || ""
-            var title = record.metadata.titles[0].title;
             var source = '';
         }
 
