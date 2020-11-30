@@ -742,7 +742,7 @@ export const FileRecordRow = React.createClass({
                         { file.checksum ?
                             <div>
                                 Checksum:
-                                <span className="checksum">{file.checksum}</span>
+                                <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.checksum} />
                             </div>
                             : false }
                         { file.ePIC_PID ?
