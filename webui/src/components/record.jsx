@@ -151,10 +151,44 @@ const Record = React.createClass({
             return;
         }
 
-        this.getB2Notes(this.props.b2noteUrl, 'record_notes', [this.props.record.get('metadata').get('ePIC_PID')], [this.props.record.get('links').get('self')]);
+        window.addEventListener('message', this.catchB2NoteEvent);
+
+        this.updateNotes();
+    },
+
+    updateNotes() {
+        this.updateRecordNotes('record_notes');
+        this.updateFileNotes('files_notes');
+    },
+
+    updateRecordNotes(target) {
+        this.getB2Notes(this.props.b2noteUrl, target, [this.props.record.get('metadata').get('ePIC_PID')], [this.props.record.get('links').get('self')]);
+    },
+
+    updateFileNotes(target) {
         var bucket_id = this.props.record.get('links').get('files');
-        this.getB2Notes(this.props.b2noteUrl, 'files_notes', this.props.record.get('files').map(file => file.get('ePIC_PID')), this.props.record.get('files').map(file => bucket_id + '/' + file.get('key')));
-                        //(url.indexOf('/api') == 0) ? (window.location.origin + url) : url)
+        this.getB2Notes(this.props.b2noteUrl, target, this.props.record.get('files').map(file => file.get('ePIC_PID')), this.props.record.get('files').map(file => bucket_id + '/' + file.get('key')));
+    },
+
+    catchB2NoteEvent(event) {
+        if (event.origin != this.state.b2noteUrl) {
+            return;
+        }
+        switch (typeof event.data || undefined) {
+            case 'string':
+                if (event.data != "B2NOTE loaded") {
+                    console.log("B2NOTE init failed");
+                }
+                break;
+
+            case 'object':
+                switch (event.data.action || "") {
+                    case 'create':
+                        this.updateNotes();
+                        break;
+                }
+                break;
+        }
     },
 
     renderFixedFields(record, community) {
