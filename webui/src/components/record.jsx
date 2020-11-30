@@ -174,6 +174,7 @@ const Record = React.createClass({
         if (event.origin != this.state.b2noteUrl) {
             return;
         }
+
         switch (typeof event.data || undefined) {
             case 'string':
                 if (event.data != "B2NOTE loaded") {
@@ -183,7 +184,7 @@ const Record = React.createClass({
 
             case 'object':
                 switch (event.data.action || "") {
-                    case 'create':
+                    case 'create': case 'delete': case 'edit':
                         this.updateNotes();
                         break;
                 }
