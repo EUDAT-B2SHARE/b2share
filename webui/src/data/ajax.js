@@ -8,7 +8,7 @@ const DEFAULT_TIMEOUT_POST_MS = 10 * 1000; // 10 seconds
 export let errorHandler = {fn:function(text){}};
 
 const starttime = Date.now();
-function timestamp() { return Date.now() - starttime; }
+export function timestamp() { return Date.now() - starttime; }
 
 export function ajaxGet({url, params, etag, successFn, errorFn, completeFn}) {
     console.log("--- ajaxGet:", timestamp(), url, params?params:"");

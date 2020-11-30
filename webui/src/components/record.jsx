@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 import { Map, List } from 'immutable';
 import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
 import moment from 'moment';
+import { timestamp } from '../data/ajax';
 import { serverCache, notifications, browser, Error } from '../data/server';
 import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
@@ -30,7 +31,8 @@ export const RecordRoute = React.createClass({
 
     render() {
         const record = this.getRecordOrDraft();
-        if (!record) {
+        const b2noteUrl = serverCache.getInfo().get('b2note_url');
+        if (!record || !b2noteUrl) {
             return <Wait/>;
         }
         if (record instanceof Error) {
@@ -38,7 +40,6 @@ export const RecordRoute = React.createClass({
         }
         const [rootSchema, blockSchemas] = serverCache.getRecordSchemas(record);
         const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
-        const b2noteUrl = serverCache.getInfo().get('b2note_url');
 
         return (
             <ReplaceAnimate>
@@ -55,28 +56,9 @@ const B2NoteWidget = React.createClass({
         record: PT.object.isRequired,
         file: PT.object,
         showB2NoteWindow: PT.func.isRequired,
+        //notes: PT.object.isRequired,
         b2noteUrl: PT.string.isRequired,
         smallButton: PT.bool
-    },
-
-    getInitialState() {
-        var state = {
-            record: this.props.record.toJS ? this.props.record.toJS() : this.props.record,
-            pid: '',
-            object_url: '',
-            notes: {}
-        }
-
-        if (this.props.file) {
-            var file = this.props.file.toJS ? this.props.file.toJS() : this.props.file;
-            state.pid = file.ePIC_PID;
-            state.object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
-        } else {
-            state.pid = state.record.metadata.ePIC_PID;
-            state.object_url = state.record.links.self || ""
-        }
-
-        return state;
     },
 
     handleSubmit(e) {
@@ -84,49 +66,39 @@ const B2NoteWidget = React.createClass({
         this.props.showB2NoteWindow();
     },
 
-    getRecordNotes() {
-        var self = this;
-        var url = this.props.b2noteUrl + '/api/annotations?type[]=semantic&type[]=keyword&type[]=comment&target-id=' + this.state.pid;
-        console.log('--- B2NOTE get: ' + url);
-        fetch(url)
-          .then(function(response) {
-            return response.json()
-          }).then(function(json) {
-            self.setState({
-                    notes: json
-                }
-            );
-          }).catch(function(ex) {
-            console.log('B2NOTE request failed: ' + ex)
-          })
-    },
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.notes != this.props.notes) {
-            this.getRecordNotes();
-        }
-    },
-
-    componentWillMount() {
-        this.getRecordNotes();
-    },
-
     render() {
-        if (this.state.record === undefined) {
-            return <Wait key={this.state.pid} />
+        var record = this.props.record.toJS ? this.props.record.toJS() : this.props.record;
+        var notes = this.props.notes || [];
+
+        const record_url = (record.links.self || "").replace('/api/records/', '/records/');
+
+        if (this.props.file) {
+            var file = this.props.file.toJS ? this.props.file.toJS() : this.props.file;
+            var pid = file.ePIC_PID;
+            var object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
+            var title = file.key;
+            var source = file.name;
+
+            // filter notes for given file
+            notes = notes.filter(n => n.target.id == pid) || [];
+        } else {
+            var pid = record.metadata.ePIC_PID;
+            var object_url = record.links.self || ""
+            var title = record.metadata.titles[0].title;
+            var source = '';
         }
-        const record_url = (this.state.record.links.self || "").replace('/api/records/', '/records/');
-        //var nc = this.state.notes.length ?  : "";
 
         return (
             <form id="b2note_form_" action={this.props.b2noteUrl + '/widget'} method="post" target="b2note_iframe" style={this.props.style} onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="pid_tofeed" value={this.state.pid} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="subject_tofeed" value={this.state.object_url} className="field left" readOnly="readonly"/>
-                <input type="hidden" name="keywords_tofeed" value={this.state.record.metadata.keywords||""} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="pid_tofeed" value={pid} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="subject_tofeed" value={object_url} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="keywords_tofeed" value={record.metadata.keywords||""} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="pidName_tofeed" value={title} className="field left" readOnly="readonly"/>
+                <input type="hidden" name="sourceName_tofeed" value={source} className="field left" readOnly="readonly"/>
                 { this.props.smallButton
-                    ? <button type="submit" className="btn btn-default btn-xs" title="Click to annotate file using B2NOTE"><i className="fa fa-edit"/>&nbsp;<Badge>{ this.state.notes.length }</Badge></button>
-                    : <button type="submit" className="btn btn-warning" title="Click to annotate record using B2NOTE"><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ this.state.notes.length }</Badge></button>
+                    ? <button type="submit" className="btn btn-warning btn-xs" title="Click to annotate file using B2NOTE"><i className="fa fa-edit"/>&nbsp;<Badge>{ notes.length }</Badge></button>
+                    : <button type="submit" className="btn btn-warning" title="Click to annotate record using B2NOTE"><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ notes.length }</Badge></button>
                 }
             </form>
         );
@@ -136,14 +108,54 @@ const B2NoteWidget = React.createClass({
 
 const Record = React.createClass({
     mixins: [React.addons.PureRenderMixin],
+
     getInitialState() {
-        return {
+        var state = {
             showB2NoteWindow: false,
-        };
+            record_notes: [],
+            files_notes: [],
+            b2noteUrl: this.props.b2noteUrl
+        }
+
+        return state;
+    },
+
+    getB2Notes(host, target, pids, sources) {
+        var self = this;
+
+        const pid_parameters = pids.join("&target-id[]=");
+        const source_parameters = sources.join("&target-source[]=");
+
+        // do not use inline ${var} here, it will unwrap the array
+        var url = host + '/api/annotations?type[]=semantic&type[]=keyword&type[]=comment&target-id[]=' + pid_parameters + '&target-source[]=' + source_parameters;
+        console.log('--- B2NOTE get:', timestamp(), `${pids}, ${sources}`);
+        fetch(url)
+          .then(function(response) {
+            return response.json();
+          }).then(function(json) {
+            console.log('  > B2NOTE ret:', timestamp(), json);
+            self.setState({
+                [target]: json
+            });
+          }).catch(function(ex) {
+            console.log('B2NOTE request failed: ' + ex)
+          });
     },
 
     showB2NoteWindow() {
-            this.setState({showB2NoteWindow: true})
+        this.setState({showB2NoteWindow: true})
+    },
+
+    componentDidMount() {
+        // this is set async in parent
+        if (this.state.b2noteUrl == "") {
+            return;
+        }
+
+        this.getB2Notes(this.props.b2noteUrl, 'record_notes', [this.props.record.get('metadata').get('ePIC_PID')], [this.props.record.get('links').get('self')]);
+        var bucket_id = this.props.record.get('links').get('files');
+        this.getB2Notes(this.props.b2noteUrl, 'files_notes', this.props.record.get('files').map(file => file.get('ePIC_PID')), this.props.record.get('files').map(file => bucket_id + '/' + file.get('key')));
+                        //(url.indexOf('/api') == 0) ? (window.location.origin + url) : url)
     },
 
     renderFixedFields(record, community) {
@@ -291,7 +303,7 @@ const Record = React.createClass({
             const fileRecordRowFn = f => {
                 let b2noteWidget = false;
                 if (b2noteUrl) {
-                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl} smallButton={true}/>;
+                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} notes={this.state.files_notes} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl} smallButton={true}/>;
                 }
                 return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} showDownloads={showDownloads} />
             }
@@ -445,7 +457,8 @@ const Record = React.createClass({
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
         const record = this.props.record;
-        if (!record || !rootSchema) {
+        const b2noteUrl = this.props.b2noteUrl;
+        if (!record || !rootSchema || !b2noteUrl) {
             return <Wait/>;
         }
 
@@ -531,7 +544,7 @@ const Record = React.createClass({
                             <div>
                                 <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse"><i className="glyphicon glyphicon-exclamation-sign"/> Report Abuse</Link>
                                 { this.props.b2noteUrl ?
-                                    <B2NoteWidget record={record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={this.props.b2noteUrl} style={{display: 'inline-block', margin: '0px 7px'}}/>
+                                    <B2NoteWidget record={record} showB2NoteWindow={this.showB2NoteWindow} notes={this.state.record_notes} b2noteUrl={this.props.b2noteUrl} b2noteCount={this.state.record_notes || {}} style={{display: 'inline-block', margin: '0px 7px'}}/>
                                     : false
                                 }
                                 { canEditRecord(record) ?
