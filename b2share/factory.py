@@ -153,7 +153,6 @@ def create_app(**kwargs):
 
 
 def add_routes(app_ui):
-
     @app_ui.route('/')
     def root():
         return app_ui.send_static_file('index.html')
