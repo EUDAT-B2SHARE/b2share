@@ -20,7 +20,7 @@ if [ ! -f /usr/var/b2share-instance/provisioned ]; then
         /usr/local/bin/b2share demo load_data
     elif [ "${INIT_DB_AND_INDEX}" = "1" ]; then
         # add default location
-        /usr/bin/b2share files add-location 'local' file:///usr/var/b2share-instance/files --default
+        /usr/local/bin/b2share files add-location 'local' file:///usr/var/b2share-instance/files --default
     fi
 
     touch /usr/var/b2share-instance/provisioned
