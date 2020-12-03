@@ -36,7 +36,7 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
 export const Schema = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    renderSchema([id, schema]) {
+    renderSchema([id, schema], depth=0) {
         const requiredClass = schema.get('isRequired') ? "required property":"";
 
         const type = schema.get('type');
@@ -47,13 +47,13 @@ export const Schema = React.createClass({
         if (type === 'array') {
             inner = (
                 <ul className="list-unstyled field-array">
-                    {this.renderSchema([null, schema.get('items')])}
+                    { this.renderSchema([null, schema.get('items')], depth) }
                 </ul>
             );
         } else if (type === 'object') {
             inner = (
                 <ul className="list-unstyled">
-                    { schema.get('properties').entrySeq().map(this.renderSchema) }
+                    { schema.get('properties').entrySeq().map(field => this.renderSchema(field, depth+1)) }
                 </ul>
             );
         } else if (schema.get('enum')) {
@@ -67,8 +67,9 @@ export const Schema = React.createClass({
             inner = <span className="mono-style">{inner}</span>
         }
 
+        const leftwidth = 12 / (this.columnCount - depth);
         const leftcolumn = !id ? false :
-            <div className="col-sm-6">
+            <div className={"col-sm-" + leftwidth}>
                 <p className={requiredClass}>
                     <span className="bold">{title}</span>
                     <span className="mono-style">
@@ -79,13 +80,25 @@ export const Schema = React.createClass({
                 </p>
                 <p> {schema.get('description')} </p>
             </div>;
-        const rightcolumnsize = leftcolumn ? "col-sm-6" : "col-sm-12";
+        const rightcolumnsize = leftcolumn ? "col-sm-" + (12 - leftwidth) : "col-sm-12";
         return (
             <li key={id} className="row field-general">
                 {leftcolumn}
                 <div className={rightcolumnsize}> {inner} </div>
             </li>
         );
+    },
+
+    determineColumnCount(schema, count=1) {
+        var fcount = count;
+        [['properties'], ['items', 'properties']].forEach(t => {
+            if (schema.getIn(t)) {
+                schema.getIn(t).forEach(field => {
+                    fcount = Math.max(fcount, this.determineColumnCount(field, count+1));
+                });
+            }
+        });
+        return Math.max(fcount, count);
     },
 
     render() {
@@ -95,6 +108,8 @@ export const Schema = React.createClass({
         }
         const jschema = schema.get('json_schema');
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(jschema);
+
+        this.columnCount = this.determineColumnCount(jschema);
         return (
             <div className="schema">
                 <div className="row">
@@ -110,8 +125,8 @@ export const Schema = React.createClass({
                     </div>
                 </div>
                 <ul className="list-unstyled">
-                    { majors.entrySeq().map(this.renderSchema) }
-                    { minors.entrySeq().map(this.renderSchema) }
+                    { majors.entrySeq().map(field => this.renderSchema(field, 0)) }
+                    { minors.entrySeq().map(field => this.renderSchema(field, 0)) }
                 </ul>
             </div>
         );
