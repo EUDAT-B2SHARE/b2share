@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import
 
-import json
+import json, copy
 
 import sqlalchemy
 from invenio_db import db
@@ -43,7 +43,27 @@ from .errors import BlockSchemaDoesNotExistError, BlockSchemaIsDeprecated, \
     SchemaVersionExistsError
 
 
-class RootSchema(object):
+class Schema(object):
+    @staticmethod
+    def _resolveLocalReferences(schema, defs):
+        def getRef(ref):
+            if not ref.startswith("#"):
+                raise InvalidRootSchemaError('Only local references supported')
+            return defs.get(ref.split('/')[-1])
+
+        r = {}
+        for k, v in schema.items():
+            if k == '$ref':
+                r.update(Schema._resolveLocalReferences(getRef(v), defs))
+            elif isinstance(v, dict):
+                r[k] = Schema._resolveLocalReferences(v, defs)
+            else:
+                r[k] = v
+
+        return r
+
+
+class RootSchema(Schema):
     """Record root Schema API.
 
     Root schemas are maintined by EUDAT. Their list is fixed and always
@@ -86,6 +106,10 @@ class RootSchema(object):
             ).order_by(RootSchemaVersion.version.asc())
         )
         prev_schemas = map(lambda x: x.json_schema, previous_root_schemas)
+
+        if 'definitions' in json_schema:
+            json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
+
         validate_json_schema(json_schema, prev_schemas)
 
         with db.session.begin_nested():
@@ -140,6 +164,10 @@ class RootSchema(object):
 
         if existing_schema is None:
             raise RootSchemaDoesNotExistError("Root schema version {0} intended for update does not exist.".format(version))
+
+        # resolve references if definitions present
+        if 'definitions' in json_schema:
+            json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
 
         validate_json_schema(json_schema, [existing_schema.json_schema])
 
