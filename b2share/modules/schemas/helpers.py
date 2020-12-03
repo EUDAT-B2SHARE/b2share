@@ -129,8 +129,10 @@ def validate_json_schema(new_json_schema, prev_schemas):
         ].ref_resolver_cls.from_schema(new_json_schema)
     )
 
+    # validate compatibility between schema version and earlier schema versions
     for prev_schema in prev_schemas:
         schema_validator.validate(json.loads(prev_schema), 'prevs')
+    # validate compatibility between schema version and previously stored same schema version
     schema_validator.validate(new_json_schema, 'current schema')
     try:
         super_schema = resolve_json(new_json_schema['$schema'])
@@ -218,22 +220,21 @@ def load_root_schemas(cli=False, verbose=False, force=False):
                 json_schema = json_config['json_schema']
                 retrieved = RootSchema.get_root_schema(version)
                 # check that the schema is the same
-                if json.loads(retrieved.json_schema) != json_schema:
-                    if force:
-                        if cli and verbose:
-                            click.echo(' => UPDATING root schema version {0}.'
-                                       .format(version, filename))
-                        configs_count += 1
-                        RootSchema.update_existing_version(version, json_schema)
-                        continue
-                    else:
-                        if cli and verbose:
-                            raise RootSchemaAlreadyExistsError(
-                                'Already loaded Root JSON Schema '
-                                'version {0} does not match the one in file "{1}".'
-                                .format(version,
-                                        os.path.join(root_schemas_dir, filename)),
-                            )
+                if force or json.loads(retrieved.json_schema) != json_schema:
+                    if cli and verbose:
+                        click.echo(' => UPDATING root schema version {0}.'
+                                   .format(version, filename))
+                    configs_count += 1
+                    RootSchema.update_existing_version(version, json_schema)
+                    continue
+                else:
+                    if cli and verbose:
+                        raise RootSchemaAlreadyExistsError(
+                            'Already loaded Root JSON Schema '
+                            'version {0} does not match the one in file "{1}".'
+                            .format(version,
+                                    os.path.join(root_schemas_dir, filename)),
+                        )
                 if cli and verbose:
                     click.echo(' => SCHEMA ALREADY LOADED.')
             except RootSchemaDoesNotExistError:
