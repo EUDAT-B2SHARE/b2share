@@ -49,7 +49,7 @@ def resolve_json(url):
     return json_schema
 
 
-def validate_json_schema(new_json_schema, prev_schemas):
+def validate_json_schema(new_json_schema, prev_schemas, options={}):
     """Check that a JSON Schema is valid.abs
 
     A JSON Schema is valid if it matches its "$schema" and it is backward
@@ -130,10 +130,13 @@ def validate_json_schema(new_json_schema, prev_schemas):
     )
 
     # validate compatibility between schema version and earlier schema versions
-    for prev_schema in prev_schemas:
-        schema_validator.validate(json.loads(prev_schema), 'prevs')
+    if not options.get('ignore_mismatches', True):
+        for prev_schema in prev_schemas:
+            schema_validator.validate(json.loads(prev_schema), 'prevs')
     # validate compatibility between schema version and previously stored same schema version
-    schema_validator.validate(new_json_schema, 'current schema')
+    if not options.get('ignore_mismatches', True):
+        schema_validator.validate(new_json_schema, 'current schema')
+
     try:
         super_schema = resolve_json(new_json_schema['$schema'])
     except URLError as e:
@@ -190,7 +193,7 @@ root_schema_config_schema = {
 }
 
 
-def load_root_schemas(cli=False, verbose=False, force=False):
+def load_root_schemas(cli=False, verbose=False, force=False, ignore_mismatches=False):
     """Load root schemas in the database.
 
     Args:
@@ -225,7 +228,7 @@ def load_root_schemas(cli=False, verbose=False, force=False):
                         click.echo(' => UPDATING root schema version {0}.'
                                    .format(version, filename))
                     configs_count += 1
-                    RootSchema.update_existing_version(version, json_schema)
+                    RootSchema.update_existing_version(version, json_schema, options=locals())
                     continue
                 else:
                     if cli and verbose:
@@ -242,7 +245,7 @@ def load_root_schemas(cli=False, verbose=False, force=False):
                     click.echo(' => LOADING root schema version {0}.'
                                .format(version, filename))
                 configs_count += 1
-                RootSchema.create_new_version(version, json_schema)
+                RootSchema.create_new_version(version, json_schema, options=locals())
             except Exception:
                 click.echo()
                 raise

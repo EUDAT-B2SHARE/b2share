@@ -80,7 +80,7 @@ class RootSchema(Schema):
         self.model = model
 
     @classmethod
-    def create_new_version(cls, version, json_schema):
+    def create_new_version(cls, version, json_schema, options={}):
         """Load a new root schema version.
 
         Args:
@@ -110,7 +110,7 @@ class RootSchema(Schema):
         if 'definitions' in json_schema:
             json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
 
-        validate_json_schema(json_schema, prev_schemas)
+        validate_json_schema(json_schema, prev_schemas, options)
 
         with db.session.begin_nested():
             # Force the given version to follow the previous one.
@@ -136,7 +136,7 @@ class RootSchema(Schema):
             return root_schema
 
     @classmethod
-    def update_existing_version(cls, version, json_schema):
+    def update_existing_version(cls, version, json_schema, options={}):
         """Update an existing root schema version.
 
         Args:
@@ -169,7 +169,7 @@ class RootSchema(Schema):
         if 'definitions' in json_schema:
             json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
 
-        validate_json_schema(json_schema, [existing_schema.json_schema])
+        validate_json_schema(json_schema, [existing_schema.json_schema], options)
 
         with db.session.begin_nested():
             # Update the root schema.
