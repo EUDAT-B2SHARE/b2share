@@ -145,7 +145,15 @@ def edit(verbose, id, name, description, logo, clear_fields):
 @communities.command()
 @with_appcontext
 @click.argument('community')
-@click.argument('json_file')
-def set_schema(community, json_file):
-    from b2share.modules.schemas.cli import update_or_set_community_schema
-    update_or_set_community_schema(community, json_file)
+@click.argument('json_file', required=False, default=None)
+@click.option('--root-schema', required=False, default=None, type=int)
+def set_schema(community, json_file, root_schema):
+    """Set the community block schema and/or root schema version.
+    If a root schema version is given, but no JSON file, the latest known block schema will be used (if present)."""
+    from b2share.modules.schemas.cli import update_or_set_community_schema, update_or_set_community_root_schema
+    if json_file:
+        update_or_set_community_schema(community, json_file, root_schema)
+    elif root_schema:
+        update_or_set_community_root_schema(community, root_schema)
+    else:
+        raise click.BadParameter("Need at least a JSON file or root schema version")

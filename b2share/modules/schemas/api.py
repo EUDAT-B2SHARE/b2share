@@ -702,6 +702,16 @@ class CommunitySchema(object):
         """Retrieve the community specific JSON Schema."""
         return self.model.community_schema
 
+    @property
+    def block_schema_id(self):
+        """Retrieve the community schema's specific block schema ID"""
+        try:
+            schema = json.loads(self.community_schema)
+            block_schema_id = list(schema.get('properties', {}).keys())[-1]
+        except:
+            return ""
+        return block_schema_id
+
 
 def _fetch_all_query_pages(query, per_page=500):
     """Paginate query results and return an iterable object."""

@@ -34,7 +34,6 @@ from flask.cli import with_appcontext
 
 from flask import current_app
 from invenio_db import db
-from urllib.parse import urlunsplit
 
 from .errors import CommunitySchemaDoesNotExistError
 from .errors import RootSchemaAlreadyExistsError, BlockSchemaDoesNotExistError
@@ -45,6 +44,7 @@ from .serializers import block_schema_version_json_schema_link
 
 from b2share.modules.communities.api import Community
 from b2share.modules.communities.helpers import get_community_by_name_or_id
+from b2share.utils import get_base_url
 
 
 @click.group()
@@ -296,7 +296,7 @@ def community_schema_list_block_schema_versions(verbose, community, version=None
 
 
 # this function should be called from the communities' cli module
-def update_or_set_community_schema(community, json_file):
+def update_or_set_community_schema(community, json_file, root_schema_version=None):
     """Updates or sets the schema for a community.
 
     The complete schema of a community contains a copy of the root metadata
@@ -307,6 +307,7 @@ def update_or_set_community_schema(community, json_file):
     - community is the ID or NAME of the community to be updated.
     - json_file is a file path to the json-schema file describing the
     community-specific block schema.
+    - root_schema_version is the index of a known root schema.
 
     See also `b2share schemas block_schema_version_generate_json`"""
 
@@ -344,22 +345,54 @@ def update_or_set_community_schema(community, json_file):
             raise click.ClickException("""Multiple block schemas not supported.""")
         #we can by configuration also have a community schema that does not refer to a blockschema
         if len (comm_schema_json['properties']) == 0:
-            _create_community_schema(comm, schema_dict)
+            _create_community_schema(comm, schema_dict, root_schema_version)
         else:
-            _update_community_schema(comm, comm_schema_json, schema_dict)
+            _update_community_schema(comm, comm_schema_json, schema_dict, root_schema_version)
     except CommunitySchemaDoesNotExistError:
-        _create_community_schema(comm, schema_dict)
+        _create_community_schema(comm, schema_dict, root_schema_version)
     db.session.commit()
     click.secho("Succesfully processed new metadata schema", fg='green')
 
 
+def update_or_set_community_root_schema(community, root_schema_version):
+    """Updates or sets the root schema version for a community.
+
+    The complete schema of a community contains a copy of the root metadata
+    schema and a set of community-specific metadata block schemas. Currently
+    we assume there's only one allowed metadata block schema for a community,
+    and this command creates it or makes a new version for it.
+
+    By calling this function a new community schema version and block schema version
+    (cloned from latest if present) are created.
+
+    - community is the ID or NAME of the community to be updated.
+    - root_schema_version is the index of a known root schema.
+    """
+
+    comm = get_community_by_name_or_id(community)
+    if not comm:
+        raise click.BadParameter("There is no community by this name or ID: %s" %
+                                 community)
+
+    # get latest version of community schema
+    try:
+        community_schema = CommunitySchema.get_community_schema(comm.id)
+        comm_schema_json = json.loads(community_schema.community_schema)
+
+        if community_schema.block_schema_id > "":
+            _create_community_schema(comm, comm_schema_json, root_schema_version)
+        else:
+            _create_community_schema_no_block(comm, root_schema_version)
+    except Exception as e:
+        print(e)
+        return False
+
+    db.session.commit()
+    click.secho("Succesfully processed root schema", fg='green')
+
+
 def _update_community_schema(community, comm_schema_json, schema_dict):
-    base_url = urlunsplit((
-        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-        current_app.config['JSONSCHEMAS_HOST'],
-        current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))
-    with current_app.test_request_context('/', base_url=base_url):
+    with current_app.test_request_context('/', base_url=get_base_url()):
         block_schema_id = comm_schema_json['properties'].popitem()[0]
         try:
             block_schema = BlockSchema.get_block_schema(block_schema_id)
@@ -377,13 +410,21 @@ def _update_community_schema(community, comm_schema_json, schema_dict):
         return CommunitySchema.create_version(community.id, comm_schema_json)
 
 
-def _create_community_schema(community, schema_dict):
-    base_url = urlunsplit((
-        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-        current_app.config['JSONSCHEMAS_HOST'],
-        current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))
-    with current_app.test_request_context('/', base_url=base_url):
+def _create_community_schema_no_block(community, root_schema_version):
+    with current_app.test_request_context('/', base_url=get_base_url()):
+        community_schema = {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'properties': {},
+            'type': "object",
+            'additionalProperties': False
+        }
+        click.secho(json.dumps(community_schema, indent=4))
+        result = CommunitySchema.create_version(community.id, community_schema, root_schema_version)
+    return result
+
+
+def _create_community_schema(community, schema_dict, root_schema_version):
+    with current_app.test_request_context('/', base_url=get_base_url()):
         block_schema = BlockSchema.create_block_schema(
             community.id, community.name
         )
@@ -403,5 +444,5 @@ def _create_community_schema(community, schema_dict):
             'required': [str(block_schema.id)],
         }
         click.secho(json.dumps(community_schema, indent=4))
-        result = CommunitySchema.create_version(community.id, community_schema)
+        result = CommunitySchema.create_version(community.id, community_schema, root_schema_version)
     return result
