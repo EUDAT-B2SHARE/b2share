@@ -16,7 +16,7 @@ import { onAjaxError } from '../data/ajax';
 import { keys, pairs, objEquals } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
-import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
+import { getSchemaOrderedMajorAndMinorFields, hiddenFields } from './schema.jsx';
 import { EditFiles, PersistentIdentifier } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { SelectLicense } from './selectlicense.jsx';
@@ -362,9 +362,9 @@ const EditRecord = React.createClass({
                     </div>
                 </div> );
         } else if (schema.get('type') === 'object') {
-            const props = schema.get('properties');
-            field = schema.get('properties').entrySeq().map(([pid, pschema]) =>
-                        this.renderFieldTree(pid, pschema, newpath(pid)));
+            field = schema.get('properties').entrySeq()
+                            .sort(([pid, pschema]) => { return !pschema.get('isRequired'); })
+                            .map(([pid, pschema]) => this.renderFieldTree(pid, pschema, newpath(pid)));
         } else {
             field = this.renderScalarField(schema, path);
         }
@@ -430,7 +430,7 @@ const EditRecord = React.createClass({
             };
             return <div style={style} key={pid}> {f} </div>;
         }
-        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema);
+        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
 
         const majorFields = majors.entrySeq().map(renderBigFieldTree.bind(this));
         const minorFields = minors.entrySeq().map(renderBigFieldTree.bind(this));
