@@ -23,8 +23,7 @@
 
 """B2share records errors."""
 
-
-import uuid
+from b2share.utils import is_valid_uuid
 from jsonschema.exceptions import ValidationError
 from jsonpatch import JsonPatchException
 from jsonpointer import JsonPointerException
@@ -122,11 +121,3 @@ def register_error_handlers(app):
         return InvalidOperationError(
             errors=[GenericError('JSON-Patch error: {}'.format(err.args[0]))]
         )
-
-
-def is_valid_uuid(argument):
-    try:
-        uuid.UUID(argument)
-        return True
-    except Exception:
-        return False
