@@ -509,6 +509,60 @@ class BlockSchemaVersionsIterator(object):
         except IndexError:
             return False
 
+class CommunitySchemaVersionsIterator(object):
+    """Iterator for Community Schema Versions.
+
+    SQL Queries are performed for each method call. Thus repeated calls will
+    be inconsistent if new Community Schema Versions are added.
+    """
+
+    def __init__(self, community_schema):
+        """Initialize iterator."""
+        self._it = None
+        self.community_schema = community_schema
+
+    def __len__(self):
+        """Get number of versions."""
+        from .models import CommunitySchemaVersion as CommunitySchemaVersionModel
+        return db.session.query(
+            sqlalchemy.func.count(CommunitySchemaVersionModel.version)
+            .label('count')
+        ).filter(
+            CommunitySchemaVersionModel.community == self.community_schema.community,
+        ).one().count
+
+    def __iter__(self):
+        """Get iterator."""
+        from .models import CommunitySchemaVersion as CommunitySchemaVersionModel
+        self._it = iter(CommunitySchemaVersionModel.query.filter(
+            CommunitySchemaVersionModel.community == self.community_schema.community,
+        ).order_by(CommunitySchemaVersionModel.version.asc()).all())
+        return self
+
+    def __next__(self):
+        """Get next version item."""
+        return CommunitySchemaVersion(next(self._it), self.community_schema)
+
+    def __getitem__(self, version):
+        """Get a specific version."""
+        from .models import CommunitySchemaVersion as CommunitySchemaVersionModel
+        try:
+            model = CommunitySchemaVersionModel.query.filter(
+                CommunitySchemaVersionModel.community == self.community_schema.community,
+                CommunitySchemaVersionModel.version == version).one()
+        except NoResultFound:
+            raise IndexError('No version {0} for community schema {1}'.format(
+                version, self.community_schema.community))
+        return CommunitySchemaVersion(model, self.community_schema)
+
+    def __contains__(self, version):
+        """Test if a version exists."""
+        try:
+            self[version]
+            return True
+        except IndexError:
+            return False
+
 
 class BlockSchemaVersion(object):
     """API for the Block Schema Versions."""
@@ -677,6 +731,19 @@ class CommunitySchema(object):
         ]}
         return result
 
+    @classmethod
+    def get_all_community_schemas(cls, community_id=None):
+        from .models import CommunitySchemaVersion as CommunitySchemaModel
+        try:
+            filters = []
+            if community_id is not None:
+                filters.append(CommunitySchemaModel.community == community_id)
+
+            return [cls(model) for model in CommunitySchemaModel.query.filter(
+                *filters).order_by(CommunitySchemaModel.released).all()]
+        except NoResultFound as e:
+            raise CommunitySchemaDoesNotExistError() from e
+
     @property
     def community(self):
         """Retrieve the community maintaining of this Community Schema."""
@@ -711,6 +778,16 @@ class CommunitySchema(object):
         except:
             return ""
         return block_schema_id
+
+    @property
+    def versions(self):
+        """Retrieve the complete list of released community schema versions.
+
+        Returns:
+            :class:`b2share.modules.schemas.models.CommunitySchemaVersionsIterator`:
+                An iterator on released community schema versions.
+        """  # noqa
+        return CommunitySchemaVersionsIterator(self)
 
 
 def _fetch_all_query_pages(query, per_page=500):

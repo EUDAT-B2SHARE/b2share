@@ -294,6 +294,39 @@ def community_schema_list_block_schema_versions(verbose, community, version=None
             key, props[key]['$ref']))
 
 
+@schemas.command()
+@with_appcontext
+@click.option('-v', '--verbose', is_flag=True, default=False)
+@click.argument('community', required=False)
+def community_schema_list(verbose, community):
+    """Lists all community schema versions for this b2share instance (filtered for a
+    community)."""
+    comm = None
+    if community:
+        comm = get_community_by_name_or_id(community)
+    community_id = None
+    if comm:
+        community_id = comm.id
+    if verbose:
+        click.secho("filtering for community %s" % comm)
+    try:
+        community_schemas = \
+        CommunitySchema.get_all_community_schemas(community_id=community_id)
+    except CommunitySchemaDoesNotExistError:
+        raise click.ClickException("""No community schemas found, community
+            parameter was: %s""" % community)
+    click.secho("""COMMUNITY ID\t\t\t\tNAME\t\tVERSION\tROOT SCHEMA\tRELEASED\t\t\t\tBLOCK SCHEMA ID""")
+    for cs in community_schemas:
+        cs_comm = Community.get(id=cs.community)
+        click.secho("%s\t%s\t%d\t%d\t\t%s\t\t%s" % (
+            cs.community,
+            cs_comm.name[0:15].ljust(15),
+            cs.version,
+            cs.root_schema,
+            cs.released,
+            cs.block_schema_id
+        ))
+
 
 # this function should be called from the communities' cli module
 def update_or_set_community_schema(community, json_file, root_schema_version=None):
@@ -383,8 +416,7 @@ def update_or_set_community_root_schema(community, root_schema_version):
             _create_community_schema(comm, comm_schema_json, root_schema_version)
         else:
             _create_community_schema_no_block(comm, root_schema_version)
-    except Exception as e:
-        print(e)
+    except:
         return False
 
     db.session.commit()
@@ -408,7 +440,6 @@ def _update_community_schema(community, comm_schema_json, schema_dict):
             '$ref': block_schema_version_url,
         }
         return CommunitySchema.create_version(community.id, comm_schema_json)
-
 
 def _create_community_schema_no_block(community, root_schema_version):
     with current_app.test_request_context('/', base_url=get_base_url()):
