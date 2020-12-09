@@ -10,6 +10,7 @@
             },
             "schemeUri": {
                 "title": "Scheme URI",
+                "description": "The URI pointing to the scheme.",
                 "type": "string",
                 "format": "uri"
             },
@@ -24,6 +25,7 @@
             "scheme": {
                 "scheme": {
                     "title": "Scheme",
+                    "description": "The scheme used for the identifier.",
                     "type": "string"
                 },
                 "scheme_uri": {
@@ -36,7 +38,7 @@
                 },
                 "$ref": "#/definitions/scheme"
             },
-            "affiliationIdentifier": {
+            "affiliation": {
                 "affiliation_name": {
                     "$ref": "#/definitions/nonEmptyString"
                 },
@@ -49,29 +51,34 @@
             "person": {
                 "given_name": {
                     "title": "Given name",
+                    "description": "The first names given to this person.",
                     "type": "string"
                 },
                 "family_name": {
                     "title": "Family name",
+                    "description": "The family names given to this person.",
                     "type": "string"
                 },
                 "affiliations": {
                     "type": "array",
                     "title": "Affiliations",
+                    "description": "The organisations or entities this person is affiliated with.",
                     "items": {
                         "type": "object",
                         "properties": {
-                            "$ref": "#/definitions/affiliationIdentifier"
+                            "$ref": "#/definitions/affiliation"
                         }
                     }
                 },
                 "name_type": {
                     "title": "Type",
+                    "description": "The type of creator.",
                     "type": "string",
                     "enum": ["Personal", "Organizational"]
                 },
                 "name_identifiers": {
                     "title": "Name identifiers",
+                    "description": "The identifiers that point to any information about this creator.",
                     "type": "array",
                     "items": {
                         "type": "object",
@@ -82,7 +89,6 @@
                 }
             },
             "spatialCoveragePlace": {
-                "description": "A place in the world",
                 "type": "string"
             },
             "spatialCoveragePoint": {
