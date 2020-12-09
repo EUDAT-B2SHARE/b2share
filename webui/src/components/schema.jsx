@@ -53,7 +53,9 @@ export const Schema = React.createClass({
         } else if (type === 'object') {
             inner = (
                 <ul className="list-unstyled">
-                    { schema.get('properties').entrySeq().map(field => this.renderSchema(field, depth+1)) }
+                    { schema.get('properties').entrySeq()
+                                .sort(([id, fschema]) => { return !fschema.get('isRequired'); })
+                                .map(field => this.renderSchema(field, depth+1)) }
                 </ul>
             );
         } else if (schema.get('enum')) {
