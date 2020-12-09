@@ -33,6 +33,7 @@ from invenio_db import db
 from sqlalchemy.orm.exc import NoResultFound
 
 from b2share.modules.communities import Community
+from b2share.modules.communities.helpers import get_community_by_name_or_id
 from b2share.modules.schemas.helpers import validate_json_schema
 
 from jsonpatch import apply_patch
@@ -733,11 +734,12 @@ class CommunitySchema(object):
 
     @classmethod
     def get_all_community_schemas(cls, community_id=None):
+        comm = get_community_by_name_or_id(community_id)
         from .models import CommunitySchemaVersion as CommunitySchemaModel
         try:
             filters = []
             if community_id is not None:
-                filters.append(CommunitySchemaModel.community == community_id)
+                filters.append(CommunitySchemaModel.community == comm.id)
 
             return [cls(model) for model in CommunitySchemaModel.query.filter(
                 *filters).order_by(CommunitySchemaModel.released).all()]

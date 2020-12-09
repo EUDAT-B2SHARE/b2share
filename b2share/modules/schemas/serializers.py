@@ -154,6 +154,16 @@ def community_schema_to_json_serializer(community_schema, code=200,
     return response
 
 
+def community_schemas_list_to_json_serializer(schemas, code=200,
+                                        headers=None):
+    response = jsonify(list(map(lambda x: community_schema_to_dict(x), schemas)))
+    response.status_code = code
+    response.set_etag(str(schemas[0].released.utcfromtimestamp(0)))
+    if headers is not None:
+        response.headers.extend(headers)
+    return response
+
+
 def block_schema_to_dict(schema):
     """Serializes block schema to dict.
 

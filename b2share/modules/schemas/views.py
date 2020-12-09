@@ -42,7 +42,7 @@ from .errors import BlockSchemaDoesNotExistError, \
 from .serializers import block_schema_version_to_json_serializer, \
     block_schema_to_dict, \
     community_schema_to_json_serializer, \
-    block_schema_to_json_serializer, schemas_list_to_json_serializer
+    block_schema_to_json_serializer, schemas_list_to_json_serializer, community_schemas_list_to_json_serializer
 from invenio_db import db
 from webargs import fields
 from webargs.flaskparser import use_kwargs
@@ -183,6 +183,29 @@ class CommunitySchemaResource(ContentNegotiatedMethodView):
         return community_schema
 
 
+class CommunitySchemaListResource(ContentNegotiatedMethodView):
+    view_name = 'community_schema_list'
+
+    def __init__(self, **kwargs):
+        """Constructor."""
+        super(CommunitySchemaListResource, self).__init__(
+            method_serializers={
+                'GET': {
+                    'application/json': community_schemas_list_to_json_serializer,
+                },
+            },
+            default_media_type='application/json',
+            **kwargs
+        )
+
+    def get(self, community_id):
+        """Get a list of all schemas."""
+        schemas = CommunitySchema.get_all_community_schemas(community_id=community_id)
+        return self.make_response(
+            schemas=schemas,
+            code=200)
+
+
 class BlockSchemaListResource(ContentNegotiatedMethodView):
     view_name = 'block_schema_list'
 
@@ -293,6 +316,10 @@ blueprint.add_url_rule(
     view_func=CommunitySchemaResource
         .as_view(CommunitySchemaResource.view_name))
 
+blueprint.add_url_rule(
+    '/communities/<string:community_id>/schemas',
+    view_func=CommunitySchemaListResource
+        .as_view(CommunitySchemaListResource.view_name))
 
 blueprint.add_url_rule(
     '/schemas/<string:schema_id>',
