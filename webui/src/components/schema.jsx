@@ -5,11 +5,11 @@ import { serverCache, Error } from '../data/server';
 import { PersistentIdentifier } from './editfiles.jsx';
 import { Wait, Err } from './waiting.jsx';
 
-const except = {'$schema':true, 'community_specific':true, 'owner':true,
-                '_internal':true, '_deposit':true, '_files':true,
-                '_pid':true, '_oai':true, 'publication_state': true};
+export const hiddenFields = ['$schema', 'community_specific', 'owner',
+                '_internal', '_deposit', '_files',
+                '_pid', '_oai', 'publication_state'];
 
-export function getSchemaOrderedMajorAndMinorFields(schema) {
+export function getSchemaOrderedMajorAndMinorFields(schema, excepts=hiddenFields) {
     if (!schema) {
         return [];
     }
@@ -25,7 +25,7 @@ export function getSchemaOrderedMajorAndMinorFields(schema) {
     let majors = OrderedMap(majorIDs ? majorIDs.map(id => [id, properties.get(id)]) : []);
 
     properties.entrySeq().forEach(([id, p]) => {
-        if (!majors.has(id) && !minors.has(id) && !except.hasOwnProperty(id)) {
+        if (!majors.has(id) && !minors.has(id) && !excepts.includes(id)) {
             majors = majors.set(id, p);
         }
     });
