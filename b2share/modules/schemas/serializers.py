@@ -115,6 +115,30 @@ def community_schema_self_link(community_schema, **kwargs):
         **kwargs)
 
 
+def community_schemas_self_link(community_schema, **kwargs):
+    """Create self link to the community schemas listing.
+
+    Args:
+        community_schema (:class:`b2share.modules.schemas.api:CommunitySchema`):
+            community schema version to which the generated link will point.
+
+        **kwargs: additional parameters given to flask.url_for.
+
+    Returns:
+        str: link pointing to the given community schema.
+    """  # noqa
+    return url_for(
+        'b2share_schemas.community_schema_list',
+        community_id=community_schema.community,
+        **kwargs)
+
+
+def community_schema_json_schemas_link(community_schema, **kwargs):
+    """Build the URL to the community's publication JSON Schemas."""
+    return '{}'.format(
+        community_schemas_self_link(community_schema, **kwargs))
+
+
 def community_schema_json_schema_link(community_schema, **kwargs):
     """Build the URL to the community's publication JSON Schema."""
     return '{}#/json_schema'.format(

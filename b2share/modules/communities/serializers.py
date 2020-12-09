@@ -26,7 +26,7 @@
 from flask import jsonify, url_for
 
 from b2share.modules.schemas.api import CommunitySchema
-from b2share.modules.schemas.serializers import block_schema_version_self_link, community_schema_json_schema_link
+from b2share.modules.schemas.serializers import block_schema_version_self_link, community_schema_json_schema_link, community_schema_json_schemas_link
 import json
 
 
@@ -74,6 +74,7 @@ def community_to_dict(community):
         community_schema_dict = json.loads(community_schema.community_schema)
         props = community_schema_dict['properties']
         ret['links']['schema'] = community_schema_json_schema_link(community_schema, _external=True)
+        ret['links']['schemas'] = community_schema_json_schemas_link(community_schema, _external=True)
         ret['links']['block_schema'] = next(iter(props.values()))['$ref']
         ret['schema'] = dict(
             version=community_schema.version,
