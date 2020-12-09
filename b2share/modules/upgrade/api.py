@@ -28,7 +28,6 @@ import traceback
 import warnings
 from collections import namedtuple
 from queue import Queue
-from urllib.parse import urlunsplit
 from functools import wraps
 
 import click
@@ -39,18 +38,13 @@ from b2share.version import __version__
 
 from .errors import MigrationFromUnknownVersionError
 from .models import Migration
-
+from b2share.utils import get_base_url
 
 def with_request_context(f):
     """Runs the decorated function in a request context."""
     @wraps(f)
     def decorator(*args, **kwargs):
-        base_url = urlunsplit((
-            current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-            current_app.config['JSONSCHEMAS_HOST'],
-            current_app.config.get('APPLICATION_ROOT') or '', '', ''
-        ))
-        with current_app.test_request_context('/', base_url=base_url):
+        with current_app.test_request_context('/', base_url=get_base_url()):
             f(*args, **kwargs)
     return decorator
 

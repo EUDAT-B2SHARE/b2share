@@ -31,7 +31,7 @@ import logging
 import os
 import requests
 import traceback
-from urllib.parse import urlunsplit, urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import click
 from flask.cli import with_appcontext
@@ -42,7 +42,7 @@ from invenio_records.api import Record
 
 from .migration import (download_v1_data, process_v1_record, main_diff,
                         make_v2_index, records_endpoint, directly_list_v2_record_ids)
-
+from b2share.utils import get_base_url
 
 
 @click.group()
@@ -91,15 +91,9 @@ def import_v1_data(verbose, download, token, download_directory,limit):
 
     click.secho("-----------")
     click.secho("Processing %d downloaded records" % (len(dirlist)))
-    base_url = urlunsplit((
-        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-        # current_app.config['SERVER_NAME'],
-        current_app.config['JSONSCHEMAS_HOST'],
-        current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))
     for d in dirlist:
         try:
-            process_v1_record(d, indexer, base_url, logfile)
+            process_v1_record(d, indexer, get_base_url(), logfile)
         except:
             logfile.write("\n********************")
             logfile.write("\nERROR: exception while processing record /{}/___record.json___\n"

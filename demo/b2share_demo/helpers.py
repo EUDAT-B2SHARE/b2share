@@ -36,7 +36,6 @@ from six import BytesIO
 import ssl
 import sys, traceback
 from uuid import UUID, uuid4
-from urllib.parse import urlunsplit
 from urllib.request import urlopen
 
 
@@ -57,7 +56,7 @@ from b2share.modules.communities import Community
 from b2share.modules.schemas import BlockSchema, CommunitySchema
 from b2share.modules.schemas.helpers import resolve_schemas_ref
 from b2share.modules.records.providers import RecordUUIDProvider
-
+from b2share.utils import get_base_url
 
 
 
@@ -68,17 +67,11 @@ def load_demo_data(path, verbose=0):
         path (str): path of the directory containing the demonstration data.
         verbose (int): verbosity level.
     """
-    base_url = urlunsplit((
-        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
-        # current_app.config['SERVER_NAME'],
-        current_app.config['JSONSCHEMAS_HOST'],
-        current_app.config.get('APPLICATION_ROOT') or '', '', ''
-    ))
     with db.session.begin_nested():
         user_info = _create_user()
         # Define the base url used for the request context. This is useful
         # for generated URLs which will use the provided url "scheme".
-        with current_app.test_request_context('/', base_url=base_url):
+        with current_app.test_request_context('/', base_url=get_base_url()):
             current_app.login_manager.reload_user(user_info['user'])
             communities = _create_communities(path, verbose)
             _create_block_schemas(communities, verbose)

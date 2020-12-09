@@ -24,7 +24,9 @@
 """B2Share utility functions."""
 
 from sqlalchemy import UniqueConstraint, PrimaryKeyConstraint
+from flask import current_app
 from invenio_db import db
+from urllib.parse import urlunsplit
 import uuid
 
 
@@ -77,3 +79,10 @@ def is_valid_uuid(val):
         return True
     except ValueError:
         return False
+
+def get_base_url():
+    return urlunsplit((
+        current_app.config.get('PREFERRED_URL_SCHEME', 'http'),
+        current_app.config['JSONSCHEMAS_HOST'],
+        current_app.config.get('APPLICATION_ROOT') or '', '', ''
+    ))
