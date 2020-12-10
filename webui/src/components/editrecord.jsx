@@ -99,6 +99,7 @@ const EditRecord = React.createClass({
             errors: {},
             dirty: false,
             waitingForServer: false,
+            opened: []
         };
     },
 
@@ -196,8 +197,44 @@ const EditRecord = React.createClass({
         this.setState({})
     },
 
-    renderScalarField(schema, path) {
+    renderButtonScalarField(schema, path, buttonname) {
         const pathstr = path.join('/');
+
+        const btnShowFieldDetails = (ev, pathstr) => {
+            ev.preventDefault();
+            let opened = this.state.opened;
+            const index = opened.indexOf(pathstr);
+            if (index > -1) {
+                opened.splice(index, 1);
+            } else {
+                opened.push(pathstr)
+            }
+            this.setState({opened: opened});
+        };
+
+        const buttons = {
+            details: {'title': 'Show details', 'event': btnShowFieldDetails, 'icon': 'glyphicon-list-alt'}
+        }
+
+        return (
+            <div className="input-group">
+                { this.renderScalarField(schema, path) }
+                <div className="input-group-btn">
+                    <button className="btn btn-default btn-md" type="button" onClick={(ev) => (buttons[buttonname].event)(ev, pathstr)}
+                         title={buttons[buttonname].title}>
+                        <span className={"glyphicon " + buttons[buttonname].icon} aria-hidden="true"/>
+                    </button>
+                </div>
+            </div>
+        )
+    },
+
+    renderScalarField(schema, path, buttons={}) {
+        const pathstr = path.join('/');
+        if (pathstr in buttons) {
+            return this.renderButtonScalarField(schema, path, buttons[pathstr][0]);
+        }
+
         const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
         const type = schema.get('type');
         const value = this.getValue(path);
@@ -285,7 +322,36 @@ const EditRecord = React.createClass({
         );
     },
 
-    renderFieldTree(id, schema, path) {
+    renderComplexField(schema, path) {
+        const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
+
+        let props = schema.get('properties').entrySeq();
+        let required_props = props.filter(([pid, pschema]) => { return pschema.get('isRequired'); });
+        let optional_props = props.filter(([pid, pschema]) => { return !pschema.get('isRequired'); });
+
+        var buttons = {}, togglePath = "";
+        if (required_props.count()) {
+            togglePath = newpath(required_props.toJS()[0][0]).join('/');
+            if (optional_props.count()) {
+                buttons[togglePath] = ['details']
+            }
+        } else {
+            togglePath = path.join('/');
+        }
+
+        return (
+            <div>
+                { required_props.map(([pid, pschema]) => this.renderFieldTree(pid, pschema, newpath(pid), buttons)) }
+                { (optional_props.count() && this.state.opened.includes(togglePath)) || !required_props.count() ?
+                    <div className="container-fluid" style={{paddingLeft:0, paddingRight:0}}>
+                        { optional_props.map(([pid, pschema]) => this.renderFieldTree(pid, pschema, newpath(pid))) }
+                    </div>
+                : false }
+            </div>
+        );
+    },
+
+    renderFieldTree(id, schema, path, buttons={}) {
         if (!schema) {
             return false;
         }
@@ -343,7 +409,7 @@ const EditRecord = React.createClass({
                 <div className="container-fluid" key={id+`[${i}]`}>
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
-                        <div className={"col-sm-offset-10 col-sm-2"} style={{paddingRight:0}}>
+                        <div className={"col-sm-offset-9 col-sm-3"} style={{paddingRight:0}}>
                             { i == 0 ?
                                 <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}
                                      title="Clear all entries for this field">
@@ -362,11 +428,9 @@ const EditRecord = React.createClass({
                     </div>
                 </div> );
         } else if (schema.get('type') === 'object') {
-            field = schema.get('properties').entrySeq()
-                            .sort(([pid, pschema]) => { return !pschema.get('isRequired'); })
-                            .map(([pid, pschema]) => this.renderFieldTree(pid, pschema, newpath(pid)));
+            field = this.renderComplexField(schema, path);
         } else {
-            field = this.renderScalarField(schema, path);
+            field = this.renderScalarField(schema, path, buttons);
         }
 
         const arrstyle = schema.get('type') !== 'array' ? {} : {
@@ -394,16 +458,14 @@ const EditRecord = React.createClass({
                         </div>
                     </div>
                 </div>
-                <div>
-                    <div className="col-sm-offset-3 col-sm-9">
-                        <HeightAnimate>
-                            { this.state.showhelp && objEquals(this.state.showhelp, path) ?
-                                <div style={{marginLeft:'1em', paddingLeft:'1em', borderLeft: '1px solid #eee'}}>
-                                    <p> {schema.get('description')} </p>
-                                </div>
-                              : false }
-                        </HeightAnimate>
-                    </div>
+                <div className="col-sm-offset-3 col-sm-9">
+                    <HeightAnimate>
+                        { this.state.showhelp && objEquals(this.state.showhelp, path) ?
+                            <div style={{marginLeft:'1em', paddingLeft:'1em', borderLeft: '1px solid #eee'}}>
+                                <p> {schema.get('description')} </p>
+                            </div>
+                          : false }
+                    </HeightAnimate>
                 </div>
             </div>
         );
