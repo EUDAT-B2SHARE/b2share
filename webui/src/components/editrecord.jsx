@@ -103,6 +103,15 @@ const EditRecord = React.createClass({
         };
     },
 
+    addFieldButton(buttons, pathstr, name) {
+        if (!(pathstr in buttons)) {
+            buttons[pathstr] = []
+        }
+        buttons[pathstr].push(name)
+        buttons[pathstr] = buttons[pathstr].filter((v, i, a) => a.indexOf(v) === i);
+        return buttons;
+    },
+
     renderFileBlock() {
         const setState = (fileState, message) => {
             const errors = this.state.errors;
@@ -197,7 +206,7 @@ const EditRecord = React.createClass({
         this.setState({})
     },
 
-    renderButtonScalarField(schema, path, buttonname) {
+    renderScalarFieldButton(schema, path, buttonname) {
         const pathstr = path.join('/');
 
         const btnShowFieldDetails = (ev, pathstr) => {
@@ -212,27 +221,75 @@ const EditRecord = React.createClass({
             this.setState({opened: opened});
         };
 
+        const onSelectLicense = (license) => {
+            console.assert(path.length >= 1);
+            const licenseData = {
+                'license': license.name,
+                'license_uri': license.url,
+            };
+            this.setValue(schema, path.slice(0, -1), fromJS(licenseData));
+        };
+
         const buttons = {
-            details: {'title': 'Show details', 'event': btnShowFieldDetails, 'icon': 'glyphicon-list-alt'}
+            details: {'title': 'Show details for this field or entry', 'event': btnShowFieldDetails, 'icon': 'glyphicon-list-alt'}
         }
 
+        let field = false;
+        let event = null;
+        switch (buttonname) {
+            case 'license':
+                return <SelectLicense title="Select License" onSelect={onSelectLicense} setModal={modal => this.setState({modal})} key={pathstr + "-" + buttonname} />
+            default:
+                return <span className="input-group-btn" key={pathstr + "-" + buttonname}>
+                            <button className="btn btn-default btn-md" type="button" onClick={(ev) => (buttons[buttonname].event)(ev, pathstr)}
+                                 title={buttons[buttonname].title}>
+                                <span className={"glyphicon " + buttons[buttonname].icon} aria-hidden="true"/>
+                            </button>
+                        </span>
+        }
+    },
+
+    renderButtonedScalarField(schema, path, buttons) {
         return (
             <div className="input-group">
                 { this.renderScalarField(schema, path) }
-                <div className="input-group-btn">
-                    <button className="btn btn-default btn-md" type="button" onClick={(ev) => (buttons[buttonname].event)(ev, pathstr)}
-                         title={buttons[buttonname].title}>
-                        <span className={"glyphicon " + buttons[buttonname].icon} aria-hidden="true"/>
-                    </button>
-                </div>
+                { buttons.map((name) => this.renderScalarFieldButton(schema, path, name)) }
             </div>
         )
     },
 
-    renderScalarField(schema, path, buttons={}) {
+    renderScalarField(schema, path, buttons={}, options={}) {
+        const onDateChange = (date) => {
+            const m = moment(date);
+            this.setValue(schema, path, m.isValid() ? m.toISOString() : undefined);
+        }
+
+        const onEmbargoDateChange = date => {
+            const m = moment(date);
+            // true if embargo is in the past
+            const access = m.isValid() ? (moment().diff(m) > 0) : true;
+            this.state.record = this.state.record.set('open_access', access);
+            // setValue will call setState
+            onDateChange(m)
+        };
+
         const pathstr = path.join('/');
         if (pathstr in buttons) {
-            return this.renderButtonScalarField(schema, path, buttons[pathstr][0]);
+            return this.renderButtonedScalarField(schema, path, buttons[pathstr]);
+        }
+
+        const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
+
+        if (path.slice(-1)[0] == 'language') {
+            const languages = serverCache.getLanguages();
+            return (languages instanceof Error) ? <Err err={languages}/> :
+                <SelectBig data={languages}
+                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+        } else if (path.slice(-1)[0] == 'discipline_name') {
+            const disciplines = serverCache.getDisciplines();
+            return (disciplines instanceof Error) ? <Err err={disciplines}/> :
+                <SelectBig data={disciplines}
+                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
         }
 
         const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
@@ -241,9 +298,11 @@ const EditRecord = React.createClass({
         const setter = x => this.setValue(schema, path, x);
         if (type === 'boolean') {
             return (
-                <div className={validClass} style={{lineHeight:"30px"}}>
-                    <Toggle checked={value} onChange={event => setter(event.target.checked)}/>
-                    <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
+                <div style={{lineHeight:"30px"}}>
+                    <div className={validClass} style={{lineHeight:"30px"}}>
+                        <Toggle checked={value} onChange={event => setter(event.target.checked)} disabled={options['disabled'] || false} />
+                        <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
+                    </div>
                 </div>
             );
         } else if (type === 'integer') {
@@ -254,10 +313,10 @@ const EditRecord = React.createClass({
             const value_str = ""+(value || "");
             if (schema.get('enum')) {
                 return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
-            } else if (schema.get('format') === 'date-time') {
+            } else if (['date-time', 'date'].includes(schema.get('format'))) {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
-                return <DateTimePicker className={validClass} defaultValue={initial}
-                        onChange={date => setter(moment(date).toISOString())} />
+                return <DateTimePicker className={validClass} time={false} defaultValue={initial}
+                        onChange={path == 'embargo_date' ? onEmbargoDateChange : onDateChange} />
             } else if (schema.get('format') === 'email') {
                 return <input type="text" className={"form-control"+ validClass} placeholder="email@example.com"
                         value={value_str} onChange={event => setter(event.target.value)} />
@@ -277,51 +336,6 @@ const EditRecord = React.createClass({
         }
     },
 
-    renderLicenseField(schema, path) {
-        const onSelect = (license) => {
-            console.assert(path.length >= 1);
-            const licenseData = {
-                'license': license.name,
-                'license_uri': license.url,
-            };
-            this.setValue(schema, path.slice(0, -1), fromJS(licenseData));
-        };
-        return (
-            <div className="input-group" style={{marginTop:'0.25em', marginBottom:'0.25em'}}>
-                { this.renderScalarField(schema, path) }
-                <SelectLicense title="Select License" onSelect={onSelect}
-                    setModal={modal => this.setState({modal})} />
-            </div>
-        );
-    },
-
-    renderOpenAccessField(schema, path, disabled) {
-        const value = this.getValue(path);
-        return (
-            <div style={{lineHeight:"30px"}}>
-                <Toggle checked={value} onChange={event => this.setValue(schema, path, event.target.checked)} disabled={disabled}/>
-                <div style={{display:"inline", "verticalAlign":"super"}}>{value ? " True" : " False"}</div>
-            </div>
-        );
-    },
-
-    renderEmbargoField(schema, path) {
-        const date = this.getValue(path);
-        const initial = (date && date !== "") ? moment(date).toDate() : null;
-        const onChange = date => {
-            const m = moment(date);
-            // true if embargo is in the past
-            const access = m.isValid() ? (moment().diff(m) > 0) : true;
-            this.state.record = this.state.record.set('open_access', access);
-            // setValue will call setState
-            this.setValue(schema, path, m.isValid() ? m.toISOString() : undefined);
-        };
-        return (
-            <DateTimePicker format={"LL"} time={false} finalView={"year"}
-                        defaultValue={initial} onChange={onChange} />
-        );
-    },
-
     renderComplexField(schema, path) {
         const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
 
@@ -329,14 +343,13 @@ const EditRecord = React.createClass({
         let required_props = props.filter(([pid, pschema]) => { return pschema.get('isRequired'); });
         let optional_props = props.filter(([pid, pschema]) => { return !pschema.get('isRequired'); });
 
-        var buttons = {}, togglePath = "";
+        var buttons = {};
+        var togglePath = togglePath = path.join('/');
         if (required_props.count()) {
             togglePath = newpath(required_props.toJS()[0][0]).join('/');
             if (optional_props.count()) {
-                buttons[togglePath] = ['details']
+                this.addFieldButton(buttons, togglePath, 'details');
             }
-        } else {
-            togglePath = path.join('/');
         }
 
         return (
@@ -361,23 +374,11 @@ const EditRecord = React.createClass({
         if (objEquals(path, ['community'])) {
             field = this.props.community ? renderSmallCommunity(this.props.community) : <Wait/>
         } else if (objEquals(path, ['license', 'license'])) {
-            field = this.renderLicenseField(schema, path);
+            field = this.renderScalarField(schema, path, this.addFieldButton(buttons, path.join('/'), 'license'));
         } else if (objEquals(path, ['open_access'])) {
             const embargo = this.getValue(schema, newpath('embargo_date'));
             const disabled = embargo && moment(embargo).isValid();
-            field = this.renderOpenAccessField(schema, path, disabled);
-        } else if (objEquals(path, ['embargo_date'])) {
-            field = this.renderEmbargoField(schema, path);
-        } else if (objEquals(path, ['language']) || objEquals(path, ['language_code'])) {
-            const languages = serverCache.getLanguages();
-            field = (languages instanceof Error) ? <Err err={languages}/> :
-                <SelectBig data={languages}
-                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
-        } else if (path.length === 2 && path[0] === 'disciplines') {
-            const disciplines = serverCache.getDisciplines();
-            field = (disciplines instanceof Error) ? <Err err={disciplines}/> :
-                <SelectBig data={disciplines}
-                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+            field = this.renderScalarField(schema, path, {}, {disabled: disabled});
         } else if (schema.get('type') === 'array') {
             const itemSchema = schema.get('items');
             const raw_values = this.getValue(path);
