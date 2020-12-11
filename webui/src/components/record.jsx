@@ -56,9 +56,15 @@ const B2NoteWidget = React.createClass({
         record: PT.object.isRequired,
         file: PT.object,
         showB2NoteWindow: PT.func.isRequired,
-        //notes: PT.object.isRequired,
         b2noteUrl: PT.string.isRequired,
-        smallButton: PT.bool
+        smallButton: PT.bool,
+        btnClass: PT.string
+    },
+
+    getDefaultProps() {
+        return {
+            btnClass: "btn-default"
+        }
     },
 
     handleSubmit(e) {
@@ -95,7 +101,7 @@ const B2NoteWidget = React.createClass({
         }
 
         return (
-            <form id="b2note_form_" action={this.props.b2noteUrl + '/widget'} method="post" target="b2note_iframe" style={this.props.style} onSubmit={this.handleSubmit}>
+            <form id="b2note_form_" action={this.props.b2noteUrl + '/widget'} method="post" target="b2note_iframe" style={{display: 'inline-block'}} onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="pid_tofeed" value={pid} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="subject_tofeed" value={object_url} className="field left" readOnly="readonly"/>
@@ -103,8 +109,8 @@ const B2NoteWidget = React.createClass({
                 <input type="hidden" name="pidName_tofeed" value={title} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="sourceName_tofeed" value={source} className="field left" readOnly="readonly"/>
                 { this.props.smallButton
-                    ? <button type="submit" className="btn btn-warning btn-xs" title={ pid ? texts.edit : texts.disabled } disabled={ pid ? "" : "disabled"}><i className="fa fa-edit"/>&nbsp;<Badge>{ notes.length }</Badge></button>
-                    : <button type="submit" className="btn btn-warning" title={ pid ? texts.edit : texts.disabled } disabled={ pid ? "" : "disabled"}><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ notes.length }</Badge></button>
+                    ? <button type="submit" style={{display: 'inline-block'}} className={"btn btn-xs "+this.props.btnClass} title={ pid ? texts.edit : texts.disabled } disabled={ pid ? "" : "disabled"}><i className="fa fa-edit"/>&nbsp;<Badge>{ notes.length }</Badge></button>
+                    : <button type="submit" className={"btn "+this.props.btnClass} title={ pid ? texts.edit : texts.disabled } disabled={ pid ? "" : "disabled"}><i className="fa fa-edit"/>&nbsp;Annotate <Badge>{ notes.length }</Badge></button>
                 }
             </form>
         );
@@ -306,17 +312,21 @@ const Record = React.createClass({
                             </p>
                         }
 
-                        {doi ?
-                            <p className="pid">
-                                <span>DOI: </span>
-                                <PersistentIdentifier pid={doi} doi={true}/>
-                            </p> : false
-                        }
-                        {pid ?
-                            <p className="pid">
-                                <span>PID: </span>
-                                <PersistentIdentifier pid={pid} />
-                            </p> : false
+                        { !(doi && pid) ? false :
+                            <div className="pids">
+                            {doi ?
+                                <p className="pid">
+                                    <span>DOI: </span>
+                                    <PersistentIdentifier pid={doi} doi={true}/>
+                                </p> : false
+                            }
+                            {pid ?
+                                <p className="pid">
+                                    <span>PID: </span>
+                                    <PersistentIdentifier pid={pid} />
+                                </p> : false
+                            }
+                            </div>
                         }
                     </div>
 
@@ -328,10 +338,9 @@ const Record = React.createClass({
         );
     },
 
-    fixedFields: {
-        'community': true, 'titles': true, 'descriptions': true,
-        'creators': true, 'keywords': true, 'disciplines': true, 'publication_state': true,
-    },
+    fixedFields: [
+        'community', 'titles', 'descriptions', 'creators', 'keywords', 'disciplines', 'publication_state'
+    ],
 
     renderFileList(files, b2noteUrl, showDownloads) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
@@ -344,7 +353,7 @@ const Record = React.createClass({
             const fileRecordRowFn = f => {
                 let b2noteWidget = false;
                 if (b2noteUrl) {
-                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} notes={this.state.files_notes} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl} smallButton={true}/>;
+                    b2noteWidget = <B2NoteWidget file={f} record={this.props.record} notes={this.state.files_notes} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={b2noteUrl} smallButton={true} style={{display: 'inline-block'}}/>;
                 }
                 return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} showDownloads={showDownloads} />
             }
@@ -442,7 +451,7 @@ const Record = React.createClass({
     },
 
 
-    renderFieldBlock(schemaID, schema, excludeFields) {
+    renderFieldBlock(schemaID, schema, excludeFields=[]) {
         if (!schema) {
             return <Wait key={schemaID}/>;
         }
@@ -452,7 +461,7 @@ const Record = React.createClass({
         const metadata = !schemaID ? metadata_block : metadata_block.getIn(['community_specific', schemaID]);
 
         function renderBigField(excludeFields, [pid, pschema], i) {
-            if (excludeFields[pid]) {
+            if (excludeFields.includes(pid)) {
                 return false;
             }
             const f = this.renderField(pid, pschema, metadata.get(pid));
@@ -576,29 +585,27 @@ const Record = React.createClass({
 
                             { !blockSchemas ? false :
                                 blockSchemas.map(([id, blockSchema]) =>
-                                    this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'), {})) }
+                                    this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'), [])) }
                         </div>
                     </div>
 
-                    <div className="row bottom-buttons">
-                        <div className="col-lg-12">
-                            <div>
-                                <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse"><i className="glyphicon glyphicon-exclamation-sign"/> Report Abuse</Link>
-                                { this.props.b2noteUrl ?
-                                    <B2NoteWidget record={record} showB2NoteWindow={this.showB2NoteWindow} notes={this.state.record_notes} b2noteUrl={this.props.b2noteUrl} b2noteCount={this.state.record_notes || {}} style={{display: 'inline-block', margin: '0px 7px'}}/>
-                                    : false
-                                }
-                                { canEditRecord(record) ?
-                                    <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}><i className="fa fa-pencil"/>&nbsp;
-                                        { state == 'draft' ? 'Edit draft metadata' : 'Edit metadata' }</Link>
-                                    : false
-                                }
-                                { isRecordOwner(record) && isLatestVersion ?
-                                    <a href='#' onClick={onNewVersion} className="btn btn-warning"><i className="fa fa-plus"/>&nbsp;
-                                        Create New Version</a>
-                                    : false
-                                }
-                            </div>
+                    <div className="row">
+                        <div className="col-lg-12 bottom-buttons">
+                            { this.props.b2noteUrl ?
+                                <B2NoteWidget record={record} btnClass={"btn-warning"} showB2NoteWindow={this.showB2NoteWindow} notes={this.state.record_notes} b2noteUrl={this.props.b2noteUrl} b2noteCount={this.state.record_notes || {}}/>
+                                : false
+                            }
+                            { canEditRecord(record) ?
+                                <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}><i className="fa fa-pencil"/>&nbsp;
+                                    { state == 'draft' ? 'Edit draft metadata' : 'Edit metadata' }</Link>
+                                : false
+                            }
+                            { isRecordOwner(record) && isLatestVersion ?
+                                <a href='#' onClick={onNewVersion} className="btn btn-warning"><i className="fa fa-plus"/>&nbsp;
+                                    Create New Version</a>
+                                : false
+                            }
+                            <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse"><i className="glyphicon glyphicon-exclamation-sign"/> Report Abuse</Link>
                         </div>
                     </div>
                 </div>
