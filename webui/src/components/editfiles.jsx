@@ -667,8 +667,9 @@ export const FileRecordHeader = React.createClass({
     render() {
         return (
             <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
-                <div className="col-sm-9">Name</div>
-                <div className="col-sm-3">Size</div>
+                <div className="col-sm-8">Name</div>
+                <div className="col-sm-2 p-0">Size</div>
+                <div className="col-sm-2 p-0">Actions</div>
             </div>
         );
     }
@@ -700,9 +701,9 @@ export const FileRecordRow = React.createClass({
         return (
             <div className="file">
                 <div className="row">
-                    <div className="col-sm-9" onClick={e => this.setState({open:!this.state.open})}>
+                    <div className="col-sm-8" onClick={e => this.setState({open:!this.state.open})}>
                         <span className={"glyphicon glyphicon-chevron-"+stateMark}
-                            style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
+                            style={{fontSize:10}} aria-hidden="true"/>
                         <span className={"glyphicon glyphicon-file"}
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
                         <a style={{display:'inline-block', marginLeft:'0.5em'}} onClick={e => e.stopPropagation()}
@@ -714,28 +715,31 @@ export const FileRecordRow = React.createClass({
                                 </span>
                             </span> : false
                         }
-                        {
-                            file.b2safe ?
+                        { file.b2safe ?
                             <span style={{marginLeft:'1em', fontSize:11}}>
                                 <span className="badge" style={{marginLeft:'0.5em', backgroundColor: '#000'}}> external </span>
                             </span> : null
                         }
                     </div>
-                    <div className={"col-sm-"+(this.props.remove? "1":"2")} onClick={e => this.setState({open:!this.state.open})}>{
+                    <div className={"col-sm-"+(this.props.remove? "1":"2")} style={{padding: '0px'}} onClick={e => this.setState({open:!this.state.open})}>{
                         file.b2safe ?
                         "-" : humanSize(file.size)
                     }</div>
-                    { this.props.b2noteWidget ?
-                    <div className="col-sm-1" style={{padding: '0px'}}>
-                        { this.props.b2noteWidget }
-                    </div> : false }
-                    { this.props.remove ?
-                        <div className="col-sm-2">
-                            <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})}>
-                                <i className="glyphicon glyphicon-remove"/>&nbsp;Delete
-                            </button>
-                        </div> : false
-                    }
+                    <div className="col-sm-2 buttons">
+                            { this.props.b2noteWidget }
+                            { !file.checksum ? false :
+                            <button type="button" className="btn btn-default btn-xs" onClick={() => copyToClipboard(file.checksum)} title="Copy checksum to clipboard">
+                                <i className="glyphicon glyphicon-asterisk"/>
+                            </button> }
+                            { !file.ePIC_PID ? false :
+                            <button type="button" className="btn btn-default btn-xs" onClick={() => copyToClipboard(file.ePIC_PID)} title="Copy PID to clipboard">
+                                <i className="glyphicon glyphicon-globe"/>
+                            </button> }
+                            { !this.props.remove ? false :
+                            <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})} title="Delete">
+                                <i className="glyphicon glyphicon-remove"/>
+                            </button> }
+                    </div>
                 </div>
                 { allowDetails && this.state.open ?
                     <div className="details">
