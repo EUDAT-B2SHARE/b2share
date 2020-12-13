@@ -294,6 +294,7 @@ const EditRecord = React.createClass({
 
         const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
         const type = schema.get('type');
+        const format = schema.get('format') || "";
         const value = this.getValue(path);
         const setter = x => this.setValue(schema, path, x);
         if (type === 'boolean') {
@@ -313,11 +314,11 @@ const EditRecord = React.createClass({
             const value_str = ""+(value || "");
             if (schema.get('enum')) {
                 return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
-            } else if (['date-time', 'date'].includes(schema.get('format'))) {
+            } else if (['date-time', 'date'].includes(format)) {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
-                return <DateTimePicker className={validClass} time={false} defaultValue={initial}
+                return <DateTimePicker className={validClass} time={format == 'date-time'} defaultValue={initial}
                         onChange={path == 'embargo_date' ? onEmbargoDateChange : onDateChange} />
-            } else if (schema.get('format') === 'email') {
+            } else if (format === 'email') {
                 return <input type="text" className={"form-control"+ validClass} placeholder="email@example.com"
                         value={value_str} onChange={event => setter(event.target.value)} />
             } else if (path[path.length-1] === 'description') {
