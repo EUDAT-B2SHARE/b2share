@@ -411,7 +411,7 @@ const EditRecord = React.createClass({
                 <div className="container-fluid" key={id+`[${i}]`}>
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
-                        <div className={"col-sm-offset-9 col-sm-3"} style={{paddingRight:0}}>
+                        <div className={"col-sm-12"} style={{paddingLeft: 0, paddingRight:0}}>
                             { i == 0 ?
                                 <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}
                                      title="Clear all entries for this field">
@@ -426,6 +426,7 @@ const EditRecord = React.createClass({
                                     <span><span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/> Remove </span>
                                 }
                             </btn>
+                            <hr style={{margin: '10px', padding: '0px'}}/>
                         </div>
                     </div>
                 </div> );
@@ -438,7 +439,7 @@ const EditRecord = React.createClass({
         const arrstyle = schema.get('type') !== 'array' ? {} : {
             paddingLeft:'10px',
             borderLeft:'1px solid black',
-            borderRadius:'4px',
+            borderRadius:'4px'
         };
         const pathstr = path.join('/');
         const isError = this.state.errors.hasOwnProperty(pathstr);
@@ -447,7 +448,7 @@ const EditRecord = React.createClass({
         const title = schema.get('title');
         return (
             <div className="row" key={id}>
-                <div key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
+                <div key={id} style={{marginBottom:'0.5em', overflow: 'auto'}} title={schema.get('description')}>
                     {!title ? false :
                         <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                             <span style={{float:'right', color:isError?'red':'black'}}>
