@@ -669,7 +669,7 @@ export const FileRecordHeader = React.createClass({
             <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
                 <div className="col-sm-8">Name</div>
                 <div className="col-sm-2 p-0">Size</div>
-                <div className="col-sm-2 p-0">Actions</div>
+                <div className="col-sm-2 p-0">{/*Actions*/}</div>
             </div>
         );
     }
@@ -727,14 +727,14 @@ export const FileRecordRow = React.createClass({
                     }</div>
                     <div className="col-sm-2 buttons">
                             { this.props.b2noteWidget }
-                            { !file.checksum ? false :
+                            {/* !file.checksum ? false :
                             <button type="button" className="btn btn-default btn-xs" onClick={() => copyToClipboard(file.checksum)} title="Copy checksum to clipboard">
                                 <i className="glyphicon glyphicon-asterisk"/>
                             </button> }
                             { !file.ePIC_PID ? false :
                             <button type="button" className="btn btn-default btn-xs" onClick={() => copyToClipboard(file.ePIC_PID)} title="Copy PID to clipboard">
                                 <i className="glyphicon glyphicon-globe"/>
-                            </button> }
+                            </button>*/ }
                             { !this.props.remove ? false :
                             <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})} title="Delete">
                                 <i className="glyphicon glyphicon-remove"/>
