@@ -412,6 +412,7 @@ const EditRecord = React.createClass({
                     <div className="row" key={i} style={{marginBottom:'0.5em'}}>
                         {f}
                         <div className={"col-sm-12"} style={{paddingLeft: 0, paddingRight:0}}>
+                        <div className={"col-sm-12"} style={{paddingRight:0}}>
                             { i == 0 ?
                                 <btn className="btn btn-default btn-xs" style={{float:'right'}} onClick={ev => btnClear(ev)}
                                      title="Clear all entries for this field">
