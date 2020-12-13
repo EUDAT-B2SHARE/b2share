@@ -3,7 +3,6 @@ import 'whatwg-fetch';
 import { Badge } from 'react-bootstrap';
 import { Link } from 'react-router'
 import { Map, List } from 'immutable';
-import { DateTimePicker, Multiselect, DropdownList, NumberPicker } from 'react-widgets';
 import moment from 'moment';
 import { timestamp } from '../data/ajax';
 import { serverCache, notifications, browser, Error } from '../data/server';
@@ -391,7 +390,11 @@ const Record = React.createClass({
     renderField(id, schema, value, vtype=null) {
         function renderScalar(schema, value) {
             const type = schema.get('type');
-            if (type === 'string' && schema.get('format') === 'date-time') {
+            if (type === 'string' && schema.get('format') === 'date') {
+                value = moment(value).format("LL");
+            } else if (type === 'string' && schema.get('format') === 'date-time') {
+                value = moment(value).format("LLLL");
+            } else if (type === 'string' && schema.get('format') === 'date-time-range') {
                 value = moment(value).format("LLLL");
             } else if (type === 'boolean') {
                 const markClass = "glyphicon glyphicon-" + (value ? "ok":"remove");
@@ -437,8 +440,9 @@ const Record = React.createClass({
 
             inner = (
                 <ul className="list-unstyled">
-                    { schema.get('properties').entrySeq().map(
-                        ([pid, pschema]) => this.renderField(pid, pschema, value.get(pid), pid == mainid ? vtype : null)) }
+                    { schema.get('properties').entrySeq()
+                        .sort(([pid, pschema]) => !pschema.get('isRequired'))
+                        .map(([pid, pschema]) => this.renderField(pid, pschema, value.get(pid), pid == mainid ? vtype : null)) }
                 </ul>
             );
         } else {
