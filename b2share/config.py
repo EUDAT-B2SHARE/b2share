@@ -267,6 +267,11 @@ OAISERVER_METADATA_FORMATS = {
         'schema': 'http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd',
         'serializer': 'b2share.modules.records.serializers.oaipmh_marc21_v1',
     },
+    'eudatcore': {
+        'namespace': 'http://schema.eudat.eu/schema/kernel-1',
+        'schema': 'http://schema.eudat.eu/schema/eudat-core-1.0.xsd',
+        'serializer': 'b2share.modules.records.serializers.eudatcore_v1'
+    }
 }
 
 # Cache
