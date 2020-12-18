@@ -1,6 +1,25 @@
 B2Share changelog
 *****************
 
+2.1.6 (December 2020)
+===========================
+
+Minor update. Changes since v2.1.5 include:
+
+- Improve B2NOTE integration
+- Python version used in Dockerfile updated to 3.6
+
+
+2.1.5 (November 2020)
+===========================
+
+Minor update. Changes since v2.1.4 include:
+
+- Fix metadata boolean field handling
+- Updated B2NOTE integration
+- Updated dependencies
+
+
 2.1.4 (March 2020)
 ===========================
 
