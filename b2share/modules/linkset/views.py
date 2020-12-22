@@ -25,11 +25,6 @@ from invenio_rest import ContentNegotiatedMethodView
 
 blueprint = Blueprint('b2share_apilinkset', __name__, url_prefix='/linkset/<path:record_id>/json')
 
-@blueprint.url_value_preprocessor
-def get_record_value(endpoint, values):
-    print(values)
-    rec = values['record_id']
-    print(rec)
 
 
 class ApiLinkset(ContentNegotiatedMethodView):
@@ -85,8 +80,10 @@ class ApiLinkset(ContentNegotiatedMethodView):
             license = {}
             if rec_license is not None:
                 license = { 'href': rec_license.get('license_uri')}
-            else:
-                print('No license')
+            #Todo: According to Signposting spec: License cardinality is 1. What we will do for the following case?
+            # https://b2share.eudat.eu/api/oai2d?verb=ListRecords&metadataPrefix=oai_dc
+            # <dc:rights>info:eu-repo/semantics/openAccess</dc:rights>
+            # <dc:rights>GNU General Public License 3 (GPL-3.0)</dc:rights>
 
             describedbys = []
             if doi_identifier is not None:
@@ -94,12 +91,8 @@ class ApiLinkset(ContentNegotiatedMethodView):
                                'type':'application/x-bibtex'}
                 describedbys.append(describedby)
             items = []
-            # item_landingpage = {'href': landingpage, 'type':'text/html'}
-            # items.append(item_landingpage)
             fs = []
-            # print(record)
             for file in record.get('_files', []):
-                print(file)
                 fmimetype = fm.ObjectVersion.get(
                     file.get('bucket'), file.get('key'),
                     file.get('version_id')).mimetype
@@ -109,8 +102,6 @@ class ApiLinkset(ContentNegotiatedMethodView):
                     'JSONSCHEMAS_HOST', '') + '/api/files/' + file.get(
                     'bucket') + '/' + file.get('key')
                 file.update({'file-location': file_location})
-                print(file_location)
-                print(fmimetype)
                 item_file = {'href': file_location, 'type':fmimetype}
                 items.append(item_file)
                 item_anchor = {'anchor':file_location, 'collection':[{'href':landingpage, 'type':'text/html'}]}
