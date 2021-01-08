@@ -29,6 +29,7 @@ from __future__ import absolute_import
 import json
 
 from flask import jsonify, url_for
+from b2share.utils import jsonify_keeporder
 
 
 def block_schema_version_self_link(block_schema_version, **kwargs):
@@ -170,7 +171,7 @@ def community_schema_to_dict(community_schema):
 
 def community_schema_to_json_serializer(community_schema, code=200,
                                         headers=None):
-    response = jsonify(community_schema_to_dict(community_schema))
+    response = jsonify_keeporder(community_schema_to_dict(community_schema))
     response.status_code = code
     response.set_etag(str(community_schema.released.utcfromtimestamp(0)))
     if headers is not None:
@@ -180,7 +181,7 @@ def community_schema_to_json_serializer(community_schema, code=200,
 
 def community_schemas_list_to_json_serializer(schemas, code=200,
                                         headers=None):
-    response = jsonify(list(map(lambda x: community_schema_to_dict(x), schemas)))
+    response = jsonify_keeporder(list(map(lambda x: community_schema_to_dict(x), schemas)))
     response.status_code = code
     response.set_etag(str(schemas[0].released.utcfromtimestamp(0)))
     if headers is not None:
@@ -214,7 +215,7 @@ def block_schema_to_json_serializer(schema, code=200, headers=None):
     Returns:
         Response: response from list of BlockSchemas.
      """
-    response = jsonify(block_schema_to_dict(schema))
+    response = jsonify_keeporder(block_schema_to_dict(schema))
     response.status_code = code
     if headers is not None:
         response.headers.extend(headers)

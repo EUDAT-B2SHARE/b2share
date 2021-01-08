@@ -24,7 +24,7 @@
 """B2Share utility functions."""
 
 from sqlalchemy import UniqueConstraint, PrimaryKeyConstraint
-from flask import current_app
+from flask import current_app, jsonify
 from invenio_db import db
 from urllib.parse import urlunsplit
 import uuid
@@ -86,3 +86,10 @@ def get_base_url():
         current_app.config['JSONSCHEMAS_HOST'],
         current_app.config.get('APPLICATION_ROOT') or '', '', ''
     ))
+
+def jsonify_keeporder(json_schema):
+    dosort = current_app.config['JSON_SORT_KEYS']
+    current_app.config['JSON_SORT_KEYS'] = False
+    res = jsonify(json_schema)
+    current_app.config['JSON_SORT_KEYS'] = dosort
+    return res
