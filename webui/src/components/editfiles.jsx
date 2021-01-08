@@ -692,6 +692,11 @@ export const FileRecordRow = React.createClass({
         };
     },
 
+    copyIdentifier(id, msg='Item') {
+        copyToClipboard(id);
+        alert(msg + ' copied to clipboard!');
+    },
+
     render() {
         let file = this.props.file;
         file = file.toJS ? file.toJS() : file;
@@ -727,14 +732,14 @@ export const FileRecordRow = React.createClass({
                     }</div>
                     <div className="col-sm-2 buttons">
                             { this.props.b2noteWidget }
-                            {/* !file.checksum ? false :
-                            <button type="button" className="btn btn-default btn-xs" onClick={() => copyToClipboard(file.checksum)} title="Copy checksum to clipboard">
+                            { !file.checksum ? false :
+                            <button type="button" className="btn btn-default btn-xs" onClick={() => this.copyIdentifier(file.checksum, 'File checksum')} title="Copy checksum to clipboard">
                                 <i className="glyphicon glyphicon-asterisk"/>
                             </button> }
                             { !file.ePIC_PID ? false :
-                            <button type="button" className="btn btn-default btn-xs" onClick={() => copyToClipboard(file.ePIC_PID)} title="Copy PID to clipboard">
+                            <button type="button" className="btn btn-default btn-xs" onClick={() => this.copyIdentifier(file.ePIC_PID, 'File EPIC PID')} title="Copy PID to clipboard">
                                 <i className="glyphicon glyphicon-globe"/>
-                            </button>*/ }
+                            </button> }
                             { !this.props.remove ? false :
                             <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})} title="Delete">
                                 <i className="glyphicon glyphicon-remove"/>
