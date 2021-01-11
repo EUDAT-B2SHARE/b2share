@@ -440,9 +440,7 @@ const Record = React.createClass({
 
             inner = (
                 <ul className="list-unstyled">
-                    { schema.get('properties').entrySeq()
-                        .sort(([pid, pschema]) => !pschema.get('isRequired'))
-                        .map(([pid, pschema]) => this.renderField(pid, pschema, value.get(pid), pid == mainid ? vtype : null)) }
+                    { schema.get('properties').entrySeq().map(([pid, pschema]) => this.renderField(pid, pschema, value.get(pid), pid == mainid ? vtype : null)) }
                 </ul>
             );
         } else {

@@ -427,7 +427,7 @@ const EditRecord = React.createClass({
                                     <span><span className="glyphicon glyphicon-minus-sign" aria-hidden="true"/> Remove </span>
                                 }
                             </btn>
-                            <hr style={{margin: '10px', padding: '0px'}}/>
+                            <hr style={{margin: '10px 5px 10px 0px', padding: '0px'}}/>
                         </div>
                     </div>
                 </div> );
@@ -437,11 +437,6 @@ const EditRecord = React.createClass({
             field = this.renderScalarField(schema, path, buttons);
         }
 
-        const arrstyle = schema.get('type') !== 'array' ? {} : {
-            paddingLeft:'10px',
-            borderLeft:'1px solid black',
-            borderRadius:'4px'
-        };
         const pathstr = path.join('/');
         const isError = this.state.errors.hasOwnProperty(pathstr);
         const onfocus = () => { this.setState({showhelp: path.slice()}); }
@@ -449,28 +444,31 @@ const EditRecord = React.createClass({
         const title = schema.get('title');
         return (
             <div className="row" key={id}>
-                <div key={id} style={{marginBottom:'0.5em', overflow: 'auto'}} title={schema.get('description')}>
+                <div key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
                     {!title ? false :
                         <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                             <span style={{float:'right', color:isError?'red':'black'}}>
                                 {title} {schema.get('isRequired') ? "*":""}
                             </span>
                         </label> }
-                    <div className={title ? "col-sm-9":"col-sm-12"} style={arrstyle} onFocus={onfocus} onBlur={onblur}>
+                    <div className={"col-sm-" + (title ? "9" : "12") + (schema.get('type') == 'array' ? " field-array" : "")} onFocus={onfocus} onBlur={onblur}>
                         <div className="container-fluid" style={{paddingLeft:0, paddingRight:0}}>
                             {field}
                         </div>
                     </div>
                 </div>
+                <div className="col-sm-12 v-spacer"><input type="hidden" /></div>
+                { path.length != 1 ? false :
                 <div className="col-sm-offset-3 col-sm-9">
                     <HeightAnimate>
                         { this.state.showhelp && objEquals(this.state.showhelp, path) ?
-                            <div style={{marginLeft:'1em', paddingLeft:'1em', borderLeft: '1px solid #eee'}}>
+                            <div className="field-description">
                                 <p> {schema.get('description')} </p>
                             </div>
                           : false }
                     </HeightAnimate>
                 </div>
+                }
             </div>
         );
     },
@@ -488,13 +486,7 @@ const EditRecord = React.createClass({
             if (!f) {
                 return false;
             }
-            const style = {
-                marginTop:'0.25em',
-                marginBottom:'0.25em',
-                paddingTop:'0.25em',
-                paddingBottom:'0.25em',
-            };
-            return <div style={style} key={pid}> {f} </div>;
+            return <div className="field-tree" key={pid}> {f} </div>;
         }
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
 

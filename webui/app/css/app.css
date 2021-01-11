@@ -974,7 +974,7 @@ a.navbar-brand {
     margin-bottom: 0.5em;
 }
 
-.metadata-field {
+.metadata-field, .field-tree {
     margin-top: 0.25em;
     margin-bottom: 0.25em;
     padding-top: 0.25em;
@@ -996,6 +996,17 @@ a.navbar-brand {
 
 .metadata .glyphicon-remove {
     color: red;
+}
+
+.field-description {
+    margin-left: 0.5em;
+    padding-left: 1em;
+    border-left: 1px solid #eee;
+}
+
+.field-array {
+    border-left: 1px solid black;
+    border-radius: 4px;
 }
 
 /*****************************************************************************/
@@ -1213,4 +1224,8 @@ ul.rw-list>li.rw-list-option.rw-state-focus,.rw-selectlist>li.rw-list-option.rw-
 .rw-multiselect-taglist .rw-tag-btn {
   padding:5px;
   color:#F45D00;
+}
+
+.v-spacer {
+    height: 0.5em;
 }
