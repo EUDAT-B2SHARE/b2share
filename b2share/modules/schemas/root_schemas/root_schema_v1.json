@@ -242,7 +242,7 @@
                 "minItems": 1,
                 "uniqueItems": true
             },
-            "instrument": {
+            "instruments": {
                 "title": "Instruments",
                 "description": "The scientific instruments the data was generated or captured on.",
                 "type": "array",
@@ -575,10 +575,11 @@
                     "type": "object",
                     "properties": {
                         "funder_name": {
+                            "title": "Funder name",
                             "$ref": "#/definitions/nonEmptyString"
                         },
                         "funder_identifier": {
-                            "title": "identifier",
+                            "title": "Identifier",
                             "type": "object",
                             "properties": {
                                 "identifier": {
@@ -588,6 +589,10 @@
                                     "$ref": "#/definitions/schemeUri"
                                 }
                             }
+                        },
+                        "award_title": {
+                            "title": "Award title",
+                            "type": "string"
                         },
                         "award_number": {
                             "title": "Award number",
@@ -602,10 +607,6 @@
                                     "format": "uri"
                                 }
                             }
-                        },
-                        "award_title": {
-                            "title": "Award title",
-                            "type": "string"
                         }
                     },
                     "required": ["funder_name"]
@@ -622,7 +623,6 @@
             "community_specific": {
                 "type": "object"
             },
-
 
             "publication_state": {
                 "title": "Publication State",
@@ -650,7 +650,7 @@
         "b2share": {
             "presentation": {
                 "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "license", "disciplines", "keywords", "contact_email" ],
-                "minor": [ "contributors", "resource_types", "alternate_identifiers", "related_identifiers", "version", "publisher", "languages", "spatial_coverages", "temporal_coverages"]
+                "minor": [ "contributors", "instruments", "resource_types", "alternate_identifiers", "related_identifiers", "version", "publisher", "languages", "spatial_coverages", "temporal_coverages", "funding_references"]
             }
         }
     }
