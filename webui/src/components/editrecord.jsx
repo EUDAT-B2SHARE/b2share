@@ -165,7 +165,7 @@ const EditRecord = React.createClass({
                 console.assert(i > 0);
                 const subpath = path.slice(0, i);
                 const list = r.getIn(subpath);
-                if (!list) {
+                if (!list || !list.size) {
                     r = r.setIn(subpath, List());
                 } else {
                     console.assert(el < 1000);
@@ -178,7 +178,7 @@ const EditRecord = React.createClass({
             }
         }
         console.assert(!Array.isArray(value));
-        if(typeof value === 'string' || value instanceof String) {
+        if (typeof value === 'string' || value instanceof String) {
             value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
         }
 
