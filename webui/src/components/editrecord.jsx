@@ -159,30 +159,39 @@ const EditRecord = React.createClass({
         if (!r) {
             return null;
         }
-        for (let i = 0; i < path.length; ++i) {
-            const el = path[i];
-            if (Number.isInteger(el)) {
-                console.assert(i > 0);
-                const subpath = path.slice(0, i);
-                const list = r.getIn(subpath);
-                if (!list || !list.size) {
-                    r = r.setIn(subpath, List());
-                } else {
-                    console.assert(el < 1000);
-                    while (el >= list.count()) {
-                        const x = Number.isInteger(path[i+1]) ? List() : Map();
-                        const list2 = list.push(x);
-                        r = r.setIn(subpath, list2);
+        if (value !== undefined) {
+            for (let i = 0; i < path.length; ++i) {
+                const el = path[i];
+                if (Number.isInteger(el)) {
+                    console.assert(i > 0);
+                    const subpath = path.slice(0, i);
+                    const list = r.getIn(subpath);
+                    if (!list || !list.size) {
+                        r = r.setIn(subpath, List());
+                    } else {
+                        console.assert(el < 1000);
+                        while (el >= list.count()) {
+                            const x = Number.isInteger(path[i+1]) ? List() : Map();
+                            const list2 = list.push(x);
+                            r = r.setIn(subpath, list2);
+                        }
                     }
                 }
             }
-        }
-        console.assert(!Array.isArray(value));
-        if (typeof value === 'string' || value instanceof String) {
-            value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
-        }
+            console.assert(!Array.isArray(value));
+            if (typeof value === 'string' || value instanceof String) {
+                value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
+            }
 
-        r = value !== undefined ? r.setIn(path, value) : r.deleteIn(path);
+            r = r.setIn(path, value);
+        } else {
+            var p = path;
+            while (l === undefined || !l.size) {
+                r = r.deleteIn(p);
+                p.pop();
+                var l = r.getIn(p)
+            }
+        }
         const errors = this.state.errors;
         const pathstr = path.join('/');
         if (!this.validField(schema, value)) {
