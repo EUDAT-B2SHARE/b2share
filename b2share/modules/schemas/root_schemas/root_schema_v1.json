@@ -34,16 +34,19 @@
             },
             "nameIdentifier": {
                 "name_identifier": {
+                    "description": "The unique identifier of the entity, according to various identifier schemes.",
                     "$ref": "#/definitions/nonEmptyString"
                 },
                 "$ref": "#/definitions/scheme"
             },
             "affiliation": {
                 "affiliation_name": {
+                    "description": "The name of the affiliation.",
                     "$ref": "#/definitions/nonEmptyString"
                 },
                 "affiliation_identifier": {
                     "title": "Identifier",
+                    "description": "The unique identifier of the affiliation, according to various identifier schemes.",
                     "$ref": "#/definitions/identifierType"
                 },
                 "$ref": "#/definitions/scheme"
@@ -51,18 +54,18 @@
             "person": {
                 "given_name": {
                     "title": "Given name",
-                    "description": "The first names given to this person.",
+                    "description": "The first names given to this entity.",
                     "type": "string"
                 },
                 "family_name": {
                     "title": "Family name",
-                    "description": "The family names given to this person.",
+                    "description": "The family names given to this entity.",
                     "type": "string"
                 },
                 "affiliations": {
                     "type": "array",
                     "title": "Affiliations",
-                    "description": "The organisations or entities this person is affiliated with.",
+                    "description": "The organisations or entities this entity is affiliated with.",
                     "items": {
                         "type": "object",
                         "properties": {
@@ -72,7 +75,7 @@
                 },
                 "name_type": {
                     "title": "Type",
-                    "description": "The type of creator.",
+                    "description": "The type of entity described.",
                     "type": "string",
                     "enum": ["Personal", "Organizational"]
                 },
@@ -201,7 +204,8 @@
                         },
                         "type": {
                             "title": "Type",
-                            "enum": ["Alternative Title", "Subtitle", "TranslatedTitle"]
+                            "enum": ["Alternative Title", "Subtitle", "TranslatedTitle"],
+                            "description": "The type of the title."
                         }
                     },
                     "additionalProperties": false,
@@ -233,6 +237,8 @@
                             "title": "Type"
                         },
                         "resource_description": {
+                            "title": "Description",
+                            "description": "An optional description of the resource.",
                             "type": "string"
                         }
                     },
@@ -254,6 +260,7 @@
                         },
                         "instrument_identifier": {
                             "title": "Identifier",
+                            "description": "The unique identifier of the instrument, according to various identifier schemes.",
                             "type": "string"
                         },
                         "$ref": "#/definitions/scheme"
@@ -274,6 +281,7 @@
                         },
                         "discipline_identifier": {
                             "title": "Identifier",
+                            "description": "The unique identifier of the discipline, according to various identifier schemes.",
                             "type": "string"
                         },
                         "$ref": "#/definitions/scheme"
@@ -292,13 +300,14 @@
                         "keyword": {
                             "$ref": "#/definitions/nonEmptyString"
                         },
-                        "identifier": {
+                        "keyword_identifier": {
                             "title": "Identifier",
-                            "description": "Corresponding identifier",
+                            "description": "The unique identifier for the keyword, according to various identifier schemes.",
                             "type": "string"
                         },
-                        "name_uri": {
-                            "title": "Name URI",
+                        "keyword_uri": {
+                            "title": "URI",
+                            "description": "The URI pointing to the definition of the keyword.",
                             "type": "string",
                             "format": "uri"
                         },
@@ -321,6 +330,7 @@
                         "$ref": "#/definitions/person",
                         "contributor_type": {
                             "title": "Type",
+                            "description": "The type of the contributor.",
                             "enum": ["ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", "Funder", "HostingInstitution", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", "RelatedPerson", "Researcher", "ResearchGroup", "RightsHolder", "Sponsor", "Supervisor", "WorkPackageLeader", "Other"]
                         }
                     },
@@ -350,6 +360,7 @@
                         },
                         "alternate_identifier_type": {
                             "title": "Type",
+                            "description": "The type of the alternate identifier, according to various identifier schemes.",
                             "$ref": "#/definitions/identifierType"
                         }
                     },
@@ -370,14 +381,17 @@
                         },
                         "resource_type_general": {
                             "title": "Resource type",
+                            "description": "The type of the resource.",
                             "$ref": "#/definitions/resourceType"
                         },
                         "related_identifier_type": {
                             "title": "Type",
+                            "description": "The type of the related identifier, according to various identifier schemes.",
                             "$ref": "#/definitions/identifierType"
                         },
                         "relation_type": {
                             "title": "Relation",
+                            "description": "The relation type of the described reference.",
                             "enum": ["IsCitedBy", "Cites", "IsSupplementTo", "IsSupplementedBy", "IsContinuedBy", "Continues", "HasMetadata", "IsMetadataFor", "IsNewVersionOf", "IsPreviousVersionOf", "IsPartOf", "HasPart", "IsReferencedBy", "References", "IsDocumentedBy", "Documents", "isCompiledBy", "Compiles", "IsVariantFormOf", "IsOriginalFormOf", "IsIdenticalTo", "IsReviewedBy", "Reviews", "IsDerivedFrom", "IsSourceOf"]
                         },
                         "$ref": "#/definitions/scheme"
@@ -398,6 +412,7 @@
                         },
                         "description_type": {
                             "title": "Type",
+                            "description": "The type of the description.",
                             "enum": ["Abstract", "Methods", "SeriesInformation", "TableOfContents", "TechnicalInfo", "Other"]
                         }
                     },
@@ -502,7 +517,7 @@
                 "properties": {
                     "places": {
                         "title": "Places",
-                        "description": "Any locations related to the resource",
+                        "description": "Any locations related to the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/spatialCoveragePlace"
@@ -510,7 +525,7 @@
                     },
                     "points": {
                         "title": "Points",
-                        "description": "Any locations related to the resource",
+                        "description": "Any locations related to the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/spatialCoveragePoint"
@@ -518,7 +533,7 @@
                     },
                     "boxes": {
                         "title": "Boxes",
-                        "description": "Any locations related to the resource",
+                        "description": "Any locations related to the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/spatialCoverageBox"
@@ -526,7 +541,7 @@
                     },
                     "polygons": {
                         "title": "Polygons",
-                        "description": "Any locations related to the resource",
+                        "description": "Any locations related to the resource.",
                         "type": "array",
                         "items": {
                             "title": "Polygon",
@@ -538,12 +553,12 @@
             },
             "temporal_coverages": {
                 "title": "Temporal coverages",
-                "description": "The temporal coverage of the contents of the resource",
+                "description": "The temporal coverage of the contents of the resource.",
                 "type": "object",
                 "properties": {
                     "start_end_dates": {
                         "title": "Start and end dates",
-                        "description": "Start and end dates of the contents of the resource",
+                        "description": "Start and end dates of the contents of the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageStartEndDate"
@@ -551,7 +566,7 @@
                     },
                     "ranges": {
                         "title": "Ranges",
-                        "description": "Ranges of the contents of the resource",
+                        "description": "Ranges of the contents of the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageRange"
@@ -559,7 +574,7 @@
                     },
                     "spans": {
                         "title": "Spans",
-                        "description": "Named spans of the contents of the resource",
+                        "description": "Named spans of the contents of the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageSpan"
@@ -570,12 +585,14 @@
             },
             "funding_references": {
                 "title": "Funding references",
+                "description": "Information about financial support (funding) for the resource being registered.",
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "funder_name": {
                             "title": "Funder name",
+                            "description": "The full name of the funder.",
                             "$ref": "#/definitions/nonEmptyString"
                         },
                         "funder_identifier": {
@@ -583,7 +600,8 @@
                             "type": "object",
                             "properties": {
                                 "identifier": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "The unique identifier of the funder, according to various identifier schemes."
                                 },
                                 "scheme_uri": {
                                     "$ref": "#/definitions/schemeUri"
@@ -592,6 +610,7 @@
                         },
                         "award_title": {
                             "title": "Award title",
+                            "description": "The title of the award.",
                             "type": "string"
                         },
                         "award_number": {
@@ -599,10 +618,12 @@
                             "type": "object",
                             "properties": {
                                 "number": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "The corresponding number of the award."
                                 },
                                 "award_uri": {
                                     "title": "Award URI",
+                                    "description": "The URI pointing to the award.",
                                     "type": "string",
                                     "format": "uri"
                                 }
