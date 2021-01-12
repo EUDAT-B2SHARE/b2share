@@ -185,7 +185,7 @@ const EditRecord = React.createClass({
 
             r = r.setIn(path, value);
         } else {
-            var p = path;
+            var p = [...path];
             while (l === undefined || !l.size) {
                 r = r.deleteIn(p);
                 p.pop();
@@ -199,7 +199,7 @@ const EditRecord = React.createClass({
         } else {
             delete errors[pathstr];
         }
-        this.setState({record:r, errors, dirty:true});
+        this.setState({record:r, errors, dirty: true});
     },
 
     removeErrors(path) {
@@ -316,16 +316,16 @@ const EditRecord = React.createClass({
                 </div>
             );
         } else if (type === 'integer') {
-            return <NumberPicker className={validClass} defaultValue={value} onChange={setter} />
+            return <NumberPicker className={validClass} value={value} onChange={setter} />
         } else if (type === 'number') {
-            return <NumberPicker className={validClass} defaultValue={value} onChange={setter} />
+            return <NumberPicker className={validClass} value={value} onChange={setter} />
         } else if (type === 'string') {
-            const value_str = ""+(value || "");
+            const value_str = "" + (value || "");
             if (schema.get('enum')) {
                 return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
             } else if (['date-time', 'date'].includes(format)) {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
-                return <DateTimePicker className={validClass} time={format == 'date-time'} defaultValue={initial}
+                return <DateTimePicker className={validClass} time={format == 'date-time'} value={initial}
                         onChange={path == 'embargo_date' ? onEmbargoDateChange : onDateChange} />
             } else if (format === 'email') {
                 return <input type="text" className={"form-control"+ validClass} placeholder="email@example.com"
@@ -695,7 +695,7 @@ const EditRecord = React.createClass({
         const updated = this.state.record.toJS();
         const patch = compare(original, updated);
         if (!patch || !patch.length) {
-            this.setState({dirty:false});
+            this.setState({dirty: false});
             return;
         }
         const afterPatch = (record) => {
@@ -704,7 +704,7 @@ const EditRecord = React.createClass({
                 // TODO(edima): when a draft is publised, clean the state of
                 // records in versioned chain, to trigger a refetch of
                 // versioning data
-                this.setState({dirty:false, waitingForServer: false});
+                this.setState({dirty: false, waitingForServer: false});
                 notifications.clearAll();
             } else {
                 browser.gotoRecord(record.id);
