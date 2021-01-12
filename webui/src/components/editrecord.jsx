@@ -439,12 +439,12 @@ const EditRecord = React.createClass({
 
         const pathstr = path.join('/');
         const isError = this.state.errors.hasOwnProperty(pathstr);
-        const onfocus = () => { this.setState({showhelp: path.slice()}); }
+        const onfocus = (e) => { this.setState({showhelp: path}); e.stopPropagation(); }
         const onblur = () => { this.setState({showhelp: null}); }
         const title = schema.get('title');
         return (
             <div className="row" key={id}>
-                <div key={id} style={{marginBottom:'0.5em'}} title={schema.get('description')}>
+                <div style={{marginBottom:'0.5em'}}>
                     {!title ? false :
                         <label htmlFor={id} className="col-sm-3 control-label" style={{fontWeight:'bold'}}>
                             <span style={{float:'right', color:isError?'red':'black'}}>
@@ -460,15 +460,12 @@ const EditRecord = React.createClass({
                 <div className="col-sm-12 v-spacer"><input type="hidden" /></div>
                 { path.length != 1 ? false :
                 <div className="col-sm-offset-3 col-sm-9">
-                    <HeightAnimate>
-                        { this.state.showhelp && objEquals(this.state.showhelp, path) ?
-                            <div className="field-description">
-                                <p> {schema.get('description')} </p>
-                            </div>
-                          : false }
-                    </HeightAnimate>
-                </div>
-                }
+                    <ReplaceAnimate>
+                        <div className="field-description">
+                            <p id={"field-description-" + path[0]} />
+                        </div>
+                    </ReplaceAnimate>
+                </div> }
             </div>
         );
     },
@@ -568,6 +565,50 @@ const EditRecord = React.createClass({
                 }
             });
             return updated ? record : null;
+        }
+    },
+
+    getSchemaFieldDefinition(path, schema) {
+        var def = schema ? schema.get(path[0], null) : null;
+        if (def) {
+            if (path.length == 1) {
+                return def;
+            } else if (def.get('type') == 'object') {
+                return this.getSchemaFieldDefinition(path.slice(1), def.get('properties'));
+            } else if (def.get('type') == 'array') {
+                return this.getSchemaFieldDefinition(path.slice(2), def.get('items').get('properties'));
+            }
+        }
+        return null;
+    },
+
+    getFieldDescription(path) {
+        var def = this.getSchemaFieldDefinition(path, this.props.rootSchema.get('properties'));
+        if (def == null) {
+            def = this.props.blockSchemas.forEach(([id, blockSchema]) => {
+                return this.getSchemaFieldDefinition(path, blockSchema.get('properties'));
+            });
+            if (!def || !def.length) {
+                return "";
+            }
+        }
+        return def.get('description') || "";
+    },
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.showhelp != this.state.showhelp) {
+            var desc = "";
+            if (this.state.showhelp === null) {
+                var elem = document.getElementById('field-description-' + prevState.showhelp[0]);
+            } else {
+                const path = this.state.showhelp;
+                var elem = document.getElementById('field-description-' + path[0]);
+                const sdesc = this.getFieldDescription(path);
+                var desc = path.length > 1
+                    ? this.getFieldDescription(path.slice(0,1)) + (sdesc > "" ? "<br/><br/>This subfield sets " + sdesc[0].toLowerCase() + sdesc.slice(1) : "")
+                    : sdesc;
+            }
+            elem.innerHTML = desc;
         }
     },
 
