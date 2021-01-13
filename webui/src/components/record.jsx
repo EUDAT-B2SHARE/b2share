@@ -421,12 +421,32 @@ const Record = React.createClass({
         if (value === undefined || value === null) {
             return false;
         }
-        //console.log(id, value);
+
         const type = schema.get('type');
         const title = schema.get('title');
         let inner = null;
 
-        if (type === 'array') {
+        if (id == 'languages' || id == 'language') {
+            const languages = serverCache.getLanguages();
+            if (languages && value.size) {
+                value = value.map(function(v) {
+                    const lang = languages.find(l => l.id == v).name;
+                    return lang ? `${lang} [${v}]` : value;
+                });
+                inner = (
+                    <ul className="list-unstyled">
+                        { value.map((v,i) => this.renderField(`#${i}`, schema.get('items'), v)) }
+                    </ul>
+                );
+            } else {
+                if (languages) {
+                    const lang = languages.find(l => l.id == value).name
+                    value = lang ? `${lang} [${value}]` : value;
+                }
+                // maintain root schema v0 compatibility
+                inner = <span>{renderScalar(schema, value)}</span>;
+            }
+        } else if (type === 'array') {
             inner = (
                 <ul className="list-unstyled">
                     { value.map((v,i) => this.renderField(`#${i}`, schema.get('items'), v)) }
@@ -444,7 +464,7 @@ const Record = React.createClass({
                 </ul>
             );
         } else {
-            inner = <span key={id}>{renderScalar(schema, value)}</span>
+            inner = <span>{renderScalar(schema, value)}</span>
         }
 
         return (
