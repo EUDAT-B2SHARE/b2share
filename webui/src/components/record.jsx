@@ -31,8 +31,8 @@ export const RecordRoute = React.createClass({
 
     render() {
         const record = this.getRecordOrDraft();
-        const b2noteUrl = serverCache.getInfo().get('b2note_url');
-        if (!record || !b2noteUrl) {
+        const b2noteUrl = serverCache.getInfo().get('b2note_url', '');
+        if (!record || b2noteUrl === null) {
             return <Wait/>;
         }
         if (record instanceof Error) {
@@ -508,7 +508,8 @@ const Record = React.createClass({
         const blockSchemas = this.props.blockSchemas;
         const record = this.props.record;
         const b2noteUrl = this.props.b2noteUrl;
-        if (!record || !rootSchema || !b2noteUrl) {
+
+        if (!record || !rootSchema) {
             return <Wait/>;
         }
 

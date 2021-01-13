@@ -682,7 +682,7 @@ export const FileRecordRow = React.createClass({
     propTypes: {
         file: PT.object.isRequired,
         remove: PT.func,
-        b2noteWidget: PT.object,
+        b2noteWidget: PT.oneOfType([PT.object, PT.bool]),
     },
 
     getInitialState() {
