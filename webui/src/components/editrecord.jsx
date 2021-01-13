@@ -289,7 +289,7 @@ const EditRecord = React.createClass({
 
         const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
 
-        if (path.slice(-1)[0] == 'language') {
+        if (['languages', 'language'].includes(path[0])) {
             const languages = serverCache.getLanguages();
             return (languages instanceof Error) ? <Err err={languages}/> :
                 <SelectBig data={languages}
