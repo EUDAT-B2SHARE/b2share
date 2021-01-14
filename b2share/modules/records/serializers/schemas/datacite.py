@@ -91,9 +91,14 @@ class DataCiteSchemaV1(Schema):
         if len(rt_list) == 0:
             return {'resourceTypeGeneral':'Other'}
         rt = rt_list[0]
-        ret = {'resourceTypeGeneral': rt['resource_type_general']}
-        if rt.get('resource_type'):
-            ret['resourceType'] = rt['resource_type']
+        if rt.get('resource_type_general'): # root schema v0
+            ret = {'resourceTypeGeneral': rt['resource_type_general']} 
+            if rt.get('resource_type'):
+                ret['resourceType'] = rt['resource_type']
+        else:                             # root schema v1
+            ret = {'resourceTypeGeneral': rt['resource_type']}
+            if rt.get('resource_description'):
+                ret['resourceType'] = rt['resource_description']
         return ret
 
     def get_subjects(self, obj):
