@@ -16,6 +16,7 @@
             },
             "identifierType": {
                 "type": "string",
+                "description": "The type of the identifier.",
                 "enum": ["ARK", "arXiv", "bibcode", "DOI", "EAN13", "EISSN", "Handle", "ISBN", "ISSN", "ISTC", "LISSN", "LSID", "ORCiD", "PMID", "PURL", "UPC", "URL", "URN"]
             },
             "resourceType": {
@@ -73,8 +74,8 @@
                         }
                     }
                 },
-                "name_type": {
-                    "title": "Type",
+                "entity_type": {
+                    "title": "Entity type",
                     "description": "The type of entity described.",
                     "type": "string",
                     "enum": ["Personal", "Organizational"]
@@ -99,11 +100,11 @@
                 "properties": {
                     "point_longitude": {
                         "title": "Longitude",
-                        "type": "number"
+                        "$ref": "#/definitions/longitude"
                     },
                     "point_latitude": {
                         "title": "Latitude",
-                        "type": "number"
+                        "$ref": "#/definitions/latitude"
                     },
                     "point_vertical": {
                         "title": "Vertical",
@@ -117,19 +118,19 @@
                 "properties": {
                     "westbound_longitude": {
                         "title": "Westbound longitude",
-                        "type": "number"
+                        "$ref": "#/definitions/longitude"
                     },
                     "eastbound_longitude": {
                         "title": "Eastbound longitude",
-                        "type": "number"
+                        "$ref": "#/definitions/latitude"
                     },
                     "northbound_latitude": {
                         "title": "Northbound latitude",
-                        "type": "number"
+                        "$ref": "#/definitions/longitude"
                     },
                     "southbound_latitude": {
                         "title": "Southbound latitude",
-                        "type": "number"
+                        "$ref": "#/definitions/latitude"
                     }
                 },
                 "required": ["westbound_longitude", "eastbound_longitude", "northbound_latitude", "southbound_latitude"]
@@ -172,6 +173,16 @@
             },
             "temporalCoverageSpan": {
                 "type": "string"
+            },
+            "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+            },
+            "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
             }
         },
         "properties": {
@@ -329,7 +340,7 @@
                         },
                         "$ref": "#/definitions/person",
                         "contributor_type": {
-                            "title": "Type",
+                            "title": "Contributor type",
                             "description": "The type of the contributor.",
                             "enum": ["ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", "Funder", "HostingInstitution", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", "RelatedPerson", "Researcher", "ResearchGroup", "RightsHolder", "Sponsor", "Supervisor", "WorkPackageLeader", "Other"]
                         }
