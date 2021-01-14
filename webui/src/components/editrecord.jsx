@@ -294,7 +294,7 @@ const EditRecord = React.createClass({
             return (languages instanceof Error) ? <Err err={languages}/> :
                 <SelectBig data={languages}
                     onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
-        } else if (path.slice(-1)[0] == 'discipline_name') {
+        } else if (path.slice(-1)[0] == 'discipline_name' || path[0] == 'disciplines') {
             const disciplines = serverCache.getDisciplines();
             return (disciplines instanceof Error) ? <Err err={disciplines}/> :
                 <SelectBig data={disciplines}
