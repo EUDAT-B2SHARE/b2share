@@ -93,21 +93,25 @@
                 }
             },
             "spatialCoveragePlace": {
-                "type": "string"
+                "type": "string",
+                "description": "The name of a place or location."
             },
             "spatialCoveragePoint": {
                 "type": "object",
                 "properties": {
                     "point_longitude": {
                         "title": "Longitude",
+                        "description": "The longitude of the point.",
                         "$ref": "#/definitions/longitude"
                     },
                     "point_latitude": {
                         "title": "Latitude",
+                        "description": "The latitude of the point.",
                         "$ref": "#/definitions/latitude"
                     },
                     "point_vertical": {
                         "title": "Vertical",
+                        "description": "The vertical position of the point.",
                         "type": "number"
                     }
                 },
@@ -118,18 +122,22 @@
                 "properties": {
                     "westbound_longitude": {
                         "title": "Westbound longitude",
+                        "description": "The westbound longitude of the enclosing box.",
                         "$ref": "#/definitions/longitude"
                     },
                     "eastbound_longitude": {
                         "title": "Eastbound longitude",
+                        "description": "The eastbound longitude of the enclosing box.",
                         "$ref": "#/definitions/latitude"
                     },
                     "northbound_latitude": {
                         "title": "Northbound latitude",
+                        "description": "The northbound latitude of the enclosing box.",
                         "$ref": "#/definitions/longitude"
                     },
                     "southbound_latitude": {
                         "title": "Southbound latitude",
+                        "description": "The southbound latitude of the enclosing box.",
                         "$ref": "#/definitions/latitude"
                     }
                 },
@@ -146,11 +154,13 @@
                 "properties": {
                     "start_date": {
                         "title": "Start date",
+                        "description": "The start date of the range covered by the resource.",
                         "type": "string",
                         "format": "date"
                     },
                     "end_date": {
                         "title": "End date",
+                        "description": "The end date of the range covered by the resource.",
                         "type": "string",
                         "format": "date"
                     }
@@ -161,10 +171,12 @@
                 "type": "object",
                 "properties": {
                     "range": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The temporal range covered by the resource."
                     },
                     "resolution": {
                         "title": "Resolution",
+                        "description": "The resolution of the contents in the resource.",
                         "type": "string",
                         "format": "number"
                     }
@@ -172,7 +184,8 @@
                 "required": ["range"]
             },
             "temporalCoverageSpan": {
-                "type": "string"
+                "type": "string",
+                "description": "The name of the span covered by the data in the resource."
             },
             "longitude": {
                 "type": "number",
@@ -303,7 +316,7 @@
             },
             "keywords": {
                 "title": "Keywords",
-                "description": "A list of keywords or key phrases describing the resource.",
+                "description": "The keywords or key phrases describing the resource.",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -352,7 +365,7 @@
             },
             "languages": {
                 "title": "Languages",
-                "description": "Language(s) of the resource. Allowed values should be taken from ISO 639-1 and 639-3 language codes or IETF BCP 47. Examples: en, de or deu, eng or de-AT, en-US.",
+                "description": "The language(s) of the contents of the resource. Allowed values should be taken from ISO 639-1 and 639-3 language codes or IETF BCP 47. Examples: en, de or deu, eng or de-AT, en-US.",
                 "type": "array",
                 "items": {
                     "type": "string"
@@ -361,7 +374,7 @@
             },
             "alternate_identifiers": {
                 "title": "Alternate identifier",
-                "description": "Any kind of other reference such as a URN, URI or an ISBN number.",
+                "description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number.",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -382,7 +395,7 @@
             },
             "related_identifiers": {
                 "title": "Related identifiers",
-                "description": "Any kind of other reference such as a URN, URI or an ISBN number.",
+                "description": "The identifiers of other resources related to the resource such as a URN, URI or an ISBN number.",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -413,7 +426,7 @@
             },
             "descriptions": {
                 "title": "Descriptions",
-                "description": "A more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
+                "description": "The more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -434,12 +447,12 @@
             },
             "version": {
                 "title": "Version",
-                "description": "Denote the version of the resource.",
+                "description": "The version of the resource.",
                 "type": "string"
             },
             "contact_email": {
                 "title": "Contact email",
-                "description": "Contact email information for this record.",
+                "description": "The contact email information for this resource.",
                 "type": "string",
                 "format": "email"
             },
@@ -456,7 +469,7 @@
             },
             "license": {
                 "title": "License",
-                "description": "Specify the license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                "description": "The license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
                 "type": "object",
                 "properties": {
                     "license": {
@@ -478,7 +491,7 @@
             },
             "dates": {
                 "title": "Dates",
-                "description": "Any date related to the resource",
+                "description": "The dates related to the resource",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -505,7 +518,7 @@
             },
             "sizes": {
                 "title": "Sizes",
-                "description": "Unstructures size information about the resource",
+                "description": "The unstructured size information about the resource",
                 "type": "array",
                 "items": {
                     "type": "string"
@@ -514,7 +527,7 @@
             },
             "formats": {
                 "title": "Formats",
-                "description": "Technical format of the resource.",
+                "description": "The technical format of the resource.",
                 "type": "array",
                 "items": {
                     "type": "string"
@@ -523,7 +536,7 @@
             },
             "spatial_coverages": {
                 "title": "Spatial coverages",
-                "description": "The spatial coverage the research data itself is related to.",
+                "description": "The spatial coverage of the contents of the resource.",
                 "type": "object",
                 "properties": {
                     "places": {
@@ -569,7 +582,7 @@
                 "properties": {
                     "start_end_dates": {
                         "title": "Start and end dates",
-                        "description": "Start and end dates of the contents of the resource.",
+                        "description": "The start and end dates of the contents of the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageStartEndDate"
@@ -577,7 +590,7 @@
                     },
                     "ranges": {
                         "title": "Ranges",
-                        "description": "Ranges of the contents of the resource.",
+                        "description": "The ranges of the contents of the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageRange"
@@ -585,7 +598,7 @@
                     },
                     "spans": {
                         "title": "Spans",
-                        "description": "Named spans of the contents of the resource.",
+                        "description": "The named spans of the contents of the resource.",
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageSpan"
@@ -596,7 +609,7 @@
             },
             "funding_references": {
                 "title": "Funding references",
-                "description": "Information about financial support (funding) for the resource being registered.",
+                "description": "The information about financial support (funding) for the resource being registered.",
                 "type": "array",
                 "items": {
                     "type": "object",
