@@ -578,14 +578,22 @@ const EditRecord = React.createClass({
     },
 
     getSchemaFieldDefinition(path, schema) {
-        var def = schema ? schema.get(path[0], null) : null;
+        while (Number.isInteger(path[0])) {
+            path = path.slice(1)
+            if (schema.has('properties')) {
+                schema = schema.get('properties');
+            } else if (schema.has('items')) {
+                schema = schema.get('items');
+            }
+        }
+        var def = schema ? schema.get(path[0], schema) : null;
         if (def) {
-            if (path.length == 1) {
+            if (path.length < 2) {
                 return def;
             } else if (def.get('type') == 'object') {
                 return this.getSchemaFieldDefinition(path.slice(1), def.get('properties'));
             } else if (def.get('type') == 'array') {
-                return this.getSchemaFieldDefinition(path.slice(2), def.get('items').get('properties'));
+                return this.getSchemaFieldDefinition(path.slice(1), def.get('items'));
             }
         }
         return null;
