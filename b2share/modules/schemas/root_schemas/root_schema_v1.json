@@ -373,9 +373,14 @@
                         "language": {
                             "type": "string"
                         },
+                        "language_identifier": {
+                            "title": "Identifier",
+                            "type": "string",
+                            "description": "The identifier for the language, according to various identifier schemes."
+                        },
                         "$ref": "#/definitions/schemeWithUri"
                     },
-                    "required": ["language"]
+                    "required": ["language", "language_identifier"]
                 },
                 "uniqueItems": true
             },
@@ -641,7 +646,7 @@
                             "properties": {
                                 "identifier": {
                                     "type": "string",
-                                    "description": "The unique identifier of the funder, according to various identifier schemes."
+                                    "description": "The unique identifier of the funder."
                                 },
                                 "identifier_type": {
                                     "title": "Type",
