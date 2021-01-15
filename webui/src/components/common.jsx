@@ -73,7 +73,7 @@ export const ImplodedList = React.createClass({
             <span>
                 { this.props.data
                       .map((t, index) => <span key={index}>{t}</span>)
-                      .reduce((prev, curr) => [prev, <span key={curr} dangerouslySetInnerHTML={{__html: this.props.delim}}/>, curr])
+                      .reduce((prev, curr, index) => [prev, <span key={index+curr} dangerouslySetInnerHTML={{__html: this.props.delim}}/>, curr])
                 }
             </span>
         )
