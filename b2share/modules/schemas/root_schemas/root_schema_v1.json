@@ -93,7 +93,7 @@
                         "properties": {
                             "$ref": "#/definitions/nameIdentifier"
                         },
-                        "required": ["name_identifier"]
+                        "required": ["name_identifier", "scheme"]
                     }
                 }
             },
@@ -643,7 +643,8 @@
                                 "scheme_uri": {
                                     "$ref": "#/definitions/schemeUri"
                                 }
-                            }
+                            },
+                            "required": ["identifier", "identifier_type"]
                         },
                         "award_title": {
                             "title": "Award title",
