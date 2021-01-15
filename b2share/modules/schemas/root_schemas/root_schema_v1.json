@@ -28,7 +28,10 @@
                     "title": "Scheme",
                     "description": "The scheme used for the identifier.",
                     "type": "string"
-                },
+                }
+            },
+            "schemeWithUri": {
+                "$ref": "#/definitions/scheme",
                 "scheme_uri": {
                     "$ref": "#/definitions/schemeUri"
                 }
@@ -38,7 +41,7 @@
                     "description": "The unique identifier of the entity, according to various identifier schemes.",
                     "$ref": "#/definitions/nonEmptyString"
                 },
-                "$ref": "#/definitions/scheme"
+                "$ref": "#/definitions/schemeWithUri"
             },
             "affiliation": {
                 "affiliation_name": {
@@ -47,8 +50,8 @@
                 },
                 "affiliation_identifier": {
                     "title": "Identifier",
-                    "description": "The unique identifier of the affiliation, according to various identifier schemes.",
-                    "$ref": "#/definitions/identifierType"
+                    "type": "string",
+                    "description": "The unique identifier of the affiliation."
                 },
                 "$ref": "#/definitions/scheme"
             },
@@ -71,12 +74,13 @@
                         "type": "object",
                         "properties": {
                             "$ref": "#/definitions/affiliation"
-                        }
+                        },
+                        "required": ["affiliation_name"]
                     }
                 },
-                "entity_type": {
-                    "title": "Entity type",
-                    "description": "The type of entity described.",
+                "name_type": {
+                    "title": "Name type",
+                    "description": "The type of name described.",
                     "type": "string",
                     "enum": ["Personal", "Organizational"]
                 },
@@ -88,7 +92,8 @@
                         "type": "object",
                         "properties": {
                             "$ref": "#/definitions/nameIdentifier"
-                        }
+                        },
+                        "required": ["name_identifier"]
                     }
                 }
             },
@@ -284,10 +289,14 @@
                         },
                         "instrument_identifier": {
                             "title": "Identifier",
-                            "description": "The unique identifier of the instrument, according to various identifier schemes.",
+                            "description": "The unique identifier of the instrument.",
                             "type": "string"
                         },
-                        "$ref": "#/definitions/scheme"
+                        "instrument_identifier_type": {
+                            "title": "Type",
+                            "description": "The type of the unique identifier of the instrument.",
+                            "$ref": "#/definitions/identifierType"
+                        }
                     },
                     "required": ["instrument_name"]
                 },
@@ -308,7 +317,7 @@
                             "description": "The unique identifier of the discipline, according to various identifier schemes.",
                             "type": "string"
                         },
-                        "$ref": "#/definitions/scheme"
+                        "$ref": "#/definitions/schemeWithUri"
                     },
                     "required": ["discipline_name"]
                 },
@@ -324,18 +333,7 @@
                         "keyword": {
                             "$ref": "#/definitions/nonEmptyString"
                         },
-                        "keyword_identifier": {
-                            "title": "Identifier",
-                            "description": "The unique identifier for the keyword, according to various identifier schemes.",
-                            "type": "string"
-                        },
-                        "keyword_uri": {
-                            "title": "URI",
-                            "description": "The URI pointing to the definition of the keyword.",
-                            "type": "string",
-                            "format": "uri"
-                        },
-                        "$ref": "#/definitions/scheme"
+                        "$ref": "#/definitions/schemeWithUri"
                     },
                     "required": ["keyword"]
                 },
@@ -368,7 +366,14 @@
                 "description": "The language(s) of the contents of the resource. Allowed values should be taken from ISO 639-1 and 639-3 language codes or IETF BCP 47. Examples: en, de or deu, eng or de-AT, en-US.",
                 "type": "array",
                 "items": {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                        "language": {
+                            "type": "string"
+                        },
+                        "$ref": "#/definitions/schemeWithUri"
+                    },
+                    "required": ["language"]
                 },
                 "uniqueItems": true
             },
@@ -384,7 +389,7 @@
                         },
                         "alternate_identifier_type": {
                             "title": "Type",
-                            "description": "The type of the alternate identifier, according to various identifier schemes.",
+                            "description": "The type of the alternate identifier.",
                             "$ref": "#/definitions/identifierType"
                         }
                     },
@@ -410,7 +415,7 @@
                         },
                         "related_identifier_type": {
                             "title": "Type",
-                            "description": "The type of the related identifier, according to various identifier schemes.",
+                            "description": "The type of the related identifier.",
                             "$ref": "#/definitions/identifierType"
                         },
                         "relation_type": {
@@ -418,7 +423,7 @@
                             "description": "The relation type of the described reference.",
                             "enum": ["IsCitedBy", "Cites", "IsSupplementTo", "IsSupplementedBy", "IsContinuedBy", "Continues", "HasMetadata", "IsMetadataFor", "IsNewVersionOf", "IsPreviousVersionOf", "IsPartOf", "HasPart", "IsReferencedBy", "References", "IsDocumentedBy", "Documents", "isCompiledBy", "Compiles", "IsVariantFormOf", "IsOriginalFormOf", "IsIdenticalTo", "IsReviewedBy", "Reviews", "IsDerivedFrom", "IsSourceOf"]
                         },
-                        "$ref": "#/definitions/scheme"
+                        "$ref": "#/definitions/schemeWithUri"
                     },
                     "required": ["related_identifier", "related_identifier_type", "relation_type"]
                 },
@@ -476,7 +481,7 @@
                         "type": "string"
                     },
                     "license_uri": {
-                        "title": "License URL",
+                        "title": "License URI",
                         "type": "string",
                         "format": "uri"
                     },
@@ -484,7 +489,7 @@
                         "title": "Identifier",
                         "$ref": "#/definitions/identifierType"
                     },
-                    "$ref": "#/definitions/scheme"
+                    "$ref": "#/definitions/schemeWithUri"
                 },
                 "additionalProperties": false,
                 "required": ["license"]
@@ -503,11 +508,13 @@
                         },
                         "date_type": {
                             "title": "Date type",
+                            "description": "The type of the date.",
                             "type": "string",
                             "enum": ["Accepted", "Available", "Collected", "Copyrighted", "Created", "Issued", "Other", "Submitted", "Updated", "Valid", "Withdrawn"]
                         },
                         "date_information": {
                             "title": "Date information",
+                            "description": "The additional information about the date.",
                             "type": "string"
                         }
                     },
@@ -527,7 +534,7 @@
             },
             "formats": {
                 "title": "Formats",
-                "description": "The technical format of the resource.",
+                "description": "The technical formats of the resource.",
                 "type": "array",
                 "items": {
                     "type": "string"
@@ -626,6 +633,12 @@
                                 "identifier": {
                                     "type": "string",
                                     "description": "The unique identifier of the funder, according to various identifier schemes."
+                                },
+                                "identifier_type": {
+                                    "title": "Type",
+                                    "type": "string",
+                                    "description": "The type of the identifier of the funder.",
+                                    "enum": ["ISNI", "GRID", "ROR", "Crossref Funder ID", "Other"]
                                 },
                                 "scheme_uri": {
                                     "$ref": "#/definitions/schemeUri"
