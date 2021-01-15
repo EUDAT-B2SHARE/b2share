@@ -76,7 +76,8 @@
                             "$ref": "#/definitions/affiliation"
                         },
                         "required": ["affiliation_name"]
-                    }
+                    },
+                    "uniqueItems": true
                 },
                 "name_type": {
                     "title": "Name type",
@@ -94,7 +95,8 @@
                             "$ref": "#/definitions/nameIdentifier"
                         },
                         "required": ["name_identifier", "scheme"]
-                    }
+                    },
+                    "uniqueItems": true
                 }
             },
             "spatialCoveragePlace": {
@@ -552,7 +554,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/spatialCoveragePlace"
-                        }
+                        },
+                        "uniqueItems": true
                     },
                     "points": {
                         "title": "Points",
@@ -560,7 +563,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/spatialCoveragePoint"
-                        }
+                        },
+                        "uniqueItems": true
                     },
                     "boxes": {
                         "title": "Boxes",
@@ -568,7 +572,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/spatialCoverageBox"
-                        }
+                        },
+                        "uniqueItems": true
                     },
                     "polygons": {
                         "title": "Polygons",
@@ -577,7 +582,8 @@
                         "items": {
                             "title": "Polygon",
                             "$ref": "#/definitions/spatialCoveragePolygon"
-                        }
+                        },
+                        "uniqueItems": true
                     }
                 },
                 "uniqueItems": true
@@ -593,7 +599,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageStartEndDate"
-                        }
+                        },
+                        "uniqueItems": true
                     },
                     "ranges": {
                         "title": "Ranges",
@@ -601,7 +608,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageRange"
-                        }
+                        },
+                        "uniqueItems": true
                     },
                     "spans": {
                         "title": "Spans",
@@ -609,7 +617,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/definitions/temporalCoverageSpan"
-                        }
+                        },
+                        "uniqueItems": true
                     }
                 },
                 "uniqueItems": true
