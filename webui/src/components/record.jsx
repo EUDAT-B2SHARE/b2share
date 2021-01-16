@@ -215,13 +215,13 @@ const Record = React.createClass({
     },
 
     // ensures root schema v0 and v1 compatibility
-    renderLinks(fields, key) {
+    renderLinks(fields, key, className="") {
         return fields.map(function(k) {
             if (k.size && k.has(key)) {
                 var v = k.get(key);
-                return <Link to={{pathname:'/records', query:{q:v}}} key={v}>{v}</Link>
+                return <Link to={{pathname:'/records', query:{q:v}}} className={className} key={v}>{v}</Link>
             } else {
-                return <Link to={{pathname:'/records', query:{q:k}}} key={k}>{k}</Link>
+                return <Link to={{pathname:'/records', query:{q:k}}} className={className} key={k}>{k}</Link>
             }
         });
     },
@@ -231,14 +231,6 @@ const Record = React.createClass({
             return i === 0 ?
                 <h2 key={i} className="name">{title.get('title')}</h2> :
                 <h3 key={i} className="name">{title.get('title')}</h3>
-        }
-        function renderCreator(creator) {
-            const c = creator.get('creator_name');
-            return (
-                <span>
-                    <Link to={{pathname:'/records', query:{q:c}}} className="creator" key={c}>{c}</Link>
-                </span>
-            );
         }
         function renderDates(record) {
             const created = moment(record.get('created')).format('ll');
@@ -310,43 +302,41 @@ const Record = React.createClass({
                     <div className="col-sm-8 col-md-10">
                         { creators ?
                             <p><span style={{color:'black'}}> by </span>
-                            <ImplodedList data={creators.map(renderCreator)}/>;</p>
+                            <ImplodedList data={this.renderLinks(creators, 'creator_name', 'creator')} />;</p>
                             : false
                         }
 
                         { renderDates(record) }
 
-                        { descriptions ? descriptions.map(renderDescription) : false }
+                        { descriptions && descriptions.map(renderDescription) }
 
-                        { !disciplines ? false :
+                        { disciplines &&
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
                                 <ImplodedList data={this.renderLinks(disciplines, 'discipline_name')} />
                             </p>
                         }
 
-                        { !keywords ? false :
+                        { keywords &&
                             <p className="keywords">
                                 <span style={{fontWeight:'bold'}}>Keywords: </span>
                                 <ImplodedList data={this.renderLinks(keywords, 'keyword')}/>;
                             </p>
                         }
 
-                        { !(doi && pid) ? false :
-                            <div className="pids">
-                            {doi ?
-                                <p className="pid">
-                                    <span>DOI: </span>
-                                    <PersistentIdentifier pid={doi} doi={true}/>
-                                </p> : false
-                            }
-                            {pid ?
-                                <p className="pid">
-                                    <span>PID: </span>
-                                    <PersistentIdentifier pid={pid} />
-                                </p> : false
-                            }
-                            </div>
+                        { doi &&
+                            <p className="pid">
+                                <span>DOI: </span>
+                                <PersistentIdentifier pid={doi} doi={true}/>
+                            </p>
+                        }
+                        { pid &&
+                            <p className="pid">
+                                <span>PID: </span>
+                                <PersistentIdentifier pid={pid} />
+                            </p>
+                        }
+                        { this.props.b2noteUrl && <B2NoteWidget record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={this.props.b2noteUrl}/>
                         }
                     </div>
 
