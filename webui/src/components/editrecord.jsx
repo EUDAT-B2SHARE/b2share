@@ -160,30 +160,31 @@ const EditRecord = React.createClass({
             return null;
         }
         if (value !== undefined) {
-            for (let i = 0; i < path.length; ++i) {
-                const el = path[i];
-                if (Number.isInteger(el)) {
+            var self = this;
+            path.forEach((p, i) => {
+                if (Number.isInteger(p)) {
                     console.assert(i > 0);
                     const subpath = path.slice(0, i);
                     const list = r.getIn(subpath);
                     if (!list || !list.size) {
                         r = r.setIn(subpath, List());
                     } else {
-                        console.assert(el < 1000);
-                        while (el >= list.count()) {
+                        console.assert(p < 1000);
+                        while (p >= list.count()) {
                             const x = Number.isInteger(path[i+1]) ? List() : Map();
                             const list2 = list.push(x);
                             r = r.setIn(subpath, list2);
                         }
                     }
                 }
-            }
+            });
             console.assert(!Array.isArray(value));
             if (typeof value === 'string' || value instanceof String) {
                 value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
             }
 
             r = r.setIn(path, value);
+            self.validateField(schema, path, value);
         } else {
             var p = [...path];
             while (l === undefined || !l.size) {
@@ -191,15 +192,9 @@ const EditRecord = React.createClass({
                 p.pop();
                 var l = r.getIn(p)
             }
+            this.validateField(schema, path, value);
         }
-        const errors = this.state.errors;
-        const pathstr = path.join('/');
-        if (!this.validField(schema, value)) {
-            errors[pathstr] = invalidFieldMessage(pathstr);
-        } else {
-            delete errors[pathstr];
-        }
-        this.setState({record:r, errors, dirty: true});
+        this.setState({record:r, dirty: true});
     },
 
     removeErrors(path) {
@@ -267,6 +262,21 @@ const EditRecord = React.createClass({
         )
     },
 
+    onDependentSelect(schema, path, value, target) {
+        // determine path in schema definition (FIXME: case: arrays directly in arrays)
+        const ppath = path.slice(0, -1).concat([target]).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat();
+        // if schema path exists, update value of target field
+        if (this.pschema.hasIn(ppath)) {
+            value = {
+                [path.slice(-1)]: value,
+                [target]: value
+            }
+            this.setValue(schema, path.slice(0, -1), fromJS(value));
+        } else {
+            this.setValue(schema, path, value);
+        }
+    },
+
     renderScalarField(schema, path, buttons={}, options={}) {
         const onDateChange = (date) => {
             const m = moment(date);
@@ -288,23 +298,23 @@ const EditRecord = React.createClass({
         }
 
         const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
+        const type = schema.get('type');
+        const value = this.getValue(path);
+        const format = schema.get('format') || "";
 
         if (path[0] == 'language' || path.slice(-1) == 'language') {
             const languages = serverCache.getLanguages();
-            return (languages instanceof Error) ? <Err err={languages}/> :
+            return (this.languages instanceof Error) ? <Err err={languages}/> :
                 <SelectBig data={languages}
-                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
-        } else if (path.slice(-1)[0] == 'discipline_name' || (path[0] == 'disciplines' && schema.get('items',Map()).get('type','') == 'string')) {
+                    onSelect={x => this.onDependentSelect(schema, path, x, 'language_identifier')} value={value} />;
+        } else if (path.slice(-1)[0] == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
             const disciplines = serverCache.getDisciplines();
             return (disciplines instanceof Error) ? <Err err={disciplines}/> :
                 <SelectBig data={disciplines}
-                    onSelect={x=>this.setValue(schema, path, x)} value={this.getValue(path)} />;
+                    onSelect={x => this.onDependentSelect(schema, path, x, 'discipline_identifier')} value={value} />;
         }
 
         const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
-        const type = schema.get('type');
-        const format = schema.get('format') || "";
-        const value = this.getValue(path);
         const setter = x => this.setValue(schema, path, x);
         if (type === 'boolean') {
             return (
@@ -485,6 +495,7 @@ const EditRecord = React.createClass({
         }
         let open = this.state.folds ? this.state.folds[schemaID||""] : false;
         const plugins = schema.getIn(['b2share', 'plugins']);
+        this.pschema = schema.get('properties');
 
         function renderBigFieldTree([pid, pschema]) {
             const datapath = schemaID ? ['community_specific', schemaID, pid] : [pid];
@@ -640,6 +651,17 @@ const EditRecord = React.createClass({
         return true;
     },
 
+    validateField(schema, path, value) {
+        // update errors
+        const errors = this.state.errors;
+        const pathstr = path.join('/');
+        if (!this.validField(schema, value)) {
+            errors[pathstr] = invalidFieldMessage(pathstr);
+        } else {
+            delete errors[pathstr];
+        }
+    },
+
     findValidationErrorsRec(errors, schema, path, value) {
         const isValue = (value !== undefined && value !== null && value !== "");
         if (schema.get('isRequired') && !isValue) {
@@ -663,10 +685,7 @@ const EditRecord = React.createClass({
                     this.findValidationErrorsRec(errors, pschema, newpath(pid), value.get(pid)));
             }
         } else {
-            if (!this.validField(schema, value)) {
-                const pathstr = path.join("/");
-                errors[pathstr] = invalidFieldMessage(pathstr);
-            }
+            this.validateField(schema, path, value);
         }
     },
 
