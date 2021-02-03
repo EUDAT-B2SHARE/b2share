@@ -103,18 +103,18 @@ class Getter {
         this.fetchErrorFn = fetchErrorFn;
     }
 
-    autofetch() {
-        this.fetch(this.params);
+    autofetch(fetchCallbackFn = () => {}) {
+        this.fetch(this.params, fetchCallbackFn);
     }
 
-    fetch(params) {
+    fetch(params, fetchCallbackFn = () => {}) {
         if (this.timer.ticking() && this.equals(params, this.params)) {
             return;
         }
-        this.forceFetch(params);
+        this.forceFetch(params, fetchCallbackFn);
     }
 
-    forceFetch(params) {
+    forceFetch(params, fetchCallbackFn = () => {}) {
         this.timer.restart();
         this.params = params;
         ajaxGet({
@@ -123,7 +123,7 @@ class Getter {
             etag: this.etag,
             successFn: (data, linkHeader, etag) => {
                 this.etag = etag;
-                this.fetchSuccessFn(data, linkHeader);
+                fetchCallbackFn(this.fetchSuccessFn(data, linkHeader));
             },
             errorFn: this.fetchErrorFn,
         });
@@ -356,6 +356,7 @@ class ServerCache {
             (data) => {
                 const langs = data.languages.map(([id, name]) => ({id, name}));
                 this.store.setIn(['languages'], langs);
+                return langs;
             },
             (xhr) => this.store.setIn(['languages'], new Error(xhr)) );
 
@@ -368,6 +369,7 @@ class ServerCache {
                 const disciplines = data.disciplines ?
                     data.disciplines.map(transform) : null;
                 this.store.setIn(['disciplines'], disciplines);
+                return disciplines;
             },
             (xhr) => this.store.setIn(['disciplines'], new Error(xhr)) );
 
@@ -453,10 +455,12 @@ class ServerCache {
                 },
                 (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
 
-        this.getters.community = new Pool(communityID =>
+        this.getters.community = new Pool((communityID) =>
             new Getter(apiUrls.community(communityID), null,
-                (data) => {
-                    this.store.setIn(['communityCache', communityID], fromJS(data));
+                (data, header) => {
+                    const res = fromJS(data);
+                    this.store.setIn(['communityCache', communityID], res);
+                    return res;
                 },
                 (xhr) => this.store.setIn(['communityCache', communityID], new Error(xhr)) ));
 
@@ -617,8 +621,8 @@ class ServerCache {
         return List(communities.valueSeq());
     }
 
-    getCommunity(communityIDorName) {
-        this.getters.community.get(communityIDorName).fetch();
+    getCommunity(communityIDorName, callbackFn = ()=>{}) {
+        this.getters.community.get(communityIDorName).fetch({}, callbackFn);
         return this.store.getIn(['communityCache', communityIDorName]);
     }
 
@@ -712,18 +716,18 @@ class ServerCache {
         });
     }
 
-    getLanguages() {
+    getLanguages(callbackFn) {
         const langs = this.store.getIn(['languages']);
         if (!langs) {
-            this.getters.languages.autofetch();
+            this.getters.languages.autofetch(callbackFn);
         }
         return langs;
     }
 
-    getDisciplines() {
+    getDisciplines(callbackFn) {
         const disciplines = this.store.getIn(['disciplines']);
         if (!disciplines) {
-            this.getters.disciplines.autofetch();
+            this.getters.disciplines.autofetch(callbackFn);
         }
         return disciplines;
     }
