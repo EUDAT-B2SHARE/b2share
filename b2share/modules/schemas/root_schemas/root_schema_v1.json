@@ -366,7 +366,7 @@
                         },
                         "$ref": "#/definitions/schemeWithUri"
                     },
-                    "required": ["language", "language_identifier"]
+                    "required": ["language_name", "language_identifier"]
                 },
                 "uniqueItems": true
             },
