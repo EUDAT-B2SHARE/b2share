@@ -161,15 +161,15 @@
                 "properties": {
                     "start_date": {
                         "title": "Start date",
-                        "description": "The start date of the range covered by the resource.",
+                        "description": "The start date and time of the range covered by the resource.",
                         "type": "string",
-                        "format": "date"
+                        "format": "date-time"
                     },
                     "end_date": {
                         "title": "End date",
-                        "description": "The end date of the range covered by the resource.",
+                        "description": "The end date and time of the range covered by the resource.",
                         "type": "string",
-                        "format": "date"
+                        "format": "date-time"
                     }
                 },
                 "required": ["start_date", "end_date"]
@@ -356,7 +356,7 @@
                 "items": {
                     "type": "object",
                     "properties": {
-                        "language": {
+                        "language_name": {
                             "type": "string"
                         },
                         "language_identifier": {
