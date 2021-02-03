@@ -89,18 +89,48 @@ export const EditRecordRoute = React.createClass({
     }
 });
 
+const EditRecordSmallCommunity = React.createClass({
+    render() {
+        if (!this.props.community) {
+            return <Wait />
+        }
+        return (
+            <a href="#" key={this.props.community.get('id')}
+                    className={"community-small"}
+                    title={this.props.community.get('description')}>
+                <p className="name">{this.props.community.get('name')}</p>
+                <img className="logo" src={this.props.community.get('logo')}/>
+            </a>
+        )
+    }
+});
 
-const EditRecord = React.createClass({
+const EditRecordFieldTree = React.createClass({
+    getDefaultProps() {
+        return {
+        }
+    },
+
     getInitialState() {
         return {
-            record: null,
-            fileState: 'done',
+            dirty: true,
             modal: null,
-            errors: {},
-            dirty: false,
-            waitingForServer: false,
-            opened: []
+            desc: "",
+            opened: []  // itself and complex subfields
         };
+    },
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (nextState.dirty) {
+            this.state.dirty = false;
+        }
+        return nextState.dirty;
+    },
+
+    setValue(schema, path, value) {
+        this.state.dirty = true;
+        this.props.funcs.setValue(schema, path, value);
+        this.setState({});
     },
 
     addFieldButton(buttons, pathstr, name) {
@@ -110,104 +140,6 @@ const EditRecord = React.createClass({
         buttons[pathstr].push(name)
         buttons[pathstr] = buttons[pathstr].filter((v, i, a) => a.indexOf(v) === i);
         return buttons;
-    },
-
-    renderFileBlock() {
-        const setState = (fileState, message) => {
-            const errors = this.state.errors;
-            if (fileState === 'done') {
-                delete errors.files;
-            } else if (fileState === 'error') {
-                errors.files = message;
-            } else {
-                errors.files = 'Waiting for files to finish uploading';
-            }
-            this.setState({fileState, errors});
-        }
-        const files = this.props.record.get('files');
-        if (files instanceof Error) {
-            return <Err err={files}/>;
-        }
-        return (
-            <EditFiles files={files ? files.toJS() : []}
-                record={this.props.record}
-                setState={setState}
-                setModal={modal => this.setState({modal})} />
-        );
-    },
-
-    setError(id, msg) {
-        const err = this.state.errors;
-        err[id] = msg;
-        this.setState({errors: this.state.errors});
-    },
-
-    getValue(path) {
-        const r = this.state.record;
-        if (!r) {
-            return null;
-        }
-        let v = r.getIn(path);
-        if (v != undefined && v != null && v.toJS) {
-            v = v.toJS();
-        }
-        return v;
-    },
-
-    setValue(schema, path, value) {
-        let r = this.state.record;
-        if (!r) {
-            return null;
-        }
-        if (value !== undefined) {
-            var self = this;
-            path.forEach((p, i) => {
-                if (Number.isInteger(p)) {
-                    console.assert(i > 0);
-                    const subpath = path.slice(0, i);
-                    const list = r.getIn(subpath);
-                    if (!list || !list.size) {
-                        r = r.setIn(subpath, List());
-                    } else {
-                        console.assert(p < 1000);
-                        while (p >= list.count()) {
-                            const x = Number.isInteger(path[i+1]) ? List() : Map();
-                            const list2 = list.push(x);
-                            r = r.setIn(subpath, list2);
-                        }
-                    }
-                }
-            });
-            console.assert(!Array.isArray(value));
-            if (typeof value === 'string' || value instanceof String) {
-                value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
-            }
-
-            r = r.setIn(path, value);
-            self.validateField(schema, path, value);
-        } else {
-            var p = [...path];
-            while (l === undefined || !l.size) {
-                r = r.deleteIn(p);
-                p.pop();
-                var l = r.getIn(p)
-            }
-            this.validateField(schema, path, value);
-        }
-        this.setState({record:r, dirty: true});
-    },
-
-    removeErrors(path) {
-        var self = this;
-        path.forEach((key) => {
-            let matching = Object.keys(self.state.errors).filter(function(k) {
-                    return ~k.indexOf(path)
-                });
-            matching.forEach((elem) => {
-                delete self.state.errors[elem]
-            });
-        });
-        this.setState({})
     },
 
     renderScalarFieldButton(schema, path, buttonname) {
@@ -222,7 +154,7 @@ const EditRecord = React.createClass({
             } else {
                 opened.push(pathstr)
             }
-            this.setState({opened: opened});
+            this.setState({opened: opened, dirty: true});
         };
 
         const onSelectLicense = (license) => {
@@ -238,11 +170,9 @@ const EditRecord = React.createClass({
             details: {'title': 'Show details for this field or entry', 'event': btnShowFieldDetails, 'icon': 'glyphicon-list-alt'}
         }
 
-        let field = false;
-        let event = null;
         switch (buttonname) {
             case 'license':
-                return <SelectLicense title="Select License" onSelect={onSelectLicense} setModal={modal => this.setState({modal})} key={pathstr + "-" + buttonname} />
+                return <SelectLicense title="Select License" onSelect={onSelectLicense} setModal={modal => this.setState({modal: modal, dirty: true})} key={pathstr + "-" + buttonname} />
             default:
                 return <span className="input-group-btn" key={pathstr + "-" + buttonname}>
                             <button className="btn btn-default btn-md" type="button" onClick={(ev) => (buttons[buttonname].event)(ev, pathstr)}
@@ -266,7 +196,7 @@ const EditRecord = React.createClass({
         // determine path in schema definition (FIXME: case: arrays directly in arrays)
         const ppath = path.slice(0, -1).concat([target]).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat();
         // if schema path exists, update value of target field
-        if (this.pschema.hasIn(ppath)) {
+        if (this.props.schema.hasIn(ppath)) {
             value = {
                 [path.slice(-1)]: value,
                 [target]: value
@@ -287,8 +217,7 @@ const EditRecord = React.createClass({
             const m = moment(date);
             // true if embargo is in the past
             const access = m.isValid() ? (moment().diff(m) > 0) : true;
-            this.state.record = this.state.record.set('open_access', access);
-            // setValue will call setState
+            this.setValue('open_access', access);
             onDateChange(m)
         };
 
@@ -299,7 +228,7 @@ const EditRecord = React.createClass({
 
         const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
         const type = schema.get('type');
-        const value = this.getValue(path);
+        const value = this.props.funcs.getValue(path);
         const format = schema.get('format') || "";
 
         if (path[0] == 'language' || path.slice(-1) == 'language') {
@@ -314,7 +243,7 @@ const EditRecord = React.createClass({
                     onSelect={x => this.onDependentSelect(schema, path, x, 'discipline_identifier')} value={value} />;
         }
 
-        const validClass = (this.state.errors[pathstr]) ? " invalid-field " : "";
+        const validClass = this.props.funcs.getError(pathstr) ? " invalid-field " : "";
         const setter = x => this.setValue(schema, path, x);
         if (type === 'boolean') {
             return (
@@ -325,10 +254,8 @@ const EditRecord = React.createClass({
                     </div>
                 </div>
             );
-        } else if (type === 'integer') {
-            return <NumberPicker className={validClass} value={value} onChange={setter} />
-        } else if (type === 'number') {
-            return <NumberPicker className={validClass} value={value} onChange={setter} />
+        } else if (type === 'integer' || type === 'number') {
+            return <NumberPicker format={format=='coordinate' ? '-###.##' : null} className={validClass} value={value} onChange={setter} />
         } else if (type === 'string') {
             const value_str = "" + (value || "");
             if (schema.get('enum')) {
@@ -392,16 +319,16 @@ const EditRecord = React.createClass({
 
         let field = false;
         if (objEquals(path, ['community'])) {
-            field = this.props.community ? renderSmallCommunity(this.props.community) : <Wait/>
+            field = <EditRecordSmallCommunity community={this.props.community} setState={this.setState} />
         } else if (objEquals(path, ['license', 'license'])) {
             field = this.renderScalarField(schema, path, this.addFieldButton(buttons, path.join('/'), 'license'));
         } else if (objEquals(path, ['open_access'])) {
-            const embargo = this.getValue(schema, newpath('embargo_date'));
+            const embargo = this.props.funcs.getValue(schema, newpath('embargo_date'));
             const disabled = embargo && moment(embargo).isValid();
             field = this.renderScalarField(schema, path, {}, {disabled: disabled});
         } else if (schema.get('type') === 'array') {
             const itemSchema = schema.get('items');
-            const raw_values = this.getValue(path);
+            const raw_values = this.props.funcs.getValue(path);
             const len = (raw_values && raw_values.length) || 1;
             const arrField = [...Array(len).keys()].map(i =>
                 this.renderFieldTree(id+`[${i}]`, itemSchema, newpath(i)));
@@ -409,21 +336,21 @@ const EditRecord = React.createClass({
                 ev.preventDefault();
                 if (pos === 0) {
                     const itemType = itemSchema.get('type');
-                    const values = this.state.record.getIn(path) || List();
-                    const newItem = itemType === 'array' ? List() : itemType === 'object' ? Map() : null;
-                    let newValues = values.push(newItem);
-                    if (newValues.count() == 1) {
+                    const values = this.props.funcs.getValue(path) || [];
+                    const newItem = itemType === 'array' ? [] : itemType === 'object' ? {} : null;
+                    values.push(newItem);
+                    if (values.length == 1) {
                         // added value starting from an empty container; 2 values needed
-                        newValues = newValues.push(newItem);
+                        values.push(newItem);
                     }
-                    this.setValue(schema, path, newValues);
+                    this.setValue(schema, path, fromJS(values));
                 } else {
                     this.setValue(schema, newpath(pos), undefined);
                 }
             }
             const btnClear = (ev) => {
                 ev.preventDefault();
-                this.removeErrors(path);
+                this.props.funcs.removeErrors(path);
                 this.setValue(schema, path, undefined);
             }
             field = arrField.map((f, i) =>
@@ -457,10 +384,11 @@ const EditRecord = React.createClass({
         }
 
         const pathstr = path.join('/');
-        const isError = this.state.errors.hasOwnProperty(pathstr);
-        const onfocus = (e) => { this.setState({showhelp: path}); e.stopPropagation(); }
-        const onblur = () => { this.setState({showhelp: null}); }
+        const isError = this.props.funcs.getError(pathstr);
+        const onfocus = (e) => { this.setFieldDescription(path); e.stopPropagation(); }
+        const onblur = () => { this.setFieldDescription(null); }
         const title = schema.get('title');
+        const spath = path.slice((path.indexOf(this.props.schemaID) || -1) + 1)
         return (
             <div className="row" key={id}>
                 <div style={{marginBottom:'0.5em'}}>
@@ -477,115 +405,17 @@ const EditRecord = React.createClass({
                     </div>
                 </div>
                 <div className="col-sm-12 v-spacer"><input type="hidden" /></div>
-                { path.length == 1 &&
+                { spath.length == 1 &&
                 <div className="col-sm-offset-3 col-sm-9">
                     <ReplaceAnimate>
                         <div className="field-description">
-                            <p id={"field-description-" + path[0]} />
+                            <p>{this.state.desc}</p>
+                            {this.state.sdesc && <p>{this.state.sdesc}</p>}
                         </div>
                     </ReplaceAnimate>
                 </div> }
             </div>
         );
-    },
-
-    renderFieldBlock(schemaID, schema) {
-        if (!schema) {
-            return <Wait key={schemaID}/>;
-        }
-        let open = this.state.folds ? this.state.folds[schemaID||""] : false;
-        const plugins = schema.getIn(['b2share', 'plugins']);
-        this.pschema = schema.get('properties');
-
-        function renderBigFieldTree([pid, pschema]) {
-            const datapath = schemaID ? ['community_specific', schemaID, pid] : [pid];
-            const f = this.renderFieldTree(pid, pschema, datapath);
-            if (!f) {
-                return false;
-            }
-            return <div className="field-tree" key={pid}> {f} </div>;
-        }
-        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
-
-        const majorFields = majors.entrySeq().map(renderBigFieldTree.bind(this));
-        const minorFields = minors.entrySeq().map(renderBigFieldTree.bind(this));
-
-        const onMoreDetails = e => {
-            e.preventDefault();
-            const folds = this.state.folds || {};
-            folds[schemaID||""] = !folds[schemaID||""];
-            this.setState({folds:folds});
-        }
-
-        const foldBlock = minorFields.count() ? (
-            <div className="col-sm-12">
-                <div className="row">
-                    <div className="col-sm-offset-3 col-sm-9" style={{marginTop:'1em', marginBottom:'1em'}}>
-                        <a href="#" onClick={onMoreDetails} style={{padding:'0.5em'}}>
-                            { !open ?
-                                <span>Show more details <span className="glyphicon glyphicon-chevron-right" style={{top:'0.1em'}} aria-hidden="true"/></span>:
-                                <span>Hide details <span className="glyphicon glyphicon-chevron-down" style={{top:'0.2em'}} aria-hidden="true"/></span> }
-                        </a>
-                    </div>
-                </div>
-                <HeightAnimate delta={20}>
-                    { open ? minorFields : false }
-                </HeightAnimate>
-            </div>
-        ) : false;
-
-        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'} : {};
-        return (
-            <div style={blockStyle} key={schemaID}>
-                <div className="row">
-                    <h3 className="col-sm-12" style={{marginBottom:0}}>
-                        { schemaID ? schema.get('title') : 'Basic fields' }
-                    </h3>
-                </div>
-                <div className="row">
-                    <div className="col-sm-12">
-                        { majorFields }
-                    </div>
-                </div>
-                <div className="row">
-                    { foldBlock }
-                </div>
-            </div>
-        );
-    },
-
-    componentWillMount() {
-        this.componentWillReceiveProps(this.props);
-    },
-
-    componentWillReceiveProps(props) {
-        if (props.record && !this.state.record) {
-            let record = props.record.get('metadata');
-            if (!record.has('community_specific')) {
-                record = record.set('community_specific', Map());
-            }
-            record = addEmptyMetadataBlocks(record, props.blockSchemas) || record;
-            this.setState({record});
-        } else if (this.state.record && props.blockSchemas) {
-            const record = addEmptyMetadataBlocks(this.state.record, props.blockSchemas);
-            if (record) {
-                this.setState({record});
-            }
-        }
-
-        function addEmptyMetadataBlocks(record, blockSchemas) {
-            if (!blockSchemas || !blockSchemas.length) {
-                return false;
-            }
-            let updated = false;
-            blockSchemas.forEach(([blockID, _]) => {
-                if (!record.get('community_specific').has(blockID)) {
-                    record = record.setIn(['community_specific', blockID], Map());
-                    updated = true;
-                }
-            });
-            return updated ? record : null;
-        }
     },
 
     getSchemaFieldDefinition(path, schema) {
@@ -611,32 +441,246 @@ const EditRecord = React.createClass({
     },
 
     getFieldDescription(path) {
-        var def = this.getSchemaFieldDefinition(path, this.props.rootSchema.get('properties'));
-        if (def == null) {
-            def = this.props.blockSchemas.forEach(([id, blockSchema]) => {
-                return this.getSchemaFieldDefinition(path, blockSchema.get('properties'));
-            });
-            if (!def || !def.length) {
-                return "";
-            }
-        }
-        return def.get('description') || "";
+        var def = this.getSchemaFieldDefinition(path, this.props.schema);
+        return def ? def.get('description') || "" : "";
     },
 
-    componentDidUpdate(prevProps, prevState) {
-        if (prevState.showhelp != this.state.showhelp) {
-            var desc = "";
-            if (this.state.showhelp === null) {
-                var elem = document.getElementById('field-description-' + prevState.showhelp[0]);
+    setFieldDescription(path) {
+        var desc = "", sdesc = "";
+        if (path && path != null) {
+            path = path.slice((path.indexOf(this.props.schemaID) || -1) + 1);
+            sdesc = (sdesc = this.getFieldDescription(path)) ? "This subfield sets " + sdesc[0].toLowerCase() + sdesc.slice(1) : "";
+            desc = path.length > 1 ? this.getFieldDescription(path.slice(0,1)) : "";
+        }
+        return this.setState({desc: desc, sdesc: sdesc, dirty: true});
+    },
+
+    render() {
+        console.log(this.props.id)
+        const datapath = this.props.schemaID ? ['community_specific', this.props.schemaID, this.props.id] : [this.props.id];
+        const f = this.renderFieldTree(this.props.id, this.props.schema, datapath);
+        if (!f) {
+            return false;
+        }
+        return <div className="field-tree"> {f} </div>;
+    }
+});
+
+const EditRecordBlock = React.createClass({
+    getInitialState() {
+        return {
+            folds: true
+        }
+    },
+
+    renderFieldBlock(schemaID, schema) {
+        if (!schema) {
+            return <Wait key={schemaID}/>;
+        }
+
+        const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
+
+        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} community={this.props.community}/>);
+        const minorFields = minors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} />);
+
+        const onMoreDetails = e => {
+            e.preventDefault();
+            this.setState({folds:!this.state.folds});
+        }
+
+        const foldBlock = minorFields.count() ? (
+            <div className="col-sm-12">
+                <div className="row">
+                    <div className="col-sm-offset-3 col-sm-9" style={{marginTop:'1em', marginBottom:'1em'}}>
+                        <a href="#" onClick={onMoreDetails} style={{padding:'0.5em'}}>
+                            { this.state.folds ?
+                                <span>Show more details <span className="glyphicon glyphicon-chevron-right" style={{top:'0.1em'}} aria-hidden="true"/></span>:
+                                <span>Hide details <span className="glyphicon glyphicon-chevron-down" style={{top:'0.2em'}} aria-hidden="true"/></span> }
+                        </a>
+                    </div>
+                </div>
+                <HeightAnimate delta={20}>
+                    { !this.state.folds ? minorFields : false }
+                </HeightAnimate>
+            </div>
+        ) : false;
+
+        const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'} : {};
+        return (
+            <div style={blockStyle}>
+                <div style={{position:'relative', width:'100%'}}>
+                    <div style={{position:'absolute', width:'100%', zIndex:1}}>
+                        { this.state.modal }
+                    </div>
+                </div>
+                <div className="row">
+                    <h3 className="col-sm-12" style={{marginBottom:0}}>
+                        { schemaID ? schema.get('title') : 'Basic fields' }
+                    </h3>
+                </div>
+                <div className="row">
+                    <div className="col-sm-12">
+                        { majorFields }
+                    </div>
+                </div>
+                <div className="row">
+                    { foldBlock }
+                </div>
+            </div>
+        );
+    },
+
+    render() {
+        return this.renderFieldBlock(this.props.schemaID, this.props.schema);
+    }
+});
+
+const EditRecord = React.createClass({
+    record: null,
+
+    getInitialState() {
+        return {
+            fileState: 'done',
+            errors: {},
+            dirty: false,
+            waitingForServer: false,
+        };
+    },
+
+    renderFileBlock() {
+        const setState = (fileState, message) => {
+            const errors = this.state.errors;
+            if (fileState === 'done') {
+                delete errors.files;
+            } else if (fileState === 'error') {
+                errors.files = message;
             } else {
-                const path = this.state.showhelp;
-                var elem = document.getElementById('field-description-' + path[0]);
-                const sdesc = this.getFieldDescription(path);
-                var desc = path.length > 1
-                    ? this.getFieldDescription(path.slice(0,1)) + (sdesc > "" ? "<br/><br/>This subfield sets " + sdesc[0].toLowerCase() + sdesc.slice(1) : "")
-                    : sdesc;
+                errors.files = 'Waiting for files to finish uploading';
             }
-            elem.innerHTML = desc;
+            this.setState({fileState, errors});
+        }
+        const files = this.props.record.get('files');
+        if (files instanceof Error) {
+            return <Err err={files}/>;
+        }
+        return (
+            <EditFiles files={files ? files.toJS() : []}
+                record={this.props.record}
+                setState={setState}
+                setModal={modal => this.setState({modal})} />
+        );
+    },
+
+    setError(id, msg) {
+        const err = this.state.errors;
+        err[id] = msg;
+        this.setState({errors: this.state.errors});
+    },
+
+    getError(pathstr) {
+        return this.state.errors[pathstr]
+    },
+
+    getValue(path) {
+        const r = this.state.record;
+        if (!r) {
+            return null;
+        }
+        let v = r.getIn(path);
+        if (v != undefined && v != null && v.toJS) {
+            v = v.toJS();
+        }
+        return v;
+    },
+
+    setValue(schema, path, value) {
+        let r = this.state.record;
+        if (!r) {
+            return null;
+        }
+        if (value !== undefined) {
+            var self = this;
+            path.forEach((p, i) => {
+                if (Number.isInteger(p)) {
+                    console.assert(i > 0);
+                    const subpath = path.slice(0, i);
+                    const list = r.getIn(subpath);
+                    if (!list || !list.size) {
+                        r = r.setIn(subpath, List());
+                    } else {
+                        console.assert(p < 1000);
+                        while (p >= list.count()) {
+                            const x = Number.isInteger(path[i+1]) ? List() : Map();
+                            const list2 = list.push(x);
+                            r = r.setIn(subpath, list2);
+                        }
+                    }
+                }
+            });
+            console.assert(!Array.isArray(value));
+            if (typeof value === 'string' || value instanceof String) {
+                value = value.replace(/^\s+/, '').replace(/(\s{2})\s+$/, '$1') ;
+            }
+
+            r = r.setIn(path, value);
+            self.validateField(schema, path, value);
+        } else {
+            var p = [...path];
+            while (l === undefined || !l.size) {
+                r = r.deleteIn(p);
+                p.pop();
+                var l = r.getIn(p)
+            }
+            this.validateField(schema, path, value);
+        }
+        this.setState({record: r, dirty: true})
+    },
+
+    removeErrors(path) {
+        var self = this;
+        path.forEach((key) => {
+            let matching = Object.keys(self.state.errors).filter(function(k) {
+                    return ~k.indexOf(path)
+                });
+            matching.forEach((elem) => {
+                delete self.state.errors[elem]
+            });
+        });
+        this.setState({})
+    },
+
+    componentWillMount() {
+        this.componentWillReceiveProps(this.props);
+    },
+
+    componentWillReceiveProps(props) {
+        if (props.record.size && !this.state.record) {
+            let record = props.record.get('metadata');
+            if (!record.has('community_specific')) {
+                record = record.set('community_specific', Map());
+            }
+            this.state.record = addEmptyMetadataBlocks(record, props.blockSchemas) || record;
+            this.setState({});
+        } else if (this.state.record && props.blockSchemas) {
+            const record = addEmptyMetadataBlocks(this.state.record, props.blockSchemas);
+            if (record) {
+                this.state.record = record;
+                this.setState({});
+            }
+        }
+
+        function addEmptyMetadataBlocks(record, blockSchemas) {
+            if (!blockSchemas || !blockSchemas.length || !record) {
+                return false;
+            }
+            let updated = false;
+            blockSchemas.forEach(([blockID, _]) => {
+                if (!record.get('community_specific').has(blockID)) {
+                    record = record.setIn(['community_specific', blockID], Map());
+                    updated = true;
+                }
+            });
+            return updated ? record : null;
         }
     },
 
@@ -833,7 +877,17 @@ const EditRecord = React.createClass({
     removeDraft(e) {
         e.preventDefault();
         if (confirm("Are you sure you want to delete this draft record?\n\nThis cannot be undone!")) {
-            serverCache.removeDraft(this.props.record.get('id'), browser.gotoProfile());
+            serverCache.removeDraft(this.state.record.get('id'), browser.gotoProfile());
+        }
+    },
+
+    getChildFuncs() {
+        return {
+            setValue: this.setValue,
+            getValue: this.getValue,
+            setError: this.setError,
+            getError: this.getError,
+            removeErrors: this.removeErrors
         }
     },
 
@@ -868,22 +922,15 @@ const EditRecord = React.createClass({
                         </h2>
                     </div>
                 </div>
-                <div style={{position:'relative', width:'100%'}}>
-                    <div style={{position:'absolute', width:'100%', zIndex:1}}>
-                        { this.state.modal }
-                    </div>
-                </div>
                 <div className="row">
                     <div className="col-xs-12">
                         { this.props.isDraft && this.renderFileBlock() }
                     </div>
                     <div className="col-xs-12">
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
-                            { this.renderFieldBlock(null, rootSchema) }
-
-                            { blockSchemas &&
-                                blockSchemas.map(([id, blockSchema]) =>
-                                    this.renderFieldBlock(id, (blockSchema||Map()).get('json_schema'))) }
+                            <EditRecordBlock key={"root"} schemaID={null} schema={rootSchema} funcs={this.getChildFuncs()} community={this.props.community} />
+                            { blockSchemas.map(([id, schema]) =>
+                                <EditRecordBlock key={id} schemaID={id} schema={(schema||Map()).get('json_schema')} funcs={this.getChildFuncs()} />) }
                         </form>
                     </div>
                 </div>
