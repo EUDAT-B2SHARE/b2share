@@ -73,13 +73,9 @@ export const EditRecordRoute = React.createClass({
         if (rootSchema instanceof Error) {
             return <Err err={rootSchema}/>;
         }
-        const community = serverCache.getCommunity(record.getIn(['metadata', 'community']));
-        if (community instanceof Error) {
-            return <Err err={community}/>;
-        }
         return (
             <ReplaceAnimate>
-                <EditRecord record={record} community={community}
+                <EditRecord record={record}
                             rootSchema={rootSchema} blockSchemas={blockSchemas}
                             refreshCache={this.refreshCache}
                             patchFn={this.patchRecordOrDraft}
@@ -91,26 +87,42 @@ export const EditRecordRoute = React.createClass({
 
 const EditRecordSmallCommunity = React.createClass({
     render() {
-        if (!this.props.community) {
-            return <Wait />
+        if (!this.props.data) {
+            return <Wait/>;
         }
         return (
-            <a href="#" key={this.props.community.get('id')}
+            <a href="#" key={this.props.data.get('id')}
                     className={"community-small"}
-                    title={this.props.community.get('description')}>
-                <p className="name">{this.props.community.get('name')}</p>
-                <img className="logo" src={this.props.community.get('logo')}/>
+                    title={this.props.data.get('description')}>
+                <p className="name">{this.props.data.get('name')}</p>
+                <img className="logo" src={this.props.data.get('logo')}/>
             </a>
         )
     }
 });
 
-const EditRecordFieldTree = React.createClass({
-    getDefaultProps() {
-        return {
+const EditRecordDataElement = React.createClass({
+    getInitialState() {
+        if (this.props.args) {
+            return {data: serverCache[this.props.load](...this.props.args, this.dataLoaded)};
+        } else {
+            return {data: serverCache[this.props.load](this.dataLoaded)};
         }
     },
 
+    dataLoaded(data) {
+        this.setState({data: data});
+    },
+
+    render() {
+        if (this.state.data) {
+            return React.cloneElement(this.props.children, this.state);
+        }
+        return null;
+    }
+});
+
+const EditRecordFieldTree = React.createClass({
     getInitialState() {
         return {
             dirty: true,
@@ -194,7 +206,7 @@ const EditRecordFieldTree = React.createClass({
 
     onDependentSelect(schema, path, value, target) {
         // determine path in schema definition (FIXME: case: arrays directly in arrays)
-        const ppath = path.slice(0, -1).concat([target]).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat();
+        const ppath = (path.slice(0, -1).concat([target]).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat()).slice(1);
         // if schema path exists, update value of target field
         if (this.props.schema.hasIn(ppath)) {
             value = {
@@ -217,7 +229,7 @@ const EditRecordFieldTree = React.createClass({
             const m = moment(date);
             // true if embargo is in the past
             const access = m.isValid() ? (moment().diff(m) > 0) : true;
-            this.setValue('open_access', access);
+            this.setValue(null, ['open_access'], access);
             onDateChange(m)
         };
 
@@ -232,15 +244,13 @@ const EditRecordFieldTree = React.createClass({
         const format = schema.get('format') || "";
 
         if (path[0] == 'language' || path.slice(-1) == 'language') {
-            const languages = serverCache.getLanguages();
-            return (this.languages instanceof Error) ? <Err err={languages}/> :
-                <SelectBig data={languages}
-                    onSelect={x => this.onDependentSelect(schema, path, x, 'language_identifier')} value={value} />;
+            return <EditRecordDataElement load='getLanguages'>
+                <SelectBig onSelect={x => this.onDependentSelect(schema, path, x, 'language_identifier')} value={value} />
+            </EditRecordDataElement>
         } else if (path.slice(-1)[0] == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
-            const disciplines = serverCache.getDisciplines();
-            return (disciplines instanceof Error) ? <Err err={disciplines}/> :
-                <SelectBig data={disciplines}
-                    onSelect={x => this.onDependentSelect(schema, path, x, 'discipline_identifier')} value={value} />;
+            return <EditRecordDataElement load='getDisciplines'>
+                <SelectBig onSelect={x => this.onDependentSelect(schema, path, x, 'discipline_identifier')} value={value} />
+            </EditRecordDataElement>
         }
 
         const validClass = this.props.funcs.getError(pathstr) ? " invalid-field " : "";
@@ -256,7 +266,7 @@ const EditRecordFieldTree = React.createClass({
             );
         } else if (type === 'integer' || type === 'number') {
             return <NumberPicker format={format=='coordinate' ? '-###.##' : null} className={validClass} value={value} onChange={setter} />
-        } else if (type === 'string') {
+        } else if (type === 'string' || schema.get('enum')) {
             const value_str = "" + (value || "");
             if (schema.get('enum')) {
                 return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
@@ -274,10 +284,6 @@ const EditRecordFieldTree = React.createClass({
                 return <input type="text" className={"form-control"+ validClass}
                         value={value_str} onChange={event => setter(event.target.value)} />
             }
-        } else if (schema.get('enum')) {
-            const value_str = ""+(value || "");
-            return <DropdownList className={"form-control"+ validClass} data={schema.get('enum').toJS()}
-                     value={value_str} onChange={setter} />
         } else {
             console.error("Cannot render field of schema:", schema.toJS());
         }
@@ -319,7 +325,9 @@ const EditRecordFieldTree = React.createClass({
 
         let field = false;
         if (objEquals(path, ['community'])) {
-            field = <EditRecordSmallCommunity community={this.props.community} setState={this.setState} />
+            field = <EditRecordDataElement load='getCommunity' args={[this.props.funcs.getValue(path)]}>
+                <EditRecordSmallCommunity />
+            </EditRecordDataElement>
         } else if (objEquals(path, ['license', 'license'])) {
             field = this.renderScalarField(schema, path, this.addFieldButton(buttons, path.join('/'), 'license'));
         } else if (objEquals(path, ['open_access'])) {
@@ -456,6 +464,7 @@ const EditRecordFieldTree = React.createClass({
     },
 
     render() {
+        console.log(this.props.id)
         const datapath = this.props.schemaID ? ['community_specific', this.props.schemaID, this.props.id] : [this.props.id];
         const f = this.renderFieldTree(this.props.id, this.props.schema, datapath);
         if (!f) {
@@ -479,7 +488,7 @@ const EditRecordBlock = React.createClass({
 
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
 
-        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} community={this.props.community}/>);
+        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} />);
         const minorFields = minors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} />);
 
         const onMoreDetails = e => {
@@ -535,8 +544,6 @@ const EditRecordBlock = React.createClass({
 });
 
 const EditRecord = React.createClass({
-    record: null,
-
     getInitialState() {
         return {
             fileState: 'done',
@@ -596,6 +603,9 @@ const EditRecord = React.createClass({
         let r = this.state.record;
         if (!r) {
             return null;
+        }
+        if (schema === null) {
+            schema = path[0] == 'community_specific' ? this.props.blockSchemas.get([0, 'json_schema']) : this.props.rootSchema;
         }
         if (value !== undefined) {
             var self = this;
@@ -927,7 +937,7 @@ const EditRecord = React.createClass({
                     </div>
                     <div className="col-xs-12">
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
-                            <EditRecordBlock key={"root"} schemaID={null} schema={rootSchema} funcs={this.getChildFuncs()} community={this.props.community} />
+                            <EditRecordBlock key={"root"} schemaID={null} schema={rootSchema} funcs={this.getChildFuncs()} />
                             { blockSchemas.map(([id, schema]) =>
                                 <EditRecordBlock key={id} schemaID={id} schema={(schema||Map()).get('json_schema')} funcs={this.getChildFuncs()} />) }
                         </form>
