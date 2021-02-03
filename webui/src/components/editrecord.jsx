@@ -204,13 +204,13 @@ const EditRecordFieldTree = React.createClass({
         )
     },
 
-    onDependentSelect(schema, path, value, target) {
+    onDependentSelect(schema, path, value, target, valueFieldValue = null) {
         // determine path in schema definition (FIXME: case: arrays directly in arrays)
         const ppath = (path.slice(0, -1).concat([target]).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat()).slice(1);
         // if schema path exists, update value of target field
         if (this.props.schema.hasIn(ppath)) {
             value = {
-                [path.slice(-1)]: value,
+                [path.slice(-1)]: valueFieldValue || value,
                 [target]: value
             }
             this.setValue(schema, path.slice(0, -1), fromJS(value));
@@ -243,9 +243,9 @@ const EditRecordFieldTree = React.createClass({
         const value = this.props.funcs.getValue(path);
         const format = schema.get('format') || "";
 
-        if (path[0] == 'language' || path.slice(-1) == 'language') {
+        if (path[0] == 'language' || path.slice(-1) == 'language_name') {
             return <EditRecordDataElement load='getLanguages'>
-                <SelectBig onSelect={x => this.onDependentSelect(schema, path, x, 'language_identifier')} value={value} />
+                <SelectBig onSelect={(x, y) => this.onDependentSelect(schema, path, x, 'language_identifier', y)} value={value} valueField="name"/>
             </EditRecordDataElement>
         } else if (path.slice(-1)[0] == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
             return <EditRecordDataElement load='getDisciplines'>
