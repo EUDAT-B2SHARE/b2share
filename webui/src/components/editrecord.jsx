@@ -263,7 +263,7 @@ const EditRecordFieldTree = React.createClass({
             } else if (['date-time', 'date'].includes(format)) {
                 const initial = (value_str && value_str !== "") ? moment(value_str).toDate() : null;
                 return <DateTimePicker className={validClass} time={format == 'date-time'} value={initial}
-                        onChange={path == 'embargo_date' ? onEmbargoDateChange : onDateChange} />
+                        format={"YYYY/MM/DD" + (format == 'date-time' ? " HH:mm" : "")} onChange={path == 'embargo_date' ? onEmbargoDateChange : onDateChange} />
             } else if (format === 'email') {
                 return <input type="text" className={"form-control"+ validClass} placeholder="email@example.com"
                         value={value_str} onChange={event => setter(event.target.value)} />
@@ -456,7 +456,6 @@ const EditRecordFieldTree = React.createClass({
     },
 
     render() {
-        console.log(this.props.id)
         const datapath = this.props.schemaID ? ['community_specific', this.props.schemaID, this.props.id] : [this.props.id];
         const f = this.renderFieldTree(this.props.id, this.props.schema, datapath);
         if (!f) {
