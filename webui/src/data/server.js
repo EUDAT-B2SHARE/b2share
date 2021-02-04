@@ -39,8 +39,7 @@ const apiUrls = {
     remotesJob()                      { return `${urlRoot}/api/remotes/jobs` },
     b2drop(path_)                     { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
 
-    languages()                       { return `${urlRoot}/suggest/languages.json` },
-    disciplines()                     { return `${urlRoot}/suggest/disciplines.json` },
+    vocabularies(vid)                 { return `${urlRoot}/suggest/${vid}.json` },
 
     statistics()                      { return `${urlRoot}/api/stats` },
     b2handle_pid_info(file_pid)       { return `${urlRoot}/api/handle/${file_pid}` },
@@ -301,8 +300,7 @@ class ServerCache {
             communitySchemas: {}, // map of community schema IDs to versions to schemas
             blockSchemas: {}, // map of block schema IDs to versions to schemas
 
-            languages: null,
-            disciplines: null,
+            vocabularies: {}, // ordered map of vocabulary IDs to vocabularies
 
             communityUsers: {}, // list of users belong to a specific community
             tokens: null, // list of user's tokens
@@ -351,27 +349,20 @@ class ServerCache {
             },
             (xhr) => this.store.setIn(['communities'], new Error(xhr)) );
 
-        this.getters.languages = new Getter(
-            apiUrls.languages(), null,
-            (data) => {
-                const langs = data.languages.map(([id, name]) => ({id, name}));
-                this.store.setIn(['languages'], langs);
-                return langs;
-            },
-            (xhr) => this.store.setIn(['languages'], new Error(xhr)) );
-
-        this.getters.disciplines = new Getter(
-            apiUrls.disciplines(), null,
-            (data) => {
-                const transform = id => {
-                    return {id, name:id};
-                }
-                const disciplines = data.disciplines ?
-                    data.disciplines.map(transform) : null;
-                this.store.setIn(['disciplines'], disciplines);
-                return disciplines;
-            },
-            (xhr) => this.store.setIn(['disciplines'], new Error(xhr)) );
+        this.getters.vocabularies = new Pool(vocabularyID =>
+            new Getter(
+                apiUrls.vocabularies(vocabularyID), null,
+                (data) => {
+                    const transform = id => {
+                        return {id, name:id};
+                    }
+                    const res = Object.assign(data, {
+                        items: (data.items[0] instanceof Array) ? data.items.map(([id, name]) => ({id, name})) : data.items.map(transform),
+                    });
+                    this.store.setIn(['vocabularies', vocabularyID], res);
+                    return res;
+                },
+                (xhr) => this.store.setIn(['vocabularies', vocabularyID], new Error(xhr)) ));
 
         function retrieveVersions(store, links, cachePath) {
             const versionsLink = links && links.versions;
@@ -716,20 +707,12 @@ class ServerCache {
         });
     }
 
-    getLanguages(callbackFn) {
-        const langs = this.store.getIn(['languages']);
-        if (!langs) {
-            this.getters.languages.autofetch(callbackFn);
+    getVocabulary(vocabularyID, callbackFn) {
+        const vocabulary = this.store.getIn(['vocabularies', vocabularyID]);
+        if (!vocabulary) {
+            this.getters.vocabularies.get(vocabularyID).forceFetch({}, callbackFn);
         }
-        return langs;
-    }
-
-    getDisciplines(callbackFn) {
-        const disciplines = this.store.getIn(['disciplines']);
-        if (!disciplines) {
-            this.getters.disciplines.autofetch(callbackFn);
-        }
-        return disciplines;
+        return vocabulary;
     }
 
     createRecord(initialMetadata, successFn) {

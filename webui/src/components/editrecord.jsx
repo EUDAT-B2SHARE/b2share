@@ -126,7 +126,6 @@ const EditRecordFieldTree = React.createClass({
     getInitialState() {
         return {
             dirty: true,
-            modal: null,
             desc: "",
             opened: []  // itself and complex subfields
         };
@@ -140,9 +139,8 @@ const EditRecordFieldTree = React.createClass({
     },
 
     setValue(schema, path, value) {
-        this.state.dirty = true;
         this.props.funcs.setValue(schema, path, value);
-        this.setState({});
+        this.setState({dirty: true});
     },
 
     addFieldButton(buttons, pathstr, name) {
@@ -174,6 +172,9 @@ const EditRecordFieldTree = React.createClass({
             const licenseData = {
                 'license': license.name,
                 'license_uri': license.url,
+                'license_identifier': license.key,
+                'scheme': license.namespace,
+                'scheme_uri': license.namespace_uri
             };
             this.setValue(schema, path.slice(0, -1), fromJS(licenseData));
         };
@@ -184,7 +185,7 @@ const EditRecordFieldTree = React.createClass({
 
         switch (buttonname) {
             case 'license':
-                return <SelectLicense title="Select License" onSelect={onSelectLicense} setModal={modal => this.setState({modal: modal, dirty: true})} key={pathstr + "-" + buttonname} />
+                return <SelectLicense title="Select License" onSelect={onSelectLicense} setModal={(modal) => this.props.setLicenseModal({modal: modal})} key={pathstr + "-" + buttonname} />
             default:
                 return <span className="input-group-btn" key={pathstr + "-" + buttonname}>
                             <button className="btn btn-default btn-md" type="button" onClick={(ev) => (buttons[buttonname].event)(ev, pathstr)}
@@ -204,18 +205,26 @@ const EditRecordFieldTree = React.createClass({
         )
     },
 
-    onDependentSelect(schema, path, value, target, valueFieldValue = null) {
-        // determine path in schema definition (FIXME: case: arrays directly in arrays)
-        const ppath = (path.slice(0, -1).concat([target]).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat()).slice(1);
-        // if schema path exists, update value of target field
-        if (this.props.schema.hasIn(ppath)) {
-            value = {
-                [path.slice(-1)]: valueFieldValue || value,
-                [target]: value
+    onVocabularySelect(schema, path, value, type) {
+        // if parent schema path is an object, map all values
+        // get schema path minus container and selector element
+        const spath = path.slice(0, -1).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat().slice(1);
+        var vschema = this.props.schema.getIn(spath);
+        // if exists, we get the subfields for the element, not the definition of a single field (root schema v1)
+        if (vschema && vschema.get('type') == undefined) {
+            // apply all value elements
+            var tvalue = {}
+            for (const [key, value] of Object.entries(value)) {
+                if (vschema.has(key)) {
+                    tvalue[key] = value;
+                } else if (vschema.has(type + "_" + key)) {
+                    tvalue[type + "_" + key] = value;
+                }
             }
-            this.setValue(schema, path.slice(0, -1), fromJS(value));
+            this.setValue(schema, path.slice(0, -1), fromJS(tvalue));
         } else {
-            this.setValue(schema, path, value);
+            // apply the identifier only (root schema v0)
+            this.setValue(schema, path, value.identifier);
         }
     },
 
@@ -243,13 +252,14 @@ const EditRecordFieldTree = React.createClass({
         const value = this.props.funcs.getValue(path);
         const format = schema.get('format') || "";
 
-        if (path[0] == 'language' || path.slice(-1) == 'language_name') {
-            return <EditRecordDataElement load='getLanguages'>
-                <SelectBig onSelect={(x, y) => this.onDependentSelect(schema, path, x, 'language_identifier', y)} value={value} valueField="name"/>
+        if (['language', 'language_name'].includes(path.last())) {
+            return <EditRecordDataElement load='getVocabulary' args={['languages']}>
+                <SelectBig onSelect={x => this.onVocabularySelect(schema, path, x, 'language')} value={value}
+                           valueField={path.last() == 'language_name' ? "name" : "id"} />
             </EditRecordDataElement>
-        } else if (path.slice(-1)[0] == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
-            return <EditRecordDataElement load='getDisciplines'>
-                <SelectBig onSelect={x => this.onDependentSelect(schema, path, x, 'discipline_identifier')} value={value} />
+        } else if (path.last() == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
+            return <EditRecordDataElement load='getVocabulary' args={['disciplines']}>
+                <SelectBig onSelect={x => this.onVocabularySelect(schema, path, x, 'discipline')} value={value} />
             </EditRecordDataElement>
         }
 
@@ -464,7 +474,6 @@ const EditRecordFieldTree = React.createClass({
     },
 
     render() {
-        console.log(this.props.id)
         const datapath = this.props.schemaID ? ['community_specific', this.props.schemaID, this.props.id] : [this.props.id];
         const f = this.renderFieldTree(this.props.id, this.props.schema, datapath);
         if (!f) {
@@ -477,6 +486,7 @@ const EditRecordFieldTree = React.createClass({
 const EditRecordBlock = React.createClass({
     getInitialState() {
         return {
+            modal: null,
             folds: true
         }
     },
@@ -488,7 +498,7 @@ const EditRecordBlock = React.createClass({
 
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
 
-        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} />);
+        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} setLicenseModal={(state) => this.setState(state) } funcs={this.props.funcs} />);
         const minorFields = minors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} />);
 
         const onMoreDetails = e => {
@@ -516,11 +526,10 @@ const EditRecordBlock = React.createClass({
         const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'} : {};
         return (
             <div style={blockStyle}>
-                <div style={{position:'relative', width:'100%'}}>
-                    <div style={{position:'absolute', width:'100%', zIndex:1}}>
-                        { this.state.modal }
-                    </div>
-                </div>
+                { this.state.modal &&
+                <div style={{position:'absolute', width:'100%', zIndex: 1}}>
+                    { this.state.modal }
+                </div> }
                 <div className="row">
                     <h3 className="col-sm-12" style={{marginBottom:0}}>
                         { schemaID ? schema.get('title') : 'Basic fields' }

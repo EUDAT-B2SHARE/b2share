@@ -92,3 +92,7 @@ export function stateSetter(obj, state) {
         obj.setState(state);
     }
 }
+
+Array.prototype.last = function() {
+    return this[this.length - 1];
+}

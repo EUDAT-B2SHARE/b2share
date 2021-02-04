@@ -428,24 +428,13 @@ const Record = React.createClass({
         const title = schema.get('title');
         let inner = null;
 
-        if (id == 'languages' || id == 'language') {
-            const languages = serverCache.getLanguages();
-            if (value.size) {
-                if (languages) {
-                    value = value.map(v => v.set('language', languages.find(l => l.id == v.get('language')).name || v.get('language')));
-                }
-                inner = (
-                    <ul className="list-unstyled">
-                        { value.map((v,i) => this.renderField(`#${i}`, schema.get('items'), v)) }
-                    </ul>
-                );
-            } else {
-                if (languages) {
-                    value = (inner = languages.find(l => l.id == value)) ? inner.name : value;
-                }
-                // maintain root schema v0 compatibility
-                inner = <span>{ renderScalar(schema, value) }</span>;
+        if (id == 'language') {
+            const languages = serverCache.getVocabulary('languages');
+            if (languages) {
+                value = (inner = languages.items.find(l => l.id == value)) ? inner.name : value;
             }
+            // maintain root schema v0 compatibility
+            inner = <span>{ renderScalar(schema, value) }</span>;
         } else if (type === 'array') {
             inner = (
                 <ul className="list-unstyled">

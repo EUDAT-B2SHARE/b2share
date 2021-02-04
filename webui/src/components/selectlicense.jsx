@@ -14,7 +14,15 @@ export const SelectLicense = React.createClass({
         if (origin === window.location.origin) {
             this.props.setModal(false);
             if (event.data) {
-                this.props.onSelect(event.data);
+                this.props.onSelect(
+                    Object.assign(
+                        event.data,
+                        {
+                            namespace: 'Public License Selector',
+                            namespace_uri: 'https://raw.githubusercontent.com/ufal/public-license-selector/master/src/definitions.coffee'
+                        }
+                    )
+                );
             }
         }
     },

@@ -6,7 +6,7 @@ const PT = React.PropTypes;
 
 export const SelectBig = React.createClass({
     propTypes: {
-        data: PT.array,
+        data: PT.object,
         value: PT.string,
         valueField: PT.string,
         onSelect: PT.func.isRequired
@@ -35,7 +35,12 @@ export const SelectBig = React.createClass({
     },
 
     select: function (val) {
-        this.props.onSelect(val.id, val[this.props.valueField]);
+        this.props.onSelect({
+            identifier: val.id,
+            name: val[this.props.valueField],
+            scheme: this.props.data.scheme,
+            scheme_uri: this.props.data.schemeUri
+        });
     },
 
     filter: function (item, search) {
@@ -69,7 +74,7 @@ export const SelectBig = React.createClass({
 
     render() {
         const busy = !this.props.data;
-        const data = this.props.data || [];
+        const data = this.props.data.items || [];
         return (
             <DropdownList
                 data={data}
