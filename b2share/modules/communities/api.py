@@ -36,12 +36,13 @@ from sqlalchemy.exc import StatementError
 from invenio_accounts.models import Role
 
 from .errors import CommunityDeletedError, CommunityDoesNotExistError, \
-    InvalidCommunityError
+    InvalidCommunityError, CommunityPolicyDoesNotExistError, CommunityPolicyInvalidValueError
 from .signals import after_community_delete, after_community_insert, \
     after_community_update, before_community_delete, before_community_insert, \
     before_community_update
 from .models import Community as CommunityMetadata, _community_admin_role_name, \
     _community_member_role_name
+from .policies import PolicyValuesMapping
 
 
 class Community(object):
@@ -224,6 +225,34 @@ class Community(object):
         }, patch, True)
         self.update(data)
         return self
+
+    def policy(self, name, value):
+        """Update the community's policy with value.
+
+        Args:
+            policy (string): the name of the policy
+
+        Returns:
+            :class:`Community`: self
+
+        Raises:
+            jsonpatch.JsonPatchConflict: the json patch conflicts on the
+                community.
+
+            jsonpatch.InvalidJsonPatch: the json patch is invalid.
+
+            b2share.modules.communities.errors.InvalidCommunityError: The
+                community patch failed because the resulting community is
+                not valid.
+        """
+
+        if not name in PolicyValuesMapping.keys():
+            raise CommunityPolicyDoesNotExistError()
+        if not value in PolicyValuesMapping[name]:
+            raise CommunityPolicyInvalidValueError()
+
+        return self.update({name: value})
+
 
     # TODO: add properties for getting schemas and admins
 

@@ -55,3 +55,11 @@ class NotACommunityRoleError(RESTException):
 
     code = 400
     description = 'This role doesn\'t belong to any community.'
+
+class CommunityPolicyDoesNotExistError(Exception):
+    """Exception raised when a requested community policy does not exist."""
+    pass
+
+class CommunityPolicyInvalidValueError(Exception):
+    """Exception raised when a community policy value is invalid."""
+    pass
