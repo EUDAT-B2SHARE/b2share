@@ -25,16 +25,16 @@
 
 from __future__ import absolute_import
 
-import os, json
+import os
 from os.path import isfile
 
 import click
 from flask.cli import with_appcontext
-from flask import current_app, url_for, jsonify
 
 from invenio_db import db
 
-from .api import Community, CommunityDoesNotExistError
+from .api import Community, CommunityDoesNotExistError, \
+    CommunityPolicyDoesNotExistError, CommunityPolicyInvalidValueError
 
 @click.group()
 def communities():
@@ -184,4 +184,42 @@ def community_policies_list(community=None):
             list_item(c)
     else:
         list_item(Community.get(community))
->>>>>>> 0265fa602 (Add community policies list CLI command)
+
+
+@policies.command('set')
+@with_appcontext
+@click.option('-v', '--verbose', is_flag=True, default=False)
+@click.argument('community')
+@click.argument('policy')
+@click.argument('value', required=False)
+@click.option('--enable', 'enable', flag_value=True)
+@click.option('--disable', 'enable', flag_value=False, default=True)
+def community_policies_set(verbose, community, policy, enable=None, value=None):
+    """Enable/disable/set the value for a given community and policy."""
+
+    from .policies import PolicyValuesMapping, PolicyToggleValues
+
+    # if a value is omitted, use the enable flag and use its value
+    if value is None:
+        if not enable is None:
+            value = enable
+        else:
+            raise click.BadParameter("No value given or use --enable or --disable flag")
+
+    try:
+        comm = Community.get(id=community)
+        comm.policy(policy, value)
+    except CommunityDoesNotExistError:
+        raise click.BadParameter("No such community with ID %s" % community)
+    except CommunityPolicyDoesNotExistError:
+        raise click.BadParameter("No such community policy '%s', choose from: '%s'" % (policy, "', '".join(PolicyValuesMapping.keys())))
+    except CommunityPolicyInvalidValueError:
+        if PolicyValuesMapping[policy] == PolicyToggleValues:
+            raise click.BadParameter("Invalid value '%s' for policy '%s', use --enable or --disable flag" % (value, policy))
+        else:
+            raise click.BadParameter("Invalid value '%s' for policy '%s', choose from: '%s'" % (value, policy, "', '".join([str(x) for x in PolicyValuesMapping[policy]])))
+
+    db.session.commit()
+    if verbose:
+        click.echo("Community policy '%s' updated" % policy)
+>>>>>>> 19031bc32 (Add community policy update CLI command)
