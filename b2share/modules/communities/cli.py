@@ -25,16 +25,16 @@
 
 from __future__ import absolute_import
 
-import os
+import os, json
 from os.path import isfile
 
 import click
 from flask.cli import with_appcontext
+from flask import current_app, url_for, jsonify
 
 from invenio_db import db
 
 from .api import Community, CommunityDoesNotExistError
-
 
 @click.group()
 def communities():
@@ -157,3 +157,31 @@ def set_schema(community, json_file, root_schema):
         update_or_set_community_root_schema(community, root_schema)
     else:
         raise click.BadParameter("Need at least a JSON file or root schema version")
+
+
+@communities.group()
+@with_appcontext
+def policies():
+    """Manage community policies"""
+
+@policies.command('list')
+@with_appcontext
+@click.argument('community', required=False)
+def community_policies_list(community=None):
+    """List all communities' policy values"""
+
+    def list_item(comm):
+        click.secho("%s\t%s\t\t%s\t%s" % (
+            comm.id,
+            comm.name,
+            comm.publication_workflow,
+            comm.restricted_submission
+        ))
+
+    click.secho("ID\t\t\t\t\tNAME\t\tWORKFLOW\tMEMBERS-ONLY")
+    if not community:
+        for c in Community.get_all():
+            list_item(c)
+    else:
+        list_item(Community.get(community))
+>>>>>>> 4abaa4c2c... Add community policies list CLI command
