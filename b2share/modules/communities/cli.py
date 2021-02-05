@@ -25,16 +25,16 @@
 
 from __future__ import absolute_import
 
-import os
+import os, json
 from os.path import isfile
 
 import click
 from flask.cli import with_appcontext
+from flask import current_app, url_for, jsonify
 
 from invenio_db import db
 
 from .api import Community, CommunityDoesNotExistError
-
 
 @click.group()
 def communities():
@@ -145,7 +145,43 @@ def edit(verbose, id, name, description, logo, clear_fields):
 @communities.command()
 @with_appcontext
 @click.argument('community')
-@click.argument('json_file')
-def set_schema(community, json_file):
-    from b2share.modules.schemas.cli import update_or_set_community_schema
-    update_or_set_community_schema(community, json_file)
+@click.argument('json_file', required=False, default=None)
+@click.option('--root-schema', required=False, default=None, type=int)
+def set_schema(community, json_file, root_schema):
+    """Set the community block schema and/or root schema version.
+    If a root schema version is given, but no JSON file, the latest known block schema will be used (if present)."""
+    from b2share.modules.schemas.cli import update_or_set_community_schema, update_or_set_community_root_schema
+    if json_file:
+        update_or_set_community_schema(community, json_file, root_schema)
+    elif root_schema:
+        update_or_set_community_root_schema(community, root_schema)
+    else:
+        raise click.BadParameter("Need at least a JSON file or root schema version")
+
+
+@communities.group()
+@with_appcontext
+def policies():
+    """Manage community policies"""
+
+@policies.command('list')
+@with_appcontext
+@click.argument('community', required=False)
+def community_policies_list(community=None):
+    """List all communities' policy values"""
+
+    def list_item(comm):
+        click.secho("%s\t%s\t\t%s\t%s" % (
+            comm.id,
+            comm.name,
+            comm.publication_workflow,
+            comm.restricted_submission
+        ))
+
+    click.secho("ID\t\t\t\t\tNAME\t\tWORKFLOW\tMEMBERS-ONLY")
+    if not community:
+        for c in Community.get_all():
+            list_item(c)
+    else:
+        list_item(Community.get(community))
+>>>>>>> 0265fa602 (Add community policies list CLI command)
