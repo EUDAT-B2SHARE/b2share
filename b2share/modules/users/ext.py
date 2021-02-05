@@ -22,7 +22,23 @@
 
 from __future__ import absolute_import, print_function
 
+from werkzeug.utils import cached_property
+
 from .views import blueprint
+
+from .cli import users as users_cmd
+
+
+class _B2ShareUsersState(object):
+    """B2Share users extension state."""
+
+    def __init__(self, app):
+        """Constructor.
+
+        Args:
+            app: the Flask application.
+        """
+        self.app = app
 
 
 class B2ShareUsers(object):
@@ -36,9 +52,13 @@ class B2ShareUsers(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
-        app.extensions['b2share-users'] = self
+        app.cli.add_command(users_cmd)
         app.register_blueprint(blueprint)
+        app.extensions['b2share-users'] = _B2ShareUsersState(app)
 
     def init_config(self, app):
         """Initialize configuration."""
+        # for k in dir(config):
+        #     if k.startswith('B2SHARE_USERS_'):
+        #         app.config.setdefault(k, getattr(config, k))
         pass
