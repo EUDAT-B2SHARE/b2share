@@ -34,6 +34,7 @@ from invenio_db import db
 from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.datacite import DataCiteProvider
 from invenio_records_files.api import Record
+from invenio_records.cli import records
 
 from b2share.modules.deposit.api import create_file_pids
 from b2share.modules.records.serializers import datacite_v31
@@ -46,12 +47,11 @@ from .utils import list_db_published_records
 from b2share.modules.handle.proxies import current_handle
 
 
-@click.group()
-def b2records():
-    """B2SHARE Records commands."""
+@records.group()
+def manage():
+    """B2SHARE record management commands."""
 
-
-@b2records.command()
+@manage.command()
 @with_appcontext
 def update_expired_embargoes():
     """Updates all records with expired embargoes to open access."""
@@ -59,7 +59,7 @@ def update_expired_embargoes():
     click.secho('Expiring embargoes...', fg='green')
 
 
-@b2records.command()
+@manage.command()
 @with_appcontext
 @click.option('-u', '--update', is_flag=True, default=False,
               help='updates if necessary')
@@ -104,7 +104,7 @@ def check_and_update_handle_records(update, verbose):
                         click.secho('  file PID ok: {}'.format(pid))
 
 
-@b2records.command()
+@manage.command()
 @with_appcontext
 @click.option('-u', '--update', is_flag=True, default=False)
 @click.argument('record_pid', required=True)
@@ -147,7 +147,7 @@ def check_handles(update, record_pid):
         db.session.commit()
 
 
-@b2records.command()
+@manage.command()
 @with_appcontext
 @click.option('-r', '--record', default=None)
 @click.option('-a', '--allrecords', is_flag=True, default=False)
