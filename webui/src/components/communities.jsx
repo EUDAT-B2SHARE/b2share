@@ -97,9 +97,7 @@ const Community = React.createClass({
                             <span>Created at </span>
                             {created}
                         { created != updated
-                            ? <p>
-                                <span>Last updated at </span>{updated}
-                              </p>
+                            ? <span><br/><span>Last updated at </span>{updated}</span>
                             : false }
                         </p>
                     </div>
