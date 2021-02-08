@@ -34,14 +34,14 @@ import { CommunityAdmin } from './components/community_admin.jsx'
 const piwik = process.env.B2SHARE_WEBUI_MATOMO_URL && process.env.B2SHARE_WEBUI_MATOMO_SITEID ?
     PiwikReactRouter({
         url: process.env.B2SHARE_WEBUI_MATOMO_URL,
-        siteId: process.env.B2SHARE_WEBUI_MATOMO_SITEID
+        siteId: process.env.B2SHARE_WEBUI_MATOMO_SITEID,
+        serverTrackerName: process.env.B2SHARE_WEBUI_MATOMO_SERVERTRACKERNAME
     }) : false;
 
-// var secondaryTrackerUrl = 'https://analytics.example.com/matomo.php';
-// var secondaryWebsiteId = 77;
+var secondaryTrackerUrl = 'https://analytics.example.com/matomo.php';
+var secondaryWebsiteId = 77;
 // Also send all of the tracking data to this other Matomo server, in website ID 77
-// _paq.push(['addTracker', secondaryTrackerUrl, secondaryWebsiteId]);
-    
+_paq.push(['addTracker', secondaryTrackerUrl, secondaryWebsiteId]);
 
 const AppFrame = React.createClass({
     getInitialState() {
@@ -106,7 +106,8 @@ function testNewPage(prev, next) {
 
 const router = (
     
-    <Router history={ piwik ? (piwik.connectToHistory(browserHistory)) : (browserHistory) }>
+    <Router history={ (browserHistory) }>
+    {/* <Router history={ piwik ? (piwik.connectToHistory(browserHistory)) : (browserHistory) }>*/}
         <Route path="/" component={AppFrame} onChange={testNewPage}>
             <IndexRoute component={HomeRoute} />
 

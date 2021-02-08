@@ -505,7 +505,7 @@ const Record = React.createClass({
         const record = this.props.record;
         const metadata = record.get('metadata') || Map();
         const doi = metadata.get('DOI').replace("http://doi.org/", "");
-        window._paq.push(['trackEvent', 'MyCategory', 'MyEvent', doi]);
+        window._paq.push(['trackPageView']);
     },
     
     render() {
