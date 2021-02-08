@@ -205,27 +205,10 @@ const EditRecordFieldTree = React.createClass({
         )
     },
 
-    onVocabularySelect(schema, path, value, type) {
-        // if parent schema path is an object, map all values
+    getParentPathSchema(path) {
         // get schema path minus container and selector element
         const spath = path.slice(0, -1).map(x => Number.isInteger(x) ? ['items', 'properties'] : x).flat().slice(1);
-        var vschema = this.props.schema.getIn(spath);
-        // if exists, we get the subfields for the element, not the definition of a single field (root schema v1)
-        if (vschema && vschema.get('type') == undefined) {
-            // apply all value elements
-            var tvalue = {}
-            for (const [key, value] of Object.entries(value)) {
-                if (vschema.has(key)) {
-                    tvalue[key] = value;
-                } else if (vschema.has(type + "_" + key)) {
-                    tvalue[type + "_" + key] = value;
-                }
-            }
-            this.setValue(schema, path.slice(0, -1), fromJS(tvalue));
-        } else {
-            // apply the identifier only (root schema v0)
-            this.setValue(schema, path, value.identifier);
-        }
+        return this.props.schema.getIn(spath);
     },
 
     renderScalarField(schema, path, buttons={}, options={}) {
@@ -242,29 +225,105 @@ const EditRecordFieldTree = React.createClass({
             onDateChange(m)
         };
 
+        const onVocabularySelect = (value, type) => {
+            // if parent schema path is an object, map all values
+            var pschema = this.getParentPathSchema(path);
+
+            // if exists, we get the subfields for the element, not the definition of a single field (root schema v1)
+            if (pschema && pschema.get('type') == undefined) {
+                // apply all value elements
+                var pvalue = {}
+                for (const [key, value] of Object.entries(value)) {
+                    if (pschema.has(key)) {
+                        pvalue[key] = value;
+                    } else if (pschema.has(type + "_" + key)) {
+                        pvalue[type + "_" + key] = value;
+                    }
+                }
+                this.setValue(schema, path.slice(0, -1), fromJS(pvalue));
+            } else {
+                // apply the identifier only (root schema v0)
+                this.setValue(schema, path, value.identifier);
+            }
+        };
+
+        const onFullNameChange = value => {
+            var pschema = this.getParentPathSchema(path);
+
+            // determine the values to be updated
+            const re = /^([^,]+),?(.*)?$/;
+            const matches = value.match(re);
+
+            // update the other fields as well, if these fields are available and
+            // all match groups have actual values
+            if (pschema.has('given_name')) {
+                // get the parent object path
+                const ppath = path.slice(0, -1);
+                if (matches && matches.filter(Boolean).length > 0) {
+                    // define the new parent object value
+                    var pvalue = Object.assign(this.props.funcs.getValue(ppath) || {}, {
+                        [path.last()]: matches[0],
+                        given_name: (matches[2] || "").trim(),
+                        family_name: (matches[1] || "").trim()
+                    });
+                } else {
+                    // remove all affected fields
+                    var pvalue = Object.assign(this.props.funcs.getValue(ppath) || {});
+                    [path.last(), 'given_name', 'family_name'].forEach((x) => { delete pvalue[x]; });
+                }
+                // set it
+                this.setValue(schema, ppath, fromJS(pvalue));
+            } else {
+                // just set the value normally
+                this.setValue(schema, path, value);
+            }
+        }
+
+        const onPartialNameChange = (value, source, target) => {
+            const ppath = path.slice(0, -1);
+            // get the value of the other dependent field
+            const other = source == 'given_name' ? 'family_name' : 'given_name';
+            const ovalue = this.props.funcs.getValue(ppath.concat([other]));
+            // if both values present, combine them for target
+            if (value.length && ovalue.length) {
+                var tvalue = source == 'given_name' ? `${ovalue}, ${value}` : `${value}, ${ovalue}`;
+            } else {
+                // otherwise take the value that is available or nothing
+                var tvalue = value.length ? value : ovalue;
+            }
+            // define the new parent object value
+            const pvalue = Object.assign(this.props.funcs.getValue(ppath) || {}, {
+                [target]: tvalue,
+                [source]: value
+            });
+            // set it
+            this.setValue(schema, ppath, fromJS(pvalue));
+        }
+
         const pathstr = path.join('/');
         if (pathstr in buttons) {
             return this.renderButtonedScalarField(schema, path, buttons[pathstr]);
         }
 
         const newpath = (last) => { const np = path.slice(); np.push(last); return np; };
+        const lpath = path.last();
         const type = schema.get('type');
         const value = this.props.funcs.getValue(path);
         const format = schema.get('format') || "";
 
-        if (['language', 'language_name'].includes(path.last())) {
+        if (['language', 'language_name'].includes(lpath)) {
             return <EditRecordDataElement load='getVocabulary' args={['languages']}>
-                <SelectBig onSelect={x => this.onVocabularySelect(schema, path, x, 'language')} value={value}
-                           valueField={path.last() == 'language_name' ? "name" : "id"} />
+                <SelectBig onSelect={x => onVocabularySelect(x, 'language')} value={value}
+                           valueField={lpath == 'language_name' ? "name" : "id"} />
             </EditRecordDataElement>
-        } else if (path.last() == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
+        } else if (lpath == 'discipline_name' || (path[0] == 'disciplines' && path.length == 2 && type == 'string')) {
             return <EditRecordDataElement load='getVocabulary' args={['disciplines']}>
-                <SelectBig onSelect={x => this.onVocabularySelect(schema, path, x, 'discipline')} value={value} />
+                <SelectBig onSelect={x => onVocabularySelect(x, 'discipline')} value={value} />
             </EditRecordDataElement>
         }
 
         const validClass = this.props.funcs.getError(pathstr) ? " invalid-field " : "";
-        const setter = x => this.setValue(schema, path, x);
+        var setter = x => this.setValue(schema, path, x);
         if (type === 'boolean') {
             return (
                 <div style={{lineHeight:"30px"}}>
@@ -278,6 +337,13 @@ const EditRecordFieldTree = React.createClass({
             return <NumberPicker format={format=='coordinate' ? '-###.##' : null} className={validClass} value={value} onChange={setter} />
         } else if (type === 'string' || schema.get('enum')) {
             const value_str = "" + (value || "");
+            // special handling for specific fields
+            if (['creator_name', 'contributor_name'].includes(lpath)) {
+                setter = x => onFullNameChange(x)
+            } else if (['given_name', 'family_name'].includes(lpath)) {
+                const pschema = this.getParentPathSchema(path);
+                setter = x => onPartialNameChange(x, lpath, pschema.keySeq().toArray()[0]);
+            }
             if (schema.get('enum')) {
                 return <DropdownList className={validClass} value={value_str} data={schema.get('enum').toJS()} onChange={setter} />
             } else if (['date-time', 'date'].includes(format)) {
