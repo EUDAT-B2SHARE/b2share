@@ -96,9 +96,7 @@ const Community = React.createClass({
                         <p>
                             <span>Created at </span>
                             {created}
-                        { created != updated
-                            ? <span><br/><span>Last updated at </span>{updated}</span>
-                            : false }
+                        { created != updated && <span><br/><span>Last updated at </span>{updated}</span> }
                         </p>
                     </div>
                     <div className="description">
@@ -116,6 +114,9 @@ const Community = React.createClass({
                     <p className="pid">
                         <span>Identifier: </span>
                         <PersistentIdentifier pid={community.get('id')}/>
+                    </p>
+                    <p className="pid">
+                        <span>Using root schema version: {community.get('schema', {}).get('root_schema', "")}</span>
                     </p>
                 </div>
                 <div className="col-sm-6">
