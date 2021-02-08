@@ -846,6 +846,9 @@ const EditRecord = React.createClass({
             this.setState({errors});
             return;
         }
+        // always remove any existing errors displayed
+        notifications.clearAll();
+        // determine if there are any changes in the original and current record
         const original = this.props.record.get('metadata').toJS();
         const updated = this.state.record.toJS();
         const patch = compare(original, updated);
@@ -860,7 +863,6 @@ const EditRecord = React.createClass({
                 // records in versioned chain, to trigger a refetch of
                 // versioning data
                 this.setState({dirty: false, waitingForServer: false});
-                notifications.clearAll();
             } else {
                 browser.gotoRecord(record.id);
             }
