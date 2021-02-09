@@ -23,8 +23,8 @@
     "css-loader": "^0.23.0",
     "enzyme": "^2.8.1",
     "enzyme-to-json": "^1.5.1",
-    "eslint": "^6.2.2",
-    "eslint-plugin-react": "^7.14.3",
+    "eslint": "^6.8.0",
+    "eslint-plugin-react": "^7.22.0",
     "jest": "^20.0.0",
     "nightmare": "^2.10.0",
     "react-addons-test-utils": "^15.5.1",
@@ -41,26 +41,18 @@
     "font-awesome": "^4.4.0",
     "history": "^3.3.0",
     "immutable": "^3.7.6",
-    "lodash": "^4.17.4",
-    "moment": "^2.13.0",
+    "lodash": "^4.17.20",
+    "moment": "^2.29.1",
     "piwik-react-router": "^0.12.1",
     "pluralize": "^1.2.1",
-    "react": "^15.5.0",
-    "react-addons-shallow-compare": "^15.5.0",
-<<<<<<< HEAD
-    "react-bootstrap": "^0.31.5",
-=======
->>>>>>> a07c893... webui: add basic Matomo support
-    "react-dom": "^15.5.0",
+    "react": "^15.7.0",
+    "react-addons-shallow-compare": "^15.6.3",
+    "react-bootstrap": "^0.31.3",
+    "react-dom": "^15.7.0",
     "react-piwik": "^1.11.0",
     "react-router": "^2.1.1",
     "react-toggle": "^2.2.0",
     "react-widgets": "^3.2.4",
-<<<<<<< HEAD
-    "reqwest": "^2.0.5",
-    "whatwg-fetch": ""
-=======
     "reqwest": "^2.0.5"
->>>>>>> a07c893... webui: add basic Matomo support
   }
 }

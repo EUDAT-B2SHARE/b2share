@@ -505,7 +505,8 @@ const Record = React.createClass({
         const record = this.props.record;
         const metadata = record.get('metadata') || Map();
         const doi = metadata.get('DOI').replace("http://doi.org/", "");
-        window._paq.push(['trackPageView']);
+        //window._paq.push(['trackPageView']);
+        window._paq.push(['trackEvent', 'b2share', 'recordview', doi]);
     },
     
     render() {
@@ -527,11 +528,7 @@ const Record = React.createClass({
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
         const state = record.get('metadata').get('publication_state');
-<<<<<<< HEAD
-
-=======
         const showB2Note = serverCache.getInfo().get('show_b2note');
->>>>>>> 07e81d8... added matomo tracking code to following files: newrecord.jsx, record.jsx
         return (
             
             <div className="container-fluid">
