@@ -295,7 +295,7 @@ def community_schema_list_block_schema_versions(verbose, community, version=None
 
 
 # this function should be called from the communities' cli module
-def update_or_set_community_schema(community, json_file):
+def update_or_set_community_schema(community, json_file, root_schema_version=None, no_block=False):
     """Updates or sets the schema for a community.
 
     The complete schema of a community contains a copy of the root metadata
@@ -306,6 +306,8 @@ def update_or_set_community_schema(community, json_file):
     - community is the ID or NAME of the community to be updated.
     - json_file is a file path to the json-schema file describing the
     community-specific block schema.
+    - root_schema_version is the index of a known root schema.
+    - no_block is a flag indicated the newly created community schema requires an empty block schema.
 
     See also `b2share schemas block_schema_version_generate_json`"""
 
@@ -313,25 +315,28 @@ def update_or_set_community_schema(community, json_file):
     if not comm:
         raise click.BadParameter("There is no community by this name or ID: %s" %
                                  community)
-    if not os.path.isfile(json_file):
-        raise click.ClickException("%s does not exist on the filesystem" %
-                                   json_file)
 
     schema_dict = {}
-    with open(json_file, 'r') as f:
+    if not no_block:
+        if not json_file:
+            raise click.ClickException("No JSON file given")
+        if not os.path.isfile(json_file):
+            raise click.ClickException("%s does not exist on the filesystem" % json_file)
+
+        with open(json_file, 'r') as f:
+            try:
+                schema_dict = json.load(f)
+            except ValueError:
+                raise click.ClickException("%s is not valid JSON" % json_file)
+
         try:
-            schema_dict = json.load(f)
-        except ValueError:
-            raise click.ClickException("%s is not valid JSON" % json_file)
+            validate_metadata_schema(schema_dict)
+        except Exception as e:
+            print("schema validation error:", e)
+            raise click.ClickException("""%s is not a valid metadata schema for
+            a B2SHARE community""" % json_file)
 
-    try:
-        validate_metadata_schema(schema_dict)
-    except Exception as e:
-        print("schema validation error:", e)
-        raise click.ClickException("""%s is not a valid metadata schema for
-        a B2SHARE community""" % json_file)
-
-    #create new block version schema
+    # create new block version schema
     try:
         community_schema = CommunitySchema.get_community_schema(comm.id)
         comm_schema_json = json.loads(community_schema.community_schema)
@@ -341,13 +346,18 @@ def update_or_set_community_schema(community, json_file):
 
         if len(comm_schema_json['properties']) > 1:
             raise click.ClickException("""Multiple block schemas not supported.""")
-        #we can by configuration also have a community schema that does not refer to a blockschema
-        if len (comm_schema_json['properties']) == 0:
-            _create_community_schema(comm, schema_dict)
+        # we can by configuration also have a community schema that does not refer to a block schema
+        if (len(comm_schema_json['properties']) == 0) and not no_block:
+            _create_community_schema(comm, schema_dict, root_schema_version)
+        elif no_block:
+            _create_community_schema_no_block(comm, root_schema_version)
         else:
             _update_community_schema(comm, comm_schema_json, schema_dict)
     except CommunitySchemaDoesNotExistError:
-        _create_community_schema(comm, schema_dict)
+        if not no_block:
+            _create_community_schema(comm, schema_dict, root_schema_version)
+        else:
+            _create_community_schema_no_block(comm, root_schema_version)
     db.session.commit()
     click.secho("Succesfully processed new metadata schema", fg='green')
 
