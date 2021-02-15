@@ -34,7 +34,7 @@ import { CommunityAdmin } from './components/community_admin.jsx'
 const piwik = process.env.B2SHARE_WEBUI_MATOMO_URL && process.env.B2SHARE_WEBUI_MATOMO_SITEID ?
     PiwikReactRouter({
         url: process.env.B2SHARE_WEBUI_MATOMO_URL,
-        siteId: process.env.B2SHARE_WEBUI_MATOMO_SITEID
+        siteId: process.env.B2SHARE_WEBUI_MATOMO_SITEID,
     }) : false;
 
 const AppFrame = React.createClass({
