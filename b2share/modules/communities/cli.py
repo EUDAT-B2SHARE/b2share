@@ -162,6 +162,33 @@ def set_schema(community, json_file, root_schema, no_block):
 
 @communities.group()
 @with_appcontext
+def roles():
+    """Manage community roles"""
+
+@roles.command('list')
+@with_appcontext
+@click.argument('community', required=False)
+def community_roles_list(community=None):
+    """List all communities' roles"""
+
+    def list_item(comm):
+        click.secho("%s\t%s\t\t%s\t%s" % (
+            comm.id,
+            comm.name,
+            comm.admin_role,
+            comm.member_role
+        ))
+
+    click.secho("ID\t\t\t\t\tNAME\t\tROLES")
+    if not community:
+        for c in Community.get_all():
+            list_item(c)
+    else:
+        list_item(Community.get(community))
+
+
+@communities.group()
+@with_appcontext
 def policies():
     """Manage community policies"""
 
