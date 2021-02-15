@@ -111,15 +111,15 @@ export const UserProfile = React.createClass({
         );
     },
 
-    createLink(communitiesList, name){
-        return <Link to={`/communities/${communitiesList[name.replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]}/admin`}> (admin page)</Link>
+    createLink(communitiesMapping, name) {
+        return <Link to={`/communities/${communitiesMapping[name.replace(new RegExp("(^com:|:[^:]*$)",'g'),"")]}/admin`}> (admin page)</Link>
     },
 
-    listRoles(roles, communitiesList){
+    listRoles(roles, communitiesMapping) {
         return roles.map(r =>
             <li key={r.get('name')}>
                 {r.get('description')}
-                {r.get('name').includes(':admin')? this.createLink(communitiesList, r.get('name')) : ""}
+                {r.get('name').includes(':admin')? this.createLink(communitiesMapping, r.get('name')) : ""}
             </li>)
     },
 
@@ -129,11 +129,13 @@ export const UserProfile = React.createClass({
             return this.renderNoUser();
         }
         const roles = user.get('roles');
-        const communitiesListTemp = serverCache.getCommunities();
-        var communitiesList = communitiesListTemp.reduce(function(map, community){
-            map[community.get('id').replace(new RegExp("-",'g'),"")] = community.get('name');
-            return map;
-        });
+        const communitiesList = serverCache.getCommunities();
+        if (communitiesList.size) {
+            var communitiesMapping = communitiesList.reduce((map, community) => {
+                map[community.get('id').replace(new RegExp("-",'g'),"")] = community.get('name');
+                return map;
+            }, {});
+        }
         return (
             <div className="bottom-line">
                 <h1>User Profile</h1>
@@ -145,7 +147,7 @@ export const UserProfile = React.createClass({
                     <div className="row">
                         <h3>Roles</h3>
                         <p>
-                            {roles && roles.count() && typeof(communitiesList) !== "undefined" ? this.listRoles(roles, communitiesList) : "You have no assigned roles" }
+                            {(roles && roles.count() && communitiesMapping !== undefined) ? this.listRoles(roles, communitiesMapping) : "You have no assigned roles" }
                         </p>
                     </div>
                     <div className="row">
