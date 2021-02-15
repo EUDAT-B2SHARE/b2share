@@ -107,6 +107,9 @@ export const Schema = React.createClass({
             return <Wait/>;
         }
         const jschema = schema.get('json_schema');
+        if (jschema.code == 404) {
+            return <div>Community has no schema defined yet</div>
+        }
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(jschema);
 
         this.columnCount = this.determineColumnCount(jschema);
