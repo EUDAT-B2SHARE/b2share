@@ -761,13 +761,12 @@ class ServerCache {
         this.posters.draft.get(id).patch(patch, successFn, errorFn);
     }
 
-    removeDraft(draftID, succesFn) {
+    removeDraft(draftID, successFn) {
         ajaxDelete({
             url: apiUrls.draft(draftID),
             successFn: () => {
                 notifications.success("Draft record was successfully removed");
-                this.store.deleteIn('draftCache', draftID)
-                successFn();
+                this.store.deleteIn('draftCache', draftID);
             }
         });
     }

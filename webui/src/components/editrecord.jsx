@@ -963,7 +963,7 @@ const EditRecord = React.createClass({
     removeDraft(e) {
         e.preventDefault();
         if (confirm("Are you sure you want to delete this draft record?\n\nThis cannot be undone!")) {
-            serverCache.removeDraft(this.state.record.get('id'), browser.gotoProfile());
+            serverCache.removeDraft(this.props.record.get('id'), browser.gotoProfile());
         }
     },
 
@@ -980,7 +980,7 @@ const EditRecord = React.createClass({
     render() {
         const rootSchema = this.props.rootSchema;
         const blockSchemas = this.props.blockSchemas;
-        if (!this.state.record || !rootSchema) {
+        if (!this.props.record || !rootSchema) {
             return <Wait/>;
         }
         const editTitle = "Editing " + (this.props.isDraft ? "draft" : "record") + (this.props.isVersion ?  " version": "");
