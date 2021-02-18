@@ -105,9 +105,15 @@ class DataCiteSchemaV1(Schema):
         items = []
         disciplines = obj['metadata'].get('disciplines', [])
         for d in disciplines:
-            items.append({'subject': d})
+            if isinstance(d, str):
+                items.append({'subject': d})
+            elif 'discipline_name' in d:
+                items.append({'subject': d['discipline_name']})
         for s in obj['metadata'].get('keywords', []):
-            items.append({'subject': s})
+            if isinstance(s, str):
+                items.append({'subject': s})
+            elif 'keyword' in s:
+                items.append({'subject': s['keyword']})
         return items
 
     def get_rights(self, obj):
