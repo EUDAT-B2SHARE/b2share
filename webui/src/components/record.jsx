@@ -336,8 +336,6 @@ const Record = React.createClass({
                                 <PersistentIdentifier pid={pid} />
                             </p>
                         }
-                        { this.props.b2noteUrl && <B2NoteWidget record={this.props.record} showB2NoteWindow={this.showB2NoteWindow} b2noteUrl={this.props.b2noteUrl}/>
-                        }
                     </div>
 
                     <div className="col-sm-4 col-md-2">
