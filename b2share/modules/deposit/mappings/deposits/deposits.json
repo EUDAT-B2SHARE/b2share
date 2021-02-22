@@ -110,11 +110,6 @@
               }
             }
           },
-          "keywords" : {
-            "index": "analyzed",
-            "type" : "string",
-            "analyzer": "english"
-          },
           "contributors" : {
             "properties" : {
               "contributor_name" : {
