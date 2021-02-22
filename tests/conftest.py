@@ -229,7 +229,7 @@ def test_communities(app, tmp_location):
         db.session.merge(tmp_location)
         db.session.commit()
         # load root schemas
-        load_root_schemas()
+        load_root_schemas(ignore_mismatches=True)
         # load the demo
         load_demo_data(os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
