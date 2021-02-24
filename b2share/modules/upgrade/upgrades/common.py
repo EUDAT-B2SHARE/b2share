@@ -88,7 +88,7 @@ def queues_declare(alembic, verbose):
 
 def schemas_init(alembic, verbose):
     """Load root schemas."""
-    load_root_schemas(cli=True, verbose=verbose)
+    load_root_schemas(cli=True, verbose=verbose, ignore_mismatches=True)
 
 
 def fix_communities(alembic, verbose):

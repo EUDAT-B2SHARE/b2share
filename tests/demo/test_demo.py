@@ -43,7 +43,7 @@ def test_demo_cmd_load(app):
 
         # Run 'load' command
         with runner.isolated_filesystem():
-            result = runner.invoke(schemas_cmd, ['init'], obj=script_info)
+            result = runner.invoke(schemas_cmd, ['init', '--ignore-mismatches'], obj=script_info)
             assert result.exit_code == 0
             result = runner.invoke(demo_cmd, ['load_data'], obj=script_info)
             assert result.exit_code == 0

@@ -118,7 +118,7 @@ def test_new_community_set_schema_cmd(app, login_user, tmp_location):
             assert result.exit_code != 0
 
             # initialize the root schema in the test environment
-            result = runner.invoke(schemas_cmd, ['init'], obj=script_info)
+            result = runner.invoke(schemas_cmd, ['init', '--ignore-mismatches'], obj=script_info)
             assert result.exit_code == 0
 
             # Make custom schema via cli

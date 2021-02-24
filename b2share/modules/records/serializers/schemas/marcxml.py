@@ -65,8 +65,7 @@ class RecordSchemaMarcXMLV1(Schema):
         lambda o: [dict(summary=x.get('description'))
                    for x in o['metadata'].get('descriptions', [])])
 
-    study_program_information_note = fields.Function(
-        lambda o: [dict(program_name=o['metadata'].get('disciplines', []))])
+    study_program_information_note = fields.Method('get_study_program_info')
 
     terms_governing_use_and_reproduction_note = fields.Function(
         lambda o: dict(terms_governing_use_and_reproduction=
@@ -80,9 +79,7 @@ class RecordSchemaMarcXMLV1(Schema):
     language_note = fields.Function(
         lambda o: [dict(language_note=o['metadata'].get('language'))])
 
-    index_term_uncontrolled = fields.Function(
-        lambda o: [dict(uncontrolled_term=x) for x in o['metadata'].get('keywords', [])])
-
+    index_term_uncontrolled = fields.Method('get_index_term_uncontrolled')
 
     electronic_location_and_access = fields.Function(
         lambda o: [dict(uniform_resource_identifier=f['ePIC_PID'],
@@ -96,6 +93,20 @@ class RecordSchemaMarcXMLV1(Schema):
     embargo_date = fields.Raw(attribute='metadata.embargo_date')
 
     _oai = fields.Raw(attribute='metadata._oai')
+
+    def get_study_program_info(self, o):
+        disciplines = o['metadata'].get('disciplines')
+        if disciplines and isinstance(disciplines[0], str): # root schema v0
+            return [dict(program_name=o) for o in disciplines]
+        else:
+            return [dict(program_name=o['discipline_name']) for o in disciplines]   # root schema v1
+
+    def get_index_term_uncontrolled(self, o):
+        keywords = o['metadata'].get('keywords')
+        if keywords and isinstance(keywords[0], str): # root schema v0
+            return [dict(uncontrolled_term=o) for o in keywords]
+        else:
+            return [dict(uncontrolled_term=o['keyword']) for o in keywords]   # root schema v1
 
 
     def get_other_standard_identifier(self, o):

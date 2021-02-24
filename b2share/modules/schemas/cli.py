@@ -423,7 +423,7 @@ def update_or_set_community_root_schema(community, root_schema_version):
     click.secho("Succesfully processed root schema", fg='green')
 
 
-def _update_community_schema(community, comm_schema_json, schema_dict):
+def _update_community_schema(community, comm_schema_json, schema_dict, root_schema_version=None):
     with current_app.test_request_context('/', base_url=get_base_url()):
         block_schema_id = comm_schema_json['properties'].popitem()[0]
         try:
@@ -439,7 +439,7 @@ def _update_community_schema(community, comm_schema_json, schema_dict):
         comm_schema_json['properties'][str(block_schema.id)] = {
             '$ref': block_schema_version_url,
         }
-        return CommunitySchema.create_version(community.id, comm_schema_json)
+        return CommunitySchema.create_version(community.id, comm_schema_json, root_schema_version)
 
 def _create_community_schema_no_block(community, root_schema_version):
     with current_app.test_request_context('/', base_url=get_base_url()):

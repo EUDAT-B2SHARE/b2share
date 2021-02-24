@@ -38,7 +38,6 @@ def md_getter(attribute):
 def md_subgetter_as_list(attribute, subattribute):
     return lambda record: [x.get(subattribute) for x in record['metadata'].get(attribute, [])]
 
-
 def record_url(pid_value):
     return url_for('b2share_records_rest.b2rec_item',
         pid_value=pid_value, _external=True)
@@ -51,7 +50,8 @@ class RecordSchemaDublinCoreV1(Schema):
     titles = fields.Function(md_subgetter_as_list('titles', 'title'))
     creators = fields.Function(md_subgetter_as_list('creators', 'creator_name'))
     descriptions = fields.Function(md_subgetter_as_list('descriptions', 'description'))
-    subjects = fields.Function(md_getter('keywords'))
+
+    subjects = fields.Method('get_subjects')
     contributors = fields.Function(md_subgetter_as_list('contributors', 'contributor_name'))
     types = fields.Function(md_subgetter_as_list('resource_types', 'resource_type_general'))
 
@@ -59,6 +59,13 @@ class RecordSchemaDublinCoreV1(Schema):
     dates = fields.Method('get_dates')
     publishers = fields.Function(md_getter_as_list('publisher'))
     languages = fields.Function(md_getter_as_list('language'))
+
+    def get_subjects(self, obj):
+        keywords = obj['metadata'].get('keywords')
+        if keywords and isinstance(keywords[0], str): # root schema v0
+            return keywords
+        else:
+            return [o['keyword'] for o in keywords]   # root schema v1
 
     def get_identifiers(self, obj):
         """Get identifiers."""

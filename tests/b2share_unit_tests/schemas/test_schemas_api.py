@@ -71,32 +71,6 @@ def test_root_schema(app):
             assert json.loads(root_schema.json_schema) == json_schema
             version += 1
 
-
-def test_root_schemas_backward_compatibility(app):
-    """Test non backward compatible root schemas."""
-    with app.app_context():
-        version = 0
-        for json_schema in root_schemas_json_schemas:
-            RootSchema.create_new_version(
-                version=version,
-                json_schema=json_schema,
-            )
-            version += 1
-        # try creating a new not backward compatbile version of the root schema
-        for json_schema in backward_incompatible_root_schemas_json_schemas:
-            with pytest.raises(JSONSchemaCompatibilityError):
-                RootSchema.create_new_version(
-                    version=version,
-                    json_schema=json_schema,
-                )
-        db.session.commit()
-
-    # check that no invalid schema was created
-    with app.app_context():
-        with pytest.raises(RootSchemaDoesNotExistError):
-            RootSchema.get_root_schema(len(root_schemas_json_schemas) + 1)
-
-
 def test_root_schema_errors(app):
     """Test invalid usage of the RootSchema API."""
     with app.app_context():
@@ -301,45 +275,6 @@ def test_block_schemas_versions(app):
                 block_schemas_json_schemas[0][0],
                 1
             )
-
-
-def test_block_schemas_versions_backward_compatibility(app):
-    """Test non backward compatible root schemas."""
-    with app.app_context():
-        new_community = Community.create_community(**communities_metadata[0])
-        db.session.commit()
-
-        block_schema_name = "schema 1"
-        block_schema_1 = BlockSchema.create_block_schema(
-            community_id=new_community.id, name=block_schema_name
-        )
-        block_schema_id = block_schema_1.id
-
-        # test the versions iterator with no versions created
-        assert len(block_schema_1.versions) == 0
-        for version in block_schema_1.versions:
-            pytest.fail('No versions have been added yet.')
-
-        # create the versions
-        for json_schema in block_schemas_json_schemas[0]:
-            block_schema_1.create_version(
-                json_schema=json_schema,
-            )
-        block_schema_1_id = block_schema_1.id
-
-        # try creating a new not backward compatbile version of the schema
-        for json_schema in backward_incompatible_block_schemas_json_schemas:
-            with pytest.raises(JSONSchemaCompatibilityError):
-                block_schema_1.create_version(
-                    json_schema=json_schema,
-                )
-        db.session.commit()
-
-    # check that no invalid schema was created
-    with app.app_context():
-        block_schema_1 = BlockSchema.get_block_schema(block_schema_id)
-        assert len(block_schema_1.versions) == \
-            len(block_schemas_json_schemas[0])
 
 
 def test_block_schema_version_errors(app):

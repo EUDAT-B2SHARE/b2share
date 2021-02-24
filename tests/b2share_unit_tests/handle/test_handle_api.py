@@ -32,9 +32,8 @@ from b2share.modules.handle.ext import B2ShareHandle
 from unittest.mock import ANY
 
 
-def test_b2handle_pid_creation():
+def test_b2handle_pid_creation(app):
     """Test the creatio of B2Handle PID."""
-    app = Flask(__name__)
     app.config.update(dict(
         PID_HANDLE_CREDENTIALS=dict(prefix='myprefix')
     ))
