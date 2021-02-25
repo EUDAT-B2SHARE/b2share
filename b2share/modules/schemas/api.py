@@ -110,6 +110,7 @@ class RootSchema(Schema):
 
         if 'definitions' in json_schema:
             json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
+            del json_schema['definitions']
 
         validate_json_schema(json_schema, prev_schemas, options)
 
@@ -169,6 +170,7 @@ class RootSchema(Schema):
         # resolve references if definitions present
         if 'definitions' in json_schema:
             json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
+            del json_schema['definitions']
 
         validate_json_schema(json_schema, [existing_schema.json_schema], options)
 
