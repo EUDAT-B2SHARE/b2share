@@ -197,18 +197,18 @@ class EudatCoreSchema(object):
         if 'spatial_coverages' in metadata:
             covs = metadata['spatial_coverages']
             spatialCoverages = E.spatialCoverages()
-            spatialCoverage = E.spatialCoverage()
+            for cov in covs:
+                spatialCoverage = E.spatialCoverage()
+                if 'places' in cov:
+                    for place in covs['places']:
+                        spatialCoverage.append(E.geoLocationPlace(place))
 
-            if 'places' in covs:
-                for place in covs['places']:
-                    spatialCoverage.append(E.geoLocationPlace(place))
+                if 'point' in cov:
+                    for point in covs['points']:
+                        spatialCoverage.append(geo_location_point(point))
 
-            if 'points' in covs:
-                for point in covs['points']:
-                    spatialCoverage.append(geo_location_point(point))
-
-            if 'boxes' in covs:
-                for box in covs['boxes']:
+                if 'box' in cov:
+                    box = cov['box']
                     b = E.geoLocationBox(
                         E.westBoundLongitude(box['westbound_longitude']),
                         E.eastBoundLongitude(box['eastbound_longitude']),
@@ -217,13 +217,12 @@ class EudatCoreSchema(object):
                     )
                     spatialCoverage.append(b)
 
-            if 'polygons' in covs:
-                for polygon in covs['polygons']:
+                if 'polygon' in cov:
                     p = E.geoLocationPolygon()
-                    for point in polygon:
+                    for point in cov['polygon']:
                         p.append(geo_location_point(point))
-                spatialCoverage.append(p)
-            spatialCoverages.append(spatialCoverage)
+                    spatialCoverage.append(p)
+                spatialCoverages.append(spatialCoverage)
             root.append(spatialCoverages)
 
     def temporal_coverages(self, metadata, root):
