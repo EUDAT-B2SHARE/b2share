@@ -23,6 +23,10 @@
                 "type": "string",
                 "enum": ["Audiovisual", "Collection", "Dataset", "Event", "Image", "InteractiveResource", "Model", "PhysicalObject", "Service", "Software", "Sound", "Text", "Workflow", "Other"]
             },
+            "funderIdentifierType": {
+                "type": "string",
+                "enum": ["ISNI", "GRID", "ROR", "Crossref Funder ID", "Other"]
+            },
             "scheme": {
                 "scheme": {
                     "title": "Scheme",
@@ -150,12 +154,6 @@
                 },
                 "required": ["westbound_longitude", "eastbound_longitude", "northbound_latitude", "southbound_latitude"]
             },
-            "spatialCoveragePolygon": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/definitions/spatialCoveragePoint"
-                }
-            },
             "temporalCoverageStartEndDate": {
                 "type": "object",
                 "properties": {
@@ -249,18 +247,18 @@
                 "items": {
                     "type": "object",
                     "properties": {
-                        "resource_type": {
+                        "resource_type_general": {
                             "$ref": "#/definitions/resourceType",
                             "title": "Type"
                         },
-                        "resource_description": {
+                        "resource_type_description": {
                             "title": "Description",
-                            "description": "An optional description of the resource.",
+                            "description": "An optional description of the resource type.",
                             "type": "string"
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["resource_type"]
+                    "required": ["resource_type_general"]
                 },
                 "minItems": 1,
                 "uniqueItems": true
@@ -536,45 +534,37 @@
             },
             "spatial_coverages": {
                 "title": "Spatial coverages",
-                "description": "The spatial coverage of the contents of the resource.",
-                "type": "object",
-                "properties": {
-                    "places": {
-                        "title": "Places",
-                        "description": "Any locations related to the resource.",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/spatialCoveragePlace"
+                "description": "The spatial coverages of the contents of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "places": {
+                            "title": "Places",
+                            "description": "Spatial region or named place where the data was gathered or about which the data is focused.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/spatialCoveragePlace"
+                            },
+                            "uniqueItems": true
                         },
-                        "uniqueItems": true
-                    },
-                    "points": {
-                        "title": "Points",
-                        "description": "Any locations related to the resource.",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/spatialCoveragePoint"
+                        "point": {
+                            "$ref": "#/definitions/spatialCoveragePoint",
+                            "description": "A point contains a single latitude-longitude pair."
                         },
-                        "uniqueItems": true
-                    },
-                    "boxes": {
-                        "title": "Boxes",
-                        "description": "Any locations related to the resource.",
-                        "type": "array",
-                        "items": {
+                        "box": {
+                            "title": "Boxes",
+                            "description": "A bounding box defined by two points.",
                             "$ref": "#/definitions/spatialCoverageBox"
                         },
-                        "uniqueItems": true
-                    },
-                    "polygons": {
-                        "title": "Polygons",
-                        "description": "Any locations related to the resource.",
-                        "type": "array",
-                        "items": {
+                        "polygon": {
                             "title": "Polygon",
-                            "$ref": "#/definitions/spatialCoveragePolygon"
-                        },
-                        "uniqueItems": true
+                            "description": "A drawn polygon area, defined by a set of points and lines connecting the points in a closed chain.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/spatialCoveragePoint"
+                            }
+                        }
                     }
                 },
                 "uniqueItems": true
@@ -618,24 +608,16 @@
                             "$ref": "#/definitions/nonEmptyString"
                         },
                         "funder_identifier": {
-                            "title": "Identifier",
-                            "type": "object",
-                            "properties": {
-                                "identifier": {
-                                    "type": "string",
-                                    "description": "The unique identifier of the funder."
-                                },
-                                "identifier_type": {
-                                    "title": "Type",
-                                    "type": "string",
-                                    "description": "The type of the identifier of the funder.",
-                                    "enum": ["ISNI", "GRID", "ROR", "Crossref Funder ID", "Other"]
-                                },
-                                "scheme_uri": {
-                                    "$ref": "#/definitions/schemeUri"
-                                }
-                            },
-                            "required": ["identifier", "identifier_type"]
+                            "type": "string",
+                            "description": "The unique identifier of the funder."
+                        },
+                        "funder_identifier_type": {
+                            "title": "Type",
+                            "description": "The type of the identifier of the funder.",
+                            "$ref": "#/definitions/funderIdentifierType"
+                        },
+                        "scheme_uri": {
+                            "$ref": "#/definitions/schemeUri"
                         },
                         "award_title": {
                             "title": "Award title",
@@ -644,19 +626,14 @@
                         },
                         "award_number": {
                             "title": "Award number",
-                            "type": "object",
-                            "properties": {
-                                "number": {
-                                    "type": "string",
-                                    "description": "The corresponding number of the award."
-                                },
-                                "award_uri": {
-                                    "title": "Award URI",
-                                    "description": "The URI pointing to the award.",
-                                    "type": "string",
-                                    "format": "uri"
-                                }
-                            }
+                            "type": "string",
+                            "description": "The corresponding number of the award."
+                        },
+                        "award_uri": {
+                            "title": "Award URI",
+                            "description": "The URI pointing to the award.",
+                            "type": "string",
+                            "format": "uri"
                         }
                     },
                     "required": ["funder_name"]
