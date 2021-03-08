@@ -59,10 +59,11 @@ class EudatCoreSchema(object):
         root.append(ret)
 
     def publication_year(self, obj, root):
-        if 'embargo_date' in obj:
-            root.append(E.publicationYear(obj['embargo_date'][:4]))
-        elif 'publication_date' in obj:
-            root.append(E.publicationYear(obj['publication_date'][:4]))
+        metadata = obj['metadata']
+        if 'embargo_date' in metadata:
+            root.append(E.publicationYear(metadata['embargo_date'][:4]))
+        elif 'publication_date' in metadata:
+            root.append(E.publicationYear(metadata['publication_date'][:4]))
         else:
             root.append(E.publicationYear(obj['created'][:4]))
 
@@ -114,18 +115,19 @@ class EudatCoreSchema(object):
                 languages.append(E.language(l))
             root.append(languages)
 
-    def formats(self, buckets, root):
-        formats = E.formats()
+    def formats(self, obj, root):
+        formats = set()
         ret = False
-        for bucket in buckets:
-            fres = ObjectVersion.get_by_bucket(bucket)
-            for f in fres:
-                split = f.basename.split('.')
-                if len(split) > 1:
-                    ret = True
-                    formats.append(E.format(split[len(split)-1]))
+        for f in obj['_files']:
+            split = f['key'].split('.')
+            if len(split) > 1:
+                ret = True
+                formats.add(split[len(split)-1])
         if ret:
-            root.append(formats)
+            fs = E.formats()
+            for f in formats:
+                fs.append(E.format(f))
+            root.append(fs)
 
     def disciplines(self, obj, root):
         if 'disciplines' in obj:
@@ -158,7 +160,7 @@ class EudatCoreSchema(object):
         if 'related_identifiers' in obj:
             rel = E.relatedIdentifiers()
             for i in obj['related_identifiers']:
-                rel.append(E.alternateIdentifier("{}:{}".format(i['related_identifier_type'], i['related_identifier'])))
+                rel.append(E.relatedIdentifier("{}:{}".format(i['related_identifier_type'], i['related_identifier'])))
             root.append(rel)
 
     def contributors(self, obj, root):
@@ -200,12 +202,11 @@ class EudatCoreSchema(object):
             for cov in covs:
                 spatialCoverage = E.spatialCoverage()
                 if 'places' in cov:
-                    for place in covs['places']:
+                    for place in cov['places']:
                         spatialCoverage.append(E.geoLocationPlace(place))
 
                 if 'point' in cov:
-                    for point in covs['points']:
-                        spatialCoverage.append(geo_location_point(point))
+                    spatialCoverage.append(geo_location_point(cov['point']))
 
                 if 'box' in cov:
                     box = cov['box']
@@ -229,16 +230,11 @@ class EudatCoreSchema(object):
         if 'temporal_coverages' in metadata:
             temporalCoverages = E.temporalCoverages()
             covs = metadata['temporal_coverages']
-            if 'start_end_dates' in covs:
-                for date in covs['start_end_dates']:
-                    tempCov = E.temporalCoverage()
-                    tempCov.append(E.startDate(date['start_date']), E.endDate(date['end_date']))
-                    temporalCoverages.append(tempCov)
             if 'ranges' in covs:
                 for r in covs['ranges']:
-                    tempCov = E.temporalCoverage(E.range(r['range']))
-                    if 'resolution' in r:
-                        tempCov.append(E.resolution(r['resolution']))
+                    tempCov = E.temporalCoverage()
+                    tempCov.append(E.startDate(r['start_date']))
+                    tempCov.append(E.endDate(r['end_date']))
                     temporalCoverages.append(tempCov)
             if 'spans' in covs:
                 for s in covs['spans']:
@@ -265,7 +261,7 @@ class EudatCoreSchema(object):
     }
 
     def dump_etree(self, pid, obj):
-        record_id = pid.pid_value[27:]
+        record_id = pid.pid_value
         metadata = obj['metadata']
         buckets = get_buckets(record_id)
         root = etree.Element('resource', nsmap=self.ns, attrib=self.root_attribs)
@@ -283,8 +279,9 @@ class EudatCoreSchema(object):
         self.subjects(metadata, root)
         self.disciplines(metadata, root)
         self.contributors(metadata, root)
-        self.formats(buckets, root)
+        self.formats(metadata, root)
         self.alternate_identifiers(metadata, root)
+        self.related_identifiers(metadata, root)
 
         self.spatial_coverages(metadata, root)
         self.temporal_coverages(metadata, root)

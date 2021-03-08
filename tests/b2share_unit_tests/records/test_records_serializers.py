@@ -25,10 +25,12 @@
 
 
 import pytest
+import pdb
 from b2share_unit_tests.helpers import (create_record, create_user)
 from b2share.modules.records.serializers import (
-    oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31)
+    oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31, eudatcore_v1)
 from invenio_indexer.api import RecordIndexer
+from b2share.modules.records.minters import make_record_url
 
 def make_record(test_records_data):
     creator = create_user('creator')
@@ -198,3 +200,70 @@ def test_records_serializers_datacite(app, test_records_data):
                'resource_type': x.text}
               for x in doc.xpath('//d:resourceType', namespaces=namespaces)]
         assert rt == record['resource_types']
+
+def test_records_serializers_eudatcore(app, test_records_data):
+    with app.app_context():
+        import types
+        pid, record = make_record(test_records_data)
+        def replace_refs(self):
+            return self
+        record.replace_refs = types.MethodType(replace_refs, record)
+
+        record['spatial_coverages'] = [
+            {'places': ['Turku']},
+            {'point': {'point_longitude': '-20', 'point_latitude': '30'}},
+            {'box': {
+                'westbound_longitude': '60',
+                'eastbound_longitude': '-30',
+                'northbound_latitude': '-80',
+                'southbound_latitude': '120'
+                }
+            },
+            {'polygon': [
+                {'point_latitude': '20', 'point_longitude': '20'},
+                {'point_latitude': '30', 'point_longitude': '30'},
+                {'point_latitude': '40', 'point_longitude': '40'}
+            ]}
+        ]
+        record['instruments'] = [{'instrument_name': 'Scalpel'}]
+        record['temporal_coverages'] = {
+            'ranges': [{'start_date': '1994-04-02', 'end_date': '1994-04-03'}],
+            'spans': ['1994-2021']
+        }
+        record['related_identifiers'] = [
+            {'related_identifier_type': 'URL',
+             'related_identifier': 'http://www.example.com'}
+        ]
+        xml = eudatcore_v1(pid=pid, record=record)
+
+        assert [t.text for t in xml.xpath('//titles/title')] == [t['title'] for t in record['titles']]
+        assert xml.xpath('//community')[0].text == 'MyTestCommunity1'
+        assert [t.text for t in xml.xpath('//identifiers')[0].xpath('//identifier')] == [
+            'pid:{}'.format(record['_pid'][2]['value']),
+            'doi:{}'.format(record['_pid'][3]['value']),
+            'url:{}'.format(make_record_url(record['_pid'][1]['value']))
+        ]
+        assert [t.text for t in xml.xpath('//publishers')[0].xpath('//publisher')] == [
+            'EUDAT B2SHARE',
+            record['publisher']
+        ]
+        assert xml.xpath('//publicationYear')[0].text == record['publication_date'][:4]
+        assert [c.text for c in xml.xpath('//creators/creator')] == [c['creator_name'] for c in record['creators']]
+        assert [i.text for i in xml.xpath('//instruments/instrument')] == [i['instrument_name'] for i in record['instruments']]
+        assert [s.text for s in xml.xpath('//subjects/subject')] == record['keywords']
+        assert [d.text for d in xml.xpath('//disciplines/discipline')] == record['disciplines']
+        assert [c.text for c in xml.xpath('//contributors/contributor')] == [c['contributor_name'] for c in record['contributors']]
+        assert [f.text for f in xml.xpath('//formats/format')] == list(set([f['key'].split('.')[1] for f in record['_files']]))
+        assert [i.text for i in xml.xpath('//alternateIdentifiers/alternateIdentifier')] == ["{}:{}".format(i['alternate_identifier_type'], i['alternate_identifier']) for i in record['alternate_identifiers']]
+        assert [i.text for i in xml.xpath('//relatedIdentifiers/relatedIdentifier')] == ["{}:{}".format(i['related_identifier_type'], i['related_identifier']) for i in record['related_identifiers']]        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPlace')[0].text == 'Turku'
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLongitude')[0].text == '-20'
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLatitude')[0].text == '30'
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationBox/westBoundLongitude')[0].text == '60'
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationBox/eastBoundLongitude')[0].text == '-30'
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationBox/northBoundLatitude')[0].text == '-80'
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationBox/southBoundLatitude')[0].text == '120'
+        assert [e.text for e in xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPolygon/geoLocationPoint/pointLatitude')] == ['20', '30', '40']
+        assert [e.text for e in xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPolygon/geoLocationPoint/pointLongitude')] == ['20', '30', '40']
+        assert xml.xpath('//temporalCoverages/temporalCoverage/startDate')[0].text == '1994-04-02'
+        assert xml.xpath('//temporalCoverages/temporalCoverage/endDate')[0].text == '1994-04-03'
+        assert xml.xpath('//temporalCoverages/temporalCoverage/span')[0].text == '1994-2021'

@@ -52,7 +52,7 @@ dc_v1 = DublinCoreSerializer(RecordSchemaDublinCoreV1, replace_refs=True)
 marcxml_v1 = MARCXMLSerializer(to_marc21, schema_class=RecordSchemaMarcXMLV1, replace_refs=True)
 oaipmh_oai_dc = dc_v1.serialize_oaipmh
 oaipmh_marc21_v1 = marcxml_v1.serialize_oaipmh
-eudatcore_v1 = XMLSerializer(EudatCoreSchema).serialize_oaipmh
+eudatcore_v1 = XMLSerializer(EudatCoreSchema, replace_refs=True).serialize_oaipmh
 
 # DOI record serializers.
 datacite_v31 = DataCite31Serializer(DataCiteSchemaV1, replace_refs=True)
