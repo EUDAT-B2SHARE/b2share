@@ -252,7 +252,7 @@ def test_records_serializers_eudatcore(app, test_records_data):
         assert [c.text for c in xml.xpath('//creators/creator')] == \
             [c['creator_name'] for c in record['creators']]
         assert [i.text for i in xml.xpath('//instruments/instrument')] == \
-            i['instrument_name'] for i in record['instruments']]
+            [i['instrument_name'] for i in record['instruments']]
         assert [s.text for s in xml.xpath('//subjects/subject')] == record['keywords']
         assert [d.text for d in xml.xpath('//disciplines/discipline')] == record['disciplines']
         assert [c.text for c in xml.xpath('//contributors/contributor')] == \
@@ -266,9 +266,9 @@ def test_records_serializers_eudatcore(app, test_records_data):
             ["{}:{}".format(i['related_identifier_type'], i['related_identifier']) \
                 for i in record['related_identifiers']]
         assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPlace')[0].text == 'Turku'
-        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLongitude')[0]
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLongitude')[0]\
         .text == '-20'
-        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLatitude')[0]
+        assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLatitude')[0]\
         .text == '30'
         assert xml.xpath(
             '//spatialCoverages/spatialCoverage/geoLocationBox/westBoundLongitude'
