@@ -263,7 +263,7 @@ class Deposit(InvenioDeposit):
                 except KeyError:
                     community_metadata = {}
                 for key in required:
-                    if properties[key]['type'] == 'boolean' and not key in community_metadata:
+                    if properties.get(key).get('type') == 'boolean' and not key in community_metadata:
                         community_metadata[key] = False
                 data['community_specific'] = {bs_id: community_metadata}
 

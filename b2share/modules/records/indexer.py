@@ -48,6 +48,15 @@ def record_to_index(record):
 def indexer_receiver(sender, json=None, record=None, index=None,
                      **dummy_kwargs):
     """Connect to before_record_index signal to transform record for ES."""
+
+    def string_to_object(val, field_name):
+        return {field_name: val}
+
+    if 'keywords' in json and isinstance(json['keywords'][0], str):
+        json['keywords'] = [string_to_object(s, 'keyword') for s in json['keywords']]
+    if 'disciplines' in json and isinstance(json['disciplines'][0], str):
+        json['disciplines'] = [string_to_object(s, 'discipline_name') for s in json['disciplines']]
+
     if 'external_pids' in json['_deposit']:
         # Keep the 'external_pids' if the record is a draft (deposit) or
         # if the files are public.
@@ -82,14 +91,5 @@ def indexer_receiver(sender, json=None, record=None, index=None,
         if record_buckets:
             json['_internal']['files_bucket_id'] = \
                 str(record_buckets[0].bucket_id)
-
-        def string_to_object(val, field_name):
-            return {field_name: val}
-
-        if 'keywords' in json and isinstance(json['keywords'][0], str):
-            json['keywords'] = [string_to_object(s, 'keyword') for s in json['keywords']]
-        if 'disciplines' in json and isinstance(json['disciplines'][0], str):
-            json['disciplines'] = [string_to_object(s, 'discipline_name') for s in json['disciplines']]
-
     except Exception:
         raise
