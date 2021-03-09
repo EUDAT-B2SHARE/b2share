@@ -41,21 +41,21 @@ class EudatCoreSchema(object):
         ret.append(E.identifier('url:{}'.format(make_record_url(record_id))))
         root.append(ret)
 
-    def titles(self, obj, root):
+    def titles(self, metadata, root):
         ret = E.titles()
-        for t in obj['titles']:
+        for t in metadata['titles']:
             ret.append(E.title(t['title']))
         root.append(ret)
 
-    def community(self, obj, root):
-        c = Community.get(id=obj['community'])
+    def community(self, metadata, root):
+        c = Community.get(id=metadata['community'])
         root.append(E.community(c.name))
 
-    def publishers(self, obj, root):
+    def publishers(self, metadata, root):
         ret = E.publishers()
         ret.append(E.publisher('EUDAT B2SHARE'))
-        if 'publisher' in obj:
-            ret.append(E.publisher(obj['publisher']))
+        if 'publisher' in metadata:
+            ret.append(E.publisher(metadata['publisher']))
         root.append(ret)
 
     def publication_year(self, obj, root):
@@ -67,58 +67,58 @@ class EudatCoreSchema(object):
         else:
             root.append(E.publicationYear(obj['created'][:4]))
 
-    def creators(self, obj, root):
-        if 'creators' in obj:
+    def creators(self, metadata, root):
+        if 'creators' in metadata:
             creators = E.creators()
-            for c in obj['creators']:
+            for c in metadata['creators']:
                 creators.append(E.creator(c['creator_name']))
             root.append(creators)
 
-    def instruments(self, obj, root):
-        if 'instruments' in obj:
+    def instruments(self, metadata, root):
+        if 'instruments' in metadata:
             instruments = E.instruments()
-            for i in obj['instruments']:
+            for i in metadata['instruments']:
                 instruments.append(E.instrument(i['instrument_name']))
             root.append(instruments)
 
-    def descriptions(self, obj, root):
-        if 'descriptions' in obj:
+    def descriptions(self, metadata, root):
+        if 'descriptions' in metadata:
             descriptions = E.descriptions()
-            for d in obj['descriptions']:
+            for d in metadata['descriptions']:
                 descriptions.append(E.description(d['description']))
             root.append(descriptions)
 
-    def resource_types(self, obj, root):
-        if 'resource_types' in obj:
+    def resource_types(self, metadata, root):
+        if 'resource_types' in metadata:
             ret = E.resourceTypes()
-            for r in obj['resource_types']:
+            for r in metadata['resource_types']:
                 if 'resource_type_general' in r:
                     ret.append(E.resourceType(r['resource_type_general']))
                 else:
                     ret.append(E.resourceType(r['resource_type']))
             root.append(ret)
 
-    def rights_list(self, obj, root):
-        if 'license' in obj:
+    def rights_list(self, metadata, root):
+        if 'license' in metadata:
             rights = E.rightsList()
-            rights.append(E.rights(obj['license']['license']))
+            rights.append(E.rights(metadata['license']['license']))
             root.append(rights)
 
-    def languages(self, obj, root):
-        if 'language' in obj:
+    def languages(self, metadata, root):
+        if 'language' in metadata:
             languages = E.languages()
-            languages.append(E.language(obj['language']))
+            languages.append(E.language(metadata['language']))
             root.append(languages)
-        if 'languages' in obj:
+        if 'languages' in metadata:
             languages = E.languages()
-            for l in obj['languages']:
+            for l in metadata['languages']:
                 languages.append(E.language(l))
             root.append(languages)
 
-    def formats(self, obj, root):
+    def formats(self, metadata, root):
         formats = set()
         ret = False
-        for f in obj['_files']:
+        for f in metadata['_files']:
             split = f['key'].split('.')
             if len(split) > 1:
                 ret = True
@@ -129,62 +129,60 @@ class EudatCoreSchema(object):
                 fs.append(E.format(f))
             root.append(fs)
 
-    def disciplines(self, obj, root):
-        if 'disciplines' in obj:
+    def disciplines(self, metadata, root):
+        if 'disciplines' in metadata:
             disciplines = E.disciplines()
-            for d in obj['disciplines']:
+            for d in metadata['disciplines']:
                 if 'discipline_name' in d:
                     disciplines.append(E.discipline(d['discipline_name']))
                 else:
                     disciplines.append(E.discipline(d))
             root.append(disciplines)
 
-    def subjects(self, obj, root):
-        if 'keywords' in obj:
+    def subjects(self, metadata, root):
+        if 'keywords' in metadata:
             subjects = E.subjects()
-            for s in obj['keywords']:
+            for s in metadata['keywords']:
                 if 'keyword' in s:
                     subjects.append(E.subject(s['keyword']))
                 else:
                     subjects.append(E.subject(s))
             root.append(subjects)
 
-    def alternate_identifiers(self, obj, root):
-        if 'alternate_identifiers' in obj:
+    def alternate_identifiers(self, metadata, root):
+        if 'alternate_identifiers' in metadata:
             alt = E.alternateIdentifiers()
-            for i in obj['alternate_identifiers']:
+            for i in metadata['alternate_identifiers']:
                 alt.append(E.alternateIdentifier("{}:{}".format(i['alternate_identifier_type'], i['alternate_identifier'])))
             root.append(alt)
 
-    def related_identifiers(self, obj, root):
-        if 'related_identifiers' in obj:
+    def related_identifiers(self, metadata, root):
+        if 'related_identifiers' in metadata:
             rel = E.relatedIdentifiers()
-            for i in obj['related_identifiers']:
+            for i in metadata['related_identifiers']:
                 rel.append(E.relatedIdentifier("{}:{}".format(i['related_identifier_type'], i['related_identifier'])))
             root.append(rel)
 
-    def contributors(self, obj, root):
-        if 'contributors' in obj:
+    def contributors(self, metadata, root):
+        if 'contributors' in metadata:
             contributors = E.contributors()
-            for c in obj['contributors']:
+            for c in metadata['contributors']:
                 contributors.append(E.contributor(c['contributor_name']))
             root.append(contributors)
 
-    def contacts(self, obj, root):
-        if 'contact_email' in obj:
+    def contacts(self, metadata, root):
+        if 'contact_email' in metadata:
             contacts = E.contacts()
-            contacts.append(E.contact((obj['contact_email'])))
+            contacts.append(E.contact((metadata['contact_email'])))
             root.append(contacts)
 
-    def sizes(self, buckets, root):
+    def sizes(self, metadata, root):
         sizes = E.sizes()
         n_files = 0
         total_size = 0
-        for bucket in buckets:
-            total_size += bucket.size
-            fres = ObjectVersion.get_by_bucket(bucket)
-            for object_version in fres:
-                n_files += 1
+        for f in metadata['_files']:
+            total_size += f['size']
+            n_files += 1
         if n_files > 0:
             sizes.append(E.size(human_readable_size(total_size)))
             sizes.append(E.size('{} file{}'.format(n_files, 's' if n_files>1 else '')))
@@ -261,9 +259,9 @@ class EudatCoreSchema(object):
     }
 
     def dump_etree(self, pid, obj):
-        record_id = pid.pid_value
         metadata = obj['metadata']
-        buckets = get_buckets(record_id)
+        print(obj['metadata']['community'])
+        record_id = [x for x in metadata['_pid'] if x['type'] == 'b2rec'][0]['value']
         root = etree.Element('resource', nsmap=self.ns, attrib=self.root_attribs)
         self.titles(metadata, root)
         self.community(metadata, root)
@@ -288,5 +286,5 @@ class EudatCoreSchema(object):
 
         self.contacts(metadata, root)
         self.version(metadata, root)
-        self.sizes(buckets, root)
+        self.sizes(metadata, root)
         return root
