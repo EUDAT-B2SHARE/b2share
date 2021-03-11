@@ -52,9 +52,9 @@ def indexer_receiver(sender, json=None, record=None, index=None,
     def string_to_object(val, field_name):
         return {field_name: val}
 
-    if 'keywords' in json and isinstance(json['keywords'][0], str):
-        json['keywords'] = [string_to_object(s, 'keyword') for s in json['keywords']]
-    if 'disciplines' in json and isinstance(json['disciplines'][0], str):
+    if 'keywords' in json and len(json['keywords']) > 0 and isinstance(json['keywords'][0], str):
+        json['keywords'] = [string_to_object(s, 'keyword') for s in json.get('keywords',)]
+    if 'disciplines' in json and len(json['disciplines'] > 0) and isinstance(json['disciplines'][0], str):
         json['disciplines'] = [string_to_object(s, 'discipline_name') for s in json['disciplines']]
 
     if 'external_pids' in json['_deposit']:

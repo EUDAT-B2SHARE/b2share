@@ -21,7 +21,7 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Upgrade recipe migrating B2SHARE from version 2.1.0 to 2.1.1."""
+"""Upgrade recipe migrating B2SHARE from version 2.1.7 to 2.2.0"""
 
 
 from __future__ import absolute_import, print_function
@@ -29,23 +29,27 @@ from __future__ import absolute_import, print_function
 import pkg_resources
 
 from ..api import UpgradeRecipe
-from .common import schemas_init, elasticsearch_index_destroy, elasticsearch_index_init, \
-    elasticsearch_index_reindex, queues_declare, fix_communities
-from b2share.modules.schemas.cli import update_or_set_community_root_schema
-from b2share.modules.communities.api import Community
-from b2share.modules.communities.models import create_roles_and_permissions, \
-    create_community_oaiset, Community
+from invenio_indexer.cli import reindex, run
+from invenio_search.cli import delete
+from .common import schemas_init, elasticsearch_index_init
+from invenio_indexer.api import RecordIndexer
+from invenio_records.models import RecordMetadata
+from invenio_search.proxies import current_search_client
 
 migrate_2_1_7_to_2_2_0 = UpgradeRecipe('2.1.7', '2.2.0')
 
-def upgrade_community_root_schemas(alembic, verbose):
-    for community in Community.query.all():
-        update_or_set_community_root_schema(community.id, 1)
+def delete_indices():
+    current_search_client.indices.delete(index='deposits')
+    current_search_client.indices.delete(index='records')
 
-for step in [schemas_init,
-             upgrade_community_root_schemas,
-             elasticsearch_index_destroy,
-             elasticsearch_index_init,
-             elasticsearch_index_reindex,
-             queues_declare]:
+def reindex_records():
+    def records():
+        """Record iterator."""
+        for record in RecordMetadata.query.values(RecordMetadata.id):
+            yield record[0]
+    RecordIndexer().bulk_index(records())
+    RecordIndexer().process_bulk_queue()
+
+
+for step in [schemas_init, delete_indices, elasticsearch_index_init, reindex_records]:
     migrate_2_1_7_to_2_2_0.step()(step)
