@@ -736,7 +736,11 @@ class CommunitySchema(object):
 
     @classmethod
     def get_all_community_schemas(cls, community_id=None):
-        comm = get_community_by_name_or_id(community_id)
+        try:
+            comm = get_community_by_name_or_id(community_id)
+        except:
+            # allow no community id
+            pass
         from .models import CommunitySchemaVersion as CommunitySchemaModel
         try:
             filters = []
