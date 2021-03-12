@@ -250,4 +250,3 @@ def community_policies_set(verbose, community, policy, enable=None, value=None):
     db.session.commit()
     if verbose:
         click.echo("Community policy '%s' updated" % policy)
->>>>>>> 19031bc32 (Add community policy update CLI command)
