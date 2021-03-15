@@ -1,0 +1,77 @@
+{
+    "id": "4ba7c0fd-1435-4313-9c13-4d888d60321a",
+    "description": "Herbarium data.",
+    "logo": "/img/communities/nrm.png",
+    "name": "NRM",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[nrm]": {
+                        "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[nrm]::0]#/json_schema"
+                    }
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "required": ["$BLOCK_SCHEMA_ID[nrm]"],
+                "additionalProperties": false
+            }
+        }
+    ],
+    "block_schemas": {
+        "nrm": {
+            "id": "fa52bec3-a847-4602-8af5-b8d41a5215bc",
+            "versions": [
+                {
+                    "title": "NRM Metadata",
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "description": "This is the blueprint of the metadata block specific for the NRM community",
+                    "type": "object",
+                    "properties": {
+                        "latitude": {
+                            "title": "Latitude",
+                            "type": "string",
+                            "description": "Only modern labels will typically carry coordinates."
+                        },
+                        "collector_name": {
+                            "title": "Collector name",
+                            "type": "string",
+                            "description": "Name of the collector shown on the label."
+                        },
+                        "species_name": {
+                            "title": "Species name",
+                            "type": "string",
+                            "description": "Species name displayed on the herbarium sheet label."
+                        },
+                        "uuid": {
+                            "title": "UUID",
+                            "type": "string",
+                            "description": "The unique identifier for the herbarium sheet shown in this image, typically corresponds to the herbarium sheet's catalogue number shown on the label."
+                        },
+                        "longitude": {
+                            "title": "Longitude",
+                            "type": "string",
+                            "description": "Only modern labels will typically carry coordinates."
+                        },
+                        "collection_date": {
+                            "title": "Collection date",
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Collection date shown on the label. This may be incomplete and/or show only year or year/month."
+                        },
+                        "locality": {
+                            "title": "Locality",
+                            "type": "string",
+                            "description": "Location at which the item shown in the image was collected. This may range from a country name to specific place names and descriptions."
+                        }
+                    },
+                    "required": [ "uuid", "species_name", "collector_name", "collection_date", "locality" ],
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

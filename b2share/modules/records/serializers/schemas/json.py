@@ -24,9 +24,9 @@
 """B2Share Records JSON schemas used for serialization."""
 
 from flask import g, current_app
-from marshmallow import Schema, fields, pre_dump
+from invenio_rest.serializer import BaseSchema as Schema
+from marshmallow import fields, pre_dump
 from b2share.modules.access.policies import allow_public_file_metadata
-from b2share.modules.deposit.api import generate_external_pids
 from b2share.modules.files.permissions import files_permission_factory
 from b2share.modules.records.utils import is_deposit
 from b2share.modules.records.minters import generate_doi
@@ -46,11 +46,12 @@ class DraftSchemaJSONV1(Schema):
     files = fields.Raw()
 
     @pre_dump
-    def filter_internal(self, data):
+    def filter_internal(self, data, **kwargs):
         """Remove internal fields from the record metadata."""
         external_pids = []
         bucket = None
         record = None
+
         # differentiating between search results and
         # single record requests
         if hasattr(g, 'record'):
@@ -58,6 +59,7 @@ class DraftSchemaJSONV1(Schema):
             if record.files:
                 bucket = record.files.bucket
             if is_deposit(record.model):
+                from b2share.modules.deposit.api import generate_external_pids
                 external_pids = generate_external_pids(record)
             # if it is a published record don't generate external pids
             # as they are immutable and stored in _deposit
@@ -73,9 +75,9 @@ class DraftSchemaJSONV1(Schema):
                 g.record_hit['_source'])
 
         if '_deposit' in data['metadata']:
-            if hasattr(g, 'record') and is_deposit(record.model) and current_app.config.get('AUTOMATICALLY_ASSIGN_DOI', False):
+            if hasattr(g, 'record') and is_deposit(record.model):# and current_app.config['AUTOMATICALLY_ASSIGN_DOI']:
                 # add future DOI string
-                data['metadata'].update({'$future_doi': generate_doi(data['metadata']['_deposit']['id']) })
+                data['b2share'] = {'future_doi': generate_doi(data['metadata']['_deposit']['id']) }
 
             data['metadata']['owners'] = data['metadata']['_deposit']['owners']
 
@@ -117,6 +119,8 @@ class DraftSchemaJSONV1(Schema):
             del data['metadata']['_oai']
         if '_internal' in data['metadata']:
             del data['metadata']['_internal']
+        if '_bucket' in data['metadata']:
+            del data['metadata']['_bucket']
         return data
 
 

@@ -1,0 +1,119 @@
+{
+    "description": "Ontological data.",
+    "id": "893fad89-dc4a-4f1b-a9ba-4240aa18e12b",
+    "name": "EUON",
+    "logo": "/img/communities/euon.png",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+        {
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "additionalProperties": false,
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[euon]": {
+                        "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[euon]::0]#/json_schema"
+                    }
+                },
+                "required": ["$BLOCK_SCHEMA_ID[euon]"],
+                "type": "object"
+            },
+            "root_schema_version": 0
+        }
+    ],
+    "block_schemas": {
+        "euon": {
+            "id": "c46a2f19-58fc-4487-9176-5c538e028e55",
+            "versions": [
+                {
+                    "title": "EUON Metadata",
+                    "description": "This is the blueprint of the metadata block specific for the EUON community",
+                    "properties": {
+                        "modificationDate": {
+                            "title": "Modification Date",
+                            "format": "date-time",
+                            "description": "Modification Date",
+                            "type": "string"
+                        },
+                        "hasOntologyLanguage": {
+                            "title": "Ontology Language",
+                            "default": "F-Logic",
+                            "description": "The language in which the ontology was developed",
+                            "type": "array",
+                            "items": {
+                                "enum": [
+									"english",
+                                    "F-Logic",
+                                    "KIF",
+                                    "LexGrid-XML",
+                                    "OCML",
+                                    "OBO",
+                                    "OMV:DAML-OIL",
+                                    "OMV:OWL",
+                                    "OMV:OWL-DL",
+                                    "OMV:OWL-Full",
+                                    "OMV:OWL-Lite",
+                                    "OMV:RDF-S",
+									"OWL",
+                                    "Prot\u00e9g\u00e9-Frames",
+									"Prot\u00e9g\u00e9 3.x",
+									"Prot\u00e9g\u00e9 4.3",
+                                    "RRF",
+									"TRIX",
+                                    "W3C:OWL_2",
+                                    "W3C:SKOS",
+                                    "Other..."
+                                ],
+                                "type": "string"
+                            },
+                            "uniqueItems": true
+                        },
+                        "hasDomain": {
+                            "title": "Ontology Domain",
+                            "description": "A category that describes the ontology, from a pre-defined list of categories",
+                            "type": "string"
+                        },
+                        "usedOntologyEngineeringTool": {
+                            "title": "Ontology Engineering Tool",
+                            "default": "Prot\u00e9g\u00e9",
+                            "description": "The tool that was used to develop the ontology",
+                            "type": "array",
+                            "items": {
+                                "enum": [
+                                    "Prot\u00e9g\u00e9",
+									"Prot\u00e9g\u00e9 3.x",
+                                    "Swoop",
+                                    "TopBraid Composer",
+                                    "OBO-Edit",
+                                    "OntoStudio",
+                                    "KAON",
+                                    "PoolParty Thesaurus Server",
+									"poolParty",
+									"XPATH2",
+									"Protege 4.3",
+                                    "Other...",
+									""
+                                ],
+                                "type": "string"
+                            },
+                            "uniqueItems": true
+                        },
+                        "creationDate": {
+                            "title": "Creation Date",
+                            "format": "date-time",
+                            "description": "Creation Date",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "additionalProperties": false,
+                    "required": [
+                        "hasDomain",
+                        "hasOntologyLanguage"
+                    ]
+                }
+            ]
+        }
+    }
+}

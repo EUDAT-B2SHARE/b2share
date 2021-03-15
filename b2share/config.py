@@ -1,5 +1,196 @@
 # -*- coding: utf-8 -*-
 #
+# Copyright (C) 2020 EUDAT.
+#
+# B2SHARE is free software; you can redistribute it and/or modify it under
+# the terms of the MIT License; see LICENSE file for more details.
+
+"""Default configuration for B2SHARE.
+
+You overwrite and set instance-specific configuration by either:
+
+- Configuration file: ``<virtualenv prefix>/var/instance/invenio.cfg``
+- Environment variables: ``APP_<variable name>``
+"""
+
+from __future__ import absolute_import, print_function
+
+import os
+from datetime import timedelta
+
+from b2share.modules.access.permissions import admin_only, authenticated_only
+from celery.schedules import crontab
+from flask import request
+
+from invenio_app.config import APP_DEFAULT_SECURE_HEADERS
+# from invenio_previewer.config import PREVIEWER_PREFERENCE as BASE_PREFERENCE
+from invenio_records_rest.utils import deny_all, allow_all
+
+from b2share.modules.oauthclient.b2access import make_b2access_remote_app
+from b2share.modules.records.search import B2ShareRecordsSearch
+from b2share.modules.records.permissions import (
+    UpdateRecordPermission, DeleteRecordPermission
+)
+from b2share.modules.deposit.permissions import (
+    CreateDepositPermission, ReadDepositPermission,
+    UpdateDepositPermission, DeleteDepositPermission,
+)
+from b2share.modules.deposit.loaders import deposit_patch_input_loader
+from b2share.modules.records.loaders import record_patch_input_loader
+from b2share.modules.users.loaders import (
+    account_json_loader, account_json_patch_loader,
+)
+
+from invenio_search.config import SEARCH_ELASTIC_HOSTS
+
+SEARCH_ELASTIC_HOSTS = []
+
+for elastic_host in os.environ.get("ELASTIC_HOSTS", "localhost:9200").split(','):
+    try:
+        (host, port) = elastic_host.split(':')
+    except:
+        host = elastic_host
+        port = 9200
+
+    SEARCH_ELASTIC_HOSTS.append(dict(host=host, port=port, use_ssl=False, ssl_show_warn=False))
+
+def _(x):
+    """Identity function used to trigger string extraction."""
+    return x
+
+# Rate limiting
+# =============
+#: Storage for ratelimiter.
+RATELIMIT_STORAGE_URL = os.environ.get("INVENIO_RATELIMIT_STORAGE_URL", 'redis://localhost:6379/3')
+
+# I18N
+# ====
+#: Default language
+BABEL_DEFAULT_LANGUAGE = 'en'
+#: Default time zone
+BABEL_DEFAULT_TIMEZONE = 'Europe/Zurich'
+#: Other supported languages (do not include the default language in list).
+I18N_LANGUAGES = [
+    # ('fr', _('French'))
+]
+
+# Base templates
+# ==============
+#: Global base template.
+BASE_TEMPLATE = 'b2share_main/base.html'
+#: Cover page base template (used for e.g. login/sign-up).
+COVER_TEMPLATE = 'invenio_theme/page_cover.html'
+#: Footer base template.
+MAIN_TEMPLATE = 'invenio_theme/footer.html'
+#: Header base template.
+HEADER_TEMPLATE = 'invenio_theme/header.html'
+#: Settings base template.
+SETTINGS_TEMPLATE = 'invenio_theme/page_settings.html'
+
+# Theme configuration
+# ===================
+#: Site name
+THEME_SITENAME = _('B2SHARE')
+#: Use default frontpage.
+THEME_FRONTPAGE = True
+#: Frontpage title.
+THEME_FRONTPAGE_TITLE = _('B2SHARE')
+#: Frontpage template.
+THEME_FRONTPAGE_TEMPLATE = 'b2share_main/page.html'
+
+# Email configuration
+# ===================
+#: Email address for support.
+SUPPORT_EMAIL = "info@eudat.eu"
+#: Disable email sending by default.
+MAIL_SUPPRESS_SEND = True
+
+# Assets
+# ======
+#: Static files collection method (defaults to copying files).
+COLLECT_STORAGE = 'flask_collect.storage.file'
+
+# Accounts
+# ========
+#: Email address used as sender of account registration emails.
+SECURITY_EMAIL_SENDER = SUPPORT_EMAIL
+#: Email subject for account registration emails.
+SECURITY_EMAIL_SUBJECT_REGISTER = _(
+    "Welcome to B2SHARE!")
+#: Redis session storage URL.
+CACHE_REDIS_URL=os.environ.get("INVENIO_CACHE_REDIS_URL", 'redis://localhost:6379/0')
+ACCOUNTS_SESSION_REDIS_URL = os.environ.get("INVENIO_ACCOUNTS_SESSION_REDIS_URL", 'redis://localhost:6379/1')
+#: Enable session/user id request tracing. This feature will add X-Session-ID
+#: and X-User-ID headers to HTTP response. You MUST ensure that NGINX (or other
+#: proxies) removes these headers again before sending the response to the
+#: client. Set to False, in case of doubt.
+ACCOUNTS_USERINFO_HEADERS = True
+
+# Database
+# ========
+#: Database URI including user and password
+SQLALCHEMY_DATABASE_URI = os.environ.get("INVENIO_SQLALCHEMY_DATABASE_URI", \
+    'postgresql+psycopg2://b2share:b2share@localhost/b2share')
+
+# JSONSchemas
+# ===========
+#: Hostname used in URLs for local JSONSchemas.
+JSONSCHEMAS_HOST = os.environ.get("JSONSCHEMAS_HOST", 'b2share.eudat.eu')
+
+# APPLICATION ROOT
+APPLICATION_ROOT = os.environ.get("APPLICATION_ROOT", '')
+
+# Flask configuration
+# ===================
+# See details on
+# http://flask.pocoo.org/docs/0.12/config/#builtin-configuration-values
+
+#: Secret key - each installation (dev, production, ...) needs a separate key.
+#: It should be changed before deploying.
+SECRET_KEY = 'CHANGE_ME'
+#: Max upload size for form data via application/mulitpart-formdata.
+MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100 MiB
+#: Sets cookie with the secure flag by default
+SESSION_COOKIE_SECURE = (os.environ.get('SESSION_COOKIE_SECURE', "True").upper() == "True".upper())
+#: Since HAProxy and Nginx route all requests no matter the host header
+#: provided, the allowed hosts variable is set to localhost. In production it
+#: should be set to the correct host and it is strongly recommended to only
+#: route correct hosts to the application.
+APP_ALLOWED_HOSTS = [ os.environ.get("SERVER_NAME", 'localhost'), os.environ.get("SERVER_INTERNAL_IP", '127.0.0.1') ]
+APP_ALLOWED_HOSTS = None
+# OAI-PMH
+# =======
+OAISERVER_ID_PREFIX = 'oai:b2share.eudat.eu:'
+
+# Previewers
+# ==========
+#: Include IIIF preview for images.
+# PREVIEWER_PREFERENCE = ['iiif_image'] + BASE_PREFERENCE
+
+# Debug
+# =====
+# Flask-DebugToolbar is by default enabled when the application is running in
+# debug mode. More configuration options are available at
+# https://flask-debugtoolbar.readthedocs.io/en/latest/#configuration
+
+#: Switches off incept of redirects by Flask-DebugToolbar.
+DEBUG_TB_INTERCEPT_REDIRECTS = False
+
+# Configures Content Security Policy for PDF Previewer
+# Remove it if you are not using PDF Previewer
+APP_DEFAULT_SECURE_HEADERS['content_security_policy'] = {
+    'default-src': ["'self'", "'unsafe-inline'"],
+    'object-src': ["'none'"],
+    'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+    'style-src': ["'self'", "'unsafe-inline'", "data:", "https://fonts.googleapis.com/css"],
+    'img-src': ["'self'", "data: blob:;"],
+    'font-src': ["'self'", "data:", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+}
+
+# ADDED:
+
+# -*- coding: utf-8 -*-
+#
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2015, 2016, University of Tuebingen, CERN.
 #
@@ -23,29 +214,6 @@
 
 """B2Share base Invenio configuration."""
 
-from __future__ import absolute_import, print_function
-
-import os
-from datetime import timedelta
-
-from b2share.modules.access.permissions import admin_only, authenticated_only
-from celery.schedules import crontab
-from flask import request
-from invenio_records_rest.utils import deny_all, allow_all
-from b2share.modules.oauthclient.b2access import make_b2access_remote_app
-from b2share.modules.records.search import B2ShareRecordsSearch
-from b2share.modules.records.permissions import (
-    UpdateRecordPermission, DeleteRecordPermission
-)
-from b2share.modules.deposit.permissions import (
-    CreateDepositPermission, ReadDepositPermission,
-    UpdateDepositPermission, DeleteDepositPermission,
-)
-from b2share.modules.deposit.loaders import deposit_patch_input_loader
-from b2share.modules.records.loaders import record_patch_input_loader
-from b2share.modules.users.loaders import (
-    account_json_loader, account_json_patch_loader,
-)
 
 
 SUPPORT_EMAIL = None # must be setup in the local instances
@@ -98,6 +266,17 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
 )
 
 
+#: Endpoint for uploading files.
+DEPOSIT_FILES_API = u'/api/files'
+#: Template for deposit list view.
+DEPOSIT_SEARCH_API = '/api/deposit/depositions'
+#: Template for deposit records API.
+DEPOSIT_RECORDS_API = '/api/deposit/depositions/{pid_value}'
+#: Records REST API endpoints.
+RECORDS_API = '/api/records/{pid_value}'
+#: Default API endpoint for search UI.
+SEARCH_UI_SEARCH_API = "/api/records/"
+
 DEPOSIT_REST_ENDPOINTS={} # We disable all endpoints as we will define our own custom REST API
 #: REST API configuration.
 DEPOSIT_PID = 'pid(b2dep,record_class="b2share.modules.deposit.api:Deposit")'
@@ -137,6 +316,9 @@ B2SHARE_DEPOSIT_REST_ENDPOINTS = dict(
 
 INDEXER_RECORD_TO_INDEX='b2share.modules.records.indexer:record_to_index'
 
+#: URL template for generating URLs outside the application/request context
+FILES_REST_ENDPOINT = '{scheme}://{host}/api/files/{bucket}/{key}'
+
 #: Files REST permission factory
 FILES_REST_PERMISSION_FACTORY = \
     'b2share.modules.files.permissions:files_permission_factory'
@@ -149,7 +331,6 @@ FILES_REST_STORAGE_CLASS_LIST = dict(
     S='Standard',
     A='Archived'
 )
-
 
 RECORDS_REST_DEFAULT_SORT = dict(
     records=dict(
@@ -197,10 +378,9 @@ RECORDS_REST_DEFAULT_DELETE_PERMISSION_FACTORY = \
 
 B2ACCESS_APP_CREDENTIALS = dict(
     # B2ACCESS authentication key and secret
-    consumer_key=os.environ.get("B2ACCESS_CONSUMER_KEY"),
-    consumer_secret=os.environ.get("B2ACCESS_SECRET_KEY"),
+    consumer_key=os.environ.get("B2ACCESS_CONSUMER_KEY", '*** CONSUMER KEY ***'),
+    consumer_secret=os.environ.get("B2ACCESS_SECRET_KEY", '*** SECRET KEY ***'),
 )
-
 
 B2ACCESS_BASE_URL = 'https://b2access.eudat.eu/'
 if os.environ.get("USE_STAGING_B2ACCESS"):
@@ -276,9 +456,9 @@ CACHE_TYPE='redis'
 # Celery
 # ======
 #: Default broker (RabbitMQ on locahost).
-BROKER_URL = "amqp://guest:guest@localhost:5672//"
+BROKER_URL = os.environ.get("INVENIO_CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
 #: Default Celery result backend.
-CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+CELERY_RESULT_BACKEND = os.environ.get("INVENIO_ACCOUNTS_SESSION_REDIS_URL", "redis://localhost:6379/1")
 #: Accepted content types for Celery.
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 #: Beat schedule
@@ -423,6 +603,7 @@ TRAINING_SITE_LINK = ""
 
 STATS_EVENTS = {
     'file-download': dict(
+        templates='invenio_stats.contrib.file_download',
         signal='invenio_files_rest.signals.file_downloaded',
         event_builders=[
             'invenio_stats.contrib.event_builders.file_download_event_builder'
@@ -458,3 +639,13 @@ SECURITY_SEND_REGISTER_EMAIL=False
 #: There is no password so don't send password change emails
 SECURITY_SEND_PASSWORD_CHANGE_EMAIL=False
 SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL=False
+
+# Extra (Harry Kodden)
+# When testing in HTTP, both cookie secure and CSRF enforcement is switched off
+APP_ENABLE_SECURE_HEADERS = (os.environ.get('SESSION_COOKIE_SECURE', "True").upper() == "True".upper())
+
+SESSION_COOKIE_PATH="/"
+SESSION_COOKIE_SAMESITE="Lax"
+
+APP_THEME = ['semantic-ui']
+SECURITY_CHANGEABLE = False

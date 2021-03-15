@@ -1,0 +1,72 @@
+{
+    "name": "RDA",
+    "description": "Research Data Alliance",
+    "logo": "/img/communities/rda.png",
+    "id": "8D963A29-5E19-492B-8CFE-97DA4F54FAD2",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": true,
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[rda]": {
+                        "$ref":
+                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[rda]::0]#/json_schema"
+                    }
+                },
+                "required": ["$BLOCK_SCHEMA_ID[rda]"],
+                "additionalProperties": false
+            }
+        }
+    ],
+    "block_schemas": {
+        "rda": {
+            "id": "668B996D-9E0E-4FFF-BE58-53D33316C5C6",
+            "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "title": "RDA Metadata",
+                    "description": "This is the blueprint of the metadata block specific for the RDA community",
+                    "type": "object",
+                    "properties": {
+                        "date": {
+                            "title": "Date",
+                            "description": "Date",
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "coverage": {
+                            "title": "Coverage",
+                            "description": "Coverage",
+                            "type": "string"
+                        },
+                        "format": {
+                            "title": "Format",
+                            "description": "Format",
+                            "type": "string"
+                        },
+                        "relation": {
+                            "title": "Relation",
+                            "description": "Relation",
+                            "type": "string"
+                        },
+                        "source": {
+                            "title": "Source",
+                            "description": "Source",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "b2share": {
+                        "presentation": {
+                            "major": [ "date", "coverage", "format", "relation", "source"]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

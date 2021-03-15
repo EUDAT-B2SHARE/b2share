@@ -32,22 +32,18 @@ from functools import partial
 from jsonpatch import apply_patch
 from flask_principal import UserNeed
 from invenio_access.permissions import (
-    superuser_access, ParameterizedActionNeed, DynamicPermission
+    superuser_access, ParameterizedActionNeed, Permission
 )
 from invenio_access.models import ActionUsers, ActionRoles
 from flask_security import current_user
 from invenio_accounts.models import userrole
-from b2share.modules.files.permissions import DepositFilesPermission
-from b2share.modules.deposit.api import generate_external_pids
 
 from flask import request, abort
 from b2share.modules.access.permissions import (AuthenticatedNeed,
                                                 OrPermissions, AndPermissions,
                                                 StrictDynamicPermission)
-from b2share.modules.communities.api import Community
 from invenio_db import db
 
-from .api import PublicationStates
 from .loaders import deposit_patch_input_loader
 
 
@@ -158,6 +154,9 @@ class CreateDepositPermission(AndPermissions):
         self.record = record
         if record is not None:
             needs = set()
+
+            from b2share.modules.communities.api import Community
+
             community = Community.get(record['community'])
             publication_state = record.get('publication_state', 'draft')
             if publication_state != 'draft' or community.restricted_submission:
@@ -225,7 +224,7 @@ class ReadDepositPermission(DepositPermission):
             community=self.deposit['community'],
             publication_state=self.deposit['publication_state'],
         ))
-        permission = DynamicPermission(*needs)
+        permission = Permission(*needs)
         self.permissions.add(permission)
 
 
@@ -268,11 +267,15 @@ class UpdateDepositPermission(DepositPermission):
     """Deposit update permission."""
 
     def _load_additional_permissions(self):
+
+        from b2share.modules.deposit.api import generate_external_pids, PublicationStates
+
         permissions = []
         new_deposit = None
         # Check submit/publish actions
         if (request.method == 'PATCH' and
             request.content_type == 'application/json-patch+json'):
+
             # FIXME: need some optimization on Invenio side. We are applying
             # the patch twice
             patch = deposit_patch_input_loader(self.deposit)
@@ -303,6 +306,7 @@ class UpdateDepositPermission(DepositPermission):
                     new_state=new_deposit['publication_state']
                 )
             )
+
             # Owners of a record can always "submit" it.
             if (self.deposit['publication_state'] == PublicationStates.draft.name and
                 new_deposit['publication_state'] == PublicationStates.submitted.name or
@@ -329,6 +333,8 @@ class UpdateDepositPermission(DepositPermission):
                 )
 
             if external_pids_changed:
+                from b2share.modules.files.permissions import DepositFilesPermission
+
                 permissions.append(
                     DepositFilesPermission(self.deposit, 'bucket-update')
                 )

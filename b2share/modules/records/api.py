@@ -23,23 +23,17 @@
 
 """B2Share Record API."""
 
-from elasticsearch.exceptions import NotFoundError
-from invenio_db import db
 from invenio_pidstore.resolver import Resolver
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
-from invenio_records.models import RecordMetadata
 from invenio_records_files.models import RecordsBuckets
-from invenio_records.api import Record
-# from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
-from b2share.modules.deposit.providers import DepositUUIDProvider
-from b2share.modules.records.fetchers import b2share_record_uuid_fetcher
 from invenio_indexer.api import RecordIndexer
 from invenio_pidrelations.contrib.versioning import PIDVersioning
+from invenio_records_files.api import Record, FileObject
+from invenio_files_rest.models import Bucket
 
-from invenio_records_files.api import Record, FilesIterator, FileObject
-from invenio_records_files.utils import sorted_files_from_bucket
-from invenio_files_rest.models import Bucket, ObjectVersion, FileInstance
+from b2share.modules.deposit.providers import DepositUUIDProvider
 
+from .fetchers import b2share_record_uuid_fetcher
 
 class B2ShareFileObject(FileObject):
     """Wrapper for B2Share files."""
@@ -73,7 +67,7 @@ class B2ShareRecord(Record):
         return PersistentIdentifier.get(pid.pid_type,
                                         pid.pid_value)
 
-    def delete(self):
+    def delete(self, **kwargs):
         """Delete a record."""
         from b2share.modules.deposit.api import Deposit
         pid = self.pid

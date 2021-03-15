@@ -1,0 +1,85 @@
+{
+    "logo": "/img/communities/eiscat.png",
+    "description": "Incoherent scatter radar data",
+    "id": "b344f92a-cd0e-4e4c-aa09-28b5f95f7e41",
+    "name": "EISCAT",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": true,
+    "community_schemas": [
+        {
+            "json_schema": {
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[eiscat]": {
+                        "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[eiscat]::0]#/json_schema"
+                    }
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "required": ["$BLOCK_SCHEMA_ID[eiscat]"],
+                "additionalProperties": false
+            },
+            "root_schema_version": 0
+        }
+    ],
+    "block_schemas": {
+        "eiscat": {
+            "id": "cee77dd0-9149-4a7b-9c28-85a8f7052bd9",
+            "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "type": "object",
+                    "title": "EISCAT Metadata",
+                    "description": "This is the blueprint of the metadata block specific for the EISCAT community",
+                    "properties": {
+                        "end_time": {
+                            "description": "Timeserie end time",
+                            "type": "string",
+                            "title": "End time"
+                        },
+                        "kind_of_data_file": {
+                            "description": "Kind of data file",
+                            "type": "string",
+                            "title": "Kind of data file"
+                        },
+                        "latitude": {
+                            "description": "Instrument latitude",
+                            "type": "string",
+                            "title": "Instrument latitude"
+                        },
+                        "longitude": {
+                            "description": "Instrument longitude",
+                            "type": "string",
+                            "title": "Instrument longitude"
+                        },
+                        "status": {
+                            "description": "Status description",
+                            "type": "string",
+                            "title": "Status description"
+                        },
+                        "instrument": {
+                            "description": "Instrument name",
+                            "type": "string",
+                            "title": "Instrument name"
+                        },
+                        "kindat": {
+                            "description": "kindat",
+                            "type": "string",
+                            "title": "kindat"
+                        },
+                        "start_time": {
+                            "description": "Timeserie start time",
+                            "type": "string",
+                            "title": "Start time"
+                        },
+                        "altitude": {
+                            "description": "Instrument altitude",
+                            "type": "string",
+                            "title": "Instrument altitude"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

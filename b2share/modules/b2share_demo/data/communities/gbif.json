@@ -1,0 +1,61 @@
+{
+    "name": "GBIF",
+    "id": "867c4e67-9227-4b6f-8595-c97d37e9de61",
+    "description": "Biodiversity data.",
+    "logo": "/img/communities/gbif.png",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "additionalProperties": false,
+                "required": ["$BLOCK_SCHEMA_ID[gbif]"],
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[gbif]": {
+                        "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[gbif]::0]#/json_schema"
+                    }
+                }
+            }
+        }
+    ],
+    "block_schemas": {
+        "gbif": {
+            "id": "e06cafbc-0598-4dd8-9029-9bf1f74d8b2e",
+            "versions": [
+                {
+                    "type": "object",
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "additionalProperties": false,
+                    "properties": {
+                        "status": {
+                            "type": "string",
+                            "description": "Endorsement status",
+                            "title": "Status"
+                        },
+                        "gbif_id": {
+                            "type": "string",
+                            "description": "Refers to GBIF metadataset",
+                            "title": "GBIF ID"
+                        },
+                        "version_number": {
+                            "type": "string",
+                            "description": "Version number",
+                            "title": "Version number"
+                        },
+                        "country": {
+                            "type": "string",
+                            "description": "Country",
+                            "title": "Country"
+                        }
+                    },
+                    "title": "GBIF Metadata",
+                    "description": "This is the blueprint of the metadata block specific for the GBIF community",
+                    "required": [ "version_number", "gbif_id", "country", "status" ]
+                }
+            ]
+        }
+    }
+}

@@ -35,15 +35,11 @@ from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.datacite import DataCiteProvider
 from invenio_records_files.api import Record
 
-from b2share.modules.deposit.api import create_file_pids
-from b2share.modules.records.serializers import datacite_v31
-from b2share.modules.records.providers import RecordUUIDProvider
-from b2share.modules.records.minters import make_record_url, b2share_pid_minter
-from b2share.modules.communities.api import Community
-from b2share.modules.records.tasks import update_expired_embargoes \
-    as update_expired_embargoes_task
+from .serializers import datacite_v31
+from .providers import RecordUUIDProvider
+from .minters import make_record_url, b2share_pid_minter
+from .tasks import update_expired_embargoes as update_expired_embargoes_task
 from .utils import list_db_published_records
-from b2share.modules.handle.proxies import current_handle
 
 
 @click.group()
@@ -71,6 +67,8 @@ def check_and_update_handle_records(update, verbose):
 
     if verbose:
         click.secho('checking PIDs for all records')
+
+    from b2share.modules.handle.proxies import current_handle
 
     for record in list_db_published_records():
         pid_list = [p.get('value') for p in record['_pid']
@@ -136,6 +134,8 @@ def check_handles(update, record_pid):
             files_ok = False
 
     if update and not files_ok:
+        from b2share.modules.deposit.api import create_file_pids
+
         create_file_pids(record)
         record_updated = True
         click.secho('    files updated with handles', fg='green')

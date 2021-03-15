@@ -49,8 +49,6 @@ from invenio_records_rest.views import (pass_record,
 from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.query import default_search_factory
 from invenio_records_rest.utils import obj_or_import_string
-from invenio_mail import InvenioMail
-from flask_mail import Message
 from invenio_mail.tasks import send_email
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_accounts.models import User
@@ -58,10 +56,8 @@ from invenio_accounts.models import User
 from b2share.modules.records.providers import RecordUUIDProvider
 from b2share.modules.deposit.serializers import json_v1_response as \
     deposit_serializer
-from b2share.modules.deposit.api import Deposit, copy_data_from_previous
 from b2share.modules.deposit.errors import RecordNotFoundVersioningError, \
     IncorrectRecordVersioningError
-from b2share.modules.records.permissions import DeleteRecordPermission
 
 
 # duplicated from invenio-records-rest because we need
@@ -206,7 +202,7 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
     from b2share.modules.deposit.api import Deposit
 
     list_view = B2ShareRecordsListResource.as_view(
-        RecordsListResource.view_name.format(endpoint),
+        B2ShareRecordsListResource.view_name.format(endpoint),
         resolver=resolver,
         minter_name=pid_minter,
         pid_type=pid_type,
@@ -292,6 +288,11 @@ def create_url_rules(endpoint, list_route=None, item_route=None,
 class B2ShareRecordsListResource(RecordsListResource):
     """B2Share resource for records listing and deposit creation."""
 
+    def __init__(self, resolver=None, **kwargs):
+        """Constructor."""
+        super(B2ShareRecordsListResource, self).__init__(**kwargs)
+        self.resolver = resolver
+
     def post(self, **kwargs):
         """Create a record.
 
@@ -300,6 +301,8 @@ class B2ShareRecordsListResource(RecordsListResource):
         # import deposit dependencies here in order to avoid recursive imports
         from b2share.modules.deposit.links import deposit_links_factory
         from b2share.modules.records.api import B2ShareRecord
+        from b2share.modules.deposit.api import copy_data_from_previous
+
         if request.content_type not in self.loaders:
             abort(415)
         version_of = request.args.get('version_of')
@@ -358,7 +361,12 @@ class B2ShareRecordsListResource(RecordsListResource):
 class B2ShareRecordResource(RecordResource):
     """B2Share resource for records."""
 
-    def put(*args, **kwargs):
+    def __init__(self, resolver=None, **kwargs):
+        """Constructor."""
+        super(B2ShareRecordResource, self).__init__(**kwargs)
+        self.resolver = resolver
+
+    def put(self, **kwargs):
         """Disable PUT."""
         abort(405)
 

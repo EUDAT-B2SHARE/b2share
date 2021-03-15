@@ -46,16 +46,16 @@ as in the case of b2share communities and schemas, where the dependency is the
 following:
 
 - x  : revision
-- \- : down-revision relation
-- \..: depends-on relation
+- \\. : down-revision relation
+- \\..: depends-on relation
 
 .. code-block:: python
 
                b2share_communities
                 ____x--x--x--x..   b2share_schemas
-  invenio-db ../                \_____x--x--x--x
+  invenio-db ../                \\_____x--x--x--x
   x--x--x--x ..      invenio-*
-               \____x--x--x--x
+               \\____x--x--x--x
 
 More information on alembic can be found at http://alembic.zzzcomputing.com/
 and http://flask-alembic.readthedocs.io/en/latest/.

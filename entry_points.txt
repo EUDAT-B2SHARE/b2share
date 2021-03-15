@@ -1,0 +1,91 @@
+[console_scripts]
+b2share = b2share.cli:cli
+
+[invenio_base.apps]
+b2share_main = b2share.modules.b2share_main:B2SHARE_MAIN
+b2share_demo = b2share.modules.b2share_demo:B2ShareDemo
+b2share_upgrade = b2share.modules.upgrade:B2ShareUpgrade
+b2share_records = b2share.modules.records:B2ShareRecords
+b2share_communities = b2share.modules.communities:B2ShareCommunities
+b2share_schemas = b2share.modules.schemas:B2ShareSchemas
+b2share_handle = b2share.modules.handle:B2ShareHandle
+b2share_files = b2share.modules.files:B2ShareFiles
+invenio_files_rest = invenio_files_rest:InvenioFilesREST
+invenio_recods_rest = invenio_records_rest:InvenioRecordsREST
+
+[invenio_base.api_apps]
+b2share_main = b2share.modules.b2share_main:B2SHARE_MAIN
+b2share_apiroot = b2share.modules.apiroot:B2ShareApiRoot
+b2share_communities = b2share.modules.communities:B2ShareCommunities
+b2share_schemas = b2share.modules.schemas:B2ShareSchemas
+b2share_users = b2share.modules.users:B2ShareUsers
+b2share_records = b2share.modules.records:B2ShareRecords
+b2share_deposit = b2share.modules.deposit:B2ShareDeposit
+b2share_handle = b2share.modules.handle:B2ShareHandle
+b2share_files = b2share.modules.files:B2ShareFiles
+b2share_remotes = b2share.modules.remotes:B2ShareRemotes
+b2share_access = b2share.modules.access:B2ShareAccess
+b2share_oaiserver = b2share.modules.oaiserver:B2ShareOAIServer
+invenio_oauthclient = invenio_oauthclient:InvenioOAuthClient
+invenio_oauth2server = invenio_oauth2server:InvenioOAuth2Server
+invenio_mail = invenio_mail:InvenioMail
+invenio_oaiserver = invenio_oaiserver:InvenioOAIServer
+invenio_pidrelations = invenio_pidrelations:InvenioPIDRelations
+invenio_files_rest = invenio_files_rest:InvenioFilesREST
+invenio_recods_rest = invenio_records_rest:InvenioRecordsREST
+
+[invenio_base.blueprints]
+b2share_main = b2share.modules.b2share_main.views:blueprint
+invenio_oauthclient = invenio_oauthclient.views.client:blueprint
+invenio_files_rest = invenio_files_rest.views:blueprint
+b2share_apiroot = b2share.modules.apiroot.views:blueprint
+
+[invenio_base.api_blueprints]
+invenio_oaiserver = invenio_oaiserver.views.server:blueprint
+b2share_apiroot = b2share.modules.apiroot.views:blueprint
+b2share_communities = b2share.modules.communities.views:blueprint
+b2share_schemas = b2share.modules.schemas.views:blueprint
+#b2share_deposit = b2share.modules.deposit.views:blueprint
+b2share_users = b2share.modules.users.views:blueprint
+invenio_files_rest = invenio_files_rest.views:blueprint
+
+[invenio_db.models]
+b2share_upgrade = b2share.modules.upgrade.models
+b2share_communities = b2share.modules.communities.models
+b2share_schemas = b2share.modules.schemas.models
+
+[invenio_db.alembic]
+b2share_upgrade = b2share.modules.upgrade:alembic
+b2share_communities = b2share.modules.communities:alembic
+b2share_schemas = b2share.modules.schemas:alembic
+
+[invenio_records.jsonresolver]
+b2share_schemas = b2share.modules.schemas.jsonresolver
+
+[invenio_pidstore.minters]
+b2rec = b2share.modules.records.minters:b2share_record_uuid_minter
+b2dep = b2share.modules.deposit.minters:b2share_deposit_uuid_minter
+
+[invenio_base.api_converters]
+file_key = b2share.modules.deposit.utils:FileKeyConverter
+
+[invenio_search.mappings]
+records = b2share.modules.records.mappings
+deposits = b2share.modules.deposit.mappings
+
+[invenio_pidstore.fetchers]
+b2rec = b2share.modules.records.fetchers:b2share_record_uuid_fetcher
+b2dep = b2share.modules.deposit.fetchers:b2share_deposit_uuid_fetcher
+
+[invenio_celery.tasks]
+b2share_records = b2share.modules.records.tasks
+b2share_files = b2share.modules.files.tasks
+
+[invenio_access.actions]
+create_deposit_need = b2share.modules.deposit.permissions:create_deposit_need
+read_deposit_need = b2share.modules.deposit.permissions:read_deposit_need
+update_deposit_publication_state_need = b2share.modules.deposit.permissions:update_deposit_publication_state_need
+update_deposit_metadata_need = b2share.modules.deposit.permissions:update_deposit_metadata_need
+update_record_metadata_need = b2share.modules.records.permissions:update_record_metadata_need
+assign_role_need = b2share.modules.users.permissions:assign_role_need
+search_accounts_need = b2share.modules.users.permissions:search_accounts_need

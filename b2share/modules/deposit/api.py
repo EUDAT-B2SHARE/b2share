@@ -117,7 +117,7 @@ class Deposit(InvenioDeposit):
 
     @has_status
     # check also that these fields are not mutable on the published records too
-    @preserve(fields=['_internal', '_files', '_oai', '_deposit'])
+    @preserve(fields=['_internal', '_files', '_oai', '_deposit', '_bucket'])
     def patch(self, patch):
         """Patch record metadata.
         :params patch: Dictionary of record metadata.

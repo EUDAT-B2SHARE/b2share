@@ -44,7 +44,6 @@ from .api import BlockSchema, CommunitySchema
 from .serializers import block_schema_version_json_schema_link
 
 from b2share.modules.communities.api import Community
-from b2share.modules.communities.helpers import get_community_by_name_or_id
 
 
 @click.group()
@@ -74,6 +73,9 @@ def block_schema_add(verbose, community, name):
     """Adds a block schema to the database. Community is the ID or NAME of the
     maintaining community for this block schema. Name is the name as displayed
     in block_schema_list command."""
+
+    from b2share.modules.communities.helpers import get_community_by_name_or_id
+
     if verbose:
         click.secho("""Creating block schema with name %s to be maintained by
         community %s""" % (name, community))
@@ -99,6 +101,9 @@ def block_schema_add(verbose, community, name):
 def block_schema_list(verbose, community):
     """Lists all block schemas for this b2share instance (filtered for a
     community)."""
+
+    from b2share.modules.communities.helpers import get_community_by_name_or_id
+
     comm = None
     if community:
         comm = get_community_by_name_or_id(community)
@@ -135,6 +140,8 @@ def block_schema_list(verbose, community):
               help='(un)set deprecated bit, 1 is deprecated, 0 is not deprecated')
 @click.argument('block_schema_id')
 def block_schema_edit(verbose, name, community, deprecated, block_schema_id):
+    from b2share.modules.communities.helpers import get_community_by_name_or_id
+
     try:
         UUID(block_schema_id, version=4)
     except ValueError:
@@ -274,6 +281,8 @@ def block_schema_version_generate_json(verbose, block_schema_id, version=None):
 def community_schema_list_block_schema_versions(verbose, community, version=None):
     """Show the block schema versions in the community schema element of a
         specific community"""
+    from b2share.modules.communities.helpers import get_community_by_name_or_id
+
     comm = get_community_by_name_or_id(community)
     if not comm:
         raise click.BadParameter("There is no community by this name or ID: %s"%
@@ -308,6 +317,8 @@ def update_or_set_community_schema(community, json_file):
     community-specific block schema.
 
     See also `b2share schemas block_schema_version_generate_json`"""
+
+    from b2share.modules.communities.helpers import get_community_by_name_or_id
 
     comm = get_community_by_name_or_id(community)
     if not comm:

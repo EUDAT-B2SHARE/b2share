@@ -1,0 +1,21 @@
+{
+    "name": "EUDAT",
+    "description": "The big Eudat community. Use this community if no other is suited for you",
+    "logo": "/img/communities/eudat.png",
+    "id": "E9B9792E-79FB-4B07-B6B4-B9C2BD06D095",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            }
+        }
+    ],
+    "block_schemas": {
+    }
+}

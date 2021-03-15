@@ -1,0 +1,83 @@
+{
+    "name": "CLARIN",
+    "description": "Linguistic data",
+    "logo": "/img/communities/clarin.png",
+    "id": "0AFEDE87-2BF2-4D89-867E-D2EE57251C62",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+        {
+            "root_schema_version": 0,
+            "json_schema": {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[clarin]": {
+                        "$ref":
+                        "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[clarin]::0]#/json_schema"
+                    }
+                },
+                "required": ["$BLOCK_SCHEMA_ID[clarin]"],
+                "additionalProperties": false
+            }
+        }
+    ],
+    "block_schemas": {
+        "clarin": {
+            "id": "2A01EE91-36FE-4EDB-9734-73D22AC78821",
+            "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "title": "CLARIN Metadata",
+                    "description": "This is the blueprint of the metadata block specific for the clarin community",
+                    "type": "object",
+                    "properties": {
+                        "language_code":{
+                            "title": "Language Code",
+                            "description": "This element can be used to add an ISO language code from ISO-639-3 to uniquely identify the language a document is written in",
+                            "type": "string",
+                            "default": "eng"
+                        },
+                        "region": {
+                            "title": "Country/Region",
+                            "description": "This element allows users to specify a country and/or a region to allow depositors to specify where the language the document is in is spoken",
+                            "type": "string"
+                        },
+                        "ling_resource_type": {
+                            "title": "Resource Type",
+                            "description": "This element allows the depositor to specify the type of the resource (Text, Audio, Video, Time-Series, Photo, etc.)",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["Text", "Image", "Video", "Audio", "Time-Series", "Other","treebank"]
+                            },
+                            "uniqueItems": true
+                        },
+                        "project_name": {
+                            "title": "Project Name",
+                            "type": "string",
+                            "description": "This element allows the depositor to specify the projects which were at the source of the creation of the resource"
+                        },
+                        "quality": {
+                            "title": "Quality",
+                            "type": "string",
+                            "description": "This element allows depositors to indicate the quality of the resource allowing potential users to immediately see whether the resource is of use for them."
+                        }
+                    },
+                    "required": ["language_code", "ling_resource_type"],
+                    "additionalProperties": false,
+                    "b2share": {
+                        "presentation": {
+                            "major": [ "language_code", "region", "ling_resource_type", "project_name", "quality"],
+                            "plugins": {"language_code": "language_chooser"}
+                        },
+                        "overwrites": {
+                            "language_code": {"ROOT_SCHEMA": ["language"] },
+                            "resource_type": {"ROOT_SCHEMA": ["resource_type"] }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

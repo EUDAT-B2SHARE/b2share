@@ -30,10 +30,13 @@ from flask_principal import UserNeed
 
 from invenio_access.permissions import superuser_access, \
     ParameterizedActionNeed
+
 from b2share.modules.access.permissions import StrictDynamicPermission
 
 
 def _record_need_factory(name, **kwargs):
+    from invenio_access.permissions import ParameterizedActionNeed
+
     if kwargs:
         for key, value in enumerate(kwargs):
             if value is None:
@@ -75,4 +78,5 @@ class DeleteRecordPermission(StrictDynamicPermission):
     """Record delete permission."""
 
     def __init__(self, record):
+        from invenio_access.permissions import superuser_access
         super(DeleteRecordPermission, self).__init__(superuser_access)

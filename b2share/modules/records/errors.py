@@ -25,6 +25,7 @@
 
 
 import uuid
+
 from jsonschema.exceptions import ValidationError
 from jsonpatch import JsonPatchException
 from jsonpointer import JsonPointerException

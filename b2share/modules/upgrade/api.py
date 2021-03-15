@@ -26,14 +26,16 @@
 import re
 import traceback
 import warnings
+import click
+
 from collections import namedtuple
 from queue import Queue
 from urllib.parse import urlunsplit
 from functools import wraps
-
-import click
 from flask import current_app
+
 from invenio_db import db
+
 from sqlalchemy.orm.attributes import flag_modified
 from b2share.version import __version__
 
@@ -70,6 +72,7 @@ def upgrade_to_last_version(verbose):
         else:
             all_migrations = Migration.query.order_by(
                 Migration.updated.desc()).all()
+            
             last_migration = all_migrations[0]
             if last_migration.success:
                 if last_migration.version == last_version:
@@ -313,7 +316,7 @@ def alembic_upgrade(target='heads'):
     with warnings.catch_warnings():
         # Ignore the warning comming from invenio-db naming convention recipe
         warnings.filterwarnings("ignore",
-                                message='Update \w* CHECK \w* manually')
+                                message='Update \\w* CHECK \\w* manually')
         env.run_migrations()
 
 

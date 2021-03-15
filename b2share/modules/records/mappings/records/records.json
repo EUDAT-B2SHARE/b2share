@@ -1,183 +1,183 @@
 {
-    "mappings" : {
-      "record" : {
-        "date_detection": false,
-        "numeric_detection": false,
-        "_all":{
-          "type":"string",
-          "index":"analyzed",
-          "analyzer":"english"
+  "mappings": {
+    "record": {
+      "date_detection": false,
+      "numeric_detection": false,
+      "_all": {
+        "type": "string",
+        "index": "analyzed",
+        "analyzer": "english"
+      },
+      "properties": {
+        "$schema": {
+          "type": "string"
         },
-        "properties" : {
-          "$schema" : {
-            "type" : "string"
-          },
-          "_created" : {
-            "type" : "date",
-            "format" : "strict_date_optional_time||epoch_millis"
-          },
-          "_files" : {
-            "properties" : {
-              "bucket" : {
-                "type" : "string"
-              },
-              "checksum" : {
-                "type" : "string"
-              },
-              "key" : {
-                "type" : "string"
-              },
-              "size" : {
-                "type" : "long"
-              },
-              "version_id" : {
-                "type" : "string"
-              }
+        "_created": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "_files": {
+          "properties": {
+            "bucket": {
+              "type": "string"
+            },
+            "checksum": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "size": {
+              "type": "long"
+            },
+            "version_id": {
+              "type": "string"
             }
-          },
-          "_internal" : {
-            "properties" : {
-              "files_bucket_id" : {
-                "type" : "string"
-              }
+          }
+        },
+        "_internal": {
+          "properties": {
+            "files_bucket_id": {
+              "type": "string"
             }
-          },
-          "_oai" : {
-            "properties" : {
-              "id" : {
-                "type" : "string"
-              },
-              "updated" : {
-                "type" : "date",
-                "format" : "strict_date_optional_time||epoch_millis"
-              }
+          }
+        },
+        "_oai": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "updated": {
+              "type": "date",
+              "format": "strict_date_optional_time||epoch_millis"
             }
-          },
-          "_pid" : {
-            "properties" : {
-              "type" : {
-                "type" : "string"
-              },
-              "value" : {
-                "type" : "string"
-              }
+          }
+        },
+        "_pid": {
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "_updated" : {
-            "type" : "date",
-            "format" : "strict_date_optional_time||epoch_millis"
-          },
-          "embargo_date" : {
-            "type" : "date",
-            "format" : "strict_date_optional_time||epoch_millis"
-          },
-          "alternate_identifiers" : {
-            "properties" : {
-              "alternate_identifier" : {
-                "type": "string"
-              },
-              "alternate_identifier_type" : {
-                "type": "string",
-                "index": "not_analyzed"
-              }
+          }
+        },
+        "_updated": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "embargo_date": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "alternate_identifiers": {
+          "properties": {
+            "alternate_identifier": {
+              "type": "string"
+            },
+            "alternate_identifier_type": {
+              "type": "string",
+              "index": "not_analyzed"
             }
-          },
-          "community" : {
-            "type" : "string",
-            "index": "not_analyzed"
-          },
-          "contact_email" : {
-            "type" : "string",
-            "index": "not_analyzed"
-          },
-          "creators" : {
-            "properties" : {
-              "creator_name" : {
-                "type": "string"
-              }
+          }
+        },
+        "community": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "contact_email": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "creators": {
+          "properties": {
+            "creator_name": {
+              "type": "string"
             }
-          },
-          "descriptions" : {
-            "properties" : {
-              "description" : {
-                "index": "analyzed",
-                "type" : "string",
-                "analyzer": "english"
-              },
-              "description_type" : {
-                "index": "not_analyzed",
-                "type" : "string"
-              }
+          }
+        },
+        "descriptions": {
+          "properties": {
+            "description": {
+              "index": "analyzed",
+              "type": "string",
+              "analyzer": "english"
+            },
+            "description_type": {
+              "index": "not_analyzed",
+              "type": "string"
             }
-          },
-          "keywords" : {
-            "index": "analyzed",
-            "type" : "string",
-            "analyzer": "english"
-          },
-          "contributors" : {
-            "properties" : {
-              "contributor_name" : {
-                "type": "string",
-                "index": "analyzed"
-              },
-              "contributor_type" : {
-                "type": "string",
-                "index": "not_analyzed"
-              }
+          }
+        },
+        "keywords": {
+          "index": "analyzed",
+          "type": "string",
+          "analyzer": "english"
+        },
+        "contributors": {
+          "properties": {
+            "contributor_name": {
+              "type": "string",
+              "index": "analyzed"
+            },
+            "contributor_type": {
+              "type": "string",
+              "index": "not_analyzed"
             }
-          },
-          "language" : {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "license" : {
-            "properties" : {
-              "license" : {
-                "type": "string"
-              },
-              "license_uri" : {
-                "type": "string"
-              }
+          }
+        },
+        "language": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "license": {
+          "properties": {
+            "license": {
+              "type": "string"
+            },
+            "license_uri": {
+              "type": "string"
             }
-          },
-          "open_access" : {
-            "type" : "boolean"
-          },
-          "owners" : {
-            "type" : "long"
-          },
-          "publication_state" : {
-            "type" : "string",
-            "index": "not_analyzed"
-          },
-          "publication_date" : {
-            "type" : "string",
-            "index": "not_analyzed"
-          },
-          "resource_types" : {
-            "properties" : {
-              "resource_type" : {
-                "index": "analyzed",
-                "type" : "string",
-                "analyzer": "english"
-              },
-              "resource_type_general" : {
-                "index": "not_analyzed",
-                "type" : "string"
-              }
+          }
+        },
+        "open_access": {
+          "type": "boolean"
+        },
+        "owners": {
+          "type": "long"
+        },
+        "publication_state": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "publication_date": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "resource_types": {
+          "properties": {
+            "resource_type": {
+              "index": "analyzed",
+              "type": "string",
+              "analyzer": "english"
+            },
+            "resource_type_general": {
+              "index": "not_analyzed",
+              "type": "string"
             }
-          },
-          "titles" : {
-            "properties" : {
-              "title" : {
-                "index":"analyzed",
-                "type" : "string",
-                "analyzer":"english"
-              }
+          }
+        },
+        "titles": {
+          "properties": {
+            "title": {
+              "index": "analyzed",
+              "type": "string",
+              "analyzer": "english"
             }
           }
         }
       }
     }
   }
+}

@@ -1,0 +1,86 @@
+{
+    "name": "Aalto",
+    "description": "Aalto University",
+    "id": "c4234f93-da96-4d2f-a2c8-fa83d0775212",
+    "logo": "/img/communities/aalto.jpg",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": true,
+    "community_schemas": [
+        {
+            "json_schema": {
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[aalto]": {
+                        "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[aalto]::0]#/json_schema"
+                    }
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "additionalProperties": false,
+                "required": ["$BLOCK_SCHEMA_ID[aalto]"],
+                "type": "object"
+            },
+            "root_schema_version": 0
+        }
+    ],
+    "block_schemas": {
+        "aalto": {
+            "id": "419e94c9-9c8b-4527-b12c-51fdd1f27947",
+            "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "description": "This is the blueprint of the metadata block specific for the Aalto community",
+                    "title": "Aalto Metadata",
+                    "type": "object",
+                    "properties": {
+                        "project_name": {
+                            "title": "Project Name",
+                            "description": "Project Name",
+                            "type": "string"
+                        },
+                        "project_url": {
+                            "title": "Project URL",
+                            "description": "Project URL",
+                            "type": "string"
+                        },
+                        "language_code": {
+                            "default": "eng",
+                            "title": "Language Code",
+                            "description": "This element can be used to add an ISO language code from ISO-639-3 to uniquely identify the language a document is written in",
+                            "type": "string"
+                        },
+                        "funding_id": {
+                            "title": "Funding ID",
+                            "description": "Funding ID",
+                            "type": "string"
+                        },
+                        "owner_org": {
+                            "title": "Owner Organisation",
+                            "description": "Owner Organisation",
+                            "type": "string"
+                        },
+                        "funder": {
+                            "title": "Funder",
+                            "description": "Funder",
+                            "type": "string"
+                        },
+                        "owner": {
+                            "title": "Owner",
+                            "description": "Owner",
+                            "type": "string"
+                        }
+                    },
+                    "required": [ "language_code" ],
+                    "additionalProperties": false,
+                    "b2share": {
+                        "presentation": {
+                            "major": [ "project_name", "project_url", "language_code", "funding_id", "owner_org", "funder", "owner" ],
+                            "plugins": {"language_code": "language_chooser"}
+                        },
+                        "overwrites": {
+                            "language_code": {"ROOT_SCHEMA": [ "language" ] }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

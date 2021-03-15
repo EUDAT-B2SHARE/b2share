@@ -72,6 +72,8 @@ def add_to_db(instance, skip_if_exists=False, **fields):
     return instance
 
 def is_valid_uuid(val):
+    """Validate uuid"""
+    
     try:
         uuid.UUID(str(val))
         return True

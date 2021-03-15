@@ -27,8 +27,8 @@ import re
 
 from flask import url_for, g
 
-from b2share.modules.records.providers import RecordUUIDProvider
-from b2share.modules.records.fetchers import b2share_parent_pid_fetcher
+from .providers import RecordUUIDProvider
+from .fetchers import b2share_parent_pid_fetcher
 
 
 RECORD_BUCKET_RELATION_TYPE = \
@@ -50,7 +50,7 @@ def url_for_bucket(bucket_id):
         _external=True
     )
 
-def record_links_factory(pid):
+def record_links_factory(pid, **kwargs):
     """Factory for record links generation."""
     def _url(name, pid_value):
         endpoint = 'b2share_records_rest.{0}_{1}'.format(pid.pid_type, name)

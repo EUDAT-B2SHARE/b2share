@@ -37,9 +37,9 @@ from .providers import RecordUUIDProvider
 def record_to_index(record):
     """Route the given record to the right index and document type."""
     if is_deposit(record.model):
-        return 'deposits-deposits', 'deposit'
+        return 'deposits',  '_doc'
     elif is_publication(record.model):
-        return 'records', 'record'
+        return 'records',  '_doc'
     else:
         raise ValueError('Invalid record. It is neither a deposit'
                          ' nor a publication')

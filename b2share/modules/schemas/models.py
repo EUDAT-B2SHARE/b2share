@@ -27,12 +27,11 @@ import uuid
 from datetime import datetime
 
 import sqlalchemy as sa
-from invenio_db import db
 from sqlalchemy_utils.models import Timestamp
 from sqlalchemy_utils.models import Timestamp
 from sqlalchemy_utils.types import UUIDType
 
-from b2share.modules.communities.models import Community
+from invenio_db import db
 
 
 class RootSchemaVersion(db.Model):
@@ -57,6 +56,8 @@ class BlockSchema(db.Model, Timestamp):
     Additionally it contains two columns ``created`` and ``updated``
     with automatically managed timestamps.
     """
+
+    from b2share.modules.communities.models import Community
 
     __tablename__ = 'b2share_block_schema'
 
@@ -127,6 +128,8 @@ class CommunitySchemaVersion(db.Model):
     The last released Community schema is used to validate all the new records
     submitted to this Community.
     """
+
+    from b2share.modules.communities.models import Community
 
     __tablename__ = 'b2share_community_schema_version'
 

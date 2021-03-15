@@ -36,8 +36,6 @@ from invenio_pidstore.models import PIDStatus
 from datacite.errors import DataCiteError
 
 from .providers import RecordUUIDProvider
-from b2share.modules.handle.errors import EpicPIDError
-from b2share.modules.handle.proxies import current_handle
 
 
 def b2share_record_uuid_minter(record_uuid, data):
@@ -86,6 +84,10 @@ def b2share_oaiid_minter(rec_pid, data):
 
 def b2share_pid_minter(rec_pid, data):
     """Mint EPIC PID for published record."""
+
+    from b2share.modules.handle.errors import EpicPIDError
+    from b2share.modules.handle.proxies import current_handle
+
     epic_pids = [p for p in data['_pid'] if p.get('type') == 'ePIC_PID']
     assert len(epic_pids) == 0
 

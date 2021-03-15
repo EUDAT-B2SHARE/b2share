@@ -228,6 +228,9 @@
             },
             "_files": {
                 "type": "array"
+            },
+            "_bucket": {
+                "type": "string"
             }
         },
         "required": ["community", "titles", "open_access", "publication_state", "community_specific"],

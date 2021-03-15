@@ -1,52 +1,78 @@
-*.clisp.mem
-*.cmucl.core
-*.egg-info
-*.fas
-*.fasl
-*.kdev4
-*.kdevelop
-*.kdevses
-*.lib
-*.pyc
-*.sbcl.core
-*.sse2f
-*.x86f
-*~
-.DS_Store
-.coverage
-.eggs
-.kdev4/
-.noseids
-.project
-.pydevproject
-.settings
-.version
-.ropeproject
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Idea software family
 .idea/
-Invenio.egg-info
-Makefile.in
-TAGS
-bower_components/
-build
-compile
-dist
-docs/_build
-docs/db
-docs/static
-dump.rdb
-instance/
-invenio/base/translations/*/LC_MESSAGES/messages.mo
-missing
-node_modules/
-org.eclipse.core.resources.prefs
-tags
-install/.vagrant/
-b2share/base/static
-nohup.out
-app_instance/
-webui/app/b2share-bundle.js
-webui/app/b2share-bundle.js.map
-webui/app/lib/
-webui/app/vendors/
-webui/src/version.js
-webui/package-lock.json
+.venv
+.pytest_cache/
+.vscode/*
+poetry_files
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+
+# end-to-end testing
+.e2e_screenshots
+
+# Translations
+*.mo
+
+# Django stuff:
+*.log
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Vim swapfiles
+.*.sw?
+
+# Environment & secrets
+.env
+
+# Development Container
+Pipfile
+poetry.lock
+settings.json
+launch.json

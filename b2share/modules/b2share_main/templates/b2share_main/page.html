@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>B2SHARE</title>
+
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+
+    <!-- new header -->
+    <link rel="stylesheet" type="text/css" href="/static/lib/css/bootstrap-grid.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/lib/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/lib/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/lib/css/toggle-style.css">
+    <link rel="stylesheet" type="text/css" href="/static/lib/css/react-widgets.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-theme.css">
+
+    <link rel="stylesheet" type="text/css" href="/static/css/font.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/app.css">
+
+    <!--[if lt IE 9]>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/es5-shim/3.4.0/es5-shim.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/es5-shim/3.4.0/es5-sham.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <noscript>
+    <div>B2SHARE requires JavaScript to be enabled!</div>
+    </noscript>
+
+    <div id="main-container">
+        <div class="page-wrap">
+            <div id="body">
+                <div class="primary-header">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="section-link">
+                                    <a href="https://eudat.eu">Go to EUDAT website</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="page"></div>
+            </div>
+
+            <div id="footer">
+                <div class="footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-4 align-self-center">
+                                <div class="logo">
+                                    <a href="https://eudat.eu"><img src="/static/img/logo_eudat_cdi.svg" alt="EUDAT CDI logo" style="max-width: 200px"></a>
+                                    <p>© 2020 EUDAT Collaborative Data Infrastructure </p>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div id="menu">
+                                    <ul>
+                                        <li><a href="https://hdl.handle.net/11304/e43b2e3f-83c5-4e3f-b8b7-18d38d37a6cd">EUDAT Service ToU</a></li>
+                                        <li><a href="https://hdl.handle.net/11304/e43b2e3f-83c5-4e3f-b8b7-18d38d37a6cd">Terms of Use</a></li>
+                                        <li><a href="https://eudat.eu/privacy-policy-summary">Data Privacy Statement</a></li>
+                                        <li><a href="https://eudat.eu/what-eudat">About EUDAT</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="secondary-footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="images">
+                                    <img src="/static/img/eu.jpg" alt="EU">
+                                    <img src="/static/img/eosc-hub-g.png" alt="EOSC-HUB" style="max-width: 150px">
+                                </div>
+                                <p>
+                                    B2SHARE is co-funded by the EOSC-hub project (Horizon 2020) under Grant number 777536
+                                </p>
+                            </div>
+                            <div class="col-md-4 align-self-center">
+                                <div class="pull-right">
+                                    <p>B2SHARE v.<span id="version"></span><br/>Powered by &nbsp;<img src="/static/img/invenio.png"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/b2share-bundle.js"></script>
+</body>
+</html>

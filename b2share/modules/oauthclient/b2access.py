@@ -26,6 +26,7 @@
 import base64
 
 from urllib.parse import urljoin
+
 from flask import abort, current_app, redirect, request, \
     session, url_for
 from flask_oauthlib.client import OAuthException, OAuthRemoteApp, \
@@ -80,7 +81,30 @@ class B2AccessOAuthRemoteApp(OAuthRemoteApp):
         """Constructor."""
         super(B2AccessOAuthRemoteApp, self).__init__(*args, **kwargs)
 
-    def handle_oauth2_response(self):
+    def my_http_request(self, uri, headers=None, data=None, method=None):
+        '''
+        Method for monkey patching 'flask_oauthlib.client.OAuth.http_request'
+        This version allows for insecure SSL certificates
+        '''
+        from flask_oauthlib.client import prepare_request, http
+        import ssl
+
+        uri, headers, data, method = prepare_request(
+            uri, headers, data, method
+        )
+        req = http.Request(uri, headers=headers, data=data)
+        req.get_method = lambda: method.upper()
+        try:
+            resp = http.urlopen(req, context=ssl._create_unverified_context())
+            content = resp.read()
+            resp.close()
+            return resp, content
+        except http.HTTPError as resp:
+            content = resp.read()
+            resp.close()
+            return resp, content
+
+    def handle_oauth2_response(self, args):
         """Handles an oauth2 authorization response.
 
         This method overrides the one provided by OAuthRemoteApp in order to
@@ -94,7 +118,7 @@ class B2AccessOAuthRemoteApp(OAuthRemoteApp):
 
         client = self.make_client()
         remote_args = {
-            'code': request.args.get('code'),
+            'code': args.get('code'),
             'client_secret': self.consumer_secret,
             'redirect_uri': (
                 session.get('%s_oauthredir' % self.name) or
@@ -104,11 +128,13 @@ class B2AccessOAuthRemoteApp(OAuthRemoteApp):
         }
         remote_args.update(self.access_token_params)
         # build the Basic HTTP Authentication code
-        b2access_basic_auth = base64.encodestring(bytes('{0}:{1}'.format(
+        b2access_basic_auth = base64.b64encode(bytes("{0}:{1}".format(
             self.consumer_key, self.consumer_secret),
             'utf-8')).decode('ascii').replace('\n', '')
+
         body = client.prepare_request_body(**remote_args)
-        resp, content = self.http_request(
+
+        resp, content = self.my_http_request(
             self.expand_url(self.access_token_url),
             # set the Authentication header
             headers={
@@ -221,6 +247,7 @@ def account_info(remote, resp):
     """Retrieve remote account information used to find local user. """
     from flask import current_app
     import json
+    import ssl
     try:
         import urllib2 as http
     except ImportError:
@@ -232,7 +259,7 @@ def account_info(remote, resp):
     req = http.Request(url, headers=headers)
     response, content = None, None
     try:
-        response = http.urlopen(req)
+        response = http.urlopen(req, context=ssl._create_unverified_context())
         content = response.read()
         response.close()
         dict_content = json.loads(content.decode('utf-8'))

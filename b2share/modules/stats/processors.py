@@ -19,13 +19,13 @@
 
 """Statistics event preprocessors."""
 
-from invenio_records_files.models import RecordsBuckets
-from invenio_records.models import RecordMetadata
-from b2share.modules.records.utils import is_deposit
-
 
 def skip_deposit(doc):
     """Check if event is coming from deposit file and skip."""
+    from invenio_records_files.models import RecordsBuckets
+    from invenio_records.models import RecordMetadata
+    from b2share.modules.records.utils import is_deposit
+
     rb = RecordsBuckets.query.filter_by(bucket_id=doc['bucket_id']).first()
     record = RecordMetadata.query.filter_by(id=rb.record_id).first()
     if is_deposit(record):

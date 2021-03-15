@@ -44,7 +44,12 @@ def elasticsearch_index_destroy(alembic, verbose):
     # Delete "records" index as it might have been created during the upgrade.
     # This happens when the indices have not been initialized yet and are
     # indexed. Normally "records" should be an alias, not an index.
-    current_search_client.indices.delete(index='records', ignore=[404])
+
+    # Adjuste: In ES 7 we need to specify the real index for deletion, not the alias
+    # Real index name is first collected by get_alias method.
+    for index in current_search_client.indices.get_alias(index='records', ignore=[404]).keys():
+        current_search_client.indices.delete(index=index, ignore=[404])
+
     for _ in current_search.delete(ignore=[400, 404]):
         pass
     queue = current_app.config['INDEXER_MQ_QUEUE']

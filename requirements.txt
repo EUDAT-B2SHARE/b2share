@@ -1,152 +1,294 @@
-# This file is part of EUDAT B2Share.
-# Copyright (C) 2015, 2016, 2017, University of Tuebingen, CERN.
-#
-# B2Share is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of the
-# License, or (at your option) any later version.
-#
-# B2Share is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with B2Share; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-#
-# In applying this license, CERN does not
-# waive the privileges and immunities granted to it by virtue of its status
-# as an Intergovernmental Organization or submit itself to any jurisdiction.
-
-alembic==0.8.10           # via flask-alembic
-amqp==2.2.1               # via invenio-queues, kombu
-angular-gettext-babel==0.3  # via invenio-search-ui
-arrow==0.8.0              # via invenio-stats, jinja2-time
-babel==2.3.4              # via angular-gettext-babel, flask-babelex, invenio-assets
-billiard==3.5.0.3         # via celery
-binaryornot==0.4.0        # via cookiecutter
-blinker==1.4              # via flask-mail, flask-principal, invenio-oauthclient, invenio-records
-celery==4.1
-cffi==1.8.3               # via cryptography
-chardet==2.3.0            # via binaryornot, doschema
-click==6.6                # via cookiecutter, dojson, doschema, flask
-cookiecutter==1.4.0       # via invenio-base
-cryptography==1.5.2       # via invenio-accounts, invenio-oauthclient, sqlalchemy-utils
-datacite==0.3.0
-dcxml==0.1.0
-decorator==4.0.10         # via validators
-dictdiffer==0.6.0         # via invenio-deposit
-dojson==1.3.2
+AccessControl==5.0
+Acquisition==4.7
+alembic==1.5.5
+amqp==5.0.5
+aniso8601==9.0.0
+appnope==0.1.2
+arrow==0.17.0
+attrs==20.3.0
+AuthEncoding==4.2
+b2handle==1.1.2
+Babel==2.9.0
+backcall==0.2.0
+base32-lib==1.0.2
+beautifulsoup4==4.9.3
+billiard==3.6.3.0
+bleach==3.3.0
+blinker==1.4
+BTrees==4.7.2
+build==0.3.0
+cachelib==0.1.1
+cchardet==2.1.7
+celery==5.0.5
+certifi==2020.12.5
+cffi==1.14.5
+Chameleon==3.9.0
+chardet==4.0.0
+check-manifest==0.46
+click==7.1.2
+click-default-group==1.2.2
+click-didyoumean==0.0.3
+click-plugins==1.1.1
+click-repl==0.1.6
+coverage==5.4
+cryptography==3.4.6
+datacite==1.0.1
+DateTime==4.3
+dcxml==0.1.2
+decorator==4.4.2
+defusedxml==0.6.0
+dictdiffer==0.8.1
+dnspython==2.1.0
+Docker-Services-CLI==0.3.0
+DocumentTemplate==4.0
+dojson==1.4.0
 doschema==1.0.0a1
-easywebdav==1.2.0
-elasticsearch-dsl==2.1.0
-elasticsearch==2.4.0
-flask-alembic==2.0.1      # via invenio-db
-flask-assets==0.12        # via invenio-assets
-flask-babelex==0.9.3      # via flask-security, invenio-accounts, invenio-deposit, invenio-i18n, invenio-marc21, invenio-oaiserver, invenio-oauth2server, invenio-oauthclient, invenio-pidstore, invenio-records-rest, invenio-records-ui, invenio-search-ui
-flask-breadcrumbs==0.4.0  # via invenio-accounts, invenio-oauth2server, invenio-oauthclient
-flask-celeryext==0.3.0    # via invenio-celery, invenio-files-rest, invenio-indexer, invenio-records
-flask-collect==1.2.2      # via invenio-assets
-flask-cors==3.0.2         # via invenio-rest
-flask-kvsession==0.6.2    # via invenio-accounts
-flask-login==0.3.2
-flask-mail==0.9.1         # via flask-security, invenio-mail
-flask-menu==0.5.1         # via flask-breadcrumbs, invenio-accounts
-flask-oauthlib==0.9.3     # via invenio-oauth2server, invenio-oauthclient
-flask-principal==0.4.0    # via flask-security
-flask-security==3.0.0     # via invenio-accounts
-flask-sqlalchemy==2.1     # via flask-alembic, invenio-db
-flask-wtf==0.13.1         # via flask-security, invenio-accounts, invenio-files-rest, invenio-oauth2server
-flask==0.11.1             # via flask-alembic, flask-assets, flask-babelex, flask-breadcrumbs, flask-celeryext, flask-collect, flask-cors, flask-kvsession, flask-login, flask-mail, flask-menu, flask-oauthlib, flask-principal, flask-security, flask-sqlalchemy, flask-wtf, invenio-access, invenio-accounts, invenio-assets, invenio-base, invenio-celery, invenio-config, invenio-db, invenio-deposit, invenio-files-rest, invenio-i18n, invenio-indexer, invenio-jsonschemas, invenio-logging, invenio-mail, invenio-marc21, invenio-oaiserver, invenio-oauth2server, invenio-oauthclient, invenio-pidstore, invenio-queues, invenio-records, invenio-records-files, invenio-records-rest, invenio-records-ui, invenio-rest, invenio-search, invenio-search-ui, invenio-stats
-fs==0.5.4                 # via invenio-files-rest
-future==0.16.0            # via cookiecutter, invenio-accounts
-httplib2==0.9.2
-idna==2.1                 # via cryptography
-infinity==1.4             # via intervals
-intervals==0.8.0          # via wtforms-components
-invenio-access==1.0.0a11
+easywebdav2==1.3.0
+elasticsearch==7.11.0
+elasticsearch-dsl==7.3.0
+email-validator==1.1.2
+entrypoints==0.3
+ExtensionClass==4.5.0
+Flask==1.1.2
+Flask-Admin==1.5.7
+Flask-Alembic==2.0.1
+Flask-BabelEx==0.9.4
+Flask-Breadcrumbs==0.5.1
+Flask-Caching==1.9.0
+Flask-CeleryExt==0.3.4
+Flask-Collect==1.2.2
+Flask-Cors==3.0.10
+Flask-DebugToolbar==0.11.0
+Flask-IIIF==0.6.1
+Flask-KVSession-Invenio==0.6.3
+Flask-Limiter==1.1.0
+Flask-Login==0.4.1
+Flask-Mail==0.9.1
+Flask-Menu==0.7.2
+Flask-OAuthlib==0.9.6
+Flask-Principal==0.4.0
+Flask-RESTful==0.3.8
+Flask-Security==3.0.0
+flask-shell-ipython==0.4.1
+Flask-SQLAlchemy==2.4.4
+flask-talisman==0.5.0
+Flask-Testing==0.8.1
+flask-webpackext==1.0.2
+Flask-WTF==0.14.3
+fs==0.5.4
+ftfy==4.4.3
+future==0.18.2
+html5lib==1.1
+httplib2==0.18.1
+idna==2.10
+importlib-metadata==3.7.0
+importmagic3==0.2.0
+infinity==1.5
+iniconfig==1.1.1
+intervals==0.9.1
+invenio==3.3.0
+invenio-access==1.4.2
+invenio-accounts==1.4.3
 invenio-accounts-rest==1.0.0a4
-invenio-accounts==1.0.0b9
-invenio-assets==1.0.0b6   # via invenio-deposit, invenio-search-ui
-invenio-base==1.0.0a14
-invenio-celery==1.0.0b3
-invenio-config==1.0.0b3
-invenio-db[postgresql,versioning]==1.0.0b8
-invenio-deposit==1.0.0a8
-invenio-files-rest==1.0.0a21
-invenio-i18n==1.0.0b4     # via invenio-accounts
-invenio-indexer==1.0.0a9
-invenio-jsonschemas==1.0.0a5  # via invenio-deposit, invenio-marc21
-invenio-logging==1.0.0a3
-invenio-mail==1.0.0b1
-invenio-marc21==1.0.0a5
-invenio-oaiserver==1.0.0a13
-invenio-oauth2server==1.0.0a14
-invenio-oauthclient==1.0.0b2
-invenio-pidrelations==v1.0.0a4
-invenio-pidstore==1.0.0b2
-invenio-query-parser==0.6.0
-invenio-queues==1.0.0a1   # via invenio-stats
-invenio-records-files==1.0.0a9
-invenio-records-rest==1.0.0b1
-invenio-records-ui==1.0.0b1  # via invenio-deposit, invenio-marc21
-invenio-records==1.0.0b2
-invenio-rest[cors]==1.0.0b1
-invenio-search-ui==1.0.0a7  # via invenio-deposit
-invenio-search==1.0.0a10
-invenio-stats==1.0.0a8
-itsdangerous==0.24        # via flask, flask-kvsession, flask-security
-jinja2-time==0.2.0        # via cookiecutter
-jinja2==2.8               # via cookiecutter, flask, flask-babelex, jinja2-time
-jsonpatch==1.16           # via invenio-records
-jsonpointer==1.10         # via jsonpatch
-jsonref==0.1              # via invenio-jsonschemas, invenio-records
-jsonresolver[jsonschema]==0.2.1
-jsonschema==2.5.1         # via datacite, doschema, invenio-records, jsonresolver
-kombu==4.1.0              # via celery, invenio-queues
-lxml==3.6.4               # via datacite, dcxml, dojson, invenio-oaiserver
-mako==1.0.6               # via alembic
-markupsafe==0.23          # via jinja2, mako
-marshmallow==2.12.2       # via invenio-oaiserver, invenio-records-rest, webargs
-maxminddb-geolite2==2017.404  # via invenio-accounts, invenio-stats
-maxminddb==1.5.4          # via maxminddb-geolite2
-msgpack-python==0.4.8     # via invenio-celery
-node-semver==0.1.1        # via invenio-assets
-oauthlib==1.1.2           # via flask-oauthlib, invenio-oauth2server, requests-oauthlib
-ordereddict==1.1          # via invenio-query-parser
-passlib==1.7.1            # via flask-security, invenio-accounts
-pluggy==0.4.0             # via jsonresolver
-poyo==0.4.0               # via cookiecutter
-psycopg2==2.7.1
-pyasn1==0.1.9             # via cryptography
-pycparser==2.17           # via cffi
-pyjwt==1.5.0              # via invenio-accounts
-pypeg2==2.15.2            # via invenio-query-parser, invenio-search
-python-dateutil==2.6.1    # via arrow, elasticsearch-dsl, invenio-records-rest, invenio-stats
-python-editor==1.0.3      # via alembic
-python-geoip==1.2         # via invenio-stats
-pytz==2016.7              # via babel, celery, invenio-indexer
-redis==2.10.5             # via invenio-accounts, invenio-celery, invenio-queues
-requests-oauthlib==0.7.0  # via flask-oauthlib
-requests==2.11.1          # via datacite, easywebdav, invenio-search, requests-oauthlib
-robot-detection==0.4      # via invenio-stats
-simplejson==3.10.0        # via dojson
-simplekv==0.10.0          # via flask-kvsession
-six==1.10.0               # via cryptography, elasticsearch-dsl, flask-breadcrumbs, flask-cors, flask-kvsession, flask-menu, fs, invenio-access, invenio-logging, invenio-oauth2server, invenio-oauthclient, invenio-query-parser, invenio-records-rest, jsonresolver, python-dateutil, robot-detection, sqlalchemy-utils, validators, wtforms-alchemy, wtforms-components
-speaklater==1.3           # via flask-babelex, invenio-assets
-sqlalchemy-continuum==1.3  # via invenio-db, invenio-deposit
-sqlalchemy-utils[encrypted]==0.32.14  # via invenio-accounts, invenio-db, invenio-deposit, invenio-files-rest, invenio-oauth2server, invenio-oauthclient, invenio-records, sqlalchemy-continuum, wtforms-alchemy
-sqlalchemy==1.1.11        # via alembic, flask-alembic, flask-sqlalchemy, invenio-db, sqlalchemy-continuum, sqlalchemy-utils, wtforms-alchemy
-ua-parser==0.7.3          # via invenio-accounts
-uritools==2.0.0           # via invenio-oauthclient
-urllib3==1.19             # via elasticsearch
-validators==0.11.0        # via wtforms-components
-vine==1.1.4               # via amqp
-webargs==1.4.0            # via invenio-files-rest, invenio-oaiserver, invenio-records-rest
-webassets==0.12.0         # via flask-assets, invenio-assets
-werkzeug==0.11.11         # via flask, flask-kvsession, flask-wtf, jsonresolver
-whichcraft==0.4.0         # via cookiecutter
-wtforms-alchemy==0.16.1   # via invenio-oauth2server
-wtforms-components==0.10.0  # via wtforms-alchemy
-wtforms==2.1              # via flask-wtf, invenio-files-rest, wtforms-alchemy, wtforms-components
+invenio-admin==1.3.0
+invenio-app==1.2.7
+invenio-assets==1.2.5
+invenio-base==1.2.3
+invenio-cache==1.1.0
+invenio-celery==1.2.2
+invenio-config==1.0.3
+invenio-db==1.0.8
+invenio-deposit==1.0.0a11
+invenio-files-rest==1.2.0
+invenio-formatter==1.1.0
+invenio-i18n==1.2.0
+invenio-indexer==1.2.0
+invenio-jsonschemas==1.1.1
+invenio-mail==1.0.2
+invenio-marc21==1.0.0a9
+invenio-oaiserver==1.2.0
+invenio-oauth2server==1.2.0
+invenio-oauthclient==1.4.4
+invenio-pidrelations==1.0.0a4
+invenio-pidstore==1.2.2
+invenio-previewer==1.2.1
+invenio-queues==1.0.0a3
+invenio-records==1.4.0
+invenio-records-files==1.2.1
+invenio-records-rest==1.7.2
+invenio-records-ui==1.1.0
+invenio-rest==1.2.3
+invenio-search==1.4.1
+invenio-search-ui==2.0.2
+invenio-stats==1.0.0a18 
+invenio-theme==1.3.8
+ipython==7.16.1
+ipython-genutils==0.2.0
+isort==5.7.0
+itsdangerous==1.1.0
+jedi==0.18.0
+Jinja2==2.11.3
+jsmin==2.2.2
+jsonpatch==1.28
+jsonpointer==2.0
+jsonref==0.2
+jsonresolver==0.3.1
+jsonschema==3.2.0
+jupyter-client==6.1.11
+jupyter-core==4.7.1
+kombu==5.0.2
+limits==1.5.1
+log-colorizer==1.8.6
+lxml==4.6.2
+Mako==1.1.4
+MarkupSafe==1.1.1
+marshmallow==3.10.0
+maxminddb==2.0.3
+maxminddb-geolite2==2018.703
+mistune==0.8.4
+mock==4.0.3
+msgpack==1.0.2
+MultiMapping==4.1
+multipart==0.2.4
+nbconvert==5.6.1
+nbformat==5.1.2
+node-semver==0.1.1
+oauthlib==2.1.0
+packaging==20.9
+pandocfilters==1.4.3
+parso==0.8.1
+passlib==1.7.4
+PasteDeploy==2.1.1
+pep517==0.9.1
+Persistence==3.0
+persistent==4.6.4
+pexpect==4.8.0
+pickleshare==0.7.5
+Pillow==8.1.0
+pluggy==0.13.1
+prompt-toolkit==3.0.3
+psutil==5.8.0
+psycopg2-binary==2.8.6
+ptyprocess==0.7.0
+py==1.10.0
+pycodestyle==2.6.0
+pycparser==2.20
+pydocstyle==5.1.1
+Pygments==2.8.0
+PyJWT==2.0.1
+pynpm==0.1.2
+pyparsing==2.4.7
+pyreadline==2.1
+pyrsistent==0.17.3
+pytest==6.2.2
+pytest-cov==2.11.1
+pytest-dotenv==0.5.2
+pytest-flask==1.1.0
+pytest-invenio==1.4.1
+pytest-isort==1.3.0
+pytest-mock==3.5.1
+pytest-pycodestyle==2.2.0
+pytest-pydocstyle==2.2.0
+pytest-runner==5.3.0
+python-dateutil==2.8.1
+python-dotenv==0.15.0
+python-editor==1.0.4
+python-gettext==4.0
+python-magic==0.4.20
+pytz==2021.1
+pywebpack==1.2.0
+pyzmq==22.0.3
+redis==3.5.3
+requests==2.25.1
+requests-oauthlib==1.1.0
+responses==0.12.1
+RestrictedPython==5.1
+roman==3.3
+selenium==3.141.0
+simplejson==3.17.2
+simplekv==0.14.1
+six==1.15.0
+snowballstemmer==2.1.0
+soupsieve==2.2
+spark-parser==1.8.9
+speaklater==1.3
+SQLAlchemy==1.3.23
+SQLAlchemy-Continuum==1.3.11
+SQLAlchemy-Utils==0.35.0
+testpath==0.4.4
+toml==0.10.2
+tornado==5.1.1
+tornado-systemd==1.0.1
+traitlets==4.3.3
+transaction==3.0.1
+typing-extensions==3.7.4.3
+ua-parser==0.10.0
+uncompyle6==3.7.4
+uritools==3.0.0
+urllib3==1.26.3
+validators==0.18.2
+vine==5.0.0
+waitress==1.4.4
+Wand==0.6.5
+wcwidth==0.2.5
+wdb==3.3.0
+wdb.server==3.3.0
+webargs==5.5.3
+webencodings==0.5.1
+WebOb==1.8.7
+WebTest==2.0.35
+Werkzeug==1.0.1
+WSGIProxy2==0.4.6
+WTForms==2.3.3
+WTForms-Alchemy==0.17.0
+WTForms-Components==0.10.5
+xdis==5.0.7
+z3c.pt==3.3.0
+zc.lockfile==2.0
+ZConfig==3.5.0
+zExceptions==4.1
+zipp==3.4.0
+ZODB==5.6.0
+zodbpickle==2.0.0
+Zope==5.1.1
+zope.annotation==4.7.0
+zope.browser==2.3
+zope.browsermenu==4.4
+zope.browserpage==4.4.0
+zope.browserresource==4.4
+zope.cachedescriptors==4.3.1
+zope.component==4.6.2
+zope.configuration==4.4.0
+zope.container==4.4.0
+zope.contentprovider==4.2.1
+zope.contenttype==4.5.0
+zope.deferredimport==4.3.1
+zope.deprecation==4.4.0
+zope.dottedname==4.3
+zope.event==4.5.0
+zope.exceptions==4.4
+zope.filerepresentation==5.0.0
+zope.globalrequest==1.5
+zope.hookable==5.0.1
+zope.i18n==4.7.0
+zope.i18nmessageid==5.0.1
+zope.interface==5.2.0
+zope.lifecycleevent==4.3
+zope.location==4.2
+zope.pagetemplate==4.5.0
+zope.processlifetime==2.3.0
+zope.proxy==4.3.5
+zope.ptresource==4.2.0
+zope.publisher==6.0.0
+zope.schema==6.1.0
+zope.security==5.1.1
+zope.sequencesort==4.1.2
+zope.site==4.4.0
+zope.size==4.3
+zope.structuredtext==4.3
+zope.tal==4.4
+zope.tales==5.1
+zope.testbrowser==5.5.1
+zope.testing==4.9
+zope.traversing==4.4.1
+zope.viewlet==4.2.1

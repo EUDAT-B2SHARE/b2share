@@ -27,7 +27,7 @@ import json
 
 from flask_principal import Permission, Need
 from invenio_access.permissions import (
-    DynamicPermission, ParameterizedActionNeed,
+    Permission, ParameterizedActionNeed,
 )
 
 
@@ -68,7 +68,7 @@ def authenticated_only(*args, **kwargs):
    and authenticated users.
 """
 
-class StrictDynamicPermission(DynamicPermission):
+class StrictDynamicPermission(Permission):
     """Stricter DynamicPermission.
 
     It adds the given needs to the returned needs instead of using only
@@ -77,9 +77,6 @@ class StrictDynamicPermission(DynamicPermission):
         - Identities can also provide a need without using the database.
         - The permission is not given even if there are no needs in the
             database. Thus the action is not allowed by default.
-
-    NOTE: This could be deprecated as the current version of invenio-access'
-    DynamicPermission class forbids by default instead of allowing.
     """
     def __init__(self, *needs):
         self.explicit_excludes = set()

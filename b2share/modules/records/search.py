@@ -78,6 +78,8 @@ class B2ShareRecordsSearch(RecordsSearch):
 
             filters = [Q('term', **{'_deposit.owners': current_user.id})]
 
+            from b2share.modules.deposit.permissions import list_readable_communities
+
             readable_communities = list_readable_communities(current_user.id)
             for publication_state in readable_communities.all:
                 filters.append(Q('term', publication_state=publication_state))

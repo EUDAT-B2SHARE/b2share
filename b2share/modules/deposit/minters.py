@@ -28,7 +28,6 @@ from __future__ import absolute_import, print_function
 import uuid
 
 from .providers import DepositUUIDProvider
-from b2share.modules.records.providers import RecordUUIDProvider
 
 
 def b2share_deposit_uuid_minter(record_uuid, data):
@@ -52,6 +51,8 @@ def b2share_deposit_uuid_minter(record_uuid, data):
             # FIXME: do not set the status once it is done by invenio-deposit API
             'status': 'draft',
         }
+
+    from b2share.modules.records.providers import RecordUUIDProvider
 
     # reserve the record PID
     RecordUUIDProvider.create(

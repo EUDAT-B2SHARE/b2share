@@ -1,192 +1,178 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of EUDAT B2Share.
-# Copyright (C) 2016 University of Tuebingen, CERN.
+# This file is part of Invenio.
+# Copyright (C) 2017-2018 CERN.
 #
-# B2Share is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of the
-# License, or (at your option) any later version.
-#
-# B2Share is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with B2Share; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-#
-# In applying this license, CERN does not
-# waive the privileges and immunities granted to it by virtue of its status
-# as an Intergovernmental Organization or submit itself to any jurisdiction.
+# Invenio is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
 
-"""Application factory creating the B2SHARE application.
+"""Flask application factories for Invenio flavours."""
 
-This module is the starting point of a B2SHARE service.
-
-The real B2SHARE application is the HTTP REST API application created by
-:py:func:`~.create_api`. However the UI files (ReactJS) also need to be served
-to the users' browser.
-It would be better to serve it via NGINX but up to now we chose to serve it
-via another top Flask application. The requests are dispatched between this
-UI application and the REST API application depending on the request URL. Any
-request whose endpoint starts with ``/api`` will be redirected to the REST API
-application.
-
-.. graphviz::
-
-    digraph G {
-    rankdir=TB;
-
-    web [
-        label="WEB",
-        width=3,
-        height=1.5,
-        fixedsize=true,
-        shape=rectangle
-        color=grey,
-        style=filled,
-    ];
-    web -> dispatcher [label="request"];
-
-    subgraph cluster_invenio_stats {
-        rank=same;
-        fontsize = 20;
-        label = "B2SHARE";
-        style = "solid";
-
-        dispatcher [label="DispatcherMiddleware", shape="parallelogram"]
-        app [label="Top Flask\\napplication", shape="Mcircle"];
-        rest_app [label="REST API\\nApplication", shape="Mcircle"]
-        ui_files [label="UI Files", shape="folder"]
-        communities_views [label="b2share.modules.communities.views", shape="rectangle"]
-        schemas_views [label="b2share.modules.schemas.views", shape="rectangle"]
-        other_views [label="...", shape="rectangle"]
-    }
-    dispatcher -> app [label="endpoint != '/api/*'"];
-    app -> ui_files [label="serves"];
-    dispatcher -> rest_app [label="endpoint == '/api/*'"];
-    rest_app -> communities_views [label="endpoint in\\n['/api/communities/*', ...]"]
-    rest_app -> schemas_views [label="endpoint in\\n['/api/communities/<ID>/schemas/*', ...]"]
-    rest_app -> other_views [label="endpoint == '...'"]
-    }
-
-See Invenio and invenio_base module for more information regarding how Invenio
-applications are created. The *"UI Application"* in our case is a custom
-one, it does not match *"Invenio UI application"* which serves default
-Invenio UI.
-
-The ``*\*.views*`` are the ``views.py`` modules included in modules which
-contain the REST API definition. The requests are dispatched to the right
-view class using the Flask endpoints matching rules.
-
-**TODO**: Note that Invenio has evolved since :py:func:`~.create_app` was
-created. It will be necessary at some point to refactor it.
-"""
+from __future__ import absolute_import, print_function
 
 import os
 import sys
 
-from flask import Flask
+import pkg_resources
+
+from flask import current_app
+
 from invenio_base.app import create_app_factory
-from invenio_config import create_conf_loader
-from werkzeug.wsgi import DispatcherMiddleware
-from werkzeug.contrib.fixers import ProxyFix
+from invenio_base.wsgi import create_wsgi_factory, wsgi_proxyfix
+from invenio_base.signals import app_created, app_loaded
+from invenio_cache import BytecodeCache
+from invenio_config import create_config_loader
+
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 from . import config
 
 env_prefix = 'B2SHARE'
 
-config_loader = create_conf_loader(config=config, env_prefix=env_prefix)
+invenio_config_loader = create_config_loader(
+    config=config, env_prefix=env_prefix
+)
 
-instance_path = os.getenv(env_prefix + '_INSTANCE_PATH') or \
-    os.path.join(sys.prefix, 'var', 'b2share-instance')
-"""Instance path for B2Share."""
+@app_created.connect
+def receiver_app_created(sender, app=None, **kwargs):
+    app.logger.debug("Application created")
 
+@app_loaded.connect
+def receiver_app_loaded(sender, app=None, **kwargs):
+    app.logger.debug("Application Loaded")
+    app.logger.debug("Instance Path: {}".format(app.instance_path))
+    check_configuration(app.config, app.logger)
 
-def create_api(*args, **kwargs):
-    """Create Flask application providing B2SHARE REST API."""
-    app = create_app_factory(
-        'b2share',
-        config_loader=config_loader,
-        extension_entry_points=['invenio_base.api_apps'],
-        blueprint_entry_points=['invenio_base.api_blueprints'],
-        converter_entry_points=['invenio_base.api_converters'],
-        instance_path=instance_path,
-    )(*args, **kwargs)
-    return app
+def instance_path():
+    """Instance path for Invenio.
 
-
-def create_app(**kwargs):
-    """Create Flask application providing B2SHARE UI and REST API.abs
-
-    The REST API is provided by redirecting any request to another Flask
-    application created with :func:`~.create_api`.
+    Defaults to ``<env_prefix>_INSTANCE_PATH``
+     or if environment variable is not set ``<sys.prefix>/var/instance``.
     """
-    # Create the REST API Flask application
-    api = create_api(**kwargs)
-    api.config.update(
-        APPLICATION_ROOT='/api'
+    return os.getenv(env_prefix + '_INSTANCE_PATH') or \
+        os.path.join(sys.prefix, 'var', 'instance')
+
+
+def static_folder():
+    """Static folder path.
+
+    Defaults to ``<env_prefix>_STATIC_FOLDER``
+    or if environment variable is not set ``<sys.prefix>/var/instance/static``.
+    """
+    return os.getenv(env_prefix + '_STATIC_FOLDER') or \
+        os.path.join(instance_path(), 'static')
+
+
+def static_url_path():
+    """Static url path.
+
+    Defaults to ``<env_prefix>_STATIC_URL_PATH``
+    or if environment variable is not set ``/static``.
+    """
+    return os.getenv(env_prefix + '_STATIC_URL_PATH') or '/static'
+
+
+def config_loader(app, **kwargs_config):
+    """Configuration loader.
+
+    Adds support for loading templates from the Flask application's instance
+    folder (``<instance_folder>/templates``).
+    """
+    # This is the only place customize the Flask application right after
+    # it has been created, but before all extensions etc are loaded.
+    local_templates_path = os.path.join(app.instance_path, 'theme/templates')
+    if os.path.exists(local_templates_path):
+        # Let's customize the template loader to look into packages
+        # and application templates folders.
+        app.jinja_loader = ChoiceLoader([
+            FileSystemLoader(local_templates_path),
+            app.jinja_loader,
+        ])
+
+    app.jinja_options = dict(
+        app.jinja_options,
+        cache_size=1000,
+        bytecode_cache=BytecodeCache(app)
     )
-    app_ui = Flask(__name__,
-                   static_folder=os.environ.get(
-                       'B2SHARE_UI_PATH',
-                       os.path.join(api.instance_path, 'static')),
-                   static_url_path='',
-                   instance_path=api.instance_path)
 
-    add_routes(app_ui)
-
-    api.wsgi_app = DispatcherMiddleware(app_ui.wsgi_app, {
-        '/api': api.wsgi_app
-    })
-    if api.config.get('WSGI_PROXIES'):
-        wsgi_proxies = api.config.get('WSGI_PROXIES')
-        assert(wsgi_proxies > 0)
-        api.wsgi_app = ProxyFix(api.wsgi_app,
-                                num_proxies=api.config['WSGI_PROXIES'])
-
-    check_configuration(api.config, api.logger)
-
-    return api
+    invenio_config_loader(app, **kwargs_config)
 
 
-def add_routes(app_ui):
-    @app_ui.route('/')
-    def root():
-        return app_ui.send_static_file('index.html')
+class TrustedHostsMixin(object):
+    """Mixin for reading trusted hosts from application config."""
 
-    @app_ui.route('/help', defaults={'path': ''})
-    @app_ui.route('/help/', defaults={'path': ''})
-    @app_ui.route('/help/<path:path>')
-    def serve_help(path):
-        return app_ui.send_static_file('index.html')
+    @property
+    def trusted_hosts(self):
+        """Get list of trusted hosts."""
+        if current_app:
+            return current_app.config.get('APP_ALLOWED_HOSTS', None)
 
-    @app_ui.route('/communities', defaults={'path': ''})
-    @app_ui.route('/communities/', defaults={'path': ''})
-    @app_ui.route('/communities/<path:path>')
-    def serve_communities(path):
-        return app_ui.send_static_file('index.html')
 
-    @app_ui.route('/user', defaults={'path': ''})
-    @app_ui.route('/user/', defaults={'path': ''})
-    @app_ui.route('/user/<path:path>')
-    def serve_user(path):
-        return app_ui.send_static_file('index.html')
+def app_class():
+    """Create Flask application class.
 
-    @app_ui.route('/records', defaults={'path': ''})
-    @app_ui.route('/records/', defaults={'path': ''})
-    @app_ui.route('/records/<path:path>')
-    def serve_records(path):
-        return app_ui.send_static_file('index.html')
+    Invenio-Files-REST needs to patch the Werkzeug form parsing in order to
+    support streaming large file uploads. This is done by subclassing the Flask
+    application class.
+    """
+    try:
+        pkg_resources.get_distribution('invenio-files-rest')
+        from invenio_files_rest.app import Flask as FlaskBase
+    except pkg_resources.DistributionNotFound:
+        from flask import Flask as FlaskBase
 
-    @app_ui.route('/search', defaults={'path': ''})
-    @app_ui.route('/search/', defaults={'path': ''})
-    @app_ui.route('/search/<path:path>')
-    def serve_search(path):
-        return app_ui.send_static_file('index.html')
+    # Add Host header validation via APP_ALLOWED_HOSTS configuration variable.
+    class Request(TrustedHostsMixin, FlaskBase.request_class):
+        pass
 
+    class Flask(FlaskBase):
+        request_class = Request
+
+    return Flask
+
+
+create_api = create_app_factory(
+    'invenio',
+    config_loader=config_loader,
+    blueprint_entry_points=['invenio_base.api_blueprints'],
+    extension_entry_points=['invenio_base.api_apps'],
+    converter_entry_points=['invenio_base.api_converters'],
+    wsgi_factory=wsgi_proxyfix(),
+    instance_path=instance_path,
+    app_class=app_class(),
+)
+"""Flask application factory for Invenio REST API."""
+
+#create_ui = create_app_factory(
+#    'invenio',
+#    config_loader=config_loader,
+#    blueprint_entry_points=['invenio_base.blueprints'],
+#    extension_entry_points=['invenio_base.apps'],
+#    converter_entry_points=['invenio_base.converters'],
+#    wsgi_factory=wsgi_proxyfix(),
+#    instance_path=instance_path,
+#    static_folder=static_folder,
+#    static_url_path=static_url_path(),
+#    app_class=app_class(),
+#)
+#"""Flask application factory for Invenio UI."""
+
+create_app = create_app_factory(
+    'invenio',
+    config_loader=config_loader,
+    blueprint_entry_points=['invenio_base.blueprints'],
+    extension_entry_points=['invenio_base.apps'],
+    converter_entry_points=['invenio_base.converters'],
+    wsgi_factory=wsgi_proxyfix(create_wsgi_factory({'/api': create_api})),
+    instance_path=instance_path,
+    static_folder=static_folder,
+    static_url_path=static_url_path(),
+    app_class=app_class(),
+)
+"""Flask application factory used for CLI, UI and API for combined UI + REST API.
+
+REST API is mounted under ``/api``.
+"""
 
 def check_configuration(config, logger):
     errors_found = False
@@ -199,11 +185,10 @@ def check_configuration(config, logger):
         if not config.get(var_name):
             error("Configuration variable expected: {}".format(var_name))
 
-    if not os.environ.get('B2SHARE_SECRET_KEY'):
+    if not os.environ.get('B2SHARE_SECRET_KEY', '*** SECRET_KEY ***'):
         error("Environment variable not defined: B2SHARE_SECRET_KEY")
 
     check('SQLALCHEMY_DATABASE_URI')
-
     check('JSONSCHEMAS_HOST')
     check('PREFERRED_URL_SCHEME')
 

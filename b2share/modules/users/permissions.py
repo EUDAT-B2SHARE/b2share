@@ -32,9 +32,6 @@ from b2share.modules.access.permissions import (
     StrictDynamicPermission,
     generic_need_factory,
 )
-from b2share.modules.communities.api import (
-    get_role_community_id, is_community_role
-)
 from invenio_access.permissions import (
     ParameterizedActionNeed, superuser_access
 )
@@ -72,6 +69,10 @@ class RoleAssignPermission(StrictDynamicPermission):
             role: assigned role.
             user: user to whom the role is assigned.
         """
+        from b2share.modules.communities.api import (
+            get_role_community_id, is_community_role
+        )
+
         super(RoleAssignPermission, self).__init__()
         # ask for the permission to assign this specific role
         self.explicit_needs.add(assign_role_need_factory(role=role.id))

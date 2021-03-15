@@ -29,28 +29,30 @@ from __future__ import absolute_import
 from functools import wraps
 
 from flask import Blueprint, abort, request, current_app
-from invenio_rest import ContentNegotiatedMethodView
-from b2share.modules.communities.views import pass_community
-from b2share.modules.schemas.errors import InvalidBlockSchemaError, \
-    InvalidSchemaVersionError, SchemaVersionExistsError
+
 from jsonpatch import JsonPatchConflict, JsonPatchException, \
     InvalidJsonPatch
+
+from invenio_rest import ContentNegotiatedMethodView
+
+from b2share.modules.schemas.errors import InvalidBlockSchemaError, \
+    InvalidSchemaVersionError, SchemaVersionExistsError
+
 
 from .api import BlockSchema, CommunitySchema
 from .errors import BlockSchemaDoesNotExistError, \
     CommunitySchemaDoesNotExistError
+
 from .serializers import block_schema_version_to_json_serializer, \
     block_schema_to_dict, \
     community_schema_to_json_serializer, \
     block_schema_to_json_serializer, schemas_list_to_json_serializer
 from invenio_db import db
-from webargs import fields
-from webargs.flaskparser import use_kwargs
 
 
 blueprint = Blueprint(
     'b2share_schemas',
-    __name__,
+    __name__
 )
 
 

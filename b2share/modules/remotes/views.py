@@ -39,6 +39,7 @@ from .b2drop import B2DropClient
 blueprint = Blueprint(
     'remotes',
     __name__,
+    url_prefix = '/remotes'
 )
 
 
@@ -183,11 +184,11 @@ def put_file_into_bucket(bucket_id, key, stream, content_length):
     return create_object(key=key, bucket=bucket)
 
 
-blueprint.add_url_rule('/remotes/jobs',
+blueprint.add_url_rule('/jobs',
                        view_func=Jobs.as_view(Jobs.view_name))
 
-blueprint.add_url_rule('/remotes/<service>',
+blueprint.add_url_rule('/<service>',
                        view_func=RemoteList.as_view(RemoteList.view_name))
 
-blueprint.add_url_rule('/remotes/b2drop/<path:path>',
+blueprint.add_url_rule('/b2drop/<path:path>',
                        view_func=B2DropRemote.as_view(B2DropRemote.view_name))

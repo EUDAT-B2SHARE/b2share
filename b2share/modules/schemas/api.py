@@ -32,8 +32,6 @@ import sqlalchemy
 from invenio_db import db
 from sqlalchemy.orm.exc import NoResultFound
 
-from b2share.modules.communities import Community
-from b2share.modules.schemas.helpers import validate_json_schema
 
 from jsonpatch import apply_patch
 from .errors import BlockSchemaDoesNotExistError, BlockSchemaIsDeprecated, \
@@ -77,6 +75,8 @@ class RootSchema(object):
                 The given JSON Schema is not valid.
         """
         from .models import RootSchemaVersion
+        from b2share.modules.schemas.helpers import validate_json_schema
+
         if not isinstance(json_schema, dict):
             raise InvalidJSONSchemaError('json_schema must be a dict')
 
@@ -131,6 +131,8 @@ class RootSchema(object):
                 The given JSON Schema is not valid.
         """
         from .models import RootSchemaVersion
+        from b2share.modules.schemas.helpers import validate_json_schema
+
         if not isinstance(json_schema, dict):
             raise InvalidJSONSchemaError('json_schema must be a dict')
 
@@ -304,6 +306,8 @@ class BlockSchema(object):
 
         """
         from .models import BlockSchemaVersion as BlockSchemaVersionModel
+        from b2share.modules.schemas.helpers import validate_json_schema
+
 
         if self.deprecated:
             raise BlockSchemaIsDeprecated()
@@ -379,6 +383,9 @@ class BlockSchema(object):
             :class:`b2share.modules.schemas.errors.InvalidBlockSchemaError`:
                 if another conflict occured.
         """  # noqa
+
+        from b2share.modules.communities import Community
+
         try:
             with db.session.begin_nested():
                 self.model.community = community_id
@@ -585,6 +592,8 @@ class CommunitySchema(object):
                 new Community schema.
         """
         from .models import CommunitySchemaVersion
+        from b2share.modules.schemas.helpers import validate_json_schema
+
 
         previous_community_schemas = _fetch_all_query_pages(
             CommunitySchemaVersion.query.filter(

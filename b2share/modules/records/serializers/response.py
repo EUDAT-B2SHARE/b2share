@@ -38,6 +38,17 @@ from b2share.modules.deposit.links import deposit_links_factory
 from b2share.modules.deposit.fetchers import b2share_deposit_uuid_fetcher
 
 
+def add_link_header(response, links):
+    """Add a Link HTTP header to a REST response.
+    :param response: REST response instance
+    :param links: Dictionary of links
+    """
+    if links is not None:
+        response.headers.extend({
+            'Link': ', '.join([
+                '<{0}>; rel="{1}"'.format(l, r) for r, l in links.items()])
+        })
+
 def record_responsify(serializer, mimetype):
     """Create a Records-REST response serializer.
 
@@ -64,25 +75,49 @@ def record_responsify(serializer, mimetype):
         return response
     return view
 
+def search_responsify(serializer, mimetype):
+    """Create a Records-REST search result response serializer.
+    :param serializer: Serializer instance.
+    :param mimetype: MIME type of response.
+    :returns: Function that generates a record HTTP response.
+    """
+    def view(pid_fetcher, search_result, code=200, headers=None, links=None,
+             item_links_factory=None):
+        response = current_app.response_class(
+            serializer.serialize_search(pid_fetcher, search_result,
+                                        links=links,
+                                        item_links_factory=item_links_factory),
+            mimetype=mimetype)
+        response.status_code = code
+        if headers is not None:
+            response.headers.extend(headers)
+
+        if links is not None:
+            add_link_header(response, links)
+
+        return response
+
+    return view
+
 
 class JSONSerializer(InvenioJSONSerializer):
-    def preprocess_record(self, pid, record, links_factory=None):
+    def preprocess_record(self, pid, record, links_factory=None, **kwargs):
         g.record = record
         return super(JSONSerializer, self).preprocess_record(
-            pid, record, links_factory)
+            pid, record, links_factory, **kwargs)
 
-    def serialize(self, pid, record, links_factory=None):
+    def serialize(self, pid, record, links_factory=None, **kwargs):
         """B2ShareRecord serializer."""
         return super(JSONSerializer, self).\
-            serialize(pid, record, links_factory)
+            serialize(pid, record, links_factory, **kwargs)
 
-    def transform_search_hit(self, pid, record_hit, links_factory=None):
+    def transform_search_hit(self, pid, record_hit, links_factory=None, **kwargs):
         g.record_hit = record_hit
         return super(JSONSerializer, self).transform_search_hit(
-            pid, record_hit, links_factory)
+            pid, record_hit, links_factory, **kwargs)
 
     def serialize_search(self, pid_fetcher, search_result, links=None,
-                         item_links_factory=None):
+                         item_links_factory=None, **kwargs):
             """Serialize a search result.
             :param pid_fetcher: Persistent identifier fetcher. It is overriden
                                 if the request searches for draft records.
@@ -92,4 +127,4 @@ class JSONSerializer(InvenioJSONSerializer):
                 item_links_factory = deposit_links_factory
             return super(JSONSerializer, self).serialize_search(
                 pid_fetcher=pid_fetcher, search_result=search_result,
-                links=links, item_links_factory=item_links_factory)
+                links=links, item_links_factory=item_links_factory, **kwargs)

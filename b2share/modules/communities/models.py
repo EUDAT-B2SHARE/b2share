@@ -31,10 +31,11 @@ from sqlalchemy.sql import expression
 from sqlalchemy_utils.models import Timestamp
 from sqlalchemy_utils.types import UUIDType
 from sqlalchemy import event
+
 from invenio_accounts.models import Role
 from invenio_access.models import ActionRoles
 from invenio_oaiserver.models import OAISet
-from b2share.utils import add_to_db
+
 
 
 class Community(db.Model, Timestamp):
@@ -116,6 +117,8 @@ def create_roles_and_permissions(community, fix=False):
     from b2share.modules.users.permissions import (
         assign_role_need_factory, search_accounts_need,
     )
+    from b2share.utils import add_to_db
+
     admin_role = Role(
         name=_community_admin_role_name(community),
         description='Admin role of the community "{}"'.format(community.name)
@@ -182,6 +185,9 @@ def create_community_oaiset(community, fix=False):
     :param fix: Enable the fixing of the database. This function doesn't fail
         if the oai set already exists. It will just add it if it is missing.
     """
+
+    from b2share.utils import add_to_db
+
     oaiset = OAISet(spec=str(community.id), name=community.name,
                     description=community.description)
     add_to_db(oaiset, skip_if_exists=fix)
@@ -189,5 +195,5 @@ def create_community_oaiset(community, fix=False):
 
 __all__ = (
     'Community',
-    'CommunityRole',
+#    'CommunityRole',
 )

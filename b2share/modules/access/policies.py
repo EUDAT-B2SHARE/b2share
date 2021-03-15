@@ -24,9 +24,10 @@
 """B2Share access policies."""
 
 
+import pytz
+
 from dateutil.parser import parse as dateutil_parse
 from datetime import datetime, timezone
-import pytz
 
 
 def allow_public_file_metadata(record_metadata):

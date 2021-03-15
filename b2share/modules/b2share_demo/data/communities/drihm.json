@@ -1,0 +1,81 @@
+{
+    "id": "94a9567e-2fba-4677-8fde-a8b68bdb63e8",
+    "description": "Meteorology and climate data.",
+    "name": "DRIHM",
+    "logo": "/img/communities/drihm.png",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+        {
+            "json_schema": {
+                "additionalProperties": false,
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "properties": {
+                    "$BLOCK_SCHEMA_ID[drihm]": {
+                        "$ref": "$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[drihm]::0]#/json_schema"
+                    }
+                },
+                "required": ["$BLOCK_SCHEMA_ID[drihm]"],
+                "type": "object"
+            },
+            "root_schema_version": 0
+        }
+    ],
+    "block_schemas": {
+        "drihm": {
+            "id": "5108aff5-be5b-4d92-968a-22930ee65e94",
+            "versions": [
+                {
+                    "description": "This is the blueprint of the metadata block specific for the DRIHM community",
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "required": [ "ref_date", "reference_system","topic", "responsible_party", "geo_location", "spatial_resolution", "vertical_extent", "lineage" ],
+                    "title": "DRIHM Metadata",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "ref_date": {
+                            "title": "Reference date",
+                            "description": "Reference date",
+                            "type": "string"
+                        },
+                        "vertical_extent": {
+                            "title": "Vertical Extent",
+                            "description": "Vertical Extent",
+                            "type": "string"
+                        },
+                        "geo_location": {
+                            "title": "Geographic Location",
+                            "description": "Geographic Location",
+                            "type": "string"
+                        },
+                        "lineage": {
+                            "title": "Lineage",
+                            "description": "Lineage",
+                            "type": "string"
+                        },
+                        "responsible_party": {
+                            "title": "Responsible Party",
+                            "description": "Responsible Party",
+                            "type": "string"
+                        },
+                        "reference_system": {
+                            "title": "Reference System",
+                            "description": "Reference System",
+                            "type": "string"
+                        },
+                        "spatial_resolution": {
+                            "title": "Spatial Resolution",
+                            "description": "Spatial Resolution",
+                            "type": "string"
+                        },
+                        "topic": {
+                            "title": "Topic Category",
+                            "description": "Topic Category",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

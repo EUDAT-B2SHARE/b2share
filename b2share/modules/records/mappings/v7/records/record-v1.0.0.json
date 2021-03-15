@@ -1,0 +1,162 @@
+{
+  "mappings": {
+    "date_detection": false,
+    "numeric_detection": false,
+    "properties": {
+      "$schema": {
+        "type": "text"
+      },
+      "_created": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "_files": {
+        "properties": {
+          "bucket": {
+            "type": "text"
+          },
+          "checksum": {
+            "type": "text"
+          },
+          "key": {
+            "type": "text"
+          },
+          "size": {
+            "type": "long"
+          },
+          "version_id": {
+            "type": "text"
+          }
+        }
+      },
+      "_internal": {
+        "properties": {
+          "files_bucket_id": {
+            "type": "text"
+          }
+        }
+      },
+      "_oai": {
+        "properties": {
+          "id": {
+            "type": "text"
+          },
+          "updated": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis"
+          }
+        }
+      },
+      "_pid": {
+        "properties": {
+          "type": {
+            "type": "text"
+          },
+          "value": {
+            "type": "text"
+          }
+        }
+      },
+      "_updated": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "embargo_date": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "alternate_identifiers": {
+        "properties": {
+          "alternate_identifier": {
+            "type": "text"
+          },
+          "alternate_identifier_type": {
+            "type": "keyword"
+          }
+        }
+      },
+      "community": {
+        "type": "keyword"
+      },
+      "contact_email": {
+        "type": "keyword"
+      },
+      "creators": {
+        "properties": {
+          "creator_name": {
+            "type": "text"
+          }
+        }
+      },
+      "descriptions": {
+        "properties": {
+          "description": {
+            "type": "text",
+            "analyzer": "english"
+          },
+          "description_type": {
+            "type": "keyword"
+          }
+        }
+      },
+      "text": {
+        "type": "text",
+        "analyzer": "english"
+      },
+      "contributors": {
+        "properties": {
+          "contributor_name": {
+            "type": "keyword"
+          },
+          "contributor_type": {
+            "type": "keyword"
+          }
+        }
+      },
+      "language": {
+        "type": "keyword"
+      },
+      "license": {
+        "properties": {
+          "license": {
+            "type": "text"
+          },
+          "license_uri": {
+            "type": "text"
+          }
+        }
+      },
+      "open_access": {
+        "type": "boolean"
+      },
+      "owners": {
+        "type": "long"
+      },
+      "publication_state": {
+        "type": "keyword"
+      },
+      "publication_date": {
+        "type": "keyword"
+      },
+      "resource_types": {
+        "properties": {
+          "resource_type": {
+            "type": "text",
+            "analyzer": "english"
+          },
+          "resource_type_general": {
+            "type": "keyword"
+          }
+        }
+      },
+      "titles": {
+        "properties": {
+          "title": {
+            "type": "text",
+            "analyzer": "english"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+    "name": "LTER",
+    "description": "Long-Term Ecosystem Research in Europe",
+    "logo": "/img/communities/lter.jpg",
+    "id": "d952913c-451e-4b5c-817e-d578dc8a4469",
+    "publication_workflow": "direct_publish",
+    "restricted_submission": false,
+    "community_schemas": [
+       	 					{
+            					"json_schema": {
+                					"properties": {
+                    					"$BLOCK_SCHEMA_ID[lter]": {
+                        "$ref": 		"$BLOCK_SCHEMA_VERSION_URL[$BLOCK_SCHEMA_ID[lter]::0]#/json_schema"
+                    }
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "additionalProperties": false,
+                "required": ["$BLOCK_SCHEMA_ID[lter]"],
+                "type": "object"
+            },
+            "root_schema_version": 0
+        }
+    ],
+    "block_schemas": {
+        "lter": {
+            "id": "27193e5b-97e6-4f6f-8e87-3694589bcebe",
+            "versions": [
+                {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "description": "This is the blueprint of the metadata block specific for the LTER community",
+                    "title": "LTER Metadata",
+                    "type": "object",
+                    "properties": {
+                        "metadata_url": {
+                            "title": "Metadata URL",
+                            "description": "Metadata URL",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}
