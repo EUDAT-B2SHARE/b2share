@@ -24,7 +24,7 @@
 """Test B2Share communities module's API."""
 
 import pytest
-from helpers import community_metadata, community_patch, community_update, \
+from .helpers import community_metadata, community_patch, community_update, \
     patched_community_metadata, updated_community_metadata
 from invenio_db import db
 from jsonpatch import InvalidJsonPatch, JsonPatchConflict

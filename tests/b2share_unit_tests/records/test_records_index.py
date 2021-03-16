@@ -33,29 +33,35 @@ from invenio_indexer.tasks import process_bulk_queue
 from invenio_indexer.api import RecordIndexer
 from invenio_records.api import Record
 from b2share.modules.deposit.api import Deposit
-
+from time import sleep
 
 def test_record_indexing(app, test_users, test_records, script_info,
                            login_user):
     """Test record indexing and reindexing."""
     creator = test_users['deposits_creator']
-
+    
     with app.app_context():
         # flush the indices so that indexed records are searchable
-        current_search_client.indices.flush('*')
+        current_search_client.indices.flush(index='_all', params= {'force':'true'})
+        current_search_client.indices.refresh(index='_all')
+        sleep(1)
+
     # records and deposits should be indexed
     subtest_record_search(app, creator, test_records, test_records, login_user)
 
     with app.app_context():
-        current_search_client.indices.flush('*')
+        current_search_client.indices.flush(index='_all', params= {'force':'true'})
+        current_search_client.indices.refresh(index='_all')
         # delete all elasticsearch indices and recreate them
         for deleted in current_search.delete(ignore=[404]):
             pass
         for created in current_search.create(None):
             pass
         # flush the indices so that indexed records are searchable
-        current_search_client.indices.flush('*')
-
+        current_search_client.indices.flush(index='_all', params= {'force':'true'})
+        current_search_client.indices.refresh(index='_all')
+        sleep(1)
+       
     # all records should have been deleted
     subtest_record_search(app, creator, [], [], login_user)
 
@@ -66,12 +72,14 @@ def test_record_indexing(app, test_users, test_records, script_info,
                             obj=script_info)
         assert 0 == res.exit_code
         # schedule a reindex task
-        res = runner.invoke(cli.reindex, ['--yes-i-know'], obj=script_info)
+        res = runner.invoke(cli.reindex, ['--yes-i-know', '-t', 'records'], obj=script_info)
         assert 0 == res.exit_code
         # execute scheduled tasks synchronously
         process_bulk_queue.delay()
         # flush the indices so that indexed records are searchable
-        current_search_client.indices.flush('*')
+        current_search_client.indices.flush(index='_all', params= {'force':'true'})
+        current_search_client.indices.refresh(index='_all')
+        sleep(1)
 
     # records and deposits should be indexed again
     subtest_record_search(app, creator, test_records, test_records, login_user)
@@ -79,6 +87,7 @@ def test_record_indexing(app, test_users, test_records, script_info,
 
 def subtest_record_search(app, creator, test_records, test_deposits,
                           login_user):
+    
     """Check that all expected published and deposit records are found."""
     with app.app_context():
         search_url = url_for('b2share_records_rest.b2rec_list')
@@ -97,6 +106,7 @@ def subtest_record_search(app, creator, test_records, test_deposits,
         assert record_search_res.status_code == 200
         record_search_data = json.loads(
             record_search_res.get_data(as_text=True))
+     
         assert record_search_data['hits']['total'] == len(test_records)
         record_pids = [hit['id'] for hit
                        in record_search_data['hits']['hits']]
@@ -135,6 +145,8 @@ def test_record_unindex(app, test_users, test_records, script_info,
         process_bulk_queue.delay()
         # flush the indices so that indexed records are searchable
         current_search_client.indices.flush('*')
+        sleep(1)
+
     # deleted record should not be searchable
     subtest_record_search(app, creator, test_records[1:], test_records,
                           login_user)
@@ -151,6 +163,8 @@ def test_unpublished_deposit_unindex(app, test_users, draft_deposits, script_inf
         process_bulk_queue.delay()
         # flush the indices so that indexed records are searchable
         current_search_client.indices.flush('*')
+        sleep(1)
+
     # deleted record should not be searchable
     subtest_record_search(app, creator, [], draft_deposits[1:],
                           login_user)
@@ -167,6 +181,7 @@ def test_published_deposit_unindex(app, test_users, test_records, script_info,
         process_bulk_queue.delay()
         # flush the indices so that indexed records are searchable
         current_search_client.indices.flush('*')
+        sleep(1)
     # deleted record should not be searchable
     subtest_record_search(app, creator, test_records, test_records[1:],
                           login_user)
@@ -185,6 +200,12 @@ def test_record_index_after_update(app, test_users, test_records, script_info,
         process_bulk_queue.delay()
         # flush the indices so that indexed records are searchable
         current_search_client.indices.flush('*')
+
+        # HK: If i do not sleep a little, then ES is not flushed, and i do not get back
+        # updated results inn next query. So there is an issue with 'flush' than needs
+        # attention, for this test to pass, I just sleep 1 second...
+
+        sleep(1)
         search_url = url_for('b2share_records_rest.b2rec_list')
 
     headers = [('Content-Type', 'application/json'),

@@ -58,7 +58,7 @@ def test_records_serializers_dc(app, test_records_data):
     with app.app_context():
         pid, record = make_record(test_records_data)
         rec = {
-            '_source': RecordIndexer._prepare_record(
+            '_source': RecordIndexer()._prepare_record(
                 record, 'records', 'record'
             ).copy(),
             '_version': record.revision_id
@@ -107,7 +107,7 @@ def test_records_serializers_marc(app, test_records_data):
     with app.app_context():
         pid, record = make_record(test_records_data)
         rec = {
-            '_source': RecordIndexer._prepare_record(
+            '_source': RecordIndexer()._prepare_record(
                 record, 'records', 'record'
             ).copy(),
             '_version': record.revision_id

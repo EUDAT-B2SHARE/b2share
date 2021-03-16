@@ -40,10 +40,10 @@ from flask.cli import ScriptInfo
 import pytest
 import responses
 from jsonpatch import apply_patch
-from b2share_unit_tests.helpers import authenticated_user, create_user
+from tests.b2share_unit_tests.helpers import authenticated_user, create_user
 from b2share.modules.deposit.api import Deposit as B2ShareDeposit
 from b2share.modules.schemas.helpers import load_root_schemas
-from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from b2share.modules.b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from flask_security import url_for_security
 from invenio_db import db
 from invenio_files_rest.models import Location
@@ -222,7 +222,7 @@ def login_user(app):
 @pytest.fixture(scope='function')
 def test_communities(app, tmp_location):
     """Load test communities."""
-    from b2share_demo.helpers import load_demo_data
+    from b2share.modules.b2share_demo.helpers import load_demo_data
 
     with app.app_context():
         tmp_location.default = True

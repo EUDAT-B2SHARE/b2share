@@ -37,7 +37,7 @@ from six import string_types, BytesIO
 from flask_login import login_user, logout_user
 from invenio_accounts.models import User
 from b2share.modules.deposit.api import Deposit
-from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from b2share.modules.b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
 from b2share.modules.deposit.api import PublicationStates
 from b2share.modules.deposit.minters import b2share_deposit_uuid_minter
 from invenio_indexer.api import RecordIndexer

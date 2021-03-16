@@ -156,7 +156,7 @@ def test_init_fail_and_retry(clean_app):
         # create a conflicting table.
         db.engine.execute('CREATE table b2share_community (wrong int);')
         result = upgrade_run(clean_app)
-        assert result.exit_code == -1
+        assert result.exit_code != 0
 
         # remove the problematic table
         db.engine.execute('DROP table b2share_community;')

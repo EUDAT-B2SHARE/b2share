@@ -27,7 +27,7 @@ import json
 
 import pytest
 from flask import url_for
-from helpers import community_metadata
+from .helpers import community_metadata
 from invenio_db import db
 
 from b2share.modules.communities import B2ShareCommunities

@@ -238,7 +238,7 @@ class CommunityResource(ContentNegotiatedMethodView):
     #     return '', 204
 
     @pass_community
-    #@need_community_permission(read_permission_factory)
+    @need_community_permission(read_permission_factory)
     def get(self, community, **kwargs):
         """Get a community's metadata."""
         # check the ETAG

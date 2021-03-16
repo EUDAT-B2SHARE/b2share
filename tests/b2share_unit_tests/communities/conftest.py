@@ -24,7 +24,7 @@
 """Pytest configuration for b2share communities."""
 
 import pytest
-from helpers import patch_with_json_diff, patch_with_json_patch
+from .helpers import patch_with_json_diff, patch_with_json_patch
 from invenio_access.models import ActionUsers
 from invenio_db import db
 

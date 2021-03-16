@@ -63,6 +63,8 @@ recursive-include invenio/modules/*/templates *
 recursive-include invenio/modules/*/testsuite *
 recursive-include invenio/modules/*/translations *.mo *.po *.pot
 
+recursive-include b2share/modules/* *.json
+
 recursive-include invenio/testsuite *
 
 recursive-include scripts *.sh
