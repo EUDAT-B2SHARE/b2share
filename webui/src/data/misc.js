@@ -42,15 +42,15 @@ export function humanSize(sz) {
     let K = 1000, M = K*K, G = K*M, T = K*G;
 
     if (sz < K) {
-        return [sz,'B '];
+        return [sz,' B'];
     } else if (sz < M) {
-        return [(sz/K).toFixed(2), 'KB'];
+        return [(sz/K).toFixed(2), ' KB'];
     } else if (sz < G) {
-        return [(sz/M).toFixed(2), 'MB'];
+        return [(sz/M).toFixed(2), ' MB'];
     } else if (sz < T) {
-        return [(sz/G).toFixed(2), 'GB'];
+        return [(sz/G).toFixed(2), ' GB'];
     } else {
-        return [(sz/T).toFixed(2), 'TB'];
+        return [(sz/T).toFixed(2), ' TB'];
     }
 }
 
