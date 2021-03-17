@@ -715,7 +715,7 @@ export const FileRecordRow = React.createClass({
                             style={{fontSize:10}} aria-hidden="true"/>
                         <span className={"glyphicon glyphicon-file"}
                             style={{marginLeft:'0.5em', fontSize:10}} aria-hidden="true"/>
-                        <a style={{display:'inline-block', marginLeft:'0.5em'}} 
+                        <a style={{display:'inline-block', marginLeft:'0.5em'}}
                             onClick={e => {
                                 this.props.catchMatomoEvent(new Event('filedownload'));
                                 e.stopPropagation();
@@ -734,11 +734,12 @@ export const FileRecordRow = React.createClass({
                             </span> : null
                         }
                     </div>
-                    <div className={"col-sm-"+(this.props.remove? "1":"2")} style={{padding: '0px'}} onClick={e => this.setState({open:!this.state.open})}>{
+                    <div className="col-sm-1" style={{padding: '0px'}} onClick={e => this.setState({open:!this.state.open})}>{
                         file.b2safe ?
                         "-" : humanSize(file.size)
                     }</div>
-                    <div className="col-sm-2 buttons">
+                    <div className="col-sm-3">
+                        <div className="btn-group" role="group" aria-label="...">
                             { this.props.b2noteWidget }
                             { !file.checksum ? false :
                             <button type="button" className="btn btn-default btn-xs" onClick={() => this.copyIdentifier(file.checksum, 'File checksum')} title="Copy checksum to clipboard">
@@ -749,31 +750,28 @@ export const FileRecordRow = React.createClass({
                                 <i className="glyphicon glyphicon-globe"/>
                             </button> }
                             { !this.props.remove ? false :
-                            <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})} title="Delete">
+                            <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})} title="Delete this file">
                                 <i className="glyphicon glyphicon-remove"/>
                             </button> }
+                        </div>
                     </div>
                 </div>
-                { allowDetails && this.state.open ?
+                { allowDetails && this.state.open &&
                     <div className="details">
-                        { file.checksum ?
+                        { file.checksum &&
                             <div>
-                                Checksum:
-                                <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.checksum} />
-                            </div>
-                            : false }
-                        { file.ePIC_PID ?
+                            Checksum: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.checksum} />
+                            </div> }
+                        { file.ePIC_PID &&
                             <div>
                             PID: <PersistentIdentifier style={{marginLeft:'0.2em'}} pid={file.ePIC_PID} />
-                            </div>
-                            : false }
-                    </div> : false }
+                            </div> }
+                    </div> }
 
-                { this.props.remove && this.state.remove ?
+                { this.props.remove && this.state.remove &&
                     <FileRemoveDialog file={file}
                                       remove={this.props.remove}
-                                      cancel={()=>this.setState({remove:false})} />
-                    : false }
+                                      cancel={()=>this.setState({remove:false})} /> }
             </div>
         );
     },
