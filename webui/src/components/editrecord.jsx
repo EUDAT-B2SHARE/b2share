@@ -920,10 +920,10 @@ const EditRecord = React.createClass({
             <div className="col-sm-offset-3 col-sm-9">
                 <p>This record is already published. Any changes you make will be directly visible to other people.</p>
                 <div className="row buttons">
-                    <div className="col-sm-10">
+                    <div className="col-sm-9">
                         <button type="submit" className={"btn btn-default btn-block " + klass} onClick={this.updateRecord}><i className={"glyphicon glyphicon-" + icon}/>&nbsp;&nbsp;{text}</button>
                     </div>
-                    <div className="col-sm-2">
+                    <div className="col-sm-3">
                         <button type="submit" className={"btn btn-default discard " + dlass} onClick={this.discardChanges}><i className="glyphicon glyphicon-remove"/>&nbsp;Discard Changes</button>
                     </div>
                 </div>
@@ -956,10 +956,10 @@ const EditRecord = React.createClass({
                   : false
                 }
                 <div className="row buttons">
-                    <div className="col-sm-10">
+                    <div className="col-sm-9">
                         <button type="submit" className={"btn btn-default btn-block " + klass} onClick={this.updateRecord}><i className={"glyphicon glyphicon-" + icon}/>&nbsp;&nbsp;{text}</button>
                     </div>
-                    <div className="col-sm-2">
+                    <div className="col-sm-3">
                         <button type="submit" className={"btn btn-default btn-block discard " + dlass} onClick={this.discardChanges}><i className="glyphicon glyphicon-remove"/>&nbsp;Discard Changes</button>
                     </div>
                 </div>
