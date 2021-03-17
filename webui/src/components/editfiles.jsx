@@ -200,7 +200,7 @@ const B2DropZone = React.createClass({
     renderFiles: function() {
         return (
             <div style={{margin:'1em'}}>
-                <ol className="list-unstyled fileList" style={{textAlign:'left', minHeight:'30em'}}>
+                <ol className="list-unstyled filelist" style={{textAlign:'left', minHeight:'30em'}}>
                     <li className="heading row" style={{padding:'0.5em 0'}}>
                         <div className="col-sm-6" style={{fontWeight:'bold'}}>File Name</div>
                         <div className="col-sm-3" style={{fontWeight:'bold'}}>Size</div>
@@ -499,7 +499,7 @@ export const EditFiles = React.createClass({
         }
         return(
             <div className="well" style={{marginTop:'1em'}}>
-                <div className="fileList">
+                <div className="filelist">
                     <FileUploadHeader/>
                     { this.state.files.map(f =>
                         <FileUploadRow key={f.name} file={f} remove={() => this.removeUploadFile(f)} />) }
@@ -530,7 +530,7 @@ export const EditFiles = React.createClass({
         }
         return(
             <div className="well" style={{marginTop:'1em'}}>
-                <div className="fileList">
+                <div className="filelist">
                     <FileRecordHeader/>
                     { this.props.files.map(f =>
                         <FileRecordRow key={f.key} file={f} remove={()=>this.removeRecordFile(f)} />) }
