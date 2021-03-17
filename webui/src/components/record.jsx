@@ -652,7 +652,7 @@ const Record = React.createClass({
 });
 
 
-function canEditRecord(record) {
+export function canEditRecord(record) {
     if (isRecordOwner(record)) {
         return true;
     }

@@ -18,6 +18,7 @@ import { Wait, Err } from './waiting.jsx';
 import { HeightAnimate, ReplaceAnimate } from './animate.jsx';
 import { getSchemaOrderedMajorAndMinorFields, hiddenFields } from './schema.jsx';
 import { EditFiles, PersistentIdentifier } from './editfiles.jsx';
+import { canEditRecord } from './record.jsx';
 import { Versions } from './versions.jsx';
 import { SelectLicense } from './selectlicense.jsx';
 import { SelectBig } from './selectbig.jsx';
@@ -73,6 +74,12 @@ export const EditRecordRoute = React.createClass({
         if (rootSchema instanceof Error) {
             return <Err err={rootSchema}/>;
         }
+
+        // need to be owner or community admin
+        if (!canEditRecord(record)) {
+            return <Err err={{code: 403, text: "Permission denied"}}/>;
+        }
+
         return (
             <ReplaceAnimate>
                 <EditRecord record={record}
