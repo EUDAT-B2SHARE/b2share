@@ -838,10 +838,6 @@ a.navbar-brand {
   border-color: #E5601E;
 }
 
-.rest_api code {
-  white-space: normal;
-}
-
 /*****************************************************************************/
 /* records */
 
@@ -945,6 +941,12 @@ a.navbar-brand {
 
 .large-record .dates span {
     color: #aaa;
+}
+
+.large-record img.orcid {
+    width: 15px;
+    margin-left: 3px;
+    margin-top: -2px;
 }
 
 .well .block {

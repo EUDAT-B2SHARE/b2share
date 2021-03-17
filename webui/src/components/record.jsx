@@ -184,12 +184,26 @@ const Record = React.createClass({
     },
 
     updateRecordNotes(target) {
-        this.getB2Notes(this.props.b2noteUrl, target, [this.props.record.get('metadata').get('ePIC_PID')], [this.props.record.get('links').get('self')]);
+        if (this.props.record.get('metadata', {}).get('publication_state', '') === 'published') {
+            this.getB2Notes(
+                this.props.b2noteUrl,
+                target,
+                [this.props.record.get('metadata').get('ePIC_PID')],
+                [this.props.record.get('links').get('self')]
+            );
+        }
     },
 
     updateFileNotes(target) {
-        var bucket_id = this.props.record.get('links').get('files');
-        this.getB2Notes(this.props.b2noteUrl, target, this.props.record.get('files').map(file => file.get('ePIC_PID')), this.props.record.get('files').map(file => bucket_id + '/' + file.get('key')));
+        if (this.props.record.get('files')) {
+            var bucket_id = this.props.record.get('links', {}).get('files');
+            this.getB2Notes(
+                this.props.b2noteUrl,
+                target,
+                this.props.record.get('files').map(file => file.get('ePIC_PID')),
+                this.props.record.get('files').map(file => bucket_id + '/' + file.get('key'))
+            );
+        }
     },
 
     catchB2NoteEvent(event) {
@@ -214,23 +228,39 @@ const Record = React.createClass({
         }
     },
 
+    renderOrcidLink(field) {
+        return field.has('name_identifiers') &&
+            field
+                .get('name_identifiers', [])
+                .filter((v, k) => v.get('scheme').toLowerCase() === 'orcid' && v.get('name_identifier') > '' )
+                .map((v, k) => <a href={v.get('scheme_uri') + '/' + v.get('name_identifier') } key={v.get('name_identifier')}><img className="orcid" src="/img/orcid.png"/></a> );
+    },
+
     // ensures root schema v0 and v1 compatibility
-    renderLinks(fields, key, className="") {
-        return fields.map(function(k) {
-            if (k.size && k.has(key)) {
-                var v = k.get(key);
-                return <Link to={{pathname:'/records', query:{q:v}}} className={className} key={v}>{v}</Link>
-            } else {
-                return <Link to={{pathname:'/records', query:{q:k}}} className={className} key={k}>{k}</Link>
-            }
-        });
+    renderLink(field, key, className="") {
+        if (field.size && field.has(key)) {
+            var v = field.get(key);
+            return <span>
+                    <Link to={{pathname:'/records', query:{q:v}}} className={className} key={v}>{v}</Link>
+                    {this.renderOrcidLink(field)}
+                </span>
+        } else {
+            return <Link to={{pathname:'/records', query:{q:k}}} className={className} key={k}>{k}</Link>
+        }
     },
 
     renderFixedFields(record, community) {
+        var self = this;
         function renderTitle(title, i) {
             return i === 0 ?
                 <h2 key={i} className="name">{title.get('title')}</h2> :
                 <h3 key={i} className="name">{title.get('title')}</h3>
+        }
+        function renderCreators(creators) {
+            return (
+                <p><span style={{color:'black'}}> by </span>
+                <ImplodedList data={creators.map((x) => self.renderLink(x, 'creator_name', 'creator'))} />;</p>
+            )
         }
         function renderDates(record) {
             const created = moment(record.get('created')).format('ll');
@@ -287,7 +317,7 @@ const Record = React.createClass({
         const state = metadata.get('publication_state');
         return (
             <div>
-                <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')}/>
+                <Versions isDraft={state == 'draft'} recordID={record.get('id')} versions={record.get('versions')} />
 
                 <div className="row">
                     <div className="col-sm-12">
@@ -300,11 +330,7 @@ const Record = React.createClass({
 
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
-                        { creators ?
-                            <p><span style={{color:'black'}}> by </span>
-                            <ImplodedList data={this.renderLinks(creators, 'creator_name', 'creator')} />;</p>
-                            : false
-                        }
+                        { renderCreators(creators) }
 
                         { renderDates(record) }
 
@@ -313,14 +339,14 @@ const Record = React.createClass({
                         { disciplines &&
                             <p className="discipline">
                                 <span style={{fontWeight:'bold'}}>Disciplines: </span>
-                                <ImplodedList data={this.renderLinks(disciplines, 'discipline_name')} />
+                                <ImplodedList data={disciplines.map((x) => self.renderLink(x, 'discipline_name'))} />
                             </p>
                         }
 
                         { keywords &&
                             <p className="keywords">
                                 <span style={{fontWeight:'bold'}}>Keywords: </span>
-                                <ImplodedList data={this.renderLinks(keywords, 'keyword')}/>;
+                                <ImplodedList data={keywords.map((x) => self.renderLink(x, 'keyword'))} />;
                             </p>
                         }
 
