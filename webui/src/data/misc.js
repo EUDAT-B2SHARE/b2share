@@ -42,7 +42,7 @@ export function humanSize(sz) {
     let K = 1000, M = K*K, G = K*M, T = K*G;
 
     if (sz < K) {
-        return [sz,'B'];
+        return [sz,' B'];
     } else if (sz < M) {
         return [(sz/K).toFixed(2), ' KB'];
     } else if (sz < G) {
