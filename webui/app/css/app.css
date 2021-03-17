@@ -1082,19 +1082,12 @@ a.navbar-brand {
   filter: none;
 }
 
-.fileList .fileHeader {
+.fileList .fileheader {
   padding: 0.5em 0;
   border-bottom: 1px solid #ddd;
-}
-.fileList .fileHeader *{
   font-weight: bold;
-}
-.fileList .buttons {
-  padding: 0px;
-  overflow-x: auto;
-}
-.fileList .buttons > *:not(:first-child) {
-  margin-left: 5px;
+  margin-top: 0.5em,
+  margin-bottom: 0.5em
 }
 .fileList .file {
   padding: 0.5em 0;

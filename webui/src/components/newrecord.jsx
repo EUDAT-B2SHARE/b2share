@@ -137,7 +137,7 @@ export const NewRecordRoute = React.createClass({
                         </div>
                     </form>
                 </div>
-                <div className="row buttons">
+                <div className="row">
                     <div className="col-sm-9 col-sm-offset-3">
                         <p className="alert alert-warning" style={{color:'black'}}>
                         You can also update the data in an existing record by creating a new version of that record.

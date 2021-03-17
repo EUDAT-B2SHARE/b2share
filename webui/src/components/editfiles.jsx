@@ -253,7 +253,6 @@ const B2DropZone = React.createClass({
 
 
 const B2SafeZone = React.createClass({
-
     getInitialState() {
         return {
             state: 'b2safe',
@@ -587,7 +586,7 @@ export const FileUploadHeader = React.createClass({
     mixins: [React.addons.PureRenderMixin],
     render() {
         return (
-            <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+            <div className="row fileheader">
                 <div className="col-sm-6">Name</div>
                 <div className="col-sm-3">Size</div>
             </div>
@@ -642,21 +641,19 @@ const FileUploadRow = React.createClass({
                         <a style={{marginLeft:'1em'}}>{file.name}</a>
                     </div>
                     <div className="col-sm-3">{humanSize(file.size)}</div>
-                    { this.props.remove ?
+                    { this.props.remove &&
                         <div className="col-sm-3">
                             <button type="button" className="btn btn-default btn-xs remove" onClick={()=>this.setState({remove:true})}>
                                 <i className="glyphicon glyphicon-remove"/>&nbsp;Cancel
                             </button>
-                        </div> : false
-                    }
+                        </div> }
                 </div>
-                { this.state.remove ?
+                { this.state.remove &&
                     <FileRemoveDialog file={file}
                                       remove={this.props.remove}
-                                      cancel={()=>this.setState({remove:false})} />
-                    : false }
-                { file.progress ? this.renderProgress(file) : false }
-                { file.error ? this.renderError(file) : false }
+                                      cancel={()=>this.setState({remove:false})} /> }
+                { file.progress && this.renderProgress(file) }
+                { file.error && this.renderError(file) }
             </div>
         );
     },
@@ -666,10 +663,10 @@ export const FileRecordHeader = React.createClass({
     mixins: [React.addons.PureRenderMixin],
     render() {
         return (
-            <div className="row fileHeader" style={{marginTop:'0.5em', marginBottom:'0.5em'}}>
+            <div className="row fileheader">
                 <div className="col-sm-8">Name</div>
-                <div className="col-sm-2 p-0">Size</div>
-                <div className="col-sm-2 p-0">{/*Actions*/}</div>
+                <div className="col-sm-1 p-0">Size</div>
+                <div className="col-sm-3 p-0">{/*Actions*/}</div>
             </div>
         );
     }
