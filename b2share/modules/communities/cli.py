@@ -95,8 +95,12 @@ def create(verbose, name, description, logo):
 def list(verbose):
     """List all communities in this instances' database"""
     communities = Community.get_all()
-    for c in communities:
-        click.echo("%s\t%s\t%s\t%s" % (c.name[0:15], c.id, c.description[0:31], c.logo))
+
+    if communities:
+        for c in communities:
+            click.echo("%s\t%s\t%s\t%s" % (c.name[0:15], c.id, c.description[0:31], c.logo))
+    else:
+        raise click.ClickException("there are no communities defined")
 
 
 @communities.command()
@@ -181,8 +185,12 @@ def community_roles_list(community=None):
 
     click.secho("ID\t\t\t\t\tNAME\t\tROLES")
     if not community:
-        for c in Community.get_all():
-            list_item(c)
+        communities = Community.get_all()
+        if communities:
+            for c in communities:
+                list_item(c)
+        else:
+            raise click.ClickException("there are no communities defined")
     else:
         list_item(Community.get(community))
 
@@ -208,8 +216,12 @@ def community_policies_list(community=None):
 
     click.secho("ID\t\t\t\t\tNAME\t\tWORKFLOW\tMEMBERS-ONLY")
     if not community:
-        for c in Community.get_all():
-            list_item(c)
+        communities = Community.get_all()
+        if communities:
+            for c in communities:
+                list_item(c)
+        else:
+            raise click.ClickException("there are no communities defined")
     else:
         list_item(Community.get(community))
 
