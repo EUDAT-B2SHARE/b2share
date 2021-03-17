@@ -1082,41 +1082,46 @@ a.navbar-brand {
   filter: none;
 }
 
-.fileList .fileheader {
+.filelist .fileheader {
   padding: 0.5em 0;
   border-bottom: 1px solid #ddd;
   font-weight: bold;
   margin-top: 0.5em,
   margin-bottom: 0.5em
 }
-.fileList .file {
+.filelist .files {
+    max-height: 800px; /* about 20 single line files */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.filelist .file {
   padding: 0.5em 0;
   word-wrap: break-word;
 }
-.fileList .file .details {
+.filelist .file .details {
   margin-left: 1em;
   overflow-x: auto;
 }
-.fileList .file .details > div {
+.filelist .file .details > div {
   margin-left: 1em;
   white-space: nowrap
 }
-.fileList .file:nth-child(odd) {
+.filelist .file:nth-child(odd) {
   background-color: #f4f4f4;
 }
-.fileList .file:nth-child(even) {
+.filelist .file:nth-child(even) {
   background-color: #fafafa;
 }
-.fileList .file:hover {
+.filelist .file:hover {
   background-color: #fff;
 }
 
-.fileList .file .btn.remove {
+.filelist .file .btn.remove {
   float: right;
   color: #F45D00;
   margin-right: 1em;
 }
-.fileList .file .btn.remove:hover {
+.filelist .file .btn.remove:hover {
   color: red;
 }
 

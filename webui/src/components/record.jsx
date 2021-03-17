@@ -396,9 +396,11 @@ const Record = React.createClass({
                 return <FileRecordRow key={f.get('key')} file={f} b2noteWidget={b2noteWidget} showDownloads={showDownloads} catchMatomoEvent={this.catchMatomoEvent} />
             }
             fileComponent =
-                <div className='fileList'>
+                <div className='filelist'>
                     <FileRecordHeader/>
+                    <div className='files'>
                     { files.map(fileRecordRowFn) }
+                    </div>
                 </div>;
         }
         return (
