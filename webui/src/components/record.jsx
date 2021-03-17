@@ -388,6 +388,21 @@ const Record = React.createClass({
     },
 
     renderField(id, schema, value, vtype=null) {
+        function isValidUrl(value) {
+            try {
+                var url = new URL(value);
+            } catch (error) {
+                return false;
+            }
+
+            return url.protocol === "http:" || url.protocol === "https:";
+        }
+
+        function isValidMail(value) {
+            var pattern = /^[a-z0-9\.\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$/
+            return pattern.test(value)
+        }
+
         function renderScalar(schema, value) {
             const type = schema.get('type');
             if (type === 'string' && schema.get('format') === 'date') {
@@ -410,9 +425,13 @@ const Record = React.createClass({
                         return <Link to={"https://dx.doi.org/" + value} target="_blank">{value}</Link>
                     case 'Handle':
                         return <Link to={"https://hdl.handle.net/" + value} target="_blank">{value}</Link>
-                    case 'URL':
-                        return <Link to={value} target="_blank">{value}</Link>
                 }
+            }
+
+            if (isValidUrl(value)) {
+                return <Link to={value} target="_blank">{value}</Link>
+            } else if (isValidMail(value)) {
+                return <Link to={"mailto:" + value} target="_blank">{value}</Link>
             }
 
             return value;
