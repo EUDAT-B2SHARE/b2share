@@ -100,7 +100,7 @@ const B2NoteWidget = React.createClass({
         }
 
         return (
-            <form id="b2note_form_" action={this.props.b2noteUrl + '/widget'} method="post" target="b2note_iframe" style={{display: 'inline-block'}} onSubmit={this.handleSubmit}>
+            <form id="b2note_form_" action={this.props.b2noteUrl + '/widget'} className="btn btn-xs" method="post" target="b2note_iframe" style={{padding: '0px', border: '0px'}} onSubmit={this.handleSubmit}>
                 <input type="hidden" name="recordurl_tofeed" value={record_url} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="pid_tofeed" value={pid} className="field left" readOnly="readonly"/>
                 <input type="hidden" name="subject_tofeed" value={object_url} className="field left" readOnly="readonly"/>
