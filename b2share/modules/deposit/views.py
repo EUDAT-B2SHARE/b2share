@@ -171,6 +171,10 @@ def create_blueprint(endpoints):
 class DepositResource(RecordResource):
     """Resource for deposit items."""
 
+    def __init__(self, resolver=None, **kwargs):
+        super(DepositResource, self).__init__(**kwargs)
+        self.resolver = resolver
+
     def patch(self, *args, **kwargs):
         """PATCH the deposit."""
         pid, record = request.view_args['pid_value'].data
