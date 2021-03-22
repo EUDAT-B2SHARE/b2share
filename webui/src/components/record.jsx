@@ -233,7 +233,7 @@ const Record = React.createClass({
             field
                 .get('name_identifiers', [])
                 .filter((v, k) => v.get('scheme').toLowerCase() === 'orcid' && v.get('name_identifier') > '' )
-                .map((v, k) => <a href={v.get('scheme_uri') + '/' + v.get('name_identifier') } key={v.get('name_identifier')}><img className="orcid" src="/img/orcid.png"/></a> );
+                .map((v, k) => <a href={v.get('scheme_uri') + '/' + v.get('name_identifier') } key={v.get('name_identifier')} target="_blank"><img className="orcid" src="/img/orcid.png"/></a> );
     },
 
     // ensures root schema v0 and v1 compatibility

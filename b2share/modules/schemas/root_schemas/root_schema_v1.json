@@ -21,7 +21,7 @@
             },
             "resourceType": {
                 "type": "string",
-                "enum": ["Audiovisual", "Collection", "Dataset", "Event", "Image", "InteractiveResource", "Model", "PhysicalObject", "Service", "Software", "Sound", "Text", "Workflow", "Other"]
+                "enum": ["Audiovisual", "Book", "BookChapter", "Collection", "ComputationalNotebook", "ConferencePaper", "ConferenceProceeding", "Dataset", "Dissertation", "Event", "Image", "InteractiveResource", "Journal", "JournalArticle", "Model", "OutputsManagementPlan", "PeerReview", "PhysicalObject", "Preprint", "Report", "Service", "Software", "Sound", "Standard", "Text", "Workflow", "Other"]
             },
             "funderIdentifierType": {
                 "type": "string",
@@ -303,6 +303,11 @@
                             "description": "The unique identifier of the discipline, according to various identifier schemes.",
                             "type": "string"
                         },
+                        "classification_code": {
+                            "title": "Code",
+                            "description": "The corresponding classification code of the discipline, according to various identifier schemes.",
+                            "type": "string"
+                        },
                         "$ref": "#/definitions/schemeWithUri"
                     },
                     "required": ["discipline_name", "discipline_identifier"]
@@ -318,6 +323,11 @@
                     "properties": {
                         "keyword": {
                             "$ref": "#/definitions/nonEmptyString"
+                        },
+                        "classification_code": {
+                            "title": "Code",
+                            "description": "The corresponding classification code of the keyword, according to various identifier schemes.",
+                            "type": "string"
                         },
                         "$ref": "#/definitions/schemeWithUri"
                     },
@@ -412,7 +422,7 @@
                         "relation_type": {
                             "title": "Relation",
                             "description": "The relation type of the described reference.",
-                            "enum": ["IsCitedBy", "Cites", "IsSupplementTo", "IsSupplementedBy", "IsContinuedBy", "Continues", "HasMetadata", "IsMetadataFor", "IsNewVersionOf", "IsPreviousVersionOf", "IsPartOf", "HasPart", "IsReferencedBy", "References", "IsDocumentedBy", "Documents", "isCompiledBy", "Compiles", "IsVariantFormOf", "IsOriginalFormOf", "IsIdenticalTo", "IsReviewedBy", "Reviews", "IsDerivedFrom", "IsSourceOf"]
+                            "enum": ["IsCitedBy", "Cites", "IsSupplementTo", "IsPublishedIn", "IsSupplementedBy", "IsContinuedBy", "Continues", "HasMetadata", "IsMetadataFor", "IsNewVersionOf", "IsPreviousVersionOf", "IsPartOf", "HasPart", "IsReferencedBy", "References", "IsDocumentedBy", "Documents", "isCompiledBy", "Compiles", "IsVariantFormOf", "IsOriginalFormOf", "IsIdenticalTo", "IsReviewedBy", "Reviews", "IsDerivedFrom", "IsSourceOf"]
                         },
                         "$ref": "#/definitions/schemeWithUri"
                     },

@@ -38,6 +38,7 @@ export const SelectBig = React.createClass({
         this.props.onSelect({
             identifier: val.id,
             name: val[this.props.valueField],
+            classification_code: val[this.props.valueField].split(' ')[0] || "",
             scheme: this.props.data.scheme,
             scheme_uri: this.props.data.schemeUri
         });
