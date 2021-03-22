@@ -76,7 +76,10 @@ export const EditRecordRoute = React.createClass({
         }
 
         // need to be owner or community admin
-        if (!canEditRecord(record)) {
+        const canEdit = canEditRecord(record);
+        if (canEdit === null) {
+            return <Wait/>;
+        } else if (!canEdit) {
             return <Err err={{code: 403, text: "Permission denied"}}/>;
         }
 

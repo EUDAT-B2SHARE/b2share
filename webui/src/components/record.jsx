@@ -245,7 +245,7 @@ const Record = React.createClass({
                     {this.renderOrcidLink(field)}
                 </span>
         } else {
-            return <Link to={{pathname:'/records', query:{q:k}}} className={className} key={k}>{k}</Link>
+            return <Link to={{pathname:'/records', query:{q:field}}} className={className} key={field}>{field}</Link>
         }
     },
 
@@ -330,7 +330,7 @@ const Record = React.createClass({
 
                 <div className="row">
                     <div className="col-sm-8 col-md-10">
-                        { renderCreators(creators) }
+                        { creators && renderCreators(creators) }
 
                         { renderDates(record) }
 
@@ -678,39 +678,45 @@ const Record = React.createClass({
 });
 
 
+/**
+ * Determine if user can edit a record
+ * @return: null if undetermined (awaiting data) or bool otherwise
+ */
 export function canEditRecord(record) {
-    if (isRecordOwner(record)) {
-        return true;
+    const isOwner = isRecordOwner(record);
+    const isCommunityAdministrator = isCommunityAdmin(record.getIn(['metadata', 'community']));
+    if (isOwner === null || isCommunityAdministrator === null) {
+        return null;
     }
-    if (isCommunityAdmin(record.getIn(['metadata', 'community']))) {
-        return true;
-    }
-    return false;
+    return isOwner || isCommunityAdministrator;
 }
 
+/**
+ * Determine if user is owner of a record
+ * @return: null if undetermined (awaiting data) or bool otherwise
+ */
 function isRecordOwner(record) {
-    if (!serverCache.getUser()) {
-        return false;
+    const user = serverCache.getUser();
+    if (!user) {
+        return null;
     }
-    const userId = serverCache.getUser().get('id');
-    if (userId === undefined || userId === null) {
-        return false;
-    }
-    return record.getIn(['metadata', 'owners']).indexOf(userId) >= 0;
+    const userId = user.get('id');
+    return userId && record.getIn(['metadata', 'owners']).indexOf(userId) >= 0;
 }
 
+/**
+ * Determine if user is community administrator for community
+ * @return: null if undetermined (awaiting data) or bool otherwise
+ */
 export function isCommunityAdmin(communityId) {
-    if (!serverCache.getUser()) {
-        return false;
-    }
-    const roles = serverCache.getUser().get('roles');
-    if (!roles) {
-        return false;
+    const user = serverCache.getUser();
+    if (!user) {
+        return null;
     }
     const community = serverCache.getCommunity(communityId);
-    if (community && community.hasIn(['roles', 'admin'])) {
-        const communityAdminRoleId = community.getIn(['roles', 'admin', 'id']);
-        return roles.find(r => r.get('id') === communityAdminRoleId);
+    if (!community) {
+        return null;
     }
-    return false
+    const communityAdminRoleId = community.getIn(['roles', 'admin', 'id']);
+    return communityAdminRoleId && user.get('roles', []).find(r => r.get('id') === communityAdminRoleId);
 }
