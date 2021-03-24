@@ -33,13 +33,13 @@ from .common import schemas_init, elasticsearch_index_init
 
 migrate_2_1_7_to_2_2_0 = UpgradeRecipe('2.1.7', '2.2.0')
 
-def delete_indices():
+def delete_indices(alembic, verbose):
     """delete deposit and record indices"""
     from invenio_search.proxies import current_search_client
     current_search_client.indices.delete(index='deposits')
     current_search_client.indices.delete(index='records')
 
-def reindex_records():
+def reindex_records(alembic, verbose):
     """reindex records"""
     from invenio_indexer.api import RecordIndexer
     from invenio_records.models import RecordMetadata
