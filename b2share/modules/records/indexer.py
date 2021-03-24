@@ -54,7 +54,7 @@ def indexer_receiver(sender, json=None, record=None, index=None,
 
     if 'keywords' in json and len(json['keywords']) > 0 and isinstance(json['keywords'][0], str):
         json['keywords'] = [string_to_object(s, 'keyword') for s in json.get('keywords',)]
-    if 'disciplines' in json and len(json['disciplines'] > 0) and isinstance(json['disciplines'][0], str):
+    if 'disciplines' in json and len(json['disciplines']) > 0 and isinstance(json['disciplines'][0], str):
         json['disciplines'] = [string_to_object(s, 'discipline_name') for s in json['disciplines']]
 
     if 'external_pids' in json['_deposit']:
