@@ -21,10 +21,9 @@
 """B2share users extension"""
 
 from __future__ import absolute_import, print_function
-
 from werkzeug.utils import cached_property
-
 from .cli import roles as roles_cmd
+from flask import Blueprint
 
 
 class _B2ShareRolesState(object):
@@ -51,6 +50,7 @@ class B2ShareRoles(object):
         """Flask application initialization."""
         self.init_config(app)
         app.cli.add_command(roles_cmd)
+        blueprint = Blueprint('roles', __name__)
         app.register_blueprint(blueprint)
         app.extensions['b2share-roles'] = _B2ShareRolesState(app)
 
