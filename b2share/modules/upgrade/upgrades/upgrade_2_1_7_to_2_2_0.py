@@ -29,20 +29,20 @@ from __future__ import absolute_import, print_function
 import pkg_resources
 
 from ..api import UpgradeRecipe
-from invenio_indexer.cli import reindex, run
-from invenio_search.cli import delete
 from .common import schemas_init, elasticsearch_index_init
-from invenio_indexer.api import RecordIndexer
-from invenio_records.models import RecordMetadata
-from invenio_search.proxies import current_search_client
 
 migrate_2_1_7_to_2_2_0 = UpgradeRecipe('2.1.7', '2.2.0')
 
 def delete_indices():
+    """delete deposit and record indices"""
+    from invenio_search.proxies import current_search_client
     current_search_client.indices.delete(index='deposits')
     current_search_client.indices.delete(index='records')
 
 def reindex_records():
+    """reindex records"""
+    from invenio_indexer.api import RecordIndexer
+    from invenio_records.models import RecordMetadata
     def records():
         """Record iterator."""
         for record in RecordMetadata.query.values(RecordMetadata.id):
