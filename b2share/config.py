@@ -622,8 +622,31 @@ STATS_EVENTS = {
         ))
 }
 
+from invenio_stats.aggregations import StatAggregator
+
 STATS_AGGREGATIONS = {
-    'file-download-agg': {},
+    'file-download-agg': dict(
+        templates='invenio_stats.contrib.aggregations.aggr_file_download',
+        cls=StatAggregator,
+        params=dict(
+            event='file-download',
+            field='unique_id',
+            interval='day',
+            index_interval='month',
+            copy_fields=dict(
+                file_key='file_key',
+                bucket_id='bucket_id',
+                file_id='file_id',
+            ),
+            metric_fields={
+                'unique_count': (
+                    'cardinality', 'unique_session_id',
+                    {'precision_threshold': 1000},
+                ),
+                'volume': ('sum', 'size', {}),
+            },
+        )
+    ),
 }
 
 STATS_QUERIES = {

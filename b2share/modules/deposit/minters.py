@@ -35,7 +35,7 @@ def b2share_deposit_uuid_minter(record_uuid, data):
     dep_pid = DepositUUIDProvider.create(
         object_type='rec', object_uuid=record_uuid,
         # we reuse the deposit UUID as PID value. This makes the demo easier.
-        pid_value=record_uuid.hex
+        pid_value=record_uuid
     )
 
     # this change is done to keep the external_pids info for the new versions
