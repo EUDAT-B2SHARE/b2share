@@ -37,7 +37,7 @@ from invenio_search import current_search
 from invenio_files_rest.models import Bucket
 from invenio_records_files.api import Record
 from click.testing import CliRunner
-from b2share.modules.records.cli import b2records
+from b2share.modules.records.cli import manage as b2records
 from flask.cli import ScriptInfo
 
 
