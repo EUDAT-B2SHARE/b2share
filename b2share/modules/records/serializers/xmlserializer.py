@@ -16,4 +16,6 @@ class XMLSerializer(PreprocessorMixin):
             rec = self.preprocess_record(pid=pid, record=record)
         elif isinstance(record['_source'], Record):
             rec = self.preprocess_record(pid=pid, record=record['_source'])
+        else:
+            rec = self.preprocess_search_hit(pid, record)
         return self.schema_class().dump_etree(pid, rec)
