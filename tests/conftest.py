@@ -556,7 +556,7 @@ def flask_http_responses(app):
                     'https://' +
                     app.config.get('SERVER_NAME') +
                     (app.config.get('APPLICATION_ROOT') or '') +
-                    re.sub(r'<[^>]+>', '\S+', rule.rule))
+                    re.sub(r'<[^>]+>', r'\\S+', rule.rule))
                 for method in rule.methods:
                     rsps.add_callback(method, url_regexp,
                                       callback=router_callback)
