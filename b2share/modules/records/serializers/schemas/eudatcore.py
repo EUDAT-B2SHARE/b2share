@@ -118,8 +118,8 @@ class EudatCoreSchema(object):
     def formats(self, metadata, root):
         formats = set()
         ret = False
-        for f in metadata['_files']:
-            split = f['key'].split('.')
+        for f in metadata.get('_files', []):
+            split = f.get('key', '').split('.')
             if len(split) > 1:
                 ret = True
                 formats.add(split[len(split)-1])
@@ -260,7 +260,6 @@ class EudatCoreSchema(object):
 
     def dump_etree(self, pid, obj):
         metadata = obj['metadata']
-        print(obj['metadata']['community'])
         record_id = [x for x in metadata['_pid'] if x['type'] == 'b2rec'][0]['value']
         root = etree.Element('resource', nsmap=self.ns, attrib=self.root_attribs)
         self.titles(metadata, root)
