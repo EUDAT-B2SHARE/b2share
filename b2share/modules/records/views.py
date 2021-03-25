@@ -339,7 +339,7 @@ class B2ShareRecordsListResource(RecordsListResource):
                                      previous_record=previous_record)
 
         # Create uuid for record
-        record_uuid = uuid.uuid4()
+        record_uuid = str(uuid.uuid4())
         # Create persistent identifier
         pid = self.minter(record_uuid, data=data)
 

@@ -51,7 +51,7 @@ class DepositUUIDProvider(BaseProvider):
     def create(cls, object_type=None, object_uuid=None, **kwargs):
         """Create a new record identifier."""
         if 'pid_value' not in kwargs:
-            kwargs.setdefault('pid_value', uuid.uuid4().hex)
+            kwargs.setdefault('pid_value', str(uuid.uuid4()))
         kwargs.setdefault('status', cls.default_status)
         return super(DepositUUIDProvider, cls).create(
             object_type=object_type, object_uuid=object_uuid, **kwargs)

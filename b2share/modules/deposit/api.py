@@ -41,7 +41,7 @@ from jsonpatch import apply_patch
 
 from invenio_db import db
 from invenio_files_rest.models import Bucket, FileInstance, ObjectVersion
-from invenio_deposit.api import Deposit as InvenioDeposit, has_status, preserve
+from invenio_deposit.api import Deposit as InvenioDeposit, has_status, preserve, index
 from invenio_records_files.api import Record
 from invenio_records_files.models import RecordsBuckets
 from invenio_records.errors import MissingModelError
@@ -73,6 +73,42 @@ from b2share.modules.deposit.providers import DepositUUIDProvider
 from b2share.modules.handle.proxies import current_handle
 from b2share.modules.handle.errors import EpicPIDError
 
+class MyInvenioDeposit(InvenioDeposit):
+
+    @classmethod
+    @index
+    def create(cls, data, id_=None):
+        """Create a deposit.
+        Initialize the follow information inside the deposit:
+        .. code-block:: python
+            deposit['_deposit'] = {
+                'id': pid_value,
+                'status': 'draft',
+                'owners': [user_id],
+                'created_by': user_id,
+            }
+        The deposit index is updated.
+        :param data: Input dictionary to fill the deposit.
+        :param id_: Default uuid for the deposit.
+        :returns: The new created deposit.
+        """
+
+        id_ = id_ or str(uuid.uuid4())
+
+        if '_deposit' not in data:
+            cls.deposit_minter(id_, data)
+
+        data['_deposit'].setdefault('owners', list())
+        if current_user and current_user.is_authenticated:
+            creator_id = int(current_user.get_id())
+
+            if creator_id not in data['_deposit']['owners']:
+                data['_deposit']['owners'].append(creator_id)
+
+            data['_deposit']['created_by'] = creator_id
+
+        return super(MyInvenioDeposit.__bases__[0], cls).create(data, id_=id_ , with_bucket=False)
+
 
 class PublicationStates(Enum):
     """States of a record."""
@@ -84,7 +120,7 @@ class PublicationStates(Enum):
     """Deposit is published."""
 
 
-class Deposit(InvenioDeposit):
+class Deposit(MyInvenioDeposit):
     """B2Share Deposit API."""
 
     published_record_class = B2ShareRecord
