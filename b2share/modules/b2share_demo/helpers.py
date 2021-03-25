@@ -244,7 +244,7 @@ def _create_record_from_filepath(path, rec_uuid, indexer, versions, verbose):
 
     last_id = pid.pid_value
     for i in range(2*versions):
-        rec_uuid = uuid4()
+        rec_uuid = uuid4().hex
         json_data = json.loads(record_str)
         b2share_deposit_uuid_minter(rec_uuid, data=json_data)
         deposit2 = Deposit.create(json_data, id_=rec_uuid,
