@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "b2share-new-dev"
+name = "b2share"
 version = "0.1.0"
 description = ""
 authors = ["Harry Kodden <harry@kodden.nl>"]
