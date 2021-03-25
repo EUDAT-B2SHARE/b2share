@@ -214,8 +214,8 @@ def test_records_serializers_eudatcore(app, test_records_data):
             {'point': {'point_longitude': -20, 'point_latitude': 30}},
             {'box': {
                 'westbound_longitude': 60,
-                'eastbound_longitude': 30,
-                'northbound_latitude': 80,
+                'eastbound_longitude': -30,
+                'northbound_latitude': -80,
                 'southbound_latitude': 120
                 }
             },
