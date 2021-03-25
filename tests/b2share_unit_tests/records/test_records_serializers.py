@@ -211,18 +211,18 @@ def test_records_serializers_eudatcore(app, test_records_data):
 
         record['spatial_coverages'] = [
             {'places': ['Turku']},
-            {'point': {'point_longitude': '-20', 'point_latitude': '30'}},
+            {'point': {'point_longitude': -20, 'point_latitude': 30}},
             {'box': {
-                'westbound_longitude': '60',
-                'eastbound_longitude': '-30',
-                'northbound_latitude': '-80',
-                'southbound_latitude': '120'
+                'westbound_longitude': 60,
+                'eastbound_longitude': 30,
+                'northbound_latitude': 80,
+                'southbound_latitude': 120
                 }
             },
             {'polygon': [
-                {'point_latitude': '20', 'point_longitude': '20'},
-                {'point_latitude': '30', 'point_longitude': '30'},
-                {'point_latitude': '40', 'point_longitude': '40'}
+                {'point_latitude': 20, 'point_longitude': 20},
+                {'point_latitude': 30, 'point_longitude': 30},
+                {'point_latitude': 40, 'point_longitude': 40}
             ]}
         ]
         record['instruments'] = [{'instrument_name': 'Scalpel'}]

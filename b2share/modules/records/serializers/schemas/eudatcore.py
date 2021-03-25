@@ -21,10 +21,10 @@ def human_readable_size(size):
     return "{:.1f} {}".format(size, unit)
 
 def geo_location_point(point):
-    p = E.geoLocationPoint(E.pointLongitude(point['point_longitude']),
-        E.pointLatitude(point['point_latitude']))
+    p = E.geoLocationPoint(E.pointLongitude(str(point['point_longitude'])),
+        E.pointLatitude(str(point['point_latitude'])))
     if 'point_vertical' in point:
-        p.append(E.pointVertical(point['point_vertical']))
+        p.append(E.pointVertical(str(point['point_vertical'])))
     return p
 
 class EudatCoreSchema(object):
@@ -209,10 +209,10 @@ class EudatCoreSchema(object):
                 if 'box' in cov:
                     box = cov['box']
                     b = E.geoLocationBox(
-                        E.westBoundLongitude(box['westbound_longitude']),
-                        E.eastBoundLongitude(box['eastbound_longitude']),
-                        E.northBoundLatitude(box['northbound_latitude']),
-                        E.southBoundLatitude(box['southbound_latitude']),
+                        E.westBoundLongitude(str(box['westbound_longitude'])),
+                        E.eastBoundLongitude(str(box['eastbound_longitude'])),
+                        E.northBoundLatitude(str(box['northbound_latitude'])),
+                        E.southBoundLatitude(str(box['southbound_latitude'])),
                     )
                     spatialCoverage.append(b)
 
