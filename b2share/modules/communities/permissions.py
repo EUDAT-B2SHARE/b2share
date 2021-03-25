@@ -25,8 +25,10 @@
 
 from functools import partial
 
-from invenio_access.permissions import Permission, \
-    ParameterizedActionNeed
+from invenio_access.permissions import ParameterizedActionNeed
+
+from b2share.modules.access.permissions import DynamicPermission
+
 
 CommunityReadActionNeed = partial(ParameterizedActionNeed, 'communities-read')
 """Action need for reading a community."""
@@ -55,19 +57,19 @@ CommunityDeleteActionNeed = partial(
 communities_delete_all = CommunityDeleteActionNeed(None)
 """Delete all communities action need."""
 
-communities_create_all_permission = Permission(communities_create_all)
+communities_create_all_permission = DynamicPermission(communities_create_all)
 
 
 def read_permission_factory(community):
     """Factory for creating read permissions for communities."""
-    return Permission(CommunityReadActionNeed(str(community.id)))
+    return DynamicPermission(CommunityReadActionNeed(str(community.id)))
 
 
 def update_permission_factory(community):
     """Factory for creating update permissions for communities."""
-    return Permission(CommunityUpdateActionNeed(str(community.id)))
+    return DynamicPermission(CommunityUpdateActionNeed(str(community.id)))
 
 
 def delete_permission_factory(community):
     """Factory for creating delete permissions for communities."""
-    return Permission(CommunityDeleteActionNeed(str(community.id)))
+    return DynamicPermission(CommunityDeleteActionNeed(str(community.id)))

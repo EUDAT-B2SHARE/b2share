@@ -25,7 +25,7 @@ from flask import request
 from invenio_app.config import APP_DEFAULT_SECURE_HEADERS
 # from invenio_previewer.config import PREVIEWER_PREFERENCE as BASE_PREFERENCE
 from invenio_records_rest.utils import deny_all, allow_all
-
+from invenio_search.api import RecordsSearch
 from b2share.modules.oauthclient.b2access import make_b2access_remote_app
 from b2share.modules.records.search import B2ShareRecordsSearch
 from b2share.modules.records.permissions import (
@@ -237,7 +237,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         pid_minter='b2dep',
         pid_fetcher='b2rec',
         record_class='b2share.modules.records.api:B2ShareRecord',
-        search_class=B2ShareRecordsSearch,
+        search_class=RecordsSearch,
         record_serializers={
             'application/json': ('b2share.modules.records.serializers'
                                  ':json_v1_response'),
@@ -544,7 +544,7 @@ CFG_FAIL_ON_MISSING_FILE_PID = False
 
 # DOI config
 # ==========
-
+RECORDS_FILES_REST_ENDPOINTS= {}
 AUTOMATICALLY_ASSIGN_DOI = False
 DOI_IDENTIFIER_FORMAT = 'b2share.{recid}'
 CFG_FAIL_ON_MISSING_DOI = False
@@ -622,8 +622,30 @@ STATS_EVENTS = {
         ))
 }
 
+from invenio_stats.aggregations import StatAggregator
 STATS_AGGREGATIONS = {
-    'file-download-agg': {},
+    'file-download-agg': dict(
+        templates='invenio_stats.contrib.aggregations.aggr_file_download',
+        cls=StatAggregator,
+        params=dict(
+            event='file-download',
+            field='unique_id',
+            interval='day',
+            index_interval='month',
+            copy_fields=dict(
+                file_key='file_key',
+                bucket_id='bucket_id',
+                file_id='file_id',
+            ),
+            metric_fields={
+                'unique_count': (
+                    'cardinality', 'unique_session_id',
+                    {'precision_threshold': 1000},
+                ),
+                'volume': ('sum', 'size', {}),
+            },
+        )
+    ),
 }
 
 STATS_QUERIES = {

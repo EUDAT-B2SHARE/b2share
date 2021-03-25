@@ -40,6 +40,7 @@ patch_headers = [('Content-Type', 'application/json-patch+json'),
 
 def test_get_and_search_versions(app, test_records_data, test_users, login_user):
     """Test search of records with versions."""
+
     login = SimpleNamespace()
     login.normal = lambda client: login_user(test_users['normal'], client)
     login.owner = lambda c: login_user(test_users['deposits_creator'], c)
@@ -59,18 +60,20 @@ def test_get_and_search_versions(app, test_records_data, test_users, login_user)
             chain.append(make_record(app, login, data[1], version_of=chain[3]))
             chain.append(make_record(app, login, data[2], version_of=chain[4]))
             chain_list.append(chain)
-
+        
         # Test GET /api/records/<ID>/versions/
+
         for chain in chain_list:
             rec0 = get_record(app, chain[0])
             versions0 = get_request(app, rec0['links']['versions'])['versions']
             assert [(v['id']) for v in versions0] == [(r['id']) for r in chain]
+            
             for r in chain[1:]:
                 rec = get_record(app, r)
                 versions = get_request(app, rec['links']['versions'])['versions']
                 assert versions0 == versions
         current_search_client.indices.refresh()
-
+        
         # Test search
         search_res = search(app, login, 'bbmri')
         hits = search_res['hits']['hits']

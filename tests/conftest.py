@@ -40,7 +40,7 @@ from flask.cli import ScriptInfo
 import pytest
 import responses
 from jsonpatch import apply_patch
-from tests.b2share_unit_tests.helpers import authenticated_user, create_user
+from b2share_unit_tests.helpers import authenticated_user, create_user
 from b2share.modules.deposit.api import Deposit as B2ShareDeposit
 from b2share.modules.schemas.helpers import load_root_schemas
 from b2share.modules.b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
@@ -82,6 +82,7 @@ def base_app():
     )
     app = create_api(
         TESTING=True,
+        RATELIMIT_ENABLED=False,
         SERVER_NAME='localhost:5000',
         JSONSCHEMAS_HOST='localhost:5000',
         DEBUG_TB_ENABLED=False,

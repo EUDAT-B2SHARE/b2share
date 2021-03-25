@@ -60,8 +60,8 @@ class B2ShareRecordsSearch(RecordsSearch):
         def doc_types(self):
             """Find the right document type to search for."""
             if _in_draft_request():
-                return 'deposit'
-            return 'record'
+                return '_doc'
+            return '_doc'
 
     class Meta(metaclass=MetaClass):
         """Default index and filter for record search."""

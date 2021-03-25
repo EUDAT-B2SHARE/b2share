@@ -25,7 +25,7 @@
 from functools import partial
 
 from invenio_access.permissions import (
-    superuser_access, ParameterizedActionNeed, Permission
+    superuser_access, ParameterizedActionNeed
 )
 from invenio_db import db
 from invenio_files_rest.models import Bucket, MultipartObject, ObjectVersion
@@ -33,7 +33,7 @@ from invenio_records.api import Record
 from invenio_records_files.api import FileObject
 from invenio_records_files.models import RecordsBuckets
 from b2share.modules.access.permissions import (
-    DenyAllPermission, StrictDynamicPermission, OrPermissions
+    DenyAllPermission, StrictDynamicPermission, OrPermissions, DynamicPermission
 )
 from flask_principal import Permission, UserNeed
 
@@ -89,7 +89,7 @@ def files_permission_factory(obj, action=None):
             elif is_deposit(record.model):
                 return DepositFilesPermission(record, action)
 
-    return Permission(superuser_access)
+    return DynamicPermission(superuser_access)
 
 
 class RecordFilesPermission(OrPermissions):
