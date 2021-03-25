@@ -18,6 +18,7 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """Test B2Share records cli module."""
+
 from __future__ import absolute_import, print_function
 
 from unittest.mock import patch, DEFAULT

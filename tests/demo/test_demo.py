@@ -32,7 +32,7 @@ from invenio_pidstore.resolver import Resolver
 from invenio_records import Record
 
 from b2share.modules.schemas.cli import schemas as schemas_cmd
-from b2share_demo.cli import demo as demo_cmd
+from b2share.modules.b2share_demo.cli import demo as demo_cmd
 
 
 def test_demo_cmd_load(app):

@@ -25,7 +25,7 @@ from flask import request
 from invenio_app.config import APP_DEFAULT_SECURE_HEADERS
 # from invenio_previewer.config import PREVIEWER_PREFERENCE as BASE_PREFERENCE
 from invenio_records_rest.utils import deny_all, allow_all
-from invenio_search.api import RecordsSearch
+
 from b2share.modules.oauthclient.b2access import make_b2access_remote_app
 from b2share.modules.records.search import B2ShareRecordsSearch
 from b2share.modules.records.permissions import (
@@ -237,7 +237,7 @@ B2SHARE_RECORDS_REST_ENDPOINTS = dict(
         pid_minter='b2dep',
         pid_fetcher='b2rec',
         record_class='b2share.modules.records.api:B2ShareRecord',
-        search_class=RecordsSearch,
+        search_class=B2ShareRecordsSearch,
         record_serializers={
             'application/json': ('b2share.modules.records.serializers'
                                  ':json_v1_response'),
@@ -623,6 +623,7 @@ STATS_EVENTS = {
 }
 
 from invenio_stats.aggregations import StatAggregator
+
 STATS_AGGREGATIONS = {
     'file-download-agg': dict(
         templates='invenio_stats.contrib.aggregations.aggr_file_download',

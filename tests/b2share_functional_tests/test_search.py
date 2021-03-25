@@ -32,7 +32,7 @@ from invenio_search import current_search
 from flask import url_for as flask_url_for
 from invenio_db import db
 from b2share.modules.communities.api import Community
-from b2share_unit_tests.helpers import (
+from tests.b2share_unit_tests.helpers import (
     create_user, generate_record_data
 )
 
