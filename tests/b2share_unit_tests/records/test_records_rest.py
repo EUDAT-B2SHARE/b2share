@@ -27,7 +27,7 @@ import json
 import copy
 
 from flask import url_for
-from b2share_unit_tests.helpers import (
+from tests.b2share_unit_tests.helpers import (
     create_record, generate_record_data, url_for_file,
     subtest_file_bucket_content, subtest_file_bucket_permissions,
     build_expected_metadata, subtest_self_link, create_user,
@@ -275,8 +275,7 @@ def test_record_put_is_disabled(app, test_records, test_users,
 def test_record_read_permissions(app, test_communities,
                                  login_user, test_users):
     """Test record read with REST API."""
-    from time import sleep
-    sleep(3)
+
     uploaded_files = {
         'myfile1.dat': b'contents1',
         'myfile2.dat': b'contents2'
@@ -286,6 +285,7 @@ def test_record_read_permissions(app, test_communities,
     with app.app_context():
         creator = create_user('creator')
         non_creator = create_user('non-creator')
+
         open_record_data = generate_record_data(open_access=True)
         _, open_record_pid, open_record = create_record(
             open_record_data, creator, files=uploaded_files
@@ -421,9 +421,7 @@ def test_delete_record(app, test_users, test_communities, login_user,
             pid_value = record_pid.pid_value
             record_id = record.id
             bucket_id = record.files.bucket.id
-            # FIX ME: HK: This fails !!!
-            # record.files seems not te become available !
-            object_version = record.files.bucket.objects[0]
+
             deposit_bucket_id = deposit.files.bucket.id
             deposit_object_version = deposit.files.bucket.objects[0]
             
@@ -435,13 +433,6 @@ def test_delete_record(app, test_users, test_communities, login_user,
                                  bucket_id=bucket_id)
             deposit_bucket_url = url_for('invenio_files_rest.bucket_api',
                                          bucket_id=deposit_bucket_id)
-            # HK: FIXME Do not execute until the record.files issue is solved (above)
-            object_version_url = url_for(
-                'invenio_files_rest.object_api',
-                bucket_id=bucket_id,
-                version=object_version.version_id,
-                key=object_version.key
-            )
             deposit_object_version_url = url_for(
                 'invenio_files_rest.object_api',
                 bucket_id=deposit_bucket_id,
@@ -557,9 +548,11 @@ def test_record_publish_with_external_pids(app, login_user,
 
             assert request_res.status_code == 200
 
+            import wdb
+            wdb.set_trace()
+
             record = json.loads(request_res.get_data(as_text=True))
-            # HK: FIXME, the external_pids are not returned...
-            # assert len(record['files']) == len(external_pids) + len(uploaded_files)
+            assert len(record['files']) == len(external_pids) + len(uploaded_files)
 
             for f in record['files']:
                 assert f['ePIC_PID']

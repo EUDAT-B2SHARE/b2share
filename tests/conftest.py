@@ -452,7 +452,7 @@ def create_deposits(app, test_records_data, creator):
     deposits = []
     with authenticated_user(creator):
         for data in deepcopy(test_records_data):
-            record_uuid = str(uuid.uuid4())
+            record_uuid = uuid.uuid4().hex
             # Create persistent identifier
             b2share_deposit_uuid_minter(record_uuid, data=data)
             deposits.append(B2ShareDeposit.create(data=data, id_=record_uuid))

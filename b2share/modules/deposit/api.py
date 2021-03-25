@@ -78,22 +78,7 @@ class MyInvenioDeposit(InvenioDeposit):
     @classmethod
     @index
     def create(cls, data, id_=None):
-        """Create a deposit.
-        Initialize the follow information inside the deposit:
-        .. code-block:: python
-            deposit['_deposit'] = {
-                'id': pid_value,
-                'status': 'draft',
-                'owners': [user_id],
-                'created_by': user_id,
-            }
-        The deposit index is updated.
-        :param data: Input dictionary to fill the deposit.
-        :param id_: Default uuid for the deposit.
-        :returns: The new created deposit.
-        """
-
-        id_ = id_ or str(uuid.uuid4())
+        id_ = id_ or uuid.uuid4().hex
 
         if '_deposit' not in data:
             cls.deposit_minter(id_, data)

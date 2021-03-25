@@ -30,7 +30,7 @@ from flask import url_for
 from invenio_accounts.models import User
 from invenio_oauth2server.models import Token
 from invenio_oauth2server import current_oauth2server
-from b2share_unit_tests.helpers import create_user
+from tests.b2share_unit_tests.helpers import create_user
 
 
 def test_accounts_search_permission(app, test_users, test_community,

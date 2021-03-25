@@ -46,6 +46,8 @@ from flask_principal import ActionNeed
 from invenio_access.models import ActionRoles, ActionUsers
 from invenio_access.permissions import ParameterizedActionNeed
 from invenio_pidstore.models import PersistentIdentifier
+from invenio_oauth2server.models import Token
+from invenio_oauth2server import current_oauth2server
 
 
 def url_for_file(bucket_id, key):
@@ -238,7 +240,7 @@ def create_deposit(data, creator=None, files=None, version_of=None):
 
     def create(data):
         data = deepcopy(data)
-        record_uuid = uuid.uuid4()
+        record_uuid = uuid.uuid4().hex
         # Create persistent identifier
         b2share_deposit_uuid_minter(record_uuid, data=data)
         deposit = Deposit.create(data=data, id_=record_uuid,

@@ -154,7 +154,7 @@ def test_deposit_create_with_invalid_community_fails(app,
 
     with app.app_context():
         # test with an invalid community
-        data['community'] = str(uuid.uuid4())
+        data['community'] = uuid.uuid4().hex
         with pytest.raises(InvalidDepositError):
             deposit = create_deposit(data=data)
 
@@ -171,7 +171,7 @@ def test_change_deposit_community(app, draft_deposits):
     with app.app_context():
         deposit = Deposit.get_record(draft_deposits[0].deposit_id)
         # test changing the community id
-        deposit['community'] = str(uuid.uuid4())
+        deposit['community'] = uuid.uuid4().hex
         with pytest.raises(InvalidDepositError):
             deposit.commit()
 

@@ -29,7 +29,7 @@ import pytest
 from mock import Mock
 from b2share.modules.communities.api import Community
 from b2share.modules.deposit.api import PublicationStates
-from b2share_unit_tests.helpers import create_user, generate_record_data
+from tests.b2share_unit_tests.helpers import create_user, generate_record_data
 from click.testing import CliRunner
 from flask import url_for as flask_url_for
 from flask.cli import ScriptInfo
@@ -41,7 +41,6 @@ from invenio_records_files.models import RecordsBuckets
 from invenio_oauth2server import current_oauth2server
 from invenio_oauth2server.models import Token
 from invenio_search import current_search, current_search_client
-from invenio_stats import InvenioStats
 from invenio_stats.tasks import aggregate_events, process_events
 from invenio_queues import InvenioQueues
 from invenio_queues.proxies import current_queues

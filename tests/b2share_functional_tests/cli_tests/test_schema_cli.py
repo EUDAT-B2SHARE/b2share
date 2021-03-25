@@ -36,7 +36,7 @@ from b2share.modules.schemas.api import CommunitySchema
 from b2share.modules.schemas.cli import (schemas as schemas_cmd,
                                          update_or_set_community_schema)
 from b2share.modules.schemas.errors import RootSchemaDoesNotExistError
-from b2share_unit_tests.helpers import create_user
+from tests.b2share_unit_tests.helpers import create_user
 
 test_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",

@@ -30,7 +30,7 @@ from io import BytesIO
 
 import pytest
 from b2share.modules.communities.api import Community
-from b2share_unit_tests.helpers import create_user, generate_record_data
+from tests.b2share_unit_tests.helpers import create_user, generate_record_data
 from b2share.modules.deposit.api import PublicationStates
 from invenio_search import current_search
 from flask import url_for as flask_url_for

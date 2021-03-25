@@ -23,24 +23,18 @@
 
 """Test B2Share deposit module's versioning REST API."""
 
-from types import SimpleNamespace
-import time
 import json
 import uuid
 from flask import url_for
-from functools import partial
-from six import BytesIO
 
 from b2share.modules.deposit.api import PublicationStates, \
     copy_data_from_previous
 from b2share.modules.records.providers import RecordUUIDProvider
-from b2share_unit_tests.helpers import create_deposit, pid_of
-from invenio_records_rest.utils import LazyPIDValue
-from invenio_files_rest.models import ObjectVersion
-from invenio_records_files.api import Record
+
 from invenio_pidstore.resolver import Resolver
 from invenio_pidstore.models import PersistentIdentifier
 from invenio_pidrelations.contrib.versioning import PIDVersioning
+
 from b2share.modules.records.api import B2ShareRecord
 from b2share.modules.deposit.api import Deposit
 

@@ -30,7 +30,7 @@ import json
 import pytest
 from b2share.modules.communities.api import Community
 from invenio_accounts.models import User, Role
-from b2share_unit_tests.helpers import create_user, create_role
+from tests.b2share_unit_tests.helpers import create_user, create_role
 from flask import url_for
 from invenio_db import db
 

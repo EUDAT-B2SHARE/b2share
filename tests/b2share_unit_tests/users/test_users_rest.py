@@ -26,7 +26,7 @@
 import json
 
 from flask import url_for
-from b2share_unit_tests.helpers import create_user, create_role
+from tests.b2share_unit_tests.helpers import create_user, create_role
 
 
 def test_users_get(app, test_users, login_user):

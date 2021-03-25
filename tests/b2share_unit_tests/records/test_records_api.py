@@ -63,7 +63,7 @@ def test_change_record_community(app, test_records):
 
     with app.app_context():
         record = Record.get_record(test_records[0].record_id)
-        record['community'] = str(uuid.uuid4())
+        record['community'] = uuid.uuid4().hex
         with pytest.raises(AlteredRecordError):
             record.commit()
 
@@ -98,7 +98,7 @@ def test_record_commit_with_incomplete_metadata(app,
     for metadata in test_incomplete_records_data:
         with app.app_context():
             data = deepcopy(metadata.complete_data)
-            record_uuid = uuid.uuid4()
+            record_uuid = uuid.uuid4().hex
             b2share_deposit_uuid_minter(record_uuid, data=data)
             deposit = Deposit.create(data, id_=record_uuid)
             deposit.submit()
@@ -217,7 +217,7 @@ def test_record_publish_adds_no_handles_for_external_files(app,
             data = deepcopy(metadata)
             data['external_pids'] = deepcopy(external_pids)
 
-            record_uuid = uuid.uuid4()
+            record_uuid = uuid.uuid4().hex
             b2share_deposit_uuid_minter(record_uuid, data=data)
 
             deposit = Deposit.create(data, id_=record_uuid)

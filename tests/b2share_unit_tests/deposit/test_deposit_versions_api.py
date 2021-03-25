@@ -43,7 +43,6 @@ from b2share.modules.deposit.errors import (DraftExistsVersioningError,
                                             IncorrectRecordVersioningError,
                                             RecordNotFoundVersioningError)
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
-from b2share.modules.records.providers import RecordUUIDProvider
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 from b2share.modules.schemas.api import CommunitySchema
 

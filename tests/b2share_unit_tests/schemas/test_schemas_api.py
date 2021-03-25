@@ -42,8 +42,8 @@ from b2share.modules.schemas.errors import BlockSchemaDoesNotExistError, \
     InvalidRootSchemaError, RootSchemaDoesNotExistError, \
     InvalidSchemaVersionError, SchemaVersionExistsError
 from doschema.errors import JSONSchemaCompatibilityError
-from b2share_unit_tests.communities.helpers import community_metadata
-from b2share_unit_tests.schemas.data import (
+from tests.b2share_unit_tests.communities.helpers import community_metadata
+from tests.b2share_unit_tests.schemas.data import (
     communities_metadata, root_schemas_json_schemas,
     block_schemas_json_schemas,
     backward_incompatible_root_schemas_json_schemas,
@@ -193,7 +193,7 @@ def test_block_schemas(app):
 def test_block_schema_errors(app):
     """Test invalid usage of the BlockSchema API."""
     with app.app_context():
-        unknown_uuid = uuid.uuid4()
+        unknown_uuid = uuid.uuid4().hex
         # test with an invalid community ID
         with pytest.raises(InvalidBlockSchemaError):
             BlockSchema.create_block_schema(community_id=unknown_uuid,

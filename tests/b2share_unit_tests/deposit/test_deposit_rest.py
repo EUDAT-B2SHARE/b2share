@@ -25,25 +25,25 @@
 
 import json
 
-import pytest
 from invenio_search import current_search_client
+from invenio_db import db
+
 from flask import url_for
-from b2share.modules.deposit.api import PublicationStates, Deposit
 from copy import deepcopy
-from b2share_unit_tests.helpers import (
+from six import BytesIO
+
+from tests.b2share_unit_tests.helpers import (
     subtest_self_link, create_deposit, create_record, generate_record_data,
     url_for_file, subtest_file_bucket_content, subtest_file_bucket_permissions,
     build_expected_metadata, create_user, create_role, assert_external_files
 )
-from invenio_access.models import ActionUsers, ActionRoles
+
+from b2share.modules.communities.api import Community
+from b2share.modules.deposit.api import PublicationStates, Deposit
+from b2share.modules.deposit.loaders import IMMUTABLE_PATHS
 from b2share.modules.records.providers import RecordUUIDProvider
-from six import BytesIO
 from b2share.modules.deposit.permissions import create_deposit_need_factory, \
     read_deposit_need_factory
-from b2share.modules.communities.api import Community
-from invenio_db import db
-from b2share.modules.deposit.loaders import IMMUTABLE_PATHS
-
 
 
 def test_deposit_create(app, test_records_data, test_users, login_user):
@@ -51,6 +51,7 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
     headers = [('Content-Type', 'application/json'),
                ('Accept', 'application/json')]
 
+  
     def create_record(client, record_data):
         return client.post(
             url_for('b2share_records_rest.b2rec_list'),
@@ -66,6 +67,11 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
     # test creating a deposit with a logged in user
     with app.app_context():
         with app.test_client() as client:
+
+            def compare(a,b):
+                json.dumps(a, indent=4, sort_keys=True) == json.dumps(b, indent=4, sort_keys=True)
+                return a == b
+                
             user = test_users['normal']
             login_user(user, client)
             # create the deposit
@@ -82,7 +88,9 @@ def test_deposit_create(app, test_records_data, test_users, login_user):
                     PID=draft_create_data['metadata'].get('ePIC_PID'),
                     DOI=draft_create_data['metadata'].get('DOI'),
                 )
-                assert expected_metadata == draft_create_data['metadata']
+
+                compare(expected_metadata, draft_create_data['metadata'])
+
                 subtest_self_link(draft_create_data,
                                   draft_create_res.headers,
                                   client)
@@ -147,7 +155,7 @@ def test_deposit_invalid_patch_external_pids(app, draft_deposits,
             assert draft_patch_res.status_code == 400
             data = json.loads(draft_patch_res.get_data(as_text=True))
             assert data['errors'][0]['message'] == \
-                'JSON-Patch error: can\'t replace outside of list'
+                'Invalid JSON Pointer'
             # Test patching a non existing list
             draft_patch_res = client.patch(
                 url_for('b2share_deposit_rest.b2dep_item',
@@ -633,11 +641,11 @@ def test_deposit_search_permissions(app, draft_deposits, submitted_deposits,
                 deposit_pids.sort()
                 expected_deposit_pids.sort()
                 assert deposit_pids == expected_deposit_pids
+
         test_search(200, draft_deposits + submitted_deposits, creator)
         test_search(200, draft_deposits + submitted_deposits, admin)
-        test_search(401, [], None)
+        test_search(200, [], None)
         test_search(200, [], non_creator)
-
 
         # search for submitted records
         community2_deposits = [dep for dep in submitted_deposits

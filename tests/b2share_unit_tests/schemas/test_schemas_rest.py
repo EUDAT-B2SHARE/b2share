@@ -35,8 +35,8 @@ from mock import patch
 from b2share.modules.schemas.api import CommunitySchema, BlockSchema, \
     BlockSchemaVersion
 from b2share.modules.communities.api import Community
-from b2share_unit_tests.helpers import subtest_self_link
-from b2share_unit_tests.schemas.data import block_schemas_json_schemas
+from tests.b2share_unit_tests.helpers import subtest_self_link
+from tests.b2share_unit_tests.schemas.data import block_schemas_json_schemas
 
 
 def test_valid_get_community_schema(app, test_communities):

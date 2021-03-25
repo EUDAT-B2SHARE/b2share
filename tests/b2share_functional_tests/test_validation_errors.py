@@ -32,8 +32,8 @@ import pytest
 
 from flask import url_for
 from invenio_db import db
-from b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
-from b2share_unit_tests.helpers import create_user
+from b2share.modules.b2share_demo.helpers import resolve_community_id, resolve_block_schema_id
+from tests.b2share_unit_tests.helpers import create_user
 
 
 json_headers = [('Content-Type', 'application/json'),

@@ -29,7 +29,7 @@ import json
 
 from flask import url_for
 from invenio_accounts.models import User
-from b2share_unit_tests.helpers import create_user
+from tests.b2share_unit_tests.helpers import create_user
 
 
 def test_accounts_update(app, test_users, test_community,
