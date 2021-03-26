@@ -61,7 +61,7 @@ class RecordSchemaDublinCoreV1(Schema):
     languages = fields.Function(md_getter_as_list('language'))
 
     def get_subjects(self, obj):
-        keywords = obj['metadata'].get('keywords')
+        keywords = obj['metadata'].get('keywords', [])
         if keywords and isinstance(keywords[0], str): # root schema v0
             return keywords
         else:
