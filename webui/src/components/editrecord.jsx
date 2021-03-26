@@ -186,7 +186,15 @@ const EditRecordFieldTree = React.createClass({
                 'scheme': license.namespace,
                 'scheme_uri': license.namespace_uri
             };
-            this.setValue(schema, path.slice(0, -1), fromJS(licenseData));
+            // get corresponding schema
+            var pschema = this.getParentPathSchema(path);
+            var pvalue = {}
+            for (const [key, value] of Object.entries(licenseData)) {
+                if (pschema.hasIn(['properties', key])) {
+                    pvalue[key] = value
+                }
+            }
+            this.setValue(schema, path.slice(0, -1), fromJS(pvalue));
         };
 
         const buttons = {
