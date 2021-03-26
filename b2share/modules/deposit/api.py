@@ -178,7 +178,7 @@ class Deposit(MyInvenioDeposit):
     @property
     def record_pid(self):
         """Return the published/reserved record PID."""
-        return PersistentIdentifier.get('b2rec', str(self.id))
+        return PersistentIdentifier.get('b2rec', self.id.hex)
 
     @property
     def versioning(self):
