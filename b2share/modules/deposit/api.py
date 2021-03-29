@@ -92,7 +92,10 @@ class MyInvenioDeposit(InvenioDeposit):
 
             data['_deposit']['created_by'] = creator_id
 
-        return super(MyInvenioDeposit.__bases__[0], cls).create(data, id_=id_ , with_bucket=False)
+        # HK: Invoke create method from super of InvenioDeposit, which is invenio-record-files !
+        # Reason: That method in that class supports the 'with_bucket' parameter, which we need to set to False
+
+        return super(InvenioDeposit, cls).create(data, id_=id_ , with_bucket=False)
 
 
 class PublicationStates(Enum):
@@ -178,7 +181,12 @@ class Deposit(MyInvenioDeposit):
     @property
     def record_pid(self):
         """Return the published/reserved record PID."""
-        return PersistentIdentifier.get('b2rec', self.id.hex)
+        if isinstance(self.id, uuid.UUID):
+            id = self.id.hex
+        else:
+            id = self.id
+
+        return PersistentIdentifier.get('b2rec', id)
 
     @property
     def versioning(self):
