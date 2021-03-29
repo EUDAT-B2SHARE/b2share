@@ -23,7 +23,7 @@
 
 """Records search class and helpers."""
 
-from elasticsearch_dsl.query import Bool, Q
+from elasticsearch_dsl.query import Bool, Q, MatchAll
 from flask import has_request_context, request
 from invenio_search.api import RecordsSearch
 from flask_security import current_user
@@ -93,7 +93,7 @@ class B2ShareRecordsSearch(RecordsSearch):
 
             # otherwise filter returned deposits
             self.query = Bool(
-                must=self.query._proxied,
+                must=MatchAll(),
                 should=filters,
                 minimum_should_match=1
             )
@@ -102,7 +102,7 @@ class B2ShareRecordsSearch(RecordsSearch):
                 # search for last record versions only
                 filters = [Q('term', **{'_internal.is_last_version': True})]
                 self.query = Bool(
-                    must=self.query._proxied,
+                    must=MatchAll(),
                     should=filters,
                     minimum_should_match=1
                 )
