@@ -73,8 +73,43 @@ from b2share.modules.deposit.providers import DepositUUIDProvider
 from b2share.modules.handle.proxies import current_handle
 from b2share.modules.handle.errors import EpicPIDError
 
+class MyRecordIndexer(RecordIndexer):
+
+    def delete(self, record, **kwargs):
+        """Delete a record.
+
+        :param record: Record instance.
+        :param kwargs: Passed to
+            :meth:`elasticsearch:elasticsearch.Elasticsearch.delete`.
+        """
+        index, doc_type = self.record_to_index(record)
+        index, doc_type = self._prepare_index(index, doc_type)
+
+        # Pop version arguments for backward compatibility if they were
+        # explicit set to None in the function call.
+        if 'version' in kwargs and kwargs['version'] is None:
+            kwargs.pop('version', None)
+            kwargs.pop('version_type', None)
+        else:
+            kwargs.setdefault('version', record.revision_id)
+            kwargs.setdefault('version_type', self._version_type)
+
+        # HK: This was neccessary because Invenio-Index uses str(UUID) instead of UUID.hex ...
+        # B2share is still using hex id's for records identifiers.
+        # Please note: this is not consistent accross all code, for example communities ID are str(UUID)
+        
+        return self.client.delete(
+            id=record.id.hex,
+            index=index,
+            doc_type=doc_type,
+            **kwargs
+        )
+
 class MyInvenioDeposit(InvenioDeposit):
 
+    indexer = MyRecordIndexer()
+
+    """Default deposit indexer."""
     @classmethod
     @index
     def create(cls, data, id_=None):
