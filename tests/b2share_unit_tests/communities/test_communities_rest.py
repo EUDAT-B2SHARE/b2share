@@ -228,7 +228,6 @@ def test_invalid_get(app, login_user,
                                      community_id=unknown_uuid),
                              headers=headers)
             assert res.status_code == 404
-
             # create community
             created_community = Community.create_community(
                 **community_metadata)
@@ -241,7 +240,7 @@ def test_invalid_get(app, login_user,
             res = client.get(url_for('b2share_communities.communities_item',
                                      community_id=community_id),
                              headers=headers)
-            assert res.status_code == 403
+            assert res.status_code == 406
 
 
 # FIXME: Test is disabled for V2 as it is not used by the UI

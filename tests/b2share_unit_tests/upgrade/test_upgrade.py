@@ -185,8 +185,9 @@ def test_upgrade_from_v2_0_0(clean_app):
             raise pytest.skip('upgrades are not supported on sqlite.')
         # bring db to v2.0.1 state
         db_create_v2_0_1()
-
         # Upgrade B2SHARE with `b2share upgrade run`
+        import wdb
+        wdb.set_trace()
         result = upgrade_run(clean_app)
         assert result.exit_code == 0
 
