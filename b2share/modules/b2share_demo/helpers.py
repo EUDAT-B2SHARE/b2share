@@ -211,7 +211,7 @@ def _create_records(path, verbose):
             for filename in files:
                 split_filename = os.path.splitext(filename)
                 if split_filename[1] == '.json':
-                    rec_uuid = UUID(split_filename[0])
+                    rec_uuid = UUID(split_filename[0]).hex
                     path = os.path.join(records_dir, root, filename)
                     record, deposit = _create_record_from_filepath(
                         path, rec_uuid, indexer, nb_records, verbose)
