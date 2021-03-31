@@ -72,10 +72,13 @@ def test_record_indexing(app, test_users, test_records, script_info,
                             obj=script_info)
         assert 0 == res.exit_code
         # schedule a reindex task
-        res = runner.invoke(cli.reindex, ['--yes-i-know', '-t', 'records'], obj=script_info)
+        res = runner.invoke(cli.reindex, ['--yes-i-know', '-t', 'b2dep'], obj=script_info)
+        assert 0 == res.exit_code
+        res = runner.invoke(cli.reindex, ['--yes-i-know', '-t', 'b2rec'], obj=script_info)
         assert 0 == res.exit_code
         # execute scheduled tasks synchronously
         process_bulk_queue.delay()
+
         # flush the indices so that indexed records are searchable
         current_search_client.indices.flush(index='_all', params= {'force':'true'})
         current_search_client.indices.refresh(index='_all')
@@ -122,6 +125,7 @@ def subtest_record_search(app, creator, test_records, test_deposits,
             search_deposits_url,
             data='',
             headers=headers)
+        
         assert deposit_search_res.status_code == 200
         deposit_search_data = json.loads(
             deposit_search_res.get_data(as_text=True))
