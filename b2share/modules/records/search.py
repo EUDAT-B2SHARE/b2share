@@ -44,7 +44,6 @@ def _in_draft_request():
     """
     return has_request_context() and 'drafts' in request.args
 
-
 class B2ShareRecordsSearch(RecordsSearch):
     """Search class for records."""
 
@@ -69,6 +68,7 @@ class B2ShareRecordsSearch(RecordsSearch):
     def __init__(self, all_versions=False, **kwargs):
         """Initialize instance."""
         super(B2ShareRecordsSearch, self).__init__(**kwargs)
+
         if _in_draft_request():
             if not current_user.is_authenticated:
                 raise AnonymousDepositSearch()
@@ -76,9 +76,27 @@ class B2ShareRecordsSearch(RecordsSearch):
             if StrictDynamicPermission(superuser_access).can():
                 return
 
-            filters = [Q('term', **{'_deposit.owners': current_user.id})]
+            filters = Bool(
+                must=[
+                        Q('term', **{'_deposit.owners': current_user.id})
+                    ]
+                )
+
+            # filters = Bool(
+            #     must=[
+            #             Q('term', **{'_deposit.owners': current_user.id}),
+            #             Q('term', **{'publication_state': 'draft'}) 
+            #         ]
+            #     )
 
             from b2share.modules.deposit.permissions import list_readable_communities
+
+            # HK: Deposits index in B2Share V2 is reocrding 'records' also in the 'deposit' index.
+            # this was filtered additionally with the 'deposit' doc_type.
+            # in ElasticSearch 7 / B2Share V3 this is no longer the case. Therefor we need to apply
+            # a 'must' clause to enforce to read 'draft' deposits only
+            # Code below is not clearly understood, seems not to comply with any use-case according to Hari
+            # We keep the code but probably is is not used.
 
             readable_communities = list_readable_communities(current_user.id)
             for publication_state in readable_communities.all:
@@ -101,6 +119,7 @@ class B2ShareRecordsSearch(RecordsSearch):
             if not all_versions:
                 # search for last record versions only
                 filters = [Q('term', **{'_internal.is_last_version': True})]
+                print("RECORDS", filters)
                 self.query = Bool(
                     must=MatchAll(),
                     should=filters,
