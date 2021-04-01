@@ -67,7 +67,7 @@ export const Schema = React.createClass({
             inner = <span className="mono-style">{inner}</span>
         }
 
-        const leftwidth = 12 / (this.columnCount - depth);
+        const leftwidth = Math.ceil(12 / (this.columnCount - depth));
         const leftcolumn = !id ? false :
             <div className={"col-sm-" + leftwidth}>
                 <p className={requiredClass}>
