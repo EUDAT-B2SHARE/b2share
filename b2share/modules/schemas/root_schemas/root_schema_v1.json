@@ -483,12 +483,14 @@
                     },
                     "license_uri": {
                         "title": "License URI",
+                        "description": "The URI pointing to the description of the license.",
                         "type": "string",
                         "format": "uri"
                     },
                     "license_identifier": {
                         "title": "Identifier",
-                        "description": "The unique identifier of the license, according to various identifier schemes."
+                        "description": "The unique identifier of the license, according to various identifier schemes.",
+                        "type": "string"
                     },
                     "$ref": "#/definitions/schemeWithUri"
                 },
@@ -550,15 +552,12 @@
                     "type": "object",
                     "properties": {
                         "places": {
-                            "title": "Places",
+                            "title": "Place",
                             "description": "Spatial region or named place where the data was gathered or about which the data is focused.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/spatialCoveragePlace"
-                            },
-                            "uniqueItems": true
+                            "$ref": "#/definitions/spatialCoveragePlace"
                         },
                         "point": {
+                            "title": "Point",
                             "$ref": "#/definitions/spatialCoveragePoint",
                             "description": "A point contains a single latitude-longitude pair."
                         },
@@ -567,13 +566,30 @@
                             "description": "A bounding box defined by two points.",
                             "$ref": "#/definitions/spatialCoverageBox"
                         },
-                        "polygon": {
-                            "title": "Polygon",
-                            "description": "A drawn polygon area, defined by a set of points and lines connecting the points in a closed chain.",
+                        "polygons": {
+                            "title": "Polygons",
+                            "description": "One or more drawn polygon areas, defined by a set of points and lines connecting the points in a closed chain.",
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/spatialCoveragePoint"
-                            }
+                                "type": "object",
+                                "properties": {
+                                    "polygon": {
+                                        "type": "array",
+                                        "title": "Polygon",
+                                        "description": "A drawn polygon area, defined by a set of points and lines connecting the points in a closed chain.",
+                                        "items": {
+                                            "$ref": "#/definitions/spatialCoveragePoint"
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "inpoint": {
+                                        "title": "Internal point",
+                                        "description": "A point inside the polygon",
+                                        "$ref": "#/definitions/spatialCoveragePoint"
+                                    }
+                                }
+                            },
+                            "uniqueItems": true
                         }
                     }
                 },
