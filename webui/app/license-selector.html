@@ -15,19 +15,26 @@
     <script type="text/javascript" src="vendors/license-selector.js"></script>
     <script type="text/javascript">
     $(function() {
+        var data = {};
         function selectLicense(license) {
+            license = Object.assign(license, {
+                scheme: data.scheme,
+                schemeUri: data.schemeUri
+            });
             window.parent.postMessage(license, window.location.origin);
         };
-
-        $('<div>')
-            .appendTo('body')
-            .licenseSelector({
-                showLabels : true,
-                onLicenseSelected : selectLicense,
-            })
-            .click();
-        $('section.license-selector')
-            .on('hide.lsmodal', function() { selectLicense(null); });
+        jQuery.get('/suggest/licenses.json',
+            function(res) {
+                data = res;
+                $('<div>')
+                    .appendTo('body')
+                    .licenseSelector({
+                        showLabels : true,
+                        onLicenseSelected : selectLicense,
+                        licenses: data.items    // FIXME: really override the licenses provided in tool
+                    })
+                    .click();
+            });
     });
     </script>
 </body>

@@ -14,15 +14,14 @@ export const SelectLicense = React.createClass({
         if (origin === window.location.origin) {
             this.props.setModal(false);
             if (event.data) {
-                this.props.onSelect(
-                    Object.assign(
-                        event.data,
-                        {
-                            namespace: 'Public License Selector',
-                            namespace_uri: 'https://raw.githubusercontent.com/ufal/public-license-selector/master/src/definitions.coffee'
-                        }
-                    )
-                );
+                const licenseData = {
+                    'license': event.data.name,
+                    'license_uri': event.data.url,
+                    'license_identifier': event.data.key,
+                    'scheme': event.data.scheme,
+                    'scheme_uri': event.data.schemeUri
+                };
+                this.props.onSelect(licenseData);
             }
         }
     },
@@ -48,9 +47,8 @@ export const SelectLicense = React.createClass({
             <a className="input-group-addon" href="#" style={{backgroundColor:'white'}}
                onClick={() => this.props.setModal(licenseModal)} title="Open license selector tool">
                     <span className="glyphicon glyphicon-copyright-mark" aria-hidden="true"/>
-                    {" "}
-                    {this.props.title}
+                    {" " + this.props.title}
             </a>
         );
-    },
+    }
 });

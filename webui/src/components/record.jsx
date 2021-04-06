@@ -178,6 +178,10 @@ const Record = React.createClass({
         this.updateNotes();
     },
 
+    componentWillUnmount() {
+        window.removeEventListener('message', this.catchB2NoteEvent);
+    },
+
     updateNotes() {
         this.updateRecordNotes('record_notes');
         this.updateFileNotes('files_notes');

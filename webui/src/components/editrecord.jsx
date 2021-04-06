@@ -179,17 +179,10 @@ const EditRecordFieldTree = React.createClass({
 
         const onSelectLicense = (license) => {
             console.assert(path.length >= 1);
-            const licenseData = {
-                'license': license.name,
-                'license_uri': license.url,
-                'license_identifier': license.key,
-                'scheme': license.namespace,
-                'scheme_uri': license.namespace_uri
-            };
             // get corresponding schema
             var pschema = this.getParentPathSchema(path);
             var pvalue = {}
-            for (const [key, value] of Object.entries(licenseData)) {
+            for (const [key, value] of Object.entries(license)) {
                 if (pschema.hasIn(['properties', key])) {
                     pvalue[key] = value
                 }
