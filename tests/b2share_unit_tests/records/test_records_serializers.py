@@ -210,7 +210,7 @@ def test_records_serializers_eudatcore(app, test_records_data):
         record.replace_refs = types.MethodType(replace_refs, record)
 
         record['spatial_coverages'] = [
-            {'places': ['Turku']},
+            {'place': 'Turku'},
             {'point': {'point_longitude': -20, 'point_latitude': 30}},
             {'box': {
                 'westbound_longitude': 60,
@@ -219,10 +219,16 @@ def test_records_serializers_eudatcore(app, test_records_data):
                 'southbound_latitude': 120
                 }
             },
-            {'polygon': [
-                {'point_latitude': 20, 'point_longitude': 20},
-                {'point_latitude': 30, 'point_longitude': 30},
-                {'point_latitude': 40, 'point_longitude': 40}
+            {'polygons': [
+                {'polygon': [
+                    {'point_latitude': 20, 'point_longitude': 20},
+                    {'point_latitude': 30, 'point_longitude': 30},
+                    {'point_latitude': 40, 'point_longitude': 40}
+                ],
+                'inpoint': {
+                    'point_latitude': 25,
+                    'point_longitude': 25
+                }}
             ]}
         ]
         record['instruments'] = [{'instrument_name': 'Scalpel'}]
@@ -283,11 +289,17 @@ def test_records_serializers_eudatcore(app, test_records_data):
             '//spatialCoverages/spatialCoverage/geoLocationBox/southBoundLatitude'
         )[0].text == '120'
         assert [e.text for e in xml.xpath(
-            '//spatialCoverages/spatialCoverage/geoLocationPolygon/geoLocationPoint/pointLatitude'
+            '//spatialCoverages/spatialCoverage/geoLocationPolygon/polygonPoint/pointLatitude'
         )] == ['20', '30', '40']
         assert [e.text for e in xml.xpath(
-            '//spatialCoverages/spatialCoverage/geoLocationPolygon/geoLocationPoint/pointLongitude'
+            '//spatialCoverages/spatialCoverage/geoLocationPolygon/polygonPoint/pointLongitude'
         )] == ['20', '30', '40']
+        assert [e.text for e in xml.xpath(
+            '//spatialCoverages/spatialCoverage/geoLocationPolygon/inPolygonPoint/pointLongitude'
+        )] == ['25']
+        assert [e.text for e in xml.xpath(
+            '//spatialCoverages/spatialCoverage/geoLocationPolygon/inPolygonPoint/pointLatitude'
+        )] == ['25']
         assert xml.xpath(
             '//temporalCoverages/temporalCoverage/startDate'
         )[0].text == '1994-04-02'

@@ -551,7 +551,7 @@
                 "items": {
                     "type": "object",
                     "properties": {
-                        "places": {
+                        "place": {
                             "title": "Place",
                             "description": "Spatial region or named place where the data was gathered or about which the data is focused.",
                             "$ref": "#/definitions/spatialCoveragePlace"

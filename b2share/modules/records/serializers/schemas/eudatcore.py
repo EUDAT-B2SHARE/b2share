@@ -20,24 +20,37 @@ def human_readable_size(size):
         size /= 1000.0
     return "{:.1f} {}".format(size, unit)
 
-def geo_location_point(point):
-    p = E.geoLocationPoint(E.pointLongitude(str(point['point_longitude'])),
+def geo_location_point(point, element_name):
+    p = E(element_name, E.pointLongitude(str(point['point_longitude'])),
         E.pointLatitude(str(point['point_latitude'])))
     if 'point_vertical' in point:
         p.append(E.pointVertical(str(point['point_vertical'])))
     return p
 
+def identifier_prefix(identifier_type):
+    if identifier_type == 'ePIC_PID':
+        return 'pid:'
+    if identifier_type in ['DOI', 'ARK', 'bibcode', 'URN']:
+        return '{}:'.format(identifier_type.lower())
+    if identifier_type == 'arXiv':
+        return 'arXiv:'
+    if identifier_type == 'EISSN':
+        return 'eISSN '
+    if identifier_type in ['ISBN', 'ISSN', 'ISTC', 'PMID']:
+        return "{} ".format(identifier_type)
+    if identifier_type == 'LISSN':
+        return 'ISSN-L '
+    if identifier_type == 'LSID':
+        return 'urn:lsid:'
+    return ''
+
 class EudatCoreSchema(object):
     def identifiers(self, obj, root, record_id):
         ret = E.identifiers()
         for item in obj['_pid']:
-            prefix = ''
-            if item['type'] == 'ePIC_PID':
-                prefix = 'pid'
-            if item['type'] == 'DOI':
-                prefix = 'doi'
+            prefix = identifier_prefix(item['type'])
             if prefix:
-                ret.append(E.identifier('{}:{}'.format(prefix, item['value'])))
+                ret.append(E.identifier('{}{}'.format(prefix, item['value'])))
         ret.append(E.identifier('url:{}'.format(make_record_url(record_id))))
         root.append(ret)
 
@@ -153,14 +166,14 @@ class EudatCoreSchema(object):
         if 'alternate_identifiers' in metadata:
             alt = E.alternateIdentifiers()
             for i in metadata['alternate_identifiers']:
-                alt.append(E.alternateIdentifier("{}:{}".format(i['alternate_identifier_type'], i['alternate_identifier'])))
+                alt.append(E.alternateIdentifier("{}{}".format(identifier_prefix(i['alternate_identifier_type']), i['alternate_identifier'])))
             root.append(alt)
 
     def related_identifiers(self, metadata, root):
         if 'related_identifiers' in metadata:
             rel = E.relatedIdentifiers()
             for i in metadata['related_identifiers']:
-                rel.append(E.relatedIdentifier("{}:{}".format(i['related_identifier_type'], i['related_identifier'])))
+                rel.append(E.relatedIdentifier("{}{}".format(identifier_prefix(i['related_identifier_type']), i['related_identifier'])))
             root.append(rel)
 
     def contributors(self, metadata, root):
@@ -199,12 +212,11 @@ class EudatCoreSchema(object):
             spatialCoverages = E.spatialCoverages()
             for cov in covs:
                 spatialCoverage = E.spatialCoverage()
-                if 'places' in cov:
-                    for place in cov['places']:
-                        spatialCoverage.append(E.geoLocationPlace(place))
+                if 'place' in cov:
+                    spatialCoverage.append(E.geoLocationPlace(cov['place']))
 
                 if 'point' in cov:
-                    spatialCoverage.append(geo_location_point(cov['point']))
+                    spatialCoverage.append(geo_location_point(cov['point'], 'geoLocationPoint'))
 
                 if 'box' in cov:
                     box = cov['box']
@@ -216,11 +228,14 @@ class EudatCoreSchema(object):
                     )
                     spatialCoverage.append(b)
 
-                if 'polygon' in cov:
-                    p = E.geoLocationPolygon()
-                    for point in cov['polygon']:
-                        p.append(geo_location_point(point))
-                    spatialCoverage.append(p)
+                if 'polygons' in cov:
+                    for polygon in cov['polygons']:
+                        p = E.geoLocationPolygon()
+                        for point in polygon.get('polygon', []):
+                            p.append(geo_location_point(point, 'polygonPoint'))
+                        if 'inpoint' in polygon:
+                            p.append(geo_location_point(polygon['inpoint'], 'inPolygonPoint'))
+                        spatialCoverage.append(p)
                 spatialCoverages.append(spatialCoverage)
             root.append(spatialCoverages)
 
