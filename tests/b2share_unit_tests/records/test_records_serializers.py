@@ -31,6 +31,7 @@ from b2share.modules.records.serializers import (
     oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31, eudatcore_v1)
 from invenio_indexer.api import RecordIndexer
 from b2share.modules.records.minters import make_record_url
+from b2share.modules.records.serializers.schemas.eudatcore import identifier_prefix
 
 def make_record(test_records_data):
     creator = create_user('creator')
@@ -266,10 +267,10 @@ def test_records_serializers_eudatcore(app, test_records_data):
         assert [f.text for f in xml.xpath('//formats/format')] == \
             list(set([f['key'].split('.')[1] for f in record['_files']]))
         assert [i.text for i in xml.xpath('//alternateIdentifiers/alternateIdentifier')] == \
-            ["{}:{}".format(i['alternate_identifier_type'], i['alternate_identifier'])\
+            ["{}{}".format(identifier_prefix(i['alternate_identifier_type']), i['alternate_identifier'])\
                 for i in record['alternate_identifiers']]
         assert [i.text for i in xml.xpath('//relatedIdentifiers/relatedIdentifier')] == \
-            ["{}:{}".format(i['related_identifier_type'], i['related_identifier']) \
+            ["{}{}".format(identifier_prefix(i['related_identifier_type']), i['related_identifier']) \
                 for i in record['related_identifiers']]
         assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPlace')[0].text == 'Turku'
         assert xml.xpath('//spatialCoverages/spatialCoverage/geoLocationPoint/pointLongitude')[0]\
