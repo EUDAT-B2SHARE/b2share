@@ -548,9 +548,6 @@ def test_record_publish_with_external_pids(app, login_user,
 
             assert request_res.status_code == 200
 
-            import wdb
-            wdb.set_trace()
-
             record = json.loads(request_res.get_data(as_text=True))
             assert len(record['files']) == len(external_pids) + len(uploaded_files)
 

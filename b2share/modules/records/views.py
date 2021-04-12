@@ -323,7 +323,8 @@ class B2ShareRecordsListResource(RecordsListResource):
                 raise IncorrectRecordVersioningError(version_of)
             # Copy the metadata from a previous version if this version is
             # specified and no data was provided.
-            if request.content_length == 0:
+            # invenio-records-rest changed missing content_length from 0 to None
+            if not request.content_length:
                 data = copy_data_from_previous(previous_record.model.json)
 
         if data is None:
@@ -395,6 +396,7 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
 
         :param resolver: Persistent identifier resolver instance.
         """
+ 
         default_media_type = 'application/json'
         super(RecordsVersionsResource, self).__init__(
             serializers={
@@ -411,7 +413,6 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
         """GET a list of record's versions."""
         record_endpoint = 'b2share_records_rest.{0}_item'.format(
             RecordUUIDProvider.pid_type)
-
         pid_value = request.view_args['pid_value']
         pid = RecordUUIDProvider.get(pid_value).pid
         pid_versioning = PIDVersioning(child=pid)

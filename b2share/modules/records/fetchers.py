@@ -48,7 +48,7 @@ def b2share_parent_pid_fetcher(record_uuid, data):
         provider=RecordUUIDProvider,
         # The record_uuid is not relevant for the parent pids
         # but it is added in the signature for consistency.
-        object_uuid=None,
+        object_uuid=record_uuid,
         pid_type=RecordUUIDProvider.pid_type,
         pid_value=next(pid['value'] for pid in data['_pid']
                        if pid['type'] == RecordUUIDProvider.parent_pid_type)

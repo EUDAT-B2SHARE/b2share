@@ -179,15 +179,17 @@ def test_init_fail_and_retry(clean_app):
 
 def test_upgrade_from_v2_0_0(clean_app):
     """Test upgrading B2Share from version 2.0.0."""
+
     with clean_app.app_context():
         ext = clean_app.extensions['invenio-db']
         if db.engine.name == 'sqlite':
             raise pytest.skip('upgrades are not supported on sqlite.')
         # bring db to v2.0.1 state
+        
+
+
         db_create_v2_0_1()
         # Upgrade B2SHARE with `b2share upgrade run`
-        import wdb
-        wdb.set_trace()
         result = upgrade_run(clean_app)
         assert result.exit_code == 0
 
@@ -231,6 +233,7 @@ def test_failed_and_repair_upgrade_from_v2_0_0(clean_app):
         db_create_v2_0_1()
         # Add a table which shouldn't exist in 2.0.1 version. This will
         # Make the 2.0.0->2.1.0 migration fail.
+
         Migration.__table__.create(db.engine)
         db.session.commit()
         result = upgrade_run(clean_app)
