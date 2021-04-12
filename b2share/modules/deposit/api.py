@@ -490,6 +490,7 @@ class Deposit(MyInvenioDeposit):
 
     def delete(self):
         """Delete a deposit."""
+
         deposit_pid = self.pid
         pid_value = deposit_pid.pid_value
         record_pid = RecordUUIDProvider.get(pid_value).pid
