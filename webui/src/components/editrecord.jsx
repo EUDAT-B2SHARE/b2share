@@ -563,7 +563,6 @@ const EditRecordFieldTree = React.createClass({
 const EditRecordBlock = React.createClass({
     getInitialState() {
         return {
-            modal: null,
             folds: true
         }
     },
@@ -575,7 +574,7 @@ const EditRecordBlock = React.createClass({
 
         const [majors, minors] = getSchemaOrderedMajorAndMinorFields(schema, hiddenFields.concat(['dates', 'sizes', 'formats']));
 
-        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} setLicenseModal={(state) => this.setState(state) } funcs={this.props.funcs} />);
+        const majorFields = majors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} setLicenseModal={this.props.setModal } funcs={this.props.funcs} />);
         const minorFields = minors.entrySeq().map(([id, schema]) => <EditRecordFieldTree key={id} id={id} schemaID={schemaID} schema={schema} funcs={this.props.funcs} />);
 
         const onMoreDetails = e => {
@@ -603,10 +602,6 @@ const EditRecordBlock = React.createClass({
         const blockStyle=schemaID ? {marginTop:'1em', paddingTop:'1em', borderTop:'1px solid #eee'} : {};
         return (
             <div style={blockStyle}>
-                { this.state.modal &&
-                <div style={{position:'absolute', width:'100%', zIndex: 1}}>
-                    { this.state.modal }
-                </div> }
                 <div className="row">
                     <h3 className="col-sm-12" style={{marginBottom:0}}>
                         { schemaID ? schema.get('title') : 'Basic fields' }
@@ -636,6 +631,7 @@ const EditRecord = React.createClass({
             errors: {},
             dirty: false,
             waitingForServer: false,
+            modal: false
         };
     },
 
@@ -997,6 +993,10 @@ const EditRecord = React.createClass({
         const editTitle = "Editing " + (this.props.isDraft ? "draft" : "record") + (this.props.isVersion ?  " version": "");
         return (
             <div className="edit-record">
+                { this.state.modal &&
+                <div style={{position:'absolute', width:'100%', zIndex: 1}}>
+                    { this.state.modal }
+                </div> }
                 <Versions isDraft={this.props.isDraft}
                           recordID={this.props.record.get('id')}
                           versions={this.props.record.get('versions')}
@@ -1025,9 +1025,9 @@ const EditRecord = React.createClass({
                     </div>
                     <div className="col-xs-12">
                         <form className="form-horizontal" onSubmit={this.updateRecord}>
-                            <EditRecordBlock key={"root"} schemaID={null} schema={rootSchema} funcs={this.getChildFuncs()} />
+                            <EditRecordBlock key={"root"} schemaID={null} schema={rootSchema} funcs={this.getChildFuncs()} setModal={s => { this.setState(s)}} />
                             { blockSchemas.map(([id, schema]) =>
-                                <EditRecordBlock key={id} schemaID={id} schema={(schema||Map()).get('json_schema')} funcs={this.getChildFuncs()} />) }
+                                <EditRecordBlock setModal={s => this.setState(s)} key={id} schemaID={id} schema={(schema||Map()).get('json_schema')} funcs={this.getChildFuncs()} />) }
                         </form>
                     </div>
                 </div>
