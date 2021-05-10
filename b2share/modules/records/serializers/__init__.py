@@ -27,7 +27,7 @@ from __future__ import absolute_import, print_function
 
 from invenio_records_rest.serializers.response import search_responsify
 from invenio_records_rest.serializers.dc import DublinCoreSerializer
-from invenio_records_rest.serializers.datacite import DataCite31Serializer
+from invenio_records_rest.serializers.datacite import DataCite31Serializer, BaseDataCiteSerializer
 
 from dojson.contrib.to_marc21 import to_marc21
 from invenio_marc21.serializers.marcxml import MARCXMLSerializer
@@ -39,6 +39,10 @@ from b2share.modules.records.serializers.schemas.datacite import DataCiteSchemaV
 from b2share.modules.records.serializers.schemas.eudatcore import EudatCoreSchema
 from .xmlserializer import XMLSerializer
 
+from b2share.modules.records.serializers.schemas.datacite import DataCiteSchemaV1, DataCiteSchemaV2
+from b2share.modules.records.serializers.schemas.eudatcore import EudatCoreSchema
+from .xmlserializer import XMLSerializer
+from .schemas import schema44
 from b2share.modules.records.serializers.response import record_responsify, \
     JSONSerializer
 
@@ -56,3 +60,8 @@ eudatcore_v1 = XMLSerializer(EudatCoreSchema, replace_refs=True).serialize_oaipm
 
 # DOI record serializers.
 datacite_v31 = DataCite31Serializer(DataCiteSchemaV1, replace_refs=True)
+class Datacite44Serializer(BaseDataCiteSerializer):
+    schema = schema44
+    version = '4.4'
+
+datacite_v44 = Datacite44Serializer(DataCiteSchemaV2, replace_refs=True)

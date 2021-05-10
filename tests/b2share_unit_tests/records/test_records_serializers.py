@@ -2,8 +2,8 @@
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2016, University of Tuebingen.
-#
 # B2Share is free software; you can redistribute it and/or
+#
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation; either version 2 of the
 # License, or (at your option) any later version.
@@ -28,7 +28,7 @@ import pytest
 import pdb
 from b2share_unit_tests.helpers import (create_record, create_user)
 from b2share.modules.records.serializers import (
-    oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31, eudatcore_v1)
+    oaipmh_oai_dc, oaipmh_marc21_v1, datacite_v31, eudatcore_v1, datacite_v44)
 from invenio_indexer.api import RecordIndexer
 from b2share.modules.records.minters import make_record_url
 from b2share.modules.records.serializers.schemas.eudatcore import identifier_prefix
@@ -54,6 +54,63 @@ def make_record(test_records_data):
             'ePIC_PID': "http://hdl.handle.net/1234/51163455-650b-45e5-9b9f-6cf2ef70a08f"
         }
     ]
+    return pid, record
+
+def make_v1_record(test_records_data):
+    pid, record = make_record(test_records_data)
+    record['spatial_coverages'] = [
+            {'place': 'Turku'},
+            {'point': {'point_longitude': -20, 'point_latitude': 30}},
+            {'box': {
+                'westbound_longitude': 60,
+                'eastbound_longitude': -30,
+                'northbound_latitude': -80,
+                'southbound_latitude': 120
+                }
+            },
+            {'polygons': [
+                {'polygon': [
+                    {'point_latitude': 20, 'point_longitude': 20},
+                    {'point_latitude': 30, 'point_longitude': 30},
+                    {'point_latitude': 40, 'point_longitude': 40}
+                ],
+                'inpoint': {
+                    'point_latitude': 25,
+                    'point_longitude': 25
+                }}
+                ]
+            }
+    ]
+    record['instruments'] = [{'instrument_name': 'Scalpel'}]
+    record['temporal_coverages'] = {
+        'ranges': [{'start_date': '1994-04-02', 'end_date': '1994-04-03'}],
+        'spans': ['1994-2021']
+    }
+    record['related_identifiers'] = [
+        {'related_identifier_type': 'URL',
+         'related_identifier': 'http://www.example.com'}
+    ]
+    record['license']['scheme'] = 'testScheme'
+    record['license']['scheme_uri'] = 'http://www.example.com'
+    record['contributors'].append(
+        {'contributor_name': 'Doe, John',
+        'given_name': 'John',
+        'family_name': 'Doe',
+        'affiliations': [
+            {
+                'affiliation_name': 'Fake Org',
+                'affiliation_identifier': 'fake_org_id',
+                'scheme': 'not_a_real_scheme'
+            }
+        ],
+        'contributor_type': 'DataCurator',
+        'name_type': 'Personal',
+        'name_identifiers': [
+            {'name_identifier': 'totally_a_real_id',
+             'scheme': 'actually_not_scheme',
+             'scheme_uri': 'http://exmaple.com'}
+            ]
+        })
     return pid, record
 
 
@@ -202,45 +259,87 @@ def test_records_serializers_datacite(app, test_records_data):
               for x in doc.xpath('//d:resourceType', namespaces=namespaces)]
         assert rt == record['resource_types']
 
-def test_records_serializers_eudatcore(app, test_records_data):
+def test_records_serializers_datacite4(app, test_records_data):
     with app.app_context():
         import types
-        pid, record = make_record(test_records_data)
+        import arrow
+        from lxml import etree
+
+        pid, record = make_v1_record(test_records_data)
         def replace_refs(self):
             return self
         record.replace_refs = types.MethodType(replace_refs, record)
+        doc_str = datacite_v44.serialize(pid=pid, record=record)
+        doc = etree.XML(doc_str.encode('utf-8'))
 
-        record['spatial_coverages'] = [
-            {'place': 'Turku'},
-            {'point': {'point_longitude': -20, 'point_latitude': 30}},
-            {'box': {
-                'westbound_longitude': 60,
-                'eastbound_longitude': -30,
-                'northbound_latitude': -80,
-                'southbound_latitude': 120
-                }
-            },
-            {'polygons': [
-                {'polygon': [
-                    {'point_latitude': 20, 'point_longitude': 20},
-                    {'point_latitude': 30, 'point_longitude': 30},
-                    {'point_latitude': 40, 'point_longitude': 40}
-                ],
-                'inpoint': {
-                    'point_latitude': 25,
-                    'point_longitude': 25
-                }}
-            ]}
-        ]
-        record['instruments'] = [{'instrument_name': 'Scalpel'}]
-        record['temporal_coverages'] = {
-            'ranges': [{'start_date': '1994-04-02', 'end_date': '1994-04-03'}],
-            'spans': ['1994-2021']
-        }
-        record['related_identifiers'] = [
-            {'related_identifier_type': 'URL',
-             'related_identifier': 'http://www.example.com'}
-        ]
+        namespaces = {'d':'http://datacite.org/schema/kernel-4.4'}
+        def datacite(path):
+            return [t.text for t in doc.xpath(path, namespaces=namespaces)]
+
+        assert datacite('//identifier') == [i['value']\
+            for i in record['_pid'] if i['type'] == 'DOI']
+        assert datacite('//alternateIdentifiers/alternateIdentifier')\
+            == [i['value'] for i in record['_pid'] if i['type'] == 'ePIC_PID'] +\
+                [i['alternate_identifier'] for i in record['alternate_identifiers']]
+        assert datacite('//creators/firstName')\
+            == [c['first_name'] for c in record['creators']]
+        assert datacite('//creators/familyName')\
+            == [c['last_name'] for c in record['creators']]
+        assert datacite('//contributors/firstName')\
+            == [c['first_name'] for c in record['contributors']]
+        assert datacite('//contributors/familyName')\
+            == [c['last_name'] for c in record['contributors']]
+
+        assert datacite('//dates/date') == [d['date'] for d in record['dates']]
+        assert datacite('//dates/dateType') == [d['date_type'] for d in record['dates']]
+        assert datacite('//dates/dateInformation')\
+            == [d['date_information'] for d in record['dates']]
+
+        assert datacite('//relatedIdentifiers/relatedIdentifier')\
+            == [i['related_identifier'] for i in record['related_identifiers']]
+
+        rights = [t.text for t in doc.xpath('//rightsList/rights')]
+        assert ('open' if record['open_access'] else 'closed') in rights
+        license = record.get('license', {})
+        if license:
+            assert license.get('license') in rights
+            assert license.get('scheme_uri') in datacite('//rightsList/rights/@schemeURI')
+            assert license.get('scheme') in datacite('//rightsList/rights/@scheme')
+        assert datacite('//description') == [d['description'] for d in record['descriptions']]
+        assert datacite('//description/@descriptionType')\
+            == [d['description_type'] for d in record['descriptions']]
+        assert datacite('//geoLocations/geoLocation/geoLocationBox/*')\
+            == [record['spatial_coverages'][0]['box'][k] for k in\
+            ['westbound_longitude', 'eastbound_longitude', 'northbound_latitude', 'southbound_latitude']]
+        assert datacite('//geoLocations/geoLocation/geoLocationPlace')\
+            == [record['spatial_coverages'][0]['place']]
+        assert datacite('//geoLocations/geoLocation/geoLocationPoint/*')\
+            == [record['spatial_coverages'][0]['point'][k] for k in ['point_longitude', 'point_latitude']]
+        assert datacite('//geoLocations/geoLocation/geoLocationPolygon/polygonPoint/pointLongitude')\
+            == [p['point_longitude'] for p in record['spatial_coverages'][0]['polygons'][0]['polygon']]
+        assert datacite('//geoLocations/geoLocation/geoLocationPolygon/polygonPoint/pointLatitude')\
+            == [p['point_latitude'] for p in record['spatial_coverages'][0]['polygons'][0]['polygon']]
+        assert datacite('//geoLocations/geoLocation/geoLocationPolygon/inPolygonPoint/*')\
+            == [record['spatial_coverages'][0]['polygons'][0]['inpoint'][k] for k in ['point_longitude', 'point_latitude']]
+
+        assert datacite('//contributors//familyName') == [c['family_name'] for c in record['contributors'] if c.get('family_name')]
+        assert datacite('//contributors//nameIdentifier/') == [c['name_identifier'] for c in record['contributors'] if c.get('name_identifier')]
+        affiliations = []
+        for c in record['contributors']:
+            if c.get('affiliations'):
+                for a in c['affiliations']:
+                    affiliations.append(a)
+        assert datacite('//contributors//affiliation/@affiliationIdentifier') == [a['affiliation_identifier'] for a in affiliations]
+        assert datacite('//contributors//affililiation') == [a['affiliation_name'] for a in affiliations]
+
+
+def test_records_serializers_eudatcore(app, test_records_data):
+    with app.app_context():
+        import types
+        pid, record = make_v1_record(test_records_data)
+        def replace_refs(self):
+            return self
+        record.replace_refs = types.MethodType(replace_refs, record)
         xml = eudatcore_v1(pid=pid, record=record)
 
         assert [t.text for t in xml.xpath('//titles/title')] == \
