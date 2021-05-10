@@ -107,7 +107,7 @@ def b2share_pid_minter(rec_pid, data):
 def b2share_doi_minter(rec_pid, data, fake_it=False):
     from invenio_pidstore.models import PIDStatus, PersistentIdentifier
     from invenio_pidstore.providers.datacite import DataCiteProvider
-    from .serializers import datacite_v31
+    from .serializers import datacite_v44
 
     def select_doi(metadata, status):
         doi_list = [DataCiteProvider.get(d.get('value'))
@@ -134,7 +134,7 @@ def b2share_doi_minter(rec_pid, data, fake_it=False):
 
     throw_on_failure = current_app.config.get('CFG_FAIL_ON_MISSING_DOI', True)
     try:
-        doc = datacite_v31.serialize(doi.pid, data)
+        doc = datacite_v44.serialize(doi.pid, data)
         if fake_it: # don't actually register DOI, just pretend to do so
             doi.pid.register()
         else:
