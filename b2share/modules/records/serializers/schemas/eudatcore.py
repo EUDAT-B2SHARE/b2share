@@ -2,10 +2,10 @@ from marshmallow import Schema
 from lxml import etree
 from lxml.builder import E
 from b2share.modules.communities.api import Community
+from b2share.modules.communities.errors import CommunityDoesNotExistError
 from invenio_files_rest.models import Bucket, ObjectVersion, FileInstance
 from invenio_records_files.models import RecordsBuckets
 from b2share.modules.records.minters import make_record_url
-import mimetypes
 
 def get_buckets(record_id):
     res = Bucket.query.join(RecordsBuckets).\
@@ -27,32 +27,15 @@ def geo_location_point(point, element_name):
         p.append(E.pointVertical(str(point['point_vertical'])))
     return p
 
-def identifier_prefix(identifier_type):
-    if identifier_type == 'ePIC_PID':
-        return 'pid:'
-    if identifier_type in ['DOI', 'ARK', 'bibcode', 'URN']:
-        return '{}:'.format(identifier_type.lower())
-    if identifier_type == 'arXiv':
-        return 'arXiv:'
-    if identifier_type == 'EISSN':
-        return 'eISSN '
-    if identifier_type in ['ISBN', 'ISSN', 'ISTC', 'PMID']:
-        return "{} ".format(identifier_type)
-    if identifier_type == 'LISSN':
-        return 'ISSN-L '
-    if identifier_type == 'LSID':
-        return 'urn:lsid:'
-    return ''
-
 class EudatCoreSchema(object):
-    def identifiers(self, obj, root, record_id):
-        ret = E.identifiers()
-        for item in obj['_pid']:
-            prefix = identifier_prefix(item['type'])
-            if prefix:
-                ret.append(E.identifier('{}{}'.format(prefix, item['value'])))
-        ret.append(E.identifier('url:{}'.format(make_record_url(record_id))))
-        root.append(ret)
+    def identifiers(self, metadata, root):
+        ids = E.identifiers()
+        for item in metadata['_pid']:
+            if item['type']  == 'DOI':
+                ids.append(E.identifier(item['value'], identifierType=item['type']))
+            if item['type'] == 'b2rec':
+                ids.append(E.identifier(make_record_url(item['value']), identifierType='URL'))
+        root.append(ids)
 
     def titles(self, metadata, root):
         ret = E.titles()
@@ -61,8 +44,11 @@ class EudatCoreSchema(object):
         root.append(ret)
 
     def community(self, metadata, root):
-        c = Community.get(id=metadata['community'])
-        root.append(E.community(c.name))
+        try:
+            c = Community.get(id=metadata['community'])
+            root.append(E.community(c.name))
+        except CommunityDoesNotExistError:
+            root.append(E.community('unknown'))
 
     def publishers(self, metadata, root):
         ret = E.publishers()
@@ -91,7 +77,12 @@ class EudatCoreSchema(object):
         if 'instruments' in metadata:
             instruments = E.instruments()
             for i in metadata['instruments']:
-                instruments.append(E.instrument(i['instrument_name']))
+                instrument = E.instrument(i['instrument_name'])
+                if 'instrument_identifier_type' in i:
+                    instrument.set('instrumentIdentifierType', i['instrument_identifier_type'])
+                instruments.append(instrument)
+                if 'instrument_identifier' in i:
+                    instrument.set('instrumentIdentifier', i['instrument_identifier'])
             root.append(instruments)
 
     def descriptions(self, metadata, root):
@@ -112,10 +103,13 @@ class EudatCoreSchema(object):
             root.append(ret)
 
     def rights_list(self, metadata, root):
+        rights = E.rightsList()
         if 'license' in metadata:
             rights = E.rightsList()
             rights.append(E.rights(metadata['license']['license']))
-            root.append(rights)
+        rights.append(E.rights('info:eu-repo/semantics/openAccess' if metadata.get('open_access') else 'info:eu-repo/semantics/closedAccess'))
+        root.append(rights)
+
 
     def languages(self, metadata, root):
         if 'language' in metadata:
@@ -125,7 +119,7 @@ class EudatCoreSchema(object):
         if 'languages' in metadata:
             languages = E.languages()
             for l in metadata['languages']:
-                languages.append(E.language(l))
+                languages.append(E.language(l['language_identifier']))
             root.append(languages)
 
     def formats(self, metadata, root):
@@ -146,47 +140,56 @@ class EudatCoreSchema(object):
         if 'disciplines' in metadata:
             disciplines = E.disciplines()
             for d in metadata['disciplines']:
-                if 'discipline_name' in d:
-                    disciplines.append(E.discipline(d['discipline_name']))
-                else:
+                if isinstance(d, str):
                     disciplines.append(E.discipline(d))
+                else:
+                    discipline = E.discipline(d['discipline_name'])
+                    if d.get('scheme'):
+                        discipline.set('disciplineScheme', d['scheme'])
+                    if d.get('scheme_uri'):
+                        discipline.set('schemeURI', d['scheme_uri'])
+                    if d.get('discipline_identifier'):
+                        discipline.set('disciplineIdentifier', d['discipline_identifier'])
+                    disciplines.append(discipline)
             root.append(disciplines)
 
-    def subjects(self, metadata, root):
+    def keywords(self, metadata, root):
         if 'keywords' in metadata:
-            subjects = E.subjects()
+            keywords = E.keywords()
             for s in metadata['keywords']:
                 if 'keyword' in s:
-                    subjects.append(E.subject(s['keyword']))
+                    keywords.append(E.keyword(s['keyword']))
                 else:
-                    subjects.append(E.subject(s))
-            root.append(subjects)
+                    keywords.append(E.keyword(s))
+            root.append(keywords)
 
     def alternate_identifiers(self, metadata, root):
         if 'alternate_identifiers' in metadata:
             alt = E.alternateIdentifiers()
-            for i in metadata['alternate_identifiers']:
-                alt.append(E.alternateIdentifier("{}{}".format(identifier_prefix(i['alternate_identifier_type']), i['alternate_identifier'])))
+            for a in metadata['alternate_identifiers']:
+                alt.append(E.alternateIdentifier(a['alternate_identifier'],\
+                    alternateIdentifierType=a['alternate_identifier_type']))
             root.append(alt)
 
     def related_identifiers(self, metadata, root):
         if 'related_identifiers' in metadata:
             rel = E.relatedIdentifiers()
-            for i in metadata['related_identifiers']:
-                rel.append(E.relatedIdentifier("{}{}".format(identifier_prefix(i['related_identifier_type']), i['related_identifier'])))
+            for r in metadata['related_identifiers']:
+                related_identifier = E.relatedIdentifier(r['related_identifier'], relatedIdentifierType=r['related_identifier_type'])
+                rel.append(related_identifier)
             root.append(rel)
 
     def contributors(self, metadata, root):
         if 'contributors' in metadata:
             contributors = E.contributors()
             for c in metadata['contributors']:
-                contributors.append(E.contributor(c['contributor_name']))
+                contributors.append(E.contributor(E.contributorName(c['contributor_name'])))
             root.append(contributors)
 
     def contacts(self, metadata, root):
         if 'contact_email' in metadata:
             contacts = E.contacts()
-            contacts.append(E.contact((metadata['contact_email'])))
+            contacts.append(E.contact(metadata['contact_email']))
             root.append(contacts)
 
     def sizes(self, metadata, root):
@@ -246,8 +249,8 @@ class EudatCoreSchema(object):
             if 'ranges' in covs:
                 for r in covs['ranges']:
                     tempCov = E.temporalCoverage()
-                    tempCov.append(E.startDate(r['start_date']))
-                    tempCov.append(E.endDate(r['end_date']))
+                    tempCov.append(E.startDate(r['start_date'], format='ISO-8601'))
+                    tempCov.append(E.endDate(r['end_date'], format='ISO-8601'))
                     temporalCoverages.append(tempCov)
             if 'spans' in covs:
                 for s in covs['spans']:
@@ -256,10 +259,14 @@ class EudatCoreSchema(object):
 
     def funding_references(self, metadata, root):
         if 'funding_references' in metadata:
-            fundref = E.fundingReferences()
+            fundrefs = E.fundingReferences()
             for f in metadata['funding_references']:
-                fundref.append(E.fundingReference(f['funder_name']))
-            root.append(fundref)
+                fundref = E.fundingReference()
+                fundref.append(E.funderName(f['funder_name']))
+                if 'award_number' in f:
+                    fundref.append(E.awardNumber(f['award_number']))
+                fundrefs.append(fundref)
+            root.append(fundrefs)
 
     ns = {
         None: 'http://schema.eudat.eu/schema/kernel-1',
@@ -279,26 +286,27 @@ class EudatCoreSchema(object):
         root = etree.Element('resource', nsmap=self.ns, attrib=self.root_attribs)
         self.titles(metadata, root)
         self.community(metadata, root)
-        self.identifiers(metadata, root, record_id)
+        self.identifiers(metadata, root)
         self.publishers(metadata, root)
         self.publication_year(obj, root)
+        self.creators(metadata, root)
+        self.instruments(metadata, root)
         self.descriptions(metadata, root)
         self.rights_list(metadata, root)
         self.languages(metadata, root)
         self.resource_types(metadata, root)
-        self.creators(metadata, root)
-        self.instruments(metadata, root)
-        self.subjects(metadata, root)
         self.disciplines(metadata, root)
-        self.contributors(metadata, root)
+        self.keywords(metadata, root)
         self.formats(metadata, root)
         self.alternate_identifiers(metadata, root)
         self.related_identifiers(metadata, root)
+        self.contributors(metadata, root)
+        self.contacts(metadata, root)
 
         self.spatial_coverages(metadata, root)
         self.temporal_coverages(metadata, root)
 
-        self.contacts(metadata, root)
         self.version(metadata, root)
         self.sizes(metadata, root)
+        self.funding_references(metadata, root)
         return root
