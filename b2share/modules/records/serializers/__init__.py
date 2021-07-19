@@ -37,6 +37,7 @@ from b2share.modules.records.serializers.schemas.dc import RecordSchemaDublinCor
 from b2share.modules.records.serializers.schemas.marcxml import RecordSchemaMarcXMLV1
 from b2share.modules.records.serializers.schemas.datacite import DataCiteSchemaV1
 from b2share.modules.records.serializers.schemas.eudatcore import EudatCoreSchema
+from b2share.modules.records.serializers.schemas.eudatextended import EudatExtendedSchema
 from .xmlserializer import XMLSerializer
 
 from b2share.modules.records.serializers.schemas.datacite import DataCiteSchemaV1, DataCiteSchemaV2
@@ -57,6 +58,7 @@ marcxml_v1 = MARCXMLSerializer(to_marc21, schema_class=RecordSchemaMarcXMLV1, re
 oaipmh_oai_dc = dc_v1.serialize_oaipmh
 oaipmh_marc21_v1 = marcxml_v1.serialize_oaipmh
 eudatcore_v1 = XMLSerializer(EudatCoreSchema, replace_refs=True).serialize_oaipmh
+eudatextended_v1 = XMLSerializer(EudatExtendedSchema, replace_refs=True).serialize_oaipmh
 
 # DOI record serializers.
 datacite_v31 = DataCite31Serializer(DataCiteSchemaV1, replace_refs=True)
