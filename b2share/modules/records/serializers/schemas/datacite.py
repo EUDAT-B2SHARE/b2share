@@ -297,7 +297,7 @@ class DataCiteSchemaV2(DataCiteSchemaV1):
         from .eudatcore import human_readable_size
         n_files = 0
         total_size = 0
-        for f in obj['metadata']['_files']:
+        for f in obj['metadata'].get('_files', []):
             total_size += f['size']
             n_files += 1
         return ['{} file{}'.format(n_files, 's' if n_files>1 else ''), human_readable_size(total_size)]
