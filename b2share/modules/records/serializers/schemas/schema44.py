@@ -6,8 +6,6 @@ del rules.rules['identifiers']
 def identifiers(path, values):
     doi = ''
     for value in values:
-        print(value['identifierType'] == 'DOI')
-        print(value['identifierType'])
         if value['identifierType'] == 'DOI':
             if doi != '':
                 # Don't know what to do with two DOIs

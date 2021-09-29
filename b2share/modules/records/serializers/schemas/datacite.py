@@ -58,6 +58,9 @@ class AlternateIdentifierSchema(Schema):
 
 
 class DataCiteSchemaV1(Schema):
+    """
+    Marshmallow schema for DataCite v3.1 serialization
+    """
     # --- required
     identifier = fields.Nested(IdentifierSchema, attribute='metadata._pid')
 
@@ -72,7 +75,7 @@ class DataCiteSchemaV1(Schema):
     resourceType = fields.Method('get_resource_type')
     subjects = fields.Method('get_subjects')
     contributors = fields.Method('get_contributors')
-    language = fields.Str(attribute='metadata.language')
+    language = fields.Method('get_language')
     alternateIdentifiers = fields.List(
         fields.Nested(AlternateIdentifierSchema, attribute='metadata._pid'))
     rightsList = fields.Method('get_rights')
@@ -102,6 +105,13 @@ class DataCiteSchemaV1(Schema):
             if rt.get('resource_description'):
                 ret['resourceType'] = rt['resource_description']
         return ret
+
+    def get_language(self, obj):
+        if obj['metadata'].get('language'):
+            return obj['metadata']['language']
+        languages = obj['metadata'].get('languages', [])
+        if languages:
+            return languages[0]['language_name']
 
     def get_subjects(self, obj):
         items = []
@@ -187,6 +197,9 @@ def add_names_and_affiliations(obj, field_name, ret):
     return ret
 
 class DataCiteSchemaV2(DataCiteSchemaV1):
+    """
+    Marshmallow schema for Datacite v4.4 serialization
+    """
     def get_identifiers(self, obj):
         return [{'identifier': i['value'], 'identifierType': i['type']}\
             for i in obj['metadata']['_pid'] if i['type'] == 'DOI']
@@ -289,9 +302,6 @@ class DataCiteSchemaV2(DataCiteSchemaV1):
             if rt.get('resource_description'):
                 ret['resourceType'] = rt['resource_description']
         return ret
-
-    def get_language(self, obj):
-        return obj['metadata'].get('languages', []).get(0, '')
 
     def get_sizes(self, obj):
         from .eudatcore import human_readable_size
