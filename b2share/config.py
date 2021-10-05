@@ -272,6 +272,11 @@ OAISERVER_METADATA_FORMATS = {
         'namespace': 'http://schema.eudat.eu/schema/kernel-1',
         'schema': 'http://schema.eudat.eu/schema/eudat-core-1.0.xsd',
         'serializer': 'b2share.modules.records.serializers.eudatcore_v1'
+    },
+    'eudatextended': {
+        'namespace': 'http://schema.eudat.eu/schema/kernel-1',
+        'schema': 'http://schema.eudat.eu/schema/eudat-extended-1.0.xsd',
+        'serializer': 'b2share.modules.records.serializers.eudatextended_v1'
     }
 }
 
