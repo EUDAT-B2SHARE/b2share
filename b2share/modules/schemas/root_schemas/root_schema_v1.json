@@ -139,12 +139,12 @@
                     "eastbound_longitude": {
                         "title": "Eastbound longitude",
                         "description": "The eastbound longitude of the enclosing box.",
-                        "$ref": "#/definitions/latitude"
+                        "$ref": "#/definitions/longitude"
                     },
                     "northbound_latitude": {
                         "title": "Northbound latitude",
                         "description": "The northbound latitude of the enclosing box.",
-                        "$ref": "#/definitions/longitude"
+                        "$ref": "#/definitions/latitude"
                     },
                     "southbound_latitude": {
                         "title": "Southbound latitude",
