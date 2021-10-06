@@ -3,7 +3,7 @@ from lxml.builder import E
 from .eudatcore import EudatCoreSchema
 from lxml import etree
 from .dc import record_url
-
+from datetime import datetime
 
 def add_affiliations(source, target):
     if source.get('affiliations', []):
@@ -116,6 +116,7 @@ class EudatExtendedSchema(EudatCoreSchema):
             root.append(contributors)
 
     def dates(self, obj, root):
+        from dateutil import parser
         metadata = obj['metadata']
         dates = E.dates()
         if 'dates' in metadata:
@@ -125,8 +126,9 @@ class EudatExtendedSchema(EudatCoreSchema):
                     date.set('dateInformation', d['date_information'])
                 dates.append(date)
         dates.append(E.date(obj['created'],dateType='Created', dateInformation='Creation'))
-        if obj['updated'] > obj['created']:
-            dates.append(E.date(obj['updated'],dateType='Updated', dateInformation='Updated with latest properties'))
+        d = parser.parse(obj['updated']) - parser.parse(obj['created'])
+        if d.days > 0:
+            dates.append(E.date(obj['updated'], dateType='Updated', dateInformation='Updated with latest properties'))
         root.append(dates)
 
     def resource_types(self, metadata, root):
