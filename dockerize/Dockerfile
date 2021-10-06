@@ -20,9 +20,10 @@ RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
 # Supposedly helps with pip time-outs.
 ENV PIP_DEFAULT_TIMEOUT=100
 
-RUN python3 -m pip install --upgrade pip setuptools wheel && \
-    python3 --version && \
-    pip3 --version
+# setuptools pinned for 2to3 compatibility (for e.g. fs==0.5.4)
+RUN python3 -m pip install --upgrade pip setuptools==57.5.0 wheel && \
+     python3 --version && \
+     pip3 --version
 
 ENV LANG=en_US.UTF-8
 ENV DB_NAME="b2share-evolution"
