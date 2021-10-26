@@ -21,7 +21,7 @@
             },
             "resourceType": {
                 "type": "string",
-                "enum": ["Audiovisual", "Book", "BookChapter", "Collection", "ComputationalNotebook", "ConferencePaper", "ConferenceProceeding", "Dataset", "Dissertation", "Event", "Image", "InteractiveResource", "Journal", "JournalArticle", "Model", "OutputsManagementPlan", "PeerReview", "PhysicalObject", "Preprint", "Report", "Service", "Software", "Sound", "Standard", "Text", "Workflow", "Other"]
+                "enum": ["Audiovisual", "Book", "BookChapter", "Collection", "ComputationalNotebook", "ConferencePaper", "ConferenceProceeding", "Dataset", "Dissertation", "Event", "Image", "InteractiveResource", "Journal", "JournalArticle", "Model", "OutputManagementPlan", "PeerReview", "PhysicalObject", "Preprint", "Report", "Service", "Software", "Sound", "Standard", "Text", "Workflow", "Other"]
             },
             "funderIdentifierType": {
                 "type": "string",
