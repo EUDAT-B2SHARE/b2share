@@ -113,6 +113,7 @@ class B2AccessOAuthRemoteApp(OAuthRemoteApp):
             # set the Authentication header
             headers={
                 'Authorization': 'Basic {}'.format(b2access_basic_auth),
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
             data=to_bytes(body, self.encoding),
             method=self.access_token_method,
