@@ -25,7 +25,7 @@
 
 import base64
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 from flask import abort, current_app, redirect, request, \
     session, url_for
 from flask_oauthlib.client import OAuthException, OAuthRemoteApp, \
@@ -105,7 +105,7 @@ class B2AccessOAuthRemoteApp(OAuthRemoteApp):
         remote_args.update(self.access_token_params)
         # build the Basic HTTP Authentication code
         b2access_basic_auth = base64.encodestring(bytes('{0}:{1}'.format(
-            self.consumer_key, self.consumer_secret),
+            self.consumer_key, quote(self.consumer_secret)),
             'utf-8')).decode('ascii').replace('\n', '')
         body = client.prepare_request_body(**remote_args)
         resp, content = self.http_request(
