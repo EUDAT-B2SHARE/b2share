@@ -2,6 +2,7 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { fromJS, OrderedMap, Map } from 'immutable';
 import moment from 'moment';
+import { Card } from "react-bootstrap";
 import { serverCache, Error } from '../data/server';
 import { pairs, humanSize } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';
@@ -837,6 +838,36 @@ export const PersistentIdentifier = React.createClass({
         );
     },
 });
+
+export const CitationBox = React.createClass({
+    getInitialState() {
+        return {data: null}
+    },
+    componentDidMount() {
+        const headers= {"Accept":"text/x-bibliography; style=apa"};
+        const url = this.props.doi.replace('http', 'https')
+        fetch(url, {headers}).then(response=>response.text()).then(text=>this.setState({data: text.replace(/<\/?i>/g, "")}));
+    },
+    render: function() {
+        return(
+            <span>{this.state.data}</span>
+        );
+    }
+});
+
+export const BibtexExport = React.createClass({
+    onButtonClick() {
+        const headers= {"Accept":"application/x-bibtex"};
+        const url = this.props.doi.replace('http', 'https')
+        fetch(url, {headers}).then(response=>response.text()).then(text=>copyToClipboard(text));
+    },
+    render: function() {
+    return (
+        <span style={this.props.style}>
+            <span><a className="btn btn-xs btn-default" onClick={this.onButtonClick.bind(this)} title="Copy BibTeX"><i className="fa fa-clipboard"/></a></span>
+        </span>
+    );
+}});
 
 
 export function copyToClipboard(text) {

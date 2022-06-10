@@ -10,9 +10,10 @@ import { keys, humanSize } from '../data/misc';
 import { ReplaceAnimate } from './animate.jsx';
 import { ImplodedList } from './common.jsx';
 import { Wait, Err } from './waiting.jsx';
-import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard } from './editfiles.jsx';
+import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard, CitationBox, BibtexExport } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
+import { Card } from 'react-bootstrap';
 import PiwikTracker from 'piwik-react-router';
 
 const PT = React.PropTypes;
@@ -380,6 +381,27 @@ const Record = React.createClass({
         'community', 'titles', 'descriptions', 'creators', 'keywords', 'disciplines', 'publication_state'
     ],
 
+    renderCitations(doi) {
+        return (
+            <div className="well">
+            <div className="row">
+                <h3 className="col-sm-9">
+                    { 'Cite as' }
+                </h3>
+            </div>
+            <div className="row">
+                <div className="col-sm-9"><CitationBox doi={doi}/></div>
+            <b className="col-sm-9">
+                    Copy BibTeX <BibtexExport doi={doi}/>
+            </b>
+            </div>
+            <a href={"https://citation.crosscite.org?doi=" + doi}>More citation choices</a>
+            </div>
+        )
+
+    },
+
+
     renderFileList(files, b2noteUrl, showDownloads) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
         const showAccessRequest = (!openAccess && !isRecordOwner(this.props.record));
@@ -590,6 +612,7 @@ const Record = React.createClass({
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
         const state = record.get('metadata').get('publication_state');
+        const doi = record.get('metadata').get('DOI')
         return (
             <div className="container-fluid">
                 <div className="large-record bottom-line">
@@ -646,6 +669,7 @@ const Record = React.createClass({
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
+                            {doi && this.renderCitations(doi)}
                             { this.renderFileList(files, this.props.b2noteUrl, true) }
                         </div>
 

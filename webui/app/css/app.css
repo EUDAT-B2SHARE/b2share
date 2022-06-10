@@ -618,6 +618,11 @@ a.navbar-brand {
   margin: 0;
 }
 
+.citation {
+  border: 1px solid black;
+}
+
+
 .record .date {
   color: #228;
 }
