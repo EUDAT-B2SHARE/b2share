@@ -2,6 +2,7 @@ import React from 'react/lib/ReactWithAddons';
 import { Link } from 'react-router'
 import { fromJS, OrderedMap, Map } from 'immutable';
 import moment from 'moment';
+import { Card } from "react-bootstrap";
 import { serverCache, Error } from '../data/server';
 import { pairs, humanSize } from '../data/misc';
 import { Wait, Err } from './waiting.jsx';

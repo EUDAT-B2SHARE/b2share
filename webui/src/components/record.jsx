@@ -13,6 +13,7 @@ import { Wait, Err } from './waiting.jsx';
 import { FileRecordHeader, FileRecordRow, PersistentIdentifier, copyToClipboard } from './editfiles.jsx';
 import { Versions } from './versions.jsx';
 import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
+import { Card } from 'react-bootstrap';
 import PiwikTracker from 'piwik-react-router';
 
 const PT = React.PropTypes;
@@ -379,6 +380,86 @@ const Record = React.createClass({
     fixedFields: [
         'community', 'titles', 'descriptions', 'creators', 'keywords', 'disciplines', 'publication_state'
     ],
+    
+
+    renderCitations(doi) {
+        
+        try {
+            const headers= {"Accept":"text/x-bibliography; style=apa"};
+            const url = doi.replace('http', 'https')
+            fetch(url, {headers})
+            .then(response => {
+                if(response.ok){
+                    this.setState({responsestatus: response.status, responseok: true})
+                    return response.text()
+                }
+                
+            }).then(text=>this.setState({data: text.replace(/<\/?i>/g, "")})
+            ).catch((error) => {
+                console.log(error + " from "+ url)
+                this.setState({responsestatus: 404, responseok: false})
+            })
+        } catch (error) {
+            console.log(error)
+            this.setState({responsestatus: 0, responseok: false})
+        }
+
+        if(this.state.responsestatus == null){
+            //This if is for the cationbox not to rendering anything before it has fetched something from the DOI.
+        } else if(this.state.responseok == true){
+            function onButtonClick() {
+                const headers= {"Accept":"application/x-bibtex"};
+                const url = doi.replace('http', 'https')
+                fetch(url, {headers}).then(response=>response.text()).then(text=>copyToClipboard(text));
+            }
+            return (
+                <div className="well">
+                <div className="row">
+                    <h3 className="col-sm-9">
+                        { 'Cite as' }
+                    </h3>
+                </div>
+                <div className="row">
+                <div className="col-sm-9" > {this.state.data} </div>
+                <b className="col-sm-9">
+                        Copy BibTeX  
+                        <span style={this.props.style}>
+                            <span><a className="btn btn-xs btn-default" onClick={onButtonClick.bind(this)} title="Copy BibTeX"><i className="fa fa-clipboard"/></a></span>
+                        </span>
+                </b>
+                </div>
+                <a href={"https://citation.crosscite.org?doi=" + doi}>More citation choices</a>
+                </div>
+            )
+        } else {
+            return(
+                <div className="well">
+                <div>
+                    <li style={{
+                        listStyleType : "none",
+                        boxsizing : "border-box",
+                        backgroundColor : "#fcf8e3",
+                        bordercolor : "#fbeed5",
+                        color : "#c09853" ,
+                        padding : "15px",
+                        marginbottom : "20px",
+                        border : "1px solid transparent",
+                        borderradius : "4px"
+                    }}>
+                        This citation is not available at this moment.
+                    </li>
+                </div>
+                </div>
+
+            )
+        }
+        
+            
+        
+
+
+    },
+
 
     renderFileList(files, b2noteUrl, showDownloads) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
@@ -590,6 +671,7 @@ const Record = React.createClass({
             serverCache.createRecordVersion(record, newRecordID => browser.gotoEditRecord(newRecordID));
         }
         const state = record.get('metadata').get('publication_state');
+        const doi = record.get('metadata').get('DOI')
         return (
             <div className="container-fluid">
                 <div className="large-record bottom-line">
@@ -646,6 +728,7 @@ const Record = React.createClass({
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
+                            {doi && this.renderCitations(doi)}
                             { this.renderFileList(files, this.props.b2noteUrl, true) }
                         </div>
 
