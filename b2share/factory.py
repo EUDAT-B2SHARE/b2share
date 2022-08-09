@@ -110,7 +110,6 @@ instance_path = os.getenv(env_prefix + '_INSTANCE_PATH') or \
     os.path.join(sys.prefix, 'var', 'b2share-instance')
 """Instance path for B2Share."""
 
-
 def create_api(*args, **kwargs):
     """Create Flask application providing B2SHARE REST API."""
     app = create_app_factory(

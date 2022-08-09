@@ -17,17 +17,26 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Statistics event preprocessors."""
+from invenio_search import current_search_client
+from invenio_stats.aggregations import StatAggregator
 
-from invenio_records_files.models import RecordsBuckets
-from invenio_records.models import RecordMetadata
-from b2share.modules.records.utils import is_deposit
+"""Statistics aggregations."""
 
-
-def skip_deposit(doc):
-    """Check if event is coming from deposit file and skip."""
-    rb = RecordsBuckets.query.filter_by(bucket_id=doc['bucket_id']).first()
-    record = RecordMetadata.query.filter_by(id=rb.record_id).first()
-    if is_deposit(record):
-        return None
-    return doc
+def register_aggregations():
+    """Register additional stats aggregations."""
+    return [dict(
+        aggregation_name='record-view-agg',
+        templates='contrib/aggregations/aggr_record_view/v2',
+        aggregator_class=StatAggregator,
+        aggregator_config=dict(
+            client=current_search_client,
+            event='record-view',
+            aggregation_field='unique_id',
+            aggregation_interval='day',
+            copy_fields=dict(
+                record_id='record_id',
+                pid_type='pid_type',
+                pid_value='pid_value',
+                community='community'
+            )
+        ))]
