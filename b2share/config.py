@@ -308,12 +308,12 @@ CELERY_BEAT_SCHEDULE = {
     'process-file-downloads': {
         'task': 'invenio_stats.tasks.process_events',
         'schedule': timedelta(minutes=5),
-        'args': [['file-download']]
+        'args': [['file-download', 'record-view']]
     },
     'aggregate-daily-file-downloads': {
         'task': 'invenio_stats.tasks.aggregate_events',
         'schedule': timedelta(minutes=15),
-        'args': [['file-download-agg']]
+        'args': [['file-download-agg', 'record-view-agg']]
     },
     # Check file checksums
     'file-checks': {
@@ -436,31 +436,55 @@ TRAINING_SITE_LINK = ""
 # ==============
 
 STATS_EVENTS = {
-    'file-download': dict(
-        signal='invenio_files_rest.signals.file_downloaded',
-        event_builders=[
+    'file-download': {
+        'signal': 'invenio_files_rest.signals.file_downloaded',
+        'templates': 'contrib/file_download/v2',
+        'event_builders':[
             'invenio_stats.contrib.event_builders.file_download_event_builder'
         ],
-        processor_config=dict(
-            preprocessors=[
+        'processor_config':{
+            'preprocessors':[
                 'b2share.modules.stats.processors:skip_deposit',
                 'invenio_stats.processors:flag_robots',
                 'invenio_stats.processors:anonymize_user',
                 'invenio_stats.contrib.event_builders:build_file_unique_id',
             ],
             # Keep only 1 file download for each file and user every 30 sec
-            double_click_window=30,
+            'double_click_window':30,
             # Create one index per month which will store file download events
-            suffix='%Y-%m'
-        ))
+            'suffix':'%Y-%m'
+        }
+    },
+    'record-view': {
+        'signal': 'invenio_records_ui.signals.record_viewed',
+        'templates': 'contrib/record_view/v2',
+        'event_builders':[
+            'b2share.modules.stats.event_builders.record_view_event_builder'
+        ],
+        'processor_config':{
+            'preprocessors':[
+                'invenio_stats.processors:flag_robots',
+                'invenio_stats.processors:anonymize_user',
+                'invenio_stats.contrib.event_builders:build_record_unique_id',
+            ],
+        }
+    },
 }
 
 STATS_AGGREGATIONS = {
-    'file-download-agg': {},
+    'file-download-agg': {
+        'templates': 'contrib/aggregations/aggr_file_download/v2'
+    },
+    'record-view-agg': {},
 }
 
 STATS_QUERIES = {
     'bucket-file-download-total': {},
+    'record-views-total': {},
+    'community-record-views-total': {},
+    'community-file-download-total': {},
+    'community-file-size-total': {},
+    'community-file-amount-total': {},
 }
 
 # Flask-Security

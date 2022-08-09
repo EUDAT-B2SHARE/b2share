@@ -253,6 +253,12 @@ setup(
             'search_accounts_need = '
             'b2share.modules.users.permissions:search_accounts_need',
         ],
+        'invenio_stats.aggregations': [
+            'invenio_stats = b2share.modules.stats.aggregations:register_aggregations'
+        ],
+        'invenio_stats.queries': [
+            'invenio_stats = b2share.modules.stats.queries:register_queries'
+        ],
     },
     extras_require=extras_require,
     install_requires=install_requires,

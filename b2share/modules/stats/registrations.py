@@ -2,6 +2,7 @@
 #
 # This file is part of EUDAT B2Share.
 # Copyright (C) 2017 CERN.
+# Copyright (C) 2023 CSC
 #
 # B2Share is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -17,17 +18,25 @@
 # along with B2Share; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Statistics event preprocessors."""
+from invenio_stats.processors import EventsIndexer, anonymize_user, flag_robots
+from invenio_stats.contrib.event_builders import build_file_unique_id
 
-from invenio_records_files.models import RecordsBuckets
-from invenio_records.models import RecordMetadata
-from b2share.modules.records.utils import is_deposit
+"""Statistics registrations."""
 
-
-def skip_deposit(doc):
-    """Check if event is coming from deposit file and skip."""
-    rb = RecordsBuckets.query.filter_by(bucket_id=doc['bucket_id']).first()
-    record = RecordMetadata.query.filter_by(id=rb.record_id).first()
-    if is_deposit(record):
-        return None
-    return doc
+def register_events():
+    """Register record-view events."""
+    return [
+        dict(
+            event_type='b2share-file-download',
+            templates='contrib/file_download',
+            processor_class=EventsIndexer,
+            processor_config=dict(
+                preprocessors=[
+                    flag_robots,
+                    anonymize_user,
+                    build_file_unique_id
+                ])),
+        dict(
+            event_type='b2share-record-view',
+            templates='contrib/record_view',
+            processor_class=EventsIndexer)]
