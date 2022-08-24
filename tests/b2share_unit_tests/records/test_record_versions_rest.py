@@ -59,7 +59,8 @@ def test_get_and_search_versions(app, test_records_data, test_users, login_user)
             chain.append(make_record(app, login, data[1], version_of=chain[3]))
             chain.append(make_record(app, login, data[2], version_of=chain[4]))
             chain_list.append(chain)
-
+        # check that ownership is kept
+        assert chain[0]['metadata']['owners'] == chain[1]['metadata']['owners']
         # Test GET /api/records/<ID>/versions/
         for chain in chain_list:
             rec0 = get_record(app, chain[0])

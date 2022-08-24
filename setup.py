@@ -180,6 +180,7 @@ setup(
             'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
             'b2share_users = b2share.modules.users:B2ShareUsers',
             'b2share_roles = b2share.modules.roles:B2ShareRoles',
+            'b2share_ownership = b2share.modules.management.ownership:B2ShareOwnership',
             'b2share_records = b2share.modules.records:B2ShareRecords',
             'b2share_deposit = b2share.modules.deposit:B2ShareDeposit',
             'b2share_handle = b2share.modules.handle:B2ShareHandle',
@@ -197,8 +198,7 @@ setup(
         ],
         'invenio_base.api_blueprints': [
             'invenio_oauthclient = invenio_oauthclient.views.client:blueprint',
-            'b2share_communities = '
-            'b2share.modules.communities.views:blueprint',
+            'b2share_communities = b2share.modules.communities.views:blueprint',
             'invenio_oaiserver = invenio_oaiserver.views.server:blueprint',
         ],
         'invenio_db.models': [
