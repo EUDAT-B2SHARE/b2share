@@ -305,11 +305,13 @@ class B2ShareRecordsListResource(RecordsListResource):
         # import deposit dependencies here in order to avoid recursive imports
         from b2share.modules.deposit.links import deposit_links_factory
         from b2share.modules.records.api import B2ShareRecord
+        from b2share.modules.records.utils import get_parent_ownership
         if request.content_type not in self.loaders:
             abort(415)
         version_of = request.args.get('version_of')
         previous_record = None
         data = None
+        previous_owners=None
         if version_of:
             try:
                 _, previous_record = Resolver(
@@ -317,6 +319,9 @@ class B2ShareRecordsListResource(RecordsListResource):
                     object_type='rec',
                     getter=B2ShareRecord.get_record,
                 ).resolve(version_of)
+
+                previous_owners=get_parent_ownership(previous_record['_deposit']['id'])
+                
             # if the pid doesn't exist
             except PIDDoesNotExistError as e:
                 raise RecordNotFoundVersioningError()
@@ -348,6 +353,10 @@ class B2ShareRecordsListResource(RecordsListResource):
         # Create record
         record = self.record_class.create(data, id_=record_uuid,
                                           version_of=version_of)
+        if previous_owners is not None:
+            record['_deposit']['owners']=previous_owners
+        
+        record.commit()
         db.session.commit()
 
         response = self.make_response(

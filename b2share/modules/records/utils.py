@@ -32,6 +32,10 @@ from invenio_pidstore.models import PersistentIdentifier
 from invenio_files_rest.models import Bucket
 from elasticsearch.exceptions import NotFoundError
 
+from invenio_pidstore.models import PIDStatus
+from invenio_pidrelations.contrib.versioning import PIDVersioning
+from invenio_pidstore.errors import PIDDoesNotExistError
+    
 
 def is_publication(record):
     """Check if a given record is a published record.
@@ -58,3 +62,27 @@ def list_db_published_records():
         record = Record(obj.json, model=obj)
         if record.model.json and is_publication(record.model):
             yield record
+
+
+def get_parent_ownership(pid):
+    """ Retrieve the Ownerships of a record given the record PID"""
+    version_master = find_version_master(pid)
+    record=Record.get_record(version_master.children.first().object_uuid)
+    return record['_deposit']['owners']
+
+
+def find_version_master(pid):
+    """Retrieve the PIDVersioning of a record PID.
+
+    :params pid: record PID.
+    """
+    from b2share.modules.deposit.errors import RecordNotFoundVersioningError
+    from b2share.modules.records.providers import RecordUUIDProvider
+    try:
+        child_pid = RecordUUIDProvider.get(pid).pid
+        if child_pid.status == PIDStatus.DELETED:
+            raise RecordNotFoundVersioningError()
+    except PIDDoesNotExistError as e:
+        raise RecordNotFoundVersioningError() from e
+
+    return PIDVersioning(child=child_pid)
