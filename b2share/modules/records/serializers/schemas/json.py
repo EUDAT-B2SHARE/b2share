@@ -32,7 +32,7 @@ from b2share.modules.records.utils import is_deposit
 from b2share.modules.records.minters import generate_doi
 
 
-DOI_URL_PREFIX = 'http://doi.org/'
+DOI_URL_PREFIX = 'https://doi.org/'
 
 
 class DraftSchemaJSONV1(Schema):

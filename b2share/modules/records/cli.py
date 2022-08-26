@@ -198,7 +198,7 @@ def check_record_doi(record, update=False):
 
 
 def _datacite_doi_reference(doi_value):
-    url = "http://doi.org/" + doi_value
+    url = "https://doi.org/" + doi_value
     res = requests.get(url, allow_redirects=False)
     if res.status_code < 200 or res.status_code >= 400:
         click.secho('    doi.org returned code {} for {}'.format(
