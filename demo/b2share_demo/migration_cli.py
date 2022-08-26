@@ -329,7 +329,7 @@ def add_missing_alternate_identifiers(v1_api_url, v1_access_token):
 
 
 def guess_alternate_identifier_type(aid):
-    for x in ['http://dx.doi.org/', 'http://doi.org/', 'doi.org', 'dx.doi.org', 'doi.', '10.']:
+    for x in ['https://dx.doi.org/', 'https://doi.org/', 'doi.org', 'dx.doi.org', 'doi.', '10.']:
         if aid.startswith(x):
             return 'DOI'
     if aid.startswith('URN:'):

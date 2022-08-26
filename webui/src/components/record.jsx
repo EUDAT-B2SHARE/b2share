@@ -136,7 +136,7 @@ const Record = React.createClass({
         event.preventDefault();
         if (window._paq) {
             const metadata = this.props.record.get('metadata') || Map();
-            const doi = metadata.get('DOI').replace("http://doi.org/", "");
+            const doi = metadata.get('DOI').replace("https://doi.org/", "");
             window._paq.push(['trackEvent', 'b2share', event.type, doi]);
         }
     },
