@@ -349,6 +349,13 @@ input:focus, select:focus, textarea:focus, button:focus, a:focus {
 
 /* route */
 
+.SocialMediaShareButton {
+  width: 36px;
+  display: inline-flex;
+  margin-right: 0px;
+  height: 32px;
+}
+
 .route-appear {
   opacity: 0.01;
   transition: opacity .1s;
