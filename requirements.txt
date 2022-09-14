@@ -150,3 +150,5 @@ whichcraft==0.4.0         # via cookiecutter
 wtforms-alchemy==0.16.1   # via invenio-oauth2server
 wtforms-components==0.10.0  # via wtforms-alchemy
 wtforms==2.1              # via flask-wtf, invenio-files-rest, wtforms-alchemy, wtforms-components
+zipstream-ng==1.3.4       # via B2ShareObjectResource
+tabulate==0.8.10          # via b2share.utils.ESSearch

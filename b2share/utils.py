@@ -23,11 +23,23 @@
 
 """B2Share utility functions."""
 
-from sqlalchemy import UniqueConstraint, PrimaryKeyConstraint
-from flask import current_app, jsonify
-from invenio_db import db
-from urllib.parse import urlunsplit
+import copy
 import uuid
+
+from itertools import groupby
+from urllib.parse import urlunsplit
+from tabulate import tabulate
+
+
+from sqlalchemy import UniqueConstraint, PrimaryKeyConstraint
+
+from flask import current_app, jsonify, request
+
+from elasticsearch_dsl.query import QueryString
+
+from invenio_search import RecordsSearch, current_search
+from invenio_accounts.models import User
+from invenio_db import db
 
 
 def add_to_db(instance, skip_if_exists=False, **fields):
@@ -61,9 +73,9 @@ def add_to_db(instance, skip_if_exists=False, **fields):
         cols = primary_constraints[0].columns
     # Retrieve the row
     existing = db.session.query(clazz).filter(
-        *[getattr(clazz, col.name)==(fields.get(col.name) or
-                                     getattr(instance, col.name))
-        for col in cols]
+        *[getattr(clazz, col.name) == (fields.get(col.name) or
+                                       getattr(instance, col.name))
+          for col in cols]
     ).one_or_none()
 
     if existing is not None:
@@ -73,12 +85,14 @@ def add_to_db(instance, skip_if_exists=False, **fields):
     db.session.add(instance)
     return instance
 
+
 def is_valid_uuid(val):
     try:
         uuid.UUID(str(val))
         return True
     except ValueError:
         return False
+
 
 def get_base_url():
     return urlunsplit((
@@ -87,9 +101,135 @@ def get_base_url():
         current_app.config.get('APPLICATION_ROOT') or '', '', ''
     ))
 
+
 def jsonify_keeporder(json_schema):
     dosort = current_app.config['JSON_SORT_KEYS']
     current_app.config['JSON_SORT_KEYS'] = False
     res = jsonify(json_schema)
     current_app.config['JSON_SORT_KEYS'] = dosort
     return res
+
+
+class ESSearch():
+    """
+    Class to search for deposit and drafts using invenio_search.
+    """
+
+    def __init__(self, app=current_app):
+        self.app = app
+        self.query = ''
+        self.raw_results = {}
+        self.results = []
+        self.index = ['*']
+
+    def _reset_(self):
+        self.query = ''
+        self.raw_results = {}
+        self.results = []
+        self.index = ['*']
+        # if we do not flush and refresh we get cached data for the next query
+        search = current_search
+        search.flush_and_refresh("_all")
+
+
+    def search(self, query, index=None):
+        '''
+        query: Querystring object (elasticsearch_dsl.query)
+        index: ['records', 'deposits']
+        '''
+        self._reset_()
+        index = index or self.index
+        # check both deposits and records
+        with current_app.app_context():
+            search = RecordsSearch()
+            # record -> owners , deposit -> _deposit.owners
+            search = search.query(QueryString(query=query))
+            results = search.execute().to_dict()
+            self.raw_results = results.get('hits')
+        self._process_results()
+
+    def _process_results(self):
+        '''
+        extract hits from search results
+        '''
+        self.results = []
+        for search_hits in self.raw_results.get('hits'):
+            pid_dic = copy.deepcopy(search_hits)
+            pid_dic['publication_state'] = search_hits.get(
+                '_source').get('publication_state')
+            pid_dic['b2rec'] = 'not published'
+            for e in search_hits.get('_source').get('_pid'):
+                pid_dic[e.get('type')] = e.get('value')
+            self.results.append(pid_dic)
+
+    def __str__(self):
+        string = ""
+        if self.raw_results['total'] > 0:
+            INFO = sorted(self.results, key=lambda x: x['b2rec'])
+            headers = ["vb2rec", "b2rec2", "id", "type", "publication state"]
+            val = []
+            for k, v in groupby(INFO, key=lambda x: (x['vb2rec'], x['b2rec'])):
+                for i in list(v):
+                    val.append([i.get('vb2rec'), i.get('b2rec'), i.get(
+                        '_id'), i.get('_type'), i.get('publication_state')])
+            string = str(tabulate(val, headers=headers))
+        return string
+
+    def matches(self):
+        '''
+        returns True is search has found something in the db
+        '''
+        return self.raw_results['total'] > 0
+
+    def get_ownership_info(self):
+        '''
+        returns ownership info about deposits/records
+        '''
+        info = dict()
+        if self.raw_results['total'] > 0:
+            INFO = sorted(self.results, key=lambda x: (
+                x['vb2rec'], x['b2rec']))
+            for k, v in groupby(INFO, key=lambda x: (x['vb2rec'], x['b2rec'])):
+                for i in list(v):
+                    owners = i.get('_source').get('_deposit').get('owners') if i.get(
+                        '_type') == 'deposit' else i.get('_source').get('owners')
+                    owners_emails = [User.query.filter(
+                        User.id.in_([w])).one_or_none() for w in owners]
+                    info[i.get('_id')] = {'id': i.get('_id'), 'vb2rec': i.get('vb2rec'), 'b2rec': i.get('b2rec'), 'type': i.get('_type'), 'publication_state': i.get(
+                        'publication_state'), 'owners': "\n".join([str(_) for _ in owners]), "owners_emails": "\n".join([e.email if e is not None else "Unknown user" for e in owners_emails])}
+        return info
+
+    def get_record_info(self):
+        '''
+        returns main info about deposits/records
+        '''
+        info = dict()
+        if self.raw_results['total'] > 0:
+            INFO = sorted(self.results, key=lambda x: (
+                x['vb2rec'], x['b2rec']))
+            for k, v in groupby(INFO, key=lambda x: (x['vb2rec'], x['b2rec'])):
+                for i in list(v):
+                    info[i.get('_id')] = {'id': i.get('_id'), 'vb2rec': i.get('vb2rec'), 'b2rec': i.get(
+                        'b2rec'), 'type': i.get('_type'), 'publication_state': i.get('publication_state')}
+        return info
+
+    def get_all_info(self):
+        '''
+        returns all record/deposit info
+        '''
+        info = dict()
+        if self.raw_results['total'] > 0:
+            INFO = sorted(self.results, key=lambda x: (
+                x['vb2rec'], x['b2rec']))
+            for k, v in groupby(INFO, key=lambda x: (x['vb2rec'], x['b2rec'])):
+                for i in list(v):
+                    info[i.get('_id')] = i
+        return info
+
+
+def to_tabulate(input_dict):
+    headers = list(input_dict[list(input_dict.keys())[0]].keys())
+    val = []
+    for keys in input_dict:
+        val.append([input_dict[keys][t] for t in input_dict[keys].keys()])
+    return str(tabulate(val, headers=headers))
