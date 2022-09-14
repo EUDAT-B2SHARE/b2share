@@ -3,6 +3,8 @@
 from flask import request
 from werkzeug.local import LocalProxy
 from werkzeug.routing import PathConverter
+from invenio_pidstore.errors import PIDInvalidAction
+from b2share.modules.deposit.api import Deposit
 
 
 def file_id_to_key(value):
@@ -20,6 +22,15 @@ def file_id_to_key(value):
         return object_version.key
     return value
 
+
+def delete_deposit(deposit_pid):
+    dep = Deposit.get_record(deposit_pid)
+    not_published = (dep.status == 'draft')
+    if not not_published:
+        raise PIDInvalidAction()
+    if dep.pid:
+        dep.pid.delete()
+    return dep.delete()
 
 class FileKeyConverter(PathConverter):
     """Convert file UUID for key."""

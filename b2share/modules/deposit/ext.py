@@ -30,6 +30,8 @@ from invenio_records_rest import utils
 
 from .views import create_blueprint
 
+from .cli import deposit as deposit_cmd
+
 
 class B2ShareDeposit(object):
     """B2Share Deposit extension."""
@@ -42,7 +44,9 @@ class B2ShareDeposit(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
+        app.cli.add_command(deposit_cmd)
         app.extensions['b2share-deposit'] = self
+        
 
         # Register records API blueprints
         endpoints = app.config['B2SHARE_DEPOSIT_REST_ENDPOINTS']
