@@ -40,7 +40,7 @@ const Search = React.createClass({
         return {
             q: "",
             community: "",
-            sort: 'mostrecent',
+            sort: '-',
             page: "1",
             size: "10",
             drafts: "",

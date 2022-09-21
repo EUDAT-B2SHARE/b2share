@@ -597,7 +597,8 @@ class ServerCache {
         if (drafts) {
             // TODO: change this once the workflows are working.
             // Add "submitted" drafts.
-            q = (q ? '(' + q + ') && ' : '') + 'publication_state:draft';
+            // q = (q ? '(' + q + ') && ' : '') + 'publication_state:draft';
+            q = 'publication_state:draft';
         }
         (drafts == 1) ? this.getters.searchRecords.fetch({q, sort, page, size, drafts}) : this.getters.searchRecords.fetch({q, sort, page, size});
         return this.store.getIn(['searchRecords']);
