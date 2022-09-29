@@ -21,6 +21,7 @@ const PT = React.PropTypes;
 
 
 export const RecordRoute = React.createClass({
+
     getRecordOrDraft() {
         const { id } = this.props.params;
         let record = serverCache.getRecord(id);
@@ -80,6 +81,7 @@ const B2NoteWidget = React.createClass({
         const record_url = (record.links.self || "").replace('/api/records/', '/records/');
 
         if (this.props.file) {
+            
             var file = this.props.file.toJS ? this.props.file.toJS() : this.props.file;
             var pid = file.ePIC_PID;
             var object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
@@ -282,6 +284,52 @@ const Record = React.createClass({
                 </div>
             );
         }
+
+        function parseThousands(amount) {
+            // Parse bytes to nicer units
+            if (!+amount) return '0';
+            if (amount > 1000) {
+                return `${parseFloat((amount/1000).toFixed(1))}k`;
+            }
+            return amount;
+        }
+
+        function getTotalFileSize(files) {
+            console.log(files)
+            const bytes = files.reduce((a, o) => {
+                return a + o.get('size', 0)
+            }, 0)
+            const units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            if (!+bytes) return '0 Bytes';
+            const divider = 1024;
+            const i = Math.floor(Math.log(bytes) / Math.log(divider));
+            return `${parseFloat((bytes / Math.pow(divider, i)).toFixed(1))} ${units[i]}`;
+        }
+
+        function renderStats(recordData){            
+            return (
+                <div>
+                    <div className="statistic-row">
+                        <p className="pid">
+                            <span>Views</span><br /><span>{parseThousands(recordData.get("views"))}</span>            
+                        </p>
+                        <p className="pid">
+                            <span>File Downloads</span><br /><span>{parseThousands(recordData.get("file-views"))}</span>
+                        </p>
+                    </div>
+                    <div className="statistic-details">
+                        <p className="stat">
+                            <span>Files</span><span>{parseThousands(recordData.get("files").size)}</span> 
+                        </p>
+                        <p className="stat">
+                            <span>Total Size</span><span>{getTotalFileSize(recordData.get("files"))}</span>   
+                        </p>
+                    </div>
+                </div>
+                
+            )
+        }
+
         function renderDescription(description, i) {
             const dt = description.get('description_type');
             const descriptionType = (dt == 'Other') ? 'Description' : dt;
@@ -335,7 +383,7 @@ const Record = React.createClass({
                 </div>
 
                 <div className="row">
-                    <div className="col-sm-8 col-md-10">
+                    <div className="col-sm-6 col-md-6">
                         { creators && renderCreators(creators) }
 
                         { renderDates(record) }
@@ -368,10 +416,15 @@ const Record = React.createClass({
                                 <PersistentIdentifier pid={pid} />
                             </p>
                         }
+                        
                     </div>
-
-                    <div className="col-sm-4 col-md-2">
-                        { renderSmallCommunity(community) }
+                    <div className='col-sm-6 col-md-6 col-lg-4 statistic-wrapper'>
+                        <div className="community-statistics">
+                            { renderStats(record) }
+                        </div>
+                    </div>
+                    <div className="col-sm-6 col-md-6 col-lg-2 community-small-wrapper">
+                        { renderSmallCommunity(community, this.props) }
                     </div>
                 </div>
             </div>
@@ -507,7 +560,7 @@ const Record = React.createClass({
     renderFileList(files, b2noteUrl, showDownloads) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
         const showAccessRequest = (!openAccess && !isRecordOwner(this.props.record));
-
+        const showLinkCreation = !openAccess && isRecordOwner(this.props.record) && (files && files.count && files.count());
         let fileComponent = false;
         if (!(files && files.count && files.count())) {
             fileComponent = <div>No files available.</div>;

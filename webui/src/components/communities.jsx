@@ -85,13 +85,32 @@ const CommunityList = React.createClass({
 const Community = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
-    renderCommunity(community) {
+    parseBytes(bytes) {
+        // Parse bytes to nicer units
+        const units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        if (!+bytes) return '0 Bytes';
+        const divider = 1024;
+        const i = Math.floor(Math.log(bytes) / Math.log(divider));
+        return `${parseFloat((bytes / Math.pow(divider, i)).toFixed(1))} ${units[i]}`;
+    },
+    
+    parseThousands(amount) {
+        // Parse bytes to nicer units
+        if (!+amount) return '0';
+        if (amount > 1000) {
+            return `${parseFloat((amount/1000).toFixed(1))}k`;
+        }
+        return amount;
+    },
+
+    renderCommunity(community, records) {
         const desc = community.get('description') || "";
         const created = new Date(community.get('created')).toLocaleString();
         const updated = new Date(community.get('updated')).toLocaleString();
+
         return (
             <div className="row" key={community.get("id")}>
-                <div className="col-sm-6">
+                <div className="col-sm-6 col-md-6">
                     <div className="dates">
                         <p>
                             <span>Created at </span>
@@ -119,10 +138,35 @@ const Community = React.createClass({
                         <span>Using root schema version: {community.get('schema', {}).get('root_schema', "")}</span>
                     </p>
                 </div>
-                <div className="col-sm-6">
-                    <div className="community-small passive" title={community.get('description')}>
-                        <p className="name">{community.get('name')}</p>
-                        <img className="logo" src={community.get('logo')}/>
+                <div>
+                    <div className='col-sm-6 col-md-6 col-lg-4 statistic-wrapper'>
+                        <div className="community-statistics" id="statistics" >
+                            <div className="statistic-row">
+                                <p className="pid">
+                                    <span>Record views</span><br /><span>{this.parseThousands(community.get("communityRecordViewsTotal"))}</span>
+                                </p>
+                                <p className="pid">
+                                    <span>File downloads</span><br /><span>{this.parseThousands(community.get("communityFileDownloadTotal"))}</span>
+                                </p>
+                            </div>
+                            <div className="statistic-details">
+                                <p className="stat">
+                                    <span>Records</span><span>{this.parseThousands(records.get("total"))}</span>
+                                </p>
+                                <p className="stat">
+                                    <span>Files</span><span>{this.parseThousands(community.get("communityFileAmountTotal"))}</span>
+                                </p>
+                                <p className="stat">
+                                    <span>File size</span><span>{this.parseBytes(community.get("communityFileSizeTotal"))}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-sm-6 col-md-6 col-lg-2 community-small-wrapper">
+                        <div className="community-small passive" title={community.get('description')}>
+                            <p className="name">{community.get('name')}</p>
+                            <img className="logo" src={community.get('logo')}/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,6 +186,7 @@ const Community = React.createClass({
             return <Err err={community}/>;
         }
         const latestRecords = serverCache.getLatestRecordsOfCommunity({community: community.get('id')});
+        const records = serverCache.searchRecords({community: community.get('id')});
         const rootSchema = this.props.rootSchema;
         if (!rootSchema) {
             return <Wait />;
@@ -154,7 +199,7 @@ const Community = React.createClass({
             <div className="community-page">
                 <h1>{community.get('name')}</h1>
 
-                { this.renderCommunity(community) }
+                { this.renderCommunity(community,records) }
                 <hr/>
                 { latestRecords ? <LatestRecords title="Community latest records" records={latestRecords} community={community.get('id')} /> : <Wait />}
                 <div className="row">

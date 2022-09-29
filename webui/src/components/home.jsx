@@ -5,7 +5,6 @@ import { Wait } from './waiting.jsx';
 import { LoginOrRegister } from './user.jsx';
 import { LatestRecords } from './latest_records.jsx';
 
-
 export const HomeRoute = React.createClass({
     render() {
         const latestRecords = serverCache.getLatestRecords();

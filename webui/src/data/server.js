@@ -399,14 +399,89 @@ class ServerCache {
                     if (!fileDownloads) {
                         return;
                     }
+                    let sum = 0
                     fileDownloads.buckets.forEach(kv => {
                         const index = store.getIn(['recordCache', recordID, 'files']).findIndex(f => f.get('key') == kv.key);
                         if (index >= 0) {
                             store.setIn(['recordCache', recordID, 'files', index, 'downloads'], kv.value);
+                            sum += kv.value
                         } else {
                             console.error('cannot find file with key: ', kv.key);
                         }
                     });
+                    store.setIn(['recordCache', recordID, 'file-views'], sum);
+                },
+            });
+        }
+
+        function fetchRecordStats(store, recordID) {
+            var data = {
+                "recordViews": {
+                    "stat": "record-views-total",
+                    "params": {
+                        "pid_value": recordID,
+                    }
+                }
+            };
+            ajaxPost({
+                url: apiUrls.statistics(),
+                params: data,
+                successFn: response => {
+                    const recordViews = response && response.recordViews;
+                    if (!recordViews) {
+                        store.setIn(['recordCache', recordID, 'views'], 0);
+                        return;
+                    }
+                    if (recordViews.buckets.length === 0) {
+                        store.setIn(['recordCache', recordID, 'views'], 0);
+                        return;
+                    }
+                    recordViews.buckets.forEach(kv => {
+                        store.setIn(['recordCache', recordID, 'views'], kv.value);
+                    });
+                },
+            });
+        }
+
+        function fetchCommunityStats(store, id, communityID) {
+            var data = {
+                "communityRecordViewsTotal": {
+                    "stat": "community-record-views-total",
+                    "params":
+                        { "community": id }
+
+                },
+                "communityFileDownloadTotal": {
+                    "stat": "community-file-download-total",
+                    "params":
+                        { "community": id }
+
+                },
+                "communityFileSizeTotal": {
+                    "stat": "community-file-size-total",
+                    "params":
+                        { "community": id }
+
+                },
+                "communityFileAmountTotal": {
+                    "stat": "community-file-amount-total",
+                    "params":
+                        { "community": id }
+
+                }
+            };
+            ajaxPost({
+                url: apiUrls.statistics(),
+                params: data,
+                successFn: response => {
+                    const communityStats = response;
+                    if (!communityStats) {
+                        return;
+                    }
+                    Object.entries(communityStats).forEach(([stat, value]) => {
+                        console.log(stat, value)
+                        store.setIn(['communityCache', communityID, stat], value.value);
+                    })
                 },
             });
         }
@@ -416,6 +491,8 @@ class ServerCache {
                 (data) => {
                     if (data.files) { data.files = data.files.map(this.fixFile); }
                     this.store.setIn(['recordCache', recordID], fromJS(data));
+                    this.store.setIn(['recordCache', recordID, 'file-views'], 0);
+                    fetchRecordStats(this.store, recordID);
                     if (data.files && data.files[0]) {
                         fetchFileStats(this.store, recordID, data.files[0].bucket);
                     } else if (!data.files && data.links.files) {
@@ -450,6 +527,7 @@ class ServerCache {
             new Getter(apiUrls.community(communityID), null,
                 (data, header) => {
                     const res = fromJS(data);
+                    fetchCommunityStats(this.store, res.get('id'), communityID);
                     this.store.setIn(['communityCache', communityID], res);
                     return res;
                 },
