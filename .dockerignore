@@ -6,3 +6,7 @@
 **/*.db
 **/node_modules
 **/b2share-bundle.js*
+.vscode
+**/docs
+*.tar
+ci-docker/data

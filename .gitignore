@@ -53,3 +53,11 @@ webui/app/vendors/
 webui/src/version.js
 webui/package-lock.json
 persistent_data/
+__pycache__
+webui/app/js/
+CICD.md
+wheels
+.vscode
+ci-docker/data/
+logs/
+logs*

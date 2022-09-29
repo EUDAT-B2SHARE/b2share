@@ -821,6 +821,7 @@ export const PersistentIdentifier = React.createClass({
 
         let prefix = "";
         let pid = this.props.pid;
+        
         for (const p of this.KNOWN_PREFIXES) {
             if (pid.indexOf(p) === 0) {
                 prefix = p;
@@ -862,3 +863,12 @@ export function copyToClipboard(text, info) {
     }
     document.body.removeChild(textArea);
 }
+
+// export function FetchStats(url, requestOptions){
+
+//     fetch(url, requestOptions)
+//         .then(response => {if(response.ok){return response.text()}}).then(text=>this.setState({data: text.replace(/<\/?i>/g, "")}))
+//     console.log("")  
+//     return "something"
+
+// }
