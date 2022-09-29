@@ -560,7 +560,6 @@ const Record = React.createClass({
     renderFileList(files, b2noteUrl, showDownloads) {
         const openAccess = this.props.record.getIn(['metadata', 'open_access']);
         const showAccessRequest = (!openAccess && !isRecordOwner(this.props.record));
-        const showLinkCreation = !openAccess && isRecordOwner(this.props.record) && (files && files.count && files.count());
         let fileComponent = false;
         if (!(files && files.count && files.count())) {
             fileComponent = <div>No files available.</div>;
