@@ -445,7 +445,7 @@ const Record = React.createClass({
             }
             return (
                 <div className="well">
-                <div className="row">
+                {/* <div className="row">
                     <h3 className="col-sm-9">
                         { 'Share' }
                     </h3>
@@ -454,7 +454,7 @@ const Record = React.createClass({
                     <div className="col-sm-9">
                         {this.renderShareButtons(doi)}
                     </div>
-                </div>
+                </div> */}
                 <div className="row">
                     <h3 className="col-sm-9">
                         { 'Cite as' }
