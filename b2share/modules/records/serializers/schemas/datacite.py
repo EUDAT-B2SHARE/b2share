@@ -278,7 +278,7 @@ class DataCiteSchemaV2(DataCiteSchemaV1):
             if 'box' in sc:
                 geoloc['geoLocationBox'] = transform_to_camelcase(sc['box'])
             if 'polygons' in sc:
-                geoloc['geoLocationPolygons'] = [transform_polygon(p) for p in [p for p in sc['polygons'] if len(p.get('polygon', [])) > 3]]
+                geoloc['geoLocationPolygons'] = [transform_polygon(p) for p in [p for p in sc['polygons'] if len(p.get('polygon', [])) > 2]]
             ret.append(geoloc)
         return ret
 

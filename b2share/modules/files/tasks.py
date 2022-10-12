@@ -96,7 +96,9 @@ def notify_admin():
             _('B2SHARE automatic task for server'),
             current_app.config['JSONSCHEMAS_HOST']
         )
-        support = str(current_app.config.get('SUPPORT_EMAIL'))
+        support = str(current_app.config.get('SUPPORT_EMAIL_INT'))
+        if not support or support == 'None':
+            support = str(current_app.config.get('SUPPORT_EMAIL'))
         send_email(dict(
             subject=_('B2SHARE Checksum Verification Report'),
             sender=support,

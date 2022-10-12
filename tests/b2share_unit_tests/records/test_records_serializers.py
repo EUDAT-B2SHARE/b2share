@@ -64,7 +64,7 @@ def make_v1_record(test_records_data):
                 'westbound_longitude': 60,
                 'eastbound_longitude': -30,
                 'northbound_latitude': -80,
-                'southbound_latitude': 120
+                'southbound_latitude': 80
                 }
             },
             {'polygons': [
@@ -87,7 +87,9 @@ def make_v1_record(test_records_data):
     }
     record['related_identifiers'] = [
         {'related_identifier_type': 'URL',
-         'related_identifier': 'http://www.example.com'}
+          'related_identifier': 'http://www.example.com',
+         'relation_type': 'IsCitedBy'}
+
     ]
     record['license']['scheme'] = 'testScheme'
     record['license']['scheme_uri'] = 'http://www.example.com'
@@ -271,65 +273,68 @@ def test_records_serializers_datacite4(app, test_records_data):
         doc_str = datacite_v44.serialize(pid=pid, record=record)
         doc = etree.XML(doc_str.encode('utf-8'))
 
-        namespaces = {'d':'http://datacite.org/schema/kernel-4.4'}
-        def datacite(path):
-            return [t.text for t in doc.xpath(path, namespaces=namespaces)]
+        namespaces = {'d':'http://datacite.org/schema/kernel-4'}
 
-        assert datacite('//identifier') == [i['value']\
+        def datacite(path):
+            return [t.text for t in doc.xpath('//d:{}'.format(path), namespaces=namespaces)]
+
+
+        assert datacite('identifier') == [i['value']\
             for i in record['_pid'] if i['type'] == 'DOI']
-        assert datacite('//alternateIdentifiers/alternateIdentifier')\
+        assert datacite('alternateIdentifiers/d:alternateIdentifier')\
             == [i['value'] for i in record['_pid'] if i['type'] == 'ePIC_PID'] +\
                 [i['alternate_identifier'] for i in record['alternate_identifiers']]
-        assert datacite('//creators/firstName')\
-            == [c['first_name'] for c in record['creators']]
-        assert datacite('//creators/familyName')\
-            == [c['last_name'] for c in record['creators']]
-        assert datacite('//contributors/firstName')\
-            == [c['first_name'] for c in record['contributors']]
-        assert datacite('//contributors/familyName')\
-            == [c['last_name'] for c in record['contributors']]
+        assert datacite('creators/d:creator/d:givenName')\
+            == [c['given_name'] for c in record['creators'] if c.get('given_name')]
+        assert datacite('creators/d:creator/d:familyName')\
+            == [c['family_name'] for c in record['creators'] if c.get('family_name')]
+        assert datacite('contributors/d:contributor/d:givenName')\
+            == [c['given_name'] for c in record['contributors'] if c.get('given_name')]
+        assert datacite('contributors/d:contributor/d:familyName')\
+            == [c.get('family_name') for c in record['contributors'] if c.get('family_name')]
 
-        assert datacite('//dates/date') == [d['date'] for d in record['dates']]
-        assert datacite('//dates/dateType') == [d['date_type'] for d in record['dates']]
-        assert datacite('//dates/dateInformation')\
-            == [d['date_information'] for d in record['dates']]
+        # not "dates" in record
+        # assert datacite('dates/d:date')[0] == [d['date'] for d in record['dates']]
+        # assert datacite('dates/d:dateType') == [d['date_type'] for d in record['dates']]
+        # assert datacite('dates/d:dateInformation')\
+        #     == [d.get('date_information') for d in record.get('dates', [])]
 
-        assert datacite('//relatedIdentifiers/relatedIdentifier')\
+        assert datacite('relatedIdentifiers/d:relatedIdentifier')\
             == [i['related_identifier'] for i in record['related_identifiers']]
 
-        rights = [t.text for t in doc.xpath('//rightsList/rights')]
+        rights = datacite('rightsList/d:rights')
         assert ('open' if record['open_access'] else 'closed') in rights
         license = record.get('license', {})
         if license:
-            assert license.get('license') in rights
-            assert license.get('scheme_uri') in datacite('//rightsList/rights/@schemeURI')
-            assert license.get('scheme') in datacite('//rightsList/rights/@scheme')
-        assert datacite('//description') == [d['description'] for d in record['descriptions']]
-        assert datacite('//description/@descriptionType')\
+            assert license.get('scheme_uri') in doc.xpath('//d:rightsList/d:rights/@schemeURI', namespaces=namespaces)
+            assert license.get('scheme') in doc.xpath('//d:rightsList/d:rights/@rightsIdentifierScheme', namespaces=namespaces)
+        assert datacite('description') == [d['description'] for d in record['descriptions']]
+        assert doc.xpath('//d:description/@descriptionType', namespaces=namespaces)\
             == [d['description_type'] for d in record['descriptions']]
-        assert datacite('//geoLocations/geoLocation/geoLocationBox/*')\
-            == [record['spatial_coverages'][0]['box'][k] for k in\
-            ['westbound_longitude', 'eastbound_longitude', 'northbound_latitude', 'southbound_latitude']]
-        assert datacite('//geoLocations/geoLocation/geoLocationPlace')\
-            == [record['spatial_coverages'][0]['place']]
-        assert datacite('//geoLocations/geoLocation/geoLocationPoint/*')\
-            == [record['spatial_coverages'][0]['point'][k] for k in ['point_longitude', 'point_latitude']]
-        assert datacite('//geoLocations/geoLocation/geoLocationPolygon/polygonPoint/pointLongitude')\
-            == [p['point_longitude'] for p in record['spatial_coverages'][0]['polygons'][0]['polygon']]
-        assert datacite('//geoLocations/geoLocation/geoLocationPolygon/polygonPoint/pointLatitude')\
-            == [p['point_latitude'] for p in record['spatial_coverages'][0]['polygons'][0]['polygon']]
-        assert datacite('//geoLocations/geoLocation/geoLocationPolygon/inPolygonPoint/*')\
-            == [record['spatial_coverages'][0]['polygons'][0]['inpoint'][k] for k in ['point_longitude', 'point_latitude']]
 
-        assert datacite('//contributors//familyName') == [c['family_name'] for c in record['contributors'] if c.get('family_name')]
-        assert datacite('//contributors//nameIdentifier/') == [c['name_identifier'] for c in record['contributors'] if c.get('name_identifier')]
+        assert datacite('geoLocations/d:geoLocation/d:geoLocationBox/d:*')\
+            == [str(record['spatial_coverages'][2]['box'][k]) for k in\
+            ['westbound_longitude', 'eastbound_longitude', 'southbound_latitude', 'northbound_latitude']]
+        assert datacite('geoLocations/d:geoLocation/d:geoLocationPlace')\
+            == [record['spatial_coverages'][0]['place']]
+        assert datacite('geoLocations/d:geoLocation/d:geoLocationPoint/d:*')\
+            == [str(record['spatial_coverages'][1]['point'][k]) for k in ['point_longitude', 'point_latitude']]
+
+        assert datacite('geoLocations/d:geoLocation/d:geoLocationPolygon/d:polygonPoint/d:pointLongitude')\
+            == [str(p['point_longitude']) for p in record['spatial_coverages'][3]['polygons'][0]['polygon']]
+        assert datacite('geoLocations/d:geoLocation/d:geoLocationPolygon/d:polygonPoint/d:pointLatitude')\
+            == [str(p['point_latitude']) for p in record['spatial_coverages'][3]['polygons'][0]['polygon']]
+        assert datacite('geoLocations/d:geoLocation/d:geoLocationPolygon/d:inPolygonPoint/d:*')\
+            == [str(record['spatial_coverages'][3]['polygons'][0]['inpoint'][k]) for k in ['point_longitude', 'point_latitude']]
+
         affiliations = []
         for c in record['contributors']:
             if c.get('affiliations'):
                 for a in c['affiliations']:
                     affiliations.append(a)
-        assert datacite('//contributors//affiliation/@affiliationIdentifier') == [a['affiliation_identifier'] for a in affiliations]
-        assert datacite('//contributors//affililiation') == [a['affiliation_name'] for a in affiliations]
+        assert doc.xpath('//d:contributors/d:contributor/d:affiliation/@affiliationIdentifier', namespaces=namespaces) == [a['affiliation_identifier'] for a in affiliations]
+        assert [t.text for t in doc.xpath('//d:contributors/d:contributor/d:affiliation', namespaces=namespaces)] == [a['affiliation_name'] for a in affiliations]
+
 
 
 def test_records_serializers_eudatcore(app, test_records_data):
@@ -344,23 +349,23 @@ def test_records_serializers_eudatcore(app, test_records_data):
         assert [t.text for t in xml.xpath('//titles/title')] == \
             [t['title'] for t in record['titles']]
         assert xml.xpath('//community')[0].text == 'MyTestCommunity1'
-        assert [t.text for t in xml.xpath('//identifiers')[0].xpath('//identifier')] == [
-            'pid:{}'.format(record['_pid'][2]['value']),
-            'doi:{}'.format(record['_pid'][3]['value']),
-            'url:{}'.format(make_record_url(record['_pid'][1]['value']))
-        ]
-        assert [t.text for t in xml.xpath('//publishers')[0].xpath('//publisher')] == [
-            'EUDAT B2SHARE',
-            record['publisher']
-        ]
+        rec_pids = []
+        for p in record['_pid']:
+            if p['type'] == 'b2rec':
+                rec_pids.append(make_record_url(p['value']))
+            else:
+                rec_pids.append(p['value'])
+        assert len([t.text for t in xml.xpath('//identifiers')[0].xpath('//identifier') if t.text in rec_pids]) == len([t.text for t in xml.xpath('//identifiers')[0].xpath('//identifier')])
+        assert [t.text for t in xml.xpath('//publishers')[0].xpath('//publisher')] == ['EUDAT B2SHARE',record['publisher']]
+
         assert xml.xpath('//publicationYear')[0].text == record['publication_date'][:4]
         assert [c.text for c in xml.xpath('//creators/creator')] == \
             [c['creator_name'] for c in record['creators']]
         assert [i.text for i in xml.xpath('//instruments/instrument')] == \
             [i['instrument_name'] for i in record['instruments']]
-        assert [s.text for s in xml.xpath('//subjects/subject')] == record['keywords']
+        assert [s.text for s in xml.xpath('//keywords/keyword')] == record['keywords']
         assert [d.text for d in xml.xpath('//disciplines/discipline')] == record['disciplines']
-        assert [c.text for c in xml.xpath('//contributors/contributor')] == \
+        assert [c.text for c in xml.xpath('//contributors/contributor/contributorName')] == \
             [c['contributor_name']for c in record['contributors']]
         assert [f.text for f in xml.xpath('//formats/format')] == \
             list(set([f['key'].split('.')[1] for f in record['_files']]))
@@ -380,7 +385,7 @@ def test_records_serializers_eudatcore(app, test_records_data):
         )[0].text == '-80'
         assert xml.xpath(
             '//spatialCoverages/spatialCoverage/geoLocationBox/southBoundLatitude'
-        )[0].text == '120'
+        )[0].text == '80'
         assert [e.text for e in xml.xpath(
             '//spatialCoverages/spatialCoverage/geoLocationPolygon/polygonPoint/pointLatitude'
         )] == ['20', '30', '40']
