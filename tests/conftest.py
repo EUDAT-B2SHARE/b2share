@@ -81,6 +81,7 @@ def base_app():
             'INSTANCE_PATH', instance_path),
     )
     app = create_api(
+        FAKE_EPIC_PID = False,
         TESTING=True,
         SERVER_NAME='localhost:5000',
         JSONSCHEMAS_HOST='localhost:5000',
@@ -552,7 +553,7 @@ def flask_http_responses(app):
                 as rsps:
             for rule in app.url_map.iter_rules():
                 url_regexp = re.compile(
-                    'https://' +
+                    app.config.get('PREFERRED_URL_SCHEME', 'http') + '://' +
                     app.config.get('SERVER_NAME') +
                     (app.config.get('APPLICATION_ROOT') or '') +
                     re.sub(r'<[^>]+>', '\S+', rule.rule))

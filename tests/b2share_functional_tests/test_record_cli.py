@@ -46,7 +46,8 @@ def _test_record_doi_cli(app, test_community, test_records,
     runner = CliRunner()
     script_info = ScriptInfo(create_app=lambda info: app)
 
-    doi_prefix = app.config['PIDSTORE_DATACITE_DOI_PREFIX'] + "/b2share."
+    doi_prefix = app.config['PIDSTORE_DATACITE_DOI_PREFIX']+ "/" + app.config['DOI_IDENTIFIER_FORMAT'].split('{recid}')[0]
+
 
     def call_doi_cli_command(args):
         nonlocal _datacite_doi_reference

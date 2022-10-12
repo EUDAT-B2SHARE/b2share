@@ -254,9 +254,9 @@ def create_deposit(data, creator=None, files=None, version_of=None):
         return create(data)
 
 
-def create_record(data, creator, files=None):
+def create_record(data, creator, files=None, version_of=None):
     """Create a deposit with the given user as creator."""
-    deposit = create_deposit(data, creator, files)
+    deposit = create_deposit(data, creator, files, version_of=version_of)
     with authenticated_user(creator):
         deposit.submit()
         deposit.publish()
