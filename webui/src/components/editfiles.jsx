@@ -692,8 +692,7 @@ export const FileRecordRow = React.createClass({
     },
 
     copyIdentifier(id, msg='Item') {
-        copyToClipboard(id);
-        alert(msg + ' copied to clipboard!');
+        copyToClipboard(id, msg);
     },
 
 
@@ -833,15 +832,14 @@ export const PersistentIdentifier = React.createClass({
         return (
             <span style={this.props.style}>
                 <span className={className + " pid-number"}> {pid} </span>
-                <span><a className="btn btn-xs btn-default" onClick={() => copyToClipboard(this.props.pid)} title="Copy identifier"><i className="fa fa-clipboard"/></a></span>
+                <span><a className="btn btn-xs btn-default" onClick={() => copyToClipboard(this.props.pid, className)} title="Copy identifier"><i className="fa fa-clipboard"/></a></span>
             </span>
         );
     },
 });
 
 
-export function copyToClipboard(text) {
-    // from https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+export function copyToClipboard(text, info) {
     var textArea = document.createElement("textarea");
     textArea.style.position = 'fixed';
     textArea.style.top = 0;
@@ -859,6 +857,7 @@ export function copyToClipboard(text) {
     textArea.select();
     try {
         document.execCommand('copy');
+        alert(info + ' copied to clipboard!');
     } catch (err) {
     }
     document.body.removeChild(textArea);

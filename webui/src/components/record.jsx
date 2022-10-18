@@ -438,10 +438,10 @@ const Record = React.createClass({
             //This if is for the cationbox not to rendering anything before it has fetched something from the DOI.
         } else if(this.state.responseok == true){
             function onButtonClick() {
-                const headers= {"Accept":"application/x-bibtex"};
+                const headers = { "Accept": "application/x-bibtex" };
                 let url = doi
                 if (url.includes("https") == false) { url = doi.replace('http', 'https') }
-                fetch(url, {headers}).then(response=>response.text()).then(text=>copyToClipboard(text));
+                fetch(url, { headers }).then(response => response.text()).then(text => copyToClipboard(text, "BibTeX"));
             }
             return (
                 <div className="well">
@@ -671,11 +671,11 @@ const Record = React.createClass({
                     <h3 className="col-sm-9">
                         { schemaID ? schema.get('title') : 'Basic metadata' }
                     </h3>
-                    { !schemaID ? false :
-                        <span style={{float: 'right'}}>
-                            <a className="btn btn-xs btn-default" onClick={() => copyToClipboard(schemaID)}
-                               title="Copy community block schema identifier used for this record">
-                                <i className="fa fa-clipboard"/>
+                    {!schemaID ? false :
+                        <span style={{ float: 'right' }}>
+                            <a className="btn btn-xs btn-default" onClick={() => copyToClipboard(schemaID, "SchemaID")}
+                                title="Copy community block schema identifier used for this record">
+                                <i className="fa fa-clipboard" />
                             </a>
                         </span>
                     }
