@@ -98,7 +98,13 @@ from . import config
 
 env_prefix = 'B2SHARE'
 
-config_loader = create_conf_loader(config=config, env_prefix=env_prefix)
+try:
+    from b2share.admin import b2share_config_loader
+    config_loader=b2share_config_loader
+except (ModuleNotFoundError,ImportError):
+    # Error handling
+    config_loader = create_conf_loader(config=config, env_prefix=env_prefix)
+    pass
 
 instance_path = os.getenv(env_prefix + '_INSTANCE_PATH') or \
     os.path.join(sys.prefix, 'var', 'b2share-instance')
