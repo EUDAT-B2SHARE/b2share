@@ -737,7 +737,7 @@ export const FileRecordRow = React.createClass({
                     }</div>
                     <div className="col-sm-3">
                         <div className="btn-group" role="group" aria-label="...">
-                            { this.props.b2noteWidget }
+                            {/* { this.props.b2noteWidget } */}
                             { !file.checksum ? false :
                             <button type="button" className="btn btn-default btn-xs" onClick={() => this.copyIdentifier(file.checksum, 'File checksum')} title="Copy checksum to clipboard">
                                 <i className="glyphicon glyphicon-asterisk"/>
