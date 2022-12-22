@@ -21,7 +21,7 @@
 
 from __future__ import absolute_import, print_function
 
-from b2handle.handleclient import EUDATHandleClient
+from pyhandle.client.resthandleclient import RESTHandleClient
 from flask import current_app
 
 from .api import (create_handle, create_fake_handle, create_epic_handle,
@@ -47,7 +47,7 @@ class _B2ShareHandleState(object):
         if credentials:
             self.handle_prefix = credentials.get('prefix')
             assert self.handle_prefix
-            self.handle_client = EUDATHandleClient(**credentials)
+            self.handle_client = RESTHandleClient(**credentials)
 
 
     def create_handle(self, location, checksum=None, fixed=False,
