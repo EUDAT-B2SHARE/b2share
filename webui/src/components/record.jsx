@@ -417,6 +417,8 @@ const Record = React.createClass({
             const headers= {"Accept":"text/x-bibliography; style=apa"};
             let url = doi
             if (url.includes("https") == false) { url = doi.replace('http', 'https') }
+            // Fixes Origin: null problems with HTTP 302 from doi.org
+            url = url.replace("doi.org", "data.crosscite.org")
             fetch(url, {headers})
             .then(response => {
                 if(response.ok){
