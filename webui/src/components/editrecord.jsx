@@ -260,7 +260,13 @@ const EditRecordFieldTree = React.createClass({
 
         const onFullNameChange = value => {
             var pschema = this.getParentPathSchema(path);
-
+            // Check that only one name
+            const re_check = /^([^,]*,){1}[^,;&:]*$/;
+            const control_match = value.match(re_check);
+            if (control_match === null && value.indexOf(',') > 0) {
+                // If trying to add multiple, return
+                return
+            }
             // determine the values to be updated
             const re = /^([^,]+),?(.*)?$/;
             const matches = value.match(re);
