@@ -28,11 +28,11 @@ billiard==3.5.0.3         # via celery
 binaryornot==0.4.0        # via cookiecutter
 blinker==1.4              # via flask-mail, flask-principal, invenio-oauthclient, invenio-records
 celery==4.1
-cffi==1.8.3               # via cryptography
+cffi==1.15.1              # via cryptography
 chardet==2.3.0            # via binaryornot, doschema
 click==6.6                # via cookiecutter, dojson, doschema, flask
 cookiecutter==1.4.0       # via invenio-base
-cryptography==1.5.2       # via invenio-accounts, invenio-oauthclient, sqlalchemy-utils
+cryptography==39.0.0       # via invenio-accounts, invenio-oauthclient, sqlalchemy-utils
 datacite==1.1.1
 dcxml==0.1.0
 decorator==4.0.10         # via validators
