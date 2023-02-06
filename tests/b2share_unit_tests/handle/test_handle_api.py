@@ -28,7 +28,7 @@ from flask import Flask
 import pytest
 
 from b2share.modules.handle.proxies import current_handle
-from b2handle.handleclient import EUDATHandleClient
+from pyhandle.client.resthandleclient import RESTHandleClient
 from b2share.modules.handle.ext import B2ShareHandle
 from unittest.mock import ANY
 
@@ -39,7 +39,7 @@ def test_b2handle_pid_creation(app):
         PID_HANDLE_CREDENTIALS=dict(prefix='myprefix')
     ))
     with app.app_context():
-        with patch.object(EUDATHandleClient,
+        with patch.object(RESTHandleClient,
                           'generate_and_register_handle') as mock_register:
             B2ShareHandle(app)
 
