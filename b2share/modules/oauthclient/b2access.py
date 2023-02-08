@@ -59,7 +59,7 @@ def make_b2access_remote_app(base_url):
         ),
         remote_app='b2share.modules.oauthclient.b2access:B2AccessOAuthRemoteApp',
         params=dict(
-            request_token_params={'scope': 'USER_PROFILE GENERATE_USER_CERTIFICATE'},
+            request_token_params={'scope': 'oidc email voperson_id'},
             base_url=base_url,
             request_token_url=None,
             access_token_url=access_token_url,
@@ -237,17 +237,24 @@ def account_info(remote, resp):
         content = response.read()
         response.close()
         dict_content = json.loads(content.decode('utf-8'))
-        if dict_content.get('cn') is None:
-            username = dict_content.get('userName')
-        else:
-            username = dict_content.get('cn')
         return dict(
             user=dict(
                 email=dict_content.get('email'),
-                # Fixme add this once we support user profiles
+                # Fixme
+                # Contact B2ACCESS for suitable user profile info once we 
+                # support user profiles. OIDC scope profile did not seem to work.
                 # profile=dict(full_name=username)
             ),
-            external_id=dict_content.get('unity:persistent'),
+            # 'voperson_id' value is concatenated UUIDv4 with 
+            # '@b2access.eudat.eu' appended to it.
+            # 'sub:15c2e339-c4e6-4caf-a4cd-2eaf0612dec1' is 
+            # 'voperson_id :15c2e339c4e64cafa4cd2eaf0612dec1@b2access.eudat.eu'.
+            # In order to guarantee compatibility, lets use 'sub' instead of
+            # 'voperson_id', since sub matches the old style 'unity:persistent'.
+            # This is the same notation of users EUDAT-ID (e.g.UUIDv4) B2SHARE 
+            # has used when storing invenio_accounts.models.User objects to 
+            # db before this oidc scope change.
+            external_id=dict_content.get('sub'),
             external_method='B2ACCESS'
         )
     except http.HTTPError as response:
