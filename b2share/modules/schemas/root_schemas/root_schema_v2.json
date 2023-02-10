@@ -1,0 +1,704 @@
+{
+    "version": 2,
+    "json_schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "definitions": {
+            "nonEmptyString": {
+                "type": "string",
+                "minLength": 1
+            },
+            "schemeUri": {
+                "title": "Scheme URI",
+                "description": "The URI pointing to the scheme.",
+                "type": "string",
+                "format": "uri"
+            },
+            "identifierType": {
+                "type": "string",
+                "description": "The type of the identifier.",
+                "enum": ["ARK", "arXiv", "bibcode", "DOI", "EAN13", "EISSN", "Handle", "ISBN", "ISSN", "ISTC", "LISSN", "LSID", "ORCID", "PMID", "PURL", "UPC", "URL", "URN", "w3id"]
+            },
+            "resourceType": {
+                "type": "string",
+                "enum": ["Audiovisual", "Book", "BookChapter", "Collection", "ComputationalNotebook", "ConferencePaper", "ConferenceProceeding", "DataPaper", "Dataset", "Dissertation", "Event", "Image", "InteractiveResource", "Journal", "JournalArticle", "Model", "OutputManagementPlan", "PeerReview", "PhysicalObject", "Preprint", "Report", "Service", "Software", "Sound", "Standard", "Text", "Workflow", "Other"]
+            },
+            "funderIdentifierType": {
+                "type": "string",
+                "enum": ["ISNI", "GRID", "ROR", "Crossref Funder ID", "Other"]
+            },
+            "scheme": {
+                "scheme": {
+                    "title": "Scheme",
+                    "description": "The scheme used for the identifier.",
+                    "type": "string"
+                }
+            },
+            "schemeWithUri": {
+                "$ref": "#/definitions/scheme",
+                "scheme_uri": {
+                    "$ref": "#/definitions/schemeUri"
+                }
+            },
+            "nameIdentifier": {
+                "name_identifier": {
+                    "description": "The unique identifier of the entity, according to various identifier schemes.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "$ref": "#/definitions/schemeWithUri"
+            },
+            "affiliation": {
+                "affiliation_name": {
+                    "description": "The name of the affiliation.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "affiliation_identifier": {
+                    "title": "Identifier",
+                    "type": "string",
+                    "description": "The unique identifier of the affiliation."
+                },
+                "$ref": "#/definitions/scheme"
+            },
+            "person": {
+                "given_name": {
+                    "title": "Given name",
+                    "description": "The first names given to this entity.",
+                    "type": "string"
+                },
+                "family_name": {
+                    "title": "Family name",
+                    "description": "The family names given to this entity.",
+                    "type": "string"
+                },
+                "affiliations": {
+                    "type": "array",
+                    "title": "Affiliations",
+                    "description": "The organisations or entities this entity is affiliated with.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "$ref": "#/definitions/affiliation"
+                        },
+                        "required": ["affiliation_name"]
+                    },
+                    "uniqueItems": true
+                },
+                "name_type": {
+                    "title": "Name type",
+                    "description": "The type of name described.",
+                    "type": "string",
+                    "enum": ["Personal", "Organizational"]
+                },
+                "name_identifiers": {
+                    "title": "Name identifiers",
+                    "description": "The identifiers that point to any information about this creator.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "$ref": "#/definitions/nameIdentifier"
+                        },
+                        "required": ["name_identifier", "scheme"]
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "spatialCoveragePlace": {
+                "type": "string",
+                "description": "The name of a place or location."
+            },
+            "spatialCoveragePoint": {
+                "type": "object",
+                "properties": {
+                    "point_longitude": {
+                        "title": "Longitude",
+                        "description": "The longitude of the point.",
+                        "$ref": "#/definitions/longitude"
+                    },
+                    "point_latitude": {
+                        "title": "Latitude",
+                        "description": "The latitude of the point.",
+                        "$ref": "#/definitions/latitude"
+                    }
+                },
+                "required": ["point_longitude", "point_latitude"]
+            },
+            "spatialCoverageBox": {
+                "type": "object",
+                "properties": {
+                    "westbound_longitude": {
+                        "title": "Westbound longitude",
+                        "description": "The westbound longitude of the enclosing box.",
+                        "$ref": "#/definitions/longitude"
+                    },
+                    "eastbound_longitude": {
+                        "title": "Eastbound longitude",
+                        "description": "The eastbound longitude of the enclosing box.",
+                        "$ref": "#/definitions/longitude"
+                    },
+                    "northbound_latitude": {
+                        "title": "Northbound latitude",
+                        "description": "The northbound latitude of the enclosing box.",
+                        "$ref": "#/definitions/latitude"
+                    },
+                    "southbound_latitude": {
+                        "title": "Southbound latitude",
+                        "description": "The southbound latitude of the enclosing box.",
+                        "$ref": "#/definitions/latitude"
+                    }
+                },
+                "required": ["westbound_longitude", "eastbound_longitude", "northbound_latitude", "southbound_latitude"]
+            },
+            "temporalCoverageStartEndDate": {
+                "type": "object",
+                "properties": {
+                    "start_date": {
+                        "title": "Start date",
+                        "description": "The start date and time of the range covered by the resource.",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "title": "End date",
+                        "description": "The end date and time of the range covered by the resource.",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "temporalCoverageSpan": {
+                "type": "string",
+                "description": "The name of the span covered by the data in the resource."
+            },
+            "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180,
+                "format": "coordinate"
+            },
+            "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90,
+                "format": "coordinate"
+            }
+        },
+        "properties": {
+            "$schema": { "type": "string" },
+            "creators": {
+                "title": "Creators",
+                "description": "The full name of the creators. The personal name format should be: family, given (e.g.: Smith, John).",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "creator_name": {
+                            "$ref": "#/definitions/nonEmptyString"
+                        },
+                        "$ref": "#/definitions/person"
+                    },
+                    "required": ["creator_name"]
+                },
+                "uniqueItems": true
+            },
+            "titles": {
+                "title": "Titles",
+                "description": "The titles(s) of the uploaded resource, or a name by which the resource is known.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "$ref": "#/definitions/nonEmptyString"
+                        },
+                        "type": {
+                            "title": "Type",
+                            "enum": ["Alternative Title", "Subtitle", "TranslatedTitle", "Other"],
+                            "description": "The type of the title."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["title"]
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            },
+            "publisher": {
+                "title": "Publisher",
+                "description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
+                "type": "string"
+            },
+            "publication_date" : {
+                "title" : "Publication date",
+                "description" : "The date when the data was or will be made publicly available (e.g. 2018-07-13)",
+                "type": "string",
+                "format": "date"
+            },
+            "resource_types": {
+                "title": "Resource type",
+                "description": "The type(s) of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "resource_type_general": {
+                            "$ref": "#/definitions/resourceType",
+                            "title": "Type"
+                        },
+                        "resource_type_description": {
+                            "title": "Description",
+                            "description": "An optional description of the resource type.",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["resource_type_general"]
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            },
+            "instruments": {
+                "title": "Instruments",
+                "description": "The scientific instruments the data was generated or captured on.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "instrument_name": {
+                            "type": "string"
+                        },
+                        "instrument_identifier": {
+                            "title": "Identifier",
+                            "description": "The unique identifier of the instrument.",
+                            "type": "string"
+                        },
+                        "instrument_identifier_type": {
+                            "title": "Type",
+                            "description": "The type of the unique identifier of the instrument.",
+                            "$ref": "#/definitions/identifierType"
+                        }
+                    },
+                    "required": ["instrument_name"]
+                },
+                "uniqueItems": true
+            },
+            "disciplines": {
+                "title": "Disciplines",
+                "description": "The scientific disciplines linked with the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "discipline_name": {
+                            "type": "string"
+                        },
+                        "discipline_identifier": {
+                            "title": "Identifier",
+                            "description": "The unique identifier of the discipline, according to various identifier schemes.",
+                            "type": "string"
+                        },
+                        "classification_code": {
+                            "title": "Code",
+                            "description": "The corresponding classification code of the discipline, according to various identifier schemes.",
+                            "type": "string"
+                        },
+                        "$ref": "#/definitions/schemeWithUri"
+                    },
+                    "required": ["discipline_name", "discipline_identifier"]
+                },
+                "uniqueItems": true
+            },
+            "keywords": {
+                "title": "Keywords",
+                "description": "The keywords or key phrases describing the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "keyword": {
+                            "$ref": "#/definitions/nonEmptyString"
+                        },
+                        "classification_code": {
+                            "title": "Code",
+                            "description": "The corresponding classification code of the keyword, according to various identifier schemes.",
+                            "type": "string"
+                        },
+                        "$ref": "#/definitions/schemeWithUri"
+                    },
+                    "required": ["keyword"]
+                },
+                "uniqueItems": true
+            },
+            "contributors": {
+                "title": "Contributors",
+                "description": "The list of all other contributors. Please mention all persons that were relevant in the creation of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "contributor_name": {
+                            "type": "string"
+                        },
+                        "$ref": "#/definitions/person",
+                        "contributor_type": {
+                            "title": "Contributor type",
+                            "description": "The type of the contributor.",
+                            "enum": ["ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", "HostingInstitution", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", "RelatedPerson", "Researcher", "ResearchGroup", "RightsHolder", "Sponsor", "Supervisor", "WorkPackageLeader", "Other"]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["contributor_name", "contributor_type"]
+                },
+                "uniqueItems": true
+            },
+            "languages": {
+                "title": "Languages",
+                "description": "The language(s) of the contents of the resource. Allowed values should be taken from ISO 639-1 and 639-3 language codes or IETF BCP 47. Examples: en, de or deu, eng or de-AT, en-US.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "language_name": {
+                            "type": "string"
+                        },
+                        "language_identifier": {
+                            "title": "Identifier",
+                            "type": "string",
+                            "description": "The identifier for the language, according to various identifier schemes."
+                        },
+                        "$ref": "#/definitions/schemeWithUri"
+                    },
+                    "required": ["language_name", "language_identifier"]
+                },
+                "uniqueItems": true
+            },
+            "alternate_identifiers": {
+                "title": "Alternate identifier",
+                "description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "alternate_identifier": {
+                            "type": "string"
+                        },
+                        "alternate_identifier_type": {
+                            "title": "Type",
+                            "description": "The type of the alternate identifier.",
+                            "$ref": "#/definitions/identifierType"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["alternate_identifier", "alternate_identifier_type"]
+                },
+                "uniqueItems": true
+            },
+            "related_identifiers": {
+                "title": "Related identifiers",
+                "description": "The identifiers of other resources related to the resource such as a URN, URI or an ISBN number.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "related_identifier": {
+                            "type": "string"
+                        },
+                        "resource_type_general": {
+                            "title": "Resource type",
+                            "description": "The type of the resource.",
+                            "$ref": "#/definitions/resourceType"
+                        },
+                        "related_identifier_type": {
+                            "title": "Type",
+                            "description": "The type of the related identifier.",
+                            "$ref": "#/definitions/identifierType"
+                        },
+                        "relation_type": {
+                            "title": "Relation",
+                            "description": "The relation type of the described reference.",
+                            "enum": ["IsCitedBy", "Cites", "IsSupplementTo", "IsPublishedIn", "IsSupplementedBy", "IsContinuedBy", "Continues", "HasMetadata", "IsMetadataFor", "IsNewVersionOf", "IsPreviousVersionOf", "IsPartOf", "HasPart", "IsReferencedBy", "References", "IsDocumentedBy", "Documents", "isCompiledBy", "Compiles", "IsVariantFormOf", "IsOriginalFormOf", "IsIdenticalTo", "IsReviewedBy", "Reviews", "IsDerivedFrom", "IsSourceOf", "Describes", "IsDescribedBy", "HasVersion", "IsVersionOf", "Requires", "IsRequiredBy", "Obsoletes", "IsObsoletedBy"]
+                        },
+                        "$ref": "#/definitions/schemeWithUri"
+                    },
+                    "required": ["related_identifier", "related_identifier_type", "relation_type"]
+                },
+                "uniqueItems": true
+            },
+            "descriptions": {
+                "title": "Descriptions",
+                "description": "The more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                            "type": "string"
+                        },
+                        "description_type": {
+                            "title": "Type",
+                            "description": "The type of the description.",
+                            "enum": ["Abstract", "Methods", "SeriesInformation", "TableOfContents", "TechnicalInfo", "Other"]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["description", "description_type"]
+                },
+                "uniqueItems": true
+            },
+            "version": {
+                "title": "Version",
+                "description": "The version of the resource.",
+                "type": "string"
+            },
+            "contact_email": {
+                "title": "Contact email",
+                "description": "The contact email information for this resource.",
+                "type": "string",
+                "format": "email"
+            },
+            "open_access": {
+                "title": "Open access",
+                "description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible. ",
+                "type": "boolean"
+            },
+            "embargo_date": {
+                "title": "Embargo date",
+                "description": "The date marking the end of the embargo period. The record will be marked as open access on the specified date at midnight. Please note that the record metadata is always publicly accessible, and only the data files can have private access.",
+                "type": "string",
+                "format": "date-time"
+            },
+            "license": {
+                "title": "License",
+                "description": "The license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                "type": "object",
+                "properties": {
+                    "license": {
+                        "type": "string"
+                    },
+                    "license_uri": {
+                        "title": "License URI",
+                        "description": "The URI pointing to the description of the license.",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "license_identifier": {
+                        "title": "Identifier",
+                        "description": "The unique identifier of the license, according to various identifier schemes.",
+                        "type": "string"
+                    },
+                    "$ref": "#/definitions/schemeWithUri"
+                },
+                "additionalProperties": false,
+                "required": ["license"]
+            },
+            "dates": {
+                "title": "Dates",
+                "description": "The dates related to the resource",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "date": {
+                            "title": "Date",
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "date_type": {
+                            "title": "Date type",
+                            "description": "The type of the date.",
+                            "type": "string",
+                            "enum": ["Accepted", "Available", "Collected", "Copyrighted", "Created", "Issued", "Other", "Submitted", "Updated", "Valid", "Withdrawn"]
+                        },
+                        "date_information": {
+                            "title": "Date information",
+                            "description": "The additional information about the date.",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["date", "date_type"],
+                    "additionalProperties": false
+                },
+                "uniqueItems": true
+            },
+            "sizes": {
+                "title": "Sizes",
+                "description": "The unstructured size information about the resource",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "formats": {
+                "title": "Formats",
+                "description": "The technical formats of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "spatial_coverages": {
+                "title": "Spatial coverages",
+                "description": "The spatial coverages of the contents of the resource.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "place": {
+                            "title": "Place",
+                            "description": "Spatial region or named place where the data was gathered or about which the data is focused.",
+                            "$ref": "#/definitions/spatialCoveragePlace"
+                        },
+                        "point": {
+                            "title": "Point",
+                            "$ref": "#/definitions/spatialCoveragePoint",
+                            "description": "A point contains a single latitude-longitude pair."
+                        },
+                        "box": {
+                            "title": "Boxes",
+                            "description": "A bounding box defined by two points.",
+                            "$ref": "#/definitions/spatialCoverageBox"
+                        },
+                        "polygons": {
+                            "title": "Polygons",
+                            "description": "One or more drawn polygon areas, defined by a set of points and lines connecting the points in a closed chain.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "polygon": {
+                                        "type": "array",
+                                        "title": "Polygon",
+                                        "description": "A drawn polygon area, defined by a set of points and lines connecting the points in a closed chain.",
+                                        "items": {
+                                            "$ref": "#/definitions/spatialCoveragePoint"
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "inpoint": {
+                                        "title": "Internal point",
+                                        "description": "A point inside the polygon",
+                                        "$ref": "#/definitions/spatialCoveragePoint"
+                                    }
+                                }
+                            },
+                            "uniqueItems": true
+                        }
+                    }
+                },
+                "uniqueItems": true
+            },
+            "temporal_coverages": {
+                "title": "Temporal coverages",
+                "description": "The temporal coverage of the contents of the resource.",
+                "type": "object",
+                "properties": {
+                    "ranges": {
+                        "title": "Ranges",
+                        "description": "The temporal ranges of the contents of the resource.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/temporalCoverageStartEndDate"
+                        },
+                        "uniqueItems": true
+                    },
+                    "spans": {
+                        "title": "Spans",
+                        "description": "The named spans of the contents of the resource.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/temporalCoverageSpan"
+                        },
+                        "uniqueItems": true
+                    }
+                },
+                "uniqueItems": true
+            },
+            "funding_references": {
+                "title": "Funding references",
+                "description": "The information about financial support (funding) for the resource being registered.",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "funder_name": {
+                            "title": "Funder name",
+                            "description": "The full name of the funder.",
+                            "$ref": "#/definitions/nonEmptyString"
+                        },
+                        "funder_identifier": {
+                            "type": "string",
+                            "description": "The unique identifier of the funder."
+                        },
+                        "funder_identifier_type": {
+                            "title": "Type",
+                            "description": "The type of the identifier of the funder.",
+                            "$ref": "#/definitions/funderIdentifierType"
+                        },
+                        "scheme_uri": {
+                            "$ref": "#/definitions/schemeUri"
+                        },
+                        "award_title": {
+                            "title": "Award title",
+                            "description": "The title of the award.",
+                            "type": "string"
+                        },
+                        "award_number": {
+                            "title": "Award number",
+                            "type": "string",
+                            "description": "The corresponding number of the award."
+                        },
+                        "award_uri": {
+                            "title": "Award URI",
+                            "description": "The URI pointing to the award.",
+                            "type": "string",
+                            "format": "uri"
+                        }
+                    },
+                    "required": ["funder_name"]
+                },
+                "uniqueItems": true
+            },
+
+            "community": {
+                "title": "Community",
+                "description": "The community to which the record has been submitted.",
+                "type": "string"
+            },
+
+            "community_specific": {
+                "type": "object"
+            },
+
+            "publication_state": {
+                "title": "Publication State",
+                "description": "State of the publication workflow.",
+                "type": "string",
+                "enum": [ "draft", "submitted", "published"]
+            },
+
+            "_pid": {
+                "title": "Persistent Identifiers",
+                "description": "Array of persistent identifiers pointing to this record."
+            },
+            "_deposit": {
+                "type": "object"
+            },
+            "_oai": {
+                "type": "object"
+            },
+            "_files": {
+                "type": "array"
+            }
+        },
+        "required": ["community", "titles", "open_access", "publication_state", "community_specific"],
+        "additionalProperties": false,
+        "b2share": {
+            "presentation": {
+                "major": [ "community", "titles", "descriptions", "creators", "open_access", "embargo_date", "license", "disciplines", "keywords", "contact_email" ],
+                "minor": [ "contributors", "instruments", "resource_types", "alternate_identifiers", "related_identifiers", "version", "publisher", "languages", "spatial_coverages", "temporal_coverages", "funding_references"]
+            }
+        }
+    }
+}
