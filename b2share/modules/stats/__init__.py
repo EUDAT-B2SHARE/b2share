@@ -23,3 +23,9 @@ This module works with invenio-stats. It adds a processor
 which is applied to new events in order to filter out events
 coming from deposits. This way the download statistics are
 calculated only for files of published records."""
+
+from __future__ import absolute_import, print_function
+
+from .ext import B2ShareStatistics
+
+__all__ = ('B2ShareStatistics')
