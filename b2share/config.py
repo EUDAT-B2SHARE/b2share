@@ -35,6 +35,7 @@ from invenio_records_rest.utils import deny_all, allow_all
 from b2share.modules.oauthclient.b2access import make_b2access_remote_app
 from b2share.modules.roles import B2ShareRoles
 from b2share.modules.management.ownership import B2ShareOwnership
+from b2share.modules.stats import B2ShareStatistics
 from b2share.modules.records.search import B2ShareRecordsSearch
 from b2share.modules.records.permissions import (
     UpdateRecordPermission, DeleteRecordPermission
