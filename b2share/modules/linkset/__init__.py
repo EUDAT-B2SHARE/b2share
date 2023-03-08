@@ -18,13 +18,12 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """B2Share ApiLinkset module.
-
 This module simply gives information on the B2SHARE service via the root
 ``/api/`` endpoint.
 """
 
 from __future__ import absolute_import, print_function
 
-from .ext import B2ShareApiLinkset
+from .ext import B2ShareLinkset
 
-__all__ = ('B2ShareApiLinkset')
+__all__ = ('B2ShareLinkset')

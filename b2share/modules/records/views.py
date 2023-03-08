@@ -28,7 +28,7 @@ from functools import partial, wraps
 
 from sqlalchemy import and_
 from sqlalchemy.orm import aliased
-from flask import Blueprint, abort, request, url_for, make_response
+from flask import Blueprint, abort, request, url_for, make_response, after_this_request
 from flask import jsonify, Flask, current_app
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
@@ -372,6 +372,83 @@ class B2ShareRecordsListResource(RecordsListResource):
 
 class B2ShareRecordResource(RecordResource):
     """B2Share resource for records."""
+
+    @pass_record
+    @need_record_permission('read_permission_factory')
+    def get(self, pid, record, **kwargs):
+        """Get a record.
+
+        Procedure description:
+
+        #. The record is resolved reading the pid value from the url.
+
+        #. The ETag and If-Modifed-Since is checked.
+
+        #. The HTTP response is built with the help of the link factory.
+
+        :param pid: Persistent identifier for record.
+        :param record: Record object.
+        :returns: The requested record.
+        """
+
+        @after_this_request
+        def add_header(response):
+            try:
+                linkset_url = url_for('b2share_linkset.linkset',
+                            record_id=pid.pid_value, _external=True)
+                response.headers['Link'] = '<{linkset_url}> ; rel="linkset" ; type="application/linkset+json"'.format(linkset_url=linkset_url)
+            except:
+                pass
+            return response
+
+        etag = str(record.revision_id)
+        self.check_etag(str(record.revision_id))
+        self.check_if_modified_since(record.updated, etag=etag)
+        return self.make_response(
+            pid, record, links_factory=self.links_factory
+        )
+
+
+    @pass_record
+    @need_record_permission('read_permission_factory')
+    def get(self, pid, record, **kwargs):
+        """Get a record.
+
+        Procedure description:
+
+        #. The record is resolved reading the pid value from the url.
+
+        #. The ETag and If-Modifed-Since is checked.
+
+        #. The HTTP response is built with the help of the link factory.
+
+        :param pid: Persistent identifier for record.
+        :param record: Record object.
+        :returns: The requested record.
+        """
+
+        @after_this_request
+        def add_header(response):
+            try:
+                linkset_url = url_for('b2share_linkset.linkset',
+                            record_id=pid.pid_value, _external=True)
+                response.headers['Link'] = '<{linkset_url}> ; rel="linkset" ; type="application/linkset+json"'.format(linkset_url=linkset_url)
+            except:
+                pass
+            return response
+
+        etag = str(record.revision_id)
+        self.check_etag(str(record.revision_id))
+        self.check_if_modified_since(record.updated, etag=etag)
+        record_viewed.send(
+            current_app._get_current_object(),
+            pid=pid,
+            record=record,
+        )
+        return self.make_response(
+            pid, record, links_factory=self.links_factory
+        )
+
 
     @pass_record
     @need_record_permission('read_permission_factory')

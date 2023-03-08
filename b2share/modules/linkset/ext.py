@@ -23,8 +23,9 @@ from __future__ import absolute_import, print_function
 
 from .views import blueprint
 
+from .cli import linkset as linkset_cmd
 
-class B2ShareApiLinkset(object):
+class B2ShareLinkset(object):
     """B2Share Api Archive extension."""
 
     def __init__(self, app=None):
@@ -35,6 +36,7 @@ class B2ShareApiLinkset(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
+        app.cli.add_command(linkset_cmd)
         app.extensions['b2share_apilinkset'] = self
         app.register_blueprint(blueprint)
 
