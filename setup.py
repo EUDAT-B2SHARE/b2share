@@ -176,7 +176,6 @@ setup(
         ],
         'invenio_base.api_apps': [
             'b2share_apiroot = b2share.modules.apiroot:B2ShareApiRoot',
-            'b2share_apilinkset = b2share.modules.linkset:B2ShareApiLinkset',
             'b2share_communities = b2share.modules.communities:B2ShareCommunities',
             'b2share_schemas = b2share.modules.schemas:B2ShareSchemas',
             'b2share_users = b2share.modules.users:B2ShareUsers',
@@ -185,6 +184,7 @@ setup(
             'b2share_records = b2share.modules.records:B2ShareRecords',
             'b2share_deposit = b2share.modules.deposit:B2ShareDeposit',
             'b2share_handle = b2share.modules.handle:B2ShareHandle',
+            'b2share_linkset = b2share.modules.linkset:B2ShareLinkset',
             'b2share_files = b2share.modules.files:B2ShareFiles',
             'b2share_remotes = b2share.modules.remotes:B2ShareRemotes',
             'b2share_access = b2share.modules.access:B2ShareAccess',

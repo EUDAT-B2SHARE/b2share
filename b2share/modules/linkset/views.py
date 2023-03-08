@@ -23,8 +23,11 @@ from invenio_files_rest import models as fm
 from invenio_records.api import Record
 from invenio_rest import ContentNegotiatedMethodView
 
-blueprint = Blueprint('b2share_apilinkset', __name__, url_prefix='/linkset/<path:record_id>/json')
+from b2share.modules.files.permissions import files_permission_factory
+from b2share.modules.access.policies import allow_public_file_metadata
 
+
+blueprint = Blueprint('b2share_linkset', __name__, url_prefix='/linkset/<path:record_id>/json')
 
 
 class ApiLinkset(ContentNegotiatedMethodView):
@@ -42,16 +45,25 @@ class ApiLinkset(ContentNegotiatedMethodView):
             },
             default_media_type=default_media_type,
             **kwargs)
-
+    
     def get(self, **kwargs):
+
+        # TODO; code needs to be refactored. 
+        # example : hdl_identifer not used anywhere
+        # original code from https://github.com/EUDAT-B2SHARE/b2share/pull/1813
+
         input_record = request.view_args['record_id']
         if input_record is None:
             return abort(400)
-
+        
+        
         linkset = []
         try:
             rec_pid = RecordUUIDProvider.get(input_record).pid
             record = Record.get_record(rec_pid.object_uuid)
+        except:
+            return abort(404, "Record not found!")
+        try:
             landingpage = current_app.config.get(
                 'PREFERRED_URL_SCHEME',
                 '') + '://' + current_app.config.get(
@@ -74,7 +86,7 @@ class ApiLinkset(ContentNegotiatedMethodView):
             hdl_identifer = None
             if doi_identifier is None:
                 #Identifier is required
-                current_app.logger.error('No alternate_identifiers')
+                current_app.logger.error('No alternate_identifiers for record {record_id}'.format(record_id=rec_pid.object_uuid))
 
             rec_license = record.get('license')
             license = {}
@@ -88,24 +100,33 @@ class ApiLinkset(ContentNegotiatedMethodView):
             describedbys = []
             if doi_identifier is not None:
                 describedby = {'href':'https://citation.crosscite.org/format?style=bibtex&doi=' + doi_identifier,
-                               'type':'application/x-bibtex'}
+                                'type':'application/x-bibtex'}
                 describedbys.append(describedby)
             items = []
             fs = []
-            for file in record.get('_files', []):
-                fmimetype = fm.ObjectVersion.get(
-                    file.get('bucket'), file.get('key'),
-                    file.get('version_id')).mimetype
-                file_location = current_app.config.get(
-                    'PREFERRED_URL_SCHEME',
-                    '') + '://' + current_app.config.get(
-                    'JSONSCHEMAS_HOST', '') + '/api/files/' + file.get(
-                    'bucket') + '/' + file.get('key')
-                file.update({'file-location': file_location})
-                item_file = {'href': file_location, 'type':fmimetype}
-                items.append(item_file)
-                item_anchor = {'anchor':file_location, 'collection':[{'href':landingpage, 'type':'text/html'}]}
-                fs.append(item_anchor)
+            bucket = None
+            if len(record.get('_files', [])) > 0:
+                # if record contains files, check for user's permissions to access those files
+                bucket = record.get('_files')[0].get("bucket")
+                user_has_permission = \
+                    allow_public_file_metadata(record) if bucket \
+                    is None else files_permission_factory(
+                        bucket, 'bucket-read').can()
+                if user_has_permission:
+                    for file in record.get('_files', []):
+                        fmimetype = fm.ObjectVersion.get(
+                            file.get('bucket'), file.get('key'),
+                            file.get('version_id')).mimetype
+                        file_location = current_app.config.get(
+                            'PREFERRED_URL_SCHEME',
+                            '') + '://' + current_app.config.get(
+                            'JSONSCHEMAS_HOST', '') + '/api/files/' + file.get(
+                            'bucket') + '/' + file.get('key')
+                        file.update({'file-location': file_location})
+                        item_file = {'href': file_location, 'type':fmimetype}
+                        items.append(item_file)
+                        item_anchor = {'anchor':file_location, 'collection':[{'href':landingpage, 'type':'text/html'}]}
+                        fs.append(item_anchor)
 
             types = []
             type_about_page = {'href':'https://schema.org/AboutPage'}
