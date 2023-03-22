@@ -447,21 +447,21 @@ const Record = React.createClass({
             }
             return (
                 <div className="well">
-                {/* <div className="row">
-                    <h3 className="col-sm-9">
-                        { 'Share' }
-                    </h3>
-                </div>
-                <div className="row">
-                    <div className="col-sm-9">
-                        {this.renderShareButtons(doi)}
+                    <div className="row">
+                        <h3 className="col-sm-9">
+                            {'Share'}
+                        </h3>
                     </div>
-                </div> */}
-                <div className="row">
-                    <h3 className="col-sm-9">
-                        { 'Cite as' }
-                    </h3>
-                </div>
+                    <div className="row">
+                        <div className="col-sm-9">
+                            {this.renderShareButtons(doi)}
+                        </div>
+                    </div>
+                    <div className="row">
+                        <h3 className="col-sm-9">
+                            {'Cite as'}
+                        </h3>
+                    </div>
                 <div className="row">
                 <div className="col-sm-9" > {this.state.data} </div>
                 <b className="col-sm-9">
