@@ -31,6 +31,8 @@ from flask import Blueprint, request,  jsonify, make_response
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_oauth2server.decorators import require_api_auth
 from b2share.modules.access.permissions import admin_only
+from invenio_access.permissions import superuser_access
+from b2share.modules.access.permissions import StrictDynamicPermission
 
 from .api import get_quota, users_list
 
@@ -49,6 +51,14 @@ def switch_queries(value):
         return None
 
 
+class ViewStatsPermission(StrictDynamicPermission):
+    """View Stats permission."""
+    
+    def __init__(self):
+        super(ViewStatsPermission, self).__init__(superuser_access)
+
+
+admin_only_permission = ViewStatsPermission()
 
 class B2shareStatisticsCollection(ContentNegotiatedMethodView):
     """B2SHARE specific stats endpoint.
@@ -57,7 +67,7 @@ class B2shareStatisticsCollection(ContentNegotiatedMethodView):
     endpoint in B2SHARE.
     """
 
-    view_name = 'record_ownership'
+    view_name = 'b2share_statistics'
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
@@ -68,7 +78,8 @@ class B2shareStatisticsCollection(ContentNegotiatedMethodView):
             default_media_type='application/json', *args, **kwargs)
 
     #@require_api_auth()
-    @admin_only.require(http_exception=403)
+    
+    @admin_only_permission.require(http_exception=403)
     def get(self):
         query_type=request.args.get('query',None)
         query_result=switch_queries(query_type)
