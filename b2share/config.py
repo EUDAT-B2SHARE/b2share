@@ -198,13 +198,6 @@ RECORDS_REST_DEFAULT_UPDATE_PERMISSION_FACTORY = None
 RECORDS_REST_DEFAULT_DELETE_PERMISSION_FACTORY = \
     'b2share.modules.records.permissions:DeleteRecordPermission'
 
-if os.environ.get("B2ACCESS_CONSUMER_KEY") and os.environ.get("B2ACCESS_SECRET_KEY"):
-    B2ACCESS_APP_CREDENTIALS = dict(
-        # B2ACCESS authentication key and secret
-        consumer_key=os.environ.get("B2ACCESS_CONSUMER_KEY"),
-        consumer_secret=os.environ.get("B2ACCESS_SECRET_KEY"),
-    )
-
 
 B2ACCESS_BASE_URL = 'https://b2access.eudat.eu/'
 if os.environ.get("USE_STAGING_B2ACCESS"):
@@ -344,6 +337,7 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
 }
+
 
 
 # ePIC PID config

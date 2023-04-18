@@ -98,23 +98,29 @@ from . import config
 
 env_prefix = 'B2SHARE'
 
-try:
-    from b2share.admin import b2share_config_loader
-    config_loader=b2share_config_loader
-except (ModuleNotFoundError,ImportError):
-    # Error handling
-    config_loader = create_conf_loader(config=config, env_prefix=env_prefix)
-    pass
+config_loader = create_conf_loader(config=config, env_prefix=env_prefix)
 
 instance_path = os.getenv(env_prefix + '_INSTANCE_PATH') or \
     os.path.join(sys.prefix, 'var', 'b2share-instance')
 """Instance path for B2Share."""
 
+
+# Use B2SHARE config_loader if it exists.
+def get_config_loader(env_prefix):
+    """Return B2SHARE config loader if available. Otherwise invenio loader."""
+    try:
+        from b2share.modules.configloader import create_b2share_config_loader
+        return create_b2share_config_loader(config=config, env_prefix=env_prefix)
+    except (ModuleNotFoundError,ImportError):
+        # Error handling. Revert back to using just Invenio config_loader
+        return create_conf_loader(config=config, env_prefix=env_prefix)
+
+
 def create_api(*args, **kwargs):
     """Create Flask application providing B2SHARE REST API."""
     app = create_app_factory(
         'b2share',
-        config_loader=config_loader,
+        config_loader=get_config_loader(env_prefix),
         extension_entry_points=['invenio_base.api_apps'],
         blueprint_entry_points=['invenio_base.api_blueprints'],
         converter_entry_points=['invenio_base.api_converters'],
@@ -202,21 +208,19 @@ def check_configuration(config, logger):
 
     def check(var_name):
         if not config.get(var_name):
-            error("Configuration variable expected: {}".format(var_name))
-
-    if not os.environ.get('B2SHARE_SECRET_KEY') and check('B2SHARE_SECRET_KEY'):
-        error("Environment variable not defined: B2SHARE_SECRET_KEY")
+            error(f"Configuration variable expected: {var_name}")
 
     check('SQLALCHEMY_DATABASE_URI')
-
+    check('SECRET_KEY')
     check('JSONSCHEMAS_HOST')
     check('PREFERRED_URL_SCHEME')
 
-    check('B2ACCESS_APP_CREDENTIALS')
+    '''check('B2ACCESS_APP_CREDENTIALS')
     if not config['B2ACCESS_APP_CREDENTIALS'].get('consumer_key'):
         error("Environment variable not defined: B2ACCESS_CONSUMER_KEY")
     if not config['B2ACCESS_APP_CREDENTIALS'].get('consumer_secret'):
         error("Environment variable not defined: B2ACCESS_SECRET_KEY")
+    '''
 
     site_function = config.get('SITE_FUNCTION')
     if site_function and site_function != 'demo':

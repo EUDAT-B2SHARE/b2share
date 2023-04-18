@@ -36,6 +36,8 @@ After successfully registering the B2ACCESS account please set the following
 environment variables with the username and password provided for the B2ACCESS
 account:
 
+Configuration before version v2.2.5:
+
 .. code-block:: console
 
     $ export B2ACCESS_CONSUMER_KEY=...    # the username used for registration
@@ -48,6 +50,18 @@ server. In this case make sure to define and export the
 .. code-block:: console
 
     $ export USE_STAGING_B2ACCESS=1
+
+Configuration from v2.3.0:
+
+With B2SHARE configuration loader introduced in v2.3.0, a ``B2SHARE_`` prefix needs 
+to be added in front of variables. A new variable for enabling B2ACCESS was introduced:
+
+.. code-block:: console
+
+    $ export B2SHARE_B2ACCESS_CONSUMER_KEY=...    # the username used for registration
+    $ export B2SHARE_B2ACCESS_SECRET_KEY=...      # the password used for registration
+    $ export B2SHARE_USE_STAGING_B2ACCESS=...     # Configure B2ACCESS
+    $ export B2SHARE_CONFIG_ENABLE_B2ACCESS=1     # Enable B2ACCESS feature
 
 
 1.2. Prerequisite: B2SHARE secret key
@@ -115,6 +129,8 @@ the mounted folder:
 After all the configuration parameters have been set go into the recently
 downloaded ``dockerize`` folder and run ``docker-compose``, e.g.:
 
+Before v2.2.5:
+
 .. code-block:: console
 
     $ cd dockerize
@@ -138,6 +154,35 @@ downloaded ``dockerize`` folder and run ``docker-compose``, e.g.:
 
     ## run it
     $ docker-compose up -d
+
+From v2.3.0:
+
+.. code-block:: console
+
+    $ cd dockerize
+
+    ## mandatory environment variables
+    $ export B2SHARE_B2ACCESS_CONSUMER_KEY=...           # the username used for registration
+    $ export B2SHARE_B2ACCESS_SECRET_KEY=...             # the password used for registration
+    $ export B2SHARE_SECRET_KEY=...              # a secret string used for encrypting user sessions
+    $ export B2SHARE_JSONSCHEMAS_HOST='<FQDN>'   # replace <FQDN> with the domain of the B2SHARE server
+    $ export B2SHARE_POSTGRESQL_DBNAME=...       # name of the postgresql database used by b2share
+    $ export B2SHARE_POSTGRESQL_PASSWORD=...     # password used by b2share when accessing the postgresql database
+    $ export B2SHARE_POSTGRESQL_USER=...         # username used by b2share when accessing the postgresql database (default=b2share)
+    $ export B2SHARE_RABBITMQ_USER=...           # username used by b2share when accessing RabbitMQ service
+    $ export B2SHARE_RABBITMQ_PASS=...           # password used by b2share when accessing RabbitMQ service
+    $ export B2SHARE_DATADIR='<PATH>'            # path on the host which will be mounted and contain all b2share related data, including postgresql, elasticsearch, redis, rabbitmq, nginx and b2share itself.
+    $ export B2SHARE_LOGGING_LEVEL=...           # set logging level, must be int or allowed string
+
+    ## optional environment variables
+    $ export B2SHARE_USE_STAGING_B2ACCESS=1              # to run with staging (testing) b2access (unity install)
+    $ export B2SHARE_INIT_DB_AND_INDEX=1                 # when run the first time, initialize the database and indices
+    $ export B2SHARE_LOAD_DEMO_COMMUNITIES_AND_RECORDS=1 # when run the first time, load some communities and records for demonstration
+    $ export B2SHARE_CONFIG_ENABLE_B2ACCESS=1     # Enable B2ACCESS feature
+    $ export B2SHARE_CONFIG_USE_VAULT_AGENT=...   # If a secret provider is used, such as Vault
+
+    ## run it
+    $ docker-compose up -d 
 
 After the docker image is built and running, B2SHARE will be available at
 https://<FQDN>. If B2SHARE does not become available, you can try inspecting
