@@ -116,35 +116,37 @@ def check_handles(update, record_pid):
 
     pid_list = [p.get('value') for p in record['_pid']
                 if p.get('type') == 'ePIC_PID']
-    if pid_list:
-        click.secho('record {} already has a handle'.format(record_pid), fg='green')
-    else:
-        click.secho('record {} has no handle'.format(record_pid), fg='red')
-        if update:
-            b2share_pid_minter(rec_pid, record)
+
+    with current_app.test_request_context('/', base_url=get_base_url()):
+        if pid_list:
+            click.secho('record {} already has a handle'.format(record_pid), fg='green')
+        else:
+            click.secho('record {} has no handle'.format(record_pid), fg='red')
+            if update:
+                b2share_pid_minter(rec_pid, record)
+                record_updated = True
+                click.secho('    handle added to record', fg='green')
+            else:
+                click.secho('use -u argument to add a handle to the record')
+
+        files_ok = True
+        for f in record.get('_files', []):
+            if f.get('ePIC_PID'):
+                click.secho('file {} already has a handle'.format(f.get('key')), fg='green')
+            else:
+                click.secho('file {} has no handle'.format(f.get('key')), fg='red')
+                files_ok = False
+
+        if update and not files_ok:
+            create_file_pids(record)
             record_updated = True
-            click.secho('    handle added to record', fg='green')
-        else:
-            click.secho('use -u argument to add a handle to the record')
+            click.secho('    files updated with handles', fg='green')
+        elif not update and not files_ok:
+            click.secho('use -u argument to add handles to the files')
 
-    files_ok = True
-    for f in record.get('_files', []):
-        if f.get('ePIC_PID'):
-            click.secho('file {} already has a handle'.format(f.get('key')), fg='green')
-        else:
-            click.secho('file {} has no handle'.format(f.get('key')), fg='red')
-            files_ok = False
-
-    if update and not files_ok:
-        create_file_pids(record)
-        record_updated = True
-        click.secho('    files updated with handles', fg='green')
-    elif not update and not files_ok:
-         click.secho('use -u argument to add handles to the files')
-
-    if record_updated:
-        record.commit()
-        db.session.commit()
+        if record_updated:
+            record.commit()
+            db.session.commit()
 
 
 @manage.command()
