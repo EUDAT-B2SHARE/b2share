@@ -10,7 +10,9 @@ RUN \
     yum -y install wget gcc-c++ make openssl-devel \
                    postgresql-devel mysql-devel supervisor \
                    git libffi-devel python-devel libxml2-devel libxml2 \
-                   libxslt-devel zlib-devel libxslt http-parser npm
+                   libxslt-devel zlib-devel libxslt http-parser && \
+    curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
+    yum install -y nodejs
 
 RUN yum -y install python36 python36-pip python36-devel uwsgi-plugin-python36 uwsgi
 
