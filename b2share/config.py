@@ -495,3 +495,5 @@ SECURITY_SEND_REGISTER_EMAIL=False
 #: There is no password so don't send password change emails
 SECURITY_SEND_PASSWORD_CHANGE_EMAIL=False
 SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL=False
+
+DEFAULT_OWNERSHIP=['johannes.lares@csc.fi']

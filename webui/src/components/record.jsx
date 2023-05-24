@@ -16,7 +16,10 @@ import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 import { Card } from 'react-bootstrap';
 import PiwikTracker from 'piwik-react-router';
 import { TwitterShareButton, TwitterIcon, FacebookShareButton, FacebookIcon} from 'react-share';
-
+import { Card } from 'react-bootstrap';
+import { ExternalUrlsRec } from './externalurls.jsx';
+import FileToken from './filetoken.jsx'
+import { Ownership } from './ownership.jsx';
 const PT = React.PropTypes;
 
 
@@ -128,7 +131,10 @@ const Record = React.createClass({
             showB2NoteWindow: false,
             record_notes: [],
             files_notes: [],
-            b2noteUrl: this.props.b2noteUrl
+            b2noteUrl: this.props.b2noteUrl,
+            token: null,
+            buckets: [],
+            showOwnershipWindow: false
         }
 
         return state;
@@ -845,6 +851,13 @@ const Record = React.createClass({
                                     className="frame"/>
                             </div> : false
                         }
+                        {this.state.showOwnershipWindow ?
+                            <div>
+                                {/* {this.renderOwnershipModal()} */}
+                                <Ownership record={this.props.record} hide={() => this.setState({ showOwnershipWindow: false })} />
+                            </div>
+                            : false
+                        }
                     </div>
                     <div className="row">
                         <div className="col-lg-6">
@@ -867,9 +880,9 @@ const Record = React.createClass({
                                 <B2NoteWidget record={record} btnClass={"btn-warning"} showB2NoteWindow={this.showB2NoteWindow} notes={this.state.record_notes} b2noteUrl={this.props.b2noteUrl} b2noteCount={this.state.record_notes || {}}/>
                                 : false
                             }
-                            { canEditRecord(record) ?
-                                <Link to={`/records/${recordID}/edit`} className="btn btn-warning" style={{margin: '0 0.5em'}}><i className="fa fa-pencil"/>&nbsp;
-                                    { state == 'draft' ? 'Edit draft metadata' : 'Edit metadata' }</Link>
+                            {canEditRecord(record) ?
+                                <Link to={`/records/${recordID}/edit`} className="btn btn-warning"><i className="fa fa-pencil" />&nbsp;
+                                    {state == 'draft' ? 'Edit draft metadata' : 'Edit metadata'}</Link>
                                 : false
                             }
                             { isRecordOwner(record) && isLatestVersion ?
@@ -877,7 +890,12 @@ const Record = React.createClass({
                                     Create New Version</a>
                                 : false
                             }
-                            <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse"><i className="glyphicon glyphicon-exclamation-sign"/> Report Abuse</Link>
+                            {isRecordOwner(record) ?
+                                <a href='#ownershipChange' onClick={() => this.setState({ showOwnershipWindow: !this.state.showOwnershipWindow })} className="btn btn-warning"><i className="fa fa-user-plus" />&nbsp;
+                                    Modify ownership</a>
+                                : false
+                            }
+                            <Link to={`/records/${recordID}/abuse`} className="btn btn-default abuse"><i className="glyphicon glyphicon-exclamation-sign" /> Report Abuse</Link>
                         </div>
                     </div>
                 </div>

@@ -43,19 +43,17 @@ from b2share.modules.deposit.api import Deposit
 from b2share.utils import ESSearch, to_tabulate
 from b2share.modules.users.cli import get_user
 
+from .errors import UserAlreadyOwner
+from .utils import get_record_by_pid, add_ownership_to_record, find_version_master, check_user
+
 
 def render_error(error, type, pid, action):
     raise click.ClickException(click.style(error, fg="red") + "\t\t{}: ".format(type) +
                                click.style(pid, fg="blue") + "\t\tAction: {}".format(action))
 
 
-def pid2record(pid):
-    pid = PersistentIdentifier.get('b2rec', pid)
-    return B2ShareRecord.get_record(pid.object_uuid)
-
-
 def replace_ownership(pid, user_id: int, obj_type='record'):
-    record = pid2record(pid)
+    record = get_record_by_pid(pid)
     record['_deposit']['owners'] = [user_id]
     try:
         record = record.commit()
@@ -63,25 +61,20 @@ def replace_ownership(pid, user_id: int, obj_type='record'):
     except Exception as e:
         db.session.rollback()
         click.secho(
-            "Error for object {}, skipping".format(obj.id), fg='red')
+            "Error for object {}, skipping".format(pid), fg='red')
         click.secho(e)
 
 
 def add_ownership(obj, user_id: int, obj_type='record'):
-    if user_id not in obj['_deposit']['owners']:
-        obj['_deposit']['owners'].append(user_id)
-        try:
-            obj = obj.commit()
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            click.secho(
-                "Error for object {}, skipping".format(obj.id), fg='red')
-            click.secho(e)
-
-    else:
+    try:
+        add_ownership_to_record(obj, user_id)
+    except UserAlreadyOwner as e:
         render_error("User is already owner of object", 'object id',
                      obj['_deposit']['id'], "skipping")
+    except Exception as e:
+        click.secho(
+            "Error for object {}, skipping".format(obj.id), fg='red')
+        click.secho(e)
 
 
 def remove_ownership(obj, user_id: int, obj_type='record'):
@@ -109,16 +102,13 @@ def list_ownership(record_pid):
     all_pids = [v.pid_value for v in version_master.children.all()]
     click.secho("PID\t\t\t\t\tOwners", fg='green')
     for single_pid in all_pids:
-        record = pid2record(single_pid)
+        record = get_record_by_pid(single_pid)
         owners = record['_deposit']['owners']
         click.secho("%s\t%s" % (
             single_pid,
             " ".join([str(User.query.filter(
                 User.id.in_([w])).all()[0].email) for w in owners])))
 
-
-def check_user(user_email):
-    return User.query.filter(User.email == user_email).one_or_none()
 
 # decorator to patch the current_app.config file temporarely
 def patch_current_app_config(vars):
@@ -128,7 +118,8 @@ def patch_current_app_config(vars):
                 v, None) for v in vars.keys()}
             for v, val in vars.items():
                 if val is None:
-                    raise Exception("Value for var {} is None.\nSet up the variable to run the command.".format(str(v)))
+                    raise Exception(
+                        "Value for var {} is None.\nSet up the variable to run the command.".format(str(v)))
                 current_app.config[v] = val
             out = function(*args, **kwargs)
             for v, val in old_vars.items():
@@ -141,23 +132,6 @@ def patch_current_app_config(vars):
 @click.group()
 def ownership():
     """ownership management commands."""
-
-
-def find_version_master(pid):
-    """Retrieve the PIDVersioning of a record PID.
-
-    :params pid: record PID.
-    """
-    from b2share.modules.deposit.errors import RecordNotFoundVersioningError
-    from b2share.modules.records.providers import RecordUUIDProvider
-    try:
-        child_pid = RecordUUIDProvider.get(pid).pid
-        if child_pid.status == PIDStatus.DELETED:
-            raise RecordNotFoundVersioningError()
-    except PIDDoesNotExistError as e:
-        raise RecordNotFoundVersioningError() from e
-
-    return PIDVersioning(child=child_pid)
 
 
 @ownership.command()
@@ -207,7 +181,7 @@ def reset(record_pid, user_email, yes_i_know, quiet):
 @click.option('-q', '--quiet', is_flag=True, default=False)
 def add(record_pid, user_email, quiet):
     """ Add user as owner for all the version of the record.
-    
+
     :params record-pid: B2rec record PID
         user-email: user email
     """
@@ -218,7 +192,7 @@ def add(record_pid, user_email, quiet):
     all_pids = [v.pid_value for v in version_master.children.all()]
     user = User.query.filter(User.email == user_email).one_or_none()
     for single_pid in all_pids:
-        record = pid2record(single_pid)
+        record = get_record_by_pid(single_pid)
         add_ownership(record, user.id)
     if not quiet:
         click.secho("Ownership Updated!", fg='red')
@@ -232,7 +206,7 @@ def add(record_pid, user_email, quiet):
 @click.option('-q', '--quiet', is_flag=True, default=False)
 def remove(record_pid, user_email, quiet):
     """ Remove user as an owner of the record.
-    
+
     :params record-pid: B2rec record PID
         user-email: user email
     """
@@ -244,7 +218,7 @@ def remove(record_pid, user_email, quiet):
     all_pids = [v.pid_value for v in version_master.children.all()]
     user = User.query.filter(User.email == user_email).one_or_none()
     for single_pid in all_pids:
-        record = pid2record(single_pid)
+        record = get_record_by_pid(single_pid)
         remove_ownership(record, user.id)
     if not quiet:
         click.secho("Ownership Updated!", fg='red')
@@ -257,7 +231,7 @@ def remove(record_pid, user_email, quiet):
 @click.option('-t', '--type', type=click.Choice(['deposit', 'record']), required=False)
 def find(user_email, type=None):
     """ Find all the records or/and deposits where user is one of the owners.
-    
+
     :params user-email: user email
             type: record type (deposit, record)
     """
@@ -276,7 +250,8 @@ def find(user_email, type=None):
             click.secho(click.style(
                 "No objs found with owner {}".format(str(user)), fg="red"))
 
-@ownership.command('add-all')
+
+@ownership.command('transfer-add')
 @with_appcontext
 @click.option('-t', '--type', type=click.Choice(['deposit', 'record']), required=False)
 @click.argument('user-email', required=True, type=str)
@@ -284,10 +259,10 @@ def find(user_email, type=None):
 @patch_current_app_config({'SERVER_NAME': os.environ.get('JSONSCHEMAS_HOST')})
 def transfer_add(user_email, new_user_email, type=None):
     """ Add user to all the records or/and deposits if user is not of the owners already.
-    
-    :param user-email: user email of the owner of the records/deposits
-    :param new-user-email: user email of the new owner
-    :param type: record type (deposit, record)
+
+    :params user-email: user email of the old owner
+            new-user-email: user email of the new owner
+            type: record type (deposit, record)
     """
     if check_user(user_email) is None:
         raise click.ClickException(
@@ -308,7 +283,7 @@ def transfer_add(user_email, new_user_email, type=None):
             click.secho(click.style("Initial state:", fg="blue"))
             print(to_tabulate(search))
 
-            #update values for each record/deposit
+            # update values for each record/deposit
             for id in search.keys():
                 obj = Deposit.get_record(id)
                 # try to update
@@ -338,9 +313,9 @@ def transfer_add(user_email, new_user_email, type=None):
 @patch_current_app_config({'SERVER_NAME': os.environ.get('JSONSCHEMAS_HOST')})
 def transfer_remove(user_email, type=None):
     """ remove user to all the records or/and deposits.
-    
-    :param user-email: user email
-    :param type: record type (deposit, record)
+
+    :params user-email: user email
+            type: record type (deposit, record)
     """
     if check_user(user_email) is None:
         raise click.ClickException(
@@ -356,7 +331,7 @@ def transfer_remove(user_email, type=None):
             click.secho(click.style("Initial state:", fg="blue"))
             print(to_tabulate(search))
 
-            #update values for each record/deposit
+            # update values for each record/deposit
             for id in search.keys():
                 obj = Deposit.get_record(id)
                 # try to delete user
@@ -402,4 +377,3 @@ def search_es(user, type):
     else:
         click.secho("The search has returned 0 maches.")
         return None
-
