@@ -306,12 +306,10 @@ class ESDualQuery(ESQuery):
                 try:
                     loop_res = connection.scroll(scroll_id=res1.get('_scroll_id')) # Might return error with 404, if trying to request page n+1
                 except:
-                    print("End of buckets")
                     break
                 hits = loop_res.get('hits', {}).get('hits', [])
                 loop_buckets = [hit.get('fields', {}).get('_files.bucket', [])[0] for hit in hits if hit.get('fields', None)]
                 buckets = [*buckets, *loop_buckets]
-            print(buckets)
 
         agg_query = self.build_query(start_date, end_date, buckets, **kwargs)
         query_result = agg_query.execute().to_dict()
