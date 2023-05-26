@@ -490,3 +490,10 @@ SECURITY_SEND_REGISTER_EMAIL=False
 #: There is no password so don't send password change emails
 SECURITY_SEND_PASSWORD_CHANGE_EMAIL=False
 SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL=False
+
+if os.environ.get("B2ACCESS_CONSUMER_KEY") and os.environ.get("B2ACCESS_SECRET_KEY") and os.environ.get("B2SHARE_CONFIG_ENABLE_B2ACCESS",0) == 0:
+    B2ACCESS_APP_CREDENTIALS = dict(
+        # B2ACCESS authentication key and secret
+        consumer_key=os.environ.get("B2ACCESS_CONSUMER_KEY"),
+        consumer_secret=os.environ.get("B2ACCESS_SECRET_KEY"),
+    )

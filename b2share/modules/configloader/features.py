@@ -19,19 +19,20 @@
 
 """B2SHARE specific features loader."""
 
-try:
-    from b2share.modules.oauthclient.b2access import make_b2access_remote_app
-except (ModuleNotFoundError, ImportError) as e:
-    raise e
-
-try:
-    from b2share.modules.oauthclient.cscaai import make_cscaai_remote_app
-except (ModuleNotFoundError, ImportError) as e:
-    raise e
 
 from .utils import _check_config_exists
 
 def load_features(app):
+
+    try:
+        from b2share.modules.oauthclient.b2access import make_b2access_remote_app
+    except (ModuleNotFoundError, ImportError) as e:
+        app.logger.warning(f'B2ACCESS IMPORT EXCEPTION: {e}')
+
+    try:
+        from b2share.modules.oauthclient.cscaai import make_cscaai_remote_app
+    except (ModuleNotFoundError, ImportError) as e:
+        app.logger.warning(f'CSCAAI IMPORT EXCEPTION: {e}')
 
     # Process feature flags
 
