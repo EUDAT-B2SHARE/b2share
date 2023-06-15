@@ -39,7 +39,7 @@ class ApiRoot(ContentNegotiatedMethodView):
 
     def get(self, **kwargs):
         b2access = current_app.config.get('OAUTHCLIENT_REMOTE_APPS', {}).get(
-            'b2access', {})
+            current_app.config.get('LOGIN_TYPE','b2access'), {})
         data = {
             'version': __version__,
             'site_function': current_app.config.get('SITE_FUNCTION', ''),

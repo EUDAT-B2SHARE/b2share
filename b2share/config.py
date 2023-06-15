@@ -207,6 +207,8 @@ OAUTHCLIENT_REMOTE_APPS = dict(
     b2access=make_b2access_remote_app(B2ACCESS_BASE_URL)
 )
 
+LOGIN_TYPE=os.environ.get("LOGIN_TYPE",'b2access')
+
 # Don't let Invenio Accounts register Flask Security
 ACCOUNTS_REGISTER_BLUEPRINT = False
 
