@@ -306,7 +306,23 @@ const Record = React.createClass({
             return `${parseFloat((bytes / Math.pow(divider, i)).toFixed(1))} ${units[i]}`;
         }
 
-        function renderStats(recordData){            
+        function renderStats(recordData){    
+            let files = '';
+            let files_size = '';
+            try {
+                files = parseThousands(recordData.get("files").size);
+            } catch (err) {
+                files = "NA";
+
+            }
+            
+            try {
+                files_size = getTotalFileSize(recordData.get("files"));
+            } catch (err) {
+                files_size = "NA";
+
+            }
+            
             return (
                 <div>
                     <div className="statistic-row">
@@ -319,15 +335,16 @@ const Record = React.createClass({
                     </div>
                     <div className="statistic-details">
                         <p className="stat">
-                            <span>Files</span><span>{parseThousands(recordData.get("files").size)}</span> 
+                            <span>Files</span><span>{files}</span> 
                         </p>
                         <p className="stat">
-                            <span>Total Size</span><span>{getTotalFileSize(recordData.get("files"))}</span>   
+                            <span>Total Size</span><span>{files_size}</span>   
                         </p>
                     </div>
                 </div>
                 
-            )
+            );            
+            
         }
 
         function renderDescription(description, i) {
