@@ -23,7 +23,6 @@
 
 """B2Share cli commands for records."""
 
-
 from __future__ import absolute_import, print_function
 
 import click
@@ -45,11 +44,15 @@ from b2share.modules.records.tasks import update_expired_embargoes \
     as update_expired_embargoes_task
 from .utils import list_db_published_records
 from b2share.modules.handle.proxies import current_handle
+from flask import current_app
+
+from b2share.utils import get_base_url
 
 
 @records.group()
 def manage():
     """B2SHARE record management commands."""
+
 
 @manage.command()
 @with_appcontext
