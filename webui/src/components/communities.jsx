@@ -107,6 +107,7 @@ const Community = React.createClass({
         const desc = community.get('description') || "";
         const created = new Date(community.get('created')).toLocaleString();
         const updated = new Date(community.get('updated')).toLocaleString();
+        const file_downloads = records.get("total") > 0 ? this.parseThousands(community.get("communityFileDownloadTotal")) : "0"
 
         return (
             <div className="row" key={community.get("id")}>
@@ -146,7 +147,7 @@ const Community = React.createClass({
                                     <span>Record views</span><br /><span>{this.parseThousands(community.get("communityRecordViewsTotal"))}</span>
                                 </p>
                                 <p className="pid">
-                                    <span>File downloads</span><br /><span>{this.parseThousands(community.get("communityFileDownloadTotal"))}</span>
+                                    <span>File downloads</span><br /><span>{file_downloads}</span>
                                 </p>
                             </div>
                             <div className="statistic-details">

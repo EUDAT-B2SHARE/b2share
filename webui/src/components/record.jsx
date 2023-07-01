@@ -306,7 +306,31 @@ const Record = React.createClass({
             return `${parseFloat((bytes / Math.pow(divider, i)).toFixed(1))} ${units[i]}`;
         }
 
-        function renderStats(recordData){            
+        function renderStats(recordData){
+            let files = '';
+            let files_size = '';
+            let isFiles = false;
+            const openAccess = recordData.getIn(['metadata', 'open_access']);
+            try {
+                if (recordData.get("files")) {
+                    isFiles = recordData.get("files").size > 0;
+                }
+                if (!isFiles && openAccess) {
+                    files = "0";
+                    files_size = "0 bytes";
+                } else if (!isFiles && !openAccess) {
+                    files = "-";
+                    files_size = "-";
+                } else {
+                    files = parseThousands(recordData.get("files").size);
+                    files_size = getTotalFileSize(recordData.get("files"));
+                }
+                
+            } catch (err) {
+                files = "-";
+                files_size = "-";
+                console.error(err)
+            }      
             return (
                 <div>
                     <div className="statistic-row">
@@ -318,11 +342,11 @@ const Record = React.createClass({
                         </p>
                     </div>
                     <div className="statistic-details">
-                        <p className="stat">
-                            <span>Files</span><span>{parseThousands(recordData.get("files").size)}</span> 
+                        <p className="stat" title={openAccess ? "" : "Files are in embargo"}>
+                            <span>Files</span><span>{files}</span> 
                         </p>
-                        <p className="stat">
-                            <span>Total Size</span><span>{getTotalFileSize(recordData.get("files"))}</span>   
+                        <p className="stat" title={openAccess ? "" : "Files are in embargo"}>
+                            <span>Total Size</span><span>{files_size}</span>   
                         </p>
                     </div>
                 </div>
