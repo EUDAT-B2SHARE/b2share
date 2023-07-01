@@ -19,16 +19,6 @@
 
 """B2SHARE specific features loader."""
 
-try:
-    from b2share.modules.oauthclient.b2access import make_b2access_remote_app
-except (ModuleNotFoundError, ImportError) as e:
-    raise e
-
-try:
-    from b2share.modules.oauthclient.cscaai import make_cscaai_remote_app
-except (ModuleNotFoundError, ImportError) as e:
-    raise e
-
 from .utils import _check_config_exists
 
 def load_features(app):
@@ -42,6 +32,10 @@ def load_features(app):
     ## Load B2ACCESS
     if app.config.get("CONFIG_ENABLE_B2ACCESS"):
         app.logger.info("Loading B2ACCESS...")
+        try:
+            from b2share.modules.oauthclient.b2access import make_b2access_remote_app
+        except (ModuleNotFoundError, ImportError) as e:
+            raise e
         
         b2access_required_conf_vars = [
             'B2ACCESS_CONSUMER_KEY',
@@ -80,6 +74,10 @@ def load_features(app):
     ## Load CSCAAI
     if app.config.get("CONFIG_ENABLE_CSCAAI"):
         app.logger.info("Loading CSCAAI...")
+        try:
+            from b2share.modules.oauthclient.cscaai import make_cscaai_remote_app
+        except (ModuleNotFoundError, ImportError) as e:
+            raise e
 
         cscaai_required_conf_vars = [
             'CSCAAI_CONSUMER_KEY',
