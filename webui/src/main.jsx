@@ -28,13 +28,12 @@ import { CommunityAdmin } from './components/community_admin.jsx'
 // TODO: edit records: open enums (rename enum to options?)
 // TODO: do memory profile
 
-// Set environmental variables in Dockerfile
+// Set environmental variables in matomo-config.js
 
-
-const piwik = process.env.B2SHARE_WEBUI_MATOMO_URL && process.env.B2SHARE_WEBUI_MATOMO_SITEID ?
+const piwik = window.B2SHARE_WEBUI_MATOMO_URL && window.B2SHARE_WEBUI_MATOMO_SITEID ?
     PiwikReactRouter({
-        url: process.env.B2SHARE_WEBUI_MATOMO_URL,
-        siteId: process.env.B2SHARE_WEBUI_MATOMO_SITEID,
+        url: window.B2SHARE_WEBUI_MATOMO_URL,
+        siteId: window.B2SHARE_WEBUI_MATOMO_SITEID,
     }) : false;
 
 const AppFrame = React.createClass({
@@ -150,4 +149,3 @@ serverCache.init(info => {
         versionElement.innerHTML = info.get('version');
     }
 });
-
