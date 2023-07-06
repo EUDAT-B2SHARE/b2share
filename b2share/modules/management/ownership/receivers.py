@@ -26,11 +26,12 @@
 from invenio_records.signals import before_record_insert
 from invenio_accounts.models import User
 from flask import current_app
+from sqlalchemy import func
 
 @before_record_insert.connect
 def add_ownership_automatically(sender, **kwargs):
     for email in current_app.config.get('DEFAULT_OWNERSHIP', []):
-        user = User.query.filter(User.email == email).one_or_none()
+        user = User.query.filter(func.lower(User.email) == email.lower()).one_or_none()
         if user == None:
             current_app.logger.error(f"User not found: {email}")
             continue
