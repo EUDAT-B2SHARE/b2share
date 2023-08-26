@@ -800,6 +800,23 @@ a.navbar-brand {
 /*****************************************************************************/
 /* communities */
 
+.blur-overlay {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  background: linear-gradient(transparent 65%, rgba(255, 255, 255, 1) 95%, rgba(255, 255, 255, 1) 10%, rgba(255, 255, 255, 1) 100%);
+  pointer-events: none; /* Makes it non-interactive so users can still select the text underneath */
+  box-sizing: border-box; /* Ensure that padding and border are included in total width/height */
+}
+
+.community {
+  padding-bottom: 5px;
+  position: relative; /* Needed to position child elements like .blur-overlay relative to this container. */
+  overflow: hidden;   /* Any child content that's outside the boundaries of .community will be clipped (not displayed). */
+}
+
 .community-small {
   background-color: white;
   border: 1px solid #eee;

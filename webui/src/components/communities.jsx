@@ -48,18 +48,65 @@ export const CommunityRoute = React.createClass({
 const CommunityList = React.createClass({
     mixins: [React.addons.PureRenderMixin],
 
+
+    getInitialState() {
+        return {
+            textTooLong: {}
+        };
+    },
+
+    componentDidMount() {
+        this.checkTextOverflow();
+    },
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.communities !== this.props.communities) {
+            this.checkTextOverflow();
+        }
+    },
+
+    checkTextOverflow() {
+
+        const textTooLong = Object.assign({}, this.state.textTooLong);
+        let hasChanged = false;
+        const charLimit = 150;
+
+        this.props.communities.forEach(community => {
+            const id = community.get('id');
+            const description = community.get('description') || "";
+
+            if (description.length > charLimit && !textTooLong[id]) {
+                textTooLong[id] = true;
+                hasChanged = true;
+            } else if (description.length <= charLimit && textTooLong[id]) {
+                delete textTooLong[id];
+                hasChanged = true;
+            }
+        });
+
+        if (hasChanged) {
+            this.setState({ textTooLong });
+        }
+
+    },
+
     renderCommunity(community) {
         const id = community.get('id');
         const name = community.get('name') || "";
         const description = community.get('description') || "";
         const logo = community.get('logo') || "";
+        const isTextLong = this.state.textTooLong[id];
+
         return (
-            <div className="col-sm-6 col-lg-4" key={id}>
+            <div className="col-sm-6 col-lg-4" key={id} ref={(ref) => { this[id] = ref; }}>
                 <Link to={"/communities/"+name}>
                     <div className="community link">
                         <h3 className="name">{name}</h3>
                         <img className="logo" src={logo}/>
-                        <p className="description"> {description.substring(0,200)} </p>
+                        <p className="description" key="description">
+                            {description}
+                            {isTextLong && <div className="blur-overlay"></div>}
+                        </p>
                     </div>
                 </Link>
             </div>
@@ -93,7 +140,7 @@ const Community = React.createClass({
         const i = Math.floor(Math.log(bytes) / Math.log(divider));
         return `${parseFloat((bytes / Math.pow(divider, i)).toFixed(1))} ${units[i]}`;
     },
-    
+
     parseThousands(amount) {
         // Parse bytes to nicer units
         if (!+amount) return '0';
