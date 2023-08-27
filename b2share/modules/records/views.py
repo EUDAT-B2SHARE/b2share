@@ -26,7 +26,9 @@ import uuid
 import re
 from functools import partial, wraps
 
+from invenio_records_rest import current_records_rest
 from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import aliased
 from flask import Blueprint, abort, request, url_for, make_response, after_this_request
 from flask import jsonify, Flask, current_app
@@ -50,7 +52,9 @@ from invenio_records_rest.views import (pass_record,
 from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.query import default_search_factory
 from invenio_records_rest.utils import obj_or_import_string
-from invenio_records_rest.errors import InvalidDataRESTError, PatchJSONFailureRESTError
+from invenio_records_rest.errors import InvalidDataRESTError, PatchJSONFailureRESTError, PIDDeletedRESTError, \
+    PIDResolveRESTError, PIDResolveRESTError
+
 from invenio_rest.decorators import require_content_types
 from invenio_mail import InvenioMail
 from flask_mail import Message
@@ -312,7 +316,7 @@ class B2ShareRecordsListResource(RecordsListResource):
         version_of = request.args.get('version_of')
         previous_record = None
         data = None
-        previous_owners=None
+        previous_owners = None
         if version_of:
             try:
                 _, previous_record = Resolver(
@@ -321,8 +325,8 @@ class B2ShareRecordsListResource(RecordsListResource):
                     getter=B2ShareRecord.get_record,
                 ).resolve(version_of)
 
-                previous_owners=get_parent_ownership(previous_record['_deposit']['id'])
-                
+                previous_owners = get_parent_ownership(previous_record['_deposit']['id'])
+
             # if the pid doesn't exist
             except PIDDoesNotExistError as e:
                 raise RecordNotFoundVersioningError()
@@ -355,8 +359,8 @@ class B2ShareRecordsListResource(RecordsListResource):
         record = self.record_class.create(data, id_=record_uuid,
                                           version_of=version_of)
         if previous_owners is not None:
-            record['_deposit']['owners']=previous_owners
-        
+            record['_deposit']['owners'] = previous_owners
+
         record.commit()
         db.session.commit()
 
@@ -373,9 +377,7 @@ class B2ShareRecordsListResource(RecordsListResource):
 class B2ShareRecordResource(RecordResource):
     """B2Share resource for records."""
 
-    @pass_record
-    @need_record_permission('read_permission_factory')
-    def get(self, pid, record, **kwargs):
+    def get(self, pid_value, **kwargs):
         """Get a record.
 
         Procedure description:
@@ -390,13 +392,34 @@ class B2ShareRecordResource(RecordResource):
         :param record: Record object.
         :returns: The requested record.
         """
+        # Manually incorporating logic from pass_record decorator with the custom PIDDeletedRESTError description:
+        try:
+            pid, record = pid_value.data
+        except SQLAlchemyError:
+            if pid:
+                raise PIDResolveRESTError(pid)
+            else:
+                raise PIDResolveRESTError()
+        except PIDDeletedRESTError:
+            # Override the description of the error
+            raise PIDDeletedRESTError(description="Record has been deleted.")
+        except ValueError:
+            # This handles the scenario where pid_value.data cannot be unpacked into pid and record:
+            raise PIDResolveRESTError('Unable to unpack PID and record from data.')
+
+        # Manually incorporating logic from need_record_permission decorator
+        permission_factory = getattr(self, 'read_permission_factory', None) or \
+                             getattr(current_records_rest, 'read_permission_factory', None)
+        if permission_factory:
+            verify_record_permission(permission_factory, record)
 
         @after_this_request
         def add_header(response):
             try:
                 linkset_url = url_for('b2share_linkset.linkset',
-                            record_id=pid.pid_value, _external=True)
-                response.headers['Link'] = '<{linkset_url}> ; rel="linkset" ; type="application/linkset+json"'.format(linkset_url=linkset_url)
+                                      record_id=pid.pid_value, _external=True)
+                response.headers['Link'] = '<{linkset_url}> ; rel="linkset" ; type="application/linkset+json"'.format(
+                    linkset_url=linkset_url)
             except:
                 pass
             return response
@@ -466,20 +489,40 @@ class B2ShareRecordResource(RecordResource):
         """Disable PUT."""
         abort(405)
 
-    @pass_record
-    def delete(self, pid, record, *args, **kwargs):
+    def delete(self, pid_value, *args, **kwargs):
         """Delete a record."""
-        self.check_etag(str(record.model.version_id))
-        pid_value = request.view_args['pid_value']
-        pid, record = pid_value.data
 
-        # Check permissions.
-        permission_factory = self.delete_permission_factory
-        if permission_factory:
-            verify_record_permission(permission_factory, record)
-        record.delete()
-        db.session.commit()
-        return '', 204
+        pid = None  # initialize pid to None or a suitable default value
+
+        # Attempt to retrieve PID and record, which was previously handled by the pass_record decorator:
+        try:
+            pid, record = pid_value.data
+        except SQLAlchemyError:
+            if pid:
+                raise PIDResolveRESTError(pid)
+            else:
+                raise PIDResolveRESTError()
+        except PIDDeletedRESTError:
+            raise PIDDeletedRESTError(description='Record has already been deleted.')
+        except ValueError:
+            # This handles the scenario where pid_value.data cannot be unpacked into pid and record:
+            raise PIDResolveRESTError('Unable to unpack pid and record from data.')
+
+        try:
+            self.check_etag(str(record.model.version_id))
+            pid_value = request.view_args['pid_value']
+            pid, record = pid_value.data
+
+            # Check permissions:
+            permission_factory = self.delete_permission_factory
+            if permission_factory:
+                verify_record_permission(permission_factory, record)
+
+            record.delete()
+            db.session.commit()
+            return '', 204
+        except Exception as e:
+            return f'Error: {str(e)}', 500  # 500 Internal Server Error
 
 
 class RecordsVersionsResource(ContentNegotiatedMethodView):
@@ -543,7 +586,7 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
                 'created': rec_meta.created,
                 'updated': rec_meta.updated,
             })
-        
+
         return {'versions': records}
 
 
@@ -618,7 +661,7 @@ class RecordsAbuseResource(ContentNegotiatedMethodView):
             body=msg_content,
         ))
         return self.make_response({
-            'message':'The record is reported.'
+            'message': 'The record is reported.'
         })
 
 
