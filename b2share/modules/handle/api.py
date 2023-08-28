@@ -208,7 +208,7 @@ def create_epic_handle(location, checksum=None):
 
     # get the handle as returned by EPIC
     hdl = response['location']
-    pid = '/'.join(urlparse(hdl).path.split('/')[3:])
+    pid = '/'.join(urlparse(hdl).path.split('/')[-2:])
 
     CFG_HANDLE_SYSTEM_BASEURL = current_app.config.get(
         'CFG_HANDLE_SYSTEM_BASEURL')
