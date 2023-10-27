@@ -24,7 +24,7 @@ import re
 import os
 from functools import lru_cache
 from urllib.error import URLError
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 from invenio_db import db
 from jsonschema import validate
@@ -40,7 +40,11 @@ from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
 @lru_cache(maxsize=1000)
 def resolve_json(url):
     """Load the given URL as a JSON."""
-    resource = urlopen(url)
+    req = Request(
+            url=url,
+            headers={'User-Agent': current_app.config.get('DEFAULT_USER_AGENT','Mozilla/5.0')}
+    )
+    resource = urlopen(req)
     encoding = resource.headers.get_content_charset()
     schema_bytes = resource.read()
     if encoding is None:
