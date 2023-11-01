@@ -322,7 +322,7 @@ class B2ShareRecordsListResource(RecordsListResource):
                 ).resolve(version_of)
 
                 previous_owners=get_parent_ownership(previous_record['_deposit']['id'])
-                
+
             # if the pid doesn't exist
             except PIDDoesNotExistError as e:
                 raise RecordNotFoundVersioningError()
@@ -356,7 +356,7 @@ class B2ShareRecordsListResource(RecordsListResource):
                                           version_of=version_of)
         if previous_owners is not None:
             record['_deposit']['owners']=previous_owners
-        
+
         record.commit()
         db.session.commit()
 
@@ -448,17 +448,20 @@ class B2ShareRecordResource(RecordResource):
             for rec_pid in record['_pid']:
                 if rec_pid['type'] == 'DOI':
                     doi = rec_pid
-            doi_pid = PersistentIdentifier.get('doi', doi['value'])
-            if doi_pid:
-                from .serializers import datacite_v44
-                from .minters import make_record_url
-                try:
-                    datacite_provider = DataCiteProvider(doi_pid)
-                    doc = datacite_v44.serialize(doi_pid, record)
-                    url = make_record_url(pid.pid_value)
-                    datacite_provider.update(url, doc)
-                except:
-                    current_app.logger.error("Error in DataCite metadata update", exc_info=True)
+            if doi is not None:
+                doi_pid = PersistentIdentifier.get('doi', doi['value'])
+                if doi_pid:
+                    from .serializers import datacite_v44
+                    from .minters import make_record_url
+                    try:
+                        datacite_provider = DataCiteProvider(doi_pid)
+                        doc = datacite_v44.serialize(doi_pid, record)
+                        url = make_record_url(pid.pid_value)
+                        datacite_provider.update(url, doc)
+                    except:
+                        current_app.logger.error("Error in DataCite metadata update", exc_info=True)
+            else:
+                current_app.logger.warning("No doi for record {record_pid}".format(record_pid=pid))
         return self.make_response(
             pid, record, links_factory=self.links_factory)
 
@@ -543,7 +546,7 @@ class RecordsVersionsResource(ContentNegotiatedMethodView):
                 'created': rec_meta.created,
                 'updated': rec_meta.updated,
             })
-        
+
         return {'versions': records}
 
 
