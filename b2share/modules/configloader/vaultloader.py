@@ -91,9 +91,7 @@ def _load_from_vault(
                     # 'key[len(env_prefix):]' removes 'env_prefix'
                     # e.g. B2SHARE_LOGGING_LEVEL -> LOGGING_LEVEL
                     if key == env_prefix + "_" + "PID_HANDLE_CREDENTIALS":
-                        tmp_dict = {
-                            key[len(env_prefix)+1:] : secrets[key]
-                            }
+                        tmp_dict = json.loads(f'{{"{key[len(env_prefix)+1:]}":{secrets[key]}}}')
                     else:
                         tmp_dict = {key[len(env_prefix)+1:] : secrets[key]}
 
