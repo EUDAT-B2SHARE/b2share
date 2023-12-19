@@ -1,31 +1,43 @@
-FROM centos:7
+#
+# Building the webui
+#
+FROM node:12.22.12-buster-slim AS web
 
-LABEL maintainer Petri Laihonen <petri.laihonen@csc.fi>
+LABEL maintainer Joni Tahvanainen <joni.tahvanainen@csc.fi>
 
-EXPOSE 5000
+RUN apt update && \
+    apt install -y git
 
-RUN \
-    # yum -y update && \
-    yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
-    yum -y install wget gcc-c++ make openssl-devel \
-                   postgresql-devel mysql-devel supervisor \
-                   git libffi-devel python-devel libxml2-devel libxml2 \
-                   libxslt-devel zlib-devel libxslt http-parser && \
-    curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
-    yum install -y nodejs
+WORKDIR /eudat/b2share
+COPY webui webui
 
-RUN yum -y install python36 python36-pip python36-devel uwsgi-plugin-python36 uwsgi
+WORKDIR /eudat/b2share/webui
+RUN npm install --unsafe-perm
+RUN node_modules/webpack/bin/webpack.js -p
 
-# install locale
-RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
+# Install public-license-selector
 
-# Supposedly helps with pip time-outs.
-ENV PIP_DEFAULT_TIMEOUT=100
+WORKDIR /eudat
+RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git && \
+    apt-get -y remove git
+WORKDIR /eudat/public-license-selector
+RUN npm install && \
+    node --version && \
+    npm --version && \
+    mv webpack.config.js webpack.config.js.0 && \
+    echo "require('es6-promise').polyfill();" > webpack.config.js && \
+    cat webpack.config.js.0 >> webpack.config.js && \
+    npm install es6-promise && \
+    npm run build && \
+    node_modules/webpack/bin/webpack.js -p && \
+    mkdir -p /eudat/b2share/webui/app/vendors && \
+    cp dist/license-selector.* /eudat/b2share/webui/app/vendors/
 
-# setuptools pinned for 2to3 compatibility (for e.g. fs==0.5.4)
-RUN python3 -m pip install --upgrade pip setuptools==57.5.0 wheel && \
-     python3 --version && \
-     pip3 --version
+
+#
+# Building the b2share
+#
+FROM python:3.6-slim as builder
 
 ENV LANG=en_US.UTF-8
 ENV DB_NAME="b2share-evolution"
@@ -37,59 +49,31 @@ ENV B2SHARE_SEARCH_ELASTIC_HOSTS="elasticsearch:9200"
 ENV B2SHARE_WEBUI_MATOMO_URL=''
 ENV B2SHARE_WEBUI_MATOMO_SITEID=''
 
-#
-# Install public-license-selector
-#
+EXPOSE 5000
+# setuptools pinned for 2to3 compatibility (for e.g. fs==0.5.4)
+RUN apt update && \
+    apt-get install -y gcc libpq-dev npm git && \
+    python3 -m pip install --upgrade pip setuptools==57.5.0 wheel
 
-WORKDIR /eudat
-RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git
-WORKDIR /eudat/public-license-selector
-RUN npm install
 
-# this next RUN is just a workaround for the old version of node on centos7
-# without it, the npm run build fails when compiling less files
-RUN node --version && \
-    npm --version
-RUN mv webpack.config.js webpack.config.js.0
-RUN echo "require('es6-promise').polyfill();" > webpack.config.js
-RUN cat webpack.config.js.0 >> webpack.config.js
-RUN npm install es6-promise
 
-RUN npm run build
+# Supposedly helps with pip time-outs.
+ENV PIP_DEFAULT_TIMEOUT=100
 
-RUN node_modules/webpack/bin/webpack.js -p
-RUN mkdir -p /eudat/b2share/webui/app/vendors
-RUN cp dist/license-selector.* /eudat/b2share/webui/app/vendors/
-
-#
-# Install B2Share webui module and dependencies
-#
-
-WORKDIR /eudat
-ADD ./webui/package.json b2share/webui/package.json
-ADD ./webui/copy_files.sh b2share/webui/copy_files.sh
-
-WORKDIR /eudat/b2share/webui
-RUN npm install --unsafe-perm
-
-#
 # UWSGI Config
-#
 
 WORKDIR /eudat
 ADD dockerize/uwsgi.ini b2share/uwsgi/uwsgi.ini
 
-#
 # Install python module and dependencies
-#
 
 WORKDIR /eudat/b2share
 ADD setup.py setup.py
 ADD b2share/version.py b2share/version.py
 ADD requirements.txt requirements.txt
 
-RUN pip3 install -r requirements.txt
-RUN pip3 install -e .
+RUN pip3 wheel . --wheel-dir=./wheels -r requirements.txt && \
+    pip3 install -e .
 
 WORKDIR /eudat/b2share/demo
 ADD demo/setup.py setup.py
@@ -98,17 +82,30 @@ RUN pip3 install -e .
 COPY dockerize/b2share.sh /eudat/
 COPY dockerize/supervisord.conf /etc/
 
-#
-# Copy the rest of B2Share files
-#
-
-WORKDIR /eudat/b2share
-ADD webui webui
-WORKDIR /eudat/b2share/webui
-RUN node_modules/webpack/bin/webpack.js -p
+# Copy the rest of B2Share files & remove webui from this stage.
 
 WORKDIR /eudat
 ADD . b2share
+RUN rm -rf /eudat/b2share/webui
+
+#
+# Compiling everything
+#
+FROM python:3.6-slim
+COPY --from=builder /eudat /eudat
+COPY --from=builder /etc/supervisord.conf /etc/
+
+RUN apt update && \
+    apt install -y libpq-dev supervisor
+
+WORKDIR /eudat/b2share
+
+RUN pip install --find-links=./wheels -r requirements.txt && \
+  pip install -e . && \
+  pip cache purge
+
+WORKDIR /eudat/b2share/webui
+COPY --from=web /eudat/b2share/webui/app /eudat/b2share/webui/app
 
 WORKDIR /eudat/b2share
 
