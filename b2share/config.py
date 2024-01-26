@@ -400,13 +400,13 @@ B2DROP_SERVER = {
 B2NOTE_URL = 'https://b2note.bsc.es'
 
 # displayed in the UI
-TERMS_OF_USE_LINK = 'http://hdl.handle.net/11304/e43b2e3f-83c5-4e3f-b8b7-18d38d37a6cd'
+TERMS_OF_USE_LINK = 'https://www.eudat.eu/eudat-cdi-aup'
 HELP_LINKS = {
     'b2note': 'https://b2note.eudat.eu/',
     'issues': 'https://github.com/EUDAT-B2SHARE/b2share/issues',
-    'rest-api': 'https://eudat.eu/services/userdoc/b2share-http-rest-api',
-    'search': 'https://eudat.eu/services/userdoc/b2share-advanced-search',
-    'user-guide': 'https://eudat.eu/services/userdoc/b2share-usage'
+    'rest-api': 'https://doc.eudat.eu/b2share/httpapi/',
+    'search': 'https://doc.eudat.eu/b2share/advancedsearch/',
+    'user-guide': 'https://doc.eudat.eu/b2share/forusers/'
 }
 
 # By default we suppose there is one proxy in front of B2Share
