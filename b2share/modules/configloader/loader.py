@@ -58,9 +58,9 @@ def create_b2share_config_loader(config=None, env_prefix="B2SHARE"):
         # Handlers need to configured as well.
         # Invenio-Logging has not loaded its handlers yet, 
         # so we need to override Flask default handlers.
-        app.logger.setLevel(app.config.get('LOGGING_LEVEL'))
+        app.logger.setLevel(app.config.get('LOGGING_LEVEL', 'DEBUG'))
         for h in app.logger.handlers:
-            h.setLevel(app.config.get('LOGGING_LEVEL'))
+            h.setLevel(app.config.get('LOGGING_LEVEL', 'DEBUG'))
 
         if app.config.get('CONFIG_USE_VAULT_AGENT'):
             app.logger.info("Loading secrets.")
