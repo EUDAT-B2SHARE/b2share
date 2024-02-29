@@ -1,0 +1,96 @@
+{
+    "Identifier": "testing/4160ad49bc7861b2cfd3",
+    "name": "B2SHARE-Schema",
+    "description": "Schema for B2SHARE",
+    "provenance": {
+        "creationDate": "2024-02-28T12:36:37.462Z",
+        "lastModificationDate": "2024-02-28T15:11:53.988Z"
+    },
+    "Schema": {
+        "Type": "Object",
+        "addProps": true,
+        "Properties": [
+            {
+                "Name": "Creators",
+                "Description": "The full name of the creators. The personal name format should be: family, given (e.g.: Smith, John)",
+                "Type": "testing/029d528885a0b07166cd",
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Titles",
+                "Description": "The titles(s) of the uploaded resource, or a name by which the resource is known",
+                "Type": "testing/0c802e9677eb9a8d70e3",
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Publication_Date",
+                "Description": "The date when the data was or will be made publicly available",
+                "Type": "testing/4867835f437df26002f7",
+                "Properties": {
+                    "Cardinality": "0 - 1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Community",
+                "Description": "The community to which the record has been submitted",
+                "Type": "testing/b308b0b5cbd43a24fed8",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Publication_State",
+                "Description": "State of the publication workflow",
+                "Type": "testing/2a9ef4513b3c35b7a0a3",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "_pid",
+                "Description": "Array of persistent identifiers pointing to this record",
+                "Type": "testing/54fd55750b19c2cf22cb",
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "doi",
+                "Description": "Record Digital Object Identifier",
+                "Type": "testing/48ba02e08f1185e3f854",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Open Access",
+                "Description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible",
+                "Type": "testing/b76ff4906f33c2dd97dd",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Alternate Identifiers",
+                "Description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number",
+                "Type": "testing/5ef8102e5e7ec4824333",
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            }
+        ]
+    }
+}
