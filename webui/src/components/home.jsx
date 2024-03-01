@@ -28,8 +28,10 @@ export const HomeRoute = React.createClass({
                             </div>
                             :
                             <div>
-                            <h3 style={divStyle} >Attention: This is not a production instance. Please refrain from storing or publishing your research data here.</h3>
-                            <p>Service is intended solely for testing purposes, and data may be deleted at any time!</p>
+                            <h3 style={divStyle} >Attention: This is not a production instance!</h3>
+                            <p style={divStyle}>Please refrain from storing or publishing your real research data here.</p>
+                            <p >You may use the service the for testing B2SHARE service, but note that any data or metadata on this instance may be deleted at any time!</p>
+                            <p >Use a production service provided by your institution or EUDAT for real research data.</p>
                             </div>
                             }
                             { training_site ?
