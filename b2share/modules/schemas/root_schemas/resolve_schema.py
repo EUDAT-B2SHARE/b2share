@@ -14,7 +14,7 @@ def fetch_type_info(data):
                 if item.get("Type", None) is not None:
                     link=item.get("Type")
                     if "testing/" in item.get("Type"):
-                        print("\"{}\": \"{}\"".format(item.get("Name"),item.get("Type")))
+                        print("\"{}\": \"{}\"".format(item.get("Name"),"https://dtr-playground.pidconsortium.eu/#objects/"+item.get("Type")))
                         content_response = requests.get("https://dtr-playground.pidconsortium.eu/objects/"+link)
                         item['Type']=fetch_type_info(content_response.json())
     return data

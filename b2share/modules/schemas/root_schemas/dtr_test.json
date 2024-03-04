@@ -4,7 +4,7 @@
     "description": "Schema for B2SHARE",
     "provenance": {
         "creationDate": "2024-02-28T12:36:37.462Z",
-        "lastModificationDate": "2024-02-28T15:11:53.988Z"
+        "lastModificationDate": "2024-03-04T10:18:01.253Z"
     },
     "Schema": {
         "Type": "Object",
@@ -88,6 +88,58 @@
                 "Type": "testing/5ef8102e5e7ec4824333",
                 "Properties": {
                     "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Publisher",
+                "Description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
+                "Type": "testing/61d70d6e8feec4a24094",
+                "Properties": {
+                    "Cardinality": "0 - 1"
+                }
+            },
+            {
+                "Name": "Affiliation",
+                "Description": "Info about the affiliation",
+                "Type": "testing/f601974c56eef3d7a40a",
+                "Properties": {
+                    "Cardinality": "0 - 1"
+                }
+            },
+            {
+                "Name": "Person",
+                "Description": "Person object, could be a person or an organization",
+                "Type": "testing/8c41ae88467fe5bbad09",
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Resource type",
+                "Title": "Resource type",
+                "Type": "resource_types",
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Instruments",
+                "Description": "The scientific instruments the data was generated or captured on.",
+                "Type": "testing/46c5d55712cb30bbaaa9",
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Disciplines",
+                "Description": "The scientific disciplines linked with the resource.",
+                "Type": "testing/7497c705e58596241ccd",
+                "Properties": {
+                    "Cardinality": "1",
                     "extractProperties": true
                 }
             }
