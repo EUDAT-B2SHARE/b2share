@@ -36,6 +36,10 @@ from doschema.validation import JSONSchemaValidator
 from .errors import InvalidJSONSchemaError, RootSchemaDoesNotExistError, \
     RootSchemaAlreadyExistsError, MissingRequiredFieldSchemaError, MissingPresentationFieldSchemaError
 
+from .api import RootSchema
+from doschema.errors import JSONSchemaCompatibilityError
+from jsonschema.exceptions import ValidationError
+
 
 @lru_cache(maxsize=1000)
 def resolve_json(url):
@@ -255,3 +259,24 @@ def load_root_schemas(cli=False, verbose=False, force=False, ignore_mismatches=F
                 raise
     if cli:
         click.secho('LOADED {} schemas'.format(configs_count), fg='green')
+
+
+def fetch_root_schema(version_id):
+    try:
+        return RootSchema.get_root_schema(version_id)
+    except RootSchemaDoesNotExistError:
+        return None
+
+def verify_compatibility(json_schema, prev_schemas):
+    try:
+        validate_json_schema(json_schema, prev_schemas, {"ignore_mismatches": False})
+        return True
+    except JSONSchemaCompatibilityError:
+        return False
+
+def verify_json_validity(json_schema, root_schema_config_schema):
+    try:
+        validate(json_schema, root_schema_config_schema)
+        return True
+    except ValidationError:
+        return False
