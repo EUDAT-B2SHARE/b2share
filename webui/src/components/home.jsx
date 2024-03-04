@@ -10,15 +10,30 @@ export const HomeRoute = React.createClass({
         const latestRecords = serverCache.getLatestRecords();
         const user = serverCache.getUser();
         const info = serverCache.getInfo();
+        const site_function = info.get('site_function');
         const b2access = info.get('b2access_registration_link');
         const training_site = info.get('training_site_link');
+        const divStyle = {
+            color: 'red',
+          };
         return (
             <div className="container-fluid home-page">
                 <div className="row">
                     <div className="col-sm-12">
                         <div style={{margin:'2em 0', textAlign: 'center'}}>
+                        { (site_function == "" || site_function == "production") ?
+                            <div>
                             <h3>Store and publish your research data</h3>
                             <p>Search in public datasets or register as a user to upload and publish your data!</p>
+                            </div>
+                            :
+                            <div>
+                            <h3 style={divStyle} >Attention: This is not a production instance!</h3>
+                            <p style={divStyle}>Please refrain from storing or publishing your real research data here.</p>
+                            <p >You may use the service the for testing B2SHARE service, but note that any data or metadata on this instance may be deleted at any time!</p>
+                            <p >Use a production service provided by your institution or EUDAT for real research data.</p>
+                            </div>
+                            }
                             { training_site ?
                                 <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
                                 : false }
