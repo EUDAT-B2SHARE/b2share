@@ -4,7 +4,7 @@
     "description": "Schema for B2SHARE",
     "provenance": {
         "creationDate": "2024-02-28T12:36:37.462Z",
-        "lastModificationDate": "2024-03-04T10:18:01.253Z"
+        "lastModificationDate": "2024-03-04T12:07:35.834Z"
     },
     "Schema": {
         "Type": "Object",
@@ -74,6 +74,54 @@
                 }
             },
             {
+                "Name": "Alternate Identifiers",
+                "Description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number",
+                "Type": "testing/5ef8102e5e7ec4824333",
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Related identifiers",
+                "Title": "Related identifiers",
+                "Description": "The identifiers of other resources related to the resource such as a URN, URI or an ISBN number.",
+                "Type": "testing/d72482f16d18ff46f8f4",
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Descriptions",
+                "Description": "The more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
+                "Type": "testing/c0375e268cdabc613c2c",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "version",
+                "Title": "Version",
+                "Description": "The version of the resource.",
+                "Type": "test/3df63b7acb0522da685d",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "contact_email",
+                "Title": "Contact email",
+                "Description": "The contact email information for this resource.",
+                "Type": "testing/a88b7dcd1a9e3e17770b",
+                "Properties": {
+                    "Cardinality": "0 - 1",
+                    "extractProperties": true
+                }
+            },
+            {
                 "Name": "Open Access",
                 "Description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible",
                 "Type": "testing/b76ff4906f33c2dd97dd",
@@ -83,11 +131,12 @@
                 }
             },
             {
-                "Name": "Alternate Identifiers",
-                "Description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number",
-                "Type": "testing/5ef8102e5e7ec4824333",
+                "Name": "License",
+                "Title": "License",
+                "Description": "The license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                "Type": "testing/3229609e15436ec51bcf",
                 "Properties": {
-                    "Cardinality": "0 - n",
+                    "Cardinality": "1",
                     "extractProperties": true
                 }
             },
