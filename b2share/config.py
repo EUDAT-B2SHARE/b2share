@@ -426,6 +426,9 @@ SITE_FUNCTION = 'demo' # set to "production" on production instances
 # if the TRAINING_SITE_LINK parameter is not empty, a message will show up
 # on the front page redirecting the testers to this link
 TRAINING_SITE_LINK = ""
+# if the PRODUCTION_SITE_LINK parameter is not empty, a message will show up
+# on the front page redirecting the user to the production instance
+PRODUCTION_SITE_LINK = ""
 
 
 # Invenio Stats

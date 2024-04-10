@@ -43,4 +43,5 @@ def test_info_get(app):
             info = get_info()
             assert info['site_function'] == app.config.get("SITE_FUNCTION")
             assert info['training_site_link'] == app.config.get("TRAINING_SITE_LINK")
+            assert info['production_site_link'] == app.config.get("PRODCUTION_SITE_LINK")
             assert info['version'] == __version__

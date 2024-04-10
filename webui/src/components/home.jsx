@@ -13,6 +13,7 @@ export const HomeRoute = React.createClass({
         const site_function = info.get('site_function');
         const b2access = info.get('b2access_registration_link');
         const training_site = info.get('training_site_link');
+        const production_site = info.get('production_site_link');
         const divStyle = {
             color: 'red',
           };
@@ -34,6 +35,9 @@ export const HomeRoute = React.createClass({
                             <p >Use a production service provided by your institution or EUDAT for real research data.</p>
                             </div>
                             }
+                            { (site_function != "" && site_function != "production" && production_site != "") ?
+                                <p>Production instance link : <a href={production_site}>{production_site.split("//")[1].replace("/","")}</a></p>
+                                : false }
                             { training_site ?
                                 <p>Please use <a href={training_site}>{training_site}</a> for testing or training.</p>
                                 : false }
