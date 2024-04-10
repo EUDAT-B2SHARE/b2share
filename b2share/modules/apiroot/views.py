@@ -44,6 +44,7 @@ class ApiRoot(ContentNegotiatedMethodView):
             'version': __version__,
             'site_function': current_app.config.get('SITE_FUNCTION', ''),
             'training_site_link': current_app.config.get('TRAINING_SITE_LINK', ''),
+            'production_site_link': current_app.config.get('PRODUCTION_SITE_LINK', ''),
             'b2access_registration_link': b2access.get('registration_url'),
             # 'b2note_url': current_app.config.get('B2NOTE_URL'),
             'terms_of_use_link': current_app.config.get('TERMS_OF_USE_LINK'),

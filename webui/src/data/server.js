@@ -286,6 +286,7 @@ class ServerCache {
                 version: "",
                 site_function: "",
                 training_site_link: "",
+                production_site_link: "",
                 b2access_registration_link: "",
                 b2note_url: "",
                 terms_of_use_link: "",
