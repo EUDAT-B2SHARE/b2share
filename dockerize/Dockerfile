@@ -1,4 +1,4 @@
-FROM centos:7
+FROM almalinux:9.4-minimal
 
 LABEL maintainer Petri Laihonen <petri.laihonen@csc.fi>
 
