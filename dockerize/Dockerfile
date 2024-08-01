@@ -73,12 +73,7 @@ ADD setup.py setup.py
 ADD b2share/version.py b2share/version.py
 ADD requirements.txt requirements.txt
 
-RUN pip3 wheel . --wheel-dir=./wheels -r requirements.txt && \
-    pip3 install -e .
-
-WORKDIR /eudat/b2share/demo
-ADD demo/setup.py setup.py
-RUN pip3 install -e .
+RUN pip3 wheel . --wheel-dir=./wheels -r requirements.txt
 
 COPY dockerize/b2share.sh /eudat/
 COPY dockerize/supervisord.conf /etc/
@@ -116,6 +111,12 @@ WORKDIR /eudat/b2share
 RUN pip install --find-links=./wheels -r requirements.txt && \
   pip install -e . && \
   pip cache purge
+
+RUN pip3 install -e .
+
+WORKDIR /eudat/b2share/demo
+ADD demo/setup.py setup.py
+RUN pip3 install -e .
 
 WORKDIR /eudat/b2share/webui
 COPY --from=web /eudat/b2share/webui/app /eudat/b2share/webui/app
