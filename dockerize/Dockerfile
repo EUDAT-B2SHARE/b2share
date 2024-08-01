@@ -39,7 +39,8 @@ RUN npm install && \
 #
 FROM python:3.6-slim as builder
 
-ENV LANG=en_US.UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 ENV DB_NAME="b2share-evolution"
 ENV B2SHARE_UI_PATH="/eudat/b2share/webui/app"
 ENV B2SHARE_BROKER_URL="redis://redis:6379/0"
@@ -94,7 +95,8 @@ RUN rm -rf /eudat/b2share/webui
 FROM python:3.6-slim
 
 # Variables needed in order to run b2share
-ENV LANG=en_US.UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 ENV B2SHARE_UI_PATH="/eudat/b2share/webui/app"
 ENV B2SHARE_BROKER_URL="redis://redis:6379/0"
 ENV B2SHARE_ACCOUNTS_SESSION_REDIS_URL="redis://redis:6379/0"
