@@ -92,6 +92,17 @@ RUN rm -rf /eudat/b2share/webui
 # Compiling everything
 #
 FROM python:3.6-slim
+
+# Variables needed in order to run b2share
+ENV LANG=en_US.UTF-8
+ENV B2SHARE_UI_PATH="/eudat/b2share/webui/app"
+ENV B2SHARE_BROKER_URL="redis://redis:6379/0"
+ENV B2SHARE_ACCOUNTS_SESSION_REDIS_URL="redis://redis:6379/0"
+ENV B2SHARE_CELERY_RESULT_BACKEND="redis://redis:6379/1"
+ENV B2SHARE_SEARCH_ELASTIC_HOSTS="elasticsearch:9200"
+ENV B2SHARE_WEBUI_MATOMO_URL=''
+ENV B2SHARE_WEBUI_MATOMO_SITEID=''
+
 COPY --from=builder /eudat /eudat
 COPY --from=builder /etc/supervisord.conf /etc/
 
