@@ -94,7 +94,7 @@ extras_require = {
         'pymysql>=0.6.7',
     ],
     'postgresql': [
-        'psycopg2>=2.6.1',
+        'psycopg2==2.9.5',
     ],
     'docs': [
         "Sphinx>=1.3",

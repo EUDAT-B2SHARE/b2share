@@ -119,7 +119,7 @@ ordereddict==1.1          # via invenio-query-parser
 passlib==1.7.1            # via flask-security, invenio-accounts
 pluggy==0.13.1             # via jsonresolver
 poyo==0.4.0               # via cookiecutter
-psycopg2==2.8.3
+psycopg2==2.9.5           # Upgraded from 2.8.3 due to having sufficient libpq for SCRAM authentication
 pyasn1==0.1.9             # via cryptography
 pycparser==2.17           # via cffi
 pyjwt==1.7.1              # via invenio-accounts, invenio_files_rest
