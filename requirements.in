@@ -33,4 +33,4 @@ invenio-rest[cors]<1.1.0,>=1.0.0a10
 invenio-search<1.1.0,>=1.0.0a10
 invenio-stats>=1.0.0a7
 jsonresolver[jsonschema]>=0.2.1
-psycopg2>=2.6.1
+psycopg2==2.9.5
