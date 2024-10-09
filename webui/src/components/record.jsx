@@ -16,7 +16,6 @@ import { getSchemaOrderedMajorAndMinorFields } from './schema.jsx';
 import { Card } from 'react-bootstrap';
 import PiwikTracker from 'piwik-react-router';
 import { TwitterShareButton, TwitterIcon, FacebookShareButton, FacebookIcon} from 'react-share';
-import { Card } from 'react-bootstrap';
 import { ExternalUrlsRec } from './externalurls.jsx';
 import FileToken from './filetoken.jsx'
 import { Ownership } from './ownership.jsx';
