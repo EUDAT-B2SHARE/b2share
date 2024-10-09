@@ -27,6 +27,7 @@
 from __future__ import absolute_import, print_function
 import click
 import os
+import uuid
 
 from flask.cli import with_appcontext
 from flask import app, current_app
@@ -251,29 +252,52 @@ def find(user_email, type=None):
                 "No objs found with owner {}".format(str(user)), fg="red"))
 
 
+def _is_valid_uuid(input_string: str) -> bool:
+    """
+    Checks if a string is a valid UUID
+    """
+    try:
+        _ = uuid.UUID(input_string)
+        return True
+    except ValueError:
+        return False
+
+
+def _get_user_by_email_or_id(user_email_or_id: str):
+    """
+    returns a user by email or id
+    """
+    # user that we want to replace
+    if not _is_valid_uuid(user_email_or_id):
+        user_email = user_email_or_id
+        if check_user(user_email) is None:
+            raise click.ClickException(
+                "User <{}> does not exist. Please check the email and try again".format(user_email))
+        user = get_user(user_email=user_email)
+    else:
+        user_id = user_email_or_id
+        user = get_user(user_id=user_id)
+        if user is None:
+            raise click.ClickException(
+                "User <{}> does not exist. Please check the id and try again".format(user_id))
+    return user
+
+
 @ownership.command('transfer-add')
 @with_appcontext
 @click.option('-t', '--type', type=click.Choice(['deposit', 'record']), required=False)
-@click.argument('user-email', required=True, type=str)
-@click.argument('new-user-email', required=True, type=str)
+@click.argument('user-email-or-id', required=True, type=str)
+@click.argument('new-user-email-or-id', required=True, type=str)
 @patch_current_app_config({'SERVER_NAME': os.environ.get('JSONSCHEMAS_HOST')})
-def transfer_add(user_email, new_user_email, type=None):
+def transfer_add(user_email_or_id, new_user_email_or_id):
     """ Add user to all the records or/and deposits if user is not of the owners already.
 
-    :params user-email: user email of the old owner
-            new-user-email: user email of the new owner
-            type: record type (deposit, record)
+    :params user-email-or-id: user email or id of the old owner
+            new-user-email-or-id: user email or id of the new owner
     """
-    if check_user(user_email) is None:
-        raise click.ClickException(
-            "User <{}> does not exist. Please check the email and try again".format(user_email))
-    if check_user(new_user_email) is None:
-        raise click.ClickException(
-            "New User <{}> does not exist. Please check the email and try again".format(new_user_email))
-    # user that we want to replace
-    user = get_user(user_email=user_email)
-    # new owner that we want to add
-    new_user = get_user(user_email=new_user_email)
+    user = _get_user_by_email_or_id(user_email_or_id)
+    new_user = _get_user_by_email_or_id(new_user_email_or_id)
+
     changed = False
     if user is not None and new_user is not None:
         # search using ESSearch class and filtering by type
@@ -304,7 +328,6 @@ def transfer_add(user_email, new_user_email, type=None):
     else:
         click.secho(click.style(
             "It was not possible to update the ownership", fg="red"))
-
 
 @ownership.command('remove-all')
 @with_appcontext
@@ -360,7 +383,7 @@ def search_es(user, type):
     use ESSearch to find obj where user is owner
 
     :params  user: User obj
-             type: filter the query. Possible values (deposit, record or None) 
+             type: filter the query. Possible values (deposit, record or None)
     '''
 
     query = 'owners:{} || _deposit.owners:{}'.format(user.id, user.id)
