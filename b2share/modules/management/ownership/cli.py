@@ -39,6 +39,8 @@ from b2share.modules.records.api import B2ShareRecord
 from invenio_accounts.models import User
 from invenio_pidrelations.contrib.versioning import PIDVersioning
 from invenio_pidstore.errors import PIDDoesNotExistError
+from invenio_oauthclient.utils import oauth_get_user
+from invenio_oauthclient.models import UserIdentity
 
 from b2share.modules.deposit.api import Deposit
 from b2share.utils import ESSearch, to_tabulate
@@ -130,6 +132,43 @@ def patch_current_app_config(vars):
     return decorator
 
 
+def _is_valid_uuid(input_string: str) -> bool:
+    """
+    Checks if a string is a valid UUID
+    """
+    try:
+        _ = uuid.UUID(input_string)
+        return True
+    except ValueError:
+        return False
+
+
+def _get_user_by_email_or_id(user_email_or_id: str):
+    """
+    returns a user by email or b2access id
+    """
+    # user that we want to replace
+    if not _is_valid_uuid(user_email_or_id):
+        user_email = user_email_or_id
+        user = User.query.filter(User.email == user_email).one_or_none()
+        if user is None:
+            raise click.ClickException(
+                "User <{}> does not exist. Please check the email and try again".format(user_email))
+    else:
+        user_id_external = uuid.UUID(user_email_or_id)
+        user_identity = UserIdentity.query.filter(UserIdentity.id == str(user_id_external)).one_or_none()
+        if user_identity is None:
+            raise click.ClickException(
+                "User <{}> does not exist. Please check the b2access id and try again".format(user_id_external))
+        user_id = user_identity.id_user  # get the local ID from the identity
+        user = User.query.filter(User.id == user_id).one_or_none()  # find user by local ID
+        if user is None:
+            raise click.ClickException(
+                "User <{}> not found internally, but user_identity <{}> exists, please contact a system administrator"
+                .format(user_id_external, user_id))
+    return user
+
+
 @click.group()
 def ownership():
     """ownership management commands."""
@@ -149,25 +188,21 @@ def list(record_pid):
 @ownership.command()
 @with_appcontext
 @click.argument('record-pid', required=True, type=str)
-@click.argument('user-email', required=True, type=str)
+@click.argument('user-email-or-id', required=True, type=str)
 @click.option('-q', '--quiet', is_flag=True, default=False)
 @click.option('-y', '--yes-i-know', is_flag=True, default=False)
-def reset(record_pid, user_email, yes_i_know, quiet):
+def reset(record_pid, user_email_or_id, yes_i_know, quiet):
     """ Remove the previous ownership and set up the new user as a unique owner for all the version of the record.
 
     :params record-pid: B2rec record PID
-            user-email: user email
+            user-email-or-id: user email or b2access ID
     """
-    if check_user(user_email) is None:
-        raise click.ClickException(
-            click.style(
-                """User does not exist. Please check the email and try again""", fg="red"))
+    user = _get_user_by_email_or_id(user_email_or_id)
     list_ownership(record_pid)
     if yes_i_know or click.confirm(
             "Are you sure you want to reset the owership? Previous owners will not be able to access the records anymore.", abort=True):
         version_master = find_version_master(record_pid)
         all_pids = [v.pid_value for v in version_master.children.all()]
-        user = User.query.filter(User.email == user_email).one_or_none()
         for single_pid in all_pids:
             replace_ownership(single_pid, user.id)
     if not quiet:
@@ -178,20 +213,17 @@ def reset(record_pid, user_email, yes_i_know, quiet):
 @ownership.command()
 @with_appcontext
 @click.argument('record-pid', required=True, type=str)
-@click.argument('user-email', required=True, type=str)
+@click.argument('user-email-or-id', required=True, type=str)
 @click.option('-q', '--quiet', is_flag=True, default=False)
-def add(record_pid, user_email, quiet):
+def add(record_pid, user_email_or_id, quiet):
     """ Add user as owner for all the version of the record.
 
     :params record-pid: B2rec record PID
-        user-email: user email
+        user-email-or-id: user email or b2access ID
     """
-    if check_user(user_email) is None:
-        raise click.ClickException(
-            """User does not exist. Please check the email and try again""")
+    user = _get_user_by_email_or_id(user_email_or_id)
     version_master = find_version_master(record_pid)
     all_pids = [v.pid_value for v in version_master.children.all()]
-    user = User.query.filter(User.email == user_email).one_or_none()
     for single_pid in all_pids:
         record = get_record_by_pid(single_pid)
         add_ownership(record, user.id)
@@ -203,21 +235,17 @@ def add(record_pid, user_email, quiet):
 @ownership.command()
 @with_appcontext
 @click.argument('record-pid', required=True, type=str)
-@click.argument('user-email', required=True, type=str)
+@click.argument('user-email-or-id', required=True, type=str)
 @click.option('-q', '--quiet', is_flag=True, default=False)
-def remove(record_pid, user_email, quiet):
+def remove(record_pid, user_email_or_id, quiet):
     """ Remove user as an owner of the record.
 
     :params record-pid: B2rec record PID
-        user-email: user email
+        user-email-or-id: user email or b2access ID
     """
-    if check_user(user_email) is None:
-        raise click.ClickException(
-            """User does not exist. Please check the email and try again""")
-
+    user = _get_user_by_email_or_id(user_email_or_id)
     version_master = find_version_master(record_pid)
     all_pids = [v.pid_value for v in version_master.children.all()]
-    user = User.query.filter(User.email == user_email).one_or_none()
     for single_pid in all_pids:
         record = get_record_by_pid(single_pid)
         remove_ownership(record, user.id)
@@ -228,19 +256,15 @@ def remove(record_pid, user_email, quiet):
 
 @ownership.command()
 @with_appcontext
-@click.argument('user-email', required=True, type=str)
+@click.argument('user-email-or-id', required=True, type=str)
 @click.option('-t', '--type', type=click.Choice(['deposit', 'record']), required=False)
-def find(user_email, type=None):
+def find(user_email_or_id, type=None):
     """ Find all the records or/and deposits where user is one of the owners.
 
     :params user-email: user email
             type: record type (deposit, record)
     """
-    if check_user(user_email) is None:
-        raise click.ClickException(
-            "User <{}> does not exist. Please check the email and try again".format(user_email))
-    # user that we want to find in the db
-    user = get_user(user_email=user_email)
+    user = _get_user_by_email_or_id(user_email_or_id)
     if user is not None:
         # search using ESSearch class and filtering by type
         search = search_es(user, type=type)
@@ -251,38 +275,6 @@ def find(user_email, type=None):
             click.secho(click.style(
                 "No objs found with owner {}".format(str(user)), fg="red"))
 
-
-def _is_valid_uuid(input_string: str) -> bool:
-    """
-    Checks if a string is a valid UUID
-    """
-    try:
-        _ = uuid.UUID(input_string)
-        return True
-    except ValueError:
-        return False
-
-
-def _get_user_by_email_or_id(user_email_or_id: str):
-    """
-    returns a user by email or id
-    """
-    # user that we want to replace
-    if not _is_valid_uuid(user_email_or_id):
-        user_email = user_email_or_id
-        if check_user(user_email) is None:
-            raise click.ClickException(
-                "User <{}> does not exist. Please check the email and try again".format(user_email))
-        user = get_user(user_email=user_email)
-    else:
-        user_id = user_email_or_id
-        user = get_user(user_id=user_id)
-        if user is None:
-            raise click.ClickException(
-                "User <{}> does not exist. Please check the id and try again".format(user_id))
-    return user
-
-
 @ownership.command('transfer-add')
 @with_appcontext
 @click.option('-t', '--type', type=click.Choice(['deposit', 'record']), required=False)
@@ -292,8 +284,8 @@ def _get_user_by_email_or_id(user_email_or_id: str):
 def transfer_add(user_email_or_id, new_user_email_or_id):
     """ Add user to all the records or/and deposits if user is not of the owners already.
 
-    :params user-email-or-id: user email or id of the old owner
-            new-user-email-or-id: user email or id of the new owner
+    :params user-email-or-id: user email or b2access id of the old owner
+            new-user-email-or-id: user email or b2access id of the new owner
     """
     user = _get_user_by_email_or_id(user_email_or_id)
     new_user = _get_user_by_email_or_id(new_user_email_or_id)
@@ -331,20 +323,16 @@ def transfer_add(user_email_or_id, new_user_email_or_id):
 
 @ownership.command('remove-all')
 @with_appcontext
-@click.argument('user-email', required=True, type=str)
+@click.argument('user-email-or-id', required=True, type=str)
 @click.option('-t', '--type', type=click.Choice(['deposit', 'record']), required=False)
 @patch_current_app_config({'SERVER_NAME': os.environ.get('JSONSCHEMAS_HOST')})
-def transfer_remove(user_email, type=None):
+def transfer_remove(user_email_or_id, type=None):
     """ remove user to all the records or/and deposits.
 
     :params user-email: user email
             type: record type (deposit, record)
     """
-    if check_user(user_email) is None:
-        raise click.ClickException(
-            "User <{}> does not exist. Please check the email and try again".format(user_email))
-   # user that we want to remove
-    user = get_user(user_email=user_email)
+    user = _get_user_by_email_or_id(user_email_or_id)
     changed = False
     if user is not None:
         # search using ESSearch class and filtering by type
