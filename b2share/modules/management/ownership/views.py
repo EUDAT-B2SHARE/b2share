@@ -40,12 +40,9 @@ from invenio_accounts.models import User
 from invenio_pidstore.errors import PIDDoesNotExistError
 
 from b2share.utils import get_base_url
-from b2share.modules.management.ownership.cli import find_version_master, pid2record
+from .utils import get_record_by_pid, find_version_master, remove_ownership
 
 blueprint = Blueprint('b2share_ownership', __name__)
-
-#@beartype
-
 
 def add_ownership(pid, user_id: int):
     """
@@ -53,7 +50,7 @@ def add_ownership(pid, user_id: int):
     :params     pid : record pid
                 user_id : id of the user to add as a owner
     """
-    record = pid2record(pid)
+    record = get_record_by_pid(pid)
     if user_id in record['_deposit']['owners']:
         current_app.logger.warning(
             "OWN-API: User is already an owner of the record, skipping..", exc_info=True)
@@ -73,25 +70,39 @@ def add_ownership(pid, user_id: int):
 def pass_user_email(f):
     """Decorator to retrieve a user."""
     @wraps(f)
-    def inner(self, record, user_email, *args, **kwargs):
+    def inner(self, record, *args, **kwargs):
+        user_email = request.args.get('email')
         user = User.query.filter(User.email == user_email).one_or_none()
         if user is None:
-            abort(400, description="User not found in the db.")
+            abort(400, description="Email not found or not added.")
         return f(self, record, user, *args, **kwargs)
     return inner
 
+def pass_user_emails(f):
+    """Decorator to retrieve user emails."""
+    @wraps(f)
+    def inner(self, record, *args, **kwargs):
+        emails = []
+        for uid in record['_deposit']['owners']:
+            user = User.query.filter(User.id == uid).one_or_none()
+            if user is None:
+                # ERROR
+                continue
+            emails.append(user.email)
+        return f(self, record, emails, *args, **kwargs)
+    return inner
 
 def pass_record(f):
     """Decorator to retrieve a record."""
     @wraps(f)
-    def inner(self, record_pid, user_email, *args, **kwargs):
+    def inner(self, record_pid, *args, **kwargs):
         try:
-            record = pid2record(record_pid)
+            record = get_record_by_pid(record_pid)
         except PIDDoesNotExistError as e:
             abort(404)
         if record is None:
             abort(404)
-        return f(self, record, user_email, *args, **kwargs)
+        return f(self, record, *args, **kwargs)
     return inner
 
 
@@ -126,43 +137,62 @@ class OwnershipRecord(ContentNegotiatedMethodView):
             },
             default_media_type='application/json', *args, **kwargs)
 
-    # @auth_required('token', 'session')
-    # @pass_record
-    # @pass_user_email
-    # @pass_record_ownership
-    # def put(self, record, user, **kwargs):
-    #     """Set user_id as a new owner of the record
-    #     The function will retrive all the version of the
-    #     record and will update the ownership for all of them
-    #     """
-    #     record_pid = record['_deposit']['pid']['value']
-    #     user_id = user.id
-    #     version_master = find_version_master(record_pid)
-    #     all_pids = [v.pid_value for v in version_master.children.all()]
-    #     for single_pid in all_pids:
-    #         add_ownership(single_pid, user_id)
-    #     return make_response(("User {} is now owner of the records {}".format(user.email, " - ".join(all_pids)), 200))
-
     @auth_required('token', 'session')
     @pass_record
     @pass_user_email
     @pass_record_ownership
-    def get(self, record, user, **kwargs):
+    def put(self, record, user, **kwargs):
+        """Set user_id as a new owner of the record
+        The function will retrive all versions of the
+        record and will update the ownership for all of them
+        """
+        record_pid = record['_deposit']['pid']['value']
+        user_id = user.id
+        version_master = find_version_master(record_pid)
+        all_pids = [v.pid_value for v in version_master.children.all()]
+        for single_pid in all_pids:
+            add_ownership(single_pid, user_id)
+        return make_response(jsonify({ 'success': True }), 200)
+
+    @auth_required('token', 'session')
+    @pass_record
+    @pass_user_emails
+    @pass_record_ownership
+    def get(self, record, users, **kwargs):
         """ Test function to check if authn is working. """
         """ Record and User are resolved using the decorators """
-        # return make_response(("You can modify the file!<br> PID: {}<br>new owner: {}<br>previous owners: {}".format(
-        #     str(record['_deposit']['pid']['value']),
-        #     str(user.email),
-        #     ", ".join([str(User.query.filter(
-        #         User.id.in_([i])).all()[0].email) for i in record['_deposit']['owners']])
-
-        # ), 200))
-        abort(501, description="Ownership API not available at the moment")
-        #return make_response(("API not available at the moment"), 501)
+        ret = []
+        presets = current_app.config.get('DEFAULT_OWNERSHIP', [])
+        for e in users:
+            o = {'email': e}
+            if e in presets:
+                o['preset'] = True
+            ret.append(o)
+        return make_response(jsonify(ret), 200)
+    
+    @auth_required('token', 'session')
+    @pass_record
+    @pass_user_email
+    @pass_record_ownership
+    def delete(self, record, user, **kwargs):
+        """Remove owner from a record"""
+        user_id = user.id
+        try:
+            remove_ownership(record, user_id)
+            # TODO: What should be returned
+            return make_response(jsonify({'success': True}), 200)
+        except ValueError as e:
+            print(e)
+            # TODO
+            return make_response(f'{e}', 400)
+        except Exception as e:
+            print(e)
+            # TODO
+            return make_response(f'{e}', 400)
 
 
 blueprint.add_url_rule(
-    '/records/<string:record_pid>/ownership/<string:user_email>',
+    '/records/<string:record_pid>/ownership',
     view_func=OwnershipRecord.as_view(
         OwnershipRecord.view_name
     )

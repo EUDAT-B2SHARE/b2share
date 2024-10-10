@@ -1,8 +1,8 @@
-import {fromJS, OrderedMap, List} from 'immutable';
-import {ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler} from './ajax'
-import {Store} from './store'
-import {objEquals, expect, pairs} from './misc'
-import {browserHistory} from 'react-router'
+import { fromJS, OrderedMap, List } from 'immutable';
+import { ajaxGet, ajaxPost, ajaxPut, ajaxPatch, ajaxDelete, errorHandler } from './ajax'
+import { Store } from './store'
+import { objEquals, expect, pairs } from './misc'
+import { browserHistory } from 'react-router'
 import _ from 'lodash';
 
 const urlRoot = ""; // window.location.origin;
@@ -12,39 +12,41 @@ export const access_type = process.env.LOGIN_TYPE || 'b2access';
 export const loginURL = `${urlRoot}/api/oauth/login/${access_type}`;
 
 const apiUrls = {
-    root()                            { return `${urlRoot}/api/` },
+    root() { return `${urlRoot}/api/` },
 
-    user()                            { return `${urlRoot}/api/user` },
-    userTokens()                      { return `${urlRoot}/api/user/tokens` },
-    manageToken(id)                   { return `${urlRoot}/api/user/tokens/${id}` },
+    user() { return `${urlRoot}/api/user` },
+    userTokens() { return `${urlRoot}/api/user/tokens` },
+    manageToken(id) { return `${urlRoot}/api/user/tokens/${id}` },
 
-    users(queryString)                { return `${urlRoot}/api/users` + (queryString ? `?q=${queryString}` : ``) },
-    userListWithRole(id)              { return `${urlRoot}/api/roles/${id}/users` },
-    userWithRole(roleid, userid)      { return `${urlRoot}/api/roles/${roleid}/users/${userid}` },
+    users(queryString) { return `${urlRoot}/api/users` + (queryString ? `?q=${queryString}` : ``) },
+    userListWithRole(id) { return `${urlRoot}/api/roles/${id}/users` },
+    userWithRole(roleid, userid) { return `${urlRoot}/api/roles/${roleid}/users/${userid}` },
 
-    records()                         { return `${urlRoot}/api/records/` },
-    recordsVersion(versionOf)         { return `${urlRoot}/api/records/?version_of=${versionOf}` },
-    record(id)                        { return `${urlRoot}/api/records/${id}` },
-    draft(id)                         { return `${urlRoot}/api/records/${id}/draft` },
-    fileBucket(bucket, key)           { return `${urlRoot}/api/files/${bucket}/${key}` },
+    records() { return `${urlRoot}/api/records/` },
+    recordsVersion(versionOf) { return `${urlRoot}/api/records/?version_of=${versionOf}` },
+    record(id) { return `${urlRoot}/api/records/${id}` },
+    draft(id) { return `${urlRoot}/api/records/${id}/draft` },
+    fileBucket(bucket, key) { return `${urlRoot}/api/files/${bucket}/${key}` },
 
-    abuse(id)                         { return `${urlRoot}/api/records/${id}/abuse` },
-    accessrequests(id)                { return `${urlRoot}/api/records/${id}/accessrequests` },
+    abuse(id) { return `${urlRoot}/api/records/${id}/abuse` },
+    accessrequests(id) { return `${urlRoot}/api/records/${id}/accessrequests` },
 
-    communities()                     { return `${urlRoot}/api/communities/` },
-    community(id)                     { return `${urlRoot}/api/communities/${id}` },
-    communitySchema(cid, version)     { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
+    communities() { return `${urlRoot}/api/communities/` },
+    community(id) { return `${urlRoot}/api/communities/${id}` },
+    communitySchema(cid, version) { return `${urlRoot}/api/communities/${cid}/schemas/${version}` },
 
-    schema(id, version)               { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
+    schema(id, version) { return `${urlRoot}/api/schemas/${id}/versions/${version}` },
 
-    remotes(remote)                   { return `${urlRoot}/api/remotes` + (remote ? `/${remote}` : ``) },
-    remotesJob()                      { return `${urlRoot}/api/remotes/jobs` },
-    b2drop(path_)                     { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
+    remotes(remote) { return `${urlRoot}/api/remotes` + (remote ? `/${remote}` : ``) },
+    remotesJob() { return `${urlRoot}/api/remotes/jobs` },
+    b2drop(path_) { return `${urlRoot}/api/remotes/b2drop` + (path_ ? `/${path_}` : ``) },
 
-    vocabularies(vid)                 { return `${urlRoot}/suggest/${vid}.json` },
+    vocabularies(vid) { return `${urlRoot}/suggest/${vid}.json` },
 
-    statistics()                      { return `${urlRoot}/api/stats` },
-    b2handle_pid_info(file_pid)       { return `${urlRoot}/api/handle/${file_pid}` },
+    statistics() { return `${urlRoot}/api/stats` },
+    b2handle_pid_info(file_pid) { return `${urlRoot}/api/handle/${file_pid}` },
+    ownership(id) { return `${urlRoot}/api/records/${id}/ownership` },
+    ownershipModify(id, email) { return `${urlRoot}/api/records/${id}/ownership?email=${email}` },
 
     extractCommunitySchemaInfoFromUrl(communitySchemaURL) {
         if (!communitySchemaURL) {
@@ -104,18 +106,18 @@ class Getter {
         this.fetchErrorFn = fetchErrorFn;
     }
 
-    autofetch(fetchCallbackFn = () => {}) {
+    autofetch(fetchCallbackFn = () => { }) {
         this.fetch(this.params, fetchCallbackFn);
     }
 
-    fetch(params, fetchCallbackFn = () => {}) {
+    fetch(params, fetchCallbackFn = () => { }) {
         if (this.timer.ticking() && this.equals(params, this.params)) {
             return;
         }
         this.forceFetch(params, fetchCallbackFn);
     }
 
-    forceFetch(params, fetchCallbackFn = () => {}) {
+    forceFetch(params, fetchCallbackFn = () => { }) {
         this.timer.restart();
         this.params = params;
         ajaxGet({
@@ -154,7 +156,7 @@ class Pool {
         return r;
     }
 
-    clear(){
+    clear() {
         this.pool = {};
     }
 }
@@ -215,7 +217,7 @@ class FilePoster {
     put(file, progressFn) {
         if (this.xhr) {
             console.error("already uploading file");
-            return ;
+            return;
         }
 
         const xhr = new XMLHttpRequest();
@@ -247,7 +249,7 @@ class FilePoster {
         if (this.xhr && this.xhr.abort) {
             this.xhr.abort();
         }
-        const completeFn = () => {this.xhr = null};
+        const completeFn = () => { this.xhr = null };
         ajaxDelete({
             url: this.url,
             successFn: (data) => { completeFn(); successFn(data); },
@@ -316,56 +318,56 @@ class ServerCache {
         this.getters.tokens = new Getter(
             apiUrls.userTokens(), null,
             (data) => {
-                var tokens = data.hits.hits.map(c =>  { return c })
+                var tokens = data.hits.hits.map(c => { return c })
                 this.store.setIn(['tokens'], tokens);
             },
-            (xhr) => this.store.setIn(['tokens'], new Error(xhr)) );
+            (xhr) => this.store.setIn(['tokens'], new Error(xhr)));
 
         this.getters.communityUsers = new Pool(roleid => new Getter(
-        	apiUrls.userListWithRole(roleid), null,
+            apiUrls.userListWithRole(roleid), null,
             (users) => {
-            	this.store.setIn(['communityUsers', roleid], fromJS(users.hits.hits));
+                this.store.setIn(['communityUsers', roleid], fromJS(users.hits.hits));
             },
-            null ));
+            null));
 
         this.getters.latestRecords = new Getter(
-            apiUrls.records(), {sort:"mostrecent"},
+            apiUrls.records(), { sort: "mostrecent" },
             (data) => this.store.setIn(['latestRecords'], fromJS(data.hits.hits)),
-            (xhr) => this.store.setIn(['latestRecords'], new Error(xhr)) );
+            (xhr) => this.store.setIn(['latestRecords'], new Error(xhr)));
 
         this.getters.latestRecordsOfCommunity = new Getter(
-            apiUrls.records(), {sort:"mostrecent"},
+            apiUrls.records(), { sort: "mostrecent" },
             (data) => this.store.setIn(['latestRecordsOfCommunity'], fromJS(data.hits.hits)),
-            (xhr) => this.store.setIn(['latestRecordsOfCommunity'], new Error(xhr)) );
+            (xhr) => this.store.setIn(['latestRecordsOfCommunity'], new Error(xhr)));
 
         this.getters.searchRecords = new Getter(
             apiUrls.records(), null,
             (data) => this.store.setIn(['searchRecords'], fromJS(data.hits)),
-            (xhr) => this.store.setIn(['searchRecords'], new Error(xhr)) );
+            (xhr) => this.store.setIn(['searchRecords'], new Error(xhr)));
 
         this.getters.communities = new Getter(
             apiUrls.communities(), null,
             (data) => {
                 let map = OrderedMap();
-                data.hits.hits.forEach(c => { map = map.set(c.id, fromJS(c)); } );
+                data.hits.hits.forEach(c => { map = map.set(c.id, fromJS(c)); });
                 this.store.setIn(['communities'], map);
             },
-            (xhr) => this.store.setIn(['communities'], new Error(xhr)) );
+            (xhr) => this.store.setIn(['communities'], new Error(xhr)));
 
         this.getters.vocabularies = new Pool(vocabularyID =>
             new Getter(
                 apiUrls.vocabularies(vocabularyID), null,
                 (data) => {
                     const transform = id => {
-                        return {id, name:id};
+                        return { id, name: id };
                     }
                     const res = Object.assign(data, {
-                        items: (data.items[0] instanceof Array) ? data.items.map(([id, name]) => ({id, name})) : data.items.map(transform),
+                        items: (data.items[0] instanceof Array) ? data.items.map(([id, name]) => ({ id, name })) : data.items.map(transform),
                     });
                     this.store.setIn(['vocabularies', vocabularyID], res);
                     return res;
                 },
-                (xhr) => this.store.setIn(['vocabularies', vocabularyID], new Error(xhr)) ));
+                (xhr) => this.store.setIn(['vocabularies', vocabularyID], new Error(xhr))));
 
         function retrieveVersions(store, links, cachePath) {
             const versionsLink = links && links.versions;
@@ -504,12 +506,12 @@ class ServerCache {
                             url: data.links.files,
                             successFn: (filedata) => {
                                 const files = filedata.contents.map(this.fixFile);
-                                for(var file_idx=0; file_idx<files.length; file_idx++){
+                                for (var file_idx = 0; file_idx < files.length; file_idx++) {
                                     var current_file = files[file_idx];
                                     var external_pids = data.metadata.external_pids
-                                    for(var ext_file_idx=0; ext_file_idx<data.metadata.external_pids.length; ext_file_idx++){
+                                    for (var ext_file_idx = 0; ext_file_idx < data.metadata.external_pids.length; ext_file_idx++) {
                                         var ext_file = data.metadata.external_pids[ext_file_idx];
-                                        if(ext_file.key == current_file.key){
+                                        if (ext_file.key == current_file.key) {
                                             current_file.b2safe = true;
                                             break;
                                         }
@@ -524,7 +526,7 @@ class ServerCache {
                     }
                     retrieveVersions(this.store, data.links, ['recordCache', recordID, 'versions']);
                 },
-                (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr)) ));
+                (xhr) => this.store.setIn(['recordCache', recordID], new Error(xhr))));
 
         this.getters.community = new Pool((communityID) =>
             new Getter(apiUrls.community(communityID), null,
@@ -534,7 +536,7 @@ class ServerCache {
                     this.store.setIn(['communityCache', communityID], res);
                     return res;
                 },
-                (xhr) => this.store.setIn(['communityCache', communityID], new Error(xhr)) ));
+                (xhr) => this.store.setIn(['communityCache', communityID], new Error(xhr))));
 
         this.getters.draft = new Pool(draftID =>
             new Getter(apiUrls.draft(draftID), null,
@@ -548,7 +550,7 @@ class ServerCache {
                     this.getters.fileBucket.get(draftID).fetch();
                     retrieveVersions(this.store, data.links, ['draftCache', draftID, 'versions']);
                 },
-                (xhr) => this.store.setIn(['draftCache', draftID], new Error(xhr)) ));
+                (xhr) => this.store.setIn(['draftCache', draftID], new Error(xhr))));
 
         this.getters.fileBucket = new Pool(draftID => {
             const fileBucketUrl = this.store.getIn(['draftCache', draftID, 'links', 'files']);
@@ -564,8 +566,8 @@ class ServerCache {
             return new Getter(fileBucketUrl, null, placeDataFn, errorFn);
         });
 
-        this.getters.communitySchema = new Pool( communityID =>
-            new Pool ( version => {
+        this.getters.communitySchema = new Pool(communityID =>
+            new Pool(version => {
                 const placeDataFn = (data) => {
                     expect(communityID == data.community);
                     processSchema(data.json_schema);
@@ -664,14 +666,14 @@ class ServerCache {
         return this.store.getIn(['latestRecords']);
     }
 
-    getLatestRecordsOfCommunity({community}) {
+    getLatestRecordsOfCommunity({ community }) {
         let q = ' community:' + community;
         let sort = 'mostrecent', page = 1, size = 10;
-        this.getters.latestRecordsOfCommunity.fetch({q, sort, page, size});
+        this.getters.latestRecordsOfCommunity.fetch({ q, sort, page, size });
         return this.store.getIn(['latestRecordsOfCommunity']);
     }
 
-    searchRecords({q, community, sort, page, size, drafts}) {
+    searchRecords({ q, community, sort, page, size, drafts }) {
         if (community) {
             q = (q ? '(' + q + ') && ' : '') + ' community:' + community;
         }
@@ -681,7 +683,7 @@ class ServerCache {
             // q = (q ? '(' + q + ') && ' : '') + 'publication_state:draft';
             q = 'publication_state:draft';
         }
-        (drafts == 1) ? this.getters.searchRecords.fetch({q, sort, page, size, drafts}) : this.getters.searchRecords.fetch({q, sort, page, size});
+        (drafts == 1) ? this.getters.searchRecords.fetch({ q, sort, page, size, drafts }) : this.getters.searchRecords.fetch({ q, sort, page, size });
         return this.store.getIn(['searchRecords']);
     }
 
@@ -694,7 +696,7 @@ class ServerCache {
         return List(communities.valueSeq());
     }
 
-    getCommunity(communityIDorName, callbackFn = ()=>{}) {
+    getCommunity(communityIDorName, callbackFn = () => { }) {
         this.getters.community.get(communityIDorName).fetch({}, callbackFn);
         return this.store.getIn(['communityCache', communityIDorName]);
     }
@@ -749,7 +751,7 @@ class ServerCache {
 
         if (blockRefs) {
             blockRefs.entrySeq().forEach(
-                ([id,ref]) => {
+                ([id, ref]) => {
                     const ver = apiUrls.extractSchemaVersionFromUrl(ref.get('$ref'));
                     blockSchemas.push([id, this.getBlockSchema(id, ver)]);
                 }
@@ -767,14 +769,14 @@ class ServerCache {
     }
 
     newUserToken(tokenName, successFn) {
-        var param = {token_name:tokenName};
-        this.posters.tokens.get().post(param, (token)=>{
+        var param = { token_name: tokenName };
+        this.posters.tokens.get().post(param, (token) => {
             this.getters.tokens.forceFetch(null);
             successFn(token);
         });
     }
 
-    getUserTokens(){
+    getUserTokens() {
         this.getters.tokens.autofetch();
         return this.store.getIn(['tokens']);
     }
@@ -782,7 +784,7 @@ class ServerCache {
     removeUserToken(tokenID) {
         ajaxDelete({
             url: apiUrls.manageToken(tokenID),
-            successFn: ()=>{
+            successFn: () => {
                 notifications.success("Token is successfully deleted");
                 this.getters.tokens.forceFetch(null);
             },
@@ -923,45 +925,45 @@ class ServerCache {
 
 
     // List users with a specific role
-    getCommunityUsers(roleid){
+    getCommunityUsers(roleid) {
         this.getters.communityUsers.get(roleid).autofetch();
-        if(this.store.getIn(['communityUsers']).size > 0){
+        if (this.store.getIn(['communityUsers']).size > 0) {
             return this.store.getIn(['communityUsers', roleid]);
         }
-    	return {};
+        return {};
     }
 
     // Assign a role to the user by email
-    registerUserRole(email, roleid, successFn, errorFn){
+    registerUserRole(email, roleid, successFn, errorFn) {
         ajaxGet({
             url: apiUrls.users(email),
             successFn: (user) => {
-                    if(user.hits.hits[0]){
-                        ajaxPut({
-                            url: apiUrls.userWithRole( roleid , fromJS(user.hits.hits[0].id) ),
-                            successFn: ()=> {
-                                        this.getters.communityUsers.get(roleid).autofetch();
-                                        ajaxGet({
-                                            url: apiUrls.user(),
-                                            successFn: data => this.store.setIn(['user'], fromJS(data)),
-                                        });
-                                        notifications.success("The new role was assigned to the user");
-                            },
-                            errorFn: () => {
-                                    notifications.danger("User not found");
-                                },
-                        });
-                    }
-                    else{
-                        notifications.danger("User not found");
-                    }
-                },
+                if (user.hits.hits[0]) {
+                    ajaxPut({
+                        url: apiUrls.userWithRole(roleid, fromJS(user.hits.hits[0].id)),
+                        successFn: () => {
+                            this.getters.communityUsers.get(roleid).autofetch();
+                            ajaxGet({
+                                url: apiUrls.user(),
+                                successFn: data => this.store.setIn(['user'], fromJS(data)),
+                            });
+                            notifications.success("The new role was assigned to the user");
+                        },
+                        errorFn: () => {
+                            notifications.danger("User not found");
+                        },
+                    });
+                }
+                else {
+                    notifications.danger("User not found");
+                }
+            },
             errorFn: errorFn,
         });
     }
 
     // Unassign a role from a user
-    deleteRoleOfUser(roleid, userid){
+    deleteRoleOfUser(roleid, userid) {
         ajaxDelete({
             url: apiUrls.userWithRole(roleid, userid),
             successFn: () => {
@@ -978,7 +980,7 @@ class ServerCache {
         });
     }
 
-    getB2HandlePidInfo(file_pid, successFn){
+    getB2HandlePidInfo(file_pid, successFn) {
         ajaxGet({
             url: apiUrls.b2handle_pid_info(file_pid),
             successFn: response => {
@@ -988,7 +990,7 @@ class ServerCache {
         });
     }
 
-    addB2SafePid(file_pid, successFn){
+    addB2SafePid(file_pid, successFn) {
         ajaxPatch({
             url: apiUrls.addB2SafeFile(file_pid),
             successFn: response => {
@@ -996,6 +998,60 @@ class ServerCache {
                 successFn(response);
             },
         });
+    }
+
+    getAccessToken(record_id, successFn) {
+        ajaxGet({
+            url: apiUrls.tempFileAccess(record_id),
+            successFn: (response) => {
+                successFn(response)
+            },
+        });
+    }
+
+    addOwnership(record_id, email, successFn, errorFn) {
+        ajaxPut({
+            url: apiUrls.ownershipModify(record_id, email),
+            params: { email },
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+            errorFn: e => {
+                console.error(e);
+                notifications.danger(JSON.parse(e.response).message);
+                setTimeout(() => {
+                    notifications.clearAll()
+                }, 5000);
+            },
+        });
+    }
+
+    getRecordOwners(record_id, successFn) {
+        ajaxGet({
+            url: apiUrls.ownership(record_id),
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+            errorFn: e => {
+                console.error(e);
+            }
+        })
+    }
+
+    removeRecordOwner(record_id, email, successFn) {
+        ajaxDelete({
+            url: apiUrls.ownershipModify(record_id, email),
+            params: { email },
+            successFn: response => {
+                console.log(response);
+                successFn(response);
+            },
+            errorFn: e => {
+                console.error(e);
+            }
+        })
     }
 };
 
@@ -1047,19 +1103,20 @@ class Notifications {
 
 
 export class Error {
-    constructor({status, statusText, responseText}) {
+    constructor({ status, statusText, responseText }) {
         this.code = status;
         this.text = statusText;
         this.data = null;
         try {
-            this.data = JSON.parse(responseText); }
+            this.data = JSON.parse(responseText);
+        }
         catch (err) {
             this.data = responseText;
         };
     }
 }
 
-errorHandler.fn = function(text) {
+errorHandler.fn = function (text) {
     notifications.danger(text);
 }
 
@@ -1093,8 +1150,8 @@ export const browser = {
         return `${window.location.origin}/records/${recordId}`;
     },
 
-    gotoSearch({q, community, sort, page, size, drafts}) {
-        const queryString = encode({q, community, sort, page, size, drafts});
+    gotoSearch({ q, community, sort, page, size, drafts }) {
+        const queryString = encode({ q, community, sort, page, size, drafts });
         // trigger a route reload which will do the new search, see SearchRecordRoute
         browserHistory.push(`/records/?${queryString}`);
     },

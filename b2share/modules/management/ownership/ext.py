@@ -27,6 +27,8 @@ from werkzeug.utils import cached_property
 from .views import blueprint
 
 from .cli import ownership as ownership_cmd
+# from .receivers import register_receivers
+from .receivers import *
 
 
 class _B2ShareOwnership(object):

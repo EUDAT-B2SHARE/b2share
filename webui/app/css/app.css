@@ -1058,8 +1058,16 @@ a.navbar-brand {
     border: 1px solid #ddd;
 }
 
-.large-record .bottom-buttons > *:not(:first-child) {
-    margin: 0em 0.5em;
+@media (min-width: 580px) {
+  .large-record .bottom-buttons > *:not(:first-child) {
+      margin: 0em 0em 0em 1em;
+  }
+}
+
+@media (max-width: 580px) {
+  .large-record .bottom-buttons > * {
+    margin: 0.5em 1em 0.5em 0em;
+  }
 }
 
 .large-record .bottom-buttons a.abuse {
@@ -1431,4 +1439,17 @@ ul.rw-list>li.rw-list-option.rw-state-focus,.rw-selectlist>li.rw-list-option.rw-
 
 .stat>span:last-child {
   text-align: center;
+}
+
+/* OWNERSHIP */
+
+.ownership-modal {
+  padding-bottom: 30px;
+  margin-top: 10%;
+  background-color: white;
+  overflow-y: auto;
+  box-shadow: 0px 0px 4px #000;
+  border-radius: 4px;
+  max-height: 80%;
+  bottom: auto !important;
 }
