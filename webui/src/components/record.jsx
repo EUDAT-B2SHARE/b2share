@@ -81,7 +81,7 @@ const B2NoteWidget = React.createClass({
         const record_url = (record.links.self || "").replace('/api/records/', '/records/');
 
         if (this.props.file) {
-            
+
             var file = this.props.file.toJS ? this.props.file.toJS() : this.props.file;
             var pid = file.ePIC_PID;
             var object_url = (file.url.indexOf('/api') == 0) ? (window.location.origin + file.url) : file.url;
@@ -128,7 +128,8 @@ const Record = React.createClass({
             showB2NoteWindow: false,
             record_notes: [],
             files_notes: [],
-            b2noteUrl: this.props.b2noteUrl
+            b2noteUrl: this.props.b2noteUrl,
+            responseok: null
         }
 
         return state;
@@ -172,15 +173,20 @@ const Record = React.createClass({
 
     componentDidMount() {
         this.catchMatomoEvent(new Event("recordview"));
-
-        // this is set async in parent
-        if (this.state.b2noteUrl == "") {
-            return;
+        const doi = this.props.record.get("metadata").get('DOI');
+        if (doi && this.state.responseok === null) {
+            this.fetchCitations(doi);
         }
-        window.addEventListener('message', this.catchB2NoteEvent);
 
-        this.updateNotes();
     },
+
+    componentDidUpdate(prevProps) {
+        const doi = this.props.record.get("metadata").get('DOI');
+        if (doi !== prevProps.record.get("metadata").get('DOI') && this.state.responseok === null) {
+            this.fetchCitations(doi);
+        }
+    },
+
 
     componentWillUnmount() {
         window.removeEventListener('message', this.catchB2NoteEvent);
@@ -325,17 +331,17 @@ const Record = React.createClass({
                     files = parseThousands(recordData.get("files").size);
                     files_size = getTotalFileSize(recordData.get("files"));
                 }
-                
+
             } catch (err) {
                 files = "-";
                 files_size = "-";
                 console.error(err)
-            }      
+            }
             return (
                 <div>
                     <div className="statistic-row">
                         <p className="pid">
-                            <span>Views</span><br /><span>{parseThousands(recordData.get("views"))}</span>            
+                            <span>Views</span><br /><span>{parseThousands(recordData.get("views"))}</span>
                         </p>
                         <p className="pid">
                             <span>File Downloads</span><br /><span>{parseThousands(recordData.get("file-views"))}</span>
@@ -343,14 +349,14 @@ const Record = React.createClass({
                     </div>
                     <div className="statistic-details">
                         <p className="stat" title={openAccess ? "" : "Files are in embargo"}>
-                            <span>Files</span><span>{files}</span> 
+                            <span>Files</span><span>{files}</span>
                         </p>
                         <p className="stat" title={openAccess ? "" : "Files are in embargo"}>
-                            <span>Total Size</span><span>{files_size}</span>   
+                            <span>Total Size</span><span>{files_size}</span>
                         </p>
                     </div>
                 </div>
-                
+
             )
         }
 
@@ -440,7 +446,7 @@ const Record = React.createClass({
                                 <PersistentIdentifier pid={pid} />
                             </p>
                         }
-                        
+
                     </div>
                     <div className='col-sm-6 col-md-6 col-lg-4 statistic-wrapper'>
                         <div className="community-statistics">
@@ -458,7 +464,7 @@ const Record = React.createClass({
     fixedFields: [
         'community', 'titles', 'descriptions', 'creators', 'keywords', 'disciplines', 'publication_state'
     ],
-    
+
     renderShareButtons(doi){
         const record = this.props.record.toJS ? this.props.record.toJS() : this.props.record;
         const title = record.metadata.titles[0].title || "";
@@ -473,7 +479,7 @@ const Record = React.createClass({
                     style={{cursor: "pointer"}}
                     >
                     <svg viewBox="0 0 64 64" width="32" height="32"><circle cx="32" cy="32" r="32" fill="#000000"></circle><path d="M 41.116 18.375 h 4.962 l -10.8405 12.39 l 12.753 16.86 H 38.005 l -7.821 -10.2255 L 21.235 47.625 H 16.27 l 11.595 -13.2525 L 15.631 18.375 H 25.87 l 7.0695 9.3465 z m -1.7415 26.28 h 2.7495 L 24.376 21.189 H 21.4255 z" fill="white"></path></svg>
-                </TwitterShareButton> 
+                </TwitterShareButton>
                 </span>
                 <span>
                 <FacebookShareButton
@@ -487,32 +493,34 @@ const Record = React.createClass({
                 </span>
                 </div>
         )
-    }, 
+    },
 
-    renderCitations(doi) {
-        
+    fetchCitations(doi) {
         try {
-            const headers= {"Accept":"text/x-bibliography; style=apa"};
+            const headers = { "Accept": "text/x-bibliography; style=apa" };
             let url = doi
             if (url.includes("https") == false) { url = doi.replace('http', 'https') }
             // Fixes Origin: null problems with HTTP 302 from doi.org
             url = url.replace("doi.org", "data.crosscite.org")
-            fetch(url, {headers})
-            .then(response => {
-                if(response.ok){
-                    this.setState({responsestatus: response.status, responseok: true})
-                    return response.text()
-                }
-                
-            }).then(text=>this.setState({data: text.replace(/<\/?i>/g, "")})
-            ).catch((error) => {
-                console.log(error + " from "+ url)
-                this.setState({responsestatus: 404, responseok: false})
-            })
+            fetch(url, { headers })
+                .then(response => {
+                    if (response.ok) {
+                        this.setState({ responsestatus: response.status, responseok: true })
+                        return response.text()
+                    }
+
+                }).then(text => this.setState({ data: text.replace(/<\/?i>/g, "") })
+                ).catch((error) => {
+                    console.log(error + " from " + url)
+                    this.setState({ responsestatus: 404, responseok: false })
+                })
         } catch (error) {
             console.log(error)
-            this.setState({responsestatus: 0, responseok: false})
+            this.setState({ responsestatus: 0, responseok: false })
         }
+    },
+
+    renderCitations(doi) {
 
         if(this.state.responsestatus == null){
             //This if is for the cationbox not to rendering anything before it has fetched something from the DOI.
@@ -543,7 +551,7 @@ const Record = React.createClass({
                 <div className="row">
                 <div className="col-sm-9" > {this.state.data} </div>
                 <b className="col-sm-9">
-                        Copy BibTeX  
+                        Copy BibTeX
                         <span style={this.props.style}>
                             <span><a className="btn btn-xs btn-default" onClick={onButtonClick.bind(this)} title="Copy BibTeX"><i className="fa fa-clipboard"/></a></span>
                         </span>
@@ -574,9 +582,9 @@ const Record = React.createClass({
 
             )
         }
-        
-            
-        
+
+
+
 
 
     },
