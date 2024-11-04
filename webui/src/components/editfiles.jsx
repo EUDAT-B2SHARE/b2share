@@ -446,7 +446,7 @@ export const EditFiles = React.createClass({
     },
 
     removeRecordFile: function(f) {
-        serverCache.deleteFile(this.props.record, f.key);
+        serverCache.deleteFile(this.props.record, f.key, f.version_id);
     },
 
     transferFileCallback(file, status, param) {
@@ -821,7 +821,7 @@ export const PersistentIdentifier = React.createClass({
 
         let prefix = "";
         let pid = this.props.pid;
-        
+
         for (const p of this.KNOWN_PREFIXES) {
             if (pid.indexOf(p) === 0) {
                 prefix = p;
