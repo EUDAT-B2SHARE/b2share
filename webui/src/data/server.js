@@ -243,13 +243,17 @@ class FilePoster {
         return xhr;
     }
 
-    delete(successFn) {
+    delete(successFn, version) {
         if (this.xhr && this.xhr.abort) {
             this.xhr.abort();
         }
         const completeFn = () => {this.xhr = null};
+        var extension = ""
+        if (version){
+            extension = "?versionId="+version
+        }
         ajaxDelete({
-            url: this.url,
+            url: this.url + extension,
             successFn: (data) => { completeFn(); successFn(data); },
             completeFn: completeFn,
         });
@@ -829,10 +833,10 @@ class ServerCache {
         return this.posters.files.get(draft.get('id')).get(fileObject.name).put(fileObject, progFn);
     }
 
-    deleteFile(draft, fileKey) {
+    deleteFile(draft, fileKey, version) {
         return this.posters.files.get(draft.get('id')).get(fileKey).delete(() => {
             this.getDraftFiles(draft.get('id'), true); // force fetch files
-        });
+        }, version);
     }
 
     updateDraft(id, metadata, successFn) {

@@ -26,7 +26,7 @@
 from __future__ import absolute_import, print_function
 
 from .cli import files as files_cmd
-
+from .views import object_view_object_resources
 
 class B2ShareFiles(object):
     """B2Share Files extension."""
@@ -40,7 +40,11 @@ class B2ShareFiles(object):
         """Flask application initialization."""
         self.init_config(app)
         app.cli.add_command(files_cmd)
-        app.extensions['b2share-files'] = self
+        app.extensions['b2share-files-rest'] = self
+        @app.before_first_request
+        def replace_files_rest_object_view():
+            app.view_functions['invenio_files_rest.object_api'] = object_view_object_resources
+
 
     def init_config(self, app):
         """Initialize configuration."""
