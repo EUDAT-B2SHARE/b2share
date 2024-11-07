@@ -49,15 +49,25 @@ export const NavbarUser = React.createClass({
         );
     },
 
+    handleClick(e) {
+        if (this.state.open) {
+            this.setState({open: false})
+        } else {
+            // This is required for Safari to open the menu
+            // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#clicking_and_focus
+            e.target.focus()
+            this.setState({open: true})
+        }
+    },
+
     renderUser(user) {
         return (
             <FocusManager
-                onFocus={() => this.setState({open: true})}
                 onBlur={() => this.setState({open: false})}
             >
             {bind => (
                 <li className={"dropdown"+(this.state.open ? " open":"")}>
-                    <a id="dropdown-top" href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" {...bind}>
+                    <a id="dropdown-top" href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" onClick={(e) => this.handleClick(e)} {...bind}>
                         <i className="glyphicon glyphicon-user"></i>
                         {" "} {user.get('name')} {" "}
                         <span className="caret"></span>
