@@ -2,7 +2,7 @@ import reqwest from 'reqwest'
 
 
 const DEFAULT_TIMEOUT_GET_MS = 10 * 1000; // 10 seconds
-const DEFAULT_TIMEOUT_POST_MS = 10 * 1000; // 10 seconds
+const DEFAULT_TIMEOUT_POST_MS = 20 * 1000; // 10 seconds
 
 
 export let errorHandler = {fn:function(text){}};
