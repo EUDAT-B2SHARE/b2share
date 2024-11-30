@@ -315,23 +315,23 @@ class UpdateDepositPermission(DepositPermission):
                     state_permission.explicit_needs.add(UserNeed(owner_id))
             permissions.append(state_permission)
 
-        # Create permission for updating generic metadata fields.
-        # Only superadmin can modify published draft.
-        if self.deposit['publication_state'] != 'published':
-            new_state = new_deposit['publication_state']
-            # Check if any metadata has been changed
-            del new_deposit['publication_state']
-            original_metadata = deepcopy(self.deposit)
-            del original_metadata['publication_state']
-            if original_metadata != new_deposit:
-                permissions.append(
-                    UpdateDepositMetadataPermission(self.deposit, new_state)
-                )
+            # Create permission for updating generic metadata fields.
+            # Only superadmin can modify published draft.
+            if self.deposit['publication_state'] != 'published':
+                new_state = new_deposit['publication_state']
+                # Check if any metadata has been changed
+                del new_deposit['publication_state']
+                original_metadata = deepcopy(self.deposit)
+                del original_metadata['publication_state']
+                if original_metadata != new_deposit:
+                    permissions.append(
+                        UpdateDepositMetadataPermission(self.deposit, new_state)
+                    )
 
-            if external_pids_changed:
-                permissions.append(
-                    DepositFilesPermission(self.deposit, 'bucket-update')
-                )
+                if external_pids_changed:
+                    permissions.append(
+                        DepositFilesPermission(self.deposit, 'bucket-update')
+                    )
 
         if len(permissions) > 1:
             self.permissions.add(AndPermissions(*permissions))
