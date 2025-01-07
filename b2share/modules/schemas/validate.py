@@ -68,7 +68,7 @@ restricted_metaschema = {
                         "type": "object",
                         "properties": {
                             "type": {
-                                "enum": ["boolean", "integer", "number", "string"]
+                                "enum": ["boolean", "integer", "number", "string", "object"]
                             },
                             "enum":  {"$ref": "#/definitions/stringArray"},
                         }
