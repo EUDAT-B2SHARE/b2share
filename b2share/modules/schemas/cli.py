@@ -296,6 +296,51 @@ def community_schema_list_block_schema_versions(verbose, community, version=None
 
 @schemas.command()
 @with_appcontext
+def list_root_schemas():
+    """Display the root schemas in the root_schemas folder and compare them with
+    the root schemas stored in the db"""
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    root_schemas_dir = os.path.join(current_dir, 'root_schemas')
+
+    schemas = []
+    # Process existing schema files
+    for filename in sorted(os.listdir(root_schemas_dir)):
+        if os.path.splitext(filename)[1] == '.json':
+            fetched_schema=process_root_schema(root_schemas_dir, filename)
+            if fetched_schema is not None:
+                schemas.append(fetched_schema)
+
+    # Process additional schema versions not in the directory
+    version_numbers = [i.get("version") for i in schemas]
+
+    for version_id in range(max(version_numbers) + 1, max(version_numbers) + 10):
+        fetched_schema = process_root_schema(root_schemas_dir, version=version_id)
+        if fetched_schema is not None:
+            schemas.append(fetched_schema)
+
+    # Print schema details
+    click.secho("\n%s\t\t%s\t%s\t%s\t%s\t%s" % (
+        "FILE NAME",
+        "VALIDATED",
+        "SCHEMA VERSION",
+        "UP TO DATE",
+        "IN DATABASE",
+        "COMPATIBILITY WITH PREVIOUS VERSION",
+    ))
+
+    for rs in schemas:
+        click.secho("%s\t%s\t\t%d\t\t%s\t\t%s\t\t%s" % (
+            rs["file_name"],
+            rs["validate"],
+            rs["version"],
+            rs["up_to_date"],
+            rs["in_db"],
+            rs["back_comp"],
+        ))
+
+
+@schemas.command()
+@with_appcontext
 @click.option('-v', '--verbose', is_flag=True, default=False)
 @click.argument('community', required=False)
 def community_schema_list(verbose, community):
@@ -327,6 +372,48 @@ def community_schema_list(verbose, community):
             cs.block_schema_id
         ))
 
+
+def process_root_schema(root_schemas_dir, filename=None, version=None):
+    root_schema_details = {"file_name": "-------------------", "validate": False, "version": -1, "up_to_date": False, "in_db": False, "back_comp": False}
+    try:
+        if filename:
+            with open(os.path.join(root_schemas_dir, filename)) as json_file:
+                json_loaded = json.load(json_file)
+                root_schema_details["file_name"] = filename
+
+            version = json_loaded['version']
+            json_schema = json_loaded['json_schema']
+
+        if version is not None:
+            root_schema_details["version"] = version
+            retrieved_root_schema = fetch_root_schema(version)
+            root_schema_details['in_db'] = retrieved_root_schema is not None
+
+            if retrieved_root_schema:
+                previous_root_schemas = _fetch_all_query_pages(RootSchemaVersion.query.filter(RootSchemaVersion.version < version).order_by(RootSchemaVersion.version.asc()))
+                prev_schemas = map(lambda x: x.json_schema, previous_root_schemas)
+
+                if filename:
+                    if 'definitions' in json_schema:
+                        json_schema = Schema._resolveLocalReferences(json_schema, json_schema['definitions'])
+                        del json_schema['definitions']
+                    root_schema_details['up_to_date'] = json.loads(retrieved_root_schema.json_schema) == json_schema
+                else:
+
+                    json_schema = json.loads(retrieved_root_schema.json_schema)
+
+                root_schema_details["back_comp"] = verify_compatibility(json_schema, prev_schemas)
+                root_schema_details["validate"] = verify_json_validity(json_schema, root_schema_config_schema)
+            else:
+                return None
+
+        elif version is None and filename is None:
+            return None
+
+    except Exception as e:
+        click.echo(e)
+        raise
+    return root_schema_details
 
 # this function should be called from the communities' cli module
 def update_or_set_community_schema(community, json_file, root_schema_version=None, no_block=False):
