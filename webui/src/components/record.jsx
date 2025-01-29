@@ -129,7 +129,9 @@ const Record = React.createClass({
             record_notes: [],
             files_notes: [],
             b2noteUrl: this.props.b2noteUrl,
-            responseok: null
+            responseok: null,
+            citationFormat: "apa",
+            citationFormats: ["apa"]
         }
 
         return state;
@@ -175,6 +177,7 @@ const Record = React.createClass({
         this.catchMatomoEvent(new Event("recordview"));
         const doi = this.props.record.get("metadata").get('DOI');
         if (doi && this.state.responseok === null) {
+            this.fetchCitationFormats();
             this.fetchCitations(doi);
         }
 
@@ -495,14 +498,31 @@ const Record = React.createClass({
         )
     },
 
-    fetchCitations(doi) {
+    fetchCitationFormats() {
         try {
-            const headers = { "Accept": "text/x-bibliography; style=apa" };
-            let url = doi
-            if (url.includes("https") == false) { url = doi.replace('http', 'https') }
-            // Fixes Origin: null problems with HTTP 302 from doi.org
-            url = url.replace("doi.org", "data.crosscite.org")
-            fetch(url, { headers })
+            const URL = "https://citation.doi.org/styles"
+            fetch(URL)
+                .then(response => {
+                    if (response.ok) {
+                        return response.text()
+                    }
+                })
+                .then(text => {
+                    this.setState({ citationFormats: JSON.parse(text) })
+                })
+        } catch (e) {
+            console.error(e)
+        }
+    },
+
+    fetchCitations(doi) {
+        if (!this.state.citationFormats.includes(this.state.citationFormat)) {
+            return
+        }
+        try {
+            const doi_split = doi.replace("https://doi.org/", "")
+            const URL = `https://citation.doi.org/format?doi=${doi_split}&style=${this.state.citationFormat}`
+            fetch(URL)
                 .then(response => {
                     if (response.ok) {
                         this.setState({ responsestatus: response.status, responseok: true })
@@ -511,7 +531,7 @@ const Record = React.createClass({
 
                 }).then(text => this.setState({ data: text.replace(/<\/?i>/g, "") })
                 ).catch((error) => {
-                    console.log(error + " from " + url)
+                    console.log(error + " from " + URL)
                     this.setState({ responsestatus: 404, responseok: false })
                 })
         } catch (error) {
@@ -523,13 +543,24 @@ const Record = React.createClass({
     renderCitations(doi) {
 
         if(this.state.responsestatus == null){
-            //This if is for the cationbox not to rendering anything before it has fetched something from the DOI.
+            //This if is for the citationbox not to render anything before it has fetched something from the DOI.
+            return (
+                <div className="well">
+                    <div className="row">
+                        <h3 className="col-sm-9">
+                            { 'Cite and Share' }
+                        </h3>
+                    </div>
+                    <div className="row">
+                        <div className="col-sm-9">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+            )
         } else if(this.state.responseok == true){
             function onButtonClick() {
-                const headers = { "Accept": "application/x-bibtex" };
-                let url = doi
-                if (url.includes("https") == false) { url = doi.replace('http', 'https') }
-                fetch(url, { headers }).then(response => response.text()).then(text => copyToClipboard(text, "BibTeX"));
+                this.fetchCitations(doi)
             }
             return (
                 <div className="well">
@@ -548,16 +579,27 @@ const Record = React.createClass({
                             {'Cite as'}
                         </h3>
                     </div>
-                <div className="row">
-                <div className="col-sm-9" > {this.state.data} </div>
-                <b className="col-sm-9">
-                        Copy BibTeX
-                        <span style={this.props.style}>
-                            <span><a className="btn btn-xs btn-default" onClick={onButtonClick.bind(this)} title="Copy BibTeX"><i className="fa fa-clipboard"/></a></span>
-                        </span>
-                </b>
-                </div>
-                <a href={"https://citation.crosscite.org?doi=" + doi}>More citation choices</a>
+                    <div className="row">
+                        <div className="col-sm-9" > {this.state.data} </div>
+                    </div>
+                    <div className="row">
+                        <h4 className="col-sm-9">
+                        { 'Select citation format' }
+                        </h4>
+                    </div>
+                    <div className="row">
+                        <div className="col-sm-3">
+                            <input list="citation-formats" className="form-control" onChange={(e) => this.setState({ citationFormat: e.target.value })} value={this.state.citationFormat} />
+                            <datalist id="citation-formats" className="col-sm-3" >
+                                {this.state.citationFormats.map((format, index) => {
+                                    return <option key={'citation-format-'+index} value={format} >{format}</option>
+                                })}
+                            </datalist>
+                        </div>
+                        <div className="col-sm-2">
+                            <button className="btn btn-primary" onClick={onButtonClick.bind(this)} disabled={!this.state.citationFormats.includes(this.state.citationFormat)} >Fetch citation</button>
+                        </div>
+                    </div>
                 </div>
             )
         } else {
