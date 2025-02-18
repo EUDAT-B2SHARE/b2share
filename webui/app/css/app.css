@@ -262,6 +262,10 @@ input:focus, select:focus, textarea:focus, button:focus, a:focus {
   .doi, .epic_pid {
     white-space: nowrap;
   }
+
+  .no-left-padding {
+    padding-left: 0px !important;
+  }
 }
 
 @media (max-width: 1200px) {
