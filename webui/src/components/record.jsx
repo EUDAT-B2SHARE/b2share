@@ -516,12 +516,12 @@ const Record = React.createClass({
     },
 
     fetchCitations(doi) {
-        if (!this.state.citationFormats.includes(this.state.citationFormat)) {
+        if (!this.state.citationFormats.includes(this.state.citationFormat.toLowerCase())) {
             return
         }
         try {
             const doi_split = doi.replace("https://doi.org/", "")
-            const URL = `https://citation.doi.org/format?doi=${doi_split}&style=${this.state.citationFormat}`
+            const URL = `https://citation.doi.org/format?doi=${doi_split}&style=${this.state.citationFormat.toLowerCase()}`
             fetch(URL)
                 .then(response => {
                     if (response.ok) {
@@ -588,16 +588,16 @@ const Record = React.createClass({
                         </h4>
                     </div>
                     <div className="row">
-                        <div className="col-sm-3">
+                        <div className="col-sm-8 col-lg-9 col-xl-7">
                             <input list="citation-formats" className="form-control" onChange={(e) => this.setState({ citationFormat: e.target.value })} value={this.state.citationFormat} />
-                            <datalist id="citation-formats" className="col-sm-3" >
+                            <datalist id="citation-formats" >
                                 {this.state.citationFormats.map((format, index) => {
                                     return <option key={'citation-format-'+index} value={format} >{format}</option>
                                 })}
                             </datalist>
                         </div>
-                        <div className="col-sm-2">
-                            <button className="btn btn-primary" onClick={onButtonClick.bind(this)} disabled={!this.state.citationFormats.includes(this.state.citationFormat)} >Fetch citation</button>
+                        <div className="col-sm-2 col-lg-3 no-left-padding">
+                            <button className="btn btn-primary" onClick={onButtonClick.bind(this)} disabled={!this.state.citationFormats.includes(this.state.citationFormat.toLowerCase())} >Fetch citation</button>
                         </div>
                     </div>
                 </div>
