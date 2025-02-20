@@ -123,4 +123,23 @@ COPY --from=web /eudat/b2share/webui/app /eudat/b2share/webui/app
 
 WORKDIR /eudat/b2share
 
+USER root
+
+ARG USERNAME=b2share
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+EXPOSE 5000
+
+COPY /dockerize/*.sh /eudat/
+
+RUN groupadd --gid $USER_GID $USERNAME && \
+  useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
+  ln -s /usr/var /usr/local/var && \
+  mkdir -p /usr/var/b2share-instance && \
+  chown $USER_UID:$USER_GID /eudat/b2share /eudat/b2share/b2share /eudat/b2share/b2share/admin && \
+  chown -R $USER_UID:$USER_GID /usr/var
+
+USER $USERNAME
+
 CMD ["/eudat/b2share.sh"]
