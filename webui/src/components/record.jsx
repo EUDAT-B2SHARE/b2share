@@ -498,6 +498,13 @@ const Record = React.createClass({
         )
     },
 
+    componentDidUpdate(prevProps) {
+        const doi = this.props.record.get("metadata").get('DOI');
+        if (doi !== prevProps.record.get("metadata").get('DOI')) {
+            this.fetchCitations(doi);
+        }
+    },
+
     fetchCitationFormats() {
         try {
             const URL = "https://citation.doi.org/styles"
