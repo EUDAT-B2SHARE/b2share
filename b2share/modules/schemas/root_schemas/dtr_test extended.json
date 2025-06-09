@@ -1,0 +1,1228 @@
+{
+    "Identifier": "testing/4160ad49bc7861b2cfd3",
+    "name": "B2SHARE-Schema",
+    "description": "Schema for B2SHARE",
+    "provenance": {
+        "creationDate": "2024-02-28T12:36:37.462Z",
+        "lastModificationDate": "2024-03-04T12:07:35.834Z"
+    },
+    "Schema": {
+        "Type": "Object",
+        "addProps": true,
+        "Properties": [
+            {
+                "Name": "Creators",
+                "Description": "The full name of the creators. The personal name format should be: family, given (e.g.: Smith, John)",
+                "Type": {
+                    "Identifier": "testing/029d528885a0b07166cd",
+                    "name": "Creator",
+                    "description": "The full name of the creators (family name and given name)",
+                    "provenance": {
+                        "creationDate": "2024-02-28T08:57:11.420Z",
+                        "lastModificationDate": "2024-02-28T12:07:05.559Z"
+                    },
+                    "ExpectedUse": "The personal name format should be: family, given (e.g.: Smith, John).",
+                    "Schema": {
+                        "Type": "String",
+                        "Properties": [
+                            {
+                                "Property": "Cardinality",
+                                "Value": "1"
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Titles",
+                "Description": "The titles(s) of the uploaded resource, or a name by which the resource is known",
+                "Type": {
+                    "Identifier": "testing/0c802e9677eb9a8d70e3",
+                    "name": "Title_Object",
+                    "description": "The titles(s) of the uploaded resource, or a name by which the resource is known",
+                    "provenance": {
+                        "creationDate": "2024-02-28T14:20:33.748Z",
+                        "lastModificationDate": "2024-02-28T14:24:09.138Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Title description",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Title Type",
+                                "Type": {
+                                    "Identifier": "testing/a116f7255e19431f1fbf",
+                                    "name": "Title",
+                                    "description": "The titles(s) of the uploaded resource, or a name by which the resource is known",
+                                    "provenance": {
+                                        "creationDate": "2024-02-28T12:11:56.516Z",
+                                        "lastModificationDate": "2024-02-28T12:12:14.392Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "Title",
+                                                    "Alternative Title",
+                                                    "Subtitle",
+                                                    "TranslatedTitle",
+                                                    "Other"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Publication_Date",
+                "Description": "The date when the data was or will be made publicly available",
+                "Type": {
+                    "Identifier": "testing/4867835f437df26002f7",
+                    "name": "Publication_Date",
+                    "description": "The date when the data was or will be made publicly available",
+                    "provenance": {
+                        "creationDate": "2024-02-28T09:15:39.927Z",
+                        "lastModificationDate": "2024-02-28T09:15:39.927Z"
+                    },
+                    "ExpectedUse": "(e.g. 2018-07-13)",
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Date",
+                                "Type": {
+                                    "Identifier": "testing/eb9a4bc1c0c153e4e4b0",
+                                    "name": "Date",
+                                    "description": "A String conforming to the date format.",
+                                    "provenance": {
+                                        "creationDate": "2024-02-28T09:13:09.933Z",
+                                        "lastModificationDate": "2024-02-28T09:13:09.933Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String",
+                                        "Properties": [
+                                            {
+                                                "Property": "format",
+                                                "Value": "date"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - 1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Community",
+                "Description": "The community to which the record has been submitted",
+                "Type": {
+                    "Identifier": "testing/b308b0b5cbd43a24fed8",
+                    "name": "Community_Identifier",
+                    "description": "The community UUID",
+                    "provenance": {
+                        "creationDate": "2024-02-28T08:55:46.476Z",
+                        "lastModificationDate": "2024-02-28T08:55:46.476Z"
+                    },
+                    "Schema": {
+                        "Type": "String",
+                        "Properties": [
+                            {
+                                "Property": "pattern",
+                                "Value": "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"
+                            },
+                            {
+                                "Property": "Cardinality",
+                                "Value": "1"
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Publication_State",
+                "Description": "State of the publication workflow",
+                "Type": {
+                    "Identifier": "testing/2a9ef4513b3c35b7a0a3",
+                    "name": "Publication_State",
+                    "description": "State of the publication workflow!",
+                    "versioning": {
+                        "version": "1",
+                        "previousVersion": "testing/2a9ef4513b3c35b7a0a3"
+                    },
+                    "provenance": {
+                        "creationDate": "2024-02-28T11:33:29.120Z",
+                        "lastModificationDate": "2024-02-29T11:32:56.675Z"
+                    },
+                    "Schema": {
+                        "Type": "Enum",
+                        "Properties": [
+                            {
+                                "Property": "String Enum",
+                                "Value": [
+                                    "draft",
+                                    "submitted",
+                                    "published"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "_pid",
+                "Description": "Array of persistent identifiers pointing to this record",
+                "Type": {
+                    "Identifier": "testing/54fd55750b19c2cf22cb",
+                    "name": "PID-B2SHARE",
+                    "description": "B2share Persistent IDentifiers",
+                    "provenance": {
+                        "creationDate": "2024-02-28T12:05:06.693Z",
+                        "lastModificationDate": "2024-02-28T12:05:06.693Z"
+                    },
+                    "Schema": {
+                        "Type": "String",
+                        "Properties": [
+                            {
+                                "Property": "pattern",
+                                "Value": "([A-Za-z]+([0-9]+[A-Za-z]+)+)"
+                            },
+                            {
+                                "Property": "Cardinality",
+                                "Value": "1"
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "doi",
+                "Description": "Record Digital Object Identifier",
+                "Type": {
+                    "Identifier": "testing/48ba02e08f1185e3f854",
+                    "name": "doi_identifier",
+                    "description": "DOI is an acronym for digital object identifier, meaning a digital identifier of an object. A DOI name is an identifier (not a location) of an entity on digital networks. It provides a system for persistent and actionable identification and interoperable exchange of managed information on digital networks. A DOI name can be assigned to any entity \u2014 physical, digital or abstract \u2014 primarily for sharing with an interested user community or managing as intellectual property. The DOI system is designed for interoperability; that is to use, or work with, existing identifier and metadata schemes. DOI names may also be expressed as URLs (URIs).",
+                    "provenance": {
+                        "creationDate": "2024-02-28T11:57:20.463Z",
+                        "lastModificationDate": "2024-02-28T11:57:20.463Z"
+                    },
+                    "ExpectedUse": "To be used to validate if a given identifier is of type doi",
+                    "Schema": {
+                        "Type": "String",
+                        "PropRelations": "OR",
+                        "Properties": [
+                            {
+                                "Property": "pattern",
+                                "Value": "^(d|D)(o|O)(i|I):10\\\\.\\\\d+\\\\/.+$"
+                            },
+                            {
+                                "Property": "pattern",
+                                "Value": "10\\\\.\\\\d+\\\\/.+$"
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Alternate Identifiers",
+                "Description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number",
+                "Type": {
+                    "Identifier": "testing/5ef8102e5e7ec4824333",
+                    "name": "Alternate_Identifier",
+                    "description": "The alternative identifiers for this resource such as a URN, URI or an ISBN number",
+                    "provenance": {
+                        "creationDate": "2024-02-28T15:10:54.160Z",
+                        "lastModificationDate": "2024-02-28T15:10:54.160Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Alternate Identifier",
+                                "Description": "Value of the identifier",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1"
+                                }
+                            },
+                            {
+                                "Name": "Alternate Identifier Type",
+                                "Description": "The type of the alternate identifier",
+                                "Type": {
+                                    "Identifier": "testing/7830b92fbbe9eb255f60",
+                                    "name": "Identifier_Type",
+                                    "description": "A collection of identifier types as enum",
+                                    "provenance": {
+                                        "creationDate": "2024-02-28T15:06:56.613Z",
+                                        "lastModificationDate": "2024-02-28T15:06:56.613Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "ARK",
+                                                    "arXiv",
+                                                    "bibcode",
+                                                    "DOI",
+                                                    "EAN13",
+                                                    "EISSN",
+                                                    "Handle",
+                                                    "ISBN",
+                                                    "ISSN",
+                                                    "ISTC",
+                                                    "LISSN",
+                                                    "LSID",
+                                                    "ORCID",
+                                                    "PMID",
+                                                    "PURL",
+                                                    "UPC",
+                                                    "URL",
+                                                    "URN",
+                                                    "w3id",
+                                                    "RAiD"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Related identifiers",
+                "Title": "Related identifiers",
+                "Description": "The identifiers of other resources related to the resource such as a URN, URI or an ISBN number.",
+                "Type": {
+                    "Identifier": "testing/d72482f16d18ff46f8f4",
+                    "name": "related_identifiers",
+                    "description": "The identifiers of other resources related to the resource such as a URN, URI or an ISBN number.",
+                    "provenance": {
+                        "creationDate": "2024-03-04T11:19:00.139Z",
+                        "lastModificationDate": "2024-03-04T11:19:00.139Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "related_identifier",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "resource_type_general",
+                                "Title": "Resource type",
+                                "Description": "The type of the resource.",
+                                "Type": {
+                                    "Identifier": "testing/a00985b98dac27bd32f8",
+                                    "name": "resourceType",
+                                    "description": "A collection of recsource type as enum",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:11:44.128Z",
+                                        "lastModificationDate": "2024-03-04T09:11:44.128Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "Audiovisual",
+                                                    "Book",
+                                                    "BookChapter",
+                                                    "Collection",
+                                                    "ComputationalNotebook",
+                                                    "ConferencePaper",
+                                                    "ConferenceProceeding",
+                                                    "DataPaper",
+                                                    "Dataset",
+                                                    "Dissertation",
+                                                    "Event",
+                                                    "Image",
+                                                    "InteractiveResource",
+                                                    "Journal",
+                                                    "JournalArticle",
+                                                    "Model",
+                                                    "OutputManagementPlan",
+                                                    "PeerReview",
+                                                    "PhysicalObject",
+                                                    "Preprint",
+                                                    "Report",
+                                                    "Service",
+                                                    "Software",
+                                                    "Sound",
+                                                    "Standard",
+                                                    "Text",
+                                                    "Workflow",
+                                                    "Other"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "related_identifier_type",
+                                "Title": "Type",
+                                "Description": "The type of the related identifier.",
+                                "Type": {
+                                    "Identifier": "testing/015dc79a77940fb65aa4",
+                                    "name": "identifierType",
+                                    "description": "The type of the identifier",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T10:09:34.788Z",
+                                        "lastModificationDate": "2024-03-04T10:09:34.788Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "ARK",
+                                                    "arXiv",
+                                                    "bibcode",
+                                                    "DOI",
+                                                    "EAN13",
+                                                    "EISSN",
+                                                    "Handle",
+                                                    "ISBN",
+                                                    "ISSN",
+                                                    "ISTC",
+                                                    "LISSN",
+                                                    "LSID",
+                                                    "ORCID",
+                                                    "PMID",
+                                                    "PURL",
+                                                    "UPC",
+                                                    "URL",
+                                                    "URN",
+                                                    "w3id"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "relation_type",
+                                "Title": "Relation",
+                                "Description": "The relation type of the described reference.",
+                                "Type": {
+                                    "Identifier": "testing/ad551d89f82cc2606790",
+                                    "name": "relation_type",
+                                    "description": "The relation type of the described reference.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T11:16:48.993Z",
+                                        "lastModificationDate": "2024-03-04T11:16:48.993Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "IsCitedBy",
+                                                    "Cites",
+                                                    "IsSupplementTo",
+                                                    "IsPublishedIn",
+                                                    "IsSupplementedBy",
+                                                    "IsContinuedBy",
+                                                    "Continues",
+                                                    "HasMetadata",
+                                                    "IsMetadataFor",
+                                                    "IsNewVersionOf",
+                                                    "IsPreviousVersionOf",
+                                                    "IsPartOf",
+                                                    "HasPart",
+                                                    "IsReferencedBy",
+                                                    "References",
+                                                    "IsDocumentedBy",
+                                                    "Documents",
+                                                    "isCompiledBy",
+                                                    "Compiles",
+                                                    "IsVariantFormOf",
+                                                    "IsOriginalFormOf",
+                                                    "IsIdenticalTo",
+                                                    "IsReviewedBy",
+                                                    "Reviews",
+                                                    "IsDerivedFrom",
+                                                    "IsSourceOf",
+                                                    "Describes",
+                                                    "IsDescribedBy",
+                                                    "HasVersion",
+                                                    "IsVersionOf",
+                                                    "Requires",
+                                                    "IsRequiredBy",
+                                                    "Obsoletes",
+                                                    "IsObsoletedBy"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Descriptions",
+                "Description": "The more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
+                "Type": {
+                    "Identifier": "testing/c0375e268cdabc613c2c",
+                    "name": "descriptions",
+                    "description": "\"The more elaborate description of the resource. Focus on a content description that makes it easy for others to find, and to interpret its relevance.",
+                    "provenance": {
+                        "creationDate": "2024-03-04T11:23:59.019Z",
+                        "lastModificationDate": "2024-03-04T11:23:59.019Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Description",
+                                "Description": "description of the resource",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Description Type",
+                                "Title": "Type",
+                                "Description": "The type of the description.",
+                                "Type": {
+                                    "Identifier": "testing/9b955a8019f16d940419",
+                                    "name": "description_type",
+                                    "description": "The type of the description.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T11:21:25.182Z",
+                                        "lastModificationDate": "2024-03-04T11:21:25.182Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "Abstract",
+                                                    "Methods",
+                                                    "SeriesInformation",
+                                                    "TableOfContents",
+                                                    "TechnicalInfo",
+                                                    "Other"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "version",
+                "Title": "Version",
+                "Description": "The version of the resource.",
+                "Type": "test/3df63b7acb0522da685d",
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "contact_email",
+                "Title": "Contact email",
+                "Description": "The contact email information for this resource.",
+                "Type": {
+                    "Identifier": "testing/a88b7dcd1a9e3e17770b",
+                    "name": "email",
+                    "description": "email format",
+                    "provenance": {
+                        "creationDate": "2024-03-04T11:27:24.961Z",
+                        "lastModificationDate": "2024-03-04T11:27:24.961Z"
+                    },
+                    "Schema": {
+                        "Type": "String",
+                        "Properties": [
+                            {
+                                "Property": "pattern",
+                                "Value": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - 1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Open Access",
+                "Description": "Indicate whether the record's files are publicly accessible or not. In case of restricted access the uploaded files will only be accessible by the record's owner and the community administrators. Please note that the record's metadata is always publicly accessible",
+                "Type": {
+                    "Identifier": "testing/b76ff4906f33c2dd97dd",
+                    "name": "Boolean",
+                    "description": "Basic boolean datatype",
+                    "provenance": {
+                        "creationDate": "2024-02-28T12:54:22.989Z",
+                        "lastModificationDate": "2024-02-28T12:54:22.989Z"
+                    },
+                    "Schema": {
+                        "Type": "Boolean"
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "License",
+                "Title": "License",
+                "Description": "The license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                "Type": {
+                    "Identifier": "testing/3229609e15436ec51bcf",
+                    "name": "License",
+                    "description": "The license under which this data set is available to the users (e.g. GPL, Apache v2 or Commercial). Please use the License Selector for help and additional information.",
+                    "provenance": {
+                        "creationDate": "2024-03-04T11:59:40.623Z",
+                        "lastModificationDate": "2024-03-04T11:59:40.623Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "license",
+                                "Title": "License",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "License URI",
+                                "Description": "The URI pointing to the description of the license",
+                                "Type": {
+                                    "Identifier": "testing/002d07c990a81dff6533",
+                                    "name": "license_uri",
+                                    "description": "The URI pointing to the description of the license",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T11:57:49.479Z",
+                                        "lastModificationDate": "2024-03-04T11:57:49.479Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Object",
+                                        "Properties": [
+                                            {
+                                                "Name": "License URI",
+                                                "Title": "License URI",
+                                                "Type": "test/cb371c93c5aa0e62198e",
+                                                "Properties": {
+                                                    "Cardinality": "1",
+                                                    "extractProperties": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "license_identifier",
+                                "Title": "Identifier",
+                                "Description": "The unique identifier of the license, according to various identifier schemes.",
+                                "Type": {
+                                    "Identifier": "testing/2b9c4b1f6d2cdbdcb4a3",
+                                    "name": "license_identifier",
+                                    "description": "The unique identifier of the license, according to various identifier schemes.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T11:56:48.355Z",
+                                        "lastModificationDate": "2024-03-04T11:56:48.355Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Publisher",
+                "Description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
+                "Type": {
+                    "Identifier": "testing/61d70d6e8feec4a24094",
+                    "name": "Publisher",
+                    "description": "The entity responsible for making the resource available, either a person, an organization, or a service.",
+                    "provenance": {
+                        "creationDate": "2024-03-04T09:04:50.733Z",
+                        "lastModificationDate": "2024-03-04T09:04:50.733Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Publisher",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "0 - 1"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - 1"
+                }
+            },
+            {
+                "Name": "Affiliation",
+                "Description": "Info about the affiliation",
+                "Type": {
+                    "Identifier": "testing/f601974c56eef3d7a40a",
+                    "name": "affiliation",
+                    "description": "Info about the affiliation",
+                    "provenance": {
+                        "creationDate": "2024-03-04T09:20:07.486Z",
+                        "lastModificationDate": "2024-03-04T09:20:07.486Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Affiliation Name",
+                                "Description": "The name of the affiliation",
+                                "Type": {
+                                    "Identifier": "testing/0a266ecb9defdbfb5088",
+                                    "name": "affiliation_name",
+                                    "description": "The name of the affiliation.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:17:29.366Z",
+                                        "lastModificationDate": "2024-03-04T09:17:29.366Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1"
+                                }
+                            },
+                            {
+                                "Name": "Affiliation Identifier",
+                                "Description": "The unique identifier of the affiliation",
+                                "Type": {
+                                    "Identifier": "testing/9c87b5a46c221dab8f7c",
+                                    "name": "affiliation_identifier",
+                                    "description": "The unique identifier of the affiliation.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:17:56.138Z",
+                                        "lastModificationDate": "2024-03-04T09:17:56.138Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - 1"
+                }
+            },
+            {
+                "Name": "Person",
+                "Description": "Person object, could be a person or an organization",
+                "Type": {
+                    "Identifier": "testing/8c41ae88467fe5bbad09",
+                    "name": "Person",
+                    "description": "Person object, could be a person or an organization",
+                    "provenance": {
+                        "creationDate": "2024-03-04T09:29:23.109Z",
+                        "lastModificationDate": "2024-03-04T09:29:23.109Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Given name",
+                                "Type": {
+                                    "Identifier": "testing/ab19585506d14c74e3df",
+                                    "name": "given_name",
+                                    "description": "The first names given to this entity.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:22:36.646Z",
+                                        "lastModificationDate": "2024-03-04T09:22:36.646Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Family Name",
+                                "Type": {
+                                    "Identifier": "testing/cb945a35616939076926",
+                                    "name": "family_name",
+                                    "description": "The family names given to this entity.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:22:49.885Z",
+                                        "lastModificationDate": "2024-03-04T09:22:49.885Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Affiliations",
+                                "Type": {
+                                    "Identifier": "testing/f601974c56eef3d7a40a",
+                                    "name": "affiliation",
+                                    "description": "Info about the affiliation",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:20:07.486Z",
+                                        "lastModificationDate": "2024-03-04T09:20:07.486Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Object",
+                                        "Properties": [
+                                            {
+                                                "Name": "Affiliation Name",
+                                                "Description": "The name of the affiliation",
+                                                "Type": {
+                                                    "Identifier": "testing/0a266ecb9defdbfb5088",
+                                                    "name": "affiliation_name",
+                                                    "description": "The name of the affiliation.",
+                                                    "provenance": {
+                                                        "creationDate": "2024-03-04T09:17:29.366Z",
+                                                        "lastModificationDate": "2024-03-04T09:17:29.366Z"
+                                                    },
+                                                    "Schema": {
+                                                        "Type": "String"
+                                                    }
+                                                },
+                                                "Properties": {
+                                                    "Cardinality": "1"
+                                                }
+                                            },
+                                            {
+                                                "Name": "Affiliation Identifier",
+                                                "Description": "The unique identifier of the affiliation",
+                                                "Type": {
+                                                    "Identifier": "testing/9c87b5a46c221dab8f7c",
+                                                    "name": "affiliation_identifier",
+                                                    "description": "The unique identifier of the affiliation.",
+                                                    "provenance": {
+                                                        "creationDate": "2024-03-04T09:17:56.138Z",
+                                                        "lastModificationDate": "2024-03-04T09:17:56.138Z"
+                                                    },
+                                                    "Schema": {
+                                                        "Type": "String"
+                                                    }
+                                                },
+                                                "Properties": {
+                                                    "Cardinality": "0 - 1"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - n",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Name Type",
+                                "Type": {
+                                    "Identifier": "testing/7e7decb6615dcf273716",
+                                    "name": "name_type",
+                                    "description": "The type of name described.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:23:24.075Z",
+                                        "lastModificationDate": "2024-03-04T09:23:24.075Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "Personal",
+                                                    "Organizational"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Name Identifiers",
+                                "Type": {
+                                    "Identifier": "testing/33a37512006c777750ad",
+                                    "name": "name_identifiers",
+                                    "description": "The identifiers that point to any information about this creator.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T09:25:58.608Z",
+                                        "lastModificationDate": "2024-03-04T09:25:58.608Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Object",
+                                        "Properties": [
+                                            {
+                                                "Name": "Name identifiers",
+                                                "Description": "The identifiers that point to any information about this creator",
+                                                "Type": {
+                                                    "Identifier": "testing/45ed2476d08239120522",
+                                                    "name": "nameIdentifier",
+                                                    "description": "The unique identifier of the entity, according to various identifier schemes",
+                                                    "provenance": {
+                                                        "creationDate": "2024-03-04T09:16:46.736Z",
+                                                        "lastModificationDate": "2024-03-04T09:16:46.736Z"
+                                                    },
+                                                    "Schema": {
+                                                        "Type": "String",
+                                                        "Properties": [
+                                                            {
+                                                                "Property": "Cardinality",
+                                                                "Value": "1"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "Properties": {
+                                                    "Cardinality": "1"
+                                                }
+                                            },
+                                            {
+                                                "Name": "Schema",
+                                                "Description": "The scheme used for the identifier.",
+                                                "Type": {
+                                                    "Identifier": "testing/9a9e56edb7dc61cd92ec",
+                                                    "name": "scheme",
+                                                    "description": "The scheme used for the identifier.",
+                                                    "provenance": {
+                                                        "creationDate": "2024-03-04T09:24:11.935Z",
+                                                        "lastModificationDate": "2024-03-04T09:24:11.935Z"
+                                                    },
+                                                    "Schema": {
+                                                        "Type": "String"
+                                                    }
+                                                },
+                                                "Properties": {
+                                                    "Cardinality": "1"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - n"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Resource type",
+                "Title": "Resource type",
+                "Type": "resource_types",
+                "Properties": {
+                    "Cardinality": "1 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Instruments",
+                "Description": "The scientific instruments the data was generated or captured on.",
+                "Type": {
+                    "Identifier": "testing/46c5d55712cb30bbaaa9",
+                    "name": "Instruments",
+                    "description": "The scientific instruments the data was generated or captured on.",
+                    "provenance": {
+                        "creationDate": "2024-03-04T10:10:08.633Z",
+                        "lastModificationDate": "2024-03-04T10:10:08.633Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "Instrument_name",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "instrument_identifier",
+                                "Description": "The unique identifier of the instrument.",
+                                "Type": {
+                                    "Identifier": "testing/ae44e000c21d8029fd56",
+                                    "name": "instrument_identifier",
+                                    "description": "The unique identifier of the instrument.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T10:05:20.185Z",
+                                        "lastModificationDate": "2024-03-04T10:05:20.185Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "instrument_identifier_type",
+                                "Description": "The type of the unique identifier of the instrument.",
+                                "Type": {
+                                    "Identifier": "testing/015dc79a77940fb65aa4",
+                                    "name": "identifierType",
+                                    "description": "The type of the identifier",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T10:09:34.788Z",
+                                        "lastModificationDate": "2024-03-04T10:09:34.788Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "Enum",
+                                        "Properties": [
+                                            {
+                                                "Property": "String Enum",
+                                                "Value": [
+                                                    "ARK",
+                                                    "arXiv",
+                                                    "bibcode",
+                                                    "DOI",
+                                                    "EAN13",
+                                                    "EISSN",
+                                                    "Handle",
+                                                    "ISBN",
+                                                    "ISSN",
+                                                    "ISTC",
+                                                    "LISSN",
+                                                    "LSID",
+                                                    "ORCID",
+                                                    "PMID",
+                                                    "PURL",
+                                                    "UPC",
+                                                    "URL",
+                                                    "URN",
+                                                    "w3id"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "0 - n",
+                    "extractProperties": true
+                }
+            },
+            {
+                "Name": "Disciplines",
+                "Description": "The scientific disciplines linked with the resource.",
+                "Type": {
+                    "Identifier": "testing/7497c705e58596241ccd",
+                    "name": "disciplines",
+                    "description": "The scientific disciplines linked with the resource.",
+                    "provenance": {
+                        "creationDate": "2024-03-04T10:17:19.490Z",
+                        "lastModificationDate": "2024-03-04T10:17:19.490Z"
+                    },
+                    "Schema": {
+                        "Type": "Object",
+                        "Properties": [
+                            {
+                                "Name": "discipline_name",
+                                "Type": "test/3df63b7acb0522da685d",
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "Identifier",
+                                "Description": "The unique identifier of the discipline, according to various identifier schemes",
+                                "Type": {
+                                    "Identifier": "testing/f90a2c793c039d5e966b",
+                                    "name": "discipline_identifier",
+                                    "description": "The unique identifier of the discipline, according to various identifier schemes.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T10:15:17.717Z",
+                                        "lastModificationDate": "2024-03-04T10:15:17.717Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "1",
+                                    "extractProperties": true
+                                }
+                            },
+                            {
+                                "Name": "classification_code",
+                                "Description": "The corresponding classification code of the discipline, according to various identifier schemes.",
+                                "Type": {
+                                    "Identifier": "testing/ab7416842fbdc5ab3547",
+                                    "name": "classification_code",
+                                    "description": "The corresponding classification code of the discipline, according to various identifier schemes.",
+                                    "provenance": {
+                                        "creationDate": "2024-03-04T10:15:32.712Z",
+                                        "lastModificationDate": "2024-03-04T10:15:32.712Z"
+                                    },
+                                    "Schema": {
+                                        "Type": "String"
+                                    }
+                                },
+                                "Properties": {
+                                    "Cardinality": "0 - 1",
+                                    "extractProperties": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Properties": {
+                    "Cardinality": "1",
+                    "extractProperties": true
+                }
+            }
+        ]
+    }
+}
