@@ -1,25 +1,26 @@
 #
+#
 # Building the webui
 #
-FROM node:12.22.12-buster-slim AS web
+FROM node:12.22.12-alpine AS web
 
-LABEL maintainer Joni Tahvanainen <joni.tahvanainen@csc.fi>
-
-RUN apt update && \
-    apt install -y git
+RUN apk update
+RUN apk add git bash
 
 WORKDIR /eudat/b2share
 COPY webui webui
 
 WORKDIR /eudat/b2share/webui
-RUN npm install --unsafe-perm
+
+RUN npm install
+RUN ./copy_files.sh
 RUN node_modules/webpack/bin/webpack.js -p
 
 # Install public-license-selector
 
 WORKDIR /eudat
-RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git && \
-    apt-get -y remove git
+RUN git clone https://github.com/EUDAT-B2SHARE/public-license-selector.git 
+
 WORKDIR /eudat/public-license-selector
 RUN npm install && \
     node --version && \
@@ -37,7 +38,7 @@ RUN npm install && \
 #
 # Building the b2share
 #
-FROM python:3.6-slim as builder
+FROM python:3.6-slim AS builder
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -55,8 +56,6 @@ EXPOSE 5000
 RUN apt update && \
     apt-get install -y gcc libpq-dev npm git && \
     python3 -m pip install --upgrade pip setuptools==57.5.0 wheel
-
-
 
 # Supposedly helps with pip time-outs.
 ENV PIP_DEFAULT_TIMEOUT=100
@@ -84,6 +83,7 @@ WORKDIR /eudat
 ADD . b2share
 RUN rm -rf /eudat/b2share/webui
 
+
 #
 # Compiling everything
 #
@@ -103,8 +103,9 @@ ENV B2SHARE_WEBUI_MATOMO_SITEID=''
 COPY --from=builder /eudat /eudat
 COPY --from=builder /etc/supervisord.conf /etc/
 
-RUN apt update && \
-    apt install -y libpq-dev supervisor
+RUN apt update && apt upgrade -y && \
+    apt install -y libpq-dev supervisor && \
+    rm -rf /var/lib/apt/lists/* && apt clean
 
 WORKDIR /eudat/b2share
 
